@@ -1,0 +1,43 @@
+server:
+  port: 9991
+
+spring:
+  datasource:
+    dynamic:
+      primary: master
+      strict: true
+      datasource:
+        master:
+          url: jdbc:mysql://${MYSQL-HOST:xiliulou-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:eletctricity}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+          username: root
+          password: 123456
+          driver-class-name: com.mysql.cj.jdbc.Driver
+        slave_1:
+          url: jdbc:mysql://${MYSQL-HOST:xiliulou-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:eletctricity}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+          username: root
+          password: 123456
+          driver-class-name: com.mysql.cj.jdbc.Driver
+
+  redis:
+    lettuce:
+      pool:
+        max-active: 16
+    host:  ${REDIS-HOST:xiliulou-redis}
+    password: 123456
+  application:
+    name: @artifactId@
+  cloud:
+    nacos:
+      discovery:
+        server-addr: ${NACOS-HOST:xiliulou-nacos}:${NACOS-PORT:8848}
+      config:
+        server-addr: ${spring.cloud.nacos.discovery.server-addr}
+        file-extension: yml
+        shared-configs[0]:
+          data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
+          refresh: true
+  profiles:
+    active: dev
+
+logging:
+  config: classpath:logback-spring-dev.xml
