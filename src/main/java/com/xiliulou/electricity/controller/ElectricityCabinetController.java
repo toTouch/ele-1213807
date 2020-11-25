@@ -22,7 +22,7 @@ public class ElectricityCabinetController {
      * 服务对象
      */
     @Autowired
-    private ElectricityCabinetService electricityCabinetService;
+    ElectricityCabinetService electricityCabinetService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -36,10 +36,9 @@ public class ElectricityCabinetController {
         return electricityCabinetService.edit(electricityCabinet);
     }
 
-
     //删除换电柜
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
-    public R delete(@PathVariable("id") Long id) {
+    public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("id不能为空");
         }

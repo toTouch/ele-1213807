@@ -23,7 +23,7 @@ public class ElectricityCabinetBox {
     /**
     * 所属换电柜柜Id
     */
-    private Long electricityCabinetId;
+    private Integer electricityCabinetId;
     /**
     * 仓门号
     */
@@ -31,7 +31,7 @@ public class ElectricityCabinetBox {
     /**
     * 电池Id
     */
-    private Long batteryId;
+    private Long electricityBatteryId;
     /**
     * 可用状态（0-禁用，1-可用）
     */
@@ -59,5 +59,11 @@ public class ElectricityCabinetBox {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+    //可用
+    public static final Integer COURIER_BOX_USABLE = 1;
+    public static final Integer COURIER_BOX_UN_USABLE = 0;
+    //分配状态
+    public static final Integer STATUS_DISTRIBUTE = 1;
+    public static final Integer STATUS_UN_DISTRIBUTE = 0;
 
 }

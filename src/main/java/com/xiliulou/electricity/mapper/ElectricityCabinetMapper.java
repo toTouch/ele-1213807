@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import java.util.List;
+
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -19,7 +21,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinet queryById(Long id);
+    ElectricityCabinet queryById(Integer id);
 
     /**
      * 查询指定行数据
@@ -28,7 +30,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @param limit 查询条数
      * @return 对象列表
      */
-    List<ElectricityCabinet> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
+    List<ElectricityCabinet> queryList(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 
     /**
@@ -55,12 +57,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      */
     int update(ElectricityCabinet electricityCabinet);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
 
 }

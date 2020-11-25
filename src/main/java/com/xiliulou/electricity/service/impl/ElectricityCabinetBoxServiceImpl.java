@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.json.JSONUtil;
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
@@ -10,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表服务实现类
@@ -97,6 +101,19 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
+        for (int i=1;i<electricityCabinetModel.getNum();i++) {
+            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+            electricityCabinetBox.setElectricityCabinetId(id);
+            electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.COURIER_BOX_USABLE);
+            electricityCabinetBox.setCellNo(String.valueOf(i));
+            electricityCabinetBox.setCreateTime(System.currentTimeMillis());
+            electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetBoxMapper.insertOne(electricityCabinetBox);
+        }
+    }
 
+    @Override
+    public void batchDeleteBoxByElectricityCabinetId(Integer id) {
+        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id);
     }
 }

@@ -25,7 +25,8 @@
         select
           id, name, num, voltage, del_flag, create_time, update_time
         from eletctricity.t_electricity_cabinet_model
-        limit #{offset}, #{limit}
+        where del_flag=0
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
@@ -89,10 +90,5 @@
         </set>
         where id = #{id}
     </update>
-
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from eletctricity.t_electricity_cabinet_model where id = #{id}
-    </delete>
 
 </mapper>

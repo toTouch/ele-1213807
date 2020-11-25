@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
+
 import java.util.List;
 
 /**
@@ -27,14 +31,6 @@ public interface ElectricityCabinetModelService {
      */
     ElectricityCabinetModel queryByIdFromCache(Integer id);
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
-    List<ElectricityCabinetModel> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据
@@ -52,12 +48,12 @@ public interface ElectricityCabinetModelService {
      */
     Integer update(ElectricityCabinetModel electricityCabinetModel);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteById(Integer id);
 
+    R save(ElectricityCabinetModel electricityCabinetModel);
+
+    R edit(ElectricityCabinetModel electricityCabinetModel);
+
+    R delete(Integer id);
+
+    R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery);
 }

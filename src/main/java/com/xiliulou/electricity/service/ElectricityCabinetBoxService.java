@@ -63,4 +63,6 @@ public interface ElectricityCabinetBoxService {
     Boolean deleteById(Long id);
 
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
+
+    void batchDeleteBoxByElectricityCabinetId(Integer id);
 }

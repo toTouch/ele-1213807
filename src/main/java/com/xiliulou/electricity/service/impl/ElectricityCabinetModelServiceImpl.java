@@ -1,14 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 换电柜型号表(TElectricityCabinetModel)表服务实现类
@@ -20,6 +25,8 @@ import java.util.List;
 public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetModelService {
     @Resource
     private ElectricityCabinetModelMapper electricityCabinetModelMapper;
+    @Autowired
+    RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -40,21 +47,21 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
      */
     @Override
     public ElectricityCabinetModel queryByIdFromCache(Integer id) {
-        return null;
+        //先查缓存
+        ElectricityCabinetModel cacheElectricityCabinetModel=redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +id,ElectricityCabinetModel.class);
+        if(Objects.nonNull(cacheElectricityCabinetModel)){
+            return cacheElectricityCabinetModel;
+        }
+        //缓存没有再查数据库
+        ElectricityCabinetModel electricityCabinetModel=electricityCabinetModelMapper.queryById(id);
+        if(Objects.isNull(electricityCabinetModel)){
+            return null;
+        }
+        //插入缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +id,electricityCabinetModel);
+        return electricityCabinetModel;
     }
 
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<ElectricityCabinetModel> queryAllByLimit(int offset, int limit) {
-        return this.electricityCabinetModelMapper.queryAllByLimit(offset, limit);
-    }
 
     /**
      * 新增数据
@@ -82,15 +89,50 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
          
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Integer id) {
-        return this.electricityCabinetModelMapper.deleteById(id) > 0;
+    public R save(ElectricityCabinetModel electricityCabinetModel) {
+        //TODO 判断参数
+        //插入数据库
+        electricityCabinetModel.setCreateTime(System.currentTimeMillis());
+        electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
+        electricityCabinetModelMapper.insertOne(electricityCabinetModel);
+        //插入缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +electricityCabinetModel.getId(),electricityCabinetModel);
+        return R.ok();
     }
+
+    @Override
+    public R edit(ElectricityCabinetModel electricityCabinetModel) {
+        //TODO 判断参数
+        ElectricityCabinetModel oldElectricityCabinetModel = queryByIdFromCache(electricityCabinetModel.getId());
+        if(Objects.isNull(oldElectricityCabinetModel)){
+            return R.fail("换电柜型号不存在！");
+        }
+        electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetModelMapper.update(electricityCabinetModel);
+        //更新缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +electricityCabinetModel.getId(),electricityCabinetModel);
+        return R.ok();
+    }
+
+    @Override
+    public R delete(Integer id) {
+        //删除数据库
+        ElectricityCabinetModel electricityCabinetModel=new ElectricityCabinetModel();
+        electricityCabinetModel.setId(electricityCabinetModel.getId());
+        electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
+        electricityCabinetModelMapper.update(electricityCabinetModel);
+        //删除缓存
+        redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +id);
+        return R.ok();
+    }
+
+    @Override
+    public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
+        List<ElectricityCabinetModel> electricityCabinetModelList= electricityCabinetModelMapper.queryAllByLimit(electricityCabinetModelQuery);
+        return R.ok(electricityCabinetModelList);
+    }
+
 }
