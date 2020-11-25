@@ -14,7 +14,18 @@
 	<dependencies>
 		<dependency>
 			<groupId>com.xiliulou</groupId>
-			<artifactId>xiliulou-utils</artifactId>
+			<artifactId>xiliulou-common-core</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.xiliulou</groupId>
+			<artifactId>xiliulou-common-cache</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>com.xiliulou</groupId>
+			<artifactId>xiliulou-common-datasource</artifactId>
 			<version>1.0.0</version>
 		</dependency>
 		<dependency>
@@ -36,6 +47,13 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-undertow</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>com.xiliulou</groupId>
+			<artifactId>xiliulou-common-sentinel</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+
 	</dependencies>
 
 </project>

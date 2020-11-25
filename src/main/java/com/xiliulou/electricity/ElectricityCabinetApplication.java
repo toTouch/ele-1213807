@@ -3,14 +3,11 @@ package com.xiliulou.electricity;
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.xiliulou.cache.redis.EnableRedis;
 import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
-import com.xiliulou.http.resttemplate.EnableXllRestTemplate;
+import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.cloud.client.SpringCloudApplication;
 import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.ComponentScan.Filter;
 
 /**
  * @author: eclair
