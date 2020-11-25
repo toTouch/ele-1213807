@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 
 import java.util.List;
 
@@ -29,14 +31,6 @@ public interface ElectricityCabinetBoxService {
      */
     ElectricityCabinetBox queryByIdFromCache(Long id);
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
-    List<ElectricityCabinetBox> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据
@@ -65,4 +59,6 @@ public interface ElectricityCabinetBoxService {
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
 
     void batchDeleteBoxByElectricityCabinetId(Integer id);
+
+    R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 }

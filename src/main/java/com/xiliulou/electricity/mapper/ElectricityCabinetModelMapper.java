@@ -24,13 +24,9 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
     ElectricityCabinetModel queryById(Integer id);
 
     /**
-     * 查询指定行数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
-    List<ElectricityCabinetModel> queryAllByLimit(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
+    List<ElectricityCabinetModel> queryList(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 
     /**

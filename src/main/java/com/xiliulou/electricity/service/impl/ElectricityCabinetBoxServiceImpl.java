@@ -2,18 +2,25 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.json.JSONUtil;
 import com.alibaba.fastjson.JSON;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表服务实现类
@@ -49,17 +56,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
 
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<ElectricityCabinetBox> queryAllByLimit(int offset, int limit) {
-        return this.electricityCabinetBoxMapper.queryAllByLimit(offset, limit);
-    }
 
     /**
      * 新增数据
@@ -115,5 +111,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public void batchDeleteBoxByElectricityCabinetId(Integer id) {
         electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id);
+    }
+
+    @Override
+    public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=this.electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOS=new ArrayList<>();
+        electricityCabinetBoxVOList.parallelStream().forEach(e -> {
+            //TODO 查电池信息
+            electricityCabinetBoxVOS.add(e);
+        });
+        return R.ok(electricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
     }
 }

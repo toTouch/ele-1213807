@@ -2,6 +2,9 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import java.util.List;
+
+import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -22,13 +25,10 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     ElectricityCabinetBox queryById(Long id);
 
     /**
-     * 查询指定行数据
      *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
-    List<ElectricityCabinetBox> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
+    List<ElectricityCabinetBoxVO> queryList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
 
     /**

@@ -52,15 +52,15 @@ public class ElectricityCabinetVO {
     /**
     * 可用状态(0--启用，1--禁用)
     */
-    private Object usableStatus;
+    private Integer usableStatus;
     /**
     * 电源状态(0--通电，1--断电)
     */
-    private Object powerStatus;
+    private Integer powerStatus;
     /**
     * 物联网连接状态（0--连网，1--断网）
     */
-    private Object onlineStatus;
+    private Integer onlineStatus;
     /**
     * 型号Id
     */
@@ -92,6 +92,10 @@ public class ElectricityCabinetVO {
     /**
     * 是否删除（0-正常，1-删除）
     */
-    private Object delFlag;
+    private Integer delFlag;
+    /**
+     * 型号名称
+     */
+    private String modelName;
 
 }

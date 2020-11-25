@@ -17,8 +17,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务实现类
@@ -187,6 +190,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList= electricityCabinetMapper.queryList(electricityCabinetQuery);
-        return R.ok(electricityCabinetList);
+        List<ElectricityCabinetVO> electricityCabinetVOS=new ArrayList<>();
+        electricityCabinetList.parallelStream().forEach(e -> {
+            //查找型号名称
+            ElectricityCabinetModel electricityCabinetModel=electricityCabinetModelService.queryByIdFromCache(e.getId());
+            if(Objects.nonNull(electricityCabinetModel)){
+                e.setModelName(electricityCabinetModel.getName());
+            }
+            electricityCabinetVOS.add(e);
+        });
+        return R.ok(electricityCabinetVOS.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getId).reversed()).collect(Collectors.toList()));
     }
 }

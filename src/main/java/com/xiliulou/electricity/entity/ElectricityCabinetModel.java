@@ -35,7 +35,7 @@ public class ElectricityCabinetModel {
     /**
     * 0--未删除，1--删除
     */
-    private Object delFlag;
+    private Integer delFlag;
     /**
     * 创建时间
     */

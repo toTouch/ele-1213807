@@ -48,7 +48,14 @@ public class ElectricityCabinetController {
    //列表查询
     @GetMapping(value = "/admin/electricityCabinet/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                              @RequestParam(value = "offset", required = false) Integer offset) {
+                       @RequestParam(value = "offset", required = false) Integer offset,
+                       @RequestParam(value = "sn", required = false) String sn,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "areaId", required = false) Integer areaId,
+                       @RequestParam(value = "address", required = false) String address,
+                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                       @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
+                       @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
         if (Objects.isNull(size)) {
             size = 10;
         }
@@ -59,7 +66,14 @@ public class ElectricityCabinetController {
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
                 .offset(offset)
-                .size(size).build();
+                .size(size)
+                .sn(sn)
+                .name(name)
+                .areaId(areaId)
+                .address(address)
+                .usableStatus(usableStatus)
+                .powerStatus(powerStatus)
+                .onlineStatus(onlineStatus).build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }

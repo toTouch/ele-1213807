@@ -131,7 +131,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
-        List<ElectricityCabinetModel> electricityCabinetModelList= electricityCabinetModelMapper.queryAllByLimit(electricityCabinetModelQuery);
+        List<ElectricityCabinetModel> electricityCabinetModelList= electricityCabinetModelMapper.queryList(electricityCabinetModelQuery);
         return R.ok(electricityCabinetModelList);
     }
 

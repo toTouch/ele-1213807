@@ -59,15 +59,15 @@ public class ElectricityCabinet {
     /**
     * 可用状态(0--启用，1--禁用)
     */
-    private Object usableStatus;
+    private Integer usableStatus;
     /**
     * 电源状态(0--通电，1--断电)
     */
-    private Object powerStatus;
+    private Integer powerStatus;
     /**
     * 物联网连接状态（0--连网，1--断网）
     */
-    private Object onlineStatus;
+    private Integer onlineStatus;
     /**
     * 型号Id
     */
@@ -99,7 +99,7 @@ public class ElectricityCabinet {
     /**
     * 是否删除（0-正常，1-删除）
     */
-    private Object delFlag;
+    private Integer delFlag;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

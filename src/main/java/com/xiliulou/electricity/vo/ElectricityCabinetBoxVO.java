@@ -1,9 +1,7 @@
-package com.xiliulou.electricity.entity;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
+package com.xiliulou.electricity.vo;
+
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+
 /**
  * 换电柜仓门表(TElectricityCabinetBox)实体类
  *
@@ -11,11 +9,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @since 2020-11-25 11:00:37
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_electricity_cabinet_box")
-public class ElectricityCabinetBox {
+public class ElectricityCabinetBoxVO {
     /**
     * 仓门Id
     */
@@ -57,13 +51,5 @@ public class ElectricityCabinetBox {
     */
     private Integer delFlag;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-    //可用
-    public static final Integer COURIER_BOX_USABLE = 1;
-    public static final Integer COURIER_BOX_UN_USABLE = 0;
-    //分配状态
-    public static final Integer STATUS_DISTRIBUTE = 1;
-    public static final Integer STATUS_UN_DISTRIBUTE = 0;
 
 }
