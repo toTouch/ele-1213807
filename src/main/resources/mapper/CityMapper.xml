@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CityMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.City" id="CityMap">
+        <result property="cid" column="cid" jdbcType="INTEGER"/>
+        <result property="city" column="city" jdbcType="VARCHAR"/>
+        <result property="pid" column="pid" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="CityMap">
+        select
+          cid, city, pid
+        from electricity.City
+        where cid = #{cid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="CityMap">
+        select
+          cid, city, pid
+        from electricity.City
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="CityMap">
+        select
+          cid, city, pid
+        from electricity.City
+        <where>
+            <if test="cid != null">
+                and cid = #{cid}
+            </if>
+            <if test="city != null and city != ''">
+                and city = #{city}
+            </if>
+            <if test="pid != null">
+                and pid = #{pid}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

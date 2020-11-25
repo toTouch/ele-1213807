@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ProvincialMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.Provincial" id="ProvincialMap">
+        <result property="pid" column="pid" jdbcType="INTEGER"/>
+        <result property="provincial" column="Provincial" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ProvincialMap">
+        select
+          pid, Provincial
+        from electricity.Provincial
+        where pid = #{pid}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ProvincialMap">
+        select
+          pid, Provincial
+        from electricity.Provincial
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ProvincialMap">
+        select
+          pid, Provincial
+        from electricity.Provincial
+        <where>
+            <if test="pid != null">
+                and pid = #{pid}
+            </if>
+            <if test="provincial != null and provincial != ''">
+                and Provincial = #{provincial}
+            </if>
+        </where>
+    </select>
+</mapper>
