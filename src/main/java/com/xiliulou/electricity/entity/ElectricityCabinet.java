@@ -19,7 +19,7 @@ public class ElectricityCabinet {
     /**
     * 换电柜Id
     */
-    private Long id;
+    private Integer id;
     /**
     * 电池编号
     */
@@ -71,7 +71,7 @@ public class ElectricityCabinet {
     /**
     * 型号Id
     */
-    private Long modelId;
+    private Integer modelId;
     /**
     * 版本
     */

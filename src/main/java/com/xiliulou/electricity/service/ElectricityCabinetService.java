@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+
 import java.util.List;
 
 /**
@@ -60,4 +63,11 @@ public interface ElectricityCabinetService {
      */
     Boolean deleteById(Long id);
 
+    R save(ElectricityCabinet electricityCabinet);
+
+    R edit(ElectricityCabinet electricityCabinet);
+
+    R delete(Long id);
+
+    R queryList(ElectricityCabinetQuery electricityCabinetQuery);
 }

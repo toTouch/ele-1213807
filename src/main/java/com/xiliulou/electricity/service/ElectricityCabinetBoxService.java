@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+
 import java.util.List;
 
 /**
@@ -60,4 +62,5 @@ public interface ElectricityCabinetBoxService {
      */
     Boolean deleteById(Long id);
 
+    void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
 }

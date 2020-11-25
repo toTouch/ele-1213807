@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -17,7 +19,7 @@ import java.util.List;
  */
 @Service("electricityCabinetBoxService")
 public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxService {
-    @Autowired
+    @Resource
     private ElectricityCabinetBoxMapper electricityCabinetBoxMapper;
 
     /**
@@ -91,5 +93,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.electricityCabinetBoxMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
+
     }
 }

@@ -3,10 +3,11 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
+import javax.annotation.Resource;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ import java.util.List;
  */
 @Service("electricityCabinetModelService")
 public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetModelService {
-    @Autowired
+    @Resource
     private ElectricityCabinetModelMapper electricityCabinetModelMapper;
 
     /**
