@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import java.util.List;
 
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -30,7 +31,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @param limit 查询条数
      * @return 对象列表
      */
-    List<ElectricityCabinet> queryList(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+    List<ElectricityCabinetVO> queryList(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 
     /**

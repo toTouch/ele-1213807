@@ -107,7 +107,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         //TODO 判断参数
         ElectricityCabinetModel oldElectricityCabinetModel = queryByIdFromCache(electricityCabinetModel.getId());
         if(Objects.isNull(oldElectricityCabinetModel)){
-            return R.fail("换电柜型号不存在！");
+            return R.fail("SYSTEM.0004");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModelMapper.update(electricityCabinetModel);

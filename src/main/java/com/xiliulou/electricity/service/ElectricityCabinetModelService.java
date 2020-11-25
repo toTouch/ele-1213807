@@ -48,7 +48,6 @@ public interface ElectricityCabinetModelService {
      */
     Integer update(ElectricityCabinetModel electricityCabinetModel);
 
-
     R save(ElectricityCabinetModel electricityCabinetModel);
 
     R edit(ElectricityCabinetModel electricityCabinetModel);

@@ -11,6 +11,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -106,17 +107,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //三元组
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey()).eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName()).eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret()));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
-            return R.fail("换电柜的三元组已存在！");
+            return R.fail("SYSTEM.0002");
         }
         //或换电柜编号
         List<ElectricityCabinet> existsElectricityCabinets = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getSn, electricityCabinet.getSn()));
         if (DataUtil.collectionIsUsable(existsElectricityCabinets)) {
-            return R.fail("换电柜编号已存在！");
+            return R.fail("SYSTEM.0003");
         }
         //查找快递柜型号
         ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId());
         if (Objects.isNull(electricityCabinetModel)) {
-            return R.fail("未找到换电柜型号！");
+            return R.fail("SYSTEM.0004");
         }
         electricityCabinetMapper.insertOne(electricityCabinet);
         //新增缓存
@@ -131,14 +132,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //TODO 判断参数
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
         if(Objects.isNull(oldElectricityCabinet)){
-            return R.fail("换电柜不已存在！");
+            return R.fail("SYSTEM.0005");
         }
         //三元组
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey()).eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName()).eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret()));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             for (ElectricityCabinet existsElectricityCabinet:existsElectricityCabinetList) {
                 if(!Objects.equals(existsElectricityCabinet.getId(),electricityCabinet.getId())){
-                    return R.fail("换电柜的三元组已存在！");
+                    return R.fail("SYSTEM.0002");
                 }
             }
         }
@@ -147,7 +148,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (DataUtil.collectionIsUsable(existsElectricityCabinets)) {
             for (ElectricityCabinet existsElectricityCabinet:existsElectricityCabinets) {
                 if(!Objects.equals(existsElectricityCabinet.getId(),electricityCabinet.getId())){
-                    return R.fail("换电柜编号已存在！");
+                    return R.fail("SYSTEM.0003");
                 }
             }
         }
@@ -156,7 +157,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查找快递柜型号
         ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId());
         if (Objects.isNull(electricityCabinetModel)) {
-            return R.fail("未找到换电柜型号！");
+            return R.fail("SYSTEM.0004");
         }
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinetMapper.update(electricityCabinet);
@@ -185,7 +186,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
-        List<ElectricityCabinet> electricityCabinetList= electricityCabinetMapper.queryList(electricityCabinetQuery);
+        List<ElectricityCabinetVO> electricityCabinetList= electricityCabinetMapper.queryList(electricityCabinetQuery);
         return R.ok(electricityCabinetList);
     }
 }

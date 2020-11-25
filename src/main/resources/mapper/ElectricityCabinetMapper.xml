@@ -35,7 +35,7 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryList" resultMap="ElectricityCabinetMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
           id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
         from eletctricity.t_electricity_cabinet

@@ -40,7 +40,7 @@ public class ElectricityCabinetController {
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
-            return R.fail("id不能为空");
+            return R.fail("SYSTEM.0001");
         }
         return electricityCabinetService.delete(id);
     }
