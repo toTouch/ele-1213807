@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.json.JSONUtil;
-import com.alibaba.fastjson.JSON;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -9,7 +7,6 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -18,8 +15,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -122,5 +117,18 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             electricityCabinetBoxVOS.add(e);
         });
         return R.ok(electricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
+    }
+
+    @Override
+    public R modify(ElectricityCabinetBox electricityCabinetBox) {
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetBoxMapper.update(electricityCabinetBox);
+        return R.ok();
+    }
+
+    @Override
+    public R modifyByElectricityCabinetId(Integer id) {
+        electricityCabinetBoxMapper.modifyByElectricityCabinetId(id);
+        return R.ok();
     }
 }

@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.controller;
-
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,7 +23,9 @@ public class ElectricityCabinetBoxController {
      * 服务对象
      */
     @Autowired
-    private ElectricityCabinetBoxService electricityCabinetBoxService;
+    ElectricityCabinetBoxService electricityCabinetBoxService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetBox/list")
@@ -40,6 +44,44 @@ public class ElectricityCabinetBoxController {
                 .size(size).build();
 
         return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+    }
+
+    //更改可用状态
+    @PutMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
+    public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
+        //TODO 判断参数
+        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
+        if (Objects.isNull(oldElectricityCabinetBox)) {
+            return R.fail("SYSTEM.0006");
+        }
+        //TODO 发送命令
+        return electricityCabinetBoxService.modify(electricityCabinetBox);
+    }
+
+    //后台一键开门
+    @PutMapping(value = "/admin/electricityCabinetBox/releaseBox")
+    public R releaseBox(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("SYSTEM.0005");
+        }
+        //TODO 判断订单
+        //TODO 发送命令
+        return electricityCabinetBoxService.modifyByElectricityCabinetId(electricityCabinetId);
+    }
+
+    //后台一键全开
+    @PutMapping(value = "/admin/electricityCabinetBox/releaseBox")
+    public R releaseBox(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
+        //TODO 判断参数
+        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
+        if (Objects.isNull(oldElectricityCabinetBox)) {
+            return R.fail("SYSTEM.0006");
+        }
+        //TODO 判断订单
+        //TODO 发送命令
+        electricityCabinetBox.setBoxStatus(0);
+        return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 
 

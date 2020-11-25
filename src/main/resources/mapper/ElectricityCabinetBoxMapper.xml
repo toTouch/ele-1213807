@@ -116,6 +116,11 @@
         set del_flag = 1
         where electricityCabinetId = #{id}
     </update>
+    <update id="modifyByElectricityCabinetId">
+         update eletctricity.t_electricity_cabinet_box
+        set box_status = 0
+        where electricityCabinetId = #{id}
+    </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">
