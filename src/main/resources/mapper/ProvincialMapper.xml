@@ -11,7 +11,7 @@
     <select id="queryById" resultMap="ProvincialMap">
         select
           pid, Provincial
-        from electricity.Provincial
+        from electricity.provincial
         where pid = #{pid}
     </select>
 
@@ -19,7 +19,7 @@
     <select id="queryAllByLimit" resultMap="ProvincialMap">
         select
           pid, Provincial
-        from electricity.Provincial
+        from electricity.provincial
         limit #{offset}, #{limit}
     </select>
 
@@ -27,7 +27,7 @@
     <select id="queryAll" resultMap="ProvincialMap">
         select
           pid, Provincial
-        from electricity.Provincial
+        from electricity.provincial
         <where>
             <if test="pid != null">
                 and pid = #{pid}
