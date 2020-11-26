@@ -1,5 +1,7 @@
 server:
   port: 9991
+  servlet:
+    context-path: /electricityCabinet
 
 spring:
   datasource:
@@ -41,3 +43,11 @@ spring:
 
 logging:
   config: classpath:logback-spring-dev.xml
+
+
+mybatis-plus:
+  mapper-locations: classpath:/mapper/*Mapper.xml
+  global-config:
+    db-config:
+      id-type: auto
+      field-strategy: NOT_NULL

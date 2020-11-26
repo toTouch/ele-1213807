@@ -17,7 +17,6 @@ import java.util.Objects;
  * @since 2020-11-25 11:01:04
  */
 @RestController
-@RequestMapping("tElectricityCabinetModel")
 public class ElectricityCabinetModelAdminController {
     /**
      * 服务对象

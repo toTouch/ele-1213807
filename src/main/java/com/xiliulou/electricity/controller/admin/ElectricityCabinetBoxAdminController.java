@@ -17,7 +17,6 @@ import java.util.Objects;
  * @since 2020-11-25 11:00:37
  */
 @RestController
-@RequestMapping("tElectricityCabinetBox")
 public class ElectricityCabinetBoxAdminController {
     /**
      * 服务对象
@@ -59,7 +58,7 @@ public class ElectricityCabinetBoxAdminController {
     }
 
     //后台一键开门
-    @PutMapping(value = "/admin/electricityCabinetBox/releaseBox")
+    @PostMapping(value = "/admin/electricityCabinetBox/releaseBox")
     public R releaseBox(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
         ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
@@ -71,8 +70,8 @@ public class ElectricityCabinetBoxAdminController {
     }
 
     //后台一键全开
-    @PutMapping(value = "/admin/electricityCabinetBox/releaseBox")
-    public R releaseBox(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
+    @PostMapping(value = "/admin/electricityCabinetBox/openAllDoor")
+    public R openAllDoor(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
         //TODO 判断参数
         ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
