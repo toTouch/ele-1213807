@@ -43,7 +43,5 @@ public class ElectricityCabinetOrderOperHistory {
     */
     private Integer uid;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
 
 }
