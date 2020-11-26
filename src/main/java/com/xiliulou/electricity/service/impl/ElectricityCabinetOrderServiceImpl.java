@@ -7,6 +7,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
 
@@ -31,8 +32,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public ElectricityCabinetOrder queryByIdFromDB(Long id) {
         return this.electricityCabinetOrderMapper.queryById(id);
     }
-    
-        /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -48,7 +49,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
     @Override
@@ -78,8 +79,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElectricityCabinetOrder electricityCabinetOrder) {
-       return this.electricityCabinetOrderMapper.update(electricityCabinetOrder);
-         
+        return this.electricityCabinetOrderMapper.update(electricityCabinetOrder);
+
     }
 
     /**
@@ -94,8 +95,26 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return this.electricityCabinetOrderMapper.deleteById(id) > 0;
     }
 
+
+    /*
+      1.判断参数
+      2.判断用户是否有电池是否有月卡
+      3.生成订单
+      4.开旧电池门
+      5.旧电池门开回调
+      6.旧电池门关回调
+      7.旧电池检测回调
+      8.检测失败重复开门
+      9.检测成功开新电池门
+      10.新电池开门回调
+      11.新电池关门回调
+      */
     @Override
     public R order(ElectricityCabinetOrder electricityCabinetOrder) {
+        //TODO 1.判断参数
+        //TODO 2.判断用户是否有电池是否有月卡
+        //TODO 3.生成订单
+        //TODO 4.开旧电池门
         return null;
     }
 }
