@@ -5,7 +5,6 @@ import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.service.CityService;
 import org.springframework.stereotype.Service;
 
-import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
 

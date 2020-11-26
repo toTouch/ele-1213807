@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 
-import java.util.List;
 
 /**
  * 换电柜表(TElectricityCabinet)表服务接口
