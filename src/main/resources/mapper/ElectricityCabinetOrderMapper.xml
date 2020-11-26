@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinetOrder" id="ElectricityCabinetOrderMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="payAmount" column="pay_amount" jdbcType="NUMERIC"/>
+        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
+        <result property="oldCellNo" column="old_cell_no" jdbcType="INTEGER"/>
+        <result property="newCellNo" column="new_cell_no" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="OTHER"/>
+        <result property="paymentMethod" column="payment_method" jdbcType="OTHER"/>
+        <result property="source" column="source" jdbcType="OTHER"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="switchBeginningTime" column="switch_beginning_time" jdbcType="INTEGER"/>
+        <result property="switchEndTime" column="switch_end_time" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ElectricityCabinetOrderMap">
+        select
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+        from electricity.t_electricity_cabinet_order
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ElectricityCabinetOrderMap">
+        select
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+        from electricity.t_electricity_cabinet_order
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ElectricityCabinetOrderMap">
+        select
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+        from electricity.t_electricity_cabinet_order
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="payAmount != null">
+                and pay_amount = #{payAmount}
+            </if>
+            <if test="electricityCabinetId != null">
+                and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="oldCellNo != null">
+                and old_cell_no = #{oldCellNo}
+            </if>
+            <if test="newCellNo != null">
+                and new_cell_no = #{newCellNo}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="paymentMethod != null">
+                and payment_method = #{paymentMethod}
+            </if>
+            <if test="source != null">
+                and source = #{source}
+            </if>
+            <if test="remark != null and remark != ''">
+                and remark = #{remark}
+            </if>
+            <if test="switchBeginningTime != null">
+                and switch_beginning_time = #{switchBeginningTime}
+            </if>
+            <if test="switchEndTime != null">
+                and switch_end_time = #{switchEndTime}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_electricity_cabinet_order(order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time)
+        values (#{orderId}, #{phone}, #{uid}, #{payAmount}, #{electricityCabinetId}, #{oldCellNo}, #{newCellNo}, #{status}, #{paymentMethod}, #{source}, #{remark}, #{switchBeginningTime}, #{switchEndTime}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_electricity_cabinet_order
+        <set>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="payAmount != null">
+                pay_amount = #{payAmount},
+            </if>
+            <if test="electricityCabinetId != null">
+                electricity_cabinet_id = #{electricityCabinetId},
+            </if>
+            <if test="oldCellNo != null">
+                old_cell_no = #{oldCellNo},
+            </if>
+            <if test="newCellNo != null">
+                new_cell_no = #{newCellNo},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="paymentMethod != null">
+                payment_method = #{paymentMethod},
+            </if>
+            <if test="source != null">
+                source = #{source},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="switchBeginningTime != null">
+                switch_beginning_time = #{switchBeginningTime},
+            </if>
+            <if test="switchEndTime != null">
+                switch_end_time = #{switchEndTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from electricity.t_electricity_cabinet_order where id = #{id}
+    </delete>
+
+</mapper>
