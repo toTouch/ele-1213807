@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import org.springframework.stereotype.Service;
