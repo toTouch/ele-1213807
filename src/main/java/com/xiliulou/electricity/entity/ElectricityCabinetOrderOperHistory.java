@@ -43,5 +43,16 @@ public class ElectricityCabinetOrderOperHistory {
     */
     private Integer uid;
 
+    //旧电池开门
+    public static final Integer STATUS_OLD_BATTERY_OPEN_DOOR = 1;
+    //旧电池关门
+    public static final Integer STATUS_OLD_BATTERY_CLOSE_DOOR = 2;
+    //旧电池弹出
+    public static final Integer STATUS_OLD_BATTERY_WEB_OPEN_DOOR = 3;
+    //新电池开门
+    public static final Integer STATUS_NEW_BATTERY_OPEN_DOOR = 4;
+    //新电池关门
+    public static final Integer STATUS_NEW_BATTERY_CLOSE_DOOR = 5;
+
 
 }
