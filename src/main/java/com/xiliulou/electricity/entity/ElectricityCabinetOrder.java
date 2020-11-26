@@ -1,5 +1,49 @@
 package com.xiliulou.electricity.entity;
-import lombok.AllArgsConstructor;
+
+
+
+
+
+                                    
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                    
+                                    
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                                            
+                    
+
+                                                                        import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,7 +52,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * 订单表(TElectricityCabinetOrder)实体类
  *
  * @author makejava
- * @since 2020-11-26 10:56:56
+ * @since 2020-11-26 16:00:45
  */
 @Data
 @AllArgsConstructor
@@ -38,6 +82,14 @@ public class ElectricityCabinetOrder {
     * 换电柜id
     */
     private Long electricityCabinetId;
+    /**
+    * 老电池编号
+    */
+    private String oldElectricityBatterySn;
+    /**
+    * 新电池编号
+    */
+    private String newElectricityBatterySn;
     /**
     * 换电柜的旧仓门号
     */
@@ -79,5 +131,23 @@ public class ElectricityCabinetOrder {
     */
     private Long updateTime;
 
+    //已支付未开门
+    public static final Integer STATUS_ORDER_PAY = 1;
+    //旧电池开门
+    public static final Integer STATUS_ORDER_OLD_BATTERY_OPEN_DOOR = 2;
+    //旧电池关门
+    public static final Integer STATUS_ORDER_OLD_BATTERY_CLOSE_DOOR = 3;
+    //旧电池检测
+    public static final Integer STATUS_ORDER_OLD_BATTERY_DETECT = 4;
+    //旧电池已存入
+    public static final Integer STATUS_ORDER_OLD_BATTERY_DEPOSITED = 5;
+    //新电池开门
+    public static final Integer STATUS_ORDER_NEW_BATTERY_OPEN_DOOR = 6;
+    //订单完成(新电池关门)
+    public static final Integer STATUS_ORDER_COMPLETE = 7;
+    //订单异常结束
+    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 8;
+    //订单取消
+    public static final Integer STATUS_ORDER_CANCEL = 9;
 
 }

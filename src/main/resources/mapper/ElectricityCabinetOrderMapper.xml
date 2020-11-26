@@ -9,6 +9,8 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="payAmount" column="pay_amount" jdbcType="NUMERIC"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
+        <result property="oldElectricityBatterySn" column="old_electricity_battery_sn" jdbcType="VARCHAR"/>
+        <result property="newElectricityBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR"/>
         <result property="oldCellNo" column="old_cell_no" jdbcType="INTEGER"/>
         <result property="newCellNo" column="new_cell_no" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="OTHER"/>
@@ -24,7 +26,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="ElectricityCabinetOrderMap">
         select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
         from electricity.t_electricity_cabinet_order
         where id = #{id}
     </select>
@@ -32,7 +34,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="ElectricityCabinetOrderMap">
         select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
         from electricity.t_electricity_cabinet_order
         limit #{offset}, #{limit}
     </select>
@@ -40,7 +42,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElectricityCabinetOrderMap">
         select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
         from electricity.t_electricity_cabinet_order
         <where>
             <if test="id != null">
@@ -60,6 +62,12 @@
             </if>
             <if test="electricityCabinetId != null">
                 and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="oldElectricityBatterySn != null and oldElectricityBatterySn != ''">
+                and old_electricity_battery_sn = #{oldElectricityBatterySn}
+            </if>
+            <if test="newElectricityBatterySn != null and newElectricityBatterySn != ''">
+                and new_electricity_battery_sn = #{newElectricityBatterySn}
             </if>
             <if test="oldCellNo != null">
                 and old_cell_no = #{oldCellNo}
@@ -96,8 +104,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_cabinet_order(order_id, phone, uid, pay_amount, electricity_cabinet_id, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time)
-        values (#{orderId}, #{phone}, #{uid}, #{payAmount}, #{electricityCabinetId}, #{oldCellNo}, #{newCellNo}, #{status}, #{paymentMethod}, #{source}, #{remark}, #{switchBeginningTime}, #{switchEndTime}, #{createTime}, #{updateTime})
+        insert into electricity.t_electricity_cabinet_order(order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time)
+        values (#{orderId}, #{phone}, #{uid}, #{payAmount}, #{electricityCabinetId}, #{oldElectricityBatterySn}, #{newElectricityBatterySn}, #{oldCellNo}, #{newCellNo}, #{status}, #{paymentMethod}, #{source}, #{remark}, #{switchBeginningTime}, #{switchEndTime}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -118,6 +126,12 @@
             </if>
             <if test="electricityCabinetId != null">
                 electricity_cabinet_id = #{electricityCabinetId},
+            </if>
+            <if test="oldElectricityBatterySn != null and oldElectricityBatterySn != ''">
+                old_electricity_battery_sn = #{oldElectricityBatterySn},
+            </if>
+            <if test="newElectricityBatterySn != null and newElectricityBatterySn != ''">
+                new_electricity_battery_sn = #{newElectricityBatterySn},
             </if>
             <if test="oldCellNo != null">
                 old_cell_no = #{oldCellNo},

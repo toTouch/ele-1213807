@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.*;
  * @since 2020-11-26 10:56:56
  */
 @RestController
-@RequestMapping("tElectricityCabinetOrder")
 public class ElectricityCabinetOrderUserController {
     /**
      * 服务对象

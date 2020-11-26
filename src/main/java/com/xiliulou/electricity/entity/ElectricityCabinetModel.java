@@ -31,7 +31,7 @@ public class ElectricityCabinetModel {
     /**
     * 电压
     */
-    private Integer voltage;
+    private String voltage;
     /**
     * 0--未删除，1--删除
     */
