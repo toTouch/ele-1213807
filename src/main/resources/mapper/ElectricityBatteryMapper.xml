@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.TElectricityBatteryMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityBatteryMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.TElectricityBattery" id="TElectricityBatteryMap">
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityBattery" id="ElectricityBatteryMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="shop" column="shop" jdbcType="INTEGER"/>
+        <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
         <result property="agent" column="agent" jdbcType="INTEGER"/>
         <result property="serialNumber" column="serial_number" jdbcType="VARCHAR"/>
         <result property="modelId" column="model_id" jdbcType="INTEGER"/>
@@ -18,32 +18,32 @@
     </resultMap>
 
     <!--查询单个-->
-    <select id="queryById" resultMap="TElectricityBatteryMap">
+    <select id="queryById" resultMap="ElectricityBatteryMap">
         select
-          id, shop, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
+          id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
         from electricity.t_electricity_battery
         where id = #{id}
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="TElectricityBatteryMap">
+    <select id="queryAllByLimit" resultMap="ElectricityBatteryMap">
         select
-          id, shop, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
+          id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
         from electricity.t_electricity_battery
         limit #{offset}, #{limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="TElectricityBatteryMap">
+    <select id="queryAll" resultMap="ElectricityBatteryMap">
         select
-          id, shop, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
+          id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
         from electricity.t_electricity_battery
         <where>
             <if test="id != null">
                 and id = #{id}
             </if>
-            <if test="shop != null">
-                and shop = #{shop}
+            <if test="shopId != null">
+                and shop_id = #{shopId}
             </if>
             <if test="agent != null">
                 and agent = #{agent}
@@ -80,16 +80,16 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_battery(shop, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id)
-        values (#{shop}, #{agent}, #{serialNumber}, #{modelId}, #{capacity}, #{status}, #{createTime}, #{updateTime}, #{delFlag}, #{uid}, #{cabinetId})
+        insert into electricity.t_electricity_battery(shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id)
+        values (#{shopId}, #{agent}, #{serialNumber}, #{modelId}, #{capacity}, #{status}, #{createTime}, #{updateTime}, #{delFlag}, #{uid}, #{cabinetId})
     </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
         update electricity.t_electricity_battery
         <set>
-            <if test="shop != null">
-                shop = #{shop},
+            <if test="shopId != null">
+                shop_id = #{shopId},
             </if>
             <if test="agent != null">
                 agent = #{agent},
