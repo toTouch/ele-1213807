@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import java.util.List;
+
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
