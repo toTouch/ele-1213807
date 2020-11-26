@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 
+import java.util.List;
+
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表服务接口
@@ -64,4 +66,6 @@ public interface ElectricityCabinetBoxService {
     R modify(ElectricityCabinetBox electricityCabinetBox);
 
     R modifyByElectricityCabinetId(Integer id);
+
+    List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id);
 }

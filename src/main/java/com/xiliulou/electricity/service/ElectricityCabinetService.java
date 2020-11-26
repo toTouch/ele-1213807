@@ -54,4 +54,6 @@ public interface ElectricityCabinetService {
     R delete(Integer id);
 
     R queryList(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery);
 }

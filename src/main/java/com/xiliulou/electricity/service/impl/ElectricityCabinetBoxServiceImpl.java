@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -95,7 +97,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         for (int i=1;i<electricityCabinetModel.getNum();i++) {
             ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
             electricityCabinetBox.setElectricityCabinetId(id);
-            electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.COURIER_BOX_USABLE);
+            electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
             electricityCabinetBox.setCellNo(String.valueOf(i));
             electricityCabinetBox.setCreateTime(System.currentTimeMillis());
             electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
@@ -112,11 +114,15 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=this.electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOS=new ArrayList<>();
-        electricityCabinetBoxVOList.parallelStream().forEach(e -> {
-            //TODO 查电池信息
-            electricityCabinetBoxVOS.add(e);
-        });
-        return R.ok(electricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
+        if(ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
+            List<ElectricityCabinetBoxVO> finalElectricityCabinetBoxVOS = electricityCabinetBoxVOS;
+            electricityCabinetBoxVOList.parallelStream().forEach(e -> {
+                //TODO 查电池信息
+                finalElectricityCabinetBoxVOS.add(e);
+            });
+            electricityCabinetBoxVOS=finalElectricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList());
+        }
+        return R.ok(electricityCabinetBoxVOS);
     }
 
     @Override
@@ -130,5 +136,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public R modifyByElectricityCabinetId(Integer id) {
         electricityCabinetBoxMapper.modifyByElectricityCabinetId(id);
         return R.ok();
+    }
+
+    @Override
+    public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
+        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId,id));
     }
 }

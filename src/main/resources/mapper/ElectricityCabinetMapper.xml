@@ -30,7 +30,7 @@
     <select id="queryById" resultMap="ElectricityCabinetMap">
         select
           id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
-        from eletctricity.t_electricity_cabinet
+        from electricity.t_electricity_cabinet
         where id = #{id}
     </select>
 
@@ -38,7 +38,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
           id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
-        from eletctricity.t_electricity_cabinet
+        from electricity.t_electricity_cabinet
         where del_flag=0
         <if test="query.sn != null and query.sn != ''">
             and sn = #{query.sn}
@@ -69,7 +69,7 @@
     <select id="queryAll" resultMap="ElectricityCabinetMap">
         select
           id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
-        from eletctricity.t_electricity_cabinet
+        from electricity.t_electricity_cabinet
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -136,16 +136,47 @@
             </if>
         </where>
     </select>
+    <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select  id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version,
+        fully_charged, service_phone, business_time, create_time, update_time,  ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{query.lat} * PI() / 180 - latitude * PI() / 180
+        ) / 2
+        ),
+        2
+        ) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
+        SIN(
+        (
+        #{query.lon} * PI() / 180 - longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance
+        from electricity.t_electricity_cabinet
+        where del_flag = 0
+        <if test="query.distance != null">
+            having distance &lt; #{query.distance}
+        </if>
+        order by distance
+        limit #{query.offset}, #{query.limit}
+    </select>
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into eletctricity.t_electricity_cabinet(sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag)
+        insert into electricity.t_electricity_cabinet(sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag)
         values (#{sn}, #{name}, #{areaId}, #{address}, #{longitude}, #{latitude}, #{productKey}, #{deviceName}, #{deviceSecret}, #{usableStatus}, #{powerStatus}, #{onlineStatus}, #{modelId}, #{version}, #{fullyCharged}, #{servicePhone}, #{businessTime}, #{createTime}, #{updateTime}, #{delFlag})
     </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
-        update eletctricity.t_electricity_cabinet
+        update electricity.t_electricity_cabinet
         <set>
             <if test="sn != null and sn != ''">
                 sn = #{sn},

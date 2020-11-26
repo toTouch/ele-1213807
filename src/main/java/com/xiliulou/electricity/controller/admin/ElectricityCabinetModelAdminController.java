@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller;
+package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -18,7 +18,7 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("tElectricityCabinetModel")
-public class ElectricityCabinetModelController {
+public class ElectricityCabinetModelAdminController {
     /**
      * 服务对象
      */

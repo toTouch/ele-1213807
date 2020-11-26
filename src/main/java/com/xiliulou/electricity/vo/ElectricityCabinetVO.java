@@ -97,5 +97,17 @@ public class ElectricityCabinetVO {
      * 型号名称
      */
     private String modelName;
+    /**
+     * 电池总数
+     */
+    private Integer electricityBatteryTotal;
+    /**
+     * 满电仓
+     */
+    private Integer fullyElectricityBattery;
+    /**
+     * 空仓
+     */
+    private Integer noElectricityBattery;
 
 }

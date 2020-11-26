@@ -4,6 +4,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * @author: eclair
@@ -45,4 +46,7 @@ public class ElectricityCabinetQuery {
 	 * 物联网连接状态（0--连网，1--断网）
 	 */
 	private Integer onlineStatus;
+	private Double meterDistance;
+	private Double lon;
+	private Double lat;
 }

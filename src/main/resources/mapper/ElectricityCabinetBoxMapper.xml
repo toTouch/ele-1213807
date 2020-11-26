@@ -19,7 +19,7 @@
     <select id="queryById" resultMap="ElectricityCabinetBoxMap">
         select
           id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
-        from eletctricity.t_electricity_cabinet_box
+        from electricity.t_electricity_cabinet_box
         where id = #{id}
     </select>
 
@@ -27,7 +27,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
         select
           id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
-        from eletctricity.t_electricity_cabinet_box
+        from electricity.t_electricity_cabinet_box
         where del_flag=0
         limit #{query.offset}, #{query.size}
     </select>
@@ -36,7 +36,7 @@
     <select id="queryAll" resultMap="ElectricityCabinetBoxMap">
         select
           id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
-        from eletctricity.t_electricity_cabinet_box
+        from electricity.t_electricity_cabinet_box
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -73,13 +73,13 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into eletctricity.t_electricity_cabinet_box(electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag)
+        insert into electricity.t_electricity_cabinet_box(electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag)
         values (#{electricityCabinetId}, #{cellNo}, #{electricityBatteryId}, #{usableStatus}, #{boxStatus}, #{status}, #{createTime}, #{updateTime}, #{delFlag})
     </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
-        update eletctricity.t_electricity_cabinet_box
+        update electricity.t_electricity_cabinet_box
         <set>
             <if test="electricityCabinetId != null">
                 electricity_cabinet_id = #{electricityCabinetId},
@@ -112,19 +112,19 @@
         where id = #{id}
     </update>
     <update id="batchDeleteBoxByElectricityCabinetId">
-        update eletctricity.t_electricity_cabinet_box
+        update electricity.t_electricity_cabinet_box
         set del_flag = 1
         where electricityCabinetId = #{id}
     </update>
     <update id="modifyByElectricityCabinetId">
-         update eletctricity.t_electricity_cabinet_box
+         update electricity.t_electricity_cabinet_box
         set box_status = 0
         where electricityCabinetId = #{id}
     </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">
-        delete from eletctricity.t_electricity_cabinet_box where id = #{id}
+        delete from electricity.t_electricity_cabinet_box where id = #{id}
     </delete>
 
 </mapper>

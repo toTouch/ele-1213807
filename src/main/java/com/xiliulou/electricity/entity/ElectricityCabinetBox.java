@@ -60,10 +60,16 @@ public class ElectricityCabinetBox {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     //可用
-    public static final Integer COURIER_BOX_USABLE = 1;
-    public static final Integer COURIER_BOX_UN_USABLE = 0;
-    //分配状态
-    public static final Integer STATUS_DISTRIBUTE = 1;
-    public static final Integer STATUS_UN_DISTRIBUTE = 0;
+    public static final Integer ELECTRICITY_CABINET_BOX_USABLE = 1;
+    //禁用
+    public static final Integer ELECTRICITY_CABINET_BOX_UN_USABLE = 0;
+    //有电池
+    public static final Integer STATUS_ELECTRICITY_BATTERY = 1;
+    //无电池
+    public static final Integer STATUS_NO_ELECTRICITY_BATTERY = 0;
+    //关门
+    public static final Integer STATUS_CLOSE_DOOR = 1;
+    //开门
+    public static final Integer STATUS_OPEN_DOOR = 0;
 
 }

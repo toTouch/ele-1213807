@@ -55,4 +55,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     int update(ElectricityCabinet electricityCabinet);
 
 
+    List<ElectricityCabinetVO> showInfoByDistance(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 }
