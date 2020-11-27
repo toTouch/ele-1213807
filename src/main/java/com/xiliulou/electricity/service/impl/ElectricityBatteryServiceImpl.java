@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.PageQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -77,11 +76,11 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
      * 电池分页
      *
      * @param electricityBatteryQuery
-     * @param pageQuery
+     * @param
      * @return
      */
     @Override
-    public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, PageQuery pageQuery) {
-        return R.ok(electricitybatterymapper.getElectricityBatteryPage(electricityBatteryQuery, pageQuery));
+    public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
+        return R.ok(electricitybatterymapper.getElectricityBatteryPage(electricityBatteryQuery, offset, size));
     }
 }

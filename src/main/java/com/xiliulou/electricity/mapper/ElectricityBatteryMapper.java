@@ -3,7 +3,6 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.PageQuery;
 import com.xiliulou.electricity.vo.ElectricityBatteryVo;
 import org.apache.ibatis.annotations.Param;
 
@@ -67,5 +66,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      */
     int deleteById(Long id);
 
-    List<ElectricityBatteryVo> getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, PageQuery pageQuery);
+    List<ElectricityBatteryVo> getElectricityBatteryPage(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
+                                                         @Param("offset") Long offset, @Param("size") Long size);
 }

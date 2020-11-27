@@ -26,7 +26,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2020-11-27 10:17:18
  */
-@RestController
+//@RestController
 @Slf4j
 public class ElectricityCabinetFileAdminController {
     /**

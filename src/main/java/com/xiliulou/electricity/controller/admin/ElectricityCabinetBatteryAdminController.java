@@ -4,7 +4,6 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.PageQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,9 +53,9 @@ public class ElectricityCabinetBatteryAdminController {
      * @return
      */
     @GetMapping(value = "/admin/battery/page")
-    public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, @Validated PageQuery pageQuery) {
-
-
-        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, pageQuery);
+    public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
+                                       @RequestParam(value = "size", required = true) Long size,
+                                       ElectricityBatteryQuery electricityBatteryQuery) {
+        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
     }
 }

@@ -2,9 +2,8 @@ package com.xiliulou.electricity;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.xiliulou.cache.redis.EnableRedis;
-import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
 import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
-import com.xiliulou.storage.EnableStorage;
+import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -20,7 +19,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @EnableCircuitBreaker
 @EnableRedis
-@EnableStorage
+//@EnableStorage
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
