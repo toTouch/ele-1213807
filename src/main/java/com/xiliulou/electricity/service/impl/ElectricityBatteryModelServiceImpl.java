@@ -93,4 +93,9 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
     public Boolean deleteById(Integer id) {
         return this.ElectricityBatteryModelMapper.deleteById(id) > 0;
     }
+
+    @Override
+    public ElectricityBatteryModel queryById(Integer modelId) {
+        return ElectricityBatteryModelMapper.selectById(modelId);
+    }
 }

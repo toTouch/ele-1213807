@@ -84,4 +84,9 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
     public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, PageQuery pageQuery) {
         return R.ok(electricitybatterymapper.getElectricityBatteryPage(electricityBatteryQuery, pageQuery));
     }
+
+    @Override
+    public ElectricityBattery queryById(Long electricityBatteryId) {
+        return electricitybatterymapper.selectById(electricityBatteryId);
+    }
 }

@@ -61,4 +61,5 @@ public interface ElectricityBatteryModelService {
      */
     Boolean deleteById(Integer id);
 
+    ElectricityBatteryModel queryById(Integer modelId);
 }

@@ -19,4 +19,6 @@ public interface ElectricityBatteryService {
     R update(ElectricityBattery electricityBattery);
 
     R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, PageQuery pageQuery);
+
+    ElectricityBattery queryById(Long electricityBatteryId);
 }

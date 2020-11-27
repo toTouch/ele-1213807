@@ -33,22 +33,27 @@ public class ElectricityCabinet {
     /**
      * 换电柜名称
      */
+    @NotEmpty(message = "换电柜名称不能为空!")
     private String name;
     /**
      * 换电柜地区Id
      */
+    @NotNull(message = "换电柜地区Id不能为空!")
     private Integer areaId;
     /**
      * 换电柜地址
      */
+    @NotEmpty(message = "换电柜地址不能为空!")
     private String address;
     /**
      * 地址经度
      */
+    @NotNull(message = "地址经度不能为空!")
     private Double longitude;
     /**
      * 地址纬度
      */
+    @NotNull(message = "地址纬度不能为空!")
     private Double latitude;
     /**
      * 物联网productKey
@@ -77,6 +82,7 @@ public class ElectricityCabinet {
     /**
      * 型号Id
      */
+    @NotNull(message = "型号Id不能为空!")
     private Integer modelId;
     /**
      * 版本
@@ -89,10 +95,12 @@ public class ElectricityCabinet {
     /**
      * 联系电话
      */
+    @NotEmpty(message = "联系电话不能为空!")
     private String servicePhone;
     /**
      * 营业时间
      */
+    @NotEmpty(message = "营业时间不能为空!")
     private String businessTime;
     /**
      * 创建时间

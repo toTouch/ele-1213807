@@ -104,7 +104,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     public R deleteById(Long id) {
         ElectricityCabinetFile electricityCabinetFile = electricityCabinetFileMapper.selectById(id);
         if (Objects.isNull(electricityCabinetFile)) {
-            return R.fail("SYSTEM.0009");
+            return R.fail("SYSTEM.0009","未找到文件");
         }
         electricityCabinetFileMapper.deleteById(id);
         return R.ok();

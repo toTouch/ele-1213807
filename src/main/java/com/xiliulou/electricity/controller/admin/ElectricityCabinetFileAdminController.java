@@ -90,7 +90,7 @@ public class ElectricityCabinetFileAdminController {
 
         if (StrUtil.isEmpty(fileName)) {
             log.error("UPLOAD ERROR! no filename");
-            return R.fail("SYSTEM.0008");
+            return R.fail("SYSTEM.0008","文件名不能为空");
         }
         if (Objects.isNull(electricityCabinetId)) {
             electricityCabinetId = -1;

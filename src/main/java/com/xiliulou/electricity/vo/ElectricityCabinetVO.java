@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.vo;
 import lombok.Data;
 
+import java.util.Set;
+
 /**
  * 换电柜表(TElectricityCabinet)实体类
  *
@@ -109,5 +111,9 @@ public class ElectricityCabinetVO {
      * 空仓
      */
     private Integer noElectricityBattery;
+    /**
+     * 电池规格
+     */
+    private Set<String> electricityBatteryFormat;
 
 }

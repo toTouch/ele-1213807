@@ -106,10 +106,12 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
-        //TODO 判断参数
+        if(Objects.isNull(electricityCabinetModel.getId())){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
         ElectricityCabinetModel oldElectricityCabinetModel = queryByIdFromCache(electricityCabinetModel.getId());
         if(Objects.isNull(oldElectricityCabinetModel)){
-            return R.fail("SYSTEM.0004");
+            return R.fail("SYSTEM.0004","未找到换电柜型号");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModelMapper.update(electricityCabinetModel);
@@ -120,8 +122,11 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R delete(Integer id) {
+        ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
+        if(Objects.isNull(electricityCabinetModel)){
+            return R.fail("SYSTEM.0004","未找到换电柜型号");
+        }
         //删除数据库
-        ElectricityCabinetModel electricityCabinetModel=new ElectricityCabinetModel();
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
