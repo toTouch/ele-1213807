@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -22,6 +23,7 @@ import java.util.Objects;
  * @since 2020-11-25 11:01:04
  */
 @Service("electricityCabinetModelService")
+@Slf4j
 public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetModelService {
     @Resource
     private ElectricityCabinetModelMapper electricityCabinetModelMapper;
@@ -120,7 +122,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     public R delete(Integer id) {
         //删除数据库
         ElectricityCabinetModel electricityCabinetModel=new ElectricityCabinetModel();
-        electricityCabinetModel.setId(electricityCabinetModel.getId());
+        electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
         electricityCabinetModelMapper.update(electricityCabinetModel);

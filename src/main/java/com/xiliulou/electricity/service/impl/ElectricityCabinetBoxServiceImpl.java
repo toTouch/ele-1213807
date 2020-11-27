@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
@@ -94,13 +95,14 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        for (int i=1;i<electricityCabinetModel.getNum();i++) {
+        for (int i=1;i<=electricityCabinetModel.getNum();i++) {
             ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
             electricityCabinetBox.setElectricityCabinetId(id);
             electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
             electricityCabinetBox.setCellNo(String.valueOf(i));
             electricityCabinetBox.setCreateTime(System.currentTimeMillis());
             electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
             electricityCabinetBoxMapper.insertOne(electricityCabinetBox);
         }
     }

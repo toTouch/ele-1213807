@@ -10,12 +10,12 @@ spring:
       strict: true
       datasource:
         master:
-          url: jdbc:mysql://${MYSQL-HOST:xiliulou-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:eletctricity}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+          url: jdbc:mysql://${MYSQL-HOST:xiliulou-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:electricity}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true
           username: root
           password: 123456
           driver-class-name: com.mysql.cj.jdbc.Driver
         slave_1:
-          url: jdbc:mysql://${MYSQL-HOST:xiliulou-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:eletctricity}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true
+          url: jdbc:mysql://${MYSQL-HOST:xiliulou-mysql}:${MYSQL-PORT:3306}/${MYSQL-DB:electricity}?characterEncoding=utf8&zeroDateTimeBehavior=convertToNull&useSSL=false&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=GMT%2B8&allowMultiQueries=true
           username: root
           password: 123456
           driver-class-name: com.mysql.cj.jdbc.Driver
@@ -40,14 +40,12 @@ spring:
           refresh: true
   profiles:
     active: dev
+  klock:
+    address: ${REDIS-HOST:xiliulou-redis}:6379
+    password: ${spring.redis.password}
+    wait-time: 20
+    lease-time: 20
+    database: 15
 
 logging:
   config: classpath:logback-spring-dev.xml
-
-
-mybatis-plus:
-  mapper-locations: classpath:/mapper/*Mapper.xml
-  global-config:
-    db-config:
-      id-type: auto
-      field-strategy: NOT_NULL
