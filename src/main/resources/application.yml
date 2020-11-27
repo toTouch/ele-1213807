@@ -40,6 +40,12 @@ spring:
           refresh: true
   profiles:
     active: dev
+  klock:
+    address: ${REDIS-HOST:xiliulou-redis}:6379
+    password: ${spring.redis.password}
+    wait-time: 20
+    lease-time: 20
+    database: 15
 
 logging:
   config: classpath:logback-spring-dev.xml

@@ -1,4 +1,5 @@
 /*
+/*
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.io.FileUtil;
@@ -36,8 +37,8 @@ import java.util.stream.Collectors;
 public class ElectricityCabinetFileAdminController {
     */
 /**
-     * 服务对象
-     *//*
+ * 服务对象
+ *//*
 
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
@@ -127,8 +128,8 @@ public class ElectricityCabinetFileAdminController {
 
     */
 /**
-     * 获取文件信息
-     *//*
+ * 获取文件信息
+ *//*
 
     @GetMapping("/admin/electricityCabinetFileService/getFile/{electricityCabinetId}/{fileType}")
     public R getFile(@PathVariable("electricityCabinetId") Integer electricityCabinetId, @PathVariable("fileType") Integer fileType) {
@@ -146,8 +147,8 @@ public class ElectricityCabinetFileAdminController {
 
     */
 /**
-     * minio获取文件
-     *//*
+ * minio获取文件
+ *//*
 
     @GetMapping("/admin/electricityCabinetFileService/getMinioFile/{fileName}")
     public void getMinioFile(@PathVariable String fileName, HttpServletResponse response) {
@@ -156,8 +157,8 @@ public class ElectricityCabinetFileAdminController {
 
     */
 /**
-     * 删除文件
-     *//*
+ * 删除文件
+ *//*
 
     @DeleteMapping("/admin/electricityCabinetFileService/deleteFile/{id}")
     public R deleteFile(@PathVariable("id") Long id) {
@@ -166,3 +167,4 @@ public class ElectricityCabinetFileAdminController {
 
 
 }*/
+
