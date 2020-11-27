@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinet" id="ElectricityCabinetMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="longitude" column="longitude" jdbcType="NUMERIC"/>
+        <result property="latitude" column="latitude" jdbcType="NUMERIC"/>
+        <result property="productKey" column="product_key" jdbcType="VARCHAR"/>
+        <result property="deviceName" column="device_name" jdbcType="VARCHAR"/>
+        <result property="deviceSecret" column="device_secret" jdbcType="VARCHAR"/>
+        <result property="usableStatus" column="usable_status" jdbcType="INTEGER"/>
+        <result property="powerStatus" column="power_status" jdbcType="INTEGER"/>
+        <result property="onlineStatus" column="online_status" jdbcType="INTEGER"/>
+        <result property="modelId" column="model_id" jdbcType="INTEGER"/>
+        <result property="version" column="version" jdbcType="VARCHAR"/>
+        <result property="fullyCharged" column="fully_charged" jdbcType="NUMERIC"/>
+        <result property="servicePhone" column="service_phone" jdbcType="VARCHAR"/>
+        <result property="businessTime" column="business_time" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ElectricityCabinetMap">
+        select
+          id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+        from electricity.t_electricity_cabinet
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select
+          id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+        from electricity.t_electricity_cabinet
+        where del_flag=0
+        <if test="query.sn != null and query.sn != ''">
+            and sn = #{query.sn}
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.areaId != null">
+            and area_id = #{query.areaId}
+        </if>
+        <if test="query.address != null and query.address != ''">
+            and address = #{query.address}
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        <if test="query.powerStatus != null">
+            and power_status = #{query.powerStatus}
+        </if>
+        <if test="query.onlineStatus != null">
+            and online_status = #{query.onlineStatus}
+        </if>
+        order by update_time
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ElectricityCabinetMap">
+        select
+          id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+        from electricity.t_electricity_cabinet
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="areaId != null">
+                and area_id = #{areaId}
+            </if>
+            <if test="address != null and address != ''">
+                and address = #{address}
+            </if>
+            <if test="longitude != null">
+                and longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                and latitude = #{latitude}
+            </if>
+            <if test="productKey != null and productKey != ''">
+                and product_key = #{productKey}
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                and device_name = #{deviceName}
+            </if>
+            <if test="deviceSecret != null and deviceSecret != ''">
+                and device_secret = #{deviceSecret}
+            </if>
+            <if test="usableStatus != null">
+                and usable_status = #{usableStatus}
+            </if>
+            <if test="powerStatus != null">
+                and power_status = #{powerStatus}
+            </if>
+            <if test="onlineStatus != null">
+                and online_status = #{onlineStatus}
+            </if>
+            <if test="modelId != null">
+                and model_id = #{modelId}
+            </if>
+            <if test="version != null and version != ''">
+                and version = #{version}
+            </if>
+            <if test="fullyCharged != null">
+                and fully_charged = #{fullyCharged}
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                and service_phone = #{servicePhone}
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                and business_time = #{businessTime}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+        </where>
+    </select>
+    <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select  id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version,
+        fully_charged, service_phone, business_time, create_time, update_time,  ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{query.lat} * PI() / 180 - latitude * PI() / 180
+        ) / 2
+        ),
+        2
+        ) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
+        SIN(
+        (
+        #{query.lon} * PI() / 180 - longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance
+        from electricity.t_electricity_cabinet
+        where del_flag = 0
+        <if test="query.distance != null">
+            having distance &lt; #{query.distance}
+        </if>
+        order by distance
+        limit #{query.offset}, #{query.limit}
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_electricity_cabinet(sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag)
+        values (#{sn}, #{name}, #{areaId}, #{address}, #{longitude}, #{latitude}, #{productKey}, #{deviceName}, #{deviceSecret}, #{usableStatus}, #{powerStatus}, #{onlineStatus}, #{modelId}, #{version}, #{fullyCharged}, #{servicePhone}, #{businessTime}, #{createTime}, #{updateTime}, #{delFlag})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_electricity_cabinet
+        <set>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="areaId != null">
+                area_id = #{areaId},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="longitude != null">
+                longitude = #{longitude},
+            </if>
+            <if test="latitude != null">
+                latitude = #{latitude},
+            </if>
+            <if test="productKey != null and productKey != ''">
+                product_key = #{productKey},
+            </if>
+            <if test="deviceName != null and deviceName != ''">
+                device_name = #{deviceName},
+            </if>
+            <if test="deviceSecret != null and deviceSecret != ''">
+                device_secret = #{deviceSecret},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="powerStatus != null">
+                power_status = #{powerStatus},
+            </if>
+            <if test="onlineStatus != null">
+                online_status = #{onlineStatus},
+            </if>
+            <if test="modelId != null">
+                model_id = #{modelId},
+            </if>
+            <if test="version != null and version != ''">
+                version = #{version},
+            </if>
+            <if test="fullyCharged != null">
+                fully_charged = #{fullyCharged},
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                service_phone = #{servicePhone},
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                business_time = #{businessTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>

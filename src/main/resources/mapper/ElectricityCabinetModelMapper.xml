@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinetModel" id="ElectricityCabinetModelMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="num" column="num" jdbcType="INTEGER"/>
+        <result property="voltage" column="voltage" jdbcType="VARCHAR"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ElectricityCabinetModelMap">
+        select
+          id, name, num, voltage, del_flag, create_time, update_time
+        from electricity.t_electricity_cabinet_model
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultMap="ElectricityCabinetModelMap">
+        select
+          id, name, num, voltage, del_flag, create_time, update_time
+        from electricity.t_electricity_cabinet_model
+        where del_flag=0
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ElectricityCabinetModelMap">
+        select
+          id, name, num, voltage, del_flag, create_time, update_time
+        from electricity.t_electricity_cabinet_model
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="num != null">
+                and num = #{num}
+            </if>
+            <if test="voltage != null">
+                and voltage = #{voltage}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_electricity_cabinet_model(name, num, voltage, del_flag, create_time, update_time)
+        values (#{name}, #{num}, #{voltage}, #{delFlag}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_electricity_cabinet_model
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="num != null">
+                num = #{num},
+            </if>
+            <if test="voltage != null">
+                voltage = #{voltage},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
