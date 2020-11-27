@@ -53,7 +53,12 @@
 			<artifactId>xiliulou-common-sentinel</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+        <dependency>
+            <groupId>com.xiliulou</groupId>
+            <artifactId>xiliulou-common-iot-storege</artifactId>
+            <version>1.0.0</version>
+        </dependency>
 
-	</dependencies>
+    </dependencies>
 
 </project>
