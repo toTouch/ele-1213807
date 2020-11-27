@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     private ElectricityCabinetModelMapper electricityCabinetModelMapper;
     @Autowired
     RedisService redisService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -112,6 +115,10 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         if(Objects.isNull(oldElectricityCabinetModel)){
             return R.fail("SYSTEM.0004","未找到换电柜型号");
         }
+        Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
+        if(count>0){
+            return R.fail("SYSTEM.0011","型号已绑定换电柜，不能操作");
+        }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModelMapper.update(electricityCabinetModel);
         //更新缓存
@@ -124,6 +131,10 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
         if(Objects.isNull(electricityCabinetModel)){
             return R.fail("SYSTEM.0004","未找到换电柜型号");
+        }
+        Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
+        if(count>0){
+            return R.fail("SYSTEM.0011","型号已绑定换电柜，不能操作");
         }
         //删除数据库
         electricityCabinetModel.setId(id);

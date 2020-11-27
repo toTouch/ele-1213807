@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -19,7 +20,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import jdk.internal.org.objectweb.asm.Handle;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -195,6 +195,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinetModel)) {
             return R.fail("SYSTEM.0004","未找到换电柜型号");
         }
+        if (!oldModelId.equals(electricityCabinet.getModelId())) {
+            return R.fail("SYSTEM.0010","不能修改型号");
+        }
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
@@ -231,7 +234,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
                 //查找型号名称
-                ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getId());
+                ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
                 }
@@ -305,6 +308,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
         return R.ok(electricityCabinetVOS);
+    }
+
+    @Override
+    public Integer queryByModelId(Integer id) {
+        return electricityCabinetMapper.selectCount(Wrappers.<ElectricityCabinet>lambdaQuery().eq(ElectricityCabinet::getModelId,id).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
     }
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
