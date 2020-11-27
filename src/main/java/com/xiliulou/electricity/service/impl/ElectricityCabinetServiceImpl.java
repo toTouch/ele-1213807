@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
  * @since 2020-11-25 11:00:14
  */
 @Service("electricityCabinetService")
+@Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
     @Resource
     private ElectricityCabinetMapper electricityCabinetMapper;

@@ -1,15 +1,16 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.TElectricityBatteryModel;
+import com.xiliulou.electricity.entity.ElectricityBatteryModel;
+
 import java.util.List;
 
 /**
- * 电池型号(TElectricityBatteryModel)表服务接口
+ * 电池型号(ElectricityBatteryModel)表服务接口
  *
  * @author makejava
  * @since 2020-11-26 14:44:44
  */
-public interface TElectricityBatteryModelService {
+public interface ElectricityBatteryModelService {
 
     /**
      * 通过ID查询单条数据从数据库
@@ -17,40 +18,40 @@ public interface TElectricityBatteryModelService {
      * @param id 主键
      * @return 实例对象
      */
-    TElectricityBatteryModel queryByIdFromDB(Integer id);
-    
-      /**
+    ElectricityBatteryModel queryByIdFromDB(Integer id);
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
-    TElectricityBatteryModel queryByIdFromCache(Integer id);
+    ElectricityBatteryModel queryByIdFromCache(Integer id);
 
     /**
      * 查询多条数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
-    List<TElectricityBatteryModel> queryAllByLimit(int offset, int limit);
+    List<ElectricityBatteryModel> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据
      *
-     * @param tElectricityBatteryModel 实例对象
+     * @param ElectricityBatteryModel 实例对象
      * @return 实例对象
      */
-    TElectricityBatteryModel insert(TElectricityBatteryModel tElectricityBatteryModel);
+    ElectricityBatteryModel insert(ElectricityBatteryModel ElectricityBatteryModel);
 
     /**
      * 修改数据
      *
-     * @param tElectricityBatteryModel 实例对象
+     * @param ElectricityBatteryModel 实例对象
      * @return 实例对象
      */
-    Integer update(TElectricityBatteryModel tElectricityBatteryModel);
+    Integer update(ElectricityBatteryModel ElectricityBatteryModel);
 
     /**
      * 通过主键删除数据

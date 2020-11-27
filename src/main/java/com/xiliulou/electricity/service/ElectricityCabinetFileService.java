@@ -1,15 +1,15 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.TElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import java.util.List;
 
 /**
- * 换电柜电池表(TElectricityBattery)表服务接口
+ * 换电柜文件表(TElectricityCabinetFile)表服务接口
  *
  * @author makejava
- * @since 2020-11-26 14:44:12
+ * @since 2020-11-27 10:17:18
  */
-public interface TElectricityBatteryService {
+public interface ElectricityCabinetFileService {
 
     /**
      * 通过ID查询单条数据从数据库
@@ -17,7 +17,7 @@ public interface TElectricityBatteryService {
      * @param id 主键
      * @return 实例对象
      */
-    TElectricityBattery queryByIdFromDB(Long id);
+    ElectricityCabinetFile queryByIdFromDB(Long id);
     
       /**
      * 通过ID查询单条数据从缓存
@@ -25,7 +25,7 @@ public interface TElectricityBatteryService {
      * @param id 主键
      * @return 实例对象
      */
-    TElectricityBattery queryByIdFromCache(Long id);
+    ElectricityCabinetFile queryByIdFromCache(Long id);
 
     /**
      * 查询多条数据
@@ -34,23 +34,23 @@ public interface TElectricityBatteryService {
      * @param limit 查询条数
      * @return 对象列表
      */
-    List<TElectricityBattery> queryAllByLimit(int offset, int limit);
+    List<ElectricityCabinetFile> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据
      *
-     * @param tElectricityBattery 实例对象
+     * @param electricityCabinetFile 实例对象
      * @return 实例对象
      */
-    TElectricityBattery insert(TElectricityBattery tElectricityBattery);
+    ElectricityCabinetFile insert(ElectricityCabinetFile electricityCabinetFile);
 
     /**
      * 修改数据
      *
-     * @param tElectricityBattery 实例对象
+     * @param electricityCabinetFile 实例对象
      * @return 实例对象
      */
-    Integer update(TElectricityBattery tElectricityBattery);
+    Integer update(ElectricityCabinetFile electricityCabinetFile);
 
     /**
      * 通过主键删除数据
@@ -60,4 +60,5 @@ public interface TElectricityBatteryService {
      */
     Boolean deleteById(Long id);
 
+    List<ElectricityCabinetFile> queryByDeviceInfo(Long electricityCabinetId, Integer fileType);
 }

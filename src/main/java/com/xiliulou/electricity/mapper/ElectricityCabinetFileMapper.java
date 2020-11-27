@@ -1,17 +1,17 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.TElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * 换电柜电池表(TElectricityBattery)表数据库访问层
+ * 换电柜文件表(TElectricityCabinetFile)表数据库访问层
  *
  * @author makejava
- * @since 2020-11-26 14:44:12
+ * @since 2020-11-27 10:17:18
  */
-public interface TElectricityBatteryMapper  extends BaseMapper<TElectricityBattery>{
+public interface ElectricityCabinetFileMapper extends BaseMapper<ElectricityCabinetFile>{
 
     /**
      * 通过ID查询单条数据
@@ -19,7 +19,7 @@ public interface TElectricityBatteryMapper  extends BaseMapper<TElectricityBatte
      * @param id 主键
      * @return 实例对象
      */
-    TElectricityBattery queryById(Long id);
+    ElectricityCabinetFile queryById(Long id);
 
     /**
      * 查询指定行数据
@@ -28,32 +28,32 @@ public interface TElectricityBatteryMapper  extends BaseMapper<TElectricityBatte
      * @param limit 查询条数
      * @return 对象列表
      */
-    List<TElectricityBattery> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
+    List<ElectricityCabinetFile> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
 
 
     /**
      * 通过实体作为筛选条件查询
      *
-     * @param tElectricityBattery 实例对象
+     * @param electricityCabinetFile 实例对象
      * @return 对象列表
      */
-    List<TElectricityBattery> queryAll(TElectricityBattery tElectricityBattery);
+    List<ElectricityCabinetFile> queryAll(ElectricityCabinetFile electricityCabinetFile);
 
     /**
      * 新增数据
      *
-     * @param tElectricityBattery 实例对象
+     * @param electricityCabinetFile 实例对象
      * @return 影响行数
      */
-    int insertOne(TElectricityBattery tElectricityBattery);
+    int insertOne(ElectricityCabinetFile electricityCabinetFile);
 
     /**
      * 修改数据
      *
-     * @param tElectricityBattery 实例对象
+     * @param electricityCabinetFile 实例对象
      * @return 影响行数
      */
-    int update(TElectricityBattery tElectricityBattery);
+    int update(ElectricityCabinetFile electricityCabinetFile);
 
     /**
      * 通过主键删除数据
