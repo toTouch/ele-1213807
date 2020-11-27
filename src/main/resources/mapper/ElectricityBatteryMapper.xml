@@ -36,7 +36,8 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElectricityBatteryMap">
         select
-          id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
+        id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid,
+        cabinet_id
         from electricity.t_electricity_battery
         <where>
             <if test="id != null">
@@ -76,6 +77,14 @@
                 and cabinet_id = #{cabinetId}
             </if>
         </where>
+    </select>
+
+
+    <!--电池分页-->
+    <select id="getElectricityBatteryPage" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
+            select  * from  t_electricity_battery where  del_flag = 0  order by  create_time desc limit 0, 5;
+
+
     </select>
 
     <!--新增所有列-->

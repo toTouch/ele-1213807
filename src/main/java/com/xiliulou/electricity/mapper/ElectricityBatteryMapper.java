@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.query.PageQuery;
+import com.xiliulou.electricity.vo.ElectricityBatteryVo;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
-
-import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * 换电柜电池表(ElectricityBattery)表数据库访问层
@@ -65,4 +67,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
      */
     int deleteById(Long id);
 
+    List<ElectricityBatteryVo> getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, PageQuery pageQuery);
 }
