@@ -1,14 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.mapper.ElectricityBatteryModelMapper;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
-import java.util.List;
+import java.util.Objects;
 
 /**
  * 电池型号(ElectricityBatteryModel)表服务实现类
@@ -17,80 +20,54 @@ import java.util.List;
  * @since 2020-11-26 14:44:44
  */
 @Service("ElectricityBatteryModelService")
+@Slf4j
 public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryModelService {
     @Resource
     private ElectricityBatteryModelMapper ElectricityBatteryModelMapper;
+    @Autowired
+    RedisService redisService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
     @Override
-    public ElectricityBatteryModel queryByIdFromDB(Integer id) {
-        return this.ElectricityBatteryModelMapper.queryById(id);
+    public R saveElectricityBatteryModel(ElectricityBatteryModel electricityBatteryModel) {
+        electricityBatteryModel.setCreateTime(System.currentTimeMillis());
+        electricityBatteryModel.setUpdateTime(System.currentTimeMillis());
+        return R.ok(ElectricityBatteryModelMapper.insert(electricityBatteryModel));
     }
 
     /**
-     * 通过ID查询单条数据从缓存
+     * 修改电池型号
      *
-     * @param id 主键
-     * @return 实例对象
+     * @param electricityBatteryModel
+     * @return
      */
     @Override
-    public ElectricityBatteryModel queryByIdFromCache(Integer id) {
-        return null;
-    }
-
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<ElectricityBatteryModel> queryAllByLimit(int offset, int limit) {
-        return this.ElectricityBatteryModelMapper.queryAllByLimit(offset, limit);
+    public R updateElectricityBatteryModel(ElectricityBatteryModel electricityBatteryModel) {
+        ElectricityBatteryModel electricityBatteryModelDb = getElectricityBatteryModelById(electricityBatteryModel.getId());
+        if (Objects.isNull(electricityBatteryModelDb)) {
+            log.error("UPDATE_ELECTRICITY_BATTERY_MODEL ERROR ,NOT FOUND ELECTRICITY_BATTERY_MODEL BY ID:{}", electricityBatteryModel.getId());
+            return R.failMsg("未找到电池型号!");
+        }
+        electricityBatteryModel.setUpdateTime(System.currentTimeMillis());
+        return R.ok(ElectricityBatteryModelMapper.updateById(electricityBatteryModel));
     }
 
     /**
-     * 新增数据
+     * 从缓存中获取电池型号
      *
-     * @param ElectricityBatteryModel 实例对象
-     * @return 实例对象
+     * @param id
+     * @return
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ElectricityBatteryModel insert(ElectricityBatteryModel ElectricityBatteryModel) {
-        this.ElectricityBatteryModelMapper.insert(ElectricityBatteryModel);
-        return ElectricityBatteryModel;
-    }
+    public ElectricityBatteryModel getElectricityBatteryModelById(Integer id) {
+        ElectricityBatteryModel electricityBatteryModel = null;
 
-    /**
-     * 修改数据
-     *
-     * @param ElectricityBatteryModel 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(ElectricityBatteryModel ElectricityBatteryModel) {
-        return this.ElectricityBatteryModelMapper.update(ElectricityBatteryModel);
-
-    }
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Integer id) {
-        return this.ElectricityBatteryModelMapper.deleteById(id) > 0;
+        electricityBatteryModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_BATTERY_MODEL + id, ElectricityBatteryModel.class);
+        if (Objects.isNull(electricityBatteryModel)) {
+            electricityBatteryModel = ElectricityBatteryModelMapper.selectById(id);
+            if (Objects.nonNull(electricityBatteryModel)) {
+                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_BATTERY_MODEL + id, electricityBatteryModel);
+            }
+        }
+        return electricityBatteryModel;
     }
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,7 +45,7 @@ public class ElectricityBatteryModel {
     private Long createTime;
 
     private Long updateTime;
-
+    @TableLogic
     private Object delFlag;
 
 
