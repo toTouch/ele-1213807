@@ -1,17 +1,19 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.TElectricityBatteryModel;
+import com.xiliulou.electricity.entity.ElectricityBatteryModel;
+
 import java.util.List;
+
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
- * 电池型号(TElectricityBatteryModel)表数据库访问层
+ * 电池型号(ElectricityBatteryModel)表数据库访问层
  *
  * @author makejava
  * @since 2020-11-26 14:44:44
  */
-public interface TElectricityBatteryModelMapper  extends BaseMapper<TElectricityBatteryModel>{
+public interface ElectricityBatteryModelMapper extends BaseMapper<ElectricityBatteryModel> {
 
     /**
      * 通过ID查询单条数据
@@ -19,41 +21,41 @@ public interface TElectricityBatteryModelMapper  extends BaseMapper<TElectricity
      * @param id 主键
      * @return 实例对象
      */
-    TElectricityBatteryModel queryById(Integer id);
+    ElectricityBatteryModel queryById(Integer id);
 
     /**
      * 查询指定行数据
      *
      * @param offset 查询起始位置
-     * @param limit 查询条数
+     * @param limit  查询条数
      * @return 对象列表
      */
-    List<TElectricityBatteryModel> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
+    List<ElectricityBatteryModel> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
 
 
     /**
      * 通过实体作为筛选条件查询
      *
-     * @param tElectricityBatteryModel 实例对象
+     * @param ElectricityBatteryModel 实例对象
      * @return 对象列表
      */
-    List<TElectricityBatteryModel> queryAll(TElectricityBatteryModel tElectricityBatteryModel);
+    List<ElectricityBatteryModel> queryAll(ElectricityBatteryModel ElectricityBatteryModel);
 
     /**
      * 新增数据
      *
-     * @param tElectricityBatteryModel 实例对象
+     * @param ElectricityBatteryModel 实例对象
      * @return 影响行数
      */
-    int insertOne(TElectricityBatteryModel tElectricityBatteryModel);
+    int insertOne(ElectricityBatteryModel ElectricityBatteryModel);
 
     /**
      * 修改数据
      *
-     * @param tElectricityBatteryModel 实例对象
+     * @param ElectricityBatteryModel 实例对象
      * @return 影响行数
      */
-    int update(TElectricityBatteryModel tElectricityBatteryModel);
+    int update(ElectricityBatteryModel ElectricityBatteryModel);
 
     /**
      * 通过主键删除数据
