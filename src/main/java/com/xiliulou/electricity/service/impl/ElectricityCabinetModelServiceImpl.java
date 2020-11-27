@@ -93,7 +93,6 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R save(ElectricityCabinetModel electricityCabinetModel) {
-        //TODO 判断参数
         //插入数据库
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());

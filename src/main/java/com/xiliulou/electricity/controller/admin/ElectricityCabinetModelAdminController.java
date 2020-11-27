@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -25,7 +26,7 @@ public class ElectricityCabinetModelAdminController {
     ElectricityCabinetModelService electricityCabinetModelService;
     //新增换电柜型号
     @PostMapping(value = "/admin/electricityCabinetModel")
-    public R save(@RequestBody ElectricityCabinetModel electricityCabinetModel) {
+    public R save(@RequestBody @Validated ElectricityCabinetModel electricityCabinetModel) {
         return electricityCabinetModelService.save(electricityCabinetModel);
     }
 

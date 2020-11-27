@@ -119,16 +119,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R save(ElectricityCabinet electricityCabinet) {
+        if(Objects.isNull(electricityCabinet.getPowerStatus())){
+            electricityCabinet.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_NO_POWER_STATUS);
+        }
+        if(Objects.isNull(electricityCabinet.getOnlineStatus())){
+            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+        }
         electricityCabinet.setCreateTime(System.currentTimeMillis());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         //三元组
-        List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey()).eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName()).eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret()));
+        List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
+                .eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey())
+                .eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName())
+                .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
+                .eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             return R.fail("SYSTEM.0002","换电柜的三元组已存在");
         }
         //或换电柜编号
-        List<ElectricityCabinet> existsElectricityCabinets = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getSn, electricityCabinet.getSn()));
+        List<ElectricityCabinet> existsElectricityCabinets = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
+                .eq(ElectricityCabinet::getSn, electricityCabinet.getSn()).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinets)) {
             return R.fail("SYSTEM.0003","换电柜编号已存在");
         }
@@ -155,7 +166,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("SYSTEM.0005","未找到换电柜");
         }
         //三元组
-        List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey()).eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName()).eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret()));
+        List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
+                .eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey())
+                .eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName())
+                .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
+                .eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             for (ElectricityCabinet existsElectricityCabinet : existsElectricityCabinetList) {
                 if (!Objects.equals(existsElectricityCabinet.getId(), electricityCabinet.getId())) {
@@ -164,7 +179,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         //或换电柜编号
-        List<ElectricityCabinet> existsElectricityCabinets = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getSn, electricityCabinet.getSn()));
+        List<ElectricityCabinet> existsElectricityCabinets = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
+                .eq(ElectricityCabinet::getSn, electricityCabinet.getSn()).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinets)) {
             for (ElectricityCabinet existsElectricityCabinet : existsElectricityCabinets) {
                 if (!Objects.equals(existsElectricityCabinet.getId(), electricityCabinet.getId())) {
@@ -204,6 +220,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //删除缓存
         redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
+        electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
         return R.ok();
     }
 
@@ -236,7 +253,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //空仓
                     noElectricityBattery = (int)electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
                     //电池总数
-                    electricityBatteryTotal = electricityCabinetBoxList.size()-noElectricityBattery;
+                    electricityBatteryTotal = (int)electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -278,7 +295,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //空仓
                     noElectricityBattery = (int)electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
                     //电池总数
-                    electricityBatteryTotal = electricityCabinetBoxList.size()-noElectricityBattery;
+                    electricityBatteryTotal = (int)electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -292,5 +309,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+    }
+
+    private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
 }

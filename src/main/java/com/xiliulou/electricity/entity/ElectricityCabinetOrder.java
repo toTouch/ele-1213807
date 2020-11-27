@@ -43,6 +43,8 @@ package com.xiliulou.electricity.entity;
                                             
                     
 
+                                                                        import com.baomidou.mybatisplus.annotation.IdType;
+                                                                        import com.baomidou.mybatisplus.annotation.TableId;
                                                                         import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -60,7 +62,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @TableName("t_electricity_cabinet_order")
 public class ElectricityCabinetOrder {
-    
+
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 订单编号--时间戳+柜子id+仓门号+用户id+5位随机数,20190203 21 155 1232)
