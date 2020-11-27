@@ -7,6 +7,7 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.storage.config.AliyunOssConfig;
 import com.xiliulou.storage.config.MinioConfig;
 import com.xiliulou.storage.service.impl.AliyunOssService;
@@ -16,9 +17,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜文件表(TElectricityCabinetFile)表控制层
@@ -51,6 +55,12 @@ public class ElectricityCabinetFileAdminController {
         if (Objects.isNull(electricityCabinetId)) {
             electricityCabinetId = -1;
         }
+        int index=1;
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
+        if(ObjectUtil.isNotEmpty(electricityCabinetFileList)){
+            electricityCabinetFileList= electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
+            index=electricityCabinetFileList.get(0).getIndex()+1;
+        }
         String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
         String bucketName = minioConfig.getBucketName();
         try {
@@ -63,7 +73,7 @@ public class ElectricityCabinetFileAdminController {
                     .type(fileType)
                     .bucketName(bucketName)
                     .name(fileName)
-                    .build();
+                    .index(index).build();
             electricityCabinetFileService.insert(electricityCabinetFile);
         } catch (Exception e) {
             log.error("上传失败", e);
@@ -85,6 +95,12 @@ public class ElectricityCabinetFileAdminController {
         if (Objects.isNull(electricityCabinetId)) {
             electricityCabinetId = -1;
         }
+        int index=1;
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
+        if(ObjectUtil.isNotEmpty(electricityCabinetFileList)){
+            electricityCabinetFileList= electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
+            index=electricityCabinetFileList.get(0).getIndex()+1;
+        }
         ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
@@ -93,7 +109,7 @@ public class ElectricityCabinetFileAdminController {
                 .type(fileType)
                 .url(AliyunOssConfig.https + aliyunOssConfig.getBucketName() + "." + aliyunOssConfig.getEndpoint() + "/" + fileName)
                 .name(fileName)
-                .build();
+                .index(index).build();
         electricityCabinetFileService.insert(electricityCabinetFile);
         return R.ok();
     }
@@ -102,8 +118,8 @@ public class ElectricityCabinetFileAdminController {
      * 获取文件信息
      *
      */
-    @GetMapping("/admin/electricityCabinetFileService/{electricityCabinetId}/{fileType}")
-    public R getSignFileUrl(@PathVariable("electricityCabinetId") Long electricityCabinetId, @PathVariable("fileType") Integer fileType) {
+    @GetMapping("/admin/electricityCabinetFileService/getFile/{electricityCabinetId}/{fileType}")
+    public R getFile(@PathVariable("electricityCabinetId") Integer electricityCabinetId, @PathVariable("fileType") Integer fileType) {
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
@@ -114,6 +130,20 @@ public class ElectricityCabinetFileAdminController {
             electricityCabinetFiles.add(electricityCabinetFile);
         }
         return R.ok(electricityCabinetFiles);
+    }
+
+    /**
+     * minio获取文件
+     *
+     */
+    @GetMapping("/admin/electricityCabinetFileService/getMinioFile/{fileName}")
+    public void getMinioFile(@PathVariable String fileName, HttpServletResponse response) {
+        electricityCabinetFileService.getMinioFile(fileName, response);
+    }
+
+    @DeleteMapping("/admin/electricityCabinetFileService/deleteFile/{id}")
+    public R deleteFile(@PathVariable("id") Long id) {
+        return electricityCabinetFileService.deleteById(id);
     }
 
 

@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
+
+import javax.servlet.http.HttpServletResponse;
 import java.util.List;
 
 /**
@@ -55,10 +58,10 @@ public interface ElectricityCabinetFileService {
     /**
      * 通过主键删除数据
      *
-     * @param id 主键
-     * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    R deleteById(Long id);
 
-    List<ElectricityCabinetFile> queryByDeviceInfo(Long electricityCabinetId, Integer fileType);
+    List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType);
+
+    void getMinioFile(String fileName, HttpServletResponse response);
 }

@@ -6,14 +6,14 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
-        <result property="type" column="type" jdbcType="OTHER"/>
-        <result property="index" column="index" jdbcType="OTHER"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="index" column="index" jdbcType="INTEGER"/>
         <result property="url" column="url" jdbcType="VARCHAR"/>
         <result property="bucketName" column="bucket_name" jdbcType="VARCHAR"/>
         <result property="isOss" column="is_oss" jdbcType="OTHER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
     </resultMap>
 
     <!--查询单个-->
@@ -119,8 +119,8 @@
     </update>
 
     <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from electricity.t_electricity_cabinet_file where id = #{id}
-    </delete>
+    <update id="deleteById">
+        update electricity.t_electricity_cabinet_file set del_flag=1 where id = #{id}
+    </update>
 
 </mapper>
