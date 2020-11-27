@@ -20,7 +20,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @EnableCircuitBreaker
 @EnableRedis
-@EnableStorage
+/*@EnableStorage*/
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")

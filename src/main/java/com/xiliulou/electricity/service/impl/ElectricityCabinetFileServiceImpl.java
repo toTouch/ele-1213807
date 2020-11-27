@@ -1,3 +1,4 @@
+/*
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.io.IoUtil;
@@ -20,12 +21,14 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Objects;
 
+*/
 /**
  * 换电柜文件表(TElectricityCabinetFile)表服务实现类
  *
  * @author makejava
  * @since 2020-11-27 10:17:18
- */
+ *//*
+
 @Service("electricityCabinetFileService")
 @Slf4j
 public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFileService {
@@ -34,47 +37,55 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Autowired
     MinioService minioService;
 
-    /**
+    */
+/**
      * 通过ID查询单条数据从DB
      *
      * @param id 主键
      * @return 实例对象
-     */
+     *//*
+
     @Override
     public ElectricityCabinetFile queryByIdFromDB(Long id) {
         return this.electricityCabinetFileMapper.queryById(id);
     }
     
-        /**
+        */
+/**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
-     */
+     *//*
+
     @Override
     public ElectricityCabinetFile queryByIdFromCache(Long id) {
         return null;
     }
 
 
-    /**
+    */
+/**
      * 查询多条数据
      *
      * @param offset 查询起始位置
      * @param limit 查询条数
      * @return 对象列表
-     */
+     *//*
+
     @Override
     public List<ElectricityCabinetFile> queryAllByLimit(int offset, int limit) {
         return this.electricityCabinetFileMapper.queryAllByLimit(offset, limit);
     }
 
-    /**
+    */
+/**
      * 新增数据
      *
      * @param electricityCabinetFile 实例对象
      * @return 实例对象
-     */
+     *//*
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ElectricityCabinetFile insert(ElectricityCabinetFile electricityCabinetFile) {
@@ -82,12 +93,14 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
         return electricityCabinetFile;
     }
 
-    /**
+    */
+/**
      * 修改数据
      *
      * @param electricityCabinetFile 实例对象
      * @return 实例对象
-     */
+     *//*
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElectricityCabinetFile electricityCabinetFile) {
@@ -95,10 +108,12 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
          
     }
 
-    /**
+    */
+/**
      * 通过主键删除数据
      *
-     */
+     *//*
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R deleteById(Long id) {
@@ -127,4 +142,4 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
             log.error("文件读取异常", e);
         }
     }
-}
+}*/

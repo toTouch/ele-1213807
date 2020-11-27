@@ -1,3 +1,4 @@
+/*
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.io.FileUtil;
@@ -22,18 +23,22 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+*/
 /**
  * 换电柜文件表(TElectricityCabinetFile)表控制层
  *
  * @author makejava
  * @since 2020-11-27 10:17:18
- */
+ *//*
+
 @RestController
 @Slf4j
 public class ElectricityCabinetFileAdminController {
-    /**
+    */
+/**
      * 服务对象
-     */
+     *//*
+
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
@@ -120,9 +125,11 @@ public class ElectricityCabinetFileAdminController {
         return R.ok();
     }
 
-    /**
+    */
+/**
      * 获取文件信息
-     */
+     *//*
+
     @GetMapping("/admin/electricityCabinetFileService/getFile/{electricityCabinetId}/{fileType}")
     public R getFile(@PathVariable("electricityCabinetId") Integer electricityCabinetId, @PathVariable("fileType") Integer fileType) {
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
@@ -137,21 +144,25 @@ public class ElectricityCabinetFileAdminController {
         return R.ok(electricityCabinetFiles);
     }
 
-    /**
+    */
+/**
      * minio获取文件
-     */
+     *//*
+
     @GetMapping("/admin/electricityCabinetFileService/getMinioFile/{fileName}")
     public void getMinioFile(@PathVariable String fileName, HttpServletResponse response) {
         electricityCabinetFileService.getMinioFile(fileName, response);
     }
 
-    /**
+    */
+/**
      * 删除文件
-     */
+     *//*
+
     @DeleteMapping("/admin/electricityCabinetFileService/deleteFile/{id}")
     public R deleteFile(@PathVariable("id") Long id) {
         return electricityCabinetFileService.deleteById(id);
     }
 
 
-}
+}*/
