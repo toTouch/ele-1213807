@@ -7,7 +7,6 @@ import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.mapper.ElectricityBatteryModelMapper;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,15 +22,16 @@ import java.util.Objects;
 @Slf4j
 public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryModelService {
     @Resource
-    private ElectricityBatteryModelMapper ElectricityBatteryModelMapper;
-    @Autowired
+    private ElectricityBatteryModelMapper electricityBatteryModelMapper;
+
+    @Resource
     RedisService redisService;
 
     @Override
     public R saveElectricityBatteryModel(ElectricityBatteryModel electricityBatteryModel) {
         electricityBatteryModel.setCreateTime(System.currentTimeMillis());
         electricityBatteryModel.setUpdateTime(System.currentTimeMillis());
-        return R.ok(ElectricityBatteryModelMapper.insert(electricityBatteryModel));
+        return R.ok(electricityBatteryModelMapper.insert(electricityBatteryModel));
     }
 
     /**
@@ -48,7 +48,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
             return R.failMsg("未找到电池型号!");
         }
         electricityBatteryModel.setUpdateTime(System.currentTimeMillis());
-        return R.ok(ElectricityBatteryModelMapper.updateById(electricityBatteryModel));
+        return R.ok(electricityBatteryModelMapper.updateById(electricityBatteryModel));
     }
 
     /**
@@ -63,7 +63,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
 
         electricityBatteryModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_BATTERY_MODEL + id, ElectricityBatteryModel.class);
         if (Objects.isNull(electricityBatteryModel)) {
-            electricityBatteryModel = ElectricityBatteryModelMapper.selectById(id);
+            electricityBatteryModel = electricityBatteryModelMapper.selectById(id);
             if (Objects.nonNull(electricityBatteryModel)) {
                 redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_BATTERY_MODEL + id, electricityBatteryModel);
             }
