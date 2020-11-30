@@ -32,7 +32,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElectricityBatteryModelMap">
         select
-          id, name, voltage, capacity, starting_material, create_time, update_time, del_flag
+        id, name, voltage, capacity, starting_material, create_time, update_time, del_flag
         from electricity.t_electricity_battery_model
         <where>
             <if test="id != null">
@@ -98,8 +98,21 @@
     </update>
 
     <!--通过主键删除-->
+    <select id="getElectricityBatteryModelPage"
+            resultType="com.xiliulou.electricity.entity.ElectricityBatteryModel">
+        SELECT *
+        FROM t_electricity_battery_model
+        WHERE del_flag =0
+        <if test="name !=null">
+            and name LIKE concat(#{name},"%")
+        </if>
+        ORDER BY create_time desc
+        LIMIT #{offset},#{size}
+
+    </select>
+
+
     <delete id="deleteById">
         delete from electricity.t_electricity_battery_model where id = #{id}
     </delete>
-
 </mapper>

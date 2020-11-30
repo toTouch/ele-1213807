@@ -22,5 +22,9 @@ public interface ElectricityBatteryModelService {
 
     ElectricityBatteryModel getElectricityBatteryModelById(Integer id);
 
+    void delElectricityBatteryModelCacheById(Integer id);
 
+    R delElectricityBatteryModelById(Integer id);
+
+    R getElectricityBatteryModelPage(Long offset, Long size, String name);
 }
