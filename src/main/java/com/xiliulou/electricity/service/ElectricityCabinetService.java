@@ -58,5 +58,7 @@ public interface ElectricityCabinetService {
 
     Integer queryByModelId(Integer id);
 
-    R disable(ElectricityCabinet electricityCabinet);
+    R disable(Integer id);
+
+    R reboot(Integer id);
 }
