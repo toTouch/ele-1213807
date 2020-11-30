@@ -21,4 +21,29 @@ public interface ElectricityBatteryModelService {
     R updateElectricityBatteryModel(ElectricityBatteryModel electricityBatteryModel);
 
     ElectricityBatteryModel getElectricityBatteryModelById(Integer id);
+    /**
+     * 新增数据
+     *
+     * @param ElectricityBatteryModel 实例对象
+     * @return 实例对象
+     */
+    ElectricityBatteryModel insert(ElectricityBatteryModel ElectricityBatteryModel);
+
+    /**
+     * 修改数据
+     *
+     * @param ElectricityBatteryModel 实例对象
+     * @return 实例对象
+     */
+    Integer update(ElectricityBatteryModel ElectricityBatteryModel);
+
+    /**
+     * 通过主键删除数据
+     *
+     * @param id 主键
+     * @return 是否成功
+     */
+    Boolean deleteById(Integer id);
+
+    ElectricityBatteryModel queryById(Integer modelId);
 }

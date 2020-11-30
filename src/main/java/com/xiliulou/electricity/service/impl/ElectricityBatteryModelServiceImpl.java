@@ -70,4 +70,9 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
         }
         return electricityBatteryModel;
     }
+
+    @Override
+    public ElectricityBatteryModel queryById(Integer modelId) {
+        return ElectricityBatteryModelMapper.selectById(modelId);
+    }
 }

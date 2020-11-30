@@ -51,7 +51,7 @@ public class ElectricityCabinetBoxAdminController {
         //TODO 判断参数
         ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("SYSTEM.0006");
+            return R.fail("SYSTEM.0006","未找到此仓门");
         }
         //TODO 发送命令
         return electricityCabinetBoxService.modify(electricityCabinetBox);
@@ -62,7 +62,7 @@ public class ElectricityCabinetBoxAdminController {
     public R releaseBox(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
         ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
-            return R.fail("SYSTEM.0005");
+            return R.fail("SYSTEM.0005","未找到换电柜");
         }
         //TODO 判断订单
         //TODO 发送命令
@@ -75,7 +75,7 @@ public class ElectricityCabinetBoxAdminController {
         //TODO 判断参数
         ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("SYSTEM.0006");
+            return R.fail("SYSTEM.0006","未找到此仓门");
         }
         //TODO 判断订单
         //TODO 发送命令

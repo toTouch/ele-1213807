@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,8 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     private ElectricityCabinetModelMapper electricityCabinetModelMapper;
     @Autowired
     RedisService redisService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -93,7 +96,6 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R save(ElectricityCabinetModel electricityCabinetModel) {
-        //TODO 判断参数
         //插入数据库
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
@@ -106,10 +108,16 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
-        //TODO 判断参数
+        if(Objects.isNull(electricityCabinetModel.getId())){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
         ElectricityCabinetModel oldElectricityCabinetModel = queryByIdFromCache(electricityCabinetModel.getId());
         if(Objects.isNull(oldElectricityCabinetModel)){
-            return R.fail("SYSTEM.0004");
+            return R.fail("SYSTEM.0004","未找到换电柜型号");
+        }
+        Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
+        if(count>0){
+            return R.fail("SYSTEM.0011","型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModelMapper.update(electricityCabinetModel);
@@ -120,8 +128,15 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
 
     @Override
     public R delete(Integer id) {
+        ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
+        if(Objects.isNull(electricityCabinetModel)){
+            return R.fail("SYSTEM.0004","未找到换电柜型号");
+        }
+        Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
+        if(count>0){
+            return R.fail("SYSTEM.0011","型号已绑定换电柜，不能操作");
+        }
         //删除数据库
-        ElectricityCabinetModel electricityCabinetModel=new ElectricityCabinetModel();
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);

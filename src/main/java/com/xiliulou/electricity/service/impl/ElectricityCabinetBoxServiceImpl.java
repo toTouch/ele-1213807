@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
@@ -41,18 +40,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public ElectricityCabinetBox queryByIdFromDB(Long id) {
         return this.electricityCabinetBoxMapper.queryById(id);
     }
-    
-        /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public ElectricityCabinetBox queryByIdFromCache(Long id) {
-        return null;
-    }
-
 
 
     /**
@@ -99,6 +86,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
             electricityCabinetBox.setElectricityCabinetId(id);
             electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
+            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_CLOSE_DOOR);
+            electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             electricityCabinetBox.setCellNo(String.valueOf(i));
             electricityCabinetBox.setCreateTime(System.currentTimeMillis());
             electricityCabinetBox.setUpdateTime(System.currentTimeMillis());

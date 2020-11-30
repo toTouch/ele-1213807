@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -29,7 +31,7 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
      * @param limit 查询条数
      * @return 对象列表
      */
-    List<ElectricityCabinetOrder> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
+    List<ElectricityCabinetOrderVO> queryList(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
 
     /**

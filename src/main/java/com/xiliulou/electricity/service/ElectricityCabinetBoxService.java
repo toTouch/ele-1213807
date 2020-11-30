@@ -23,14 +23,7 @@ public interface ElectricityCabinetBoxService {
      * @return 实例对象
      */
     ElectricityCabinetBox queryByIdFromDB(Long id);
-    
-      /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinetBox queryByIdFromCache(Long id);
+
 
 
     /**
