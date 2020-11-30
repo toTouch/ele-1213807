@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
-import com.sun.org.apache.regexp.internal.RE;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
