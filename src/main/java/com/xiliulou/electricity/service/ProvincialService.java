@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Provincial;
 import java.util.List;
 
@@ -27,14 +28,5 @@ public interface ProvincialService {
      */
     Provincial queryByIdFromCache(Integer pid);
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
-    List<Provincial> queryAllByLimit(int offset, int limit);
-
-
+    R test();
 }

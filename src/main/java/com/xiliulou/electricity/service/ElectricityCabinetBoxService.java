@@ -58,7 +58,8 @@ public interface ElectricityCabinetBoxService {
 
     R modify(ElectricityCabinetBox electricityCabinetBox);
 
-    R modifyByElectricityCabinetId(Integer id);
+    R modifyByElectricityCabinetId(ElectricityCabinetBox electricityCabinetBox);
 
     List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id);
+
 }

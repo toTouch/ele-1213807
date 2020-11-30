@@ -50,6 +50,12 @@ public class ElectricityCabinetBoxVO {
     * 是否删除（0-正常，1-删除）
     */
     private Integer delFlag;
+    //电池编号
+    private String serialNumber;
+    /**
+     * 电池电量
+     */
+    private Integer capacity;
 
 
 }

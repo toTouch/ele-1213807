@@ -17,4 +17,5 @@ import lombok.NoArgsConstructor;
 public class ElectricityCabinetModelQuery {
 	private Integer size;
 	private Integer offset;
+	private String name;
 }

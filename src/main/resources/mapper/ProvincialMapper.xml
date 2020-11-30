@@ -15,14 +15,6 @@
         where pid = #{pid}
     </select>
 
-    <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="ProvincialMap">
-        select
-          pid, Provincial
-        from electricity.provincial
-        limit #{offset}, #{limit}
-    </select>
-
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ProvincialMap">
         select

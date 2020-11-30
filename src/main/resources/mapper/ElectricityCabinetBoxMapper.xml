@@ -29,13 +29,18 @@
           id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_box
         where del_flag=0
+        <if test="electricityBatteryId != null">
+            and electricity_battery_id = #{query.electricityBatteryId}
+        </if>
+        order by id desc
         limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElectricityCabinetBoxMap">
         select
-          id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
+        id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time,
+        update_time, del_flag
         from electricity.t_electricity_cabinet_box
         <where>
             <if test="id != null">
@@ -117,11 +122,14 @@
         where electricity_cabinet_id = #{id}
     </update>
     <update id="modifyByElectricityCabinetId">
-         update electricity.t_electricity_cabinet_box
-        set box_status = 0
-        where electricity_cabinet_id = #{id}
+        update electricity.t_electricity_cabinet_box
+        <set>
+            <if test="query.boxStatus != null">
+                box_status = #{query.boxStatus},
+            </if>
+        </set>
+        where electricity_cabinet_id = #{query.electricityCabinetId}
     </update>
-
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from electricity.t_electricity_cabinet_box where id = #{id}

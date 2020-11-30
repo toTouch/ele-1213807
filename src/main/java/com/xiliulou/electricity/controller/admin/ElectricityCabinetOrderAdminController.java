@@ -24,7 +24,7 @@ public class ElectricityCabinetOrderAdminController {
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
 
-    //换电柜下单
+    //换电柜订单查询
     @PostMapping("/admin/electricityCabinetOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
                        @RequestParam(value = "offset", required = false) Integer offset,

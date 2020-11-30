@@ -64,7 +64,7 @@
                 and tec.area_id = #{query.areaId}
             </if>
         </where>
-        order by teco.update_time
+        order by teco.update_time desc
         limit #{query.offset}, #{query.limit}
     </select>
 

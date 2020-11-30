@@ -244,19 +244,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-                    for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+                    for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
                         //满仓个数
-                        ElectricityBattery electricityBattery=electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
-                        if(Objects.nonNull(electricityBattery)) {
+                        ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                        if (Objects.nonNull(electricityBattery)) {
                             if (electricityBattery.getCapacity() >= e.getFullyCharged()) {
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
                             }
                         }
                     }
                     //空仓
-                    noElectricityBattery = (int)electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
                     //电池总数
-                    electricityBatteryTotal = (int)electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -264,7 +264,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVOS.add(e);
             });
         }
-        return R.ok(electricityCabinetVOS.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getId).reversed()).collect(Collectors.toList()));
+        return R.ok(electricityCabinetVOS.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getUpdateTime).reversed()).collect(Collectors.toList()));
     }
 
 
@@ -291,7 +291,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             }
                             ElectricityBatteryModel electricityBatteryModel=electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                             if(Objects.nonNull(electricityBatteryModel)){
-                                set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity());
+                                set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
                             }
                         }
                     }
@@ -314,6 +314,48 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public Integer queryByModelId(Integer id) {
         return electricityCabinetMapper.selectCount(Wrappers.<ElectricityCabinet>lambdaQuery().eq(ElectricityCabinet::getModelId,id).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
     }
+
+    @Override
+    public R disable(Integer id) {
+        if(Objects.isNull(id)){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
+        ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(id);
+        if (Objects.isNull(oldElectricityCabinet)) {
+            return R.fail("SYSTEM.0005","未找到换电柜");
+        }
+        if(Objects.equals(oldElectricityCabinet.getUsableStatus(),ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)){
+            return R.fail("SYSTEM.0012","快递柜已禁用，不能重复操作");
+        }
+        ElectricityCabinet electricityCabinet=new ElectricityCabinet();
+        electricityCabinet.setId(id);
+        electricityCabinet.setUsableStatus(ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS);
+        electricityCabinet.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetMapper.update(electricityCabinet);
+        //更新缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+        return R.ok();
+    }
+
+    @Override
+    public R reboot(Integer id) {
+        if(Objects.isNull(id)){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
+        ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(id);
+        if (Objects.isNull(oldElectricityCabinet)) {
+            return R.fail("SYSTEM.0005","未找到换电柜");
+        }
+        ElectricityCabinet electricityCabinet=new ElectricityCabinet();
+        electricityCabinet.setId(id);
+        electricityCabinet.setUsableStatus(ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS);
+        electricityCabinet.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetMapper.update(electricityCabinet);
+        //更新缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+        return R.ok();
+    }
+
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
