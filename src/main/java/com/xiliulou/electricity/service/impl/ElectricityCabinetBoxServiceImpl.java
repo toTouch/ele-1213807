@@ -124,8 +124,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
 
     @Override
-    public R modifyByElectricityCabinetId(Integer id) {
-        electricityCabinetBoxMapper.modifyByElectricityCabinetId(id);
+    public R modifyByElectricityCabinetId(ElectricityCabinetBox electricityCabinetBox) {
+        electricityCabinetBoxMapper.modifyByElectricityCabinetId(electricityCabinetBox);
         return R.ok();
     }
 

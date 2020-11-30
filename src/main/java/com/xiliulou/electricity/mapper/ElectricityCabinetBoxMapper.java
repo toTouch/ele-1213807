@@ -65,5 +65,5 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
 
     void batchDeleteBoxByElectricityCabinetId(Integer id);
 
-    void modifyByElectricityCabinetId(Integer id);
+    void modifyByElectricityCabinetId(@Param("query")ElectricityCabinetBox electricityCabinetBox);
 }

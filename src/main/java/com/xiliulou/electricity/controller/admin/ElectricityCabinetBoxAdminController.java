@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -48,8 +50,10 @@ public class ElectricityCabinetBoxAdminController {
     //更改可用状态
     @PutMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        //TODO 判断参数
-        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
+        if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getStatus())){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
+        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("SYSTEM.0006","未找到此仓门");
         }
@@ -58,29 +62,53 @@ public class ElectricityCabinetBoxAdminController {
     }
 
     //后台一键开门
-    @PostMapping(value = "/admin/electricityCabinetBox/releaseBox")
-    public R releaseBox(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+    @PostMapping(value = "/admin/electricityCabinetBox/releaseBox/{id}")
+    public R releaseBox(@PathVariable("id") Long id) {
+        if(Objects.isNull(id)){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
+        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(id);
+        if (Objects.isNull(oldElectricityCabinetBox)) {
+            return R.fail("SYSTEM.0006","未找到此仓门");
+        }
+        if(Objects.equals(oldElectricityCabinetBox.getStatus(),ElectricityCabinetBox.STATUS_ORDER_OCCUPY)){
+            return R.fail("SYSTEM.0013","仓门有订单，不能开门");
+        }
+        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("SYSTEM.0005","未找到换电柜");
+        }
+        //TODO 发送命令
+        ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
+        electricityCabinetBox.setId(id);
+        electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
+        return electricityCabinetBoxService.modify(electricityCabinetBox);
+    }
+
+    //后台一键全开
+    @PostMapping(value = "/admin/electricityCabinetBox/openAllDoor/{electricityCabinetId}")
+    public R openAllDoor(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {
+        if(Objects.isNull(electricityCabinetId)){
+            return R.fail("SYSTEM.0007","不合法的参数");
+        }
         ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("SYSTEM.0005","未找到换电柜");
         }
-        //TODO 判断订单
-        //TODO 发送命令
-        return electricityCabinetBoxService.modifyByElectricityCabinetId(electricityCabinetId);
-    }
-
-    //后台一键全开
-    @PostMapping(value = "/admin/electricityCabinetBox/openAllDoor")
-    public R openAllDoor(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        //TODO 判断参数
-        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromCache(electricityCabinetBox.getId());
-        if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("SYSTEM.0006","未找到此仓门");
+        List<ElectricityCabinetBox> electricityCabinetBoxList=electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
+        if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
+            return R.fail("SYSTEM.0014","换电柜没有仓门，不能开门");
         }
-        //TODO 判断订单
+        for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+            if(Objects.equals(electricityCabinetBox.getStatus(),ElectricityCabinetBox.STATUS_ORDER_OCCUPY)){
+                return R.fail("SYSTEM.0013","仓门有订单，不能开门");
+            }
+        }
         //TODO 发送命令
-        electricityCabinetBox.setBoxStatus(0);
-        return electricityCabinetBoxService.modify(electricityCabinetBox);
+        ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
+        electricityCabinetBox.setElectricityCabinetId(electricityCabinetId);
+        electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
+        return electricityCabinetBoxService.modifyByElectricityCabinetId(electricityCabinetBox);
     }
 
 
