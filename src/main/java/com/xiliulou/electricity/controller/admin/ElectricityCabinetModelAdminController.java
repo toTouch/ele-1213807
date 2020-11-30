@@ -48,7 +48,8 @@ public class ElectricityCabinetModelAdminController {
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetModel/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset) {
+                       @RequestParam(value = "offset", required = false) Integer offset,
+                       @RequestParam(value = "name", required = false) String name) {
         if (Objects.isNull(size)) {
             size = 10;
         }
@@ -59,7 +60,8 @@ public class ElectricityCabinetModelAdminController {
 
         ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
                 .offset(offset)
-                .size(size).build();
+                .size(size)
+                .name(name).build();
 
         return electricityCabinetModelService.queryList(electricityCabinetModelQuery);
     }

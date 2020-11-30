@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
+import com.sun.org.apache.regexp.internal.RE;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -31,7 +32,8 @@ public class ElectricityCabinetBoxAdminController {
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetBox/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset) {
+                       @RequestParam(value = "offset", required = false) Integer offset,
+                       @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
         if (Objects.isNull(size)) {
             size = 10;
         }
@@ -42,13 +44,14 @@ public class ElectricityCabinetBoxAdminController {
 
         ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
                 .offset(offset)
-                .size(size).build();
+                .size(size)
+                .electricityCabinetId(electricityCabinetId).build();
 
         return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
     }
 
     //更改可用状态
-    @PutMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
+    @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
         if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getStatus())){
             return R.fail("SYSTEM.0007","不合法的参数");
@@ -110,6 +113,7 @@ public class ElectricityCabinetBoxAdminController {
         electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
         return electricityCabinetBoxService.modifyByElectricityCabinetId(electricityCabinetBox);
     }
+
 
 
 

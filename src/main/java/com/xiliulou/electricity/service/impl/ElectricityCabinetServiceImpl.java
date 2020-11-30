@@ -244,19 +244,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-                    for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+                    for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
                         //满仓个数
-                        ElectricityBattery electricityBattery=electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
-                        if(Objects.nonNull(electricityBattery)) {
+                        ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                        if (Objects.nonNull(electricityBattery)) {
                             if (electricityBattery.getCapacity() >= e.getFullyCharged()) {
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
                             }
                         }
                     }
                     //空仓
-                    noElectricityBattery = (int)electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
                     //电池总数
-                    electricityBatteryTotal = (int)electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -264,7 +264,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetVOS.add(e);
             });
         }
-        return R.ok(electricityCabinetVOS.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getId).reversed()).collect(Collectors.toList()));
+        return R.ok(electricityCabinetVOS.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getUpdateTime).reversed()).collect(Collectors.toList()));
     }
 
 
@@ -291,7 +291,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             }
                             ElectricityBatteryModel electricityBatteryModel=electricityBatteryModelService.queryById(electricityBattery.getModelId());
                             if(Objects.nonNull(electricityBatteryModel)){
-                                set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity());
+                                set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
                             }
                         }
                     }

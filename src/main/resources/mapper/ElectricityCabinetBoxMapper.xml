@@ -29,6 +29,10 @@
           id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_box
         where del_flag=0
+        <if test="electricityBatteryId != null">
+            and electricity_battery_id = #{query.electricityBatteryId}
+        </if>
+        order by id desc
         limit #{query.offset}, #{query.size}
     </select>
 

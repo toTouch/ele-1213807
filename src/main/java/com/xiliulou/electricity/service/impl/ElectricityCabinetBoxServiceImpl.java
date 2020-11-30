@@ -1,14 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +22,7 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -29,6 +35,8 @@ import java.util.stream.Collectors;
 public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxService {
     @Resource
     private ElectricityCabinetBoxMapper electricityCabinetBoxMapper;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -64,8 +72,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(ElectricityCabinetBox electricityCabinetBox) {
-       return this.electricityCabinetBoxMapper.update(electricityCabinetBox);
-         
+        return this.electricityCabinetBoxMapper.update(electricityCabinetBox);
+
     }
 
     /**
@@ -82,7 +90,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        for (int i=1;i<=electricityCabinetModel.getNum();i++) {
+        for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
             ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
             electricityCabinetBox.setElectricityCabinetId(id);
             electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
@@ -103,17 +111,19 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=this.electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOS=new ArrayList<>();
-        if(ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
-            List<ElectricityCabinetBoxVO> finalElectricityCabinetBoxVOS = electricityCabinetBoxVOS;
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOS = new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
             electricityCabinetBoxVOList.parallelStream().forEach(e -> {
-                //TODO 查电池信息
-                finalElectricityCabinetBoxVOS.add(e);
+                ElectricityBattery electricityBattery=electricityBatteryService.queryById(e.getElectricityBatteryId());
+                if(Objects.nonNull(electricityBattery)) {
+                    e.setSerialNumber(electricityBattery.getSerialNumber());
+                    e.setCapacity(electricityBattery.getCapacity());
+                }
+                electricityCabinetBoxVOS.add(e);
             });
-            electricityCabinetBoxVOS=finalElectricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList());
         }
-        return R.ok(electricityCabinetBoxVOS);
+        return R.ok(electricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
     }
 
     @Override
@@ -131,6 +141,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId,id));
+        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id));
     }
 }

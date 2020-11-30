@@ -61,7 +61,7 @@
         <if test="query.onlineStatus != null">
             and online_status = #{query.onlineStatus}
         </if>
-        order by update_time
+        order by update_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
