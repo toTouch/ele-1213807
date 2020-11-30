@@ -4,13 +4,13 @@
 
     <resultMap type="com.xiliulou.electricity.entity.Provincial" id="ProvincialMap">
         <result property="pid" column="pid" jdbcType="INTEGER"/>
-        <result property="provincial" column="Provincial" jdbcType="VARCHAR"/>
+        <result property="provincial" column="provincial" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="ProvincialMap">
         select
-          pid, Provincial
+          pid, provincial
         from electricity.provincial
         where pid = #{pid}
     </select>
@@ -18,14 +18,14 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ProvincialMap">
         select
-          pid, Provincial
+          pid, provincial
         from electricity.provincial
         <where>
             <if test="pid != null">
                 and pid = #{pid}
             </if>
             <if test="provincial != null and provincial != ''">
-                and Provincial = #{provincial}
+                and provincial = #{provincial}
             </if>
         </where>
     </select>

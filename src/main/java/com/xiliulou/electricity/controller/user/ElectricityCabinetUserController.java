@@ -33,7 +33,7 @@ public class ElectricityCabinetUserController {
                        @RequestParam("lat") Double lat) {
 
         if (Objects.isNull(lon) || lon <= 0.0 || Objects.isNull(lat) || lat <= 0.0) {
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         if (Objects.isNull(size)) {
             size = 10;
