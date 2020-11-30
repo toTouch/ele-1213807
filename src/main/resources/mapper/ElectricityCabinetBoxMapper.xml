@@ -114,12 +114,12 @@
     <update id="batchDeleteBoxByElectricityCabinetId">
         update electricity.t_electricity_cabinet_box
         set del_flag = 1
-        where electricityCabinetId = #{id}
+        where electricity_cabinet_id = #{id}
     </update>
     <update id="modifyByElectricityCabinetId">
          update electricity.t_electricity_cabinet_box
         set box_status = 0
-        where electricityCabinetId = #{id}
+        where electricity_cabinet_id = #{id}
     </update>
 
     <!--通过主键删除-->

@@ -1,12 +1,6 @@
-package com.xiliulou.electricity.entity;
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+package com.xiliulou.electricity.vo;
 
+import lombok.Data;
 
 
 /**
@@ -16,13 +10,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @since 2020-11-26 16:00:45
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_electricity_cabinet_order")
-public class ElectricityCabinetOrder {
+public class ElectricityCabinetOrderVO {
 
-    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 订单编号--时间戳+柜子id+仓门号+用户id+5位随机数,20190203 21 155 1232)
@@ -79,7 +68,7 @@ public class ElectricityCabinetOrder {
     /**
     * 换电开始时间
     */
-    private Long switchBeginTime;
+    private Long switchBeginningTime;
     /**
     * 换电结束时间
     */
@@ -92,24 +81,13 @@ public class ElectricityCabinetOrder {
     * 更新时间
     */
     private Long updateTime;
-
-    //已支付未开门
-    public static final Integer STATUS_ORDER_PAY = 1;
-    //旧电池开门
-    public static final Integer STATUS_ORDER_OLD_BATTERY_OPEN_DOOR = 2;
-    //旧电池关门
-    public static final Integer STATUS_ORDER_OLD_BATTERY_CLOSE_DOOR = 3;
-    //旧电池检测
-    public static final Integer STATUS_ORDER_OLD_BATTERY_DETECT = 4;
-    //旧电池已存入
-    public static final Integer STATUS_ORDER_OLD_BATTERY_DEPOSITED = 5;
-    //新电池开门
-    public static final Integer STATUS_ORDER_NEW_BATTERY_OPEN_DOOR = 6;
-    //订单完成(新电池关门)
-    public static final Integer STATUS_ORDER_COMPLETE = 7;
-    //订单异常结束
-    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 8;
-    //订单取消
-    public static final Integer STATUS_ORDER_CANCEL = 9;
+    /**
+     * 换电柜地区
+     */
+    private Integer areaName;
+    /**
+     * 换电柜地区Id
+     */
+    private Integer areaId;
 
 }

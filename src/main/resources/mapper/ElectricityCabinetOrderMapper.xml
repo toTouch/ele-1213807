@@ -13,11 +13,11 @@
         <result property="newElectricityBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR"/>
         <result property="oldCellNo" column="old_cell_no" jdbcType="INTEGER"/>
         <result property="newCellNo" column="new_cell_no" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="OTHER"/>
-        <result property="paymentMethod" column="payment_method" jdbcType="OTHER"/>
-        <result property="source" column="source" jdbcType="OTHER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="paymentMethod" column="payment_method" jdbcType="INTEGER"/>
+        <result property="source" column="source" jdbcType="INTEGER"/>
         <result property="remark" column="remark" jdbcType="VARCHAR"/>
-        <result property="switchBeginningTime" column="switch_beginning_time" jdbcType="INTEGER"/>
+        <result property="switchBeginTime" column="switch_begin_time" jdbcType="INTEGER"/>
         <result property="switchEndTime" column="switch_end_time" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -26,23 +26,54 @@
     <!--查询单个-->
     <select id="queryById" resultMap="ElectricityCabinetOrderMap">
         select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time
         from electricity.t_electricity_cabinet_order
         where id = #{id}
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="ElectricityCabinetOrderMap">
+    <select id="queryList" resultMap="ElectricityCabinetOrderMap">
         select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
-        from electricity.t_electricity_cabinet_order
-        limit #{offset}, #{limit}
+        teco.id as id, teco.order_id as order_id, teco.phone as phone, teco.uid as uid, teco.pay_amount as pay_amount,
+        teco.electricity_cabinet_id as electricity_cabinet_id, teco.old_electricity_battery_sn as
+        old_electricity_battery_sn,
+        teco.new_electricity_battery_sn as new_electricity_battery_sn, teco.old_cell_no as old_cell_no, teco.new_cell_no
+        as new_cell_no, teco.status as status, teco.payment_method as payment_method, teco.source as source, teco.remark
+        as remark,
+        teco.switch_begin_time as switch_begin_time, teco.switch_end_time as switch_end_time, teco.create_time
+        as create_time, teco.update_time as update_time,tec.area_id as area_id
+        from electricity.t_electricity_cabinet_order as teco
+        left join electricity.t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
+        <where>
+            <if test="orderId != null and orderId != ''">
+                and teco.order_id = #{orderId}
+            </if>
+            <if test="phone != null and phone != ''">
+                and teco.phone = #{phone}
+            </if>
+            <if test="status != null">
+                and teco.status = #{status}
+            </if>
+            <if test="query.beginTime != null">
+                and teco.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and teco.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.areaId != null">
+                and tec.area_id = #{query.areaId}
+            </if>
+        </where>
+        order by teco.update_time
+        limit #{query.offset}, #{query.limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElectricityCabinetOrderMap">
         select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time
+        id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn,
+        new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark,
+        switch_begin_time, switch_end_time, create_time, update_time
         from electricity.t_electricity_cabinet_order
         <where>
             <if test="id != null">
@@ -87,8 +118,8 @@
             <if test="remark != null and remark != ''">
                 and remark = #{remark}
             </if>
-            <if test="switchBeginningTime != null">
-                and switch_beginning_time = #{switchBeginningTime}
+            <if test="switchBeginTime != null">
+                and switch_begin_time = #{switchBeginTime}
             </if>
             <if test="switchEndTime != null">
                 and switch_end_time = #{switchEndTime}
@@ -104,8 +135,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_cabinet_order(order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_beginning_time, switch_end_time, create_time, update_time)
-        values (#{orderId}, #{phone}, #{uid}, #{payAmount}, #{electricityCabinetId}, #{oldElectricityBatterySn}, #{newElectricityBatterySn}, #{oldCellNo}, #{newCellNo}, #{status}, #{paymentMethod}, #{source}, #{remark}, #{switchBeginningTime}, #{switchEndTime}, #{createTime}, #{updateTime})
+        insert into electricity.t_electricity_cabinet_order(order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time)
+        values (#{orderId}, #{phone}, #{uid}, #{payAmount}, #{electricityCabinetId}, #{oldElectricityBatterySn}, #{newElectricityBatterySn}, #{oldCellNo}, #{newCellNo}, #{status}, #{paymentMethod}, #{source}, #{remark}, #{switchBeginTime}, #{switchEndTime}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -151,8 +182,8 @@
             <if test="remark != null and remark != ''">
                 remark = #{remark},
             </if>
-            <if test="switchBeginningTime != null">
-                switch_beginning_time = #{switchBeginningTime},
+            <if test="switchBeginTime != null">
+                switch_begin_time = #{switchBeginTime},
             </if>
             <if test="switchEndTime != null">
                 switch_end_time = #{switchEndTime},

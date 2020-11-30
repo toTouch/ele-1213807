@@ -55,4 +55,6 @@ public interface ElectricityCabinetService {
     R queryList(ElectricityCabinetQuery electricityCabinetQuery);
 
     R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery);
+
+    Integer queryByModelId(Integer id);
 }

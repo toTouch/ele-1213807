@@ -1,3 +1,5 @@
+/*
+/*
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.io.FileUtil;
@@ -7,41 +9,55 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
-import com.xiliulou.storage.config.AliyunOssConfig;
-import com.xiliulou.storage.config.MinioConfig;
-import com.xiliulou.storage.service.impl.AliyunOssService;
-import com.xiliulou.storage.service.impl.MinioService;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
+*/
 /**
  * 换电柜文件表(TElectricityCabinetFile)表控制层
  *
  * @author makejava
  * @since 2020-11-27 10:17:18
- */
-//@RestController
+ *//*
+
+@RestController
 @Slf4j
 public class ElectricityCabinetFileAdminController {
-    /**
-     * 服务对象
-     */
+    */
+/**
+ * 服务对象
+ *//*
+
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
-    AliyunOssConfig aliyunOssConfig;
+    StorageConfig storageConfig;
+    @Qualifier("minioService")
     @Autowired
-    AliyunOssService aliyunOssService;
-    @Autowired
-    MinioConfig minioConfig;
-    @Autowired
-    MinioService minioService;
+    StorageService storageService;
+
+    //通知前端是aili还是oss
+    @PostMapping("/admin/electricityCabinetFileService/noticeIsOss")
+    public R noticeIsOss() {
+        if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+            return R.ok(storageService.getOssUploadSign());
+        }else {
+            return R.ok(StorageConfig.IS_USE_MINIO);
+        }
+    }
+
 
     //minio上传
     @PostMapping("/admin/electricityCabinetFileService/minio/upload")
@@ -51,10 +67,16 @@ public class ElectricityCabinetFileAdminController {
         if (Objects.isNull(electricityCabinetId)) {
             electricityCabinetId = -1;
         }
+        int index = 1;
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
+        if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
+            electricityCabinetFileList = electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
+            index = electricityCabinetFileList.get(0).getIndex() + 1;
+        }
         String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
-        String bucketName = minioConfig.getBucketName();
+        String bucketName = storageConfig.getBucketName();
         try {
-            minioService.uploadMinioFile(bucketName, fileName, file.getInputStream());
+            storageService.uploadMinioFile(bucketName, fileName, file.getInputStream());
             ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
@@ -63,7 +85,7 @@ public class ElectricityCabinetFileAdminController {
                     .type(fileType)
                     .bucketName(bucketName)
                     .name(fileName)
-                    .build();
+                    .index(index).build();
             electricityCabinetFileService.insert(electricityCabinetFile);
         } catch (Exception e) {
             log.error("上传失败", e);
@@ -72,18 +94,24 @@ public class ElectricityCabinetFileAdminController {
         return R.ok();
     }
 
-   //oss上传
+    //oss上传
     @PostMapping("/admin/electricityCabinetFileService/oss/call/back")
     public R ossCallBack(@RequestParam("fileName") String fileName,
-                              @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                              @RequestParam("fileType") Integer fileType) {
+                         @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                         @RequestParam("fileType") Integer fileType) {
 
         if (StrUtil.isEmpty(fileName)) {
             log.error("UPLOAD ERROR! no filename");
-            return R.fail("SYSTEM.0008");
+            return R.fail("SYSTEM.0008", "文件名不能为空");
         }
         if (Objects.isNull(electricityCabinetId)) {
             electricityCabinetId = -1;
+        }
+        int index = 1;
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
+        if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
+            electricityCabinetFileList = electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
+            index = electricityCabinetFileList.get(0).getIndex() + 1;
         }
         ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                 .createTime(System.currentTimeMillis())
@@ -91,31 +119,52 @@ public class ElectricityCabinetFileAdminController {
                 .delFlag(ElectricityCabinetFile.DEL_NORMAL)
                 .electricityCabinetId(electricityCabinetId)
                 .type(fileType)
-                .url(AliyunOssConfig.https + aliyunOssConfig.getBucketName() + "." + aliyunOssConfig.getEndpoint() + "/" + fileName)
+                .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
                 .name(fileName)
-                .build();
+                .index(index).build();
         electricityCabinetFileService.insert(electricityCabinetFile);
         return R.ok();
     }
 
-    /**
-     * 获取文件信息
-     *
-     */
-    @GetMapping("/admin/electricityCabinetFileService/{electricityCabinetId}/{fileType}")
-    public R getSignFileUrl(@PathVariable("electricityCabinetId") Long electricityCabinetId, @PathVariable("fileType") Integer fileType) {
+    */
+/**
+ * 获取文件信息
+ *//*
+
+    @GetMapping("/admin/electricityCabinetFileService/getFile/{electricityCabinetId}/{fileType}")
+    public R getFile(@PathVariable("electricityCabinetId") Integer electricityCabinetId, @PathVariable("fileType") Integer fileType) {
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
         }
         List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-            electricityCabinetFile.setUrl(aliyunOssService.getOssFileUrl(aliyunOssConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
             electricityCabinetFiles.add(electricityCabinetFile);
         }
         return R.ok(electricityCabinetFiles);
     }
 
+    */
+/**
+ * minio获取文件
+ *//*
+
+    @GetMapping("/admin/electricityCabinetFileService/getMinioFile/{fileName}")
+    public void getMinioFile(@PathVariable String fileName, HttpServletResponse response) {
+        electricityCabinetFileService.getMinioFile(fileName, response);
+    }
+
+    */
+/**
+ * 删除文件
+ *//*
+
+    @DeleteMapping("/admin/electricityCabinetFileService/deleteFile/{id}")
+    public R deleteFile(@PathVariable("id") Long id) {
+        return electricityCabinetFileService.deleteById(id);
+    }
 
 
-}
+}*/
+

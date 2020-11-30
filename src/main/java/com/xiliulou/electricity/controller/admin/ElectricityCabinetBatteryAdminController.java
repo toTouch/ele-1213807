@@ -4,7 +4,6 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.PageQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,7 @@ public class ElectricityCabinetBatteryAdminController {
      * @param
      * @return
      */
-    @PostMapping(value = "/admin/electricity/battery")
+    @PostMapping(value = "/admin/battery")
     public R save(@RequestBody @Validated ElectricityBattery electricityBattery) {
 
         return electricityBatteryService.save(electricityBattery);
@@ -38,7 +37,7 @@ public class ElectricityCabinetBatteryAdminController {
      * @param
      * @return
      */
-    @PutMapping(value = "/admin/electricity/battery")
+    @PutMapping(value = "/admin/battery")
     public R update(@RequestBody @Validated ElectricityBattery electricityBattery) {
         if (Objects.isNull(electricityBattery.getId())) {
             return R.fail("请求参数错误!");
@@ -53,10 +52,10 @@ public class ElectricityCabinetBatteryAdminController {
      * @param
      * @return
      */
-    @GetMapping(value = "/admin/electricity/battery/page")
-    public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, @Validated PageQuery pageQuery) {
-
-        log.info("pageQuery");
-        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, pageQuery);
+    @GetMapping(value = "/admin/battery/page")
+    public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
+                                       @RequestParam(value = "size", required = true) Long size,
+                                       ElectricityBatteryQuery electricityBatteryQuery) {
+        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
     }
 }

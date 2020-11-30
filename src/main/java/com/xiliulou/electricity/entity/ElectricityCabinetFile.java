@@ -29,6 +29,8 @@ package com.xiliulou.electricity.entity;
                                             
                     
 
+                                            import com.baomidou.mybatisplus.annotation.IdType;
+                                            import com.baomidou.mybatisplus.annotation.TableId;
                                             import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -46,7 +48,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @TableName("t_electricity_cabinet_file")
 public class ElectricityCabinetFile {
-    
+
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 文件名称
@@ -59,11 +62,11 @@ public class ElectricityCabinetFile {
     /**
     * 类型
     */
-    private Object type;
+    private Integer type;
     /**
     * 文件次序
     */
-    private Object index;
+    private Integer index;
     /**
     * 文件的url
     */
@@ -87,7 +90,7 @@ public class ElectricityCabinetFile {
     /**
     * 是否删除（0-正常，1-删除）
     */
-    private Object delFlag;
+    private Integer delFlag;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

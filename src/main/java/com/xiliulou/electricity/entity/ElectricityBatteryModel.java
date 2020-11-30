@@ -7,6 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import javax.validation.constraints.NotEmpty;
+
 /**
  * 电池型号(ElectricityBatteryModel)实体类
  *
@@ -24,6 +26,7 @@ public class ElectricityBatteryModel {
     /**
      * 电池型号名称
      */
+    @NotEmpty(message = "电池型号名称")
     private String name;
     /**
      * 电压
