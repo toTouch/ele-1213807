@@ -1,12 +1,24 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Provincial;
 import com.xiliulou.electricity.mapper.ProvincialMapper;
+import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ProvincialService;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.ProvincialVO;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * (Provincial)表服务实现类
@@ -18,6 +30,8 @@ import java.util.List;
 public class ProvincialServiceImpl implements ProvincialService {
     @Resource
     private ProvincialMapper provincialMapper;
+    @Autowired
+    private CityService cityService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -42,16 +56,24 @@ public class ProvincialServiceImpl implements ProvincialService {
     }
 
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
+
     @Override
-    public List<Provincial> queryAllByLimit(int offset, int limit) {
-        return this.provincialMapper.queryAllByLimit(offset, limit);
+    public R test() {
+        List<Provincial> provincialList=provincialMapper.selectList(Wrappers.<Provincial>lambdaQuery());
+        List<ProvincialVO> provincialVOList=new ArrayList<>();
+        if(ObjectUtil.isNotEmpty(provincialList)){
+            for (Provincial provincial:provincialList) {
+                ProvincialVO provincialVO=new ProvincialVO();
+                BeanUtil.copyProperties(provincial,provincialVO);
+                List<City> cityList=cityService.queryByPid(provincialVO.getPid());
+                provincialVO.setCityList(cityList);
+                provincialVOList.add(provincialVO);
+            }
+        }
+        return R.ok(provincialVOList.stream().sorted(Comparator.comparing(ProvincialVO::getPid)).collect(Collectors.toList()));
+
     }
+
+
 
 }

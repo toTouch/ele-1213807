@@ -16,14 +16,6 @@
         where cid = #{cid}
     </select>
 
-    <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="CityMap">
-        select
-          cid, city, pid
-        from electricity.city
-        limit #{offset}, #{limit}
-    </select>
-
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="CityMap">
         select

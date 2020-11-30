@@ -40,7 +40,7 @@ public class ElectricityCabinetAdminController {
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
-            return R.fail("SYSTEM.0001","ID不能为空");
+            return R.fail("SYSTEM.0007","不合法的参数");
         }
         return electricityCabinetService.delete(id);
     }
@@ -76,6 +76,19 @@ public class ElectricityCabinetAdminController {
                 .onlineStatus(onlineStatus).build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
+    }
+
+    //禁用换电柜
+    @PutMapping(value = "/admin/electricityCabinet/disable/{id}")
+    public R disable(@PathVariable("id") Integer id) {
+        return electricityCabinetService.disable(id);
+    }
+
+
+    //重启换电柜
+    @PutMapping(value = "/admin/electricityCabinet/disable/{id}")
+    public R reboot(@PathVariable("id") Integer id) {
+        return electricityCabinetService.reboot(id);
     }
 
 
