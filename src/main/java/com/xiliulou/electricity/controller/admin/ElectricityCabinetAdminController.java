@@ -86,7 +86,7 @@ public class ElectricityCabinetAdminController {
 
 
     //重启换电柜
-    @PutMapping(value = "/admin/electricityCabinet/disable/{id}")
+    @PutMapping(value = "/admin/electricityCabinet/reboot/{id}")
     public R reboot(@PathVariable("id") Integer id) {
         return electricityCabinetService.reboot(id);
     }
