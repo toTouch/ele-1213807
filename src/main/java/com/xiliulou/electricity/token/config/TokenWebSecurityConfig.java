@@ -3,12 +3,11 @@ package com.xiliulou.electricity.token.config;
 import com.xiliulou.security.component.CustomAccessDeniedHandler;
 import com.xiliulou.security.component.CustomAuthenticationEntryPoint;
 import com.xiliulou.security.component.CustomPasswordEncoder;
+import com.xiliulou.security.component.CustomTokenAuthenticationFilter;
 import com.xiliulou.security.component.CustomUsernamePasswordAuthenticationFilter;
 import com.xiliulou.security.component.JwtTokenManager;
 import com.xiliulou.security.component.TokenLogoutHandler;
 import com.xiliulou.security.config.TokenConfig;
-import com.xiliulou.security.service.CustomUserDetailServiceImpl;
-import com.xiliulou.security.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -19,6 +18,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
@@ -60,7 +60,11 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.anyRequest().authenticated()
 				.and().logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler())
-				.and().httpBasic().and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()));
+				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
+				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(),jwtTokenManager())).httpBasic()
+				//不缓存session
+				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
 
 	}
 
