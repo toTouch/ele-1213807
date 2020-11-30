@@ -78,6 +78,12 @@ public class ElectricityCabinetAdminController {
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }
 
+    //禁用换电柜
+    @PutMapping(value = "/admin/electricityCabinet/disable")
+    public R disable(@RequestBody ElectricityCabinet electricityCabinet) {
+        return electricityCabinetService.disable(electricityCabinet);
+    }
+
 
 
 }
