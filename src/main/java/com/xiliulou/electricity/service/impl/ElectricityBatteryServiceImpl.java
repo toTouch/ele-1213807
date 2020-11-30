@@ -31,7 +31,7 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
      */
     @Override
     public R save(ElectricityBattery electricityBattery) {
-        if (Objects.nonNull(electricityBattery.getAgent())) {
+        if (Objects.nonNull(electricityBattery.getAgentId())) {
             // TODO: 2020/11/26 0026 校验代理商合法性
         }
         if (Objects.nonNull(electricityBattery.getShopId())) {
@@ -56,7 +56,7 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
             log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
             return R.fail("电池不存在!");
         }
-        if (Objects.nonNull(electricityBattery.getAgent())) {
+        if (Objects.nonNull(electricityBattery.getAgentId())) {
             //校验合法性
         }
         if (Objects.nonNull(electricityBattery.getShopId())) {
@@ -87,5 +87,22 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
     @Override
     public ElectricityBattery queryById(Long electricityBatteryId) {
         return electricitybatterymapper.selectById(electricityBatteryId);
+    }
+
+    /**
+     * 删除电池
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public R deleteElectricityBattery(Long id) {
+        // TODO: 2020/11/30 0030  校验  电池是否正在被用!
+        int raws = electricitybatterymapper.deleteById(id);
+        if (raws > 0) {
+            return R.ok();
+        } else {
+            return R.failMsg("删除失败!");
+        }
     }
 }

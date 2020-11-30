@@ -20,4 +20,6 @@ public interface ElectricityBatteryService {
     R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
     ElectricityBattery queryById(Long electricityBatteryId);
+
+    R deleteElectricityBattery(Long id);
 }

@@ -18,7 +18,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2020-11-26 14:44:44
  */
-@Service("ElectricityBatteryModelService")
+@Service
 @Slf4j
 public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryModelService {
     @Resource

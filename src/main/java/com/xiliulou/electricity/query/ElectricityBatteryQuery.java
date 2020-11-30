@@ -6,7 +6,7 @@ public class ElectricityBatteryQuery {
     /**
      * 代理商id
      */
-    private Integer agent;
+    private Integer agentId;
     /**
      * sn码
      */
