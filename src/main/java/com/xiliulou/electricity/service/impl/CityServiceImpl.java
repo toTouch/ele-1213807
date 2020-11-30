@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.Provincial;
 import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.service.CityService;
 import org.springframework.stereotype.Service;
@@ -41,17 +43,9 @@ public class CityServiceImpl implements CityService {
         return null;
     }
 
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
     @Override
-    public List<City> queryAllByLimit(int offset, int limit) {
-        return this.cityMapper.queryAllByLimit(offset, limit);
+    public List<City> queryByPid(Integer pid) {
+        return cityMapper.selectList(Wrappers.<City>lambdaQuery().eq(City::getPid,pid));
     }
 
 }
