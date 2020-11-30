@@ -40,18 +40,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public ElectricityCabinetBox queryByIdFromDB(Long id) {
         return this.electricityCabinetBoxMapper.queryById(id);
     }
-    
-        /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public ElectricityCabinetBox queryByIdFromCache(Long id) {
-        return null;
-    }
-
 
 
     /**

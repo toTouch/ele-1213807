@@ -24,7 +24,6 @@ public class ElectricityCabinetOrderUserController {
     //换电柜下单
     @PostMapping("/user/electricityCabinetOrder/order")
     public R order(@RequestBody ElectricityCabinetOrder electricityCabinetOrder) {
-
         return electricityCabinetOrderService.order(electricityCabinetOrder);
     }
 

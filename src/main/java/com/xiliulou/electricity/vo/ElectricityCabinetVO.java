@@ -115,5 +115,9 @@ public class ElectricityCabinetVO {
      * 电池规格
      */
     private Set<String> electricityBatteryFormat;
+    /**
+     * 换电柜地区
+     */
+    private Integer areaName;
 
 }
