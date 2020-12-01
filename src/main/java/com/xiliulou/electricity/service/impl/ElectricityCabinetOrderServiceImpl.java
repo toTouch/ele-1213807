@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -25,7 +26,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -150,6 +150,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList= electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
         return R.ok(electricityCabinetOrderVOList);
+    }
+
+    @Override
+    public R openDoor(OpenDoorQuery openDoorQuery) {
+        return null;
     }
 
     public String findUsableCellNo(Integer id) {
