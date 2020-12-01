@@ -12,5 +12,7 @@ public interface ElectricityMemberCardService {
 
     void deleteElectricityMemberCardCache(Integer id);
 
+    ElectricityMemberCard getElectricityMemberCard(Integer id);
+
     R getElectricityMemberCardPage(Long offset, Long size, Integer agentId);
 }

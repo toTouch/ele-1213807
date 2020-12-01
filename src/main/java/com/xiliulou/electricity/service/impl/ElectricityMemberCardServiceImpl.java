@@ -11,6 +11,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 /**
  * @program: XILIULOU
  * @description:
@@ -83,5 +85,24 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public R getElectricityMemberCardPage(Long offset, Long size, Integer agentId) {
         return R.ok(baseMapper.getElectricityMemberCardPage(offset, size, agentId));
+    }
+
+    /**
+     * 获取套餐
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public ElectricityMemberCard getElectricityMemberCard(Integer id) {
+        ElectricityMemberCard electricityMemberCard = null;
+        electricityMemberCard = redisService.getWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id, ElectricityMemberCard.class);
+        if (Objects.isNull(electricityMemberCard)) {
+            electricityMemberCard = baseMapper.selectById(id);
+            if (Objects.nonNull(electricityMemberCard)) {
+                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id, electricityMemberCard);
+            }
+        }
+        return electricityMemberCard;
     }
 }
