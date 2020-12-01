@@ -46,7 +46,7 @@ public class ElectricityCabinetFileAdminController {
     StorageService storageService;
 
     //通知前端是aili还是oss
-    @PostMapping("/admin/electricityCabinetFileService/noticeIsOss")
+    @GetMapping("/admin/electricityCabinetFileService/noticeIsOss")
     public R noticeIsOss() {
         if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
             return R.ok(storageService.getOssUploadSign());
