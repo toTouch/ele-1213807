@@ -35,7 +35,7 @@ public class ElectricityCabinetOrder {
     /**
     * 换电人id
     */
-    private Integer uid;
+    private Long uid;
     /**
     * 支付金额
     */
@@ -43,7 +43,7 @@ public class ElectricityCabinetOrder {
     /**
     * 换电柜id
     */
-    private Long electricityCabinetId;
+    private Integer electricityCabinetId;
     /**
     * 老电池编号
     */
@@ -111,5 +111,6 @@ public class ElectricityCabinetOrder {
     public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 8;
     //订单取消
     public static final Integer STATUS_ORDER_CANCEL = 9;
+
 
 }

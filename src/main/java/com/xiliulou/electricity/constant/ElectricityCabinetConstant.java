@@ -11,4 +11,9 @@ public interface ElectricityCabinetConstant {
 	//用户缓存
 	String CACHE_USER_UID = "user_uid:";
 	String CACHE_USER_PHONE = "user_phone:";
+
+	//最后一个操作格挡缓存
+	String ELECTRICITY_CABINET_DEVICE_LAST_CELL = "electricity_cabinet_cell_device_last:";
+	//占用仓门缓存
+	String ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY = "electricity_cabinet_cell_occupy:";
 }

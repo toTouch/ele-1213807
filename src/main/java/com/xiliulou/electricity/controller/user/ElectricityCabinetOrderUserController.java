@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,8 +24,8 @@ public class ElectricityCabinetOrderUserController {
 
     //换电柜下单
     @PostMapping("/user/electricityCabinetOrder/order")
-    public R order(@RequestBody ElectricityCabinetOrder electricityCabinetOrder) {
-        return electricityCabinetOrderService.order(electricityCabinetOrder);
+    public R order(@RequestBody OrderQuery orderQuery) {
+        return electricityCabinetOrderService.order(orderQuery);
     }
 
 

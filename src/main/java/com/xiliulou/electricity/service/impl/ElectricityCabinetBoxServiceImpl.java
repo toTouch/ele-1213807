@@ -1,6 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
@@ -12,7 +10,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -141,6 +138,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id));
+        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+    }
+
+    @Override
+    public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
+        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+                .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
     }
 }
