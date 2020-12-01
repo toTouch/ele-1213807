@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.token.config;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.security.component.CustomAccessDeniedHandler;
 import com.xiliulou.security.component.CustomAuthenticationEntryPoint;
 import com.xiliulou.security.component.CustomPasswordEncoder;
@@ -12,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -35,10 +37,11 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private UserDetailsService userDetailsService;
 
-	@Bean
-	public PasswordEncoder passwordEncoder() {
-		return new CustomPasswordEncoder();
-	}
+	@Autowired
+	RedisService redisService;
+
+	@Autowired
+	CustomPasswordEncoder customPasswordEncoder;
 
 	@Bean
 	public JwtTokenManager jwtTokenManager() {
@@ -56,15 +59,14 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
 				.and().csrf().disable()
 				.authorizeRequests()
-				.antMatchers("/auth/token/**", "/actuator/**", "/error","/**").permitAll()
+				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
 				.anyRequest().authenticated()
 				.and().logout().logoutUrl("/auth/token/logout")
-				.addLogoutHandler(new TokenLogoutHandler())
+				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
 				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
-				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(),jwtTokenManager())).httpBasic()
+				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager())).httpBasic()
 				//不缓存session
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
-
 
 	}
 
@@ -75,6 +77,6 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder);
 	}
 }
