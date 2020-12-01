@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.ProvincialService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 
@@ -21,7 +21,7 @@ public class ElectricityCabinetTestController {
     ProvincialService provincialService;
 
     //测试省市
-    @PutMapping(value = "/admin/test")
+    @GetMapping(value = "/admin/test")
     public R test() {
         return provincialService.test();
     }

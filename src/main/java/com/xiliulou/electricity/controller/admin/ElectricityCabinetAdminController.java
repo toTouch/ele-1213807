@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.controller.admin;
-
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -7,7 +6,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Objects;
 
 /**
@@ -40,7 +38,7 @@ public class ElectricityCabinetAdminController {
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         return electricityCabinetService.delete(id);
     }
@@ -79,14 +77,14 @@ public class ElectricityCabinetAdminController {
     }
 
     //禁用换电柜
-    @PutMapping(value = "/admin/electricityCabinet/disable/{id}")
+    @PostMapping(value = "/admin/electricityCabinet/disable/{id}")
     public R disable(@PathVariable("id") Integer id) {
         return electricityCabinetService.disable(id);
     }
 
 
     //重启换电柜
-    @PutMapping(value = "/admin/electricityCabinet/reboot/{id}")
+    @PostMapping(value = "/admin/electricityCabinet/reboot/{id}")
     public R reboot(@PathVariable("id") Integer id) {
         return electricityCabinetService.reboot(id);
     }

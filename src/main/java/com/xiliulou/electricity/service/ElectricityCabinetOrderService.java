@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.OpenDoorQuery;
+import com.xiliulou.electricity.query.OrderQuery;
 
 import java.util.List;
 
@@ -46,7 +48,9 @@ public interface ElectricityCabinetOrderService {
      */
     Boolean deleteById(Long id);
 
-    R order(ElectricityCabinetOrder electricityCabinetOrder);
+    R order(OrderQuery orderQuery);
 
     R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+
+    R openDoor(OpenDoorQuery openDoorQuery);
 }

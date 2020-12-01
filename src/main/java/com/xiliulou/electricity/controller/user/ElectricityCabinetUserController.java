@@ -26,27 +26,16 @@ public class ElectricityCabinetUserController {
     ElectricityCabinetService electricityCabinetService;
    //列表查询
     @GetMapping(value = "/user/electricityCabinet/showInfoByDistance")
-    public R showInfoByDistance(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
-                       @RequestParam(value = "distance", required = false) Double meterDistance,
+    public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
                        @RequestParam("lon") Double lon,
                        @RequestParam("lat") Double lat) {
 
         if (Objects.isNull(lon) || lon <= 0.0 || Objects.isNull(lat) || lat <= 0.0) {
-            return R.fail("SYSTEM.0007","不合法的参数");
-        }
-        if (Objects.isNull(size)) {
-            size = 10;
-        }
-
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
-                .offset(offset)
-                .size(size)
-                .meterDistance(meterDistance)
+                .distance(distance)
                 .lon(lon)
                 .lat(lat).build();
 

@@ -8,7 +8,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 import java.util.Objects;
 
@@ -52,33 +51,33 @@ public class ElectricityCabinetBoxAdminController {
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getStatus())){
-            return R.fail("SYSTEM.0007","不合法的参数");
+        if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getUsableStatus())){
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("SYSTEM.0006","未找到此仓门");
+            return R.fail("ELECTRICITY.0006","未找到此仓门");
         }
         //TODO 发送命令
         return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 
     //后台一键开门
-    @PostMapping(value = "/admin/electricityCabinetBox/releaseBox/{id}")
-    public R releaseBox(@PathVariable("id") Long id) {
+    @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}")
+    public R openDoor(@PathVariable("id") Long id) {
         if(Objects.isNull(id)){
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(id);
         if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("SYSTEM.0006","未找到此仓门");
+            return R.fail("ELECTRICITY.0006","未找到此仓门");
         }
         if(Objects.equals(oldElectricityCabinetBox.getStatus(),ElectricityCabinetBox.STATUS_ORDER_OCCUPY)){
-            return R.fail("SYSTEM.0013","仓门有订单，不能开门");
+            return R.fail("ELECTRICITY.0013","仓门有订单，不能开门");
         }
         ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
-            return R.fail("SYSTEM.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
         //TODO 发送命令
         ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
@@ -91,19 +90,19 @@ public class ElectricityCabinetBoxAdminController {
     @PostMapping(value = "/admin/electricityCabinetBox/openAllDoor/{electricityCabinetId}")
     public R openAllDoor(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {
         if(Objects.isNull(electricityCabinetId)){
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
-            return R.fail("SYSTEM.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
         List<ElectricityCabinetBox> electricityCabinetBoxList=electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
-            return R.fail("SYSTEM.0014","换电柜没有仓门，不能开门");
+            return R.fail("ELECTRICITY.0014","换电柜没有仓门，不能开门");
         }
         for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
             if(Objects.equals(electricityCabinetBox.getStatus(),ElectricityCabinetBox.STATUS_ORDER_OCCUPY)){
-                return R.fail("SYSTEM.0013","仓门有订单，不能开门");
+                return R.fail("ELECTRICITY.0013","仓门有订单，不能开门");
             }
         }
         //TODO 发送命令

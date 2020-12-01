@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("City")
+@TableName("city")
 public class City {
     
     private Integer cid;
