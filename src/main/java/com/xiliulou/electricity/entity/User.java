@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.entity;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +20,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_user")
 public class User {
 
+	@TableId
 	private Long uid;
 	/**
 	 * 手机号

@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.web.query.AdminUserQuery;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -62,5 +65,13 @@ public interface UserService {
 	Boolean deleteById(Long uid);
 
 	User queryByUserName(String username);
+
+	Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery);
+
+	User queryByUserPhone(String phone);
+
+	Pair<Boolean, Object> queryListUser(Long uid,Integer size, Integer offset, String name, String phone, Integer type);
+
+	Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery);
 
 }
