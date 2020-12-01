@@ -156,31 +156,42 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public R openDoor(OpenDoorQuery openDoorQuery) {
+        if (Objects.isNull(openDoorQuery.getOrderId())||Objects.isNull(openDoorQuery.getOpenType())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, openDoorQuery.getOrderId()));
         if(Objects.isNull(electricityCabinetOrder)){
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ",openDoorQuery.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+        //旧电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
            if(!Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_ORDER_PAY)){
                return R.fail("ELECTRICITY.0015", "未找到订单");
            }
         }
+        //新电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
             if(!Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED)){
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
         }
+        //判断开门用户是否匹配
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+        if(Objects.equals(electricityCabinetOrder.getUid(),user.getUid())){
+            return R.fail("ELECTRICITY.0016", "订单用户不匹配，非法开门");
+        }
+        //查找换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", electricityCabinetOrder.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+        //TODO 发送命令
         return null;
     }
 

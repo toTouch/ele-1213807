@@ -17,10 +17,8 @@ import javax.validation.constraints.NotNull;
 @Builder
 public class OpenDoorQuery {
 
-    @NotEmpty(message = "订单编号不能为空!")
     private String orderId;
     //开门类型 1--旧仓门开门 2--新仓门开门
-    @NotNull(message = "开门类型不能为空!")
     private Integer openType;
 
     //微信公众号来源

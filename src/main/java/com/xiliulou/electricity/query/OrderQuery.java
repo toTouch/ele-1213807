@@ -24,12 +24,10 @@ public class OrderQuery {
     /**
     * 换电柜id
     */
-    @NotNull(message = "换电柜id不能为空!")
     private Integer electricityCabinetId;
     /**
     * 下单来源 1--微信公众号 2--小程序
     */
-    @NotNull(message = "下单来源不能为空!")
     private Integer source;
 
     //微信公众号来源
