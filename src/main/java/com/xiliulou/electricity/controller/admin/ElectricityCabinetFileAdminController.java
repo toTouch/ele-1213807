@@ -136,7 +136,9 @@ public class ElectricityCabinetFileAdminController {
         }
         List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
         for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-            electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+                electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+            }
             electricityCabinetFiles.add(electricityCabinetFile);
         }
         return R.ok(electricityCabinetFiles);

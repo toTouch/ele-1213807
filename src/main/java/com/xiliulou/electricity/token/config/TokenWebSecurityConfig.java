@@ -59,7 +59,7 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
 				.and().csrf().disable()
 				.authorizeRequests()
-				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
+				.antMatchers("/auth/token/**", "/actuator/**", "/error","/**").permitAll()
 				.anyRequest().authenticated()
 				.and().logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
