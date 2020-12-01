@@ -165,7 +165,6 @@
             having distance &lt; #{query.distance}
         </if>
         order by distance
-        limit #{query.offset}, #{query.limit}
     </select>
 
     <!--新增所有列-->
