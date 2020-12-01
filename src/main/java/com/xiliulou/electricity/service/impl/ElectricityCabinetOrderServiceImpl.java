@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
@@ -22,6 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,7 +59,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public ElectricityCabinetOrder queryByIdFromDB(Long id) {
         return this.electricityCabinetOrderMapper.queryById(id);
     }
-
 
 
     /**
@@ -113,27 +115,27 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
       */
     @Override
     public R order(OrderQuery orderQuery) {
-        if(Objects.isNull(orderQuery.getElectricityCabinetId())){
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+        if (Objects.isNull(orderQuery.getElectricityCabinetId())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         TokenUser user = SecurityUtils.getUserInfo();
-        if(Objects.isNull(user)){
+        if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001","未找到用户");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
-        if(Objects.isNull(electricityCabinet)){
-            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}",orderQuery.getElectricityCabinetId());
-            return R.fail("ELECTRICITY.0005","未找到换电柜");
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", orderQuery.getElectricityCabinetId());
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        if(Objects.isNull(orderQuery.getSource())){
+        if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         //分配开门格挡
         String cellNo = findUsableCellNo(electricityCabinet.getId());
         //TODO 2.判断用户是否有电池是否有月卡
         //TODO 3.根据用户查询旧电池
-        ElectricityCabinetOrder electricityCabinetOrder=ElectricityCabinetOrder.builder()
+        ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                 .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), user.getUid(), cellNo))
                 .uid(user.getUid())
                 .phone(user.getPhone())
@@ -148,12 +150,37 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList= electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
         return R.ok(electricityCabinetOrderVOList);
     }
 
     @Override
     public R openDoor(OpenDoorQuery openDoorQuery) {
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, openDoorQuery.getOrderId()));
+        if(Objects.isNull(electricityCabinetOrder)){
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ",openDoorQuery.getOrderId());
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
+           if(!Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_ORDER_PAY)){
+               return R.fail("ELECTRICITY.0015", "未找到订单");
+           }
+        }
+        if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
+            if(!Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED)){
+                return R.fail("ELECTRICITY.0015", "未找到订单");
+            }
+        }
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", electricityCabinetOrder.getElectricityCabinetId());
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
         return null;
     }
 
@@ -166,17 +193,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         List<Integer> boxes = usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList());
 
         //查看有没有初始化过设备的上次操作过的格挡,这里不必关心线程安全，不需要保证原子性
-        if (!redisService.hasKey(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id )) {
-            redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id , boxes.get(0).toString());
+        if (!redisService.hasKey(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id)) {
+            redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, boxes.get(0).toString());
         }
 
-        String lastCellNo = redisService.get(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id );
+        String lastCellNo = redisService.get(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id);
 
         boxes = rebuildByCellCircleForDevice(boxes, Integer.parseInt(lastCellNo));
 
         for (Integer box : boxes) {
-            if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300*1000L, false)) {
-                redisService.set(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id , box.toString());
+            if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
+                redisService.set(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, box.toString());
                 return box.toString();
             }
         }
