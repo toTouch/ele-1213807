@@ -32,10 +32,10 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
     @Override
     public R save(ElectricityBattery electricityBattery) {
         if (Objects.nonNull(electricityBattery.getAgentId())) {
-            // TODO: 2020/11/26 0026 校验代理商合法性
+            // TODO: 2020/11/26 0026 YG 校验代理商合法性
         }
         if (Objects.nonNull(electricityBattery.getShopId())) {
-            // TODO: 2020/11/26 0026 校验商铺/门店合法性
+            // TODO: 2020/11/26 0026 YG 校验商铺/门店合法性
         }
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -97,7 +97,7 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
      */
     @Override
     public R deleteElectricityBattery(Long id) {
-        // TODO: 2020/11/30 0030  校验  电池是否正在被用!
+        // TODO: 2020/11/30 0030  YG 校验  电池是否正在被用!
         int raws = electricitybatterymapper.deleteById(id);
         if (raws > 0) {
             return R.ok();
