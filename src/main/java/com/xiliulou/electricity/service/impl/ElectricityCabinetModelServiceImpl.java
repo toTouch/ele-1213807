@@ -109,15 +109,15 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
         if(Objects.isNull(electricityCabinetModel.getId())){
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinetModel oldElectricityCabinetModel = queryByIdFromCache(electricityCabinetModel.getId());
         if(Objects.isNull(oldElectricityCabinetModel)){
-            return R.fail("SYSTEM.0004","未找到换电柜型号");
+            return R.fail("ELECTRICITY.0004","未找到换电柜型号");
         }
         Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
         if(count>0){
-            return R.fail("SYSTEM.0011","型号已绑定换电柜，不能操作");
+            return R.fail("ELECTRICITY.0011","型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModelMapper.update(electricityCabinetModel);
@@ -130,11 +130,11 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     public R delete(Integer id) {
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
         if(Objects.isNull(electricityCabinetModel)){
-            return R.fail("SYSTEM.0004","未找到换电柜型号");
+            return R.fail("ELECTRICITY.0004","未找到换电柜型号");
         }
         Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
         if(count>0){
-            return R.fail("SYSTEM.0011","型号已绑定换电柜，不能操作");
+            return R.fail("ELECTRICITY.0011","型号已绑定换电柜，不能操作");
         }
         //删除数据库
         electricityCabinetModel.setId(id);

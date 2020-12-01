@@ -5,7 +5,7 @@
     <resultMap type="com.xiliulou.electricity.entity.ElectricityBattery" id="ElectricityBatteryMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
-        <result property="agent" column="agent" jdbcType="INTEGER"/>
+        <result property="agentId" column="agent" jdbcType="INTEGER"/>
         <result property="serialNumber" column="serial_number" jdbcType="VARCHAR"/>
         <result property="modelId" column="model_id" jdbcType="INTEGER"/>
         <result property="capacity" column="capacity" jdbcType="INTEGER"/>
@@ -17,68 +17,6 @@
         <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER"/>
     </resultMap>
 
-    <!--查询单个-->
-    <select id="queryById" resultMap="ElectricityBatteryMap">
-        select
-          id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
-        from electricity.t_electricity_battery
-        where id = #{id}
-    </select>
-
-    <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="ElectricityBatteryMap">
-        select
-          id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id
-        from electricity.t_electricity_battery
-        limit #{offset}, #{limit}
-    </select>
-
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="ElectricityBatteryMap">
-        select
-        id, shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid,
-        cabinet_id
-        from electricity.t_electricity_battery
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="shopId != null">
-                and shop_id = #{shopId}
-            </if>
-            <if test="agent != null">
-                and agent = #{agent}
-            </if>
-            <if test="serialNumber != null and serialNumber != ''">
-                and serial_number = #{serialNumber}
-            </if>
-            <if test="modelId != null">
-                and model_id = #{modelId}
-            </if>
-            <if test="capacity != null">
-                and capacity = #{capacity}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
-            </if>
-            <if test="cabinetId != null">
-                and cabinet_id = #{cabinetId}
-            </if>
-        </where>
-    </select>
-
 
     <!--电池分页-->
     <select id="getElectricityBatteryPage" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
@@ -87,56 +25,5 @@
 
     </select>
 
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_battery(shop_id, agent, serial_number, model_id, capacity, status, create_time, update_time, del_flag, uid, cabinet_id)
-        values (#{shopId}, #{agent}, #{serialNumber}, #{modelId}, #{capacity}, #{status}, #{createTime}, #{updateTime}, #{delFlag}, #{uid}, #{cabinetId})
-    </insert>
-
-    <!--通过主键修改数据-->
-    <update id="update">
-        update electricity.t_electricity_battery
-        <set>
-            <if test="shopId != null">
-                shop_id = #{shopId},
-            </if>
-            <if test="agent != null">
-                agent = #{agent},
-            </if>
-            <if test="serialNumber != null and serialNumber != ''">
-                serial_number = #{serialNumber},
-            </if>
-            <if test="modelId != null">
-                model_id = #{modelId},
-            </if>
-            <if test="capacity != null">
-                capacity = #{capacity},
-            </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="delFlag != null">
-                del_flag = #{delFlag},
-            </if>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="cabinetId != null">
-                cabinet_id = #{cabinetId},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
-
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from electricity.t_electricity_battery where id = #{id}
-    </delete>
 
 </mapper>

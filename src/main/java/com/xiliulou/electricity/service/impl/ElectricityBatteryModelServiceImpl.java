@@ -18,7 +18,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2020-11-26 14:44:44
  */
-@Service("ElectricityBatteryModelService")
+@Service
 @Slf4j
 public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryModelService {
     @Resource
@@ -48,7 +48,13 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
             return R.failMsg("未找到电池型号!");
         }
         electricityBatteryModel.setUpdateTime(System.currentTimeMillis());
-        return R.ok(electricityBatteryModelMapper.updateById(electricityBatteryModel));
+        int rows = electricityBatteryModelMapper.updateById(electricityBatteryModel);
+        if (rows > 0) {
+            delElectricityBatteryModelCacheById(electricityBatteryModel.getId());
+            return R.ok();
+        } else {
+            return R.failMsg("修改失败!");
+        }
     }
 
     /**
@@ -71,5 +77,48 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
         return electricityBatteryModel;
     }
 
+    /**
+     * 删除型号缓存
+     *
+     * @param id
+     */
+    @Override
+    public void delElectricityBatteryModelCacheById(Integer id) {
+        redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_BATTERY_MODEL + id);
+    }
 
+    /**
+     * 删除型号
+     *
+     * @param id
+     * @return
+     */
+    @Override
+    public R delElectricityBatteryModelById(Integer id) {
+        ElectricityBatteryModel electricityBatteryModelDb = getElectricityBatteryModelById(id);
+        if (Objects.isNull(electricityBatteryModelDb)) {
+            log.error("DELETE ELECTRICITY_BATTERY_MODEL  ERROR ,NOT FOUND  ELECTRICITY_BATTERY_MODEL ID:{}", id);
+            return R.failMsg("电池型号不存在!");
+        }
+        // TODO: 2020/11/30 0030  判断是否还有电池引用此型号
+        int rows = electricityBatteryModelMapper.deleteById(id);
+        if (rows > 0) {
+            delElectricityBatteryModelCacheById(id);
+            return R.ok();
+        }
+        return R.failMsg("删除失败!");
+    }
+
+    /**
+     * 分页
+     *
+     * @param offset
+     * @param size
+     * @param name
+     * @return
+     */
+    @Override
+    public R getElectricityBatteryModelPage(Long offset, Long size, String name) {
+        return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(offset, size, name));
+    }
 }

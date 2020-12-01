@@ -135,18 +135,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
                 .eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
-            return R.fail("SYSTEM.0002","换电柜的三元组已存在");
+            return R.fail("ELECTRICITY.0002","换电柜的三元组已存在");
         }
         //或换电柜编号
         List<ElectricityCabinet> existsElectricityCabinets = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
                 .eq(ElectricityCabinet::getSn, electricityCabinet.getSn()).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinets)) {
-            return R.fail("SYSTEM.0003","换电柜编号已存在");
+            return R.fail("ELECTRICITY.0003","换电柜编号已存在");
         }
         //查找快递柜型号
         ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId());
         if (Objects.isNull(electricityCabinetModel)) {
-            return R.fail("SYSTEM.0004","未找到换电柜型号");
+            return R.fail("ELECTRICITY.0004","未找到换电柜型号");
         }
         electricityCabinetMapper.insertOne(electricityCabinet);
         //新增缓存
@@ -159,11 +159,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R edit(ElectricityCabinet electricityCabinet) {
         if(Objects.isNull(electricityCabinet.getId())){
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
         if (Objects.isNull(oldElectricityCabinet)) {
-            return R.fail("SYSTEM.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
         //三元组
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
@@ -174,7 +174,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             for (ElectricityCabinet existsElectricityCabinet : existsElectricityCabinetList) {
                 if (!Objects.equals(existsElectricityCabinet.getId(), electricityCabinet.getId())) {
-                    return R.fail("SYSTEM.0002","换电柜的三元组已存在");
+                    return R.fail("ELECTRICITY.0002","换电柜的三元组已存在");
                 }
             }
         }
@@ -184,7 +184,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (DataUtil.collectionIsUsable(existsElectricityCabinets)) {
             for (ElectricityCabinet existsElectricityCabinet : existsElectricityCabinets) {
                 if (!Objects.equals(existsElectricityCabinet.getId(), electricityCabinet.getId())) {
-                    return R.fail("SYSTEM.0003","换电柜编号已存在");
+                    return R.fail("ELECTRICITY.0003","换电柜编号已存在");
                 }
             }
         }
@@ -193,10 +193,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查找快递柜型号
         ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId());
         if (Objects.isNull(electricityCabinetModel)) {
-            return R.fail("SYSTEM.0004","未找到换电柜型号");
+            return R.fail("ELECTRICITY.0004","未找到换电柜型号");
         }
         if (!oldModelId.equals(electricityCabinet.getModelId())) {
-            return R.fail("SYSTEM.0010","不能修改型号");
+            return R.fail("ELECTRICITY.0010","不能修改型号");
         }
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinetMapper.update(electricityCabinet);
@@ -214,7 +214,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R delete(Integer id) {
         ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
         if(Objects.isNull(electricityCabinet)){
-            return R.fail("SYSTEM.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
         //删除数据库
         electricityCabinet.setId(id);
@@ -318,14 +318,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R disable(Integer id) {
         if(Objects.isNull(id)){
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(id);
         if (Objects.isNull(oldElectricityCabinet)) {
-            return R.fail("SYSTEM.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
         if(Objects.equals(oldElectricityCabinet.getUsableStatus(),ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)){
-            return R.fail("SYSTEM.0012","快递柜已禁用，不能重复操作");
+            return R.fail("ELECTRICITY.0012","快递柜已禁用，不能重复操作");
         }
         ElectricityCabinet electricityCabinet=new ElectricityCabinet();
         electricityCabinet.setId(id);
@@ -340,11 +340,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R reboot(Integer id) {
         if(Objects.isNull(id)){
-            return R.fail("SYSTEM.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(id);
         if (Objects.isNull(oldElectricityCabinet)) {
-            return R.fail("SYSTEM.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
         ElectricityCabinet electricityCabinet=new ElectricityCabinet();
         electricityCabinet.setId(id);

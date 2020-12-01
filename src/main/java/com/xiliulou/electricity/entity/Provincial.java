@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("Provincial")
+@TableName("provincial")
 public class Provincial {
     
     private Integer pid;

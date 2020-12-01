@@ -2,13 +2,14 @@ package com.xiliulou.electricity.entity;
 
 
 import com.baomidou.mybatisplus.annotation.TableLogic;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
 
 /**
  * 电池型号(ElectricityBatteryModel)实体类
@@ -32,14 +33,17 @@ public class ElectricityBatteryModel {
     /**
      * 电压
      */
+    @NotNull(message = "电池电压不能为空!")
     private Integer voltage;
     /**
      * 电池容量,单位(mah)
      */
+    @NotNull(message = "电池容量不能为空1")
     private Integer capacity;
     /**
      * 类型(原材料)
      */
+    @NotEmpty(message = "电池种类不能为空!")
     private String startingMaterial;
 
     private Long createTime;
@@ -47,6 +51,5 @@ public class ElectricityBatteryModel {
     private Long updateTime;
     @TableLogic
     private Object delFlag;
-
 
 }

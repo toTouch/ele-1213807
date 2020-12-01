@@ -12,7 +12,12 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
-
+/**
+ * @program: XILIULOU
+ * @description: 电池 controller
+ * @author: Mr.YG
+ * @create: 2020-11-27 14:08
+ **/
 @RestController
 @Slf4j
 public class ElectricityCabinetBatteryAdminController {
@@ -44,6 +49,17 @@ public class ElectricityCabinetBatteryAdminController {
         }
 
         return electricityBatteryService.update(electricityBattery);
+    }
+
+    /**
+     * 删除电池
+     *
+     * @param
+     * @return
+     */
+    @DeleteMapping(value = "/admin/battery/{id}")
+    public R delete(@PathVariable("id") Long id) {
+        return electricityBatteryService.deleteElectricityBattery(id);
     }
 
     /**
