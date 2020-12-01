@@ -9,7 +9,6 @@ import com.xiliulou.electricity.entity.Provincial;
 import com.xiliulou.electricity.mapper.ProvincialMapper;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ProvincialService;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.ProvincialVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
