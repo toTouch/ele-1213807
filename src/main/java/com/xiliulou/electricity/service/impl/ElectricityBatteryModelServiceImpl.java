@@ -100,7 +100,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
             log.error("DELETE ELECTRICITY_BATTERY_MODEL  ERROR ,NOT FOUND  ELECTRICITY_BATTERY_MODEL ID:{}", id);
             return R.failMsg("电池型号不存在!");
         }
-        // TODO: 2020/11/30 0030  判断是否还有电池引用此型号
+        // TODO: 2020/11/30 0030    YG 判断是否还有电池引用此型号
         int rows = electricityBatteryModelMapper.deleteById(id);
         if (rows > 0) {
             delElectricityBatteryModelCacheById(id);

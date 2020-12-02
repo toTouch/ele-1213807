@@ -22,6 +22,11 @@
 			<artifactId>xiliulou-common-cache</artifactId>
 			<version>1.0.0</version>
 		</dependency>
+		<dependency>
+			<groupId>com.github.javen205</groupId>
+			<artifactId>IJPay</artifactId>
+			<version>1.2.0</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.xiliulou</groupId>

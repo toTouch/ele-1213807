@@ -27,12 +27,10 @@ public class ElectricityBattery {
     /**
      * 所属店铺
      */
-//    @NotNull(message = "所属店铺不能为空!")
     private Integer shopId;
     /**
      * 代理商id
      */
-//    @NotNull(message = "所属代理商不能为空!")
     private Integer agentId;
     /**
      * sn码
