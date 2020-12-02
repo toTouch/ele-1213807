@@ -28,7 +28,7 @@ public class ElectricityPayParamsAdminController {
      * @param
      * @return
      */
-    @PostMapping(value = "/admin/battery")
+    @PostMapping(value = "/admin/electricityPayParams")
     public R save(@RequestBody @Validated ElectricityPayParams electricityPayParams) {
 
         return electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams, System.currentTimeMillis());
