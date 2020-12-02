@@ -1,3 +1,4 @@
+/*
 package com.xiliulou.electricity.queue;
 import com.xiliulou.electricity.entity.DelayedMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -51,3 +52,4 @@ public class JdkDelayedQueue {
         return queue.size();
     }
 }
+*/
