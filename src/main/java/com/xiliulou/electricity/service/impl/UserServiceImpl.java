@@ -12,14 +12,11 @@ import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
-import com.xiliulou.security.component.CustomPasswordEncoder;
+import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -155,6 +152,7 @@ public class UserServiceImpl implements UserService {
 		if (Objects.nonNull(userNameExists)) {
 			return Triple.of(false, null, "手机号已存在");
 		}
+
 		//解密密码
 		String encryptPassword = adminUserQuery.getPassword();
 		String decryptPassword = AESUtils.decrypt(encryptPassword);
@@ -203,8 +201,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@DS("slave_1")
-	public Pair<Boolean, Object> queryListUser(Long uid, Integer size, Integer offset, String name, String phone, Integer type) {
-		List<User> user = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type);
+	public Pair<Boolean, Object> queryListUser(Long uid, Integer size, Integer offset, String name, String phone, Integer type, Long startTime, Long endTime) {
+		List<User> user = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type,startTime,endTime);
 		return Pair.of(true, DataUtil.collectionIsUsable(user) ? user : Collections.emptyList());
 	}
 
@@ -218,9 +216,64 @@ public class UserServiceImpl implements UserService {
 		if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
 			User phone = queryByUserPhone(adminUserQuery.getPhone());
 			if (!Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
-				return Pair.of(false,"手机号已存在！无法修改!");
+				return Pair.of(false, "手机号已存在！无法修改!");
 			}
 		}
-		return null;
+
+		if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
+			User nameUser = queryByUserName(adminUserQuery.getName());
+			if (!Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
+				return Pair.of(false, "用户名已经存在！无法修改！");
+			}
+		}
+		String decryptPassword = null;
+		if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
+			//解密密码
+			String encryptPassword = adminUserQuery.getPassword();
+			decryptPassword = AESUtils.decrypt(encryptPassword);
+			if (StrUtil.isEmpty(decryptPassword)) {
+				log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+				return Pair.of(false, "系统错误!");
+			}
+		}
+
+		User updateUser = User.builder()
+				.uid(user.getUid())
+				.delFlag(User.DEL_NORMAL)
+				.lockFlag(User.USER_UN_LOCK)
+				.gender(adminUserQuery.getGender())
+				.lang(adminUserQuery.getLang())
+				.loginPwd(StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword))
+				.name(adminUserQuery.getName())
+				.phone(adminUserQuery.getPhone())
+				.updateTime(System.currentTimeMillis())
+				.userType(adminUserQuery.getUserType())
+				.lockFlag(adminUserQuery.getLock())
+				.build();
+		int i = updateUser(updateUser, user);
+		return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
+	}
+
+	@Override
+	public Pair<Boolean, Object> deleteAdminUser(Long uid) {
+		User user = queryByIdFromCache(uid);
+		if (Objects.isNull(user)) {
+			return Pair.of(false, "uid:" + uid + "用户不存在!");
+		}
+
+		if (deleteById(uid)) {
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + uid);
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone());
+		}
+		return Pair.of(true,null);
+	}
+
+	private int updateUser(User updateUser, User oldUser) {
+		Integer update = update(updateUser);
+		if (update > 0) {
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + oldUser.getPhone());
+		}
+		return update;
 	}
 }

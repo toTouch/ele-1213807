@@ -64,5 +64,5 @@ public interface UserMapper extends BaseMapper<User> {
 	 */
 	int deleteById(Long uid);
 
-	List<User> queryListUserByCriteria(@Param("uid") Long uid, @Param("size") Integer size, @Param("offset") Integer offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type);
+	List<User> queryListUserByCriteria(@Param("uid") Long uid, @Param("size") Integer size, @Param("offset") Integer offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 }

@@ -134,15 +134,16 @@
 	</update>
 
 	<!--通过主键删除-->
-	<delete id="deleteById">
-        delete from electricity.t_user where uid = #{uid}
-    </delete>
+	<update id="deleteById">
+        update electricity.t_user set del_flag = 1  where uid = #{uid}
+    </update>
 
 	<select id="queryListUserByCriteria" resultMap="UserMap">
 		select uid, phone, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,
 		lang
 		from t_user
 		<where>
+			del_flag = 0
 			<if test="uid != null">
 				and uid = #{uid}
 			</if>
@@ -154,6 +155,12 @@
 			</if>
 			<if test="phone != null and phone != ''">
 				and phone=#{phone}
+			</if>
+			<if test="startTime != null">
+				and create_time &gt;=#{startTime}
+			</if>
+			<if test="endTime != null">
+				and create_time &lt;=#{endTime}
 			</if>
 		</where>
 		order by create_time desc

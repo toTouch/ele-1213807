@@ -31,7 +31,7 @@ public class AdminUserQuery {
 	private String password;
 	@NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
 	private String phone;
-	@Range(min = 1, max = 10, message = "用户类型不合法", groups = {CreateGroup.class,UpdateGroup.class})
+	@Range(min = 1, max = 10, message = "用户类型不合法", groups = {CreateGroup.class, UpdateGroup.class})
 	@NotNull(message = "语言不能为空", groups = {CreateGroup.class})
 	private Integer userType;
 	@NotEmpty(message = "语言不能为空", groups = {CreateGroup.class})
@@ -39,5 +39,6 @@ public class AdminUserQuery {
 	@Range(min = 0, max = 1, message = "性别类型不合法", groups = {CreateGroup.class, UpdateGroup.class})
 	@NotNull(message = "性别不能为空", groups = {CreateGroup.class})
 	private Integer gender;
-
+	@Range(min = 0, max = 1, message = "锁定类型不合法", groups = {UpdateGroup.class})
+	private Integer lock;
 }
