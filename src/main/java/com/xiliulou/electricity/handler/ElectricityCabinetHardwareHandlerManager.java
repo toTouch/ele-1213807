@@ -1,3 +1,4 @@
+/*
 package com.xiliulou.electricity.handler;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -7,11 +8,13 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+*/
 /**
  * @author: lxc
  * @Date: 2020/12/3 13:26
  * @Description:
- */
+ *//*
+
 @Service
 @Slf4j
 public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerManager {
@@ -27,4 +30,4 @@ public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerMan
 	public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
 		return false;
 	}
-}
+}*/
