@@ -4,6 +4,7 @@ import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.xiliulou.cache.redis.EnableRedis;
 import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
 import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
+import com.xiliulou.pay.EnablePay;
 import com.xiliulou.storage.EnableStorage;
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
@@ -24,6 +25,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
+@EnablePay
 public class ElectricityCabinetApplication {
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);
