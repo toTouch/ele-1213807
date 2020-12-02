@@ -40,7 +40,7 @@ public class ElectricityCabinetQuery {
 	 * 物联网连接状态（0--连网，1--断网）
 	 */
 	private Integer onlineStatus;
-	private Double meterDistance;
+	private Double distance;
 	private Double lon;
 	private Double lat;
 }

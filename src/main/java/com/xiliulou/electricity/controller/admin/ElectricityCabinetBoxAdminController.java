@@ -51,7 +51,7 @@ public class ElectricityCabinetBoxAdminController {
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getStatus())){
+        if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getUsableStatus())){
             return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
@@ -63,8 +63,8 @@ public class ElectricityCabinetBoxAdminController {
     }
 
     //后台一键开门
-    @PostMapping(value = "/admin/electricityCabinetBox/releaseBox/{id}")
-    public R releaseBox(@PathVariable("id") Long id) {
+    @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}")
+    public R openDoor(@PathVariable("id") Long id) {
         if(Objects.isNull(id)){
             return R.fail("ELECTRICITY.0007","不合法的参数");
         }
