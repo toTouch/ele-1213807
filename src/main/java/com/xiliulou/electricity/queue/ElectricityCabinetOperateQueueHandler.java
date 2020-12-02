@@ -21,7 +21,7 @@ public class ElectricityCabinetOperateQueueHandler {
 	private volatile boolean shutdown = false;
 
 	@EventListener({WebServerInitializedEvent.class})
-	public void startHandleLockerOperate() {
+	public void startHandleElectricityCabinetOperate() {
 		initElectricityCabinetOperate();
 	}
 
@@ -34,7 +34,7 @@ public class ElectricityCabinetOperateQueueHandler {
 					});
 
 				} catch (Exception e) {
-					log.error("LOCKER OPERATE QUEUE ERROR! ", e);
+					log.error("ELECTRICITY CABINET OPERATE QUEUE ERROR! ", e);
 				}
 
 			}
