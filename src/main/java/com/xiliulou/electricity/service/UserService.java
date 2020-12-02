@@ -70,8 +70,9 @@ public interface UserService {
 
 	User queryByUserPhone(String phone);
 
-	Pair<Boolean, Object> queryListUser(Long uid,Integer size, Integer offset, String name, String phone, Integer type);
+	Pair<Boolean, Object> queryListUser(Long uid, Integer size, Integer offset, String name, String phone, Integer type, Long startTime, Long endTime);
 
 	Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery);
 
+	Pair<Boolean, Object> deleteAdminUser(Long uid);
 }

@@ -91,6 +91,6 @@ public class User {
 	//运营商
 	public static final Integer TYPE_USER_OPERATE = 1;
 	//普通用户
-	public static final Integer TYPE_USER_NORMAL = 2;
+	public static final Integer TYPE_USER_NORMAL = 11;
 
 }

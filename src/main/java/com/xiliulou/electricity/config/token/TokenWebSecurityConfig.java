@@ -1,19 +1,21 @@
-package com.xiliulou.electricity.token.config;
+package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.security.component.CustomAccessDeniedHandler;
-import com.xiliulou.security.component.CustomAuthenticationEntryPoint;
-import com.xiliulou.security.component.CustomPasswordEncoder;
-import com.xiliulou.security.component.CustomTokenAuthenticationFilter;
-import com.xiliulou.security.component.CustomUsernamePasswordAuthenticationFilter;
-import com.xiliulou.security.component.JwtTokenManager;
-import com.xiliulou.security.component.TokenLogoutHandler;
+import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
+import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
+import com.xiliulou.security.authentication.CustomAuthenticationEntryPoint;
+import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import com.xiliulou.security.authentication.CustomTokenAuthenticationFilter;
+import com.xiliulou.security.authentication.console.CustomUsernamePasswordAuthenticationFilter;
+import com.xiliulou.security.authentication.JwtTokenManager;
+import com.xiliulou.security.authentication.TokenLogoutHandler;
+import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationServiceFactory;
 import com.xiliulou.security.config.TokenConfig;
+import com.xiliulou.security.constant.TokenConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -22,7 +24,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 /**
  * @author: eclair
@@ -36,6 +37,9 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Qualifier("userDetailServiceImpl")
 	@Autowired
 	private UserDetailsService userDetailsService;
+
+	@Autowired
+	private WxProThirdAuthenticationServiceImpl wxProThirdAuthenticationService;
 
 	@Autowired
 	RedisService redisService;
@@ -67,6 +71,9 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager())).httpBasic()
 				//不缓存session
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+
+		//增加第三方授权的service
+		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_WX_PRO, wxProThirdAuthenticationService);
 
 	}
 

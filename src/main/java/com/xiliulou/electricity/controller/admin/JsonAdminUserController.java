@@ -8,9 +8,12 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -43,7 +46,9 @@ public class JsonAdminUserController extends BaseController {
 			@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "phone", required = false) String phone,
-			@RequestParam(value = "type", required = false) Integer type) {
+			@RequestParam(value = "type", required = false) Integer type,
+			@RequestParam(value = "startTime", required = false) Long startTime,
+			@RequestParam(value = "endTime", required = false) Long endTime) {
 		if (size < 0 || size > 50) {
 			size = 10;
 		}
@@ -51,7 +56,7 @@ public class JsonAdminUserController extends BaseController {
 		if (offset < 0) {
 			offset = 0;
 		}
-		return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type));
+		return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime));
 	}
 
 	@PutMapping("/user")
@@ -61,5 +66,11 @@ public class JsonAdminUserController extends BaseController {
 		}
 
 		return returnPairResult(userService.updateAdminUser(adminUserQuery));
+	}
+
+	//	@PreAuthorize("hasAnyAuthority('menu:system')")
+	@DeleteMapping("/user/{uid}")
+	public R deleteAdminUser(@PathVariable("uid") Long uid) {
+		return returnPairResult(userService.deleteAdminUser(uid));
 	}
 }
