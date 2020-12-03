@@ -79,12 +79,8 @@ public class ElectricityCabinetFileAdminController {
     @PostMapping("/admin/electricityCabinetFileService/call/back")
     public R callBack(@RequestParam("fileName") String fileName,
                          @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                         @RequestParam("fileType") Integer fileType,
-                         @RequestParam("bucketName") String bucketName) {
+                         @RequestParam("fileType") Integer fileType) {
         //查看是第几张图片
-        if (Objects.isNull(electricityCabinetId)) {
-            electricityCabinetId = -1;
-        }
         int index = 1;
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
         if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
@@ -92,10 +88,6 @@ public class ElectricityCabinetFileAdminController {
             index = electricityCabinetFileList.get(0).getIndex() + 1;
         }
         if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-            if (StrUtil.isEmpty(fileName)) {
-                log.error("UPLOAD ERROR! no filename");
-                return R.fail("ELECTRICITY.0008", "文件名不能为空");
-            }
             ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
@@ -113,7 +105,7 @@ public class ElectricityCabinetFileAdminController {
                     .delFlag(ElectricityCabinetFile.DEL_NORMAL)
                     .electricityCabinetId(electricityCabinetId)
                     .type(fileType)
-                    .bucketName(bucketName)
+                    .bucketName(storageConfig.getBucketName())
                     .name(fileName)
                     .index(index).build();
             electricityCabinetFileService.insert(electricityCabinetFile);
