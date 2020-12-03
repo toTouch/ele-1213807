@@ -126,8 +126,9 @@ public class ElectricityCabinetFileAdminController {
      * 获取文件信息
      */
 
-    @GetMapping("/admin/electricityCabinetFileService/getFile/{electricityCabinetId}/{fileType}")
-    public R getFile(@PathVariable("electricityCabinetId") Integer electricityCabinetId, @PathVariable("fileType") Integer fileType) {
+    @GetMapping("/admin/electricityCabinetFileService/getFile")
+    public R getFile( @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                      @RequestParam("fileType") Integer fileType) {
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
