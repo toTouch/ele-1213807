@@ -61,4 +61,6 @@ public interface ElectricityCabinetService {
     R disable(Integer id);
 
     R reboot(Integer id);
+
+    R queryOne(Integer id);
 }

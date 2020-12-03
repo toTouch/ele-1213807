@@ -43,6 +43,7 @@ public class ElectricityCabinetAdminController {
         return electricityCabinetService.delete(id);
     }
 
+
    //列表查询
     @GetMapping(value = "/admin/electricityCabinet/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,

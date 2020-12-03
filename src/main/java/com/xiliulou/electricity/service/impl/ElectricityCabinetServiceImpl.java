@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -21,14 +22,15 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -359,6 +361,55 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         return R.ok();
+    }
+
+    @Override
+    public R queryOne(Integer id) {
+        ElectricityCabinet electricityCabinet=queryByIdFromCache(id);
+        if(Objects.isNull(electricityCabinet)){
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
+        }
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //TODO 判断是否租用电池
+        ElectricityCabinetVO electricityCabinetVO=new ElectricityCabinetVO();
+        BeanUtil.copyProperties(electricityCabinet,electricityCabinetVO);
+        //查满仓空仓数
+        Integer electricityBatteryTotal = 0;
+        Integer fullyElectricityBattery = 0;
+        Integer noElectricityBattery = 0;
+        Set<String> set= new  HashSet();
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
+        if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+            for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+                //满仓个数
+                ElectricityBattery electricityBattery=electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                if(Objects.nonNull(electricityBattery)) {
+                    if (electricityBattery.getCapacity() >= electricityCabinet.getFullyCharged()) {
+                        fullyElectricityBattery = fullyElectricityBattery + 1;
+                    }
+                    ElectricityBatteryModel electricityBatteryModel=electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
+                    if(Objects.nonNull(electricityBatteryModel)){
+                        set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
+                    }
+                }
+            }
+            //空仓
+            noElectricityBattery = (int)electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+            //电池总数
+            electricityBatteryTotal = (int)electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+        }
+        if(noElectricityBattery<=0){
+            return R.fail("ELECTRICITY.0008","换电柜暂无空仓");
+        }
+        electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
+        electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
+        electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+        electricityCabinetVO.setElectricityBatteryFormat(set);
+        return R.ok(electricityCabinetVO);
     }
 
 
