@@ -135,7 +135,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
         //分配开门格挡
-        String cellNo = findUsableCellNo(electricityCabinet.getId());
+        String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         //TODO 2.判断用户是否有电池是否有月卡  YG
         //TODO 3.根据用户查询旧电池  YG
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
@@ -203,7 +203,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return null;
     }
 
-    public String findUsableCellNo(Integer id) {
+    public String findOldUsableCellNo(Integer id) {
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryNoElectricityBatteryBox(id);
         if (!DataUtil.collectionIsUsable(usableBoxes)) {
             return null;
@@ -371,7 +371,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     //检查电池通知 TODO
     public void checkBattery(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult){
           if(operResult){
-              // TODO 分配新仓门
+              //修改仓门为有电池
+              ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
+              electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+              //TODO 查找旧电池Id 暂时写死
+              electricityCabinetBox.setElectricityBatteryId(-1L);
+              electricityCabinetBoxService.modify(electricityCabinetBox);
+              String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId());
+              // TODO 根据换电柜id和仓门查出电池 暂时写死
+              electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+              electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
+              electricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
+              electricityCabinetOrder.setNewElectricityBatterySn("-1");
+              electricityCabinetOrderMapper.update(electricityCabinetOrder);
           }else {
               //TODO 弹开老仓门
           }
@@ -398,6 +410,33 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return true;
         }
         return false;
+    }
+
+    public String findNewUsableCellNo(Integer id) {
+        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id);
+        if (!DataUtil.collectionIsUsable(usableBoxes)) {
+            return null;
+        }
+
+        List<Integer> boxes = usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList());
+
+        //查看有没有初始化过设备的上次操作过的格挡,这里不必关心线程安全，不需要保证原子性
+        if (!redisService.hasKey(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id)) {
+            redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, boxes.get(0).toString());
+        }
+
+        String lastCellNo = redisService.get(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id);
+
+        boxes = rebuildByCellCircleForDevice(boxes, Integer.parseInt(lastCellNo));
+
+        for (Integer box : boxes) {
+            if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
+                redisService.set(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, box.toString());
+                return box.toString();
+            }
+        }
+
+        return null;
     }
 
 }

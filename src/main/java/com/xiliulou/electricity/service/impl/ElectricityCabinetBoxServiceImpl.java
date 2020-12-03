@@ -3,12 +3,14 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -34,6 +36,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     private ElectricityCabinetBoxMapper electricityCabinetBoxMapper;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -109,7 +113,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOS = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
             electricityCabinetBoxVOList.parallelStream().forEach(e -> {
                 ElectricityBattery electricityBattery=electricityBatteryService.queryById(e.getElectricityBatteryId());
@@ -117,10 +120,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     e.setSerialNumber(electricityBattery.getSerialNumber());
                     e.setCapacity(electricityBattery.getCapacity());
                 }
-                electricityCabinetBoxVOS.add(e);
             });
         }
-        return R.ok(electricityCabinetBoxVOS.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
+        return R.ok(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
     }
 
     @Override
@@ -145,5 +147,26 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+    }
+
+    @Override
+    public List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id) {
+        List<ElectricityCabinetBox> electricityCabinetBoxList=electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+                .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+        List<ElectricityCabinetBox> electricityCabinetBoxes=new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+            electricityCabinetBoxList.parallelStream().forEach(e -> {
+                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(id);
+                if(Objects.nonNull(electricityCabinet)){
+                    ElectricityBattery electricityBattery=electricityBatteryService.queryById(e.getElectricityBatteryId());
+                    if(Objects.nonNull(electricityBattery)){
+                        if(electricityBattery.getCapacity()>=electricityCabinet.getFullyCharged()){
+                            electricityCabinetBoxes.add(e);
+                        }
+                    }
+                }
+            });
+        }
+        return electricityCabinetBoxes;
     }
 }
