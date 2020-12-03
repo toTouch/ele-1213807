@@ -27,7 +27,7 @@ public class ElectricityCabinetBatteryModelAdminController {
      * @return
      */
     @PostMapping("admin/battery/model")
-    public R saveBatteryModel(@Validated ElectricityBatteryModel electricityBatteryModel) {
+    public R saveBatteryModel(@RequestBody @Validated ElectricityBatteryModel electricityBatteryModel) {
         return electricityBatteryModelService.saveElectricityBatteryModel(electricityBatteryModel);
     }
 

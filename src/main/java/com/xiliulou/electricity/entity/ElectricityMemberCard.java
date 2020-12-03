@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -15,6 +17,7 @@ import java.math.BigDecimal;
 @Data
 @TableName("t_electricity_member_card")
 public class ElectricityMemberCard {
+    @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     //代理商id
     private Integer agentId;
