@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
@@ -24,6 +26,7 @@ import javax.validation.constraints.NotNull;
 @TableName("t_electricity_battery_model")
 public class ElectricityBatteryModel {
 
+    @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
      * 电池型号名称

@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.entity;
 
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -22,7 +24,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 @TableName("t_electricity_battery")
 public class ElectricityBattery {
-
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
      * 所属店铺
