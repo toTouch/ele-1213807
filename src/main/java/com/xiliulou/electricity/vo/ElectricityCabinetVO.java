@@ -118,6 +118,6 @@ public class ElectricityCabinetVO {
     /**
      * 换电柜地区
      */
-    private Integer areaName;
+    private String areaName;
 
 }

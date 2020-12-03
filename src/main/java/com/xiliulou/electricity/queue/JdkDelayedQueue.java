@@ -26,7 +26,7 @@ public class JdkDelayedQueue {
                     DelayedMessage message = queue.take();
                     executorService.execute(() -> {
                         log.info("ORDER CANCEL , queue receiver a meg={}", message);
-                       //TODO 执行定时任务
+                       //
                     });
                 }
             } catch (InterruptedException e2) {

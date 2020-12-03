@@ -10,7 +10,7 @@
         <result property="index" column="index" jdbcType="INTEGER"/>
         <result property="url" column="url" jdbcType="VARCHAR"/>
         <result property="bucketName" column="bucket_name" jdbcType="VARCHAR"/>
-        <result property="isOss" column="is_oss" jdbcType="OTHER"/>
+        <result property="isOss" column="is_oss" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>

@@ -19,7 +19,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -58,68 +60,56 @@ public class ElectricityCabinetFileAdminController {
 
     //minio上传
     @PostMapping("/admin/electricityCabinetFileService/minio/upload")
-    public R minioUpload(@RequestParam("file") MultipartFile file,
+    public R minioUpload(@RequestParam("file") MultipartFile file) {
+        String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
+        String bucketName = storageConfig.getBucketName();
+        Map<String, String> resultMap = new HashMap<>(4);
+        resultMap.put("bucketName", bucketName);
+        resultMap.put("fileName", fileName);
+        try {
+            storageService.uploadMinioFile(bucketName, fileName, file.getInputStream());
+        } catch (Exception e) {
+            log.error("上传失败", e);
+            return R.fail(e.getLocalizedMessage());
+        }
+        return R.ok(resultMap);
+    }
+
+    //统一上传
+    @PostMapping("/admin/electricityCabinetFileService/call/back")
+    public R callBack(@RequestParam("fileName") String fileName,
                          @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
                          @RequestParam("fileType") Integer fileType) {
-        if (Objects.isNull(electricityCabinetId)) {
-            electricityCabinetId = -1;
-        }
+        //查看是第几张图片
         int index = 1;
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
         if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
             electricityCabinetFileList = electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
             index = electricityCabinetFileList.get(0).getIndex() + 1;
         }
-        String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
-        String bucketName = storageConfig.getBucketName();
-        try {
-            storageService.uploadMinioFile(bucketName, fileName, file.getInputStream());
+        if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
             ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
                     .delFlag(ElectricityCabinetFile.DEL_NORMAL)
                     .electricityCabinetId(electricityCabinetId)
                     .type(fileType)
-                    .bucketName(bucketName)
+                    .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
                     .name(fileName)
                     .index(index).build();
             electricityCabinetFileService.insert(electricityCabinetFile);
-        } catch (Exception e) {
-            log.error("上传失败", e);
-            return R.fail(e.getLocalizedMessage());
+        }else {
+            ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis())
+                    .delFlag(ElectricityCabinetFile.DEL_NORMAL)
+                    .electricityCabinetId(electricityCabinetId)
+                    .type(fileType)
+                    .bucketName(storageConfig.getBucketName())
+                    .name(fileName)
+                    .index(index).build();
+            electricityCabinetFileService.insert(electricityCabinetFile);
         }
-        return R.ok();
-    }
-
-    //oss上传
-    @PostMapping("/admin/electricityCabinetFileService/oss/call/back")
-    public R ossCallBack(@RequestParam("fileName") String fileName,
-                         @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                         @RequestParam("fileType") Integer fileType) {
-
-        if (StrUtil.isEmpty(fileName)) {
-            log.error("UPLOAD ERROR! no filename");
-            return R.fail("ELECTRICITY.0008", "文件名不能为空");
-        }
-        if (Objects.isNull(electricityCabinetId)) {
-            electricityCabinetId = -1;
-        }
-        int index = 1;
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
-        if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-            electricityCabinetFileList = electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
-            index = electricityCabinetFileList.get(0).getIndex() + 1;
-        }
-        ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                .electricityCabinetId(electricityCabinetId)
-                .type(fileType)
-                .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
-                .name(fileName)
-                .index(index).build();
-        electricityCabinetFileService.insert(electricityCabinetFile);
         return R.ok();
     }
 
@@ -128,8 +118,9 @@ public class ElectricityCabinetFileAdminController {
      * 获取文件信息
      */
 
-    @GetMapping("/admin/electricityCabinetFileService/getFile/{electricityCabinetId}/{fileType}")
-    public R getFile(@PathVariable("electricityCabinetId") Integer electricityCabinetId, @PathVariable("fileType") Integer fileType) {
+    @GetMapping("/admin/electricityCabinetFileService/getFile")
+    public R getFile( @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                      @RequestParam("fileType") Integer fileType) {
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();

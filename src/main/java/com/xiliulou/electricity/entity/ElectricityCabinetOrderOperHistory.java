@@ -32,30 +32,39 @@ public class ElectricityCabinetOrderOperHistory {
     /**
     * 换电柜id
     */
-    private Long electricityCabinetId;
+    private Integer electricityCabinetId;
     /**
     * 换电柜的格挡号
     */
     private Integer cellNo;
     /**
-    * 操作订单的状态 1--旧电池开门 2--旧电池关门 3--旧电池检测不通过开门 4--新电池开门 5--新电池关门
+    * 操作订单的状态 0--成功 1--失败
     */
     private Object status;
     /**
     * 下单的用户
     */
     private Integer uid;
+    /**
+     *操作订单的类型 1--旧电池开门 2--旧电池关门 3--旧电池检测不通过开门 4--新电池开门 5--新电池关门
+     */
+    private Integer type;
+
+    //开门状态--成功
+    public static final Integer STATUS_OPEN_DOOR_SUCCESS = 0;
+    //失败
+    public static final Integer STATUS_OPEN_DOOR_FAIL = 1;
 
     //旧电池开门
-    public static final Integer STATUS_OLD_BATTERY_OPEN_DOOR = 1;
+    public static final Integer TYPE_OLD_BATTERY_OPEN_DOOR = 1;
     //旧电池关门
-    public static final Integer STATUS_OLD_BATTERY_CLOSE_DOOR = 2;
+    public static final Integer TYPE_OLD_BATTERY_CLOSE_DOOR = 2;
     //旧电池弹出
-    public static final Integer STATUS_OLD_BATTERY_WEB_OPEN_DOOR = 3;
+    public static final Integer TYPE_OLD_BATTERY_WEB_OPEN_DOOR = 3;
     //新电池开门
-    public static final Integer STATUS_NEW_BATTERY_OPEN_DOOR = 4;
+    public static final Integer TYPE_NEW_BATTERY_OPEN_DOOR = 4;
     //新电池关门
-    public static final Integer STATUS_NEW_BATTERY_CLOSE_DOOR = 5;
+    public static final Integer TYPE_NEW_BATTERY_CLOSE_DOOR = 5;
 
 
 }

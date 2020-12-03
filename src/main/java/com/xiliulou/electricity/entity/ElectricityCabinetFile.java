@@ -48,7 +48,7 @@ public class ElectricityCabinetFile {
     /**
     * 是否oss 0--是 1--否
     */
-    private Object isOss;
+    private Integer isOss;
     /**
     * 创建时间
     */
@@ -64,5 +64,8 @@ public class ElectricityCabinetFile {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    //换电柜柜机图片
+    public static final Integer TYPE_ELECTRICITY_CABINET = 1;
 
 }

@@ -19,6 +19,6 @@ public interface ElectricityCabinetConstant {
 	//占用仓门缓存
 	String ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY = "electricity_cabinet_cell_occupy:";
 
-	//执行订单取消定时任务
-	String CACHE_ELECTRICITY_CABINET_ORDER_CANCEL = "electricity_cabinet_order_cancel";
+	//城市缓存，不变
+	String CACHE_CITY = "city:";
 }
