@@ -1,14 +1,19 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Provincial;
 import com.xiliulou.electricity.mapper.CityMapper;
 import com.xiliulou.electricity.service.CityService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * (City)表服务实现类
@@ -20,6 +25,8 @@ import java.util.List;
 public class CityServiceImpl implements CityService {
     @Resource
     private CityMapper cityMapper;
+    @Autowired
+    RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -40,7 +47,19 @@ public class CityServiceImpl implements CityService {
      */
     @Override
     public  City queryByIdFromCache(Integer cid) {
-        return null;
+        //先查缓存
+        City cacheCity = redisService.getWithHash(ElectricityCabinetConstant.CACHE_CITY + cid, City.class);
+        if (Objects.nonNull(cacheCity)) {
+            return cacheCity;
+        }
+        //缓存没有再查数据库
+        City city =cityMapper.queryById(cid);
+        if (Objects.isNull(city)) {
+            return null;
+        }
+        //放入缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_CITY + cid, city);
+        return city;
     }
 
     @Override

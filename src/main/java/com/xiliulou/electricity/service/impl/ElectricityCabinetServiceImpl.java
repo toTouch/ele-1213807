@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -55,6 +57,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     ElectricityBatteryModelService electricityBatteryModelService;
+    @Autowired
+    CityService cityService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -153,7 +157,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         //添加快递柜格挡
         electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
-        return R.ok();
+        return R.ok(electricityCabinet.getId());
     }
 
     @Override
@@ -233,6 +237,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinetVOS = new ArrayList<>();
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+                //地区
+                City city=cityService.queryByIdFromCache(e.getAreaId());
+                if (Objects.nonNull(city)) {
+                    e.setAreaName(city.getCity());
+                }
                 //查找型号名称
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
