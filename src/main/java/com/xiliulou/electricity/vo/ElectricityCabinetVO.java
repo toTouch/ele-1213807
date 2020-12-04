@@ -120,4 +120,6 @@ public class ElectricityCabinetVO {
      */
     private String areaName;
 
+    private Double distance;
+
 }

@@ -287,7 +287,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
                 Integer noElectricityBattery = 0;
-                Set<String> set= new  HashSet();
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
                     for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
@@ -296,10 +295,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         if(Objects.nonNull(electricityBattery)) {
                             if (electricityBattery.getCapacity() >= e.getFullyCharged()) {
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
-                            }
-                            ElectricityBatteryModel electricityBatteryModel=electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
-                            if(Objects.nonNull(electricityBatteryModel)){
-                                set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
                             }
                         }
                     }
@@ -311,7 +306,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
-                e.setElectricityBatteryFormat(set);
             });
         }
         return R.ok(electricityCabinetList);
@@ -374,7 +368,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //TODO 判断是否租用电池
+        //TODO 判断是否租用电池 YG
         ElectricityCabinetVO electricityCabinetVO=new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet,electricityCabinetVO);
         //查满仓空仓数
