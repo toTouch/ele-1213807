@@ -1,23 +1,29 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.pay.weixin.entity.PayOrder;
+import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
 import com.xiliulou.pay.weixin.pay.PayAdapterHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.Date;
+import java.util.Objects;
 
 /**
  * @program: XILIULOU
@@ -33,6 +39,8 @@ public class ElectricityTradeOrderServiceImpl extends
     PayAdapterHandler payAdapterHandler;
     @Autowired
     ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    ElectricityMemberCardOrderMapper electricityMemberCardOrderMapper;
 
     /**
      * 创建并获取支付参数
@@ -83,5 +91,56 @@ public class ElectricityTradeOrderServiceImpl extends
 
     }
 
+    /**
+     * 处理  回调
+     *
+     * @param weiXinPayNotify
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Pair<Boolean, Object> notifyMemberOrder(WeiXinPayNotify weiXinPayNotify) {
+        String tradeOrderNo = weiXinPayNotify.getOutTradeNo();
 
+        ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(electricityTradeOrder)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderMapper.selectByOrderNo(electricityTradeOrder.getOrderNo());
+        if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "未找到订单!");
+        }
+        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "套餐订单已处理!");
+        }
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        Integer memberOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
+        boolean result = false;
+        if (StringUtils.isNotEmpty(weiXinPayNotify.getReturnCode()) && ObjectUtil.equal("SUCCESS", weiXinPayNotify.getReturnCode())) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+            memberOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
+            result = true;
+        } else {
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + weiXinPayNotify.getOutTradeNo());
+        }
+        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
+        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
+        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
+        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        baseMapper.updateById(electricityTradeOrderUpdate);
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+        electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
+        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
+        // TODO: 2020/12/4 0004 修改用户套餐信息
+        return Pair.of(result, null);
+    }
 }
