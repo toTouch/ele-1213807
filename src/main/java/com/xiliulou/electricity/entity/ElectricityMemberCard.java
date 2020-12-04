@@ -17,7 +17,7 @@ import java.math.BigDecimal;
 @Data
 @TableName("t_electricity_member_card")
 public class ElectricityMemberCard {
-    @TableId(value = "id",type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     //代理商id
     private Integer agentId;
@@ -33,9 +33,13 @@ public class ElectricityMemberCard {
     private BigDecimal holidayPrice;
     //有效天数
     private Integer validDays;
-    @NotNull(message = "使用次数不能为空!")
+
     //最大使用次数
     private Long maxUseCount;
+    //是否限制使用次数  0:不限制,1:限制
+    @NotNull(message = "是否限制使用次数不能为空!")
+    private Integer limitCount;
+
     //状态
     private Integer status;
     private Long createTime;
