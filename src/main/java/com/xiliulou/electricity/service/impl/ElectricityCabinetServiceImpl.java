@@ -142,7 +142,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
         }
         if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
-            if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())) {
+            if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())
+            ||electricityCabinetAddAndUpdate.getBeginTime()>electricityCabinetAddAndUpdate.getEndTime()) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             electricityCabinet.setBusinessTime(electricityCabinetAddAndUpdate.getBeginTime()+"-"+Objects.isNull(electricityCabinetAddAndUpdate.getEndTime()));
@@ -197,7 +198,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
             }
             if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
-                if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())) {
+                if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())
+                        ||electricityCabinetAddAndUpdate.getBeginTime()>electricityCabinetAddAndUpdate.getEndTime()) {
                     return R.fail("ELECTRICITY.0007", "不合法的参数");
                 }
                 electricityCabinet.setBusinessTime(electricityCabinetAddAndUpdate.getBeginTime()+"-"+Objects.isNull(electricityCabinetAddAndUpdate.getEndTime()));

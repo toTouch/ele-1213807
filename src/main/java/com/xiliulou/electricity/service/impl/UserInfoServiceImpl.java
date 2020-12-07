@@ -80,6 +80,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         }
         UserInfo userInfo=new UserInfo();
         BeanUtil.copyProperties(userInfoAddAndUpdate,userInfo);
+        userInfo.setNowElectricityBatterySn(userInfoAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setDelFlag(UserInfo.DEL_NORMAL);
         userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
