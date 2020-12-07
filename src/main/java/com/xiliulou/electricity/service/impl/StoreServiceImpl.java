@@ -15,6 +15,7 @@ import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -182,6 +183,20 @@ public class StoreServiceImpl implements StoreService {
         List<StoreVO> storeVOList= storeMapper.queryList(storeQuery);
         if(ObjectUtil.isNotEmpty(storeVOList)){
             storeVOList.parallelStream().forEach(e -> {
+                //营业时间
+                if(Objects.nonNull(e.getBusinessTime())){
+                    String businessTime=e.getBusinessTime();
+                    if(Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)){
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    }
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
+                    }
+                }
                 //地区
                 City city = cityService.queryByIdFromCache(e.getAreaId());
                 if (Objects.nonNull(city)) {
@@ -226,6 +241,24 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public R showInfoByDistance(StoreQuery storeQuery) {
         List<StoreVO> storeVOList= storeMapper.showInfoByDistance(storeQuery);
-        return R.ok(storeVOList);
+        if(ObjectUtil.isNotEmpty(storeVOList)){
+            storeVOList.parallelStream().forEach(e -> {
+                //营业时间
+                if(Objects.nonNull(e.getBusinessTime())){
+                    String businessTime=e.getBusinessTime();
+                    if(Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)){
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    }
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
+                    }
+                }
+            });
+        }
+        return R.ok(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getDistance).reversed()).collect(Collectors.toList()));
     }
 }
