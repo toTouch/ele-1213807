@@ -80,9 +80,13 @@ public class ElectricityCabinetVO {
     */
     private String servicePhone;
     /**
-    * 营业时间
-    */
+     * 营业时间
+     */
     private String businessTime;
+    /**
+    * 营业时间类型
+    */
+    private String businessTimeType;
     /**
     * 创建时间
     */
@@ -125,5 +129,19 @@ public class ElectricityCabinetVO {
      * 省id
      */
     private Integer pid;
+
+    /**
+     * 营业开始时间
+     */
+    private Long beginTime;
+    /**
+     * 营业结束时间
+     */
+    private Long endTime;
+
+    //全天
+    public static final String ALL_DAY = "-1";
+    //自定义时间段
+    public static final String CUSTOMIZE_TIME = "1";
 
 }

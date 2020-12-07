@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 
 
@@ -46,9 +47,9 @@ public interface ElectricityCabinetService {
      */
     Integer update(ElectricityCabinet electricityCabinet);
 
-    R save(ElectricityCabinet electricityCabinet);
+    R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
 
-    R edit(ElectricityCabinet electricityCabinet);
+    R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
 
     R delete(Integer id);
 

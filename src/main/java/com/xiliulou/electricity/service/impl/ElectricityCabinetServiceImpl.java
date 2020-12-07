@@ -15,6 +15,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
@@ -125,12 +126,26 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R save(ElectricityCabinet electricityCabinet) {
+    public R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        ElectricityCabinet electricityCabinet=new ElectricityCabinet();
+        BeanUtil.copyProperties(electricityCabinetAddAndUpdate,electricityCabinet);
         if(Objects.isNull(electricityCabinet.getPowerStatus())){
             electricityCabinet.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_NO_POWER_STATUS);
         }
         if(Objects.isNull(electricityCabinet.getOnlineStatus())){
             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+        }
+        if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.ALL_DAY)){
+            electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+        }
+        if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
+            if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())) {
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
+            electricityCabinet.setBusinessTime(electricityCabinetAddAndUpdate.getBeginTime()+"-"+Objects.isNull(electricityCabinetAddAndUpdate.getEndTime()));
+        }
+        if(Objects.isNull(electricityCabinet.getBusinessTime())){
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         electricityCabinet.setCreateTime(System.currentTimeMillis());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
@@ -164,13 +179,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R edit(ElectricityCabinet electricityCabinet) {
+    public R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        ElectricityCabinet electricityCabinet=new ElectricityCabinet();
+        BeanUtil.copyProperties(electricityCabinetAddAndUpdate,electricityCabinet);
         if(Objects.isNull(electricityCabinet.getId())){
             return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
         if (Objects.isNull(oldElectricityCabinet)) {
             return R.fail("ELECTRICITY.0005","未找到换电柜");
+        }
+        if(Objects.nonNull(electricityCabinetAddAndUpdate.getBusinessTimeType())){
+            if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.ALL_DAY)){
+                electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+            }
+            if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
+                if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())) {
+                    return R.fail("ELECTRICITY.0007", "不合法的参数");
+                }
+                electricityCabinet.setBusinessTime(electricityCabinetAddAndUpdate.getBeginTime()+"-"+Objects.isNull(electricityCabinetAddAndUpdate.getEndTime()));
+            }
+            if(Objects.isNull(electricityCabinet.getBusinessTime())){
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
         }
         //三元组
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
@@ -239,6 +270,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+                //营业时间
+                if(Objects.nonNull(e.getBusinessTime())){
+                    String businessTime=e.getBusinessTime();
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)){
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    }
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
+                    }
+                }
                 //地区
                 City city=cityService.queryByIdFromCache(e.getAreaId());
                 if (Objects.nonNull(city)) {
@@ -287,6 +332,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinets=new ArrayList<>();
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+                //营业时间
+                if(Objects.nonNull(e.getBusinessTime())){
+                    String businessTime=e.getBusinessTime();
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)){
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    }
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
+                    }
+                }
                 //查满仓空仓数
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
@@ -398,6 +457,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if(Objects.nonNull(electricityBatteryModel)){
                         set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
                     }
+                }
+            }
+            //营业时间
+            if(Objects.nonNull(electricityCabinetVO.getBusinessTime())){
+                String businessTime=electricityCabinetVO.getBusinessTime();
+                if(Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)){
+                    electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                }
+                if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                    electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                    Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                    Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                    electricityCabinetVO.setBeginTime(beginTime);
+                    electricityCabinetVO.setEndTime(endTime);
                 }
             }
             //空仓
