@@ -121,5 +121,9 @@ public class ElectricityCabinetVO {
     private String areaName;
 
     private Double distance;
+    /**
+     * 省id
+     */
+    private Integer pid;
 
 }

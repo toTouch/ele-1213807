@@ -242,6 +242,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 City city=cityService.queryByIdFromCache(e.getAreaId());
                 if (Objects.nonNull(city)) {
                     e.setAreaName(city.getCity());
+                    e.setPid(city.getPid());
                 }
                 //查找型号名称
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
