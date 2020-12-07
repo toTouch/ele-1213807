@@ -1,3 +1,4 @@
+/*
 package com.xiliulou.electricity.queue;
 import com.xiliulou.electricity.entity.DelayedMessage;
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +26,7 @@ public class JdkDelayedQueue {
                     DelayedMessage message = queue.take();
                     executorService.execute(() -> {
                         log.info("ORDER CANCEL , queue receiver a meg={}", message);
-                       //TODO 执行定时任务
+                       //
                     });
                 }
             } catch (InterruptedException e2) {
@@ -51,3 +52,4 @@ public class JdkDelayedQueue {
         return queue.size();
     }
 }
+*/

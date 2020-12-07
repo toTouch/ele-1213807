@@ -1,3 +1,4 @@
+/*
 package com.xiliulou.electricity.queue;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -7,12 +8,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 
+*/
 /**
  * @author: lxc
  * @Date: 2020/12/3 08:31
  * @Description:
- */
-//@Service
+ *//*
+
+@Service
 @Slf4j
 public class ElectricityCabinetOperateQueueHandler {
 
@@ -47,3 +50,4 @@ public class ElectricityCabinetOperateQueueHandler {
 		executorService.shutdown();
 	}
 }
+*/

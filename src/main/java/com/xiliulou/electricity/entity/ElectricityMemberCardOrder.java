@@ -1,0 +1,45 @@
+package com.xiliulou.electricity.entity;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
+
+import java.math.BigDecimal;
+
+/**
+ * @program: XILIULOU
+ * @description:
+ * @author: Mr.YG
+ * @create: 2020-12-03 09:45
+ **/
+@Data
+public class ElectricityMemberCardOrder {
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
+    //支付金额
+    private BigDecimal payAmount;
+    //有效天数
+    private Integer validDays;
+
+    //
+    private Long uid;
+    //
+    private String orderNo;
+    // 0,未支付,1,支付成功 2,支付失败
+    private Integer status;
+    //月卡id
+    private Integer memberCardId;
+    //用户名
+    private String userName;
+    //月卡类型
+    private Integer memberCardType;
+    //创建时间
+    private Long createTime;
+    //修改时间
+    private Long updateTime;
+
+    public static final Integer STATUS_INIT = 0;
+    public static final Integer STATUS_SUCCESS = 1;
+    public static final Integer STATUS_FAIL = 0;
+
+}

@@ -27,7 +27,7 @@ public class ElectricityCabinetBatteryModelAdminController {
      * @return
      */
     @PostMapping("admin/battery/model")
-    public R saveBatteryModel(@Validated ElectricityBatteryModel electricityBatteryModel) {
+    public R saveBatteryModel(@RequestBody @Validated ElectricityBatteryModel electricityBatteryModel) {
         return electricityBatteryModelService.saveElectricityBatteryModel(electricityBatteryModel);
     }
 
@@ -36,7 +36,7 @@ public class ElectricityCabinetBatteryModelAdminController {
      * @return
      */
     @PutMapping("admin/battery/model")
-    public R updateBatteryModel(@Validated ElectricityBatteryModel electricityBatteryModel) {
+    public R updateBatteryModel(@RequestBody @Validated ElectricityBatteryModel electricityBatteryModel) {
         if (Objects.isNull(electricityBatteryModel.getId())) {
             return R.failMsg("电池型号id不能为空!");
         }

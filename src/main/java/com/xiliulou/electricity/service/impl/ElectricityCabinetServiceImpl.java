@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -7,19 +9,24 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -28,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +63,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     ElectricityBatteryModelService electricityBatteryModelService;
+    @Autowired
+    CityService cityService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -118,12 +128,26 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R save(ElectricityCabinet electricityCabinet) {
+    public R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        ElectricityCabinet electricityCabinet=new ElectricityCabinet();
+        BeanUtil.copyProperties(electricityCabinetAddAndUpdate,electricityCabinet);
         if(Objects.isNull(electricityCabinet.getPowerStatus())){
             electricityCabinet.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_NO_POWER_STATUS);
         }
         if(Objects.isNull(electricityCabinet.getOnlineStatus())){
             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+        }
+        if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.ALL_DAY)){
+            electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+        }
+        if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
+            if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())) {
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
+            electricityCabinet.setBusinessTime(electricityCabinetAddAndUpdate.getBeginTime()+"-"+Objects.isNull(electricityCabinetAddAndUpdate.getEndTime()));
+        }
+        if(Objects.isNull(electricityCabinet.getBusinessTime())){
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         electricityCabinet.setCreateTime(System.currentTimeMillis());
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
@@ -153,17 +177,33 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         //添加快递柜格挡
         electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
-        return R.ok();
+        return R.ok(electricityCabinet.getId());
     }
 
     @Override
-    public R edit(ElectricityCabinet electricityCabinet) {
+    public R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        ElectricityCabinet electricityCabinet=new ElectricityCabinet();
+        BeanUtil.copyProperties(electricityCabinetAddAndUpdate,electricityCabinet);
         if(Objects.isNull(electricityCabinet.getId())){
             return R.fail("ELECTRICITY.0007","不合法的参数");
         }
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
         if (Objects.isNull(oldElectricityCabinet)) {
             return R.fail("ELECTRICITY.0005","未找到换电柜");
+        }
+        if(Objects.nonNull(electricityCabinetAddAndUpdate.getBusinessTimeType())){
+            if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.ALL_DAY)){
+                electricityCabinet.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+            }
+            if(Objects.equals(electricityCabinetAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
+                if(Objects.isNull(electricityCabinetAddAndUpdate.getBeginTime())||Objects.isNull(electricityCabinetAddAndUpdate.getEndTime())) {
+                    return R.fail("ELECTRICITY.0007", "不合法的参数");
+                }
+                electricityCabinet.setBusinessTime(electricityCabinetAddAndUpdate.getBeginTime()+"-"+Objects.isNull(electricityCabinetAddAndUpdate.getEndTime()));
+            }
+            if(Objects.isNull(electricityCabinet.getBusinessTime())){
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
         }
         //三元组
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
@@ -230,9 +270,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
-        List<ElectricityCabinetVO> electricityCabinetVOS = new ArrayList<>();
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+                //营业时间
+                if(Objects.nonNull(e.getBusinessTime())){
+                    String businessTime=e.getBusinessTime();
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)){
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    }
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
+                    }
+                }
+                //地区
+                City city=cityService.queryByIdFromCache(e.getAreaId());
+                if (Objects.nonNull(city)) {
+                    e.setAreaName(city.getCity());
+                    e.setPid(city.getPid());
+                }
                 //查找型号名称
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
@@ -258,13 +317,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
+                //TODO 在线更新柜机
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
-                electricityCabinetVOS.add(e);
             });
         }
-        return R.ok(electricityCabinetVOS.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getUpdateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getUpdateTime).reversed()).collect(Collectors.toList()));
     }
 
 
@@ -272,14 +331,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
-        List<ElectricityCabinetVO> electricityCabinetVOS = new ArrayList<>();
+        List<ElectricityCabinetVO> electricityCabinets=new ArrayList<>();
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+                //营业时间
+                if(Objects.nonNull(e.getBusinessTime())){
+                    String businessTime=e.getBusinessTime();
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)){
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    }
+                    if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        e.setBeginTime(beginTime);
+                        e.setEndTime(endTime);
+                        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                        Long now =System.currentTimeMillis();
+                        if(firstToday+beginTime>now||firstToday+endTime<now){
+                            e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                        }else {
+                            e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                        }
+                    }
+                }
                 //查满仓空仓数
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
                 Integer noElectricityBattery = 0;
-                Set<String> set= new  HashSet();
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
                     for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
@@ -288,10 +367,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         if(Objects.nonNull(electricityBattery)) {
                             if (electricityBattery.getCapacity() >= e.getFullyCharged()) {
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
-                            }
-                            ElectricityBatteryModel electricityBatteryModel=electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
-                            if(Objects.nonNull(electricityBatteryModel)){
-                                set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
                             }
                         }
                     }
@@ -303,11 +378,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
-                e.setElectricityBatteryFormat(set);
-                electricityCabinetVOS.add(e);
+                //TODO 在线更新柜机
+                if(Objects.equals(e.getUsableStatus(),ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)&&Objects.equals(e.getPowerStatus(),ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS)
+                        &&Objects.equals(e.getOnlineStatus(),ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)){
+                    electricityCabinets.add(e);
+                }
             });
         }
-        return R.ok(electricityCabinetVOS);
+        return R.ok(electricityCabinets);
     }
 
     @Override
@@ -354,6 +432,76 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
         return R.ok();
+    }
+
+    @Override
+    public R queryOne(Integer id) {
+        ElectricityCabinet electricityCabinet=queryByIdFromCache(id);
+        if(Objects.isNull(electricityCabinet)){
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
+        }
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //TODO 判断是否租用电池 YG
+        ElectricityCabinetVO electricityCabinetVO=new ElectricityCabinetVO();
+        BeanUtil.copyProperties(electricityCabinet,electricityCabinetVO);
+        //查满仓空仓数
+        Integer electricityBatteryTotal = 0;
+        Integer fullyElectricityBattery = 0;
+        Integer noElectricityBattery = 0;
+        Set<String> set= new  HashSet();
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
+        if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+            for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+                //满仓个数
+                ElectricityBattery electricityBattery=electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                if(Objects.nonNull(electricityBattery)) {
+                    if (electricityBattery.getCapacity() >= electricityCabinet.getFullyCharged()) {
+                        fullyElectricityBattery = fullyElectricityBattery + 1;
+                    }
+                    ElectricityBatteryModel electricityBatteryModel=electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
+                    if(Objects.nonNull(electricityBatteryModel)){
+                        set.add(electricityBatteryModel.getVoltage()+"V"+electricityBatteryModel.getCapacity()+"M");
+                    }
+                }
+            }
+            //营业时间
+            if(Objects.nonNull(electricityCabinetVO.getBusinessTime())){
+                String businessTime=electricityCabinetVO.getBusinessTime();
+                if(Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)){
+                    electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                }
+                if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                    electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                    Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                    Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                    electricityCabinetVO.setBeginTime(beginTime);
+                    electricityCabinetVO.setEndTime(endTime);
+                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                    Long now =System.currentTimeMillis();
+                    if(firstToday+beginTime>now||firstToday+endTime<now){
+                        electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                    }else {
+                        electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                    }
+                }
+            }
+            //空仓
+            noElectricityBattery = (int)electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+            //电池总数
+            electricityBatteryTotal = (int)electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+        }
+        if(noElectricityBattery<=0){
+            return R.fail("ELECTRICITY.0008","换电柜暂无空仓");
+        }
+        electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
+        electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
+        electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+        electricityCabinetVO.setElectricityBatteryFormat(set);
+        return R.ok(electricityCabinetVO);
     }
 
 

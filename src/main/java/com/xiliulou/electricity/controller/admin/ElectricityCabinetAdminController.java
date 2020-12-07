@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -24,14 +27,14 @@ public class ElectricityCabinetAdminController {
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
-    public R save(@RequestBody @Validated ElectricityCabinet electricityCabinet) {
-        return electricityCabinetService.save(electricityCabinet);
+    public R save(@RequestBody @Validated(value = CreateGroup.class) ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        return electricityCabinetService.save(electricityCabinetAddAndUpdate);
     }
 
     //修改换电柜
     @PutMapping(value = "/admin/electricityCabinet")
-    public R update(@RequestBody ElectricityCabinet electricityCabinet) {
-        return electricityCabinetService.edit(electricityCabinet);
+    public R update(@RequestBody @Validated(value = UpdateGroup.class)  ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        return electricityCabinetService.edit(electricityCabinetAddAndUpdate);
     }
 
     //删除换电柜
@@ -42,6 +45,7 @@ public class ElectricityCabinetAdminController {
         }
         return electricityCabinetService.delete(id);
     }
+
 
    //列表查询
     @GetMapping(value = "/admin/electricityCabinet/list")

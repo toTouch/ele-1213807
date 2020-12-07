@@ -16,7 +16,7 @@ import java.util.Objects;
  * @author: Mr.YG
  * @create: 2020-12-01 15:25
  **/
-@RestControllerAdvice
+@RestController
 @Slf4j
 public class ElectricityMemberCardAdminController {
 
