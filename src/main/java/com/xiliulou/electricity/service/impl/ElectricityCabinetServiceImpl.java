@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
@@ -269,6 +270,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
+                //TODO 在线更新柜机
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
@@ -282,6 +284,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
+        List<ElectricityCabinetVO> electricityCabinets=new ArrayList<>();
         if(ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
                 //查满仓空仓数
@@ -307,9 +310,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
+                //TODO 在线更新柜机
+                if(Objects.equals(e.getUsableStatus(),ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)&&Objects.equals(e.getPowerStatus(),ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS)
+                        &&Objects.equals(e.getOnlineStatus(),ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)){
+                    electricityCabinets.add(e);
+                }
             });
         }
-        return R.ok(electricityCabinetList);
+        return R.ok(electricityCabinets);
     }
 
     @Override
