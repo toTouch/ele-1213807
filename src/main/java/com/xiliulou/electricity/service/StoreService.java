@@ -1,0 +1,46 @@
+package com.xiliulou.electricity.service;
+
+import com.xiliulou.electricity.entity.Store;
+
+/**
+ * 门店表(TStore)表服务接口
+ *
+ * @author makejava
+ * @since 2020-12-07 14:59:37
+ */
+public interface StoreService {
+
+    /**
+     * 通过ID查询单条数据从数据库
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    Store queryByIdFromDB(Integer id);
+    
+      /**
+     * 通过ID查询单条数据从缓存
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    Store queryByIdFromCache(Integer id);
+
+    /**
+     * 新增数据
+     *
+     * @param store 实例对象
+     * @return 实例对象
+     */
+    Store insert(Store store);
+
+    /**
+     * 修改数据
+     *
+     * @param store 实例对象
+     * @return 实例对象
+     */
+    Integer update(Store store);
+
+
+}
