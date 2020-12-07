@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -34,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -344,6 +346,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
                         e.setBeginTime(beginTime);
                         e.setEndTime(endTime);
+                        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                        Long now =System.currentTimeMillis();
+                        if(firstToday+beginTime>now||firstToday+endTime<now){
+                            e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                        }else {
+                            e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                        }
                     }
                 }
                 //查满仓空仓数
@@ -471,6 +480,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
                     electricityCabinetVO.setBeginTime(beginTime);
                     electricityCabinetVO.setEndTime(endTime);
+                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                    Long now =System.currentTimeMillis();
+                    if(firstToday+beginTime>now||firstToday+endTime<now){
+                        electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                    }else {
+                        electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                    }
                 }
             }
             //空仓

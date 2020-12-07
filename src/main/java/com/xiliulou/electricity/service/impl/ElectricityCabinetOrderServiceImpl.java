@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.date.DateUnit;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
@@ -20,6 +22,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -130,6 +134,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", orderQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        //TODO 换电柜是否在线
+        //营业时间
+        if(Objects.nonNull(electricityCabinet.getBusinessTime())){
+            String businessTime=electricityCabinet.getBusinessTime();
+            if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+                Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                Long now =System.currentTimeMillis();
+                Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length()));
+                if(firstToday+beginTime>now||firstToday+endTime<now){
+                    return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+                }
+            }
         }
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
