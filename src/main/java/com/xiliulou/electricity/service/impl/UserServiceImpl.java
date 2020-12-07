@@ -116,10 +116,13 @@ public class UserServiceImpl implements UserService {
 	 * @param user 实例对象
 	 * @return 实例对象
 	 */
-	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(User user) {
-		return this.userMapper.update(user);
+		int update = this.userMapper.update(user);
+		if (update > 0) {
+
+		}
+		return update;
 
 	}
 
@@ -202,7 +205,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@DS("slave_1")
 	public Pair<Boolean, Object> queryListUser(Long uid, Integer size, Integer offset, String name, String phone, Integer type, Long startTime, Long endTime) {
-		List<User> user = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type,startTime,endTime);
+		List<User> user = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime);
 		return Pair.of(true, DataUtil.collectionIsUsable(user) ? user : Collections.emptyList());
 	}
 
@@ -265,10 +268,11 @@ public class UserServiceImpl implements UserService {
 			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + uid);
 			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone());
 		}
-		return Pair.of(true,null);
+		return Pair.of(true, null);
 	}
 
-	private int updateUser(User updateUser, User oldUser) {
+	@Override
+	public Integer updateUser(User updateUser, User oldUser) {
 		Integer update = update(updateUser);
 		if (update > 0) {
 			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());

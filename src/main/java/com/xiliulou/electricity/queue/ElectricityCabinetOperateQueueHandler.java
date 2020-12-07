@@ -12,7 +12,7 @@ import java.util.concurrent.Executors;
  * @Date: 2020/12/3 08:31
  * @Description:
  */
-@Service
+//@Service
 @Slf4j
 public class ElectricityCabinetOperateQueueHandler {
 

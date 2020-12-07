@@ -30,11 +30,14 @@ public class UserDetailServiceImpl implements UserDetailsService {
 	public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 		//查询用户
 		User user = userService.queryByUserName(username);
-		if (Objects.isNull(user)) {
+		if (Objects.isNull(user) || Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL)) {
 			throw new UsernameNotFoundException("用户名或者密码错误!");
 		}
+
 		//获取权限
 		ArrayList<String> dbAuthsSet = Lists.newArrayList();
+		dbAuthsSet.add("oauth_bind_modify");
+		dbAuthsSet.add("oauth_bind_list");
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
 				.createAuthorityList(dbAuthsSet.toArray(new String[0]));
 

@@ -9,13 +9,17 @@ import com.xiliulou.security.authentication.CustomTokenAuthenticationFilter;
 import com.xiliulou.security.authentication.console.CustomUsernamePasswordAuthenticationFilter;
 import com.xiliulou.security.authentication.JwtTokenManager;
 import com.xiliulou.security.authentication.TokenLogoutHandler;
+import com.xiliulou.security.authentication.thirdauth.CustomThirdAuthAuthenticationFilter;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationServiceFactory;
+import com.xiliulou.security.authentication.thirdauth.ThirdWxProAuthenticationProvider;
 import com.xiliulou.security.config.TokenConfig;
 import com.xiliulou.security.constant.TokenConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -57,18 +61,21 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return new TokenConfig();
 	}
 
+
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
 				.and().csrf().disable()
 				.authorizeRequests()
-				.antMatchers("/auth/token/**", "/actuator/**", "/error","/**").permitAll()
+				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
 				.anyRequest().authenticated()
 				.and().logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
 				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
-				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager())).httpBasic()
+				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager()))
+				.addFilterAfter(new CustomThirdAuthAuthenticationFilter(jwtTokenManager(), authenticationManager()), CustomUsernamePasswordAuthenticationFilter.class)
+				.httpBasic()
 				//不缓存session
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
@@ -84,6 +91,6 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder);
+		auth.userDetailsService(userDetailsService).passwordEncoder(customPasswordEncoder).and().authenticationProvider(new ThirdWxProAuthenticationProvider());
 	}
 }

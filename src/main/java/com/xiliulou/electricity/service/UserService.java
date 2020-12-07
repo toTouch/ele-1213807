@@ -50,11 +50,10 @@ public interface UserService {
 
 	/**
 	 * 修改数据
-	 *
-	 * @param user 实例对象
+	 * oldUser必须包括手机号和uid
 	 * @return 实例对象
 	 */
-	Integer update(User user);
+	Integer updateUser(User updateUser,User oldUser);
 
 	/**
 	 * 通过主键删除数据

@@ -51,7 +51,7 @@ public class User {
 	 */
 	private Integer delFlag;
 	/**
-	 * 0--正常 1--删除
+	 * 0--正常 1--锁住
 	 */
 	private Integer lockFlag;
 	/**

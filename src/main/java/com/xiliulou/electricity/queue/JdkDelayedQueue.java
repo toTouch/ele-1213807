@@ -7,7 +7,7 @@ import java.util.concurrent.DelayQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-@Service
+//@Service
 @Slf4j
 public class JdkDelayedQueue {
     DelayQueue<DelayedMessage> queue = new DelayQueue<>();
