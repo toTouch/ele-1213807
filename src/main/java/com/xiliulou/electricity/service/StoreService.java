@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 
 /**
@@ -45,9 +46,9 @@ public interface StoreService {
     Integer update(Store store);
 
 
-    R save(Store store);
+    R save(StoreAddAndUpdate storeAddAndUpdate);
 
-    R edit(Store store);
+    R edit(StoreAddAndUpdate storeAddAndUpdate);
 
     R delete(Integer id);
 
@@ -56,4 +57,6 @@ public interface StoreService {
     R disable(Integer id);
 
     R reboot(Integer id);
+
+    R showInfoByDistance(StoreQuery storeQuery);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -8,15 +9,15 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.mapper.StoreMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
+import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.Comparator;
@@ -30,7 +31,7 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2020-12-07 14:59:37
  */
-@Service("tStoreService")
+@Service("storeService")
 public class StoreServiceImpl implements StoreService {
     @Resource
     private StoreMapper storeMapper;
@@ -97,7 +98,21 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public R save(Store store) {
+    public R save(StoreAddAndUpdate storeAddAndUpdate) {
+        Store store=new Store();
+        BeanUtil.copyProperties(storeAddAndUpdate,store);
+        if(Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)){
+            store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+        }
+        if(Objects.equals(storeAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
+            if(Objects.isNull(storeAddAndUpdate.getBeginTime())||Objects.isNull(storeAddAndUpdate.getEndTime())) {
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
+            store.setBusinessTime(storeAddAndUpdate.getBeginTime()+"-"+Objects.isNull(storeAddAndUpdate.getEndTime()));
+        }
+        if(Objects.isNull(store.getBusinessTime())){
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
         if(Objects.isNull(store.getUsableStatus())){
             store.setUsableStatus(Store.STORE_UN_USABLE_STATUS);
         }
@@ -114,7 +129,27 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public R edit(Store store) {
+    public R edit(StoreAddAndUpdate storeAddAndUpdate) {
+        Store store=new Store();
+        BeanUtil.copyProperties(storeAddAndUpdate,store);
+        Store oldStore=queryByIdFromCache(store.getId());
+        if(Objects.isNull(oldStore)){
+            return R.fail("ELECTRICITY.0018","未找到门店");
+        }
+        if(Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())){
+            if(Objects.equals(storeAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.ALL_DAY)){
+                store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+            }
+            if(Objects.equals(storeAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
+                if(Objects.isNull(storeAddAndUpdate.getBeginTime())||Objects.isNull(storeAddAndUpdate.getEndTime())) {
+                    return R.fail("ELECTRICITY.0007", "不合法的参数");
+                }
+                store.setBusinessTime(storeAddAndUpdate.getBeginTime()+"-"+Objects.isNull(storeAddAndUpdate.getEndTime()));
+            }
+            if(Objects.isNull(store.getBusinessTime())){
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
+        }
         store.setUpdateTime(System.currentTimeMillis());
         int insert= storeMapper.insertOne(store);
         DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -127,8 +162,10 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public R delete(Integer id) {
-        Store store=new Store();
-        store.setId(id);
+        Store store=queryByIdFromCache(id);
+        if(Objects.isNull(store)){
+            return R.fail("ELECTRICITY.0018","未找到门店");
+        }
         store.setUpdateTime(System.currentTimeMillis());
         store.setDelFlag(ElectricityCabinet.DEL_DEL);
         int insert= storeMapper.insertOne(store);
@@ -184,5 +221,11 @@ public class StoreServiceImpl implements StoreService {
             return null;
         });
         return R.ok();
+    }
+
+    @Override
+    public R showInfoByDistance(StoreQuery storeQuery) {
+        List<StoreVO> storeVOList= storeMapper.showInfoByDistance(storeQuery);
+        return R.ok(storeVOList);
     }
 }

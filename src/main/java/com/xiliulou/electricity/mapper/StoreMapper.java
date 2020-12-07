@@ -55,4 +55,5 @@ public interface StoreMapper extends BaseMapper<Store>{
      */
     int update(Store store);
 
+    List<StoreVO> showInfoByDistance(@Param("query")StoreQuery storeQuery);
 }

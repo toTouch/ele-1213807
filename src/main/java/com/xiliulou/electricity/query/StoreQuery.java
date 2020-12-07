@@ -22,4 +22,7 @@ public class StoreQuery {
 	private Integer areaId;
 	private Long beginTime;
 	private Long endTime;
+	private Double distance;
+	private Double lon;
+	private Double lat;
 }

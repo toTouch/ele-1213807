@@ -17,12 +17,14 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="usableStatus" column="usable_status" jdbcType="INTEGER"/>
+        <result property="servicePhone" column="service_phone" jdbcType="VARCHAR"/>
+        <result property="businessTime" column="business_time" jdbcType="VARCHAR"/>
     </resultMap>
 
     <!--查询单个-->
     <select id="queryById" resultMap="StoreMap">
         select
-          id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status
+          id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status,service_phone, business_time
         from electricity.t_store
         where id = #{id}
     </select>
@@ -32,7 +34,7 @@
             resultType="com.xiliulou.electricity.vo.StoreVO">
         select
         id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
-        create_time, update_time,usable_status
+        create_time, update_time,usable_status,service_phone, business_time
         from electricity.t_store
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -54,7 +56,7 @@
     <select id="queryAll" resultMap="StoreMap">
         select
         id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
-        create_time, update_time,usable_status
+        create_time, update_time,usable_status,service_phone, business_time
         from electricity.t_store
         <where>
             <if test="id != null">
@@ -99,13 +101,49 @@
             <if test="usableStatus != null">
                 and usable_status = #{usableStatus}
             </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                and service_phone = #{servicePhone}
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                and business_time = #{businessTime}
+            </if>
         </where>
+    </select>
+    <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.StoreVO">
+        select  id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
+        create_time, update_time,usable_status,  service_phone, business_time,  ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{query.lat} * PI() / 180 - latitude * PI() / 180
+        ) / 2
+        ),
+        2
+        ) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
+        SIN(
+        (
+        #{query.lon} * PI() / 180 - longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance
+        from electricity.t_store
+        where del_flag = 0
+        <if test="query.distance != null">
+            having distance &lt; #{query.distance}
+        </if>
+        order by distance
     </select>
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_store(sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status)
-        values (#{sn}, #{name}, #{areaId}, #{address}, #{longitude}, #{latitude}, #{batteryStock}, #{batteryService}, #{carService}, #{delFlag}, #{createTime}, #{updateTime},#{usableStatus})
+        insert into electricity.t_store(sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status, service_phone, business_time)
+        values (#{sn}, #{name}, #{areaId}, #{address}, #{longitude}, #{latitude}, #{batteryStock}, #{batteryService}, #{carService}, #{delFlag}, #{createTime}, #{updateTime},#{usableStatus}, #{servicePhone}, #{businessTime})
     </insert>
 
     <!--通过主键修改数据-->
@@ -150,6 +188,12 @@
             </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                service_phone = #{servicePhone},
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                business_time = #{businessTime},
             </if>
         </set>
         where id = #{id}

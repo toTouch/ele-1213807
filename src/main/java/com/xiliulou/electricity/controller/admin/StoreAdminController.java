@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -26,14 +27,14 @@ public class StoreAdminController {
 
     //新增门店
     @PostMapping(value = "/admin/store")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) Store store) {
-        return storeService.save(store);
+    public R save(@RequestBody @Validated(value = CreateGroup.class) StoreAddAndUpdate storeAddAndUpdate) {
+        return storeService.save(storeAddAndUpdate);
     }
 
     //修改门店
     @PutMapping(value = "/admin/store")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class)  Store store) {
-        return storeService.edit(store);
+    public R update(@RequestBody @Validated(value = UpdateGroup.class)  StoreAddAndUpdate storeAddAndUpdate) {
+        return storeService.edit(storeAddAndUpdate);
     }
 
     //删除门店

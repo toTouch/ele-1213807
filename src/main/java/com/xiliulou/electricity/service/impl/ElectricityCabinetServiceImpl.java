@@ -188,9 +188,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         ElectricityCabinet electricityCabinet=new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddAndUpdate,electricityCabinet);
-        if(Objects.isNull(electricityCabinet.getId())){
-            return R.fail("ELECTRICITY.0007","不合法的参数");
-        }
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
         if (Objects.isNull(oldElectricityCabinet)) {
             return R.fail("ELECTRICITY.0005","未找到换电柜");
