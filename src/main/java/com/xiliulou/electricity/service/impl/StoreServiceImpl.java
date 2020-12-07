@@ -106,7 +106,8 @@ public class StoreServiceImpl implements StoreService {
             store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
         }
         if(Objects.equals(storeAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
-            if(Objects.isNull(storeAddAndUpdate.getBeginTime())||Objects.isNull(storeAddAndUpdate.getEndTime())) {
+            if(Objects.isNull(storeAddAndUpdate.getBeginTime())||Objects.isNull(storeAddAndUpdate.getEndTime())
+                    ||storeAddAndUpdate.getBeginTime()>storeAddAndUpdate.getEndTime()) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             store.setBusinessTime(storeAddAndUpdate.getBeginTime()+"-"+Objects.isNull(storeAddAndUpdate.getEndTime()));
@@ -142,7 +143,8 @@ public class StoreServiceImpl implements StoreService {
                 store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
             }
             if(Objects.equals(storeAddAndUpdate.getBusinessTimeType(),ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)){
-                if(Objects.isNull(storeAddAndUpdate.getBeginTime())||Objects.isNull(storeAddAndUpdate.getEndTime())) {
+                if(Objects.isNull(storeAddAndUpdate.getBeginTime())||Objects.isNull(storeAddAndUpdate.getEndTime())
+                        ||storeAddAndUpdate.getBeginTime()>storeAddAndUpdate.getEndTime()) {
                     return R.fail("ELECTRICITY.0007", "不合法的参数");
                 }
                 store.setBusinessTime(storeAddAndUpdate.getBeginTime()+"-"+Objects.isNull(storeAddAndUpdate.getEndTime()));
