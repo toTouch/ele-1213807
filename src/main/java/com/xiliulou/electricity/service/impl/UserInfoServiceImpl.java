@@ -84,6 +84,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfo.setDelFlag(UserInfo.DEL_NORMAL);
         userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
         userInfoMapper.update(userInfo);
-        return null;
+        // TODO 电池绑定用户 YG
+        return R.ok();
     }
 }
