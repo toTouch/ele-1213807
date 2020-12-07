@@ -30,4 +30,7 @@ public interface ElectricityCabinetConstant {
     //城市缓存，不变
     String CACHE_CITY = "city:";
     String CACHE_SUBSCRIPTION_MESSAGE = "CACHE_SUBSCRIPTION_MESSAGE_";
+
+    //门店缓存
+    String CACHE_STORE = "store:";
 }

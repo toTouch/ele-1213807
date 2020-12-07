@@ -14,7 +14,7 @@ import javax.annotation.Resource;
  * @author makejava
  * @since 2020-12-07 15:00:00
  */
-@Service("tUserInfoService")
+@Service("userInfoService")
 public class UserInfoServiceImpl implements UserInfoService {
     @Resource
     private UserInfoMapper userInfoMapper;

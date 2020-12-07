@@ -1,8 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
-
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * 门店表(TStore)表控制层
@@ -15,7 +21,69 @@ public class StoreAdminController {
     /**
      * 服务对象
      */
-    @Resource
-    private StoreService tStoreService;
+    @Autowired
+    StoreService storeService;
+
+    //新增门店
+    @PostMapping(value = "/admin/store")
+    public R save(@RequestBody @Validated(value = CreateGroup.class) Store store) {
+        return storeService.save(store);
+    }
+
+    //修改门店
+    @PutMapping(value = "/admin/store")
+    public R update(@RequestBody @Validated(value = UpdateGroup.class)  Store store) {
+        return storeService.edit(store);
+    }
+
+    //删除门店
+    @DeleteMapping(value = "/admin/store/{id}")
+    public R delete(@PathVariable("id") Integer id) {
+        if (Objects.isNull(id)) {
+            return R.fail("ELECTRICITY.0007","不合法的参数");
+        }
+        return storeService.delete(id);
+    }
+
+
+    //列表查询
+    @GetMapping(value = "/admin/store/list")
+    public R queryList(@RequestParam(value = "size", required = false) Integer size,
+                       @RequestParam(value = "offset", required = false) Integer offset,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "areaId", required = false) Integer areaId,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (Objects.isNull(size)) {
+            size = 10;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0;
+        }
+
+        StoreQuery storeQuery = StoreQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .areaId(areaId)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+        return storeService.queryList(storeQuery);
+    }
+
+    //禁用门店
+    @PostMapping(value = "/admin/store/disable/{id}")
+    public R disable(@PathVariable("id") Integer id) {
+        return storeService.disable(id);
+    }
+
+
+    //启用门店
+    @PostMapping(value = "/admin/store/reboot/{id}")
+    public R reboot(@PathVariable("id") Integer id) {
+        return storeService.reboot(id);
+    }
 
 }

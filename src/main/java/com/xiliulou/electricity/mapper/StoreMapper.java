@@ -2,6 +2,9 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.Store;
 import java.util.List;
+
+import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.vo.StoreVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -25,7 +28,7 @@ public interface StoreMapper extends BaseMapper<Store>{
      * 查询指定行数据
      *
      */
-    List<Store> queryList(@Param("offset") int offset, @Param("limit") int limit);
+    List<StoreVO> queryList(@Param("query") StoreQuery storeQuery);
 
 
     /**

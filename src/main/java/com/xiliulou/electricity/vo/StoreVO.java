@@ -1,12 +1,13 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
+
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
@@ -18,61 +19,44 @@ import javax.validation.constraints.NotNull;
  * @since 2020-12-07 14:59:37
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_store")
-public class Store {
-    /**
-    * 门店Id
-    */
-    @TableId
-    @NotNull(message = "门店Id不能为空!", groups = {UpdateGroup.class})
+public class StoreVO {
+
     private Integer id;
     /**
     * 门店账号
     */
-    @NotEmpty(message = "门店账号不能为空!", groups = {CreateGroup.class})
     private String sn;
     /**
     * 门店名称
     */
-    @NotEmpty(message = "门店名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
     * 门店地区Id
     */
-    @NotNull(message = "门店地区Id不能为空!", groups = {CreateGroup.class})
     private Integer areaId;
     /**
     * 门店地址
     */
-    @NotEmpty(message = "门店地址不能为空!", groups = {CreateGroup.class})
     private String address;
     /**
     * 地址经度
     */
-    @NotNull(message = "地址经度不能为空!", groups = {CreateGroup.class})
     private Double longitude;
     /**
     * 地址纬度
     */
-    @NotNull(message = " 地址纬度不能为空!", groups = {CreateGroup.class})
     private Double latitude;
     /**
     * 电池库存
     */
-    @NotNull(message = " 电池库存不能为空!", groups = {CreateGroup.class})
     private Integer batteryStock;
     /**
     * 租电池服务(0--支持，1--不支持)
     */
-    @NotNull(message = " 租电池服务不能为空!", groups = {CreateGroup.class})
     private Integer batteryService;
     /**
     * 租车服务(0--支持，1--不支持)
     */
-    @NotNull(message = "租车服务不能为空!", groups = {CreateGroup.class})
     private Integer carService;
     /**
     * 0--正常 1--删除
@@ -86,17 +70,22 @@ public class Store {
     * 更新时间
     */
     private Long updateTime;
+
+    /**
+     * 门店地区
+     */
+    private String areaName;
+
+    /**
+     * 电池在用数量
+     */
+    private Integer userStock;
+
+    private Integer pid;
     /**
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
-    //可用
-    public static final Integer STORE_USABLE_STATUS = 0;
-    //禁用
-    public static final Integer STORE_UN_USABLE_STATUS = 1;
 
 }

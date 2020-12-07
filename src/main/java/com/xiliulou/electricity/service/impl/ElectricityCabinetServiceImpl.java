@@ -24,6 +24,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.security.bean.TokenUser;
@@ -172,11 +173,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004","未找到换电柜型号");
         }
-        electricityCabinetMapper.insertOne(electricityCabinet);
-        //新增缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-        //添加快递柜格挡
-        electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+        int insert= electricityCabinetMapper.insertOne(electricityCabinet);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            //新增缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+            //添加快递柜格挡
+            electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+            return electricityCabinet;
+        });
         return R.ok(electricityCabinet.getId());
     }
 
@@ -239,14 +243,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0010","不能修改型号");
         }
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetMapper.update(electricityCabinet);
-        //更新缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-        //添加快递柜格挡
-        if (!oldModelId.equals(electricityCabinet.getModelId())) {
-            electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
-            electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
-        }
+        int update= electricityCabinetMapper.update(electricityCabinet);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+            //添加快递柜格挡
+            if (!oldModelId.equals(electricityCabinet.getModelId())) {
+                electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
+                electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+            }
+            return null;
+        });
         return R.ok();
     }
 
@@ -260,10 +267,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setId(id);
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setDelFlag(ElectricityCabinet.DEL_DEL);
-        electricityCabinetMapper.update(electricityCabinet);
-        //删除缓存
-        redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
-        electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
+        int update= electricityCabinetMapper.update(electricityCabinet);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //删除缓存
+            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
+            electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
+            return null;
+        });
         return R.ok();
     }
 
@@ -323,7 +333,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setFullyElectricityBattery(fullyElectricityBattery);
             });
         }
-        return R.ok(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getUpdateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
     }
 
 
