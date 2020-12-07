@@ -251,6 +251,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.createTime(System.currentTimeMillis())
 				.phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
 				.name("")
+				.serviceStatus(UserInfo.NO_SERVICE_STATUS)
 				.delFlag(User.DEL_NORMAL)
 				.build();
 		userInfoService.insert(insertUserInfo);

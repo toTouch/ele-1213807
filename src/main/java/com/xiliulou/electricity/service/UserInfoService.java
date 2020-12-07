@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.UserInfoAddAndUpdate;
 
 /**
  * 用户列表(TUserInfo)表服务接口
@@ -43,4 +45,5 @@ public interface UserInfoService {
     Integer update(UserInfo userInfo);
 
 
+    R bindBattery(UserInfoAddAndUpdate userInfoAddAndUpdate);
 }
