@@ -38,7 +38,7 @@ public class ElectricityTradeOrder {
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
-    public static final Integer STATUS_FAIL = 0;
+    public static final Integer STATUS_FAIL = -1;
 
     public static final Integer ORDER_TYPE_MEMBER_CARD = 1;
 

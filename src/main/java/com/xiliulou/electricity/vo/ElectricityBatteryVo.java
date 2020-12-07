@@ -18,9 +18,12 @@ public class ElectricityBatteryVo extends ElectricityBattery {
     //代理商名称
     private String agentName;
     //电池型号
-    private ElectricityBatteryModel electricityBatteryModel;
+    private ElectricityBatteryModel batteryModel;
     //所在电柜名称
     private String cabinetName;
+    /**
+     * 所属用户
+     */
     private String userName;
 
 }
