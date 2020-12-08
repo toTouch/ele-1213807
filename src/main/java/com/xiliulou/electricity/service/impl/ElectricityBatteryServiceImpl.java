@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
@@ -104,5 +105,11 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
         } else {
             return R.failMsg("删除失败!");
         }
+    }
+
+    @Override
+    public Integer queryCountByShopId(Integer id) {
+        return electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getShopId,id)
+        .in(ElectricityBattery::getStatus,ElectricityBattery.WARE_HOUSE_STATUS,ElectricityBattery.LEASE_STATUS));
     }
 }

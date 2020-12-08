@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
@@ -53,8 +52,13 @@ public class StoreAdminController {
                        @RequestParam(value = "offset", required = false) Integer offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "areaId", required = false) Integer areaId,
+                       @RequestParam(value = "address", required = false) String address,
+                       @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "batteryService", required = false) Integer batteryService,
+                       @RequestParam(value = "carService", required = false) Integer carService,
+                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
         if (Objects.isNull(size)) {
             size = 10;
         }
@@ -69,7 +73,12 @@ public class StoreAdminController {
                 .name(name)
                 .areaId(areaId)
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .sn(sn)
+                .address(address)
+                .batteryService(batteryService)
+                .carService(carService)
+                .usableStatus(usableStatus).build();
 
         return storeService.queryList(storeQuery);
     }

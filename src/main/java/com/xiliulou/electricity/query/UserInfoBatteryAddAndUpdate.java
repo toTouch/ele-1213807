@@ -14,25 +14,19 @@ import javax.validation.constraints.NotNull;
  * @since 2020-12-07 15:00:00
  */
 @Data
-public class UserInfoAddAndUpdate {
+public class UserInfoBatteryAddAndUpdate {
     @NotNull(message = "Id不能为空!", groups = {UpdateGroup.class})
     private Long id;
-
-    private Long uid;
     /**
     * 用户姓名
     */
     @NotEmpty(message = "用户姓名不能为空!", groups = {UpdateGroup.class})
     private String name;
     /**
-    * 手机号
-    */
-    private String phone;
-    /**
     * 门店Id
     */
     @NotNull(message = "门店Id不能为空!", groups = {UpdateGroup.class})
-    private Long storeId;
+    private Integer batteryStoreId;
     /**
     * 身份证号
     */
@@ -44,36 +38,9 @@ public class UserInfoAddAndUpdate {
     @NotEmpty(message = "初始电池编号不能为空!", groups = {UpdateGroup.class})
     private String initElectricityBatterySn;
     /**
-    * 当前电池编号
-    */
-    private String nowElectricityBatterySn;
-    /**
-    * 服务状态 未开通-0 已开通-1
-    */
-    private Object serviceStatus;
-    /**
-    * 月卡剩余天数
-    */
-    private Integer memberCardDays;
-    /**
     * 租电池押金
     */
     @NotNull(message = "租电池押金不能为空!", groups = {UpdateGroup.class})
-    private Double deposit;
-    /**
-    * 0--正常 1--删除
-    */
-    private Object delFlag;
-    /**
-    * 创建时间
-    */
-    private Long createTime;
-    /**
-    * 更新时间
-    */
-    private Long updateTime;
-
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
+    private Double batteryDeposit;
 
 }

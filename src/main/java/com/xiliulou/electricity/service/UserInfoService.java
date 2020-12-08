@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.query.UserInfoAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
+import com.xiliulou.electricity.query.UserInfoQuery;
 
 /**
  * 用户列表(TUserInfo)表服务接口
@@ -45,5 +47,13 @@ public interface UserInfoService {
     Integer update(UserInfo userInfo);
 
 
-    R bindBattery(UserInfoAddAndUpdate userInfoAddAndUpdate);
+    R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
+
+    R bindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
+
+    R queryList(UserInfoQuery userInfoQuery);
+
+    R disable(Long id);
+
+    R reboot(Long id);
 }

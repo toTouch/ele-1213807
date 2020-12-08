@@ -18,7 +18,6 @@ public class StoreAddAndUpdate {
     /**
     * 门店Id
     */
-    @TableId
     @NotNull(message = "门店Id不能为空!", groups = {UpdateGroup.class})
     private Integer id;
     /**

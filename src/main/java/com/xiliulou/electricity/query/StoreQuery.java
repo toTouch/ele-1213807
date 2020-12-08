@@ -25,4 +25,24 @@ public class StoreQuery {
 	private Double distance;
 	private Double lon;
 	private Double lat;
+	/**
+	 * 租电池服务(0--支持，1--不支持)
+	 */
+	private Integer batteryService;
+	/**
+	 * 租车服务(0--支持，1--不支持)
+	 */
+	private Integer carService;
+	/**
+	 * 可用状态(0--启用，1--禁用)
+	 */
+	private Integer usableStatus;
+	/**
+	 * 门店账号
+	 */
+	private String sn;
+	/**
+	 * 门店地址
+	 */
+	private String address;
 }

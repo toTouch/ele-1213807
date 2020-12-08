@@ -49,7 +49,22 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
-        limit #{query.offset}, #{query.limit}
+        <if test="query.address != null and query.address != ''">
+            and address = #{query.address}
+        </if>
+        <if test="query.batteryService != null">
+            and battery_service = #{query.batteryService}
+        </if>
+        <if test="query.carService != null">
+            and car_service = #{query.carService}
+        </if>
+        <if test="query.sn != null and query.sn != ''">
+            and sn = #{query.sn}
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->

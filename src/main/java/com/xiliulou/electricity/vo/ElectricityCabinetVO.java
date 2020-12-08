@@ -147,6 +147,8 @@ public class ElectricityCabinetVO {
     public static final String ALL_DAY = "-1";
     //自定义时间段
     public static final String CUSTOMIZE_TIME = "1";
+    //不合法数据
+    public static final String ILLEGAL_DATA = "2";
 
     //营业
     public static final Integer IS_BUSINESS  = 0;

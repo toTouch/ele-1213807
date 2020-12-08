@@ -79,7 +79,7 @@ public class StoreVO {
     /**
      * 电池在用数量
      */
-    private Integer userStock;
+    private Integer useStock;
 
     private Integer pid;
     /**
@@ -113,6 +113,13 @@ public class StoreVO {
      * 是否营业 0--营业 1--打烊
      */
     private Integer isBusiness;
+
+    //全天
+    public static final String ALL_DAY = "-1";
+    //自定义时间段
+    public static final String CUSTOMIZE_TIME = "1";
+    //不合法数据
+    public static final String ILLEGAL_DATA = "2";
 
 
 }

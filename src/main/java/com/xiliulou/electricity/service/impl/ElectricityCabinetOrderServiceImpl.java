@@ -139,11 +139,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //营业时间
         if(Objects.nonNull(electricityCabinet.getBusinessTime())){
             String businessTime=electricityCabinet.getBusinessTime();
-            if(Objects.equals(businessTime,ElectricityCabinetVO.CUSTOMIZE_TIME)) {
+            if(!Objects.equals(businessTime,ElectricityCabinetVO.ALL_DAY)) {
                 Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                 Long now =System.currentTimeMillis();
                 Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
-                Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length()));
+                Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length()-1));
                 if(firstToday+beginTime>now||firstToday+endTime<now){
                     return R.fail("ELECTRICITY.0017", "换电柜已打烊");
                 }

@@ -66,4 +66,11 @@ public class ElectricityBattery {
 
     private Integer cabinetId;
 
+    //在仓
+    public static final Integer WARE_HOUSE_STATUS = 0;
+    //在库
+    public static final Integer STOCK_STATUS = 1;
+    //租借
+    public static final Integer LEASE_STATUS = 2;
+
 }

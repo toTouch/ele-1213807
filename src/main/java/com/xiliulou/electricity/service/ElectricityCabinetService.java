@@ -64,4 +64,10 @@ public interface ElectricityCabinetService {
     R reboot(Integer id);
 
     R queryOne(Integer id);
+
+    R homeOne(Integer day);
+
+    R homeTwo(Integer day);
+
+    R homeThree(Integer day);
 }

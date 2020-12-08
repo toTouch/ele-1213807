@@ -30,7 +30,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.stereotype.Service;
 
-import javax.annotation.Resource;
 import javax.crypto.Cipher;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -253,6 +252,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.name("")
 				.serviceStatus(UserInfo.NO_SERVICE_STATUS)
 				.delFlag(User.DEL_NORMAL)
+				.usableStatus(UserInfo.USER_USABLE_STATUS)
 				.build();
 		userInfoService.insert(insertUserInfo);
 

@@ -1,7 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.UserInfo;
 import java.util.List;
+
+import com.xiliulou.electricity.entity.UserInfo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
