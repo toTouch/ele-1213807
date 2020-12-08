@@ -37,7 +37,9 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.UserInfoVO">
         select
-          id, uid, name, phone, id_number, service_status, member_card_days, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+        id, uid, name, phone, id_number, service_status, member_card_days, battery_store_id, battery_area_id,
+        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
+        car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -62,7 +64,9 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="UserInfoMap">
         select
-          id, uid, name, phone, id_number, service_status, member_card_days, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+        id, uid, name, phone, id_number, service_status, member_card_days, battery_store_id, battery_area_id,
+        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
+        car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         <where>
             <if test="id != null">
@@ -183,6 +187,53 @@
             <if test="carDeposit != null">
                 car_deposit = #{carDeposit},
             </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键修改数据-->
+    <update id="unBind">
+        update electricity.t_user_info
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            <if test="memberCardDays != null">
+                member_card_days = #{memberCardDays},
+            </if>
+            battery_store_id = #{batteryStoreId},
+            battery_area_id = #{batteryAreaId},
+            init_electricity_battery_sn = #{initElectricityBatterySn},
+            now_electricity_battery_sn = #{nowElectricityBatterySn},
+            battery_deposit = #{batteryDeposit},
+            car_store_id = #{carStoreId},
+            car_sn = #{carSn},
+            number_plate = #{numberPlate},
+            car_deposit = #{carDeposit},
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>

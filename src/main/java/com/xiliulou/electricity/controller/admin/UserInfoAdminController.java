@@ -92,4 +92,17 @@ public class UserInfoAdminController {
     }
 
 
+   /*public static void main(String[] args) {
+        new Thread("read-thread"){
+            @Override
+            public void run () {
+            }
+        }.start();
+
+        new Thread("write-thread"){
+            @Override
+            public void run () {
+            }
+        }.start();
+    }*/
 }

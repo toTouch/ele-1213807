@@ -55,4 +55,12 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
      */
     int update(UserInfo userInfo);
 
+    /**
+     * 解除绑定
+     *
+     * @param userInfo 实例对象
+     * @return 影响行数
+     */
+    int unBind(UserInfo userInfo);
+
 }

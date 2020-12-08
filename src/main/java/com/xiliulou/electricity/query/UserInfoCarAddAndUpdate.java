@@ -21,10 +21,7 @@ public class UserInfoCarAddAndUpdate {
     */
     @NotEmpty(message = "用户姓名不能为空!", groups = {UpdateGroup.class})
     private String name;
-    /**
-    * 门店Id
-    */
-    @NotNull(message = "门店Id不能为空!", groups = {UpdateGroup.class})
+
     private Integer carStoreId;
     /**
     * 身份证号
@@ -45,6 +42,6 @@ public class UserInfoCarAddAndUpdate {
     * 租车押金
     */
     @NotNull(message = "租车押金不能为空!", groups = {UpdateGroup.class})
-    private Double batteryDeposit;
+    private Double carDeposit;
 
 }

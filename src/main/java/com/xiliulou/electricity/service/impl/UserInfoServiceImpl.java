@@ -25,6 +25,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.Comparator;
 import java.util.List;
@@ -62,8 +63,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     public UserInfo queryByIdFromDB(Long id) {
         return this.userInfoMapper.queryById(id);
     }
-    
-        /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -73,7 +74,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     public UserInfo queryByIdFromCache(Long id) {
         return null;
     }
-    
+
     /**
      * 新增数据
      *
@@ -96,47 +97,49 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
-       return this.userInfoMapper.update(userInfo);
-         
+        return this.userInfoMapper.update(userInfo);
+
     }
 
     @Override
     public R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
-        UserInfo oldUserInfo=queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
-        if(Objects.isNull(oldUserInfo)){
-            return R.fail("ELECTRICITY.0019","未找到用户");
+        UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        Store store=storeService.queryByIdFromCache(userInfoBatteryAddAndUpdate.getBatteryStoreId());
-        if (Objects.isNull(store)) {
-            return R.fail("ELECTRICITY.0018", "未找到门店");
-        }
-        ElectricityBattery oldElectricityBattery=electricityBatteryService.queryBySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
-        UserInfo userInfo=new UserInfo();
-        BeanUtil.copyProperties(userInfoBatteryAddAndUpdate,userInfo);
-        userInfo.setBatteryAreaId(store.getAreaId());
+        UserInfo userInfo = new UserInfo();
+        BeanUtil.copyProperties(userInfoBatteryAddAndUpdate, userInfo);
+        RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+        if (Objects.nonNull(userInfoBatteryAddAndUpdate.getBatteryStoreId())) {
+            Store store = storeService.queryByIdFromCache(userInfoBatteryAddAndUpdate.getBatteryStoreId());
+            if (Objects.isNull(store)) {
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
+            userInfo.setBatteryAreaId(store.getAreaId());
+            rentBatteryOrder.setBatteryStoreName(store.getName());
+        }
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
-        Integer update=userInfoMapper.update(userInfo);
+        Integer update = userInfoMapper.update(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录
-            RentBatteryOrder rentBatteryOrder=new RentBatteryOrder();
+            //添加租电池记录=
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(userInfo.getName());
             rentBatteryOrder.setPhone(userInfo.getPhone());
             rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
             rentBatteryOrder.setBatteryStoreId(userInfo.getBatteryStoreId());
-            rentBatteryOrder.setBatteryStoreName(store.getName());
             rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.IS_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
             //电池绑定用户
-            ElectricityBattery electricityBattery= new ElectricityBattery();
+            ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setUid(userInfo.getUid());
             electricityBatteryService.update(electricityBattery);
@@ -148,28 +151,29 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R bindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
-        UserInfo oldUserInfo=queryByIdFromDB(userInfoCarAddAndUpdate.getId());
-        if(Objects.isNull(oldUserInfo)){
-            return R.fail("ELECTRICITY.0019","未找到用户");
+        UserInfo oldUserInfo = queryByIdFromDB(userInfoCarAddAndUpdate.getId());
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        Store store=storeService.queryByIdFromCache(userInfoCarAddAndUpdate.getCarStoreId());
-        if (Objects.isNull(store)) {
-            return R.fail("ELECTRICITY.0018", "未找到门店");
+        RentCarOrder rentCarOrder = new RentCarOrder();
+        if(Objects.nonNull(userInfoCarAddAndUpdate.getCarStoreId())) {
+            Store store = storeService.queryByIdFromCache(userInfoCarAddAndUpdate.getCarStoreId());
+            if (Objects.isNull(store)) {
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
+            rentCarOrder.setCarStoreName(store.getName());
         }
-        UserInfo userInfo=new UserInfo();
-        BeanUtil.copyProperties(userInfoCarAddAndUpdate,userInfo);
+        UserInfo userInfo = new UserInfo();
+        BeanUtil.copyProperties(userInfoCarAddAndUpdate, userInfo);
         userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
-        Integer update=userInfoMapper.update(userInfo);
+        Integer update = userInfoMapper.update(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
-            RentCarOrder rentCarOrder = new RentCarOrder();
             rentCarOrder.setUid(oldUserInfo.getUid());
             rentCarOrder.setName(userInfo.getName());
             rentCarOrder.setPhone(userInfo.getPhone());
             rentCarOrder.setIdNumber(userInfo.getIdNumber());
             rentCarOrder.setCarStoreId(userInfo.getCarStoreId());
-            rentCarOrder.setCarStoreName(store.getName());
             rentCarOrder.setCarSn(userInfo.getCarSn());
             rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
             rentCarOrder.setNumberPlate(userInfo.getNumberPlate());
@@ -183,7 +187,7 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R queryList(UserInfoQuery userInfoQuery) {
-        List<UserInfoVO> UserInfoVOList=  userInfoMapper.queryList(userInfoQuery);
+        List<UserInfoVO> UserInfoVOList = userInfoMapper.queryList(userInfoQuery);
         if (ObjectUtil.isNotEmpty(UserInfoVOList)) {
             UserInfoVOList.parallelStream().forEach(e -> {
                 //地区
@@ -199,11 +203,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R disable(Long id) {
-        UserInfo oldUserInfo=queryByIdFromDB(id);
-        if(Objects.isNull(oldUserInfo)){
-            return R.fail("ELECTRICITY.0019","未找到用户");
+        UserInfo oldUserInfo = queryByIdFromDB(id);
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        UserInfo userInfo=new UserInfo();
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(UserInfo.USER_UN_USABLE_STATUS);
         userInfoMapper.update(userInfo);
@@ -212,11 +217,12 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R reboot(Long id) {
-        UserInfo oldUserInfo=queryByIdFromDB(id);
-        if(Objects.isNull(oldUserInfo)){
-            return R.fail("ELECTRICITY.0019","未找到用户");
+        UserInfo oldUserInfo = queryByIdFromDB(id);
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        UserInfo userInfo=new UserInfo();
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(UserInfo.USER_USABLE_STATUS);
         userInfoMapper.update(userInfo);
@@ -225,15 +231,20 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R unBindBattery(Long id) {
-        UserInfo oldUserInfo=queryByIdFromDB(id);
-        if(Objects.isNull(oldUserInfo)){
-            return R.fail("ELECTRICITY.0019","未找到用户");
+        UserInfo oldUserInfo = queryByIdFromDB(id);
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        Store store=storeService.queryByIdFromCache(oldUserInfo.getBatteryStoreId());
+        Store store = storeService.queryByIdFromCache(oldUserInfo.getBatteryStoreId());
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        UserInfo userInfo=new UserInfo();
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(id);
+        userInfo.setCarStoreId(oldUserInfo.getCarStoreId());
+        userInfo.setCarSn(oldUserInfo.getCarSn());
+        userInfo.setCarDeposit(oldUserInfo.getCarDeposit());
+        userInfo.setNumberPlate(oldUserInfo.getNumberPlate());
         userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryStoreId(null);
@@ -241,7 +252,7 @@ public class UserInfoServiceImpl implements UserInfoService {
         userInfo.setBatteryDeposit(null);
         userInfo.setServiceStatus(UserInfo.NO_SERVICE_STATUS);
         userInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update=userInfoMapper.updateById(userInfo);
+        Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             RentCarOrder rentCarOrder = new RentCarOrder();
@@ -264,22 +275,27 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public R unBindCar(Long id) {
-        UserInfo oldUserInfo=queryByIdFromDB(id);
-        if(Objects.isNull(oldUserInfo)){
-            return R.fail("ELECTRICITY.0019","未找到用户");
+        UserInfo oldUserInfo = queryByIdFromDB(id);
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        Store store=storeService.queryByIdFromCache(oldUserInfo.getCarStoreId());
+        Store store = storeService.queryByIdFromCache(oldUserInfo.getCarStoreId());
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        UserInfo userInfo=new UserInfo();
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(id);
+        userInfo.setInitElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
+        userInfo.setNowElectricityBatterySn(oldUserInfo.getNowElectricityBatterySn());
+        userInfo.setBatteryStoreId(oldUserInfo.getBatteryStoreId());
+        userInfo.setBatteryAreaId(oldUserInfo.getBatteryAreaId());
+        userInfo.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
         userInfo.setCarStoreId(null);
         userInfo.setCarSn(null);
         userInfo.setCarDeposit(null);
         userInfo.setNumberPlate(null);
-        userInfo.setServiceStatus(UserInfo.NO_SERVICE_STATUS);
         userInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update=userInfoMapper.updateById(userInfo);
+        Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             RentCarOrder rentCarOrder = new RentCarOrder();

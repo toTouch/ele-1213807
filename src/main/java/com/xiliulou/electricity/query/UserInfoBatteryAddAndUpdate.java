@@ -22,10 +22,7 @@ public class UserInfoBatteryAddAndUpdate {
     */
     @NotEmpty(message = "用户姓名不能为空!", groups = {UpdateGroup.class})
     private String name;
-    /**
-    * 门店Id
-    */
-    @NotNull(message = "门店Id不能为空!", groups = {UpdateGroup.class})
+
     private Integer batteryStoreId;
     /**
     * 身份证号
