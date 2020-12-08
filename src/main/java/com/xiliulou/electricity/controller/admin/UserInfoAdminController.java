@@ -31,10 +31,22 @@ public class UserInfoAdminController {
         return userInfoService.bindBattery(userInfoBatteryAddAndUpdate);
     }
 
+    //解绑电池
+    @PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
+    public R unBindBattery(@PathVariable("id") Long id) {
+        return userInfoService.unBindBattery(id);
+    }
+
     //绑定车辆
     @PutMapping(value = "/admin/userInfo/bindCar")
     public R bindCar(@RequestBody @Validated(value = UpdateGroup.class) UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
         return userInfoService.bindCar(userInfoCarAddAndUpdate);
+    }
+
+    //解绑车辆
+    @PutMapping(value = "/admin/userInfo/unBindCar/{id}")
+    public R unBindCar(@PathVariable("id") Long id) {
+        return userInfoService.unBindCar(id);
     }
 
     //列表查询
@@ -43,7 +55,7 @@ public class UserInfoAdminController {
                        @RequestParam(value = "offset", required = false) Integer offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "areaId", required = false) Integer areaId,
+                       @RequestParam(value = "batteryAreaId", required = false) Integer batteryAreaId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size)) {
@@ -59,7 +71,7 @@ public class UserInfoAdminController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .areaId(areaId)
+                .batteryAreaId(batteryAreaId)
                 .beginTime(beginTime)
                 .endTime(endTime).build();
 

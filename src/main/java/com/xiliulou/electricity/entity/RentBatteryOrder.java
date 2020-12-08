@@ -62,4 +62,9 @@ public class RentBatteryOrder {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    //租用中
+    public static final Integer IS_USE_STATUS = 0;
+    //已退租
+    public static final Integer NO_USE_STATUS = 1;
+
 }

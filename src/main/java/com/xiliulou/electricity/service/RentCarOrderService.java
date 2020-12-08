@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentCarOrder;
+import com.xiliulou.electricity.query.RentCarOrderQuery;
 
 /**
  * 租车记录(TRentCarOrder)表服务接口
@@ -43,4 +45,5 @@ public interface RentCarOrderService {
     Integer update(RentCarOrder rentCarOrder);
 
 
+    R queryList(RentCarOrderQuery rentCarOrderQuery);
 }

@@ -9,7 +9,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class UserInfoQuery {
+public class RentCarOrderQuery {
 	private Integer size;
 	private Integer offset;
 	/**
@@ -18,9 +18,10 @@ public class UserInfoQuery {
 	private String name;
 	private String phone;
 	/**
-	 * 门店地区Id
+	 * 门店Id
 	 */
-	private Integer batteryAreaId;
+	private Integer carStoreId;
 	private Long beginTime;
 	private Long endTime;
+	private Integer status;
 }

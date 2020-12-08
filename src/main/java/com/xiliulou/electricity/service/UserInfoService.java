@@ -56,4 +56,8 @@ public interface UserInfoService {
     R disable(Long id);
 
     R reboot(Long id);
+
+    R unBindBattery(Long id);
+
+    R unBindCar(Long id);
 }

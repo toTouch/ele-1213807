@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.vo.UserInfoVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -26,7 +28,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
      * 查询指定行数据
      *
      */
-    List<UserInfo> queryList(@Param("offset") int offset, @Param("limit") int limit);
+    List<UserInfoVO> queryList(@Param("query") UserInfoQuery userInfoQuery);
 
 
     /**

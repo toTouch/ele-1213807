@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
@@ -65,5 +68,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     public Integer update(RentBatteryOrder rentBatteryOrder) {
        return this.rentBatteryOrderMapper.update(rentBatteryOrder);
          
+    }
+
+    @Override
+    public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
+        List<RentBatteryOrder> rentBatteryOrderList=  rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
+        return R.ok(rentBatteryOrderList) ;
     }
 }

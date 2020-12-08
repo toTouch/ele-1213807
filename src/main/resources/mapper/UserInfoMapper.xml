@@ -34,11 +34,29 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryList" resultMap="UserInfoMap">
+    <select id="queryList"
+            resultType="com.xiliulou.electricity.vo.UserInfoVO">
         select
           id, uid, name, phone, id_number, service_status, member_card_days, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
-        limit #{offset}, #{limit}
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and phone = #{query.phone}
+        </if>
+        <if test="query.batteryAreaId != null">
+            and battery_area_id = #{query.batteryAreaId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        order by update_time desc
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->

@@ -1,11 +1,6 @@
-package com.xiliulou.electricity.entity;
-import com.baomidou.mybatisplus.annotation.IdType;
-                                                                            import com.baomidou.mybatisplus.annotation.TableId;
-                                                                            import lombok.AllArgsConstructor;
-import lombok.Builder;
+package com.xiliulou.electricity.vo;
 import lombok.Data;
-import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+
 /**
  * 用户绑定列表(TUserInfo)实体类
  *
@@ -13,13 +8,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
  * @since 2020-12-08 14:17:59
  */
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
-@TableName("t_user_info")
-public class UserInfo {
+public class UserInfoVO {
 
-    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     
     private Long uid;
@@ -36,7 +26,7 @@ public class UserInfo {
     */
     private String idNumber;
     /**
-    * 服务状态 未开通-1 已开通-0
+    * 服务状态 未开通-0 已开通-1
     */
     private Integer serviceStatus;
     /**
@@ -51,6 +41,13 @@ public class UserInfo {
     * 电池门店地区Id
     */
     private Integer batteryAreaId;
+    /**
+     * 门店地区
+     */
+    private String areaName;
+
+    private Integer pid;
+
     /**
     * 初始电池编号
     */

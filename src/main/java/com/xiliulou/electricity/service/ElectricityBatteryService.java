@@ -24,4 +24,6 @@ public interface ElectricityBatteryService {
     R deleteElectricityBattery(Long id);
 
     Integer queryCountByShopId(Integer id);
+
+    ElectricityBattery queryBySn(String initElectricityBatterySn);
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务接口
@@ -43,4 +45,5 @@ public interface RentBatteryOrderService {
     Integer update(RentBatteryOrder rentBatteryOrder);
 
 
+    R queryList(RentBatteryOrderQuery rentBatteryOrderQuery);
 }

@@ -64,6 +64,7 @@
         <if test="query.usableStatus != null">
             and usable_status = #{query.usableStatus}
         </if>
+        order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 

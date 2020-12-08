@@ -112,4 +112,10 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
         return electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getShopId,id)
         .in(ElectricityBattery::getStatus,ElectricityBattery.WARE_HOUSE_STATUS,ElectricityBattery.LEASE_STATUS));
     }
+
+    @Override
+    public ElectricityBattery queryBySn(String initElectricityBatterySn) {
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber,initElectricityBatterySn)
+                .eq(ElectricityBattery::getStatus,ElectricityBattery.STOCK_STATUS));
+    }
 }

@@ -27,15 +27,41 @@
     <!--查询指定行数据-->
     <select id="queryList" resultMap="RentBatteryOrderMap">
         select
-          id, uid, name, phone, id_number, battery_store_id, battery_store_name, electricity_battery_sn, battery_deposit, status, create_time
+        id, uid, name, phone, id_number, battery_store_id, battery_store_name, electricity_battery_sn, battery_deposit,
+        status, create_time
         from electricity.t_rent_battery_order
-        limit #{offset}, #{limit}
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and name = #{query.name}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and phone = #{query.phone}
+            </if>
+            <if test="query.batteryStoreId != null">
+                and battery_store_id = #{query.batteryStoreId}
+            </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+            <if test="query.beginTime != null">
+                and create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+        </where>
+        order by create_time desc
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="RentBatteryOrderMap">
         select
-          id, uid, name, phone, id_number, battery_store_id, battery_store_name, electricity_battery_sn, battery_deposit, status, create_time
+        id, uid, name, phone, id_number, battery_store_id, battery_store_name, electricity_battery_sn, battery_deposit,
+        status, create_time
         from electricity.t_rent_battery_order
         <where>
             <if test="id != null">
