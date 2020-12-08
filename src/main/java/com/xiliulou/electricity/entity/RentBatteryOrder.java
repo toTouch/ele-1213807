@@ -41,7 +41,7 @@ public class RentBatteryOrder {
     /**
     * 电池门店名称
     */
-    private Integer batteryAreaId;
+    private String batteryStoreName;
     /**
     * 电池编号
     */

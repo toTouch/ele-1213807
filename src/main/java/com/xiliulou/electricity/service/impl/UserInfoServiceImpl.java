@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.RentCarOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
@@ -9,6 +11,7 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.RentCarOrderService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -33,6 +36,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     StoreService storeService;
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
+    @Autowired
+    RentCarOrderService rentCarOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -101,7 +106,17 @@ public class UserInfoServiceImpl implements UserInfoService {
         Integer update=userInfoMapper.update(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
-
+            RentBatteryOrder rentBatteryOrder=new RentBatteryOrder();
+            rentBatteryOrder.setUid(oldUserInfo.getUid());
+            rentBatteryOrder.setName(userInfo.getName());
+            rentBatteryOrder.setPhone(userInfo.getPhone());
+            rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
+            rentBatteryOrder.setBatteryStoreId(userInfo.getBatteryStoreId());
+            rentBatteryOrder.setBatteryStoreName(store.getName());
+            rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
+            rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
+            rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+            rentBatteryOrderService.insert(rentBatteryOrder);
             // TODO 电池绑定用户 YG
             return null;
         });
@@ -123,7 +138,23 @@ public class UserInfoServiceImpl implements UserInfoService {
         BeanUtil.copyProperties(userInfoCarAddAndUpdate,userInfo);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
-        userInfoMapper.update(userInfo);
+        Integer update=userInfoMapper.update(userInfo);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //添加租电池记录
+            RentCarOrder rentCarOrder = new RentCarOrder();
+            rentCarOrder.setUid(oldUserInfo.getUid());
+            rentCarOrder.setName(userInfo.getName());
+            rentCarOrder.setPhone(userInfo.getPhone());
+            rentCarOrder.setIdNumber(userInfo.getIdNumber());
+            rentCarOrder.setCarStoreId(userInfo.getCarStoreId());
+            rentCarOrder.setCarStoreName(store.getName());
+            rentCarOrder.setCarSn(userInfo.getCarSn());
+            rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
+            rentCarOrder.setNumberPlate(userInfo.getNumberPlate());
+            rentCarOrder.setCreateTime(System.currentTimeMillis());
+            rentCarOrderService.insert(rentCarOrder);
+            return null;
+        });
         return R.ok();
     }
 

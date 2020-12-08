@@ -41,7 +41,7 @@ public class RentCarOrder {
     /**
     * 车门店名称
     */
-    private Integer carAreaId;
+    private String carStoreName;
     /**
     * 车编号
     */
