@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -314,5 +315,11 @@ public class UserInfoServiceImpl implements UserInfoService {
             return null;
         });
         return R.ok();
+    }
+
+    @Override
+    public UserInfo queryByUid(Long uid) {
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid,uid)
+                .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
     }
 }

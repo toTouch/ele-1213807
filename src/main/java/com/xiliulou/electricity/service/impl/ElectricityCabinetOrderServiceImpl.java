@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -54,6 +56,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     RedisService redisService;
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+    @Autowired
+    UserInfoService userInfoService;
 
 
     /**
@@ -154,14 +158,30 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
-        //TODO 2.判断用户是否有电池是否有月卡  YG
-        //TODO 3.根据用户查询旧电池  YG
+        //2.判断用户是否有电池是否有月卡
+        //判断是否开通服务
+        UserInfo userInfo=userInfoService.queryByUid(user.getUid());
+        if(Objects.isNull(userInfo)){
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0021", "未开通服务");
+        }
+        //判断用户是否开通月卡
+        if(Objects.isNull(userInfo.getMemberCardDays())){
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        if(userInfo.getMemberCardDays()<1){
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
+        }
+        //3.根据用户查询旧电池
+        String oldElectricityBatterySn=userInfo.getNowElectricityBatterySn();
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                 .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), user.getUid(), cellNo))
                 .uid(user.getUid())
                 .phone(user.getPhone())
                 .electricityCabinetId(orderQuery.getElectricityCabinetId())
-                .oldElectricityBatterySn("-1")
+                .oldElectricityBatterySn(oldElectricityBatterySn)
                 .oldCellNo(Integer.valueOf(cellNo))
                 .status(ElectricityCabinetOrder.STATUS_ORDER_PAY)
                 .source(orderQuery.getSource()).build();

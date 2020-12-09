@@ -60,4 +60,6 @@ public interface UserInfoService {
     R unBindBattery(Long id);
 
     R unBindCar(Long id);
+
+    UserInfo queryByUid(Long uid);
 }
