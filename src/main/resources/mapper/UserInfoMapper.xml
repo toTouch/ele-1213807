@@ -9,7 +9,8 @@
         <result property="phone" column="phone" jdbcType="VARCHAR"/>
         <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
         <result property="serviceStatus" column="service_status" jdbcType="OTHER"/>
-        <result property="memberCardExpireTime" column="member_card_expire_time" jdbcType="INTEGER"/>
+        <result property="memberCardExpireTime" column="member_canrd_expire_time" jdbcType="INTEGER"/>
+        <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
         <result property="batteryStoreId" column="battery_store_id" jdbcType="INTEGER"/>
         <result property="batteryAreaId" column="battery_area_id" jdbcType="INTEGER"/>
         <result property="initElectricityBatterySn" column="init_electricity_battery_sn" jdbcType="VARCHAR"/>
@@ -28,7 +29,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="UserInfoMap">
         select
-          id, uid, name, phone, id_number, service_status, member_card_expire_time, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+          id, uid, name, phone, id_number, service_status, member_card_expire_time,remainingNumber, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where id = #{id}
     </select>
@@ -37,7 +38,8 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.UserInfoVO">
         select
-        id, uid, name, phone, id_number, service_status, member_card_expire_time, battery_store_id, battery_area_id,
+        id, uid, name, phone, id_number, service_status, member_card_expire_time, remaining_number,battery_store_id,
+        battery_area_id,
         init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
         car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
@@ -61,82 +63,6 @@
         limit #{query.offset}, #{query.size}
     </select>
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="UserInfoMap">
-        select
-        id, uid, name, phone, id_number, service_status, member_card_expire_time, battery_store_id, battery_area_id,
-        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
-        car_deposit, usable_status, del_flag, create_time, update_time
-        from electricity.t_user_info
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
-            </if>
-            <if test="name != null and name != ''">
-                and name = #{name}
-            </if>
-            <if test="phone != null and phone != ''">
-                and phone = #{phone}
-            </if>
-            <if test="idNumber != null and idNumber != ''">
-                and id_number = #{idNumber}
-            </if>
-            <if test="serviceStatus != null">
-                and service_status = #{serviceStatus}
-            </if>
-            <if test="memberCardExpireTime != null">
-                and member_card_expire_time = #{memberCardExpireTime}
-            </if>
-            <if test="batteryStoreId != null">
-                and battery_store_id = #{batteryStoreId}
-            </if>
-            <if test="batteryAreaId != null">
-                and battery_area_id = #{batteryAreaId}
-            </if>
-            <if test="initElectricityBatterySn != null and initElectricityBatterySn != ''">
-                and init_electricity_battery_sn = #{initElectricityBatterySn}
-            </if>
-            <if test="nowElectricityBatterySn != null and nowElectricityBatterySn != ''">
-                and now_electricity_battery_sn = #{nowElectricityBatterySn}
-            </if>
-            <if test="batteryDeposit != null">
-                and battery_deposit = #{batteryDeposit}
-            </if>
-            <if test="carStoreId != null">
-                and car_store_id = #{carStoreId}
-            </if>
-            <if test="carSn != null and carSn != ''">
-                and car_sn = #{carSn}
-            </if>
-            <if test="numberPlate != null and numberPlate != ''">
-                and number_plate = #{numberPlate}
-            </if>
-            <if test="carDeposit != null">
-                and car_deposit = #{carDeposit}
-            </if>
-            <if test="usableStatus != null">
-                and usable_status = #{usableStatus}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-        </where>
-    </select>
-
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_user_info(uid, name, phone, id_number, service_status, member_card_expire_time, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time)
-        values (#{uid}, #{name}, #{phone}, #{idNumber}, #{serviceStatus}, #{memberCardExpireTime}, #{batteryStoreId}, #{batteryAreaId}, #{initElectricityBatterySn}, #{nowElectricityBatterySn}, #{batteryDeposit}, #{carStoreId}, #{carSn}, #{numberPlate}, #{carDeposit}, #{usableStatus}, #{delFlag}, #{createTime}, #{updateTime})
-    </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
