@@ -1,12 +1,12 @@
 package com.xiliulou.electricity.mapper;
 
-import java.util.List;
-
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.UserInfoVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * 用户列表(TUserInfo)表数据库访问层
@@ -31,21 +31,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
     List<UserInfoVO> queryList(@Param("query") UserInfoQuery userInfoQuery);
 
 
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param userInfo 实例对象
-     * @return 对象列表
-     */
-    List<UserInfo> queryAll(UserInfo userInfo);
 
-    /**
-     * 新增数据
-     *
-     * @param userInfo 实例对象
-     * @return 影响行数
-     */
-    int insertOne(UserInfo userInfo);
+
 
     /**
      * 修改数据

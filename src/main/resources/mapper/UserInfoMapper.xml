@@ -9,7 +9,7 @@
         <result property="phone" column="phone" jdbcType="VARCHAR"/>
         <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
         <result property="serviceStatus" column="service_status" jdbcType="OTHER"/>
-        <result property="memberCardExpireTime" column="member_card_expire_time" jdbcType="INTEGER"/>
+        <result property="memberCardExpireTime" column="member_canrd_expire_time" jdbcType="INTEGER"/>
         <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
         <result property="batteryStoreId" column="battery_store_id" jdbcType="INTEGER"/>
         <result property="batteryAreaId" column="battery_area_id" jdbcType="INTEGER"/>
@@ -29,7 +29,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="UserInfoMap">
         select
-          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+          id, uid, name, phone, id_number, service_status, member_card_expire_time,remainingNumber, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where id = #{id}
     </select>
@@ -38,7 +38,8 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.UserInfoVO">
         select
-        id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number, battery_store_id, battery_area_id,
+        id, uid, name, phone, id_number, service_status, member_card_expire_time, remaining_number,battery_store_id,
+        battery_area_id,
         init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
         car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
