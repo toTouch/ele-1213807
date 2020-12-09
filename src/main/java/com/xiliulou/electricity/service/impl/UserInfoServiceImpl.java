@@ -341,7 +341,7 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public void minCount(Long id) {
-
+    public int minCount(Long id) {
+        return userInfoMapper.minCount(id);
     }
 }

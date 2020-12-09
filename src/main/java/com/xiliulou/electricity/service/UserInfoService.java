@@ -69,5 +69,5 @@ public interface UserInfoService {
 
     Integer homeOneMemberCar(Long first, Long now);
 
-    void minCount(Long id);
+    int minCount(Long id);
 }

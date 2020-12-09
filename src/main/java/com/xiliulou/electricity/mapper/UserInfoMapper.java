@@ -63,4 +63,5 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
      */
     int unBind(UserInfo userInfo);
 
+    int minCount(Long id);
 }
