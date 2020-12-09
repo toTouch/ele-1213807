@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -602,54 +603,54 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return null;
     }
 
-    public HashMap getHomeOne(Long first, Long firstBefor, Long end) {
+    public R getHomeOne(Long first, Long firstBefor, Long end) {
         HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
         Long now = System.currentTimeMillis();
-        Integer countTotal = userInfoService.homeOneTotal(first, now);
-        Integer countService = userInfoService.homeOneService(first, now);
-        Integer countMemberCar = userInfoService.homeOneMemberCar(first, now);
+        Integer totalCount = userInfoService.homeOneTotal(first, now);
+        Integer serviceCount = userInfoService.homeOneService(first, now);
+        Integer MemberCardCount = userInfoService.homeOneMemberCard(first, now);
         HashMap<String, String> userInfo = new HashMap<>();
-        userInfo.put("countTotal", countTotal.toString());
-        userInfo.put("countService", countService.toString());
-        userInfo.put("countMemberCar", countMemberCar.toString());
+        userInfo.put("totalCount", totalCount.toString());
+        userInfo.put("serviceCount", serviceCount.toString());
+        userInfo.put("MemberCardCount", MemberCardCount.toString());
         homeOne.put("userInfo", userInfo);
         //查收益
-        BigDecimal moneyNow = electricityMemberCardOrderService.homeOne(first, now);
-        BigDecimal moneyBefor = electricityMemberCardOrderService.homeOne(firstBefor, end);
+        BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
+        BigDecimal beforMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
         HashMap<String, String> moneyInfo = new HashMap<>();
-        moneyInfo.put("moneyNow", moneyNow.toString());
-        moneyInfo.put("moneyBefor", moneyBefor.toString());
+        moneyInfo.put("nowMoney", nowMoney.toString());
+        moneyInfo.put("beforMoney", beforMoney.toString());
         homeOne.put("moneyInfo", moneyInfo);
         //换电
-        Integer countNow = electricityCabinetOrderService.homeOneCount(first, now);
-        Integer countBefor = electricityCabinetOrderService.homeOneCount(firstBefor, end);
+        Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now);
+        Integer beforCount = electricityCabinetOrderService.homeOneCount(firstBefor, end);
         //成功率
         BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now);
         HashMap<String, String> orderInfo = new HashMap<>();
-        moneyInfo.put("countNow", countNow.toString());
-        moneyInfo.put("countBefor", countBefor.toString());
+        moneyInfo.put("nowCount", nowCount.toString());
+        moneyInfo.put("beforCount", beforCount.toString());
         moneyInfo.put("successOrder", successOrder.toString());
         homeOne.put("orderInfo", orderInfo);
-        return homeOne;
+        return R.ok(homeOne);
     }
 
     @Override
     public R homeTwo(Integer areaId) {
-        HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
+        HashMap<String, HashMap<String, String>> homeTwo = new HashMap<>();
         //门店
-        Integer countTotal = storeService.homeTwoTotal(areaId);
-        Integer countBusiness = storeService.homeTwoBusiness(areaId);
-        Integer countBattery = storeService.homeTwoBattery(areaId);
-        Integer countCar = storeService.homeTwoCar(areaId);
+        Integer totalCount = storeService.homeTwoTotal(areaId);
+        Integer businessCount = storeService.homeTwoBusiness(areaId);
+        Integer batteryCount = storeService.homeTwoBattery(areaId);
+        Integer carCount = storeService.homeTwoCar(areaId);
         HashMap<String, String> storeInfo = new HashMap<>();
-        storeInfo.put("countTotal", countTotal.toString());
-        storeInfo.put("countBusiness", countBusiness.toString());
-        storeInfo.put("countBattery", countBattery.toString());
-        storeInfo.put("countCar", countCar.toString());
-        homeOne.put("storeInfo", storeInfo);
+        storeInfo.put("totalCount", totalCount.toString());
+        storeInfo.put("businessCount", businessCount.toString());
+        storeInfo.put("batteryCount", batteryCount.toString());
+        storeInfo.put("carCount", carCount.toString());
+        homeTwo.put("storeInfo", storeInfo);
         //换电柜
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(ElectricityCabinet::getAreaId, areaId));
-        Integer totalCount=electricityCabinetList.size();
+        Integer total=electricityCabinetList.size();
         Integer onlineCount=0;
         Integer offlineCount=0;
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
@@ -658,17 +659,66 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         HashMap<String, String> electricityCabinetInfo = new HashMap<>();
-        electricityCabinetInfo.put("totalCount", totalCount.toString());
+        electricityCabinetInfo.put("totalCount", total.toString());
         electricityCabinetInfo.put("onlineCount", onlineCount.toString());
         electricityCabinetInfo.put("offlineCount", offlineCount.toString());
-        homeOne.put("electricityCabinetInfo", electricityCabinetInfo);
+        homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
         //电池
-        return null;
+        List<ElectricityBattery> electricityBatteryList=electricityBatteryService.homeTwo(areaId);
+        Integer batteryTotal=electricityBatteryList.size();
+        Integer cabinetCount=0;
+        Integer userCount=0;
+        if(ObjectUtil.isNotEmpty(electricityBatteryList)){
+            if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+                for (ElectricityBattery electricityBattery : electricityBatteryList) {
+                    if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)){
+                        cabinetCount=cabinetCount+1;
+                        userCount=userCount+1;
+                    }
+                    if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)){
+                        userCount=userCount+1;
+                    }
+                }
+            }
+        }
+        HashMap<String, String> electricityBatteryInfo = new HashMap<>();
+        electricityCabinetInfo.put("batteryTotal", batteryTotal.toString());
+        electricityCabinetInfo.put("cabinetCount", cabinetCount.toString());
+        electricityCabinetInfo.put("userCount", userCount.toString());
+        homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
+        return R.ok(homeTwo);
     }
 
     @Override
     public R homeThree(Integer day) {
-        return null;
+        HashMap<String, HashMap<String,Object>> homeThree = new HashMap<>();
+        //用户人数
+        Long endTimeMilliDay = DateUtil.endOfDay(new Date()).getTime();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE, -(day - 1));
+        Date date = calendar.getTime();
+        DateTime startTime = DateUtil.beginOfDay(date);
+        long startTimeMilliDay = startTime.getTime();
+        List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay);
+        List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeService(startTimeMilliDay, endTimeMilliDay);
+        List<HashMap<String, String>> memberCardCountList = userInfoService.homeThreeMemberCard(startTimeMilliDay, endTimeMilliDay);
+        HashMap<String, Object> userInfo = new HashMap<>();
+        userInfo.put("totalCountList", totalCountList);
+        userInfo.put("serviceCountList", serviceCountList);
+        userInfo.put("MemberCardCountList", memberCardCountList);
+        homeThree.put("userInfo", userInfo);
+        //查收益
+        List<HashMap<String, String>> moneyList = electricityMemberCardOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
+        HashMap<String, Object> moneyInfo = new HashMap<>();
+        moneyInfo.put("nowMoney", moneyList);
+        homeThree.put("moneyInfo", moneyInfo);
+         //换电
+        List<HashMap<String, String>> orderList= electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
+        HashMap<String, Object> orderInfo = new HashMap<>();
+        orderInfo.put("orderList", orderList);
+        homeThree.put("orderInfo", orderInfo);
+        return R.ok(homeThree);
     }
 
 

@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -335,13 +336,28 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     @Override
-    public Integer homeOneMemberCar(Long first, Long now) {
+    public Integer homeOneMemberCard(Long first, Long now) {
         return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
-        .ne(UserInfo::getMemberCardExpireTime,null));
+        .ne(UserInfo::getMemberCardExpireTime,null).ne(UserInfo::getRemainingNumber,null));
     }
 
     @Override
     public int minCount(Long id) {
         return userInfoMapper.minCount(id);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay) {
+        return userInfoMapper.homeThreeTotal(startTimeMilliDay,endTimeMilliDay);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay) {
+        return userInfoMapper.homeThreeService(startTimeMilliDay,endTimeMilliDay);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay) {
+        return userInfoMapper.homeThreeMemberCard(startTimeMilliDay,endTimeMilliDay);
     }
 }

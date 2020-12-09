@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 
 import java.math.BigDecimal;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -58,4 +59,6 @@ public interface ElectricityCabinetOrderService {
     Integer homeOneCount(Long first, Long now);
 
     BigDecimal homeOneSuccess(Long first, Long now);
+
+    List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay);
 }

@@ -5,6 +5,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 
+import java.util.List;
+
 /**
  * 换电柜电池表(ElectricityBattery)表服务接口
  *
@@ -27,4 +29,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer queryCountByShopId(Integer id);
 
     ElectricityBattery queryBySn(String initElectricityBatterySn);
+
+    List<ElectricityBattery> homeTwo(Integer areaId);
 }

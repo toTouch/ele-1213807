@@ -35,6 +35,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -260,6 +261,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         Integer countTotal = homeOneCount(first, now);
         Integer SuccessTotal = electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE));
         return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal));
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay) {
+        return electricityCabinetOrderMapper.homeThree(startTimeMilliDay,endTimeMilliDay);
     }
 
     public String findOldUsableCellNo(Integer id) {

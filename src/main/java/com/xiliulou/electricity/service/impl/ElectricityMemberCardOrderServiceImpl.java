@@ -13,6 +13,8 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -113,6 +115,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public BigDecimal homeOne(Long first, Long now) {
         return baseMapper.homeOne(first,now);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay) {
+        return baseMapper.homeThree(startTimeMilliDay,endTimeMilliDay);
     }
 
 
