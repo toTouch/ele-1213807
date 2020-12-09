@@ -33,7 +33,7 @@ public class ElectricityCabinetBatteryAdminController {
     @PostMapping(value = "/admin/battery")
     public R save(@RequestBody @Validated ElectricityBattery electricityBattery) {
 
-        return electricityBatteryService.save(electricityBattery);
+        return electricityBatteryService.saveElectricityBattery(electricityBattery);
     }
 
     /**
