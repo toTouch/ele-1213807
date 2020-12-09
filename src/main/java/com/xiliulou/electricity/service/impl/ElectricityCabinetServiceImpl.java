@@ -729,24 +729,4 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
-
-    public static void main(String[] args) {
-        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-        Long firstWeek = DateUtil.beginOfWeek(new Date()).getTime();
-        Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
-        Long firstQuarter = DateUtil.beginOfQuarter(new Date()).getTime();
-        Long firstYear = DateUtil.beginOfYear(new Date()).getTime();
-
-        Calendar cal = Calendar.getInstance();
-        cal.setTime(new Date());
-        cal.add(Calendar.DATE, -1);
-        Date dateBefor = cal.getTime();
-        Long firstTodayBefor = DateUtil.beginOfDay(dateBefor).getTime();
-        System.out.println(firstToday);
-        System.out.println(firstTodayBefor);
-        System.out.println(firstWeek);
-        System.out.println(firstMonth);
-        System.out.println(firstQuarter);
-        System.out.println(((int) cal.get(Calendar.MONTH) / 3 - 1) * 3 - (int) cal.get(Calendar.MONTH));
-    }
 }
