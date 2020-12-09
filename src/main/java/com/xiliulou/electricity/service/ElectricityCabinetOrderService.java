@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -53,4 +54,8 @@ public interface ElectricityCabinetOrderService {
     R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
     R openDoor(OpenDoorQuery openDoorQuery);
+
+    Integer homeOneCount(Long first, Long now);
+
+    BigDecimal homeOneSuccess(Long first, Long now);
 }

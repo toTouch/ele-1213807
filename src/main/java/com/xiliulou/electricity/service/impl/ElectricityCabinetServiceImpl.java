@@ -24,7 +24,9 @@ import com.xiliulou.electricity.service.ElectricityBatteryModelService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -36,9 +38,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -70,6 +75,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     CityService cityService;
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -531,12 +540,97 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R homeOne(Integer day) {
+    public R homeOne(Integer type) {
+        if(type==1) {
+            //查用户
+            Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.DATE, -1);
+            Date dateBefor = cal.getTime();
+            Long firstTodayBefor = DateUtil.beginOfDay(dateBefor).getTime();
+            Long endToday = DateUtil.endOfDay(dateBefor).getTime();
+            getHomeOne(firstToday,firstTodayBefor,endToday);
+        }
+        if(type==2) {
+            //查用户
+            Long firstWeek = DateUtil.beginOfWeek(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.DATE, -7);
+            Date dateBefor = cal.getTime();
+            Long firstWeekBefor = DateUtil.beginOfWeek(dateBefor).getTime();
+            Long endWeek = DateUtil.endOfWeek(dateBefor).getTime();
+            getHomeOne(firstWeek,firstWeekBefor,endWeek);
+        }
+        if(type==3) {
+            //查用户
+            Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.MONTH, -1);
+            Date dateBefor = cal.getTime();
+            Long firstMonthBefor = DateUtil.beginOfMonth(dateBefor).getTime();
+            Long endMonth = DateUtil.endOfMonth(dateBefor).getTime();
+            getHomeOne(firstMonth,firstMonthBefor,endMonth);
+        }
+        if(type==4) {
+            //查用户
+            Long firstQuarter = DateUtil.beginOfQuarter(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.MONTH, ((int) cal.get(Calendar.MONTH) / 3 - 1) * 3-(int) cal.get(Calendar.MONTH));
+            Date dateBefor = cal.getTime();
+            Long firstQuarterBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
+            Long endQuarter = DateUtil.endOfQuarter(dateBefor).getTime();
+            getHomeOne(firstQuarter,firstQuarterBefor,endQuarter);
+        }
+        if(type==5) {
+            //查用户
+            Long firstYear = DateUtil.beginOfYear(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.YEAR, -1);
+            Date dateBefor = cal.getTime();
+            Long firstYearBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
+            Long endYear = DateUtil.endOfQuarter(dateBefor).getTime();
+            getHomeOne(firstYear,firstYearBefor,endYear);
+        }
         return null;
+    }
+    public HashMap getHomeOne(Long first,Long firstBefor,Long end ){
+        HashMap<String, HashMap<String,String>> homeOne=new HashMap<>();
+        Long now=System.currentTimeMillis();
+        Integer countTotal = userInfoService.homeOneTotal(first, now);
+        Integer countService = userInfoService.homeOneService(first, now);
+        Integer countMemberCar = userInfoService.homeOneMemberCar(first, now);
+        HashMap<String,String> userInfo=new HashMap<>();
+        userInfo.put("countTotal",countTotal.toString());
+        userInfo.put("countService",countService.toString());
+        userInfo.put("countMemberCar",countMemberCar.toString());
+        homeOne.put("userInfo",userInfo);
+        //查收益
+        BigDecimal moneyNow= electricityMemberCardOrderService.homeOne(first,now);
+        BigDecimal moneyBefor= electricityMemberCardOrderService.homeOne(firstBefor,end);
+        HashMap<String,String> moneyInfo=new HashMap<>();
+        moneyInfo.put("moneyNow",moneyNow.toString());
+        moneyInfo.put("moneyBefor",moneyBefor.toString());
+        homeOne.put("moneyInfo",moneyInfo);
+        //换电
+        Integer countNow=electricityCabinetOrderService.homeOneCount(first,now);
+        Integer countBefor=electricityCabinetOrderService.homeOneCount(firstBefor,end);
+        //成功率
+        BigDecimal successOrder=electricityCabinetOrderService.homeOneSuccess(first,now);
+        HashMap<String,String> orderInfo=new HashMap<>();
+        moneyInfo.put("countNow",countNow.toString());
+        moneyInfo.put("countBefor",countBefor.toString());
+        moneyInfo.put("successOrder",successOrder.toString());
+        homeOne.put("orderInfo",orderInfo);
+        return homeOne;
     }
 
     @Override
-    public R homeTwo(Integer day) {
+    public R homeTwo(Integer areaId) {
         return null;
     }
 
@@ -552,5 +646,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+    }
+
+    public static void main(String[] args) {
+        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+        Long firstWeek = DateUtil.beginOfWeek(new Date()).getTime();
+        Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
+        Long firstQuarter = DateUtil.beginOfQuarter(new Date()).getTime();
+        Long firstYear = DateUtil.beginOfYear(new Date()).getTime();
+
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(new Date());
+        cal.add(Calendar.DATE, -1);
+        Date dateBefor = cal.getTime();
+        Long firstTodayBefor = DateUtil.beginOfDay(dateBefor).getTime();
+        System.out.println(firstToday);
+        System.out.println(firstTodayBefor);
+        System.out.println(firstWeek);
+        System.out.println(firstMonth);
+        System.out.println(firstQuarter);
+        System.out.println(((int) cal.get(Calendar.MONTH) / 3 - 1) * 3-(int) cal.get(Calendar.MONTH));
     }
 }

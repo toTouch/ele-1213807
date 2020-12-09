@@ -322,4 +322,21 @@ public class UserInfoServiceImpl implements UserInfoService {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid,uid)
                 .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
     }
+
+    @Override
+    public Integer homeOneTotal(Long first, Long now) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public Integer homeOneService(Long first, Long now) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
+        .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS));
+    }
+
+    @Override
+    public Integer homeOneMemberCar(Long first, Long now) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
+        .ne(UserInfo::getMemberCardDays,null));
+    }
 }

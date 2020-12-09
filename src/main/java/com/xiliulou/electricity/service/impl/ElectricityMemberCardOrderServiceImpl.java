@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -82,6 +83,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.failMsg(getPayParamsPair.getRight().toString());
         }
         return R.ok(getPayParamsPair.getRight());
+    }
+
+    @Override
+    public BigDecimal homeOne(Long first, Long now) {
+        return baseMapper.homeOne(first,now);
     }
 
 

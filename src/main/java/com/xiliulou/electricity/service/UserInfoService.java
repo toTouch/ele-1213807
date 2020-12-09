@@ -62,4 +62,10 @@ public interface UserInfoService {
     R unBindCar(Long id);
 
     UserInfo queryByUid(Long uid);
+
+    Integer homeOneTotal(Long first, Long now);
+
+    Integer homeOneService(Long first, Long now);
+
+    Integer homeOneMemberCar(Long first, Long now);
 }

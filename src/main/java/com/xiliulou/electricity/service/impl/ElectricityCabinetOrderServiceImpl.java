@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.date.DateUnit;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -31,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -239,6 +240,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         //TODO 发送命令
         return null;
+    }
+
+    @Override
+    public Integer homeOneCount(Long first, Long now) {
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime,first,now));
+    }
+
+    @Override
+    public BigDecimal homeOneSuccess(Long first, Long now) {
+        Integer countTotal=homeOneCount(first,now);
+        Integer SuccessTotal=electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime,first,now).eq(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_COMPLETE));
+        return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal));
     }
 
     public String findOldUsableCellNo(Integer id) {
