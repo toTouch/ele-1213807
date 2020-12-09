@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
@@ -20,7 +22,7 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
-public class ElectricityBatteryServiceImpl implements ElectricityBatteryService {
+public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatteryMapper, ElectricityBattery> implements ElectricityBatteryService {
     @Resource
     private ElectricityBatteryMapper electricitybatterymapper;
 
@@ -31,7 +33,7 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
      * @return
      */
     @Override
-    public R save(ElectricityBattery electricityBattery) {
+    public R saveElectricityBattery(ElectricityBattery electricityBattery) {
         if (Objects.nonNull(electricityBattery.getAgentId())) {
             // TODO: 2020/11/26 0026 YG 校验代理商合法性
         }
@@ -98,7 +100,17 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
      */
     @Override
     public R deleteElectricityBattery(Long id) {
-        // TODO: 2020/11/30 0030  YG 校验  电池是否正在被用!
+        ElectricityBattery electricityBattery = electricitybatterymapper.selectById(id);
+        if (Objects.isNull(electricityBattery)) {
+            log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,NOT FOUND ELECTRICITYBATTERY ID:{}", id);
+            return R.failMsg("未找到电池!");
+        }
+
+        if (ObjectUtil.equal(ElectricityBattery.LEASE_STATUS, electricityBattery.getStatus())) {
+            log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,THIS ELECTRICITY_BATTERY IS USING:{}", id);
+            return R.failMsg("电池正在租用中,无法删除!");
+        }
+
         int raws = electricitybatterymapper.deleteById(id);
         if (raws > 0) {
             return R.ok();
@@ -109,13 +121,13 @@ public class ElectricityBatteryServiceImpl implements ElectricityBatteryService 
 
     @Override
     public Integer queryCountByShopId(Integer id) {
-        return electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getShopId,id)
-        .in(ElectricityBattery::getStatus,ElectricityBattery.WARE_HOUSE_STATUS,ElectricityBattery.LEASE_STATUS));
+        return electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getShopId, id)
+                .in(ElectricityBattery::getStatus, ElectricityBattery.WARE_HOUSE_STATUS, ElectricityBattery.LEASE_STATUS));
     }
 
     @Override
     public ElectricityBattery queryBySn(String initElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber,initElectricityBatterySn)
-                .eq(ElectricityBattery::getStatus,ElectricityBattery.STOCK_STATUS));
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, initElectricityBatterySn)
+                .eq(ElectricityBattery::getStatus, ElectricityBattery.STOCK_STATUS));
     }
 }

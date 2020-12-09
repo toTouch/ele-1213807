@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -10,10 +11,10 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
  * @author makejava
  * @since 2020-11-26 14:44:12
  */
-public interface ElectricityBatteryService {
+public interface ElectricityBatteryService extends IService<ElectricityBattery> {
 
 
-    R save(ElectricityBattery electricityBattery);
+    R saveElectricityBattery(ElectricityBattery electricityBattery);
 
     R update(ElectricityBattery electricityBattery);
 
