@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import java.util.List;
 
@@ -7,7 +8,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.springframework.stereotype.Component;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -27,8 +27,9 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     /**
      * @return 对象列表
+     * @param electricityCabinetQuery
      */
-    List<ElectricityCabinetVO> queryList(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+    List<ElectricityCabinetVO> queryList(@Param("query")ElectricityCabinetQuery electricityCabinetQuery);
 
 
     /**

@@ -100,8 +100,8 @@ public class ElectricityCabinetAdminController {
     }
 
     //首页二
-    @PostMapping(value = "/admin/electricityCabinet/homeTwo/{areaId}")
-    public R homeTwo(@PathVariable("areaId") Integer areaId) {
+    @PostMapping(value = "/admin/electricityCabinet/homeTwo")
+    public R homeTwo( @RequestParam(value = "areaId", required = false) Integer areaId) {
         return electricityCabinetService.homeTwo(areaId);
     }
 

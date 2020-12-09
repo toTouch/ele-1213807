@@ -93,4 +93,9 @@ public class Store {
     //禁用
     public static final Integer STORE_UN_USABLE_STATUS = 1;
 
+    //支持
+    public static final Integer SUPPORT = 0;
+    //不支持
+    public static final Integer UN_SUPPORT = 1;
+
 }

@@ -59,4 +59,12 @@ public interface StoreService {
     R reboot(Integer id);
 
     R showInfoByDistance(StoreQuery storeQuery);
+
+    Integer homeTwoTotal(Integer areaId);
+
+    Integer homeTwoBusiness(Integer areaId);
+
+    Integer homeTwoBattery(Integer areaId);
+
+    Integer homeTwoCar(Integer areaId);
 }
