@@ -337,6 +337,11 @@ public class UserInfoServiceImpl implements UserInfoService {
     @Override
     public Integer homeOneMemberCar(Long first, Long now) {
         return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
-        .ne(UserInfo::getMemberCardDays,null));
+        .ne(UserInfo::getMemberCardExpireTime,null));
+    }
+
+    @Override
+    public void minCount(Long id) {
+
     }
 }

@@ -167,14 +167,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
         //判断用户是否开通月卡
-        if(Objects.isNull(userInfo.getMemberCardDays())){
+        if(Objects.isNull(userInfo.getMemberCardExpireTime())||Objects.isNull(userInfo.getRemainingNumber())){
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
-        if(userInfo.getMemberCardDays()<1){
+        Long now=System.currentTimeMillis();
+        if(userInfo.getMemberCardExpireTime()<now||userInfo.getRemainingNumber()==0){
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
+        //扣除月卡
+        userInfoService.minCount(userInfo.getId());
         //3.根据用户查询旧电池
         String oldElectricityBatterySn=userInfo.getNowElectricityBatterySn();
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
