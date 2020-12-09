@@ -61,4 +61,8 @@ public interface ElectricityCabinetOrderService {
     BigDecimal homeOneSuccess(Long first, Long now);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay);
+
+    Integer homeMonth(Long uid, Long firstMonth, Long now);
+
+    Integer homeTotal(Long uid);
 }

@@ -70,4 +70,6 @@ public interface ElectricityCabinetService {
     R homeTwo(Integer areaId);
 
     R homeThree(Integer day);
+
+    R home();
 }

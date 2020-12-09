@@ -650,9 +650,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeTwo.put("storeInfo", storeInfo);
         //换电柜
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(ElectricityCabinet::getAreaId, areaId));
-        Integer total=electricityCabinetList.size();
-        Integer onlineCount=0;
-        Integer offlineCount=0;
+        Integer total = electricityCabinetList.size();
+        Integer onlineCount = 0;
+        Integer offlineCount = 0;
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
                 //TODO 查询在线离线
@@ -664,19 +664,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInfo.put("offlineCount", offlineCount.toString());
         homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
         //电池
-        List<ElectricityBattery> electricityBatteryList=electricityBatteryService.homeTwo(areaId);
-        Integer batteryTotal=electricityBatteryList.size();
-        Integer cabinetCount=0;
-        Integer userCount=0;
-        if(ObjectUtil.isNotEmpty(electricityBatteryList)){
+        List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(areaId);
+        Integer batteryTotal = electricityBatteryList.size();
+        Integer cabinetCount = 0;
+        Integer userCount = 0;
+        if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
             if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
                 for (ElectricityBattery electricityBattery : electricityBatteryList) {
-                    if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)){
-                        cabinetCount=cabinetCount+1;
-                        userCount=userCount+1;
+                    if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
+                        cabinetCount = cabinetCount + 1;
+                        userCount = userCount + 1;
                     }
-                    if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)){
-                        userCount=userCount+1;
+                    if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+                        userCount = userCount + 1;
                     }
                 }
             }
@@ -691,7 +691,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R homeThree(Integer day) {
-        HashMap<String, HashMap<String,Object>> homeThree = new HashMap<>();
+        HashMap<String, HashMap<String, Object>> homeThree = new HashMap<>();
         //用户人数
         Long endTimeMilliDay = DateUtil.endOfDay(new Date()).getTime();
         Calendar calendar = Calendar.getInstance();
@@ -713,12 +713,49 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HashMap<String, Object> moneyInfo = new HashMap<>();
         moneyInfo.put("nowMoney", moneyList);
         homeThree.put("moneyInfo", moneyInfo);
-         //换电
-        List<HashMap<String, String>> orderList= electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
+        //换电
+        List<HashMap<String, String>> orderList = electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
         HashMap<String, Object> orderInfo = new HashMap<>();
         orderInfo.put("orderList", orderList);
         homeThree.put("orderInfo", orderInfo);
         return R.ok(homeThree);
+    }
+
+    @Override
+    public R home() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        HashMap<String, String> homeInfo = new HashMap<>();
+        Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
+        Long now = System.currentTimeMillis();
+        Integer battery = null;
+        Long cardDay = null;
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.nonNull(userInfo)) {
+            //我的电池
+            if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(userInfo.getNowElectricityBatterySn());
+                if (Objects.nonNull(electricityBattery)) {
+                    battery = electricityBattery.getCapacity();
+                }
+            }
+            //套餐剩余天数
+            if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) && userInfo.getMemberCardExpireTime() > now) {
+                cardDay = (userInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+            }
+        }
+        //本月换电
+        Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
+        //总换电
+        Integer totalCount = electricityCabinetOrderService.homeTotal(user.getUid());
+        homeInfo.put("monthCount", monthCount.toString());
+        homeInfo.put("totalCount", totalCount.toString());
+        homeInfo.put("battery", battery.toString());
+        homeInfo.put("cardDay", cardDay.toString());
+        return R.ok(homeInfo);
     }
 
 

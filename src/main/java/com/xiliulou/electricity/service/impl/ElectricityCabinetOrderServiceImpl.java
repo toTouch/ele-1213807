@@ -164,7 +164,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //2.判断用户是否有电池是否有月卡
         //判断是否开通服务
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
-        if (Objects.isNull(userInfo)) {
+        if (Objects.isNull(userInfo)||Objects.equals(userInfo.getServiceStatus(),UserInfo.IS_SERVICE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
@@ -266,6 +266,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay) {
         return electricityCabinetOrderMapper.homeThree(startTimeMilliDay,endTimeMilliDay);
+    }
+
+    @Override
+    public Integer home(Long uid, Long first, Long now) {
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid,uid));
+    }
+
+    @Override
+    public Integer homeTotal(Long uid) {
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,uid));
     }
 
     public String findOldUsableCellNo(Integer id) {
