@@ -63,6 +63,24 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+    <select id="homeThreeTotal" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as totalCount
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
+        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+    </select>
+    <select id="homeThreeService" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as serviceCount
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and service_status=0
+        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+    </select>
+    <select id="homeThreeMemberCard" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as memberCardCount
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and member_card_expire_time is not null and remaining_number is not null
+        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+    </select>
 
     <!--通过主键修改数据-->
     <update id="update">
@@ -85,6 +103,9 @@
             </if>
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
             </if>
             <if test="batteryStoreId != null">
                 battery_store_id = #{batteryStoreId},
@@ -151,6 +172,9 @@
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
             </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
+            </if>
             battery_store_id = #{batteryStoreId},
             battery_area_id = #{batteryAreaId},
             init_electricity_battery_sn = #{initElectricityBatterySn},
@@ -174,6 +198,9 @@
             </if>
         </set>
         where id = #{id}
+    </update>
+    <update id="minCount">
+         update electricity.t_user_info set remaining_number=remaining_number-1 where del_flag=0 and  remaining_number>1
     </update>
 
 </mapper>

@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -23,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -195,11 +198,11 @@ public class StoreServiceImpl implements StoreService {
                         e.setBusinessTimeType(StoreVO.ALL_DAY);
                     } else {
                         e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index=businessTime.indexOf("-");
-                        if(!Objects.equals(index,-1)&&index>0) {
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
                             e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
                             Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index+1));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
                             e.setBeginTime(beginTime);
                             e.setEndTime(endTime);
                         }
@@ -212,7 +215,7 @@ public class StoreServiceImpl implements StoreService {
                     e.setPid(city.getPid());
                 }
                 //电池在用
-                Integer count=electricityBatteryService.queryCountByShopId(e.getId());
+                Integer count = electricityBatteryService.queryCountByShopId(e.getId());
                 e.setUseStock(count);
             });
         }
@@ -269,11 +272,11 @@ public class StoreServiceImpl implements StoreService {
                         e.setBusinessTimeType(StoreVO.ALL_DAY);
                     } else {
                         e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index=businessTime.indexOf("-");
-                        if(!Objects.equals(index,-1)&&index>0) {
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
                             e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
                             Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index+1));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
                             e.setBeginTime(beginTime);
                             e.setEndTime(endTime);
                         }
@@ -282,5 +285,46 @@ public class StoreServiceImpl implements StoreService {
             });
         }
         return R.ok(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getDistance).reversed()).collect(Collectors.toList()));
+    }
+
+    @Override
+    public Integer homeTwoTotal(Integer areaId) {
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+    }
+
+    @Override
+    public Integer homeTwoBusiness(Integer areaId) {
+        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+        Integer countBusiness = 0;
+        if (ObjectUtil.isNotEmpty(storeList)) {
+            for (Store store : storeList) {
+                //营业时间
+                if (Objects.nonNull(store.getBusinessTime())) {
+                    String businessTime = store.getBusinessTime();
+                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                        countBusiness = countBusiness + 1;
+                    } else {
+                        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                        Long now = System.currentTimeMillis();
+                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
+                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
+                        if (firstToday + beginTime < now && firstToday + endTime > now) {
+                            countBusiness = countBusiness + 1;
+                        }
+                    }
+                }
+            }
+        }
+        return countBusiness;
+    }
+
+    @Override
+    public Integer homeTwoBattery(Integer areaId) {
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+    }
+
+    @Override
+    public Integer homeTwoCar(Integer areaId) {
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
     }
 }

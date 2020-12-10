@@ -20,4 +20,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBatteryVo> getElectricityBatteryPage(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
                                                          @Param("offset") Long offset, @Param("size") Long size);
+
+    List<ElectricityBattery> homeTwo(@Param("areaId")Integer areaId);
 }

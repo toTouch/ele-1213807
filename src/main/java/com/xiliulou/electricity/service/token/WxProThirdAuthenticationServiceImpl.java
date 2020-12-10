@@ -68,7 +68,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 	CustomPasswordEncoder customPasswordEncoder;
 
 	@Autowired
-	private UserInfoService userInfoService;
+	UserInfoService userInfoService;
 
 	@Override
 	public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {

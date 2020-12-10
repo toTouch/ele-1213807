@@ -65,9 +65,11 @@ public interface ElectricityCabinetService {
 
     R queryOne(Integer id);
 
-    R homeOne(Integer day);
+    R homeOne(Integer type);
 
-    R homeTwo(Integer day);
+    R homeTwo(Integer areaId);
 
     R homeThree(Integer day);
+
+    R home();
 }

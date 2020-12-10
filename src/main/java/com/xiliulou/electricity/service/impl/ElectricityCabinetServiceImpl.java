@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -23,7 +25,11 @@ import com.xiliulou.electricity.service.ElectricityBatteryModelService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -34,9 +40,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Comparator;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -66,6 +75,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityBatteryModelService electricityBatteryModelService;
     @Autowired
     CityService cityService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
+    @Autowired
+    StoreService storeService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -288,11 +305,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
                     } else {
                         e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-                        Integer index=businessTime.indexOf("-");
-                        if(!Objects.equals(index,-1)&&index>0) {
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
                             e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
                             Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index+1));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
                             e.setBeginTime(beginTime);
                             e.setEndTime(endTime);
                         }
@@ -352,11 +369,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
                     } else {
                         e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-                        Integer index=businessTime.indexOf("-");
-                        if(!Objects.equals(index,-1)&&index>0) {
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
                             e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
                             Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index+1));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
                             e.setBeginTime(beginTime);
                             e.setEndTime(endTime);
                             Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -459,7 +476,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //TODO 判断是否租用电池 YG
+        //判断是否开通服务
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0020", "未开通服务");
+        }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
         //查满仓空仓数
@@ -489,11 +511,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
                 } else {
                     electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-                    Integer index=businessTime.indexOf("-");
-                    if(!Objects.equals(index,-1)&&index>1) {
+                    Integer index = businessTime.indexOf("-");
+                    if (!Objects.equals(index, -1) && index > 1) {
                         electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
-                        Long beginTime = Long.valueOf(businessTime.substring(0,index));
-                        Long endTime = Long.valueOf(businessTime.substring(index+1));
+                        Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long endTime = Long.valueOf(businessTime.substring(index + 1));
                         electricityCabinetVO.setBeginTime(beginTime);
                         electricityCabinetVO.setEndTime(endTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -522,18 +544,218 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R homeOne(Integer day) {
+    public R homeOne(Integer type) {
+        if (type == 1) {
+            //查用户
+            Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.DATE, -1);
+            Date dateBefor = cal.getTime();
+            Long firstTodayBefor = DateUtil.beginOfDay(dateBefor).getTime();
+            Long endToday = DateUtil.endOfDay(dateBefor).getTime();
+            getHomeOne(firstToday, firstTodayBefor, endToday);
+        }
+        if (type == 2) {
+            //查用户
+            Long firstWeek = DateUtil.beginOfWeek(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.DATE, -7);
+            Date dateBefor = cal.getTime();
+            Long firstWeekBefor = DateUtil.beginOfWeek(dateBefor).getTime();
+            Long endWeek = DateUtil.endOfWeek(dateBefor).getTime();
+            getHomeOne(firstWeek, firstWeekBefor, endWeek);
+        }
+        if (type == 3) {
+            //查用户
+            Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.MONTH, -1);
+            Date dateBefor = cal.getTime();
+            Long firstMonthBefor = DateUtil.beginOfMonth(dateBefor).getTime();
+            Long endMonth = DateUtil.endOfMonth(dateBefor).getTime();
+            getHomeOne(firstMonth, firstMonthBefor, endMonth);
+        }
+        if (type == 4) {
+            //查用户
+            Long firstQuarter = DateUtil.beginOfQuarter(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.MONTH, ((int) cal.get(Calendar.MONTH) / 3 - 1) * 3 - (int) cal.get(Calendar.MONTH));
+            Date dateBefor = cal.getTime();
+            Long firstQuarterBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
+            Long endQuarter = DateUtil.endOfQuarter(dateBefor).getTime();
+            getHomeOne(firstQuarter, firstQuarterBefor, endQuarter);
+        }
+        if (type == 5) {
+            //查用户
+            Long firstYear = DateUtil.beginOfYear(new Date()).getTime();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(new Date());
+            cal.add(Calendar.YEAR, -1);
+            Date dateBefor = cal.getTime();
+            Long firstYearBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
+            Long endYear = DateUtil.endOfQuarter(dateBefor).getTime();
+            getHomeOne(firstYear, firstYearBefor, endYear);
+        }
         return null;
     }
 
+    public R getHomeOne(Long first, Long firstBefor, Long end) {
+        HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
+        Long now = System.currentTimeMillis();
+        Integer totalCount = userInfoService.homeOneTotal(first, now);
+        Integer serviceCount = userInfoService.homeOneService(first, now);
+        Integer MemberCardCount = userInfoService.homeOneMemberCard(first, now);
+        HashMap<String, String> userInfo = new HashMap<>();
+        userInfo.put("totalCount", totalCount.toString());
+        userInfo.put("serviceCount", serviceCount.toString());
+        userInfo.put("MemberCardCount", MemberCardCount.toString());
+        homeOne.put("userInfo", userInfo);
+        //查收益
+        BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
+        BigDecimal beforMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
+        HashMap<String, String> moneyInfo = new HashMap<>();
+        moneyInfo.put("nowMoney", nowMoney.toString());
+        moneyInfo.put("beforMoney", beforMoney.toString());
+        homeOne.put("moneyInfo", moneyInfo);
+        //换电
+        Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now);
+        Integer beforCount = electricityCabinetOrderService.homeOneCount(firstBefor, end);
+        //成功率
+        BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now);
+        HashMap<String, String> orderInfo = new HashMap<>();
+        moneyInfo.put("nowCount", nowCount.toString());
+        moneyInfo.put("beforCount", beforCount.toString());
+        moneyInfo.put("successOrder", successOrder.toString());
+        homeOne.put("orderInfo", orderInfo);
+        return R.ok(homeOne);
+    }
+
     @Override
-    public R homeTwo(Integer day) {
-        return null;
+    public R homeTwo(Integer areaId) {
+        HashMap<String, HashMap<String, String>> homeTwo = new HashMap<>();
+        //门店
+        Integer totalCount = storeService.homeTwoTotal(areaId);
+        Integer businessCount = storeService.homeTwoBusiness(areaId);
+        Integer batteryCount = storeService.homeTwoBattery(areaId);
+        Integer carCount = storeService.homeTwoCar(areaId);
+        HashMap<String, String> storeInfo = new HashMap<>();
+        storeInfo.put("totalCount", totalCount.toString());
+        storeInfo.put("businessCount", businessCount.toString());
+        storeInfo.put("batteryCount", batteryCount.toString());
+        storeInfo.put("carCount", carCount.toString());
+        homeTwo.put("storeInfo", storeInfo);
+        //换电柜
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(ElectricityCabinet::getAreaId, areaId));
+        Integer total = electricityCabinetList.size();
+        Integer onlineCount = 0;
+        Integer offlineCount = 0;
+        if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+            for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
+                //TODO 查询在线离线
+            }
+        }
+        HashMap<String, String> electricityCabinetInfo = new HashMap<>();
+        electricityCabinetInfo.put("totalCount", total.toString());
+        electricityCabinetInfo.put("onlineCount", onlineCount.toString());
+        electricityCabinetInfo.put("offlineCount", offlineCount.toString());
+        homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
+        //电池
+        List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(areaId);
+        Integer batteryTotal = electricityBatteryList.size();
+        Integer cabinetCount = 0;
+        Integer userCount = 0;
+        if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+            if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+                for (ElectricityBattery electricityBattery : electricityBatteryList) {
+                    if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
+                        cabinetCount = cabinetCount + 1;
+                        userCount = userCount + 1;
+                    }
+                    if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+                        userCount = userCount + 1;
+                    }
+                }
+            }
+        }
+        HashMap<String, String> electricityBatteryInfo = new HashMap<>();
+        electricityCabinetInfo.put("batteryTotal", batteryTotal.toString());
+        electricityCabinetInfo.put("cabinetCount", cabinetCount.toString());
+        electricityCabinetInfo.put("userCount", userCount.toString());
+        homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
+        return R.ok(homeTwo);
     }
 
     @Override
     public R homeThree(Integer day) {
-        return null;
+        HashMap<String, HashMap<String, Object>> homeThree = new HashMap<>();
+        //用户人数
+        Long endTimeMilliDay = DateUtil.endOfDay(new Date()).getTime();
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(new Date());
+        calendar.add(Calendar.DATE, -(day - 1));
+        Date date = calendar.getTime();
+        DateTime startTime = DateUtil.beginOfDay(date);
+        long startTimeMilliDay = startTime.getTime();
+        List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay);
+        List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeService(startTimeMilliDay, endTimeMilliDay);
+        List<HashMap<String, String>> memberCardCountList = userInfoService.homeThreeMemberCard(startTimeMilliDay, endTimeMilliDay);
+        HashMap<String, Object> userInfo = new HashMap<>();
+        userInfo.put("totalCountList", totalCountList);
+        userInfo.put("serviceCountList", serviceCountList);
+        userInfo.put("MemberCardCountList", memberCardCountList);
+        homeThree.put("userInfo", userInfo);
+        //查收益
+        List<HashMap<String, String>> moneyList = electricityMemberCardOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
+        HashMap<String, Object> moneyInfo = new HashMap<>();
+        moneyInfo.put("nowMoney", moneyList);
+        homeThree.put("moneyInfo", moneyInfo);
+        //换电
+        List<HashMap<String, String>> orderList = electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
+        HashMap<String, Object> orderInfo = new HashMap<>();
+        orderInfo.put("orderList", orderList);
+        homeThree.put("orderInfo", orderInfo);
+        return R.ok(homeThree);
+    }
+
+    @Override
+    public R home() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        HashMap<String, String> homeInfo = new HashMap<>();
+        Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
+        Long now = System.currentTimeMillis();
+        Integer battery = null;
+        Long cardDay = null;
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.nonNull(userInfo)) {
+            //我的电池
+            if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(userInfo.getNowElectricityBatterySn());
+                if (Objects.nonNull(electricityBattery)) {
+                    battery = electricityBattery.getCapacity();
+                }
+            }
+            //套餐剩余天数
+            if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) && userInfo.getMemberCardExpireTime() > now) {
+                cardDay = (userInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+            }
+        }
+        //本月换电
+        Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
+        //总换电
+        Integer totalCount = electricityCabinetOrderService.homeTotal(user.getUid());
+        homeInfo.put("monthCount", monthCount.toString());
+        homeInfo.put("totalCount", totalCount.toString());
+        homeInfo.put("battery", battery.toString());
+        homeInfo.put("cardDay", cardDay.toString());
+        return R.ok(homeInfo);
     }
 
 

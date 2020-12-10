@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.UserInfoVO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -32,8 +33,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
 
 
 
-
-
     /**
      * 修改数据
      *
@@ -50,4 +49,11 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
      */
     int unBind(UserInfo userInfo);
 
+    int minCount(Long id);
+
+    List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    List<HashMap<String, String>> homeThreeService(@Param("startTimeMilliDay") long startTimeMilliDay,@Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay,@Param("endTimeMilliDay") Long endTimeMilliDay);
 }

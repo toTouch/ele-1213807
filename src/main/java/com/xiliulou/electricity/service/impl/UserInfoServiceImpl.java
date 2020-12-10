@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -28,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -314,5 +316,48 @@ public class UserInfoServiceImpl implements UserInfoService {
             return null;
         });
         return R.ok();
+    }
+
+    @Override
+    public UserInfo queryByUid(Long uid) {
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid,uid)
+                .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public Integer homeOneTotal(Long first, Long now) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public Integer homeOneService(Long first, Long now) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
+        .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS));
+    }
+
+    @Override
+    public Integer homeOneMemberCard(Long first, Long now) {
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
+        .ne(UserInfo::getMemberCardExpireTime,null).ne(UserInfo::getRemainingNumber,null));
+    }
+
+    @Override
+    public int minCount(Long id) {
+        return userInfoMapper.minCount(id);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay) {
+        return userInfoMapper.homeThreeTotal(startTimeMilliDay,endTimeMilliDay);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay) {
+        return userInfoMapper.homeThreeService(startTimeMilliDay,endTimeMilliDay);
+    }
+
+    @Override
+    public List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay) {
+        return userInfoMapper.homeThreeMemberCard(startTimeMilliDay,endTimeMilliDay);
     }
 }

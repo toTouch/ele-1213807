@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -130,6 +131,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public ElectricityBattery queryBySn(String initElectricityBatterySn) {
         return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, initElectricityBatterySn)
                 .eq(ElectricityBattery::getStatus, ElectricityBattery.STOCK_STATUS));
+    }
+
+    @Override
+    public List<ElectricityBattery> homeTwo(Integer areaId) {
+        return electricitybatterymapper.homeTwo(areaId);
     }
 
     /**

@@ -6,6 +6,9 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 
+import java.util.HashMap;
+import java.util.List;
+
 /**
  * 用户列表(TUserInfo)表服务接口
  *
@@ -60,4 +63,20 @@ public interface UserInfoService {
     R unBindBattery(Long id);
 
     R unBindCar(Long id);
+
+    UserInfo queryByUid(Long uid);
+
+    Integer homeOneTotal(Long first, Long now);
+
+    Integer homeOneService(Long first, Long now);
+
+    Integer homeOneMemberCard(Long first, Long now);
+
+    int minCount(Long id);
+
+    List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay);
+
+    List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay);
+
+    List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay);
 }
