@@ -269,9 +269,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
-    public Integer home(Long uid, Long first, Long now) {
-        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid,uid));
+    public Integer homeMonth(Long uid, Long firstMonth, Long now) {
+        return null;
     }
+
 
     @Override
     public Integer homeTotal(Long uid) {
