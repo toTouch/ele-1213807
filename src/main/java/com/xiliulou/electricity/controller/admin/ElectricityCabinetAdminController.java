@@ -94,19 +94,19 @@ public class ElectricityCabinetAdminController {
 
 
     //首页一
-    @PostMapping(value = "/admin/electricityCabinet/homeOne/{type}")
+    @GetMapping(value = "/admin/electricityCabinet/homeOne/{type}")
     public R homeOne(@PathVariable("type") Integer type) {
         return electricityCabinetService.homeOne(type);
     }
 
     //首页二
-    @PostMapping(value = "/admin/electricityCabinet/homeTwo")
+    @GetMapping(value = "/admin/electricityCabinet/homeTwo")
     public R homeTwo( @RequestParam(value = "areaId", required = false) Integer areaId) {
         return electricityCabinetService.homeTwo(areaId);
     }
 
     //首页三
-    @PostMapping(value = "/admin/electricityCabinet/homeThree/{day}")
+    @GetMapping(value = "/admin/electricityCabinet/homeThree/{day}")
     public R homeThree(@PathVariable("day") Integer day) {
         return electricityCabinetService.homeThree(day);
     }
