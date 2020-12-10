@@ -5,6 +5,8 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
+import java.util.List;
+
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -13,6 +15,8 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     @Select("SELECT *  FROM t_electricity_member_card_order  WHERE order_id = #{orderId}")
     ElectricityMemberCardOrder selectByOrderNo(@Param("orderId") String orderNo);
+    @Select("SELECT *  FROM t_electricity_member_card_order  WHERE uid =#{uid} and status =1 order by create_time desc limit #{offset},#{size}")
+    List<ElectricityMemberCardOrder> getMemberCardOrderPage(@Param("uid") Long uid, @Param("offset") Long offset, @Param("size") Long size);
 
     @Select("SELECT sum(pay_amount)  FROM t_electricity_member_card_order  WHERE status = 1 and create_time >= #{first} and create_time <= #{now}")
     BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now);

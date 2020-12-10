@@ -98,14 +98,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         electricityMemberCardOrder.setMemberCardId(memberId);
-        electricityMemberCardOrder.setUid(1L);
+        electricityMemberCardOrder.setUid(uid);
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getPrice());
-        electricityMemberCardOrder.setUserName("YG");
-        electricityMemberCardOrder.setValidDays(31);
+        electricityMemberCardOrder.setUserName(userInfo.getName());
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         baseMapper.insert(electricityMemberCardOrder);
         Pair<Boolean, Object> getPayParamsPair =
-                electricityTradeOrderService.createTradeOrderAndGetPayParams(electricityMemberCardOrder, electricityPayParams, "openId", request);
+                electricityTradeOrderService.createTradeOrderAndGetPayParams(electricityMemberCardOrder, electricityPayParams, userOauthBind.getThirdId(), request);
         if (!getPayParamsPair.getLeft()) {
             return R.failMsg(getPayParamsPair.getRight().toString());
         }
@@ -123,4 +123,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
 
+    @Override
+    public R getMemberCardOrderPage(Long uid, Long offset, Long size) {
+        return R.ok(baseMapper.getMemberCardOrderPage(uid, offset, size));
+    }
 }

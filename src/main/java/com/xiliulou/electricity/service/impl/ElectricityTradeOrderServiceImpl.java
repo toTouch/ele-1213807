@@ -54,10 +54,7 @@ public class ElectricityTradeOrderServiceImpl extends
                                                                  String openId,
                                                                  HttpServletRequest request) {
 
-
         String ip = request.getRemoteAddr();
-
-
         ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
         electricityTradeOrder.setOrderNo(electricityMemberCardOrder.getOrderNo());
         electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
@@ -69,9 +66,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrder.setTotalFee(electricityMemberCardOrder.getPayAmount());
         electricityTradeOrder.setUid(electricityMemberCardOrder.getUid());
         baseMapper.insert(electricityTradeOrder);
-
         //支付
-
         PayOrder payOrder = new PayOrder();
         payOrder.setAppId(electricityPayParams.getAppId());
         payOrder.setAppSecret(electricityPayParams.getAppSecret());
@@ -86,7 +81,6 @@ public class ElectricityTradeOrderServiceImpl extends
         //订单有效期为三分钟
         payOrder.setTimeExpire(DateUtil.format(new Date(System.currentTimeMillis() + (3 * 60 * 1000L)),
                 "yyyyMMddHHmmss"));
-
         return payAdapterHandler.adaptAndPay(payOrder);
 
     }

@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
@@ -33,7 +34,17 @@ public class ElectricityMemberCardOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
 
-        return electricityMemberCardOrderService.createOrder(uid, memberId,request);
+        return electricityMemberCardOrderService.createOrder(uid, memberId, request);
+    }
+
+    @GetMapping("user/memberCardOrder/page")
+    public R getMemberCardOrderPage(@RequestParam("offset") Long offset, @RequestParam("size") Long size) {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+
+        return electricityMemberCardOrderService.getMemberCardOrderPage(uid, offset, size);
     }
 
 }
