@@ -51,9 +51,8 @@ public class ElectricitySubscriptionMessageAdminController {
      *
      * @return
      */
-    @GetMapping("admin/electricityMemberCard/list")
+    @GetMapping("admin/subscriptionMessage/list")
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type) {
-
 
         return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type);
     }
