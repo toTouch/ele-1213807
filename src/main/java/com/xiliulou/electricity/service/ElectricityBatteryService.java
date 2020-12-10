@@ -5,6 +5,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 
+import java.util.List;
+
 /**
  * 换电柜电池表(ElectricityBattery)表服务接口
  *
