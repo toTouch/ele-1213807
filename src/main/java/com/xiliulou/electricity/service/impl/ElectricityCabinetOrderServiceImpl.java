@@ -268,15 +268,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return electricityCabinetOrderMapper.homeThree(startTimeMilliDay,endTimeMilliDay);
     }
 
-    @Override
-    public Integer homeMonth(Long uid, Long firstMonth, Long now) {
-        return null;
-    }
 
+    @Override
+    public Integer homeMonth(Long uid, Long first, Long now) {
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid,uid));
+    }
 
     @Override
     public Integer homeTotal(Long uid) {
         return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,uid));
+    }
+
+    @Override
+    public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+        Integer count=electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime,electricityCabinetOrderQuery.getBeginTime(),electricityCabinetOrderQuery.getEndTime()));
+        return R.ok(count);
     }
 
     public String findOldUsableCellNo(Integer id) {

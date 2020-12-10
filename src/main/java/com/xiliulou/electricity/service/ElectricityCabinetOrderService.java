@@ -65,4 +65,6 @@ public interface ElectricityCabinetOrderService {
     Integer homeMonth(Long uid, Long firstMonth, Long now);
 
     Integer homeTotal(Long uid);
+
+    R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 }
