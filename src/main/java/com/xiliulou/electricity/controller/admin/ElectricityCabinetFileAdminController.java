@@ -11,6 +11,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.ehcache.xml.model.ListenersType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -77,38 +78,48 @@ public class ElectricityCabinetFileAdminController {
 
     //统一上传
     @PostMapping("/admin/electricityCabinetFileService/call/back")
-    public R callBack(@RequestParam("fileName") String fileName,
+    public R callBack(@RequestParam("fileNameList") List<String> fileNameList,
                          @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
                          @RequestParam("fileType") Integer fileType) {
-        //查看是第几张图片
-        int index = 1;
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
-        if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-            electricityCabinetFileList = electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
-            index = electricityCabinetFileList.get(0).getIndex() + 1;
+        if(ObjectUtil.isEmpty(fileNameList)){
+            return R.ok();
         }
+        //先删除
+        electricityCabinetFileService.deleteByDeviceInfo(electricityCabinetId,fileType);
+        //再新增
         if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-            ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                    .electricityCabinetId(electricityCabinetId)
-                    .type(fileType)
-                    .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
-                    .name(fileName)
-                    .index(index).build();
-            electricityCabinetFileService.insert(electricityCabinetFile);
+            for (String fileName:fileNameList) {
+                int index=1;
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .delFlag(ElectricityCabinetFile.DEL_NORMAL)
+                        .electricityCabinetId(electricityCabinetId)
+                        .type(fileType)
+                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
+                        .name(fileName)
+                        .sequence(index)
+                        .isOss(Integer.valueOf(StorageConfig.IS_USE_OSS)).build();
+                electricityCabinetFileService.insert(electricityCabinetFile);
+                index++;
+            }
+
         }else {
-            ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                    .electricityCabinetId(electricityCabinetId)
-                    .type(fileType)
-                    .bucketName(storageConfig.getBucketName())
-                    .name(fileName)
-                    .index(index).build();
-            electricityCabinetFileService.insert(electricityCabinetFile);
+            for (String fileName:fileNameList) {
+                int index=1;
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .delFlag(ElectricityCabinetFile.DEL_NORMAL)
+                        .electricityCabinetId(electricityCabinetId)
+                        .type(fileType)
+                        .bucketName(storageConfig.getBucketName())
+                        .name(fileName)
+                        .sequence(index)
+                        .isOss(Integer.valueOf(StorageConfig.IS_USE_MINIO)).build();
+                electricityCabinetFileService.insert(electricityCabinetFile);
+                index++;
+            }
         }
         return R.ok();
     }

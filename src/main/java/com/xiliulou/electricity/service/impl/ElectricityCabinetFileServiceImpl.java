@@ -137,4 +137,12 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
             log.error("文件读取异常", e);
         }
     }
+
+    @Override
+    public void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType) {
+        ElectricityCabinetFile electricityCabinetFile=new ElectricityCabinetFile();
+        electricityCabinetFile.setDelFlag(ElectricityCabinetFile.DEL_DEL);
+        electricityCabinetFileMapper.update(electricityCabinetFile,Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getElectricityCabinetId, electricityCabinetId)
+                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getDelFlag, ElectricityCabinetFile.DEL_NORMAL));
+    }
 }

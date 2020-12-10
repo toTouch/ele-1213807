@@ -144,6 +144,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setUid(userInfo.getUid());
+            electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
             electricityBatteryService.update(electricityBattery);
             return null;
         });

@@ -24,7 +24,7 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     @Select(" select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money\n" +
             "from t_electricity_member_card_order\n" +
-            "where create_time >= #{startTimeMilliDay} and create_time <=#{endTimeMilliDay}\n" +
+            "where create_time >= #{startTimeMilliDay} and create_time <=#{endTimeMilliDay} and status = 1\n" +
             "group by from_unixtime(create_time / 1000, '%Y-%m-%d')\n" +
             "order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc")
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
