@@ -8,4 +8,6 @@ public interface ElectricityMemberCardOrderService {
 
 
     R createOrder(Long uid, Integer memberId, HttpServletRequest request);
+
+    R getMemberCardOrderPage(Long uid, Long offset, Long size);
 }

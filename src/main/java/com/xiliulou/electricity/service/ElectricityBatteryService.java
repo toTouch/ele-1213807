@@ -27,4 +27,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer queryCountByShopId(Integer id);
 
     ElectricityBattery queryBySn(String initElectricityBatterySn);
+
+    R getSelfBattery(Long uid);
 }
