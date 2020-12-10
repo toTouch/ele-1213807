@@ -25,10 +25,10 @@
 
     </select>
     <select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select teb.id as id,teb.shop_id as shop_id,teb.agentId as agentId,teb.serial_number as serial_number,teb.model_id as model_id,
+        select teb.id as id,teb.shop_id as shop_id,teb.agent_id as agentId,teb.serial_number as serial_number,teb.model_id as model_id,
         teb.capacity as capacity,teb.status as status,teb.create_time as create_time,teb.update_time as update_time,
         teb.del_flag as del_flag,teb.uid as uid,teb.cabinet_id as cabinet_id
-        form t_electricity_battery as teb
+        from t_electricity_battery as teb
         left join electricity.t_store as ts on teb.shop_id=ts.id
         where teb.del_flag=0 and ts.del_flag=0
         <if test="areaId != null">

@@ -7,7 +7,7 @@
         <result property="name" column="name" jdbcType="VARCHAR"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
-        <result property="index" column="index" jdbcType="INTEGER"/>
+        <result property="sequence" column="sequence" jdbcType="INTEGER"/>
         <result property="url" column="url" jdbcType="VARCHAR"/>
         <result property="bucketName" column="bucket_name" jdbcType="VARCHAR"/>
         <result property="isOss" column="is_oss" jdbcType="INTEGER"/>
@@ -19,7 +19,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="ElectricityCabinetFileMap">
         select
-          id, name, electricity_cabinet_id, type, index, url, bucket_name, is_oss, create_time, update_time, del_flag
+          id, name, electricity_cabinet_id, type, sequence, url, bucket_name, is_oss, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_file
         where id = #{id}
     </select>
@@ -27,7 +27,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="ElectricityCabinetFileMap">
         select
-          id, name, electricity_cabinet_id, type, index, url, bucket_name, is_oss, create_time, update_time, del_flag
+          id, name, electricity_cabinet_id, type, sequence, url, bucket_name, is_oss, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_file
         limit #{offset}, #{limit}
     </select>
@@ -35,7 +35,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="ElectricityCabinetFileMap">
         select
-          id, name, electricity_cabinet_id, type, index, url, bucket_name, is_oss, create_time, update_time, del_flag
+          id, name, electricity_cabinet_id, type, sequence, url, bucket_name, is_oss, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_file
         <where>
             <if test="id != null">
@@ -50,8 +50,8 @@
             <if test="type != null">
                 and type = #{type}
             </if>
-            <if test="index != null">
-                and index = #{index}
+            <if test="sequence != null">
+                and sequence = #{sequence}
             </if>
             <if test="url != null and url != ''">
                 and url = #{url}
@@ -76,8 +76,8 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_cabinet_file(name, electricity_cabinet_id, type, index, url, bucket_name, is_oss, create_time, update_time, del_flag)
-        values (#{name}, #{electricityCabinetId}, #{type}, #{index}, #{url}, #{bucketName}, #{isOss}, #{createTime}, #{updateTime}, #{delFlag})
+        insert into electricity.t_electricity_cabinet_file(name, electricity_cabinet_id, type, sequence, url, bucket_name, is_oss, create_time, update_time, del_flag)
+        values (#{name}, #{electricityCabinetId}, #{type}, #{sequence}, #{url}, #{bucketName}, #{isOss}, #{createTime}, #{updateTime}, #{delFlag})
     </insert>
 
     <!--通过主键修改数据-->
@@ -93,8 +93,8 @@
             <if test="type != null">
                 type = #{type},
             </if>
-            <if test="index != null">
-                index = #{index},
+            <if test="sequence != null">
+                sequence = #{sequence},
             </if>
             <if test="url != null and url != ''">
                 url = #{url},

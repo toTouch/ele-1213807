@@ -554,7 +554,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Date dateBefor = cal.getTime();
             Long firstTodayBefor = DateUtil.beginOfDay(dateBefor).getTime();
             Long endToday = DateUtil.endOfDay(dateBefor).getTime();
-            getHomeOne(firstToday, firstTodayBefor, endToday);
+            return getHomeOne(firstToday, firstTodayBefor, endToday);
         }
         if (type == 2) {
             //查用户
@@ -565,7 +565,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Date dateBefor = cal.getTime();
             Long firstWeekBefor = DateUtil.beginOfWeek(dateBefor).getTime();
             Long endWeek = DateUtil.endOfWeek(dateBefor).getTime();
-            getHomeOne(firstWeek, firstWeekBefor, endWeek);
+            return getHomeOne(firstWeek, firstWeekBefor, endWeek);
         }
         if (type == 3) {
             //查用户
@@ -576,7 +576,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Date dateBefor = cal.getTime();
             Long firstMonthBefor = DateUtil.beginOfMonth(dateBefor).getTime();
             Long endMonth = DateUtil.endOfMonth(dateBefor).getTime();
-            getHomeOne(firstMonth, firstMonthBefor, endMonth);
+            return getHomeOne(firstMonth, firstMonthBefor, endMonth);
         }
         if (type == 4) {
             //查用户
@@ -587,7 +587,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Date dateBefor = cal.getTime();
             Long firstQuarterBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
             Long endQuarter = DateUtil.endOfQuarter(dateBefor).getTime();
-            getHomeOne(firstQuarter, firstQuarterBefor, endQuarter);
+            return getHomeOne(firstQuarter, firstQuarterBefor, endQuarter);
         }
         if (type == 5) {
             //查用户
@@ -598,9 +598,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Date dateBefor = cal.getTime();
             Long firstYearBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
             Long endYear = DateUtil.endOfQuarter(dateBefor).getTime();
-            getHomeOne(firstYear, firstYearBefor, endYear);
+            return getHomeOne(firstYear, firstYearBefor, endYear);
         }
-        return null;
+        return R.ok();
     }
 
     public R getHomeOne(Long first, Long firstBefor, Long end) {
@@ -617,6 +617,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查收益
         BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
         BigDecimal beforMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
+        if(Objects.isNull(nowMoney)){
+            nowMoney=BigDecimal.valueOf(0);
+        }
+        if(Objects.isNull(beforMoney)){
+            beforMoney=BigDecimal.valueOf(0);
+        }
         HashMap<String, String> moneyInfo = new HashMap<>();
         moneyInfo.put("nowMoney", nowMoney.toString());
         moneyInfo.put("beforMoney", beforMoney.toString());
@@ -627,9 +633,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //成功率
         BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now);
         HashMap<String, String> orderInfo = new HashMap<>();
-        moneyInfo.put("nowCount", nowCount.toString());
-        moneyInfo.put("beforCount", beforCount.toString());
-        moneyInfo.put("successOrder", successOrder.toString());
+        orderInfo.put("nowCount", nowCount.toString());
+        orderInfo.put("beforCount", beforCount.toString());
+        orderInfo.put("successOrder", successOrder.toString());
         homeOne.put("orderInfo", orderInfo);
         return R.ok(homeOne);
     }
@@ -682,9 +688,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         HashMap<String, String> electricityBatteryInfo = new HashMap<>();
-        electricityCabinetInfo.put("batteryTotal", batteryTotal.toString());
-        electricityCabinetInfo.put("cabinetCount", cabinetCount.toString());
-        electricityCabinetInfo.put("userCount", userCount.toString());
+        electricityBatteryInfo.put("batteryTotal", batteryTotal.toString());
+        electricityBatteryInfo.put("cabinetCount", cabinetCount.toString());
+        electricityBatteryInfo.put("userCount", userCount.toString());
         homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
         return R.ok(homeTwo);
     }

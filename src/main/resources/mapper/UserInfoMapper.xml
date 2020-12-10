@@ -29,7 +29,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="UserInfoMap">
         select
-          id, uid, name, phone, id_number, service_status, member_card_expire_time,remainingNumber, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where id = #{id}
     </select>

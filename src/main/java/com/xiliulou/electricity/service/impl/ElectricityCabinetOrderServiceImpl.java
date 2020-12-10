@@ -260,6 +260,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public BigDecimal homeOneSuccess(Long first, Long now) {
         Integer countTotal = homeOneCount(first, now);
         Integer SuccessTotal = electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE));
+        if(SuccessTotal==0||countTotal==0){
+            return BigDecimal.valueOf(0);
+        }
         return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal));
     }
 

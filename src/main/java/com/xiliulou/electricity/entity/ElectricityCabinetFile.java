@@ -36,7 +36,7 @@ public class ElectricityCabinetFile {
     /**
     * 文件次序
     */
-    private Integer index;
+    private Integer sequence;
     /**
     * 文件的url
     */
