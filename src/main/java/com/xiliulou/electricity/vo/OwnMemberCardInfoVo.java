@@ -20,7 +20,7 @@ public class OwnMemberCardInfoVo {
     private Long remainingNumber;
 
 
-    private Integer days;
+    private Long days;
     private Integer type;
 
 }
