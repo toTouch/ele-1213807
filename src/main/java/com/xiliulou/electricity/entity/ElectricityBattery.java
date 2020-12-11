@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 @TableName("t_electricity_battery")
 public class ElectricityBattery {
-    @TableId(value = "id",type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
      * 所属店铺
@@ -47,12 +47,11 @@ public class ElectricityBattery {
     /**
      * 电池电量
      */
-
     private Integer capacity;
     /**
      * 0：在仓，1：在库，2：租借
      */
-    private Object status;
+    private Integer status;
 
     private Long createTime;
 
