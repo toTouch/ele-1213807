@@ -5,8 +5,6 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
-import java.util.List;
-
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -15,6 +13,7 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     @Select("SELECT *  FROM t_electricity_member_card_order  WHERE order_id = #{orderId}")
     ElectricityMemberCardOrder selectByOrderNo(@Param("orderId") String orderNo);
+
     @Select("SELECT *  FROM t_electricity_member_card_order  WHERE uid =#{uid} and status =1 order by create_time desc limit #{offset},#{size}")
     List<ElectricityMemberCardOrder> getMemberCardOrderPage(@Param("uid") Long uid, @Param("offset") Long offset, @Param("size") Long size);
 
@@ -28,4 +27,7 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
             "group by from_unixtime(create_time / 1000, '%Y-%m-%d')\n" +
             "order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc")
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    @Select("SELECT * FROM  t_electricity_member_card_order  WHERE uid = #{uid} AND status =1  ORDER BY create_time desc LIMIT 0,1")
+    ElectricityMemberCardOrder getRecentOrder(@Param("uid") Long uid);
 }

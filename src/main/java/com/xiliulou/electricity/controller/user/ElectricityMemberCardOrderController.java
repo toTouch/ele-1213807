@@ -47,4 +47,16 @@ public class ElectricityMemberCardOrderController {
         return electricityMemberCardOrderService.getMemberCardOrderPage(uid, offset, size);
     }
 
+    @GetMapping("user/memberCardOrder/count")
+    public R getMemberCardOrderCount() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+
+        return electricityMemberCardOrderService.getMemberCardOrderCount(uid);
+    }
+
+
+
 }

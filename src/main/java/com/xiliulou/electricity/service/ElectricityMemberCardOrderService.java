@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -16,4 +17,8 @@ public interface ElectricityMemberCardOrderService {
     BigDecimal homeOne(Long first, Long now);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay);
+
+    R getMemberCardOrderCount(Long uid);
+
+    ElectricityMemberCardOrder getRecentOrder(Long uid);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
@@ -126,5 +127,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public R getMemberCardOrderPage(Long uid, Long offset, Long size) {
         return R.ok(baseMapper.getMemberCardOrderPage(uid, offset, size));
+    }
+
+    /**
+     * 获取交易次数
+     *
+     * @param uid
+     * @return
+     */
+    @Override
+    public R getMemberCardOrderCount(Long uid) {
+        return R.ok(baseMapper.selectCount(Wrappers.<ElectricityMemberCardOrder>lambdaQuery()
+                .eq(ElectricityMemberCardOrder::getUid, uid)
+                .eq(ElectricityMemberCardOrder::getStatus, ElectricityMemberCardOrder.STATUS_SUCCESS)
+                .orderByDesc(ElectricityMemberCardOrder::getCreateTime)));
+    }
+
+    /**
+     * 获取最近的电池交易记录
+     *
+     * @param uid
+     * @return
+     */
+    @Override
+    public ElectricityMemberCardOrder getRecentOrder(Long uid) {
+        return baseMapper.getRecentOrder(uid);
     }
 }
