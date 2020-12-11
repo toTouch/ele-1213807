@@ -20,7 +20,8 @@ public class ElectricityMemberCardOrder {
     private BigDecimal payAmount;
     //有效天数
     private Integer validDays;
-
+    //最大使用次数
+    private Long maxUseCount;
     //
     private Long uid;
     //

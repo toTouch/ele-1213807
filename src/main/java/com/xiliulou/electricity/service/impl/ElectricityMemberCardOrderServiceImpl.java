@@ -65,7 +65,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", uid);
             return R.failMsg("未找到用户的第三方授权信息!");
         }
-        UserInfo userInfo = userInfoService.queryByIdFromCache(uid);
+        UserInfo userInfo = userInfoService.selectUsersById(uid);
         if (ObjectUtil.isNull(userInfo)) {
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USER_INFO. UID:{}", uid);
             return R.failMsg("未找到用户信息!");
@@ -114,12 +114,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public BigDecimal homeOne(Long first, Long now) {
-        return baseMapper.homeOne(first,now);
+        return baseMapper.homeOne(first, now);
     }
 
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay) {
-        return baseMapper.homeThree(startTimeMilliDay,endTimeMilliDay);
+        return baseMapper.homeThree(startTimeMilliDay, endTimeMilliDay);
     }
 
 

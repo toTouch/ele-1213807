@@ -13,7 +13,7 @@ public interface ElectricityCabinetConstant {
     String CACHE_USER_UID = "user_uid:";
     String CACHE_USER_PHONE = "user_phone:";
     String CACHE_MEMBER_CARD = "CACHE_MEMBER_CARD:";
-
+    String CACHE_USER_INFO_UID = "user_info_uid:";
     //最后一个操作格挡缓存
     String ELECTRICITY_CABINET_DEVICE_LAST_CELL = "electricity_cabinet_cell_device_last:";
     //占用仓门缓存

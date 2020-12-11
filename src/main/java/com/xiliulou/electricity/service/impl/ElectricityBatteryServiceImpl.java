@@ -6,10 +6,13 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.StoreService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -27,6 +30,8 @@ import java.util.Objects;
 public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatteryMapper, ElectricityBattery> implements ElectricityBatteryService {
     @Resource
     private ElectricityBatteryMapper electricitybatterymapper;
+    @Autowired
+    StoreService storeService;
 
     /**
      * 保存电池
@@ -40,7 +45,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             // TODO: 2020/11/26 0026 YG 校验代理商合法性
         }
         if (Objects.nonNull(electricityBattery.getShopId())) {
-            // TODO: 2020/11/26 0026 YG 校验商铺/门店合法性
+            Store store = storeService.queryByIdFromCache(electricityBattery.getShopId());
+            if (Objects.isNull(store)) {
+                log.error("SAVE_ELECTRICITY_BATTERY ERROR, ,NOT FOUND SHOP ,SHOPID:{}", electricityBattery.getShopId());
+                return R.failMsg("未找到店铺!");
+            }
         }
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
