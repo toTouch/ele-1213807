@@ -210,7 +210,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 .oldElectricityBatterySn(oldElectricityBatterySn)
                 .oldCellNo(Integer.valueOf(cellNo))
                 .status(ElectricityCabinetOrder.STATUS_ORDER_PAY)
-                .source(orderQuery.getSource()).build();
+                .source(orderQuery.getSource())
+                .paymentMethod(userInfo.getCardType()).build();
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
         //修改仓门为订单中状态
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();

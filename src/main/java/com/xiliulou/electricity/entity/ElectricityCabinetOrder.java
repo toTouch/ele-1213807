@@ -65,7 +65,7 @@ public class ElectricityCabinetOrder {
     */
     private Integer status;
     /**
-    * 支付方式 1--月卡抵扣
+    * 类型(0:月卡,1:季卡,2:年卡)
     */
     private Integer paymentMethod;
     /**
