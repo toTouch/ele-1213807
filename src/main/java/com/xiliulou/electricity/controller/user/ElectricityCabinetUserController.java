@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
