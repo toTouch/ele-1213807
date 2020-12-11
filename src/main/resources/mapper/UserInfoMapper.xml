@@ -81,6 +81,10 @@
         group by from_unixtime(create_time / 1000, '%Y-%m-%d')
         order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
     </select>
+    <select id="homeOneMemberCard" resultType="java.lang.Integer">
+        select count(1)
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and member_card_expire_time is not null and remaining_number is not null
+    </select>
 
     <!--通过主键修改数据-->
     <update id="update">
@@ -200,7 +204,7 @@
         where id = #{id}
     </update>
     <update id="minCount">
-         update electricity.t_user_info set remaining_number=remaining_number-1 where del_flag=0 and  remaining_number>1
+         update electricity.t_user_info set remaining_number=remaining_number-1,update_time = #{updateTime} where del_flag=0 and  remaining_number>1
     </update>
 
 </mapper>

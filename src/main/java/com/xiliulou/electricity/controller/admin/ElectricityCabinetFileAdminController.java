@@ -7,6 +7,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -78,47 +79,48 @@ public class ElectricityCabinetFileAdminController {
 
     //统一上传
     @PostMapping("/admin/electricityCabinetFileService/call/back")
-    public R callBack(@RequestParam("fileNameList") List<String> fileNameList,
-                         @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                         @RequestParam("fileType") Integer fileType) {
-        if(ObjectUtil.isEmpty(fileNameList)){
+    public R callBack(@RequestBody CallBackQuery callBackQuery) {
+        if(ObjectUtil.isEmpty(callBackQuery.getFileNameList())){
             return R.ok();
         }
+        if(ObjectUtil.equal(callBackQuery.getFileType(),ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET)){
+            if(Objects.isNull(callBackQuery.getElectricityCabinetId())){
+                return R.fail("ELECTRICITY.0007","不合法的参数");
+            }
+        }
         //先删除
-        electricityCabinetFileService.deleteByDeviceInfo(electricityCabinetId,fileType);
+        electricityCabinetFileService.deleteByDeviceInfo(callBackQuery.getElectricityCabinetId(),callBackQuery.getFileType());
         //再新增
         if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-            for (String fileName:fileNameList) {
-                int index=1;
+            int index=1;
+            for (String fileName:callBackQuery.getFileNameList()) {
                 ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
-                        .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                        .electricityCabinetId(electricityCabinetId)
-                        .type(fileType)
+                        .electricityCabinetId(callBackQuery.getElectricityCabinetId())
+                        .type(callBackQuery.getFileType())
                         .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
                         .name(fileName)
                         .sequence(index)
                         .isOss(Integer.valueOf(StorageConfig.IS_USE_OSS)).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
-                index++;
+                index=index+1;
             }
 
         }else {
-            for (String fileName:fileNameList) {
-                int index=1;
+            int index=1;
+            for (String fileName:callBackQuery.getFileNameList()) {
                 ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
-                        .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                        .electricityCabinetId(electricityCabinetId)
-                        .type(fileType)
+                        .electricityCabinetId(callBackQuery.getElectricityCabinetId())
+                        .type(callBackQuery.getFileType())
                         .bucketName(storageConfig.getBucketName())
                         .name(fileName)
                         .sequence(index)
                         .isOss(Integer.valueOf(StorageConfig.IS_USE_MINIO)).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
-                index++;
+                index=index+1;
             }
         }
         return R.ok();

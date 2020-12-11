@@ -26,7 +26,8 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
         select
-          id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
+        id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time,
+        update_time, del_flag
         from electricity.t_electricity_cabinet_box
         where del_flag=0
         <if test="query.electricityCabinetId != null">
@@ -118,16 +119,15 @@
     </update>
     <update id="batchDeleteBoxByElectricityCabinetId">
         update electricity.t_electricity_cabinet_box
-        set del_flag = 1
+        set del_flag = 1, update_time = #{updateTime}
         where electricity_cabinet_id = #{id}
     </update>
     <update id="modifyByElectricityCabinetId">
         update electricity.t_electricity_cabinet_box
-        <set>
-            <if test="query.boxStatus != null">
-                box_status = #{query.boxStatus},
-            </if>
-        </set>
+        set update_time = #{query.updateTime},
+        <if test="query.boxStatus != null">
+            box_status = #{query.boxStatus},
+        </if>
         where electricity_cabinet_id = #{query.electricityCabinetId}
     </update>
     <!--通过主键删除-->

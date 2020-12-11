@@ -33,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -263,7 +265,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if(SuccessTotal==0||countTotal==0){
             return BigDecimal.valueOf(0);
         }
-        return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal));
+        return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal)).multiply(BigDecimal.valueOf(100));
     }
 
     @Override
@@ -286,6 +288,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         Integer count=electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime,electricityCabinetOrderQuery.getBeginTime(),electricityCabinetOrderQuery.getEndTime()));
         return R.ok(count);
+    }
+
+    @Override
+    public void handlerExpiredCancelOrder(String orderId) {
+        log.info("handel  cancel order start ------->");
+        electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId,System.currentTimeMillis());
+        log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
     }
 
     public String findOldUsableCellNo(Integer id) {

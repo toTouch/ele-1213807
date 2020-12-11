@@ -68,4 +68,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     int deleteById(Long id);
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    void updateExpiredCancelOrder(@Param("orderId")String orderId,@Param("updateTime") Long updateTime);
 }

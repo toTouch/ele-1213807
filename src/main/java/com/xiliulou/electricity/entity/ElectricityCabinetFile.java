@@ -57,13 +57,6 @@ public class ElectricityCabinetFile {
     * 更新时间
     */
     private Long updateTime;
-    /**
-    * 是否删除（0-正常，1-删除）
-    */
-    private Integer delFlag;
-
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
 
     //换电柜柜机图片
     public static final Integer TYPE_ELECTRICITY_CABINET = 1;
