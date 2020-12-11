@@ -144,14 +144,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
       11.新电池关门回调
       */
     @Override
-    public R
-
-
-
-
-
-
-    order(OrderQuery orderQuery) {
+    public R order(OrderQuery orderQuery) {
         if (Objects.isNull(orderQuery.getElectricityCabinetId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
