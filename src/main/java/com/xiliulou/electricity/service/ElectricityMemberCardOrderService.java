@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.query.MemberCardOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -21,4 +22,6 @@ public interface ElectricityMemberCardOrderService {
     R getMemberCardOrderCount(Long uid);
 
     ElectricityMemberCardOrder getRecentOrder(Long uid);
+
+    R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery);
 }
