@@ -3,28 +3,20 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.RentCarOrder;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
-import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.RentCarOrderService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.UserInfoVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -41,7 +33,7 @@ import java.util.stream.Collectors;
  * @since 2020-12-07 15:00:00
  */
 @Service("userInfoService")
-public class UserInfoServiceImpl implements UserInfoService {
+public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements UserInfoService {
     @Resource
     private UserInfoMapper userInfoMapper;
     @Autowired
@@ -54,6 +46,8 @@ public class UserInfoServiceImpl implements UserInfoService {
     CityService cityService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -67,14 +61,20 @@ public class UserInfoServiceImpl implements UserInfoService {
     }
 
     /**
-     * 通过ID查询单条数据从缓存
-     *
      * @param id 主键
-     * @return 实例对象
+     * @return
      */
     @Override
-    public UserInfo queryByIdFromCache(Long id) {
-        return null;
+    public UserInfo selectUsersById(Long id) {
+        UserInfo userInfo = null;
+        userInfo = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, UserInfo.class);
+        if (Objects.isNull(userInfo)) {
+            userInfo = this.userInfoMapper.selectById(id);
+            if (Objects.nonNull(userInfo)) {
+                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, userInfo);
+            }
+        }
+        return userInfo;
     }
 
     /**
@@ -159,7 +159,7 @@ public class UserInfoServiceImpl implements UserInfoService {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         RentCarOrder rentCarOrder = new RentCarOrder();
-        if(Objects.nonNull(userInfoCarAddAndUpdate.getCarStoreId())) {
+        if (Objects.nonNull(userInfoCarAddAndUpdate.getCarStoreId())) {
             Store store = storeService.queryByIdFromCache(userInfoCarAddAndUpdate.getCarStoreId());
             if (Objects.isNull(store)) {
                 return R.fail("ELECTRICITY.0018", "未找到门店");
@@ -321,19 +321,19 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public UserInfo queryByUid(Long uid) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid,uid)
-                .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid)
+                .eq(UserInfo::getServiceStatus, UserInfo.IS_SERVICE_STATUS).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
     @Override
     public Integer homeOneTotal(Long first, Long now) {
-        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime, first, now).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
     @Override
     public Integer homeOneService(Long first, Long now) {
-        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime,first,now).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL)
-        .eq(UserInfo::getServiceStatus,UserInfo.IS_SERVICE_STATUS));
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime, first, now).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL)
+                .eq(UserInfo::getServiceStatus, UserInfo.IS_SERVICE_STATUS));
     }
 
     @Override
@@ -348,16 +348,16 @@ public class UserInfoServiceImpl implements UserInfoService {
 
     @Override
     public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay) {
-        return userInfoMapper.homeThreeTotal(startTimeMilliDay,endTimeMilliDay);
+        return userInfoMapper.homeThreeTotal(startTimeMilliDay, endTimeMilliDay);
     }
 
     @Override
     public List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay) {
-        return userInfoMapper.homeThreeService(startTimeMilliDay,endTimeMilliDay);
+        return userInfoMapper.homeThreeService(startTimeMilliDay, endTimeMilliDay);
     }
 
     @Override
     public List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay) {
-        return userInfoMapper.homeThreeMemberCard(startTimeMilliDay,endTimeMilliDay);
+        return userInfoMapper.homeThreeMemberCard(startTimeMilliDay, endTimeMilliDay);
     }
 }
