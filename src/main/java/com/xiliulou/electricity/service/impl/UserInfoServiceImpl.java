@@ -343,12 +343,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public Integer homeOneMemberCard(Long first, Long now) {
-        return userInfoMapper.homeOneMemberCard(first,now);
+        return userInfoMapper.homeOneMemberCard(first, now);
     }
 
     @Override
     public int minCount(Long id) {
-        return userInfoMapper.minCount(id,System.currentTimeMillis());
+        return userInfoMapper.minCount(id, System.currentTimeMillis());
     }
 
     @Override
@@ -393,7 +393,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setMemberCardExpireTime(userInfo.getMemberCardExpireTime());
         ownMemberCardInfoVo.setRemainingNumber(userInfo.getRemainingNumber());
         ownMemberCardInfoVo.setType(electricityMemberCardOrder.getMemberCardType());
-//        ownMemberCardInfoVo.setDays((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L));
-        return null;
+        ownMemberCardInfoVo.setDays((long) Math.round((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L)));
+        return R.ok(ownMemberCardInfoVo);
     }
 }

@@ -1,6 +1,6 @@
 server:
   port: 9991
-  servlet:
+ 
 
 
 spring:
@@ -25,7 +25,7 @@ spring:
       pool:
         max-active: 16
     host:  ${REDIS-HOST:xiliulou-redis}
-    password: 123456
+    password: xll_redis_nihao...333
   application:
     name: @artifactId@
   cloud:
