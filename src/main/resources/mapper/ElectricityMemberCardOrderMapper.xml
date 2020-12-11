@@ -18,7 +18,7 @@
             and tel.member_card_type =#{query.cardType}
         </if>
         <if test="query.queryStartTime != null">
-            and tel.create_time BETWEEN #{queryStartTime} and #{queryEndTime}
+            and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
         </if>
         order by tel.create_time desc
         limit #{offset},#{size}
