@@ -9,6 +9,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @ClassName : Expired
@@ -25,20 +27,24 @@ public class ExpiredCancelOrderTask extends IJobHandler {
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
 
+    ExecutorService executorService = Executors.newFixedThreadPool(4);
+
     //处理未支付寄存订单 (每分钟执行一次)
     @Override
     public ReturnT<String> execute(String s) throws Exception {
-        //放redis 订单id
+        //放redis 订单id TODO
         redisService.zsetAddString("orderId", "value", System.currentTimeMillis() + 360 * 1000);
         try {
             //取redis
             Set<String> orderIdList = redisService.getZsetStringByRange("orderId", 0, System.currentTimeMillis());
             if (DataUtil.collectionIsUsable(orderIdList)) {
+                redisService.removeZsetRangeByScore("key", 0, System.currentTimeMillis());
                 for (String orderId : orderIdList) {
                     //同步去处理
-                    electricityCabinetOrderService.handlerExpiredCancelOrder(orderId);
+                    executorService.execute(() -> {
+                        electricityCabinetOrderService.handlerExpiredCancelOrder(orderId);
+                    });
                 }
-                redisService.removeZsetRangeByScore("key", 0, System.currentTimeMillis());
             }
         } catch (Exception e) {
             log.error("处理失败"+e);
