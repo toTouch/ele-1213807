@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -9,6 +10,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
@@ -18,6 +20,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -72,6 +75,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    CityService cityService;
 
 
     /**
@@ -218,6 +223,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+                //地区
+                City city = cityService.queryByIdFromCache(e.getAreaId());
+                if (Objects.nonNull(city)) {
+                    e.setAreaName(city.getCity());
+                    e.setPid(city.getPid());
+                }
+            });
+        }
         return R.ok(electricityCabinetOrderVOList);
     }
 
@@ -314,6 +329,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         return R.ok(electricityCabinetOrder.getStatus());
+    }
+
+    @Override
+    public R endOrder(String orderId) {
+        return R.ok();
     }
 
     public String findOldUsableCellNo(Integer id) {

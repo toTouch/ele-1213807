@@ -71,4 +71,6 @@ public interface ElectricityCabinetOrderService {
     void handlerExpiredCancelOrder(String orderId);
 
     R queryStatus(String orderId);
+
+    R endOrder(String orderId);
 }

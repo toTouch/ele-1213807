@@ -262,20 +262,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录
-            RentCarOrder rentCarOrder = new RentCarOrder();
-            rentCarOrder.setUid(oldUserInfo.getUid());
-            rentCarOrder.setName(userInfo.getName());
-            rentCarOrder.setPhone(userInfo.getPhone());
-            rentCarOrder.setIdNumber(userInfo.getIdNumber());
-            rentCarOrder.setCarStoreId(userInfo.getCarStoreId());
-            rentCarOrder.setCarStoreName(store.getName());
-            rentCarOrder.setCarSn(userInfo.getCarSn());
-            rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
-            rentCarOrder.setNumberPlate(userInfo.getNumberPlate());
-            rentCarOrder.setCreateTime(System.currentTimeMillis());
-            rentCarOrder.setStatus(RentCarOrder.NO_USE_STATUS);
-            rentCarOrderService.insert(rentCarOrder);
+            //添加租电池记录=
+            RentBatteryOrder rentBatteryOrder=new RentBatteryOrder();
+            rentBatteryOrder.setUid(oldUserInfo.getUid());
+            rentBatteryOrder.setName(userInfo.getName());
+            rentBatteryOrder.setPhone(userInfo.getPhone());
+            rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
+            rentBatteryOrder.setBatteryStoreId(userInfo.getBatteryStoreId());
+            rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
+            rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
+            rentBatteryOrder.setCreateTime(System.currentTimeMillis());
+            rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
+            rentBatteryOrderService.insert(rentBatteryOrder);
             return null;
         });
         return R.ok();

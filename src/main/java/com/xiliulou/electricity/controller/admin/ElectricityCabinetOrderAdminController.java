@@ -3,7 +3,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,7 +28,7 @@ public class ElectricityCabinetOrderAdminController {
     ElectricityCabinetOrderService electricityCabinetOrderService;
 
     //换电柜订单查询
-    @PostMapping("/admin/electricityCabinetOrder/list")
+    @GetMapping("/admin/electricityCabinetOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
                        @RequestParam(value = "offset", required = false) Integer offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
@@ -53,6 +56,12 @@ public class ElectricityCabinetOrderAdminController {
                 .beginTime(beginTime)
                 .endTime(endTime).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+    }
+
+    //结束异常订单
+    @PutMapping(value = "/admin/electricityCabinetOrder/endOrder")
+    public R endOrder(@RequestParam("orderId") String orderId) {
+        return electricityCabinetOrderService.endOrder(orderId);
     }
 
 
