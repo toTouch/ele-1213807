@@ -53,7 +53,7 @@ public class ElectricitySubscriptionMessageAdminController {
      * @return
      */
     @PostMapping("admin/servicePhone")
-    public R getServicePhone(ServicePhoneQuery servicePhoneQuery) {
+    public R getServicePhone(@RequestBody ServicePhoneQuery servicePhoneQuery) {
 
         redisService.set(ElectricityCabinetConstant.CACHE_SERVICE_PHONE, servicePhoneQuery.getPhone());
         return R.ok();
