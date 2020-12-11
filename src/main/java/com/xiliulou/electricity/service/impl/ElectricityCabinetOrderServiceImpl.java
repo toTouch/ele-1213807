@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.RandomUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
@@ -27,12 +28,22 @@ import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -201,7 +212,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ORDER_OCCUPY);
         electricityCabinetBoxService.modify(electricityCabinetBox);
         //TODO 4.开旧电池门
-        return null;
+        return R.ok(electricityCabinetOrder.getOrderId());
     }
 
     @Override
@@ -263,7 +274,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if(SuccessTotal==0||countTotal==0){
             return BigDecimal.valueOf(0);
         }
-        return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal));
+        return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal)).multiply(BigDecimal.valueOf(100));
     }
 
     @Override
@@ -286,6 +297,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         Integer count=electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime,electricityCabinetOrderQuery.getBeginTime(),electricityCabinetOrderQuery.getEndTime()));
         return R.ok(count);
+    }
+
+    @Override
+    public void handlerExpiredCancelOrder(String orderId) {
+        log.info("handel  cancel order start ------->");
+        electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId,System.currentTimeMillis());
+        log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
+    }
+
+    @Override
+    public R queryStatus(String orderId) {
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId));
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        return R.ok(electricityCabinetOrder.getStatus());
     }
 
     public String findOldUsableCellNo(Integer id) {
@@ -523,6 +551,38 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         return null;
+    }
+
+
+    public String testOpenDoor(String seesionId){
+        JSONObject json= (JSONObject)JSONObject.toJSON(seesionId);
+        String url="";
+        String result=post(json,url);
+        return result;
+    }
+
+    public  String post(JSONObject json, String path) {
+        String result="";
+        try {
+            HttpClient client=new DefaultHttpClient();
+            HttpPost post=new HttpPost(path);
+            post.setHeader("Content-Type", "application/json");
+            StringEntity s=new StringEntity(json.toString(), "utf-8");
+            post.setEntity(s);
+            HttpResponse httpResponse=client.execute(post);
+            InputStream in=httpResponse.getEntity().getContent();
+            BufferedReader br=new BufferedReader(new InputStreamReader(in, "utf-8"));
+            StringBuilder strber=new StringBuilder();
+            String line=null;
+            while ((line=br.readLine())!=null) {
+                strber.append(line+"\n");
+            }
+            in.close();
+            result=strber.toString();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return result;
     }
 
 }

@@ -123,7 +123,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Override
     public List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType) {
         return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getElectricityCabinetId, electricityCabinetId)
-                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getDelFlag, ElectricityCabinetFile.DEL_NORMAL));
+                .eq(ElectricityCabinetFile::getType, fileType));
     }
 
     @Override
@@ -140,9 +140,6 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
 
     @Override
     public void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType) {
-        ElectricityCabinetFile electricityCabinetFile=new ElectricityCabinetFile();
-        electricityCabinetFile.setDelFlag(ElectricityCabinetFile.DEL_DEL);
-        electricityCabinetFileMapper.update(electricityCabinetFile,Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getElectricityCabinetId, electricityCabinetId)
-                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getDelFlag, ElectricityCabinetFile.DEL_NORMAL));
+        electricityCabinetFileMapper.deleteByDeviceInfo(electricityCabinetId,fileType);
     }
 }

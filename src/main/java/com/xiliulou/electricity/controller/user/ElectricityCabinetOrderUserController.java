@@ -73,5 +73,11 @@ public class ElectricityCabinetOrderUserController {
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 
+    //查订单状态
+    @PostMapping("/user/electricityCabinetOrder/queryStatus")
+    public R queryStatus( @RequestParam("orderId") String orderId) {
+        return electricityCabinetOrderService.queryStatus(orderId);
+    }
+
 
 }

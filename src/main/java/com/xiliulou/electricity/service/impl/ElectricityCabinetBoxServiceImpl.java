@@ -107,7 +107,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchDeleteBoxByElectricityCabinetId(Integer id) {
-        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id);
+        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id,System.currentTimeMillis());
     }
 
     @Override

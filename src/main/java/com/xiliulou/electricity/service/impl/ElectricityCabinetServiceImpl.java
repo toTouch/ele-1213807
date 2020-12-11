@@ -609,33 +609,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer totalCount = userInfoService.homeOneTotal(first, now);
         Integer serviceCount = userInfoService.homeOneService(first, now);
         Integer MemberCardCount = userInfoService.homeOneMemberCard(first, now);
+        Integer allTotalCount = userInfoService.homeOneTotal(0L, now);
         HashMap<String, String> userInfo = new HashMap<>();
         userInfo.put("totalCount", totalCount.toString());
         userInfo.put("serviceCount", serviceCount.toString());
         userInfo.put("MemberCardCount", MemberCardCount.toString());
+        userInfo.put("allTotalCount", allTotalCount.toString());
         homeOne.put("userInfo", userInfo);
         //查收益
         BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
         BigDecimal beforMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
+        BigDecimal totalMoney = electricityMemberCardOrderService.homeOne(0L, now);
         if(Objects.isNull(nowMoney)){
             nowMoney=BigDecimal.valueOf(0);
         }
         if(Objects.isNull(beforMoney)){
             beforMoney=BigDecimal.valueOf(0);
         }
+        if(Objects.isNull(totalMoney)){
+            totalMoney=BigDecimal.valueOf(0);
+        }
         HashMap<String, String> moneyInfo = new HashMap<>();
         moneyInfo.put("nowMoney", nowMoney.toString());
         moneyInfo.put("beforMoney", beforMoney.toString());
+        moneyInfo.put("totalMoney", totalMoney.toString());
         homeOne.put("moneyInfo", moneyInfo);
         //换电
         Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now);
         Integer beforCount = electricityCabinetOrderService.homeOneCount(firstBefor, end);
+        Integer count = electricityCabinetOrderService.homeOneCount(0L, now);
         //成功率
         BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now);
         HashMap<String, String> orderInfo = new HashMap<>();
         orderInfo.put("nowCount", nowCount.toString());
         orderInfo.put("beforCount", beforCount.toString());
         orderInfo.put("successOrder", successOrder.toString());
+        orderInfo.put("totalCount", count.toString());
         homeOne.put("orderInfo", orderInfo);
         return R.ok(homeOne);
     }
@@ -717,7 +726,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //查收益
         List<HashMap<String, String>> moneyList = electricityMemberCardOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
         HashMap<String, Object> moneyInfo = new HashMap<>();
-        moneyInfo.put("nowMoney", moneyList);
+        moneyInfo.put("moneyList", moneyList);
         homeThree.put("moneyInfo", moneyInfo);
         //换电
         List<HashMap<String, String>> orderList = electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);

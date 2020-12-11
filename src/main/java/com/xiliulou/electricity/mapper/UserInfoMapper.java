@@ -49,11 +49,13 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
      */
     int unBind(UserInfo userInfo);
 
-    int minCount(Long id);
+    int minCount(@Param("id")Long id,@Param("updateTime")Long updateTime);
 
     List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
     List<HashMap<String, String>> homeThreeService(@Param("startTimeMilliDay") long startTimeMilliDay,@Param("endTimeMilliDay") Long endTimeMilliDay);
 
     List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay,@Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    Integer homeOneMemberCard(@Param("startTimeMilliDay")Long first, @Param("endTimeMilliDay") Long now);
 }

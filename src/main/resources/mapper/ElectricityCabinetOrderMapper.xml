@@ -203,6 +203,11 @@
         </set>
         where id = #{id}
     </update>
+    <update id="updateExpiredCancelOrder">
+        update electricity.t_electricity_cabinet_order
+        set status = 8 , update_time = #{updateTime}
+        where  order_id = #{orderId} and status in(1,2,3);
+    </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">
