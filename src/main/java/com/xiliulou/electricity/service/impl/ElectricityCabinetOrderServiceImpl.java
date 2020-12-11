@@ -212,7 +212,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ORDER_OCCUPY);
         electricityCabinetBoxService.modify(electricityCabinetBox);
         //TODO 4.开旧电池门
-        return null;
+        return R.ok(electricityCabinetOrder.getOrderId());
     }
 
     @Override
@@ -304,6 +304,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("handel  cancel order start ------->");
         electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId,System.currentTimeMillis());
         log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
+    }
+
+    @Override
+    public R queryStatus(String orderId) {
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId));
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        return R.ok(electricityCabinetOrder.getStatus());
     }
 
     public String findOldUsableCellNo(Integer id) {

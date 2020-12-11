@@ -69,4 +69,6 @@ public interface ElectricityCabinetOrderService {
     R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
     void handlerExpiredCancelOrder(String orderId);
+
+    R queryStatus(String orderId);
 }
