@@ -14,7 +14,9 @@ import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
 import com.xiliulou.electricity.vo.UserInfoVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -33,6 +35,7 @@ import java.util.stream.Collectors;
  * @since 2020-12-07 15:00:00
  */
 @Service("userInfoService")
+@Slf4j
 public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> implements UserInfoService {
     @Resource
     private UserInfoMapper userInfoMapper;
@@ -48,6 +51,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     RedisService redisService;
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -359,5 +364,36 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay) {
         return userInfoMapper.homeThreeMemberCard(startTimeMilliDay, endTimeMilliDay);
+    }
+
+    /**
+     * 获取用户套餐信息
+     *
+     * @param uid
+     * @return
+     */
+    @Override
+    public R getMemberCardInfo(Long uid) {
+        UserInfo userInfo = selectUsersById(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
+            return R.failMsg("未找到用户信息!");
+        }
+        if (Objects.isNull(userInfo.getRemainingNumber()) || Objects.isNull(userInfo.getMemberCardExpireTime()) || System.currentTimeMillis() >
+                userInfo.getMemberCardExpireTime() || userInfo.getRemainingNumber() == 0) {
+            return R.ok();
+        }
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.getRecentOrder(uid);
+
+        if (Objects.isNull(electricityMemberCardOrder)) {
+            return R.failMsg("未找到月卡交易记录!");
+        }
+        OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
+        ownMemberCardInfoVo.setMemberCardExpireTime(userInfo.getMemberCardExpireTime());
+        ownMemberCardInfoVo.setRemainingNumber(userInfo.getRemainingNumber());
+        ownMemberCardInfoVo.setType(electricityMemberCardOrder.getMemberCardType());
+//        ownMemberCardInfoVo.setDays((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L));
+        return null;
     }
 }

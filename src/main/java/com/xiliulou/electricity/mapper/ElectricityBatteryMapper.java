@@ -17,9 +17,10 @@ import java.util.List;
 public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery> {
 
 
-
     List<ElectricityBatteryVo> getElectricityBatteryPage(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
                                                          @Param("offset") Long offset, @Param("size") Long size);
 
-    List<ElectricityBattery> homeTwo(@Param("areaId")Integer areaId);
+    List<ElectricityBattery> homeTwo(@Param("areaId") Integer areaId);
+
+    ElectricityBatteryVo selectBatteryInfo(@Param("uid") Long uid);
 }

@@ -80,4 +80,6 @@ public interface UserInfoService extends IService<UserInfo> {
     List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay);
 
     List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay);
+
+    R getMemberCardInfo(Long uid);
 }

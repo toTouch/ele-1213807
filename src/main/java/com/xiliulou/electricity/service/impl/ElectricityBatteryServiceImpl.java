@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -155,6 +154,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R getSelfBattery(Long uid) {
-        return R.ok(baseMapper.selectOne(Wrappers.<ElectricityBattery>lambdaQuery().eq(ElectricityBattery::getUid, uid)));
+
+        return R.ok(baseMapper.selectBatteryInfo(uid));
     }
 }
