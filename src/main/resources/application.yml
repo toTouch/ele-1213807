@@ -25,7 +25,7 @@ spring:
       pool:
         max-active: 16
     host:  ${REDIS-HOST:xiliulou-redis}
-    password: xll_redis_nihao...333
+    password: 123456
   application:
     name: @artifactId@
   cloud:
