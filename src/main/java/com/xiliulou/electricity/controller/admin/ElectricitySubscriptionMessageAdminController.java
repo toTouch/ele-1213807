@@ -27,7 +27,7 @@ public class ElectricitySubscriptionMessageAdminController {
      *
      * @return
      */
-    @PostMapping("admin/subscriptionMessage")
+    @PostMapping("/admin/subscriptionMessage")
     public R saveElectricitySubscriptionMessage(@RequestBody @Validated ElectricitySubscriptionMessage electricitySubscriptionMessage) {
         return electricitySubscriptionMessageService.saveElectricitySubscriptionMessage(electricitySubscriptionMessage);
     }
@@ -37,7 +37,7 @@ public class ElectricitySubscriptionMessageAdminController {
      *
      * @return
      */
-    @PutMapping("admin/subscriptionMessage")
+    @PutMapping("/admin/subscriptionMessage")
     public R updateElectricitySubscriptionMessage(@RequestBody @Validated ElectricitySubscriptionMessage electricitySubscriptionMessage) {
         if (Objects.isNull(electricitySubscriptionMessage)) {
             return R.failMsg("请求参数Id不能为空!");
@@ -51,7 +51,7 @@ public class ElectricitySubscriptionMessageAdminController {
      *
      * @return
      */
-    @GetMapping("admin/subscriptionMessage/list")
+    @GetMapping("/admin/subscriptionMessage/list")
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type) {
 
         return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type);
