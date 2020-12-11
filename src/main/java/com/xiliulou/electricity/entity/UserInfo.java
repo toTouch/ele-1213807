@@ -50,9 +50,9 @@ public class UserInfo {
      */
     private Long remainingNumber;
     /**
-     * 类型(1:月卡,2:季卡,3:年卡)
+     * 类型(0:月卡,1:季卡,2:年卡)
      */
-    private Long cardType;
+    private Integer cardType;
 
     /**
      * 电池门店Id

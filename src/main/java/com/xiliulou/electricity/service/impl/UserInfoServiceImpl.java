@@ -263,7 +263,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录=
-            RentBatteryOrder rentBatteryOrder=new RentBatteryOrder();
+            RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(userInfo.getName());
             rentBatteryOrder.setPhone(userInfo.getPhone());
@@ -382,15 +382,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok();
         }
 
-        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.getRecentOrder(uid);
 
-        if (Objects.isNull(electricityMemberCardOrder)) {
-            return R.failMsg("未找到月卡交易记录!");
-        }
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
         ownMemberCardInfoVo.setMemberCardExpireTime(userInfo.getMemberCardExpireTime());
         ownMemberCardInfoVo.setRemainingNumber(userInfo.getRemainingNumber());
-        ownMemberCardInfoVo.setType(electricityMemberCardOrder.getMemberCardType());
+        ownMemberCardInfoVo.setType(userInfo.getCardType());
         ownMemberCardInfoVo.setDays((long) Math.round((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L)));
         return R.ok(ownMemberCardInfoVo);
     }

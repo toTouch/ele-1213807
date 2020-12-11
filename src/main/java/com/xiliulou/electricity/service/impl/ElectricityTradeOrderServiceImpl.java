@@ -135,6 +135,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
         userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+        userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateById(userInfoUpdate);
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
