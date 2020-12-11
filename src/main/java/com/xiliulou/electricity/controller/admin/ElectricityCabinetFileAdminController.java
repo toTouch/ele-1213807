@@ -89,7 +89,7 @@ public class ElectricityCabinetFileAdminController {
             }
         }
         //先删除
-        electricityCabinetFileService.deleteByDeviceInfo(callBackQuery.getElectricityCabinetId(),callBackQuery.getFileType());
+        electricityCabinetFileService.deleteByDeviceInfo(callBackQuery.getElectricityCabinetId(),callBackQuery.getFileType(),storageConfig.getIsUseOSS());
         //再新增
         if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
             int index=1;
@@ -102,7 +102,7 @@ public class ElectricityCabinetFileAdminController {
                         .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
                         .name(fileName)
                         .sequence(index)
-                        .isOss(Integer.valueOf(StorageConfig.IS_USE_OSS)).build();
+                        .isOss(StorageConfig.IS_USE_OSS).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
                 index=index+1;
             }
@@ -118,7 +118,7 @@ public class ElectricityCabinetFileAdminController {
                         .bucketName(storageConfig.getBucketName())
                         .name(fileName)
                         .sequence(index)
-                        .isOss(Integer.valueOf(StorageConfig.IS_USE_MINIO)).build();
+                        .isOss(StorageConfig.IS_USE_MINIO).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
                 index=index+1;
             }
@@ -134,7 +134,7 @@ public class ElectricityCabinetFileAdminController {
     @GetMapping("/admin/electricityCabinetFileService/getFile")
     public R getFile( @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
                       @RequestParam("fileType") Integer fileType) {
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType,storageConfig.getIsUseOSS());
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
         }

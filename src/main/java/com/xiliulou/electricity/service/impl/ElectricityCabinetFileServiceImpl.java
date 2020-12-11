@@ -121,9 +121,9 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
-    public List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType) {
+    public List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer  isUseOSS) {
         return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getElectricityCabinetId, electricityCabinetId)
-                .eq(ElectricityCabinetFile::getType, fileType));
+                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getIsOss,isUseOSS));
     }
 
     @Override
@@ -139,7 +139,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
-    public void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType) {
-        electricityCabinetFileMapper.deleteByDeviceInfo(electricityCabinetId,fileType);
+    public void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer isUseOSS) {
+        electricityCabinetFileMapper.deleteByDeviceInfo(electricityCabinetId,fileType,isUseOSS);
     }
 }

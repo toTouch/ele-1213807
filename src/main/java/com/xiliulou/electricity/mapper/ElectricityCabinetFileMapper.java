@@ -63,5 +63,5 @@ public interface ElectricityCabinetFileMapper extends BaseMapper<ElectricityCabi
      */
     int deleteById(Long id);
 
-    void deleteByDeviceInfo(@Param("electricityCabinetId") Integer electricityCabinetId, @Param("fileType")Integer fileType);
+    void deleteByDeviceInfo(@Param("electricityCabinetId") Integer electricityCabinetId, @Param("fileType")Integer fileType, @Param("isUseOSS")Integer isUseOSS);
 }
