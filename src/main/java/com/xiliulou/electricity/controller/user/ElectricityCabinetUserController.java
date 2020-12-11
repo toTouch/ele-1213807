@@ -74,7 +74,7 @@ public class ElectricityCabinetUserController {
      *
      * @return
      */
-    @PostMapping(value = "/user/electricityCabinet/home")
+    @PostMapping(value = "/user/memberCard/info")
     public R getMemberCardInfo() {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
