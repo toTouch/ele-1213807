@@ -32,7 +32,7 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryList" resultMap="ElectricityCabinetOrderMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
         teco.id as id, teco.order_id as order_id, teco.phone as phone, teco.uid as uid, teco.pay_amount as pay_amount,
         teco.electricity_cabinet_id as electricity_cabinet_id, teco.old_electricity_battery_sn as
@@ -45,14 +45,14 @@
         from electricity.t_electricity_cabinet_order as teco
         left join electricity.t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
         <where>
-            <if test="orderId != null and orderId != ''">
-                and teco.order_id = #{orderId}
+            <if test="query.orderId != null and query.orderId != ''">
+                and teco.order_id = #{query.orderId}
             </if>
-            <if test="phone != null and phone != ''">
-                and teco.phone = #{phone}
+            <if test="query.phone != null and query.phone != ''">
+                and teco.phone = #{query.phone}
             </if>
-            <if test="status != null">
-                and teco.status = #{status}
+            <if test="query.status != null">
+                and teco.status = #{query.status}
             </if>
             <if test="query.beginTime != null">
                 and teco.create_time &gt;=#{query.beginTime}
@@ -65,7 +65,7 @@
             </if>
         </where>
         order by teco.update_time desc
-        limit #{query.offset}, #{query.limit}
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->

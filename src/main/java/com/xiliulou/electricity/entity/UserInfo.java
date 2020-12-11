@@ -49,6 +49,10 @@ public class UserInfo {
      * 剩余使用次数
      */
     private Long remainingNumber;
+    /**
+     * 类型(1:月卡,2:季卡,3:年卡)
+     */
+    private Long cardType;
 
     /**
      * 电池门店Id

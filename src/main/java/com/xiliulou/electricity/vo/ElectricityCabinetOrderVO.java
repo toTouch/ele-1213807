@@ -84,10 +84,14 @@ public class ElectricityCabinetOrderVO {
     /**
      * 换电柜地区
      */
-    private Integer areaName;
+    private String areaName;
     /**
      * 换电柜地区Id
      */
     private Integer areaId;
+    /**
+     * 省id
+     */
+    private Integer pid;
 
 }

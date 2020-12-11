@@ -11,6 +11,7 @@
         <result property="serviceStatus" column="service_status" jdbcType="OTHER"/>
         <result property="memberCardExpireTime" column="member_canrd_expire_time" jdbcType="INTEGER"/>
         <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
+        <result property="cardType" column="card_type" jdbcType="INTEGER"/>
         <result property="batteryStoreId" column="battery_store_id" jdbcType="INTEGER"/>
         <result property="batteryAreaId" column="battery_area_id" jdbcType="INTEGER"/>
         <result property="initElectricityBatterySn" column="init_electricity_battery_sn" jdbcType="VARCHAR"/>
@@ -29,7 +30,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="UserInfoMap">
         select
-          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number,card_type, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where id = #{id}
     </select>
@@ -38,7 +39,7 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.UserInfoVO">
         select
-        id, uid, name, phone, id_number, service_status, member_card_expire_time, remaining_number,battery_store_id,
+        id, uid, name, phone, id_number, service_status, member_card_expire_time, remaining_number,card_type,battery_store_id,
         battery_area_id,
         init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
         car_deposit, usable_status, del_flag, create_time, update_time
@@ -111,6 +112,9 @@
             <if test="remainingNumber != null">
                 remaining_number = #{remainingNumber},
             </if>
+            <if test="cardType != null">
+                card_type = #{cardType},
+            </if>
             <if test="batteryStoreId != null">
                 battery_store_id = #{batteryStoreId},
             </if>
@@ -178,6 +182,9 @@
             </if>
             <if test="remainingNumber != null">
                 remaining_number = #{remainingNumber},
+            </if>
+            <if test="cardType != null">
+                card_type = #{cardType},
             </if>
             battery_store_id = #{batteryStoreId},
             battery_area_id = #{batteryAreaId},
