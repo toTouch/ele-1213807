@@ -669,7 +669,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         storeInfo.put("carCount", carCount.toString());
         homeTwo.put("storeInfo", storeInfo);
         //换电柜
-        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(ElectricityCabinet::getAreaId, areaId));
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(Objects.nonNull(areaId),ElectricityCabinet::getAreaId, areaId));
         Integer total = electricityCabinetList.size();
         Integer onlineCount = 0;
         Integer offlineCount = 0;
