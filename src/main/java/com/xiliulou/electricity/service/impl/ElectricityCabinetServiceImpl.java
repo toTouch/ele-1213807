@@ -467,14 +467,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R queryOne(Integer id) {
-        ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
-        if (Objects.isNull(electricityCabinet)) {
-            return R.fail("ELECTRICITY.0005", "未找到换电柜");
-        }
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         //判断是否开通服务
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
