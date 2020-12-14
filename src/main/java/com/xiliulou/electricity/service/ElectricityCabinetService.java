@@ -72,4 +72,6 @@ public interface ElectricityCabinetService {
     R homeThree(Integer day);
 
     R home();
+
+    R queryByDevice(String productKey, String deviceName,String deviceSecret);
 }
