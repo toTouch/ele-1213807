@@ -594,36 +594,4 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return null;
     }
 
-
-    public String testOpenDoor(String seesionId) {
-        JSONObject json = (JSONObject) JSONObject.toJSON(seesionId);
-        String url = "";
-        String result = post(json, url);
-        return result;
-    }
-
-    public String post(JSONObject json, String path) {
-        String result = "";
-        try {
-            HttpClient client = new DefaultHttpClient();
-            HttpPost post = new HttpPost(path);
-            post.setHeader("Content-Type", "application/json");
-            StringEntity s = new StringEntity(json.toString(), "utf-8");
-            post.setEntity(s);
-            HttpResponse httpResponse = client.execute(post);
-            InputStream in = httpResponse.getEntity().getContent();
-            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
-            StringBuilder strber = new StringBuilder();
-            String line = null;
-            while ((line = br.readLine()) != null) {
-                strber.append(line + "\n");
-            }
-            in.close();
-            result = strber.toString();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return result;
-    }
-
 }
