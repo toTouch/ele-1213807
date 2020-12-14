@@ -211,7 +211,7 @@
         where id = #{id}
     </update>
     <update id="minCount">
-         update electricity.t_user_info set remaining_number=remaining_number-1,update_time = #{updateTime} where del_flag=0 and  remaining_number>1
+         update electricity.t_user_info set remaining_number=remaining_number-1,update_time = #{updateTime} where del_flag=0 and  remaining_number>0
     </update>
 
 </mapper>

@@ -195,11 +195,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
-        //扣除月卡
-        int row = userInfoService.minCount(userInfo.getId());
-        if (row < 1) {
-            log.error("ELECTRICITY  ERROR! not found memberCard ");
-            return R.fail("ELECTRICITY.0023", "月卡已过期");
+        if (userInfo.getRemainingNumber() != -1) {
+            //扣除月卡
+            int row = userInfoService.minCount(userInfo.getId());
+            if (row < 1) {
+                log.error("ELECTRICITY  ERROR! not found memberCard ");
+                return R.fail("ELECTRICITY.0023", "月卡已过期");
+            }
         }
         //3.根据用户查询旧电池
         String oldElectricityBatterySn = userInfo.getNowElectricityBatterySn();
