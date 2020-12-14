@@ -471,7 +471,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-       /* TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -481,7 +481,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0020", "未开通服务");
-        }*/
+        }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
         //查满仓空仓数
@@ -738,17 +738,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R home() {
-        TokenUser user = SecurityUtils.getUserInfo();
+       /* TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+        }*/
         HashMap<String, String> homeInfo = new HashMap<>();
         Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
         Long now = System.currentTimeMillis();
         Integer battery = null;
         Long cardDay = null;
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUid(9L);
         if (Objects.nonNull(userInfo)) {
             //我的电池
             if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
@@ -763,9 +763,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         //本月换电
-        Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
+        Integer monthCount = electricityCabinetOrderService.homeMonth(9L, firstMonth, now);
         //总换电
-        Integer totalCount = electricityCabinetOrderService.homeTotal(user.getUid());
+        Integer totalCount = electricityCabinetOrderService.homeTotal(9L);
         homeInfo.put("monthCount", monthCount.toString());
         homeInfo.put("totalCount", totalCount.toString());
         homeInfo.put("battery", battery.toString());

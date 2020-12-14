@@ -63,7 +63,7 @@ public class ElectricityCabinetUserController {
      *
      * @return
      */
-    @PostMapping(value = "/user/electricityCabinet/home")
+    @GetMapping(value = "/user/electricityCabinet/home")
     public R homeOne() {
         return electricityCabinetService.home();
     }
@@ -73,7 +73,7 @@ public class ElectricityCabinetUserController {
      *
      * @return
      */
-    @PostMapping(value = "/user/memberCard/info")
+    @GetMapping(value = "/user/memberCard/info")
     public R getMemberCardInfo() {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
