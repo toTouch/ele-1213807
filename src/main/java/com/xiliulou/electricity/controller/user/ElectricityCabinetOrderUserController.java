@@ -39,7 +39,7 @@ public class ElectricityCabinetOrderUserController {
     }
 
     //换电柜订单查询
-    @PostMapping("/user/electricityCabinetOrder/list")
+    @GetMapping("/user/electricityCabinetOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
                        @RequestParam(value = "offset", required = false) Integer offset,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -62,7 +62,7 @@ public class ElectricityCabinetOrderUserController {
     }
 
     //换电柜订单量
-    @PostMapping("/user/electricityCabinetOrder/count")
+    @GetMapping("/user/electricityCabinetOrder/count")
     public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -74,7 +74,7 @@ public class ElectricityCabinetOrderUserController {
     }
 
     //查订单状态
-    @PostMapping("/user/electricityCabinetOrder/queryStatus")
+    @GetMapping("/user/electricityCabinetOrder/queryStatus")
     public R queryStatus( @RequestParam("orderId") String orderId) {
         return electricityCabinetOrderService.queryStatus(orderId);
     }
