@@ -169,4 +169,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         }
         return electricityCabinetBoxes;
     }
+
+    @Override
+    public void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox) {
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetBox);
+    }
+
+    @Override
+    public ElectricityCabinetBox queryByCellNo(ElectricityCabinetBox electricityCabinetNewBox) {
+        return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetNewBox.getElectricityCabinetId())
+                .eq(ElectricityCabinetBox::getCellNo,electricityCabinetNewBox.getCellNo()).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+    }
 }

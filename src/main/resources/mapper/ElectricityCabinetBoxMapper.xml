@@ -130,6 +130,30 @@
         </if>
         where electricity_cabinet_id = #{query.electricityCabinetId}
     </update>
+    <update id="modifyByCellNo">
+        update electricity.t_electricity_cabinet_box
+        <set>
+            <if test="electricityBatteryId != null">
+                electricity_battery_id = #{electricityBatteryId},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="boxStatus != null">
+                box_status = #{boxStatus},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where cell_no = #{cellNo} and electricity_cabinet_id = #{electricityCabinetId} and del_flag=0
+    </update>
     <!--通过主键删除-->
     <delete id="deleteById">
         delete from electricity.t_electricity_cabinet_box where id = #{id}
