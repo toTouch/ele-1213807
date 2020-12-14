@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
@@ -50,6 +51,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
      * @return
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R createOrder(Long uid, Integer memberId, HttpServletRequest request) {
         ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
         if (Objects.isNull(electricityPayParams)) {

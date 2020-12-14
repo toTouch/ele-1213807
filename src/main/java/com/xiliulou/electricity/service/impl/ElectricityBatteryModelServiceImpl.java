@@ -127,6 +127,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
      * @return
      */
     @Override
+
     public R getElectricityBatteryModelPage(Long offset, Long size, String name) {
         return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(offset, size, name));
     }
