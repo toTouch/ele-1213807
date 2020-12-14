@@ -33,7 +33,7 @@ public class ElectricityCabinetBatteryAdminController {
     @PostMapping(value = "/admin/battery")
     public R save(@RequestBody @Validated ElectricityBattery electricityBattery) {
 
-        return electricityBatteryService.save(electricityBattery);
+        return electricityBatteryService.saveElectricityBattery(electricityBattery);
     }
 
     /**
@@ -71,7 +71,19 @@ public class ElectricityCabinetBatteryAdminController {
     @GetMapping(value = "/admin/battery/page")
     public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
                                        @RequestParam(value = "size", required = true) Long size,
-                                       ElectricityBatteryQuery electricityBatteryQuery) {
+                                       @RequestParam(value = "shopId", required = false) Integer shopId,
+                                       @RequestParam(value = "agentId", required = false) Integer agentId,
+                                       @RequestParam(value = "modelId", required = false) Integer modelId,
+                                       @RequestParam(value = "serialNumber", required = false) String serialNumber,
+                                       @RequestParam(value = "status", required = false) Integer status,
+                                       @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
+        ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setShopId(shopId);
+        electricityBatteryQuery.setAgentId(agentId);
+        electricityBatteryQuery.setModelId(modelId);
+        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setCabinetId(cabinetId);
+        electricityBatteryQuery.setSerialNumber(serialNumber);
         return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
     }
 }

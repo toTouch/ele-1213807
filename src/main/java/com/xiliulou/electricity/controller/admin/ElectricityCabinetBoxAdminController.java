@@ -109,6 +109,7 @@ public class ElectricityCabinetBoxAdminController {
         ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityCabinetId(electricityCabinetId);
         electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         return electricityCabinetBoxService.modifyByElectricityCabinetId(electricityCabinetBox);
     }
 

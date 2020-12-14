@@ -1,6 +1,7 @@
 server:
   port: 9991
-
+  servlet:
+    context-path: /electricityCabinet
 spring:
   application:
     name: @artifactId@
@@ -16,5 +17,8 @@ spring:
           refresh: true
   profiles:
     active: dev
+
 logging:
   config: classpath:logback-spring-dev.xml
+  level:
+    com.xiliulou.electricity.mapper: debug

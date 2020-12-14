@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -91,6 +90,25 @@ public class ElectricityCabinetAdminController {
     @PostMapping(value = "/admin/electricityCabinet/reboot/{id}")
     public R reboot(@PathVariable("id") Integer id) {
         return electricityCabinetService.reboot(id);
+    }
+
+
+    //首页一
+    @GetMapping(value = "/admin/electricityCabinet/homeOne/{type}")
+    public R homeOne(@PathVariable("type") Integer type) {
+        return electricityCabinetService.homeOne(type);
+    }
+
+    //首页二
+    @GetMapping(value = "/admin/electricityCabinet/homeTwo")
+    public R homeTwo( @RequestParam(value = "areaId", required = false) Integer areaId) {
+        return electricityCabinetService.homeTwo(areaId);
+    }
+
+    //首页三
+    @GetMapping(value = "/admin/electricityCabinet/homeThree/{day}")
+    public R homeThree(@PathVariable("day") Integer day) {
+        return electricityCabinetService.homeThree(day);
     }
 
 

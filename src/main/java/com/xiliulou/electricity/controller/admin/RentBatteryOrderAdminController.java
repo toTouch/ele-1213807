@@ -1,0 +1,57 @@
+package com.xiliulou.electricity.controller.admin;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import java.util.Objects;
+
+/**
+ * 租车记录(TRentCarOrder)表控制层
+ *
+ * @author makejava
+ * @since 2020-12-08 15:09:08
+ */
+@RestController
+public class RentBatteryOrderAdminController {
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private RentBatteryOrderService rentBatteryOrderService;
+
+    //列表查询
+    @GetMapping(value = "/admin/rentBatteryOrder/list")
+    public R queryList(@RequestParam(value = "size", required = false) Integer size,
+                       @RequestParam(value = "offset", required = false) Integer offset,
+                       @RequestParam(value = "batteryStoreId", required = false) Integer batteryStoreId,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (Objects.isNull(size)) {
+            size = 10;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0;
+        }
+
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .phone(phone)
+                .batteryStoreId(batteryStoreId)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(status).build();
+
+        return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
+    }
+
+}

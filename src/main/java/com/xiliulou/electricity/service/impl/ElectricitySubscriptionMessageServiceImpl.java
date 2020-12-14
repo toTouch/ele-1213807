@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.mapper.ElectricitySubscriptionMessageMapper;
@@ -61,6 +62,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
      * @return
      */
     @Override
+    @DS("slave_1")
     public ElectricitySubscriptionMessage getSubscriptionMessageByType(Integer type) {
         ElectricitySubscriptionMessage electricitySubscriptionMessage = null;
         electricitySubscriptionMessage = redisService.getWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + type, ElectricitySubscriptionMessage.class);
@@ -114,6 +116,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
     }
 
     @Override
+    @DS("slave_1")
     public R getElectricitySubscriptionMessagePage(Integer type) {
         return R.ok(baseMapper.selectList(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
                 .eq(Objects.nonNull(type), ElectricitySubscriptionMessage::getType, type)));

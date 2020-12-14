@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
@@ -83,6 +84,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      * @return
      */
     @Override
+    @DS("slave_1")
     public R getElectricityMemberCardPage(Long offset, Long size, Integer agentId) {
         return R.ok(baseMapper.getElectricityMemberCardPage(offset, size, agentId));
     }

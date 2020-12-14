@@ -1,12 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.mapper.ElectricityBatteryModelMapper;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,7 +28,8 @@ import java.util.Objects;
 public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryModelService {
     @Resource
     private ElectricityBatteryModelMapper electricityBatteryModelMapper;
-
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
     @Resource
     RedisService redisService;
 
@@ -100,7 +106,11 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
             log.error("DELETE ELECTRICITY_BATTERY_MODEL  ERROR ,NOT FOUND  ELECTRICITY_BATTERY_MODEL ID:{}", id);
             return R.failMsg("电池型号不存在!");
         }
-        // TODO: 2020/11/30 0030    YG 判断是否还有电池引用此型号
+        Integer count = electricityBatteryService.count(Wrappers.<ElectricityBattery>lambdaQuery().eq(ElectricityBattery::getModelId, id));
+        if (count > 0) {
+            log.error("DELETE ELECTRICITY_BATTERY_MODEL  ERROR , FOUND  ELECTRICITY_BATTERY  USING ID:{}", id);
+            return R.failMsg("还存在电池使用此型号!");
+        }
         int rows = electricityBatteryModelMapper.deleteById(id);
         if (rows > 0) {
             delElectricityBatteryModelCacheById(id);
@@ -118,6 +128,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
      * @return
      */
     @Override
+    @DS("slave_1")
     public R getElectricityBatteryModelPage(Long offset, Long size, String name) {
         return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(offset, size, name));
     }

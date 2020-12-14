@@ -32,7 +32,7 @@ import java.util.Objects;
 public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFileService {
     @Resource
     private ElectricityCabinetFileMapper electricityCabinetFileMapper;
-    @Qualifier("minioService")
+    @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
 
@@ -121,9 +121,9 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
-    public List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType) {
+    public List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer  isUseOSS) {
         return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getElectricityCabinetId, electricityCabinetId)
-                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getDelFlag, ElectricityCabinetFile.DEL_NORMAL));
+                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getIsOss,isUseOSS));
     }
 
     @Override
@@ -136,5 +136,10 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
         } catch (Exception e) {
             log.error("文件读取异常", e);
         }
+    }
+
+    @Override
+    public void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer isUseOSS) {
+        electricityCabinetFileMapper.deleteByDeviceInfo(electricityCabinetId,fileType,isUseOSS);
     }
 }

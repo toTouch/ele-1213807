@@ -1,15 +1,16 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixin.entity.PayOrder;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
 import com.xiliulou.pay.weixin.pay.PayAdapterHandler;
@@ -22,7 +23,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.Date;
 import java.util.Objects;
 
 /**
@@ -41,6 +41,8 @@ public class ElectricityTradeOrderServiceImpl extends
     ElectricityPayParamsService electricityPayParamsService;
     @Autowired
     ElectricityMemberCardOrderMapper electricityMemberCardOrderMapper;
+    @Autowired
+    UserInfoService userInfoService;
 
     /**
      * 创建并获取支付参数
@@ -54,12 +56,9 @@ public class ElectricityTradeOrderServiceImpl extends
                                                                  String openId,
                                                                  HttpServletRequest request) {
 
-
         String ip = request.getRemoteAddr();
-
-
         ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
-        electricityTradeOrder.setOrderNo(electricityMemberCardOrder.getOrderNo());
+        electricityTradeOrder.setOrderNo(electricityMemberCardOrder.getOrderId());
         electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
         electricityTradeOrder.setClientId(ip);
         electricityTradeOrder.setCreateTime(System.currentTimeMillis());
@@ -69,24 +68,20 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrder.setTotalFee(electricityMemberCardOrder.getPayAmount());
         electricityTradeOrder.setUid(electricityMemberCardOrder.getUid());
         baseMapper.insert(electricityTradeOrder);
-
         //支付
-
         PayOrder payOrder = new PayOrder();
         payOrder.setAppId(electricityPayParams.getAppId());
         payOrder.setAppSecret(electricityPayParams.getAppSecret());
         payOrder.setMchId(electricityPayParams.getMchId());
         payOrder.setPaternerKey(electricityPayParams.getPaternerKey());
-        payOrder.setBody("换电卡:" + electricityMemberCardOrder.getOrderNo());
+        payOrder.setBody("换电卡:" + electricityMemberCardOrder.getOrderId());
         payOrder.setChannelId(PayOrder.CHANNEL_ID_WX_PRO);
         payOrder.setOpenId(openId);
         payOrder.setOutTradeNo(electricityTradeOrder.getTradeOrderNo());
         payOrder.setSpbillCreateIp(ip);
         payOrder.setTotalFee(electricityMemberCardOrder.getPayAmount().multiply(new BigDecimal(100)).longValue());
         //订单有效期为三分钟
-        payOrder.setTimeExpire(DateUtil.format(new Date(System.currentTimeMillis() + (3 * 60 * 1000L)),
-                "yyyyMMddHHmmss"));
-
+        payOrder.setTimeExpire(3 * 60 * 1000L);
         return payAdapterHandler.adaptAndPay(payOrder);
 
     }
@@ -130,6 +125,19 @@ public class ElectricityTradeOrderServiceImpl extends
         } else {
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + weiXinPayNotify.getOutTradeNo());
         }
+        UserInfo userInfo = userInfoService.selectUsersById(electricityMemberCardOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", electricityMemberCardOrder.getUid(), weiXinPayNotify.getOutTradeNo());
+        }
+        UserInfo userInfoUpdate = new UserInfo();
+        userInfoUpdate.setId(userInfo.getId());
+        Long memberCardExpireTime = System.currentTimeMillis() +
+                electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+        userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+        userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        userInfoService.updateById(userInfoUpdate);
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
         electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
         electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
@@ -140,7 +148,8 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
         electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
-        // TODO: 2020/12/4 0004 修改用户套餐信息
+
+
         return Pair.of(result, null);
     }
 }

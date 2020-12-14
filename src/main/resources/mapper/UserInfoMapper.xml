@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserInfoMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.UserInfo" id="UserInfoMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
+        <result property="serviceStatus" column="service_status" jdbcType="OTHER"/>
+        <result property="memberCardExpireTime" column="member_canrd_expire_time" jdbcType="INTEGER"/>
+        <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
+        <result property="cardType" column="card_type" jdbcType="INTEGER"/>
+        <result property="batteryStoreId" column="battery_store_id" jdbcType="INTEGER"/>
+        <result property="batteryAreaId" column="battery_area_id" jdbcType="INTEGER"/>
+        <result property="initElectricityBatterySn" column="init_electricity_battery_sn" jdbcType="VARCHAR"/>
+        <result property="nowElectricityBatterySn" column="now_electricity_battery_sn" jdbcType="VARCHAR"/>
+        <result property="batteryDeposit" column="battery_deposit" jdbcType="NUMERIC"/>
+        <result property="carStoreId" column="car_store_id" jdbcType="INTEGER"/>
+        <result property="carSn" column="car_sn" jdbcType="VARCHAR"/>
+        <result property="numberPlate" column="number_plate" jdbcType="VARCHAR"/>
+        <result property="carDeposit" column="car_deposit" jdbcType="NUMERIC"/>
+        <result property="usableStatus" column="usable_status" jdbcType="OTHER"/>
+        <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="UserInfoMap">
+        select
+          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number,card_type, battery_store_id, battery_area_id, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+        from electricity.t_user_info
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryList"
+            resultType="com.xiliulou.electricity.vo.UserInfoVO">
+        select
+        id, uid, name, phone, id_number, service_status, member_card_expire_time, remaining_number,card_type,battery_store_id,
+        battery_area_id,
+        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
+        car_deposit, usable_status, del_flag, create_time, update_time
+        from electricity.t_user_info
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and phone = #{query.phone}
+        </if>
+        <if test="query.batteryAreaId != null">
+            and battery_area_id = #{query.batteryAreaId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        order by update_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="homeThreeTotal" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as totalCount
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
+        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+    </select>
+    <select id="homeThreeService" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as serviceCount
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and service_status=0
+        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+    </select>
+    <select id="homeThreeMemberCard" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as memberCardCount
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and member_card_expire_time is not null and remaining_number is not null
+        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+    </select>
+    <select id="homeOneMemberCard" resultType="java.lang.Integer">
+        select count(1)
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and member_card_expire_time is not null and remaining_number is not null
+    </select>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_user_info
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            <if test="memberCardExpireTime != null">
+                member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
+            </if>
+            <if test="cardType != null">
+                card_type = #{cardType},
+            </if>
+            <if test="batteryStoreId != null">
+                battery_store_id = #{batteryStoreId},
+            </if>
+            <if test="batteryAreaId != null">
+                battery_area_id = #{batteryAreaId},
+            </if>
+            <if test="initElectricityBatterySn != null and initElectricityBatterySn != ''">
+                init_electricity_battery_sn = #{initElectricityBatterySn},
+            </if>
+            <if test="nowElectricityBatterySn != null and nowElectricityBatterySn != ''">
+                now_electricity_battery_sn = #{nowElectricityBatterySn},
+            </if>
+            <if test="batteryDeposit != null">
+                battery_deposit = #{batteryDeposit},
+            </if>
+            <if test="carStoreId != null">
+                car_store_id = #{carStoreId},
+            </if>
+            <if test="carSn != null and carSn != ''">
+                car_sn = #{carSn},
+            </if>
+            <if test="numberPlate != null and numberPlate != ''">
+                number_plate = #{numberPlate},
+            </if>
+            <if test="carDeposit != null">
+                car_deposit = #{carDeposit},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键修改数据-->
+    <update id="unBind">
+        update electricity.t_user_info
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            <if test="memberCardExpireTime != null">
+                member_card_expire_time = #{memberCardExpireTime},
+            </if>
+            <if test="remainingNumber != null">
+                remaining_number = #{remainingNumber},
+            </if>
+            <if test="cardType != null">
+                card_type = #{cardType},
+            </if>
+            battery_store_id = #{batteryStoreId},
+            battery_area_id = #{batteryAreaId},
+            init_electricity_battery_sn = #{initElectricityBatterySn},
+            now_electricity_battery_sn = #{nowElectricityBatterySn},
+            battery_deposit = #{batteryDeposit},
+            car_store_id = #{carStoreId},
+            car_sn = #{carSn},
+            number_plate = #{numberPlate},
+            car_deposit = #{carDeposit},
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="minCount">
+         update electricity.t_user_info set remaining_number=remaining_number-1,update_time = #{updateTime} where del_flag=0 and  remaining_number>0
+    </update>
+
+</mapper>

@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.StoreMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.Store" id="StoreMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="sn" column="sn" jdbcType="VARCHAR"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
+        <result property="address" column="address" jdbcType="VARCHAR"/>
+        <result property="longitude" column="longitude" jdbcType="NUMERIC"/>
+        <result property="latitude" column="latitude" jdbcType="NUMERIC"/>
+        <result property="batteryStock" column="battery_stock" jdbcType="INTEGER"/>
+        <result property="batteryService" column="battery_service" jdbcType="OTHER"/>
+        <result property="carService" column="car_service" jdbcType="OTHER"/>
+        <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="usableStatus" column="usable_status" jdbcType="INTEGER"/>
+        <result property="servicePhone" column="service_phone" jdbcType="VARCHAR"/>
+        <result property="businessTime" column="business_time" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="StoreMap">
+        select
+          id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status,service_phone, business_time
+        from electricity.t_store
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryList"
+            resultType="com.xiliulou.electricity.vo.StoreVO">
+        select
+        id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
+        create_time, update_time,usable_status,service_phone, business_time
+        from electricity.t_store
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.areaId != null">
+            and area_id = #{query.areaId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.address != null and query.address != ''">
+            and address = #{query.address}
+        </if>
+        <if test="query.batteryService != null">
+            and battery_service = #{query.batteryService}
+        </if>
+        <if test="query.carService != null">
+            and car_service = #{query.carService}
+        </if>
+        <if test="query.sn != null and query.sn != ''">
+            and sn = #{query.sn}
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        order by create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="StoreMap">
+        select
+        id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
+        create_time, update_time,usable_status,service_phone, business_time
+        from electricity.t_store
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="sn != null and sn != ''">
+                and sn = #{sn}
+            </if>
+            <if test="name != null and name != ''">
+                and name = #{name}
+            </if>
+            <if test="areaId != null">
+                and area_id = #{areaId}
+            </if>
+            <if test="address != null and address != ''">
+                and address = #{address}
+            </if>
+            <if test="longitude != null">
+                and longitude = #{longitude}
+            </if>
+            <if test="latitude != null">
+                and latitude = #{latitude}
+            </if>
+            <if test="batteryStock != null">
+                and battery_stock = #{batteryStock}
+            </if>
+            <if test="batteryService != null">
+                and battery_service = #{batteryService}
+            </if>
+            <if test="carService != null">
+                and car_service = #{carService}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="usableStatus != null">
+                and usable_status = #{usableStatus}
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                and service_phone = #{servicePhone}
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                and business_time = #{businessTime}
+            </if>
+        </where>
+    </select>
+    <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.StoreVO">
+        select  id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
+        create_time, update_time,usable_status,  service_phone, business_time,  ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{query.lat} * PI() / 180 - latitude * PI() / 180
+        ) / 2
+        ),
+        2
+        ) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
+        SIN(
+        (
+        #{query.lon} * PI() / 180 - longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance
+        from electricity.t_store
+        where del_flag = 0
+        <if test="query.distance != null">
+            having distance &lt; #{query.distance}
+        </if>
+        order by distance
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_store(sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status, service_phone, business_time)
+        values (#{sn}, #{name}, #{areaId}, #{address}, #{longitude}, #{latitude}, #{batteryStock}, #{batteryService}, #{carService}, #{delFlag}, #{createTime}, #{updateTime},#{usableStatus}, #{servicePhone}, #{businessTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_store
+        <set>
+            <if test="sn != null and sn != ''">
+                sn = #{sn},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="areaId != null">
+                area_id = #{areaId},
+            </if>
+            <if test="address != null and address != ''">
+                address = #{address},
+            </if>
+            <if test="longitude != null">
+                longitude = #{longitude},
+            </if>
+            <if test="latitude != null">
+                latitude = #{latitude},
+            </if>
+            <if test="batteryStock != null">
+                battery_stock = #{batteryStock},
+            </if>
+            <if test="batteryService != null">
+                battery_service = #{batteryService},
+            </if>
+            <if test="carService != null">
+                car_service = #{carService},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="servicePhone != null and servicePhone != ''">
+                service_phone = #{servicePhone},
+            </if>
+            <if test="businessTime != null and businessTime != ''">
+                business_time = #{businessTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>

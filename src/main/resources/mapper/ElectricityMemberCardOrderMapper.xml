@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
+    <select id="memberCardOrderPage" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVo">
+        select tel.* , tui.phone as phone from
+        t_electricity_member_card_order tel
+
+        LEFT JOIN t_user_info tui on tui.id = tel.uid
+
+        WHERE 0= 0
+        <if test="query.phone != null">
+            and tui.phone =#{query.phone}
+        </if>
+        <if test="query.orderId != null">
+            and tel.order_id =#{query.orderId}
+        </if>
+        <if test="query.cardType != null">
+            and tel.member_card_type =#{query.cardType}
+        </if>
+        <if test="query.queryStartTime != null">
+            and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+        </if>
+        order by tel.create_time desc
+        limit #{offset},#{size}
+
+
+    </select>
+
+</mapper>

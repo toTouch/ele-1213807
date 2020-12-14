@@ -7,10 +7,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
+import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
+import org.ehcache.xml.model.ListenersType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -43,7 +45,7 @@ public class ElectricityCabinetFileAdminController {
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("minioService")
+    @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
 
@@ -77,38 +79,49 @@ public class ElectricityCabinetFileAdminController {
 
     //统一上传
     @PostMapping("/admin/electricityCabinetFileService/call/back")
-    public R callBack(@RequestParam("fileName") String fileName,
-                         @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                         @RequestParam("fileType") Integer fileType) {
-        //查看是第几张图片
-        int index = 1;
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
-        if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-            electricityCabinetFileList = electricityCabinetFileList.stream().sorted(Comparator.comparing(ElectricityCabinetFile::getIndex).reversed()).collect(Collectors.toList());
-            index = electricityCabinetFileList.get(0).getIndex() + 1;
+    public R callBack(@RequestBody CallBackQuery callBackQuery) {
+        if(ObjectUtil.isEmpty(callBackQuery.getFileNameList())){
+            return R.ok();
         }
+        if(ObjectUtil.equal(callBackQuery.getFileType(),ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET)){
+            if(Objects.isNull(callBackQuery.getElectricityCabinetId())){
+                return R.fail("ELECTRICITY.0007","不合法的参数");
+            }
+        }
+        //先删除
+        electricityCabinetFileService.deleteByDeviceInfo(callBackQuery.getElectricityCabinetId(),callBackQuery.getFileType(),storageConfig.getIsUseOSS());
+        //再新增
         if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-            ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                    .electricityCabinetId(electricityCabinetId)
-                    .type(fileType)
-                    .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
-                    .name(fileName)
-                    .index(index).build();
-            electricityCabinetFileService.insert(electricityCabinetFile);
+            int index=1;
+            for (String fileName:callBackQuery.getFileNameList()) {
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .electricityCabinetId(callBackQuery.getElectricityCabinetId())
+                        .type(callBackQuery.getFileType())
+                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
+                        .name(fileName)
+                        .sequence(index)
+                        .isOss(StorageConfig.IS_USE_OSS).build();
+                electricityCabinetFileService.insert(electricityCabinetFile);
+                index=index+1;
+            }
+
         }else {
-            ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis())
-                    .delFlag(ElectricityCabinetFile.DEL_NORMAL)
-                    .electricityCabinetId(electricityCabinetId)
-                    .type(fileType)
-                    .bucketName(storageConfig.getBucketName())
-                    .name(fileName)
-                    .index(index).build();
-            electricityCabinetFileService.insert(electricityCabinetFile);
+            int index=1;
+            for (String fileName:callBackQuery.getFileNameList()) {
+                ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis())
+                        .electricityCabinetId(callBackQuery.getElectricityCabinetId())
+                        .type(callBackQuery.getFileType())
+                        .bucketName(storageConfig.getBucketName())
+                        .name(fileName)
+                        .sequence(index)
+                        .isOss(StorageConfig.IS_USE_MINIO).build();
+                electricityCabinetFileService.insert(electricityCabinetFile);
+                index=index+1;
+            }
         }
         return R.ok();
     }
@@ -121,7 +134,7 @@ public class ElectricityCabinetFileAdminController {
     @GetMapping("/admin/electricityCabinetFileService/getFile")
     public R getFile( @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
                       @RequestParam("fileType") Integer fileType) {
-        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType);
+        List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType,storageConfig.getIsUseOSS());
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
             return R.ok();
         }

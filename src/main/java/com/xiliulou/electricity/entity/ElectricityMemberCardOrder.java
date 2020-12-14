@@ -20,11 +20,12 @@ public class ElectricityMemberCardOrder {
     private BigDecimal payAmount;
     //有效天数
     private Integer validDays;
-
+    //最大使用次数
+    private Long maxUseCount;
     //
     private Long uid;
     //
-    private String orderNo;
+    private String orderId;
     // 0,未支付,1,支付成功 2,支付失败
     private Integer status;
     //月卡id

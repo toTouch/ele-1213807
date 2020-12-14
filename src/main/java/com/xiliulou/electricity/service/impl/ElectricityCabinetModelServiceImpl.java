@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -95,18 +97,23 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
+    @Transactional
     public R save(ElectricityCabinetModel electricityCabinetModel) {
         //插入数据库
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-        electricityCabinetModelMapper.insertOne(electricityCabinetModel);
-        //插入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +electricityCabinetModel.getId(),electricityCabinetModel);
+        int insert= electricityCabinetModelMapper.insertOne(electricityCabinetModel);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            //插入缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
+            return null;
+        });
         return R.ok();
     }
 
     @Override
+    @Transactional
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
         if(Objects.isNull(electricityCabinetModel.getId())){
             return R.fail("ELECTRICITY.0007","不合法的参数");
@@ -120,13 +127,17 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
             return R.fail("ELECTRICITY.0011","型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetModelMapper.update(electricityCabinetModel);
-        //更新缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +electricityCabinetModel.getId(),electricityCabinetModel);
+        int update= electricityCabinetModelMapper.update(electricityCabinetModel);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //更新缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
+            return null;
+        });
         return R.ok();
     }
 
     @Override
+    @Transactional
     public R delete(Integer id) {
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
         if(Objects.isNull(electricityCabinetModel)){
@@ -140,13 +151,17 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
-        electricityCabinetModelMapper.update(electricityCabinetModel);
-        //删除缓存
-        redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +id);
+        int update= electricityCabinetModelMapper.update(electricityCabinetModel);
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //删除缓存
+            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
+            return null;
+        });
         return R.ok();
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         List<ElectricityCabinetModel> electricityCabinetModelList= electricityCabinetModelMapper.queryList(electricityCabinetModelQuery);
         return R.ok(electricityCabinetModelList);

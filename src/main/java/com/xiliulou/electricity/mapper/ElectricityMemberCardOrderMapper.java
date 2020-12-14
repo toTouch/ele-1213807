@@ -2,11 +2,36 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
 
 public interface ElectricityMemberCardOrderMapper extends BaseMapper<ElectricityMemberCardOrder> {
 
     @Select("SELECT *  FROM t_electricity_member_card_order  WHERE order_id = #{orderId}")
     ElectricityMemberCardOrder selectByOrderNo(@Param("orderId") String orderNo);
+
+    @Select("SELECT *  FROM t_electricity_member_card_order  WHERE uid =#{uid} and status =1 order by create_time desc limit #{offset},#{size}")
+    List<ElectricityMemberCardOrder> getMemberCardOrderPage(@Param("uid") Long uid, @Param("offset") Long offset, @Param("size") Long size);
+
+    @Select("SELECT sum(pay_amount)  FROM t_electricity_member_card_order  WHERE status = 1 and create_time >= #{first} and create_time <= #{now}")
+    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now);
+
+
+    @Select(" select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money\n" +
+            "from t_electricity_member_card_order\n" +
+            "where create_time >= #{startTimeMilliDay} and create_time <=#{endTimeMilliDay} and status = 1\n" +
+            "group by from_unixtime(create_time / 1000, '%Y-%m-%d')\n" +
+            "order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc")
+    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    @Select("SELECT * FROM  t_electricity_member_card_order  WHERE uid = #{uid} AND status =1  ORDER BY create_time desc LIMIT 0,1")
+    ElectricityMemberCardOrder getRecentOrder(@Param("uid") Long uid);
+
+    List<ElectricityMemberCardOrderVo> memberCardOrderPage(@Param("offset") Long offset, @Param("size") Long size, @Param("query") MemberCardOrderQuery memberCardOrderQuery);
 }

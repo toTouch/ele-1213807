@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -107,10 +108,11 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchDeleteBoxByElectricityCabinetId(Integer id) {
-        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id);
+        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id,System.currentTimeMillis());
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
@@ -122,7 +124,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 }
             });
         }
-        return R.ok(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getId).reversed()).collect(Collectors.toList()));
+        return R.ok(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo).reversed()).collect(Collectors.toList()));
     }
 
     @Override
@@ -168,5 +170,17 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             });
         }
         return electricityCabinetBoxes;
+    }
+
+    @Override
+    public void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox) {
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetBox);
+    }
+
+    @Override
+    public ElectricityCabinetBox queryByCellNo(ElectricityCabinetBox electricityCabinetNewBox) {
+        return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetNewBox.getElectricityCabinetId())
+                .eq(ElectricityCabinetBox::getCellNo,electricityCabinetNewBox.getCellNo()).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
     }
 }
