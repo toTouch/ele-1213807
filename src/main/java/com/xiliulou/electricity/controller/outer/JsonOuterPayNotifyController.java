@@ -26,7 +26,7 @@ import java.util.Map;
  **/
 @RestController
 @Slf4j
-public class JsonOuterController {
+public class JsonOuterPayNotifyController {
     @Autowired
     WeiXinPayNotifyService weiXinPayNotifyService;
 
@@ -63,7 +63,13 @@ public class JsonOuterController {
         Pair<Boolean, Object> notifyMemberOrderPair = electricityTradeOrderService.notifyMemberOrder(weiXinPayNotify);
 
         redisService.deleteKeys("notify_order_no" + orderNo);
-        return "OK";
+        if (notifyMemberOrderPair.getLeft()) {
+
+            return "OK";
+        } else {
+            return "FAILED";
+
+        }
 
     }
 
