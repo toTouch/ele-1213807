@@ -15,15 +15,16 @@ public class OperateResultDto {
     private String errCode;
     private Integer operateFlowNum;
     //开旧门
-    public Integer OPERATE_FLOW_NUM_OPEN_OLD = 1;
-
+    public static final Integer OPERATE_FLOW_NUM_OPEN_OLD = 1;
+    //旧门关闭
+    public static final Integer OPERATE_FLOW_CLOSE_OLD = 2;
     //检测电池
-    public Integer operate_flow_check_battery = 2;
+    public static final Integer OPERATE_FLOW_CHECK_BATTERY = 3;
 
     //开新门
-    public Integer OPERATE_FLOW_NUM_OPEN_NEW = 3;
+    public static final Integer OPERATE_FLOW_NUM_OPEN_NEW = 4;
     //检测电池是否取走
-    public Integer OPERATE_FLOW_TAKE_BATTERY = 4;
+    public static final Integer OPERATE_FLOW_TAKE_BATTERY = 5;
     //检测新门是否关闭
-
+    public static final Integer OPERATE_FLOW_CLOSE_BOX = 6;
 }

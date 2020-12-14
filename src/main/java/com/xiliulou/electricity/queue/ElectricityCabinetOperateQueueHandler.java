@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -114,9 +115,13 @@ public class ElectricityCabinetOperateQueueHandler {
     }
 
     private void replaceOldBattery(HardwareCommandQuery commandQuery) {
+        Random random = new Random();
+
+        Integer flowNumber = random.nextInt(4) + 1;
         OperateResultDto operateResultDto = new OperateResultDto();
         operateResultDto.setSessionId(commandQuery.getSessionId());
         operateResultDto.setResult(true);
+//        operateResultDto.setOperateFlowNum();
         try {
             Thread.sleep(4000L);
         } catch (InterruptedException e) {
@@ -125,6 +130,7 @@ public class ElectricityCabinetOperateQueueHandler {
         putQueue(operateResultDto);
 
     }
+
 
     /**
      * 接收到响应的操作信息
