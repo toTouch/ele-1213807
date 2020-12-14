@@ -103,12 +103,15 @@ public class ElectricityCabinetOrder {
     public static final Integer STATUS_ORDER_OLD_BATTERY_DEPOSITED = 4;
     //新电池开门
     public static final Integer STATUS_ORDER_NEW_BATTERY_OPEN_DOOR = 5;
-    //订单完成(新电池关门)
-    public static final Integer STATUS_ORDER_COMPLETE = 6;
+    //新电池检测(新电池关门)
+    public static final Integer STATUS_ORDER_NEW_BATTERY_CLOSE_DOOR = 6;
+    //订单完成
+    public static final Integer STATUS_ORDER_COMPLETE = 7;
     //订单异常结束
-    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 7;
+    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 8;
     //订单取消
-    public static final Integer STATUS_ORDER_CANCEL = 8;
+    public static final Integer STATUS_ORDER_CANCEL = 9;
+
 
 
 }
