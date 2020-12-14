@@ -7,6 +7,7 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -44,9 +45,9 @@ public class ElectricityCabinetOperateQueueHandler {
                     operateResultDto = queue.take();
                     log.info(" QUEUE get a message ={}", operateResultDto);
 
-                    OperateResultDto finalLockerOperDTO = operateResultDto;
+                    OperateResultDto finalOperDTO = operateResultDto;
                     executorService.execute(() -> {
-                        handleOrderAfterOperated(finalLockerOperDTO);
+                        handleOrderAfterOperated(finalOperDTO);
                     });
 
                 } catch (Exception e) {
@@ -130,7 +131,8 @@ public class ElectricityCabinetOperateQueueHandler {
      *
      * @param finalLockerOperDTO
      */
-    private void handleOrderAfterOperated(OperateResultDto finalLockerOperDTO) {
+    private void handleOrderAfterOperated(OperateResultDto finalOperDTO) {
+        if(Objects.equals(finalOperDTO.getOperateFlowNum(finalOperDTO.getOperateFlowNum(),OperateResultDto.)))
 
     }
 
