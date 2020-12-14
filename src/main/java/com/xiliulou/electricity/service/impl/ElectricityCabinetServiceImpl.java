@@ -748,7 +748,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Long now = System.currentTimeMillis();
         Integer battery = null;
         Long cardDay = null;
-        UserInfo userInfo = userInfoService.queryByUid(9L);
+        UserInfo userInfo = userInfoService.queryByUid(10L);
         if (Objects.nonNull(userInfo)) {
             //我的电池
             if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
@@ -763,13 +763,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         //本月换电
-        Integer monthCount = electricityCabinetOrderService.homeMonth(9L, firstMonth, now);
+        Integer monthCount = electricityCabinetOrderService.homeMonth(10L, firstMonth, now);
         //总换电
-        Integer totalCount = electricityCabinetOrderService.homeTotal(9L);
+        Integer totalCount = electricityCabinetOrderService.homeTotal(10L);
         homeInfo.put("monthCount", monthCount.toString());
         homeInfo.put("totalCount", totalCount.toString());
-        homeInfo.put("battery", battery.toString());
-        homeInfo.put("cardDay", cardDay.toString());
+        homeInfo.put("battery", String.valueOf(battery));
+        homeInfo.put("cardDay", String.valueOf(cardDay));
         return R.ok(homeInfo);
     }
 
