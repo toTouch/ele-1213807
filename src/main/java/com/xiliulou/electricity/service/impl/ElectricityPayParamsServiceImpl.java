@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
@@ -69,6 +70,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      * @return
      */
     @Override
+    @DS("slave_1")
     public ElectricityPayParams getElectricityPayParams() {
         ElectricityPayParams electricityPayParams = null;
         electricityPayParams = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS, ElectricityPayParams.class);

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityBatteryModel;
@@ -127,6 +128,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
      * @return
      */
     @Override
+    @DS("slave_1")
     public R getElectricityBatteryModelPage(Long offset, Long size, String name) {
         return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(offset, size, name));
     }
