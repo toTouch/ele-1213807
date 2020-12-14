@@ -146,6 +146,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Transactional
     public R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         ElectricityCabinet electricityCabinet = new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddAndUpdate, electricityCabinet);
@@ -203,6 +204,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Transactional
     public R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         ElectricityCabinet electricityCabinet = new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddAndUpdate, electricityCabinet);
@@ -274,6 +276,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Transactional
     public R delete(Integer id) {
         ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinet)) {
@@ -425,6 +428,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Transactional
     public R disable(Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -447,6 +451,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Transactional
     public R reboot(Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
