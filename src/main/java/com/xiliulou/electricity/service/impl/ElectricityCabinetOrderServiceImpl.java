@@ -147,11 +147,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getElectricityCabinetId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        /*TokenUser user = SecurityUtils.getUserInfo();
+        TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
-        }*/
+        }
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", orderQuery.getElectricityCabinetId());
@@ -177,12 +177,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
-        //分配开门格挡
-        String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         //2.判断用户是否有电池是否有月卡
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
         //判断是否开通服务
-        UserInfo userInfo = userInfoService.queryByUid(10L);
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
@@ -196,6 +199,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
+        //分配开门格挡
+        String cellNo = findOldUsableCellNo(electricityCabinet.getId());
+        if(Objects.isNull(cellNo)){
+            return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+        }
+        //查看是否有满电电池 TODO
         if (userInfo.getRemainingNumber() != -1) {
             //扣除月卡
             int row = userInfoService.minCount(userInfo.getId());
@@ -207,8 +216,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //3.根据用户查询旧电池
         String oldElectricityBatterySn = userInfo.getNowElectricityBatterySn();
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
-                .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), 10L, cellNo))
-                .uid(10L)
+                .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), user.getUid(), cellNo))
+                .uid(user.getUid())
                 .phone(userInfo.getPhone())
                 .electricityCabinetId(orderQuery.getElectricityCabinetId())
                 .oldElectricityBatterySn(oldElectricityBatterySn)
