@@ -181,7 +181,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //2.判断用户是否有电池是否有月卡
         //判断是否开通服务
         UserInfo userInfo = userInfoService.queryByUid(10L);
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
