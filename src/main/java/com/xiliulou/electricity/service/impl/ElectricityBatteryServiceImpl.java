@@ -157,4 +157,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         return R.ok(baseMapper.selectBatteryInfo(uid));
     }
+
+    @Override
+    public ElectricityBattery queryByUserSn(String nowElectricityBatterySn) {
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, nowElectricityBatterySn));
+    }
 }
