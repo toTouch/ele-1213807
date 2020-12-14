@@ -104,7 +104,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			//解析手机号
 			String s = decryptWxData(data, iv, result.getSession_key());
 			if (StrUtil.isEmpty(s)) {
-				throw new AuthenticationServiceException("微信解密失败！");
+				throw new AuthenticationServiceException("WX0001");
 			}
 
 			WXMinProPhoneResultDTO wxMinProPhoneResultDTO = JsonUtil.fromJson(s, WXMinProPhoneResultDTO.class);
