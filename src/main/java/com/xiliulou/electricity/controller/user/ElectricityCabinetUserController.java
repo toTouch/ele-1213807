@@ -45,6 +45,17 @@ public class ElectricityCabinetUserController {
     }
 
     /**
+     * 查询换电柜 按三元组
+     *
+     * @return
+     */
+    @GetMapping(value = "/user/electricityCabinet")
+    public R queryByDevice(@RequestParam("productKey") String productKey,@RequestParam("deviceName")String deviceName
+            ,@RequestParam("deviceSecret") String deviceSecret) {
+        return electricityCabinetService.queryByDevice(productKey,deviceName,deviceSecret);
+    }
+
+    /**
      * 查询换电柜
      *
      * @param id
