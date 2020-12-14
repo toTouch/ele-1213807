@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -297,6 +298,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
@@ -360,6 +362,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
     @Override
+    @DS("slave_1")
     public R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery) {
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistance(electricityCabinetQuery);
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
@@ -669,7 +672,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         storeInfo.put("carCount", carCount.toString());
         homeTwo.put("storeInfo", storeInfo);
         //换电柜
-        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(ElectricityCabinet::getAreaId, areaId));
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(Objects.nonNull(areaId),ElectricityCabinet::getAreaId, areaId));
         Integer total = electricityCabinetList.size();
         Integer onlineCount = 0;
         Integer offlineCount = 0;

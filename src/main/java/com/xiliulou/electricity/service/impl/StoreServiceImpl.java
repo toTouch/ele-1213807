@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -190,6 +191,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
         if (ObjectUtil.isNotEmpty(storeVOList)) {
@@ -294,12 +296,12 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Integer homeTwoTotal(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
     }
 
     @Override
     public Integer homeTwoBusiness(Integer areaId) {
-        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
         Integer countBusiness = 0;
         if (ObjectUtil.isNotEmpty(storeList)) {
             for (Store store : storeList) {
@@ -325,11 +327,11 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Integer homeTwoBattery(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
     }
 
     @Override
     public Integer homeTwoCar(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Store::getAreaId,areaId));
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
     }
 }
