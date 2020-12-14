@@ -197,6 +197,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
         List<UserInfoVO> UserInfoVOList = userInfoMapper.queryList(userInfoQuery);
         if (ObjectUtil.isNotEmpty(UserInfoVOList)) {

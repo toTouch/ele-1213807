@@ -6,6 +6,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -190,6 +191,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
         if (ObjectUtil.isNotEmpty(storeVOList)) {

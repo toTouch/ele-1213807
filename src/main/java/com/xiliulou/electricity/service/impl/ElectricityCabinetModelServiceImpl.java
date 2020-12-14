@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
@@ -160,6 +161,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
+    @DS("slave_1")
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
         List<ElectricityCabinetModel> electricityCabinetModelList= electricityCabinetModelMapper.queryList(electricityCabinetModelQuery);
         return R.ok(electricityCabinetModelList);
