@@ -4,7 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
-import com.xiliulou.electricity.queue.ServicePhoneQuery;
+import com.xiliulou.electricity.query.ServicePhoneQuery;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

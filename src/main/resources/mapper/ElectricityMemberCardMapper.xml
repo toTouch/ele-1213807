@@ -4,7 +4,7 @@
 
 
     <select id="getElectricityMemberCardPage" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
-            SELECT * FROM t_electricity_member_card  ORDER BY create_time DESC  LIMIT #{offset},#{size};
+            SELECT * FROM t_electricity_member_card  where status = 0  ORDER BY create_time DESC  LIMIT #{offset},#{size};
 
     </select>
 
