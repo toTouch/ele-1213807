@@ -31,6 +31,8 @@ public class ElectricityCabinetOrderQuery {
     private Integer size;
     private Integer offset;
 
+    private Long uid;
+
     private Long beginTime;
     private Long endTime;
 

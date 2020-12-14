@@ -45,8 +45,6 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -180,7 +178,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //2.判断用户是否有电池是否有月卡
         //判断是否开通服务
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
-        if (Objects.isNull(userInfo)||Objects.equals(userInfo.getServiceStatus(),UserInfo.IS_SERVICE_STATUS)) {
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
@@ -287,7 +285,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public BigDecimal homeOneSuccess(Long first, Long now) {
         Integer countTotal = homeOneCount(first, now);
         Integer SuccessTotal = electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE));
-        if(SuccessTotal==0||countTotal==0){
+        if (SuccessTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }
         return BigDecimal.valueOf(SuccessTotal).divide(BigDecimal.valueOf(countTotal)).multiply(BigDecimal.valueOf(100));
@@ -295,30 +293,31 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay) {
-        return electricityCabinetOrderMapper.homeThree(startTimeMilliDay,endTimeMilliDay);
+        return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay);
     }
 
 
     @Override
     public Integer homeMonth(Long uid, Long first, Long now) {
-        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid,uid));
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid, uid));
     }
 
     @Override
     public Integer homeTotal(Long uid) {
-        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,uid));
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid));
     }
 
     @Override
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        Integer count=electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime,electricityCabinetOrderQuery.getBeginTime(),electricityCabinetOrderQuery.getEndTime()));
+        Integer count = electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, electricityCabinetOrderQuery.getBeginTime(), electricityCabinetOrderQuery.getEndTime())
+                .eq(ElectricityCabinetOrder::getUid, electricityCabinetOrderQuery.getUid()));
         return R.ok(count);
     }
 
     @Override
     public void handlerExpiredCancelOrder(String orderId) {
         log.info("handel  cancel order start ------->");
-        electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId,System.currentTimeMillis());
+        electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
         log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
     }
 
@@ -575,31 +574,31 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
 
-    public String testOpenDoor(String seesionId){
-        JSONObject json= (JSONObject)JSONObject.toJSON(seesionId);
-        String url="";
-        String result=post(json,url);
+    public String testOpenDoor(String seesionId) {
+        JSONObject json = (JSONObject) JSONObject.toJSON(seesionId);
+        String url = "";
+        String result = post(json, url);
         return result;
     }
 
-    public  String post(JSONObject json, String path) {
-        String result="";
+    public String post(JSONObject json, String path) {
+        String result = "";
         try {
-            HttpClient client=new DefaultHttpClient();
-            HttpPost post=new HttpPost(path);
+            HttpClient client = new DefaultHttpClient();
+            HttpPost post = new HttpPost(path);
             post.setHeader("Content-Type", "application/json");
-            StringEntity s=new StringEntity(json.toString(), "utf-8");
+            StringEntity s = new StringEntity(json.toString(), "utf-8");
             post.setEntity(s);
-            HttpResponse httpResponse=client.execute(post);
-            InputStream in=httpResponse.getEntity().getContent();
-            BufferedReader br=new BufferedReader(new InputStreamReader(in, "utf-8"));
-            StringBuilder strber=new StringBuilder();
-            String line=null;
-            while ((line=br.readLine())!=null) {
-                strber.append(line+"\n");
+            HttpResponse httpResponse = client.execute(post);
+            InputStream in = httpResponse.getEntity().getContent();
+            BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
+            StringBuilder strber = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                strber.append(line + "\n");
             }
             in.close();
-            result=strber.toString();
+            result = strber.toString();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

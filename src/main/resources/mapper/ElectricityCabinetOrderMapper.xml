@@ -63,6 +63,9 @@
             <if test="query.areaId != null">
                 and tec.area_id = #{query.areaId}
             </if>
+            <if test="query.uid != null">
+                and teco.uid = #{query.uid}
+            </if>
         </where>
         order by teco.update_time desc
         limit #{query.offset}, #{query.size}

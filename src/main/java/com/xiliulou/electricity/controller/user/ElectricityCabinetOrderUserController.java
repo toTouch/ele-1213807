@@ -6,6 +6,9 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,6 +22,7 @@ import java.util.Objects;
  * @since 2020-11-26 10:56:56
  */
 @RestController
+@Slf4j
 public class ElectricityCabinetOrderUserController {
     /**
      * 服务对象
@@ -53,11 +57,18 @@ public class ElectricityCabinetOrderUserController {
             offset = 0;
         }
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .offset(offset)
                 .size(size)
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .uid(user.getUid()).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
 
@@ -66,10 +77,16 @@ public class ElectricityCabinetOrderUserController {
     public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .uid(user.getUid()).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 
