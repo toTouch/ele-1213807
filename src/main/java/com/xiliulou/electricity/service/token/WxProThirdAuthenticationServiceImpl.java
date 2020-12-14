@@ -94,8 +94,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			String bodyStr = restTemplateService.getForString(codeUrl, null);
 			log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
 
-//			WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
-			WXMinProAuth2SessionResult result = new WXMinProAuth2SessionResult("open2", "session1", "uni", null, null);
+			WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
+//			WXMinProAuth2SessionResult result = new WXMinProAuth2SessionResult("open2", "session1", "uni", null, null);
 			if (Objects.isNull(result) || StrUtil.isEmpty(result.getOpenid()) || StrUtil.isEmpty(result.getSession_key())) {
 				log.error("TOKEN ERROR! wxResult has error! bodyStr={},authMap={}", bodyStr, authMap);
 				throw new AuthenticationServiceException("微信返回异常！");
