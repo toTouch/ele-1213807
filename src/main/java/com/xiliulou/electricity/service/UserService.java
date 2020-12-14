@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import org.apache.commons.lang3.tuple.Pair;
@@ -74,4 +75,5 @@ public interface UserService {
 	Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery);
 
 	Pair<Boolean, Object> deleteAdminUser(Long uid);
+
 }

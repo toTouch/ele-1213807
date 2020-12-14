@@ -4,6 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.utils.AESUtils;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -148,12 +150,12 @@ public class UserServiceImpl implements UserService {
 	public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
 		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone());
 		if (Objects.nonNull(phoneUserExists)) {
-			return Triple.of(false, null, "用户名已存在");
+			return Triple.of(false, null, "手机号已存在");
 		}
 
 		User userNameExists = queryByUserName(adminUserQuery.getName());
 		if (Objects.nonNull(userNameExists)) {
-			return Triple.of(false, null, "手机号已存在");
+			return Triple.of(false, null, "用户名已存在");
 		}
 
 		//解密密码
@@ -280,4 +282,5 @@ public class UserServiceImpl implements UserService {
 		}
 		return update;
 	}
+
 }
