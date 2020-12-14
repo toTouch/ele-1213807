@@ -58,7 +58,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         String ip = request.getRemoteAddr();
         ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
-        electricityTradeOrder.setOrderNo(electricityMemberCardOrder.getOrderNo());
+        electricityTradeOrder.setOrderNo(electricityMemberCardOrder.getOrderId());
         electricityTradeOrder.setTradeOrderNo(String.valueOf(System.currentTimeMillis()));
         electricityTradeOrder.setClientId(ip);
         electricityTradeOrder.setCreateTime(System.currentTimeMillis());
@@ -74,7 +74,7 @@ public class ElectricityTradeOrderServiceImpl extends
         payOrder.setAppSecret(electricityPayParams.getAppSecret());
         payOrder.setMchId(electricityPayParams.getMchId());
         payOrder.setPaternerKey(electricityPayParams.getPaternerKey());
-        payOrder.setBody("换电卡:" + electricityMemberCardOrder.getOrderNo());
+        payOrder.setBody("换电卡:" + electricityMemberCardOrder.getOrderId());
         payOrder.setChannelId(PayOrder.CHANNEL_ID_WX_PRO);
         payOrder.setOpenId(openId);
         payOrder.setOutTradeNo(electricityTradeOrder.getTradeOrderNo());
@@ -135,6 +135,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
         userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+        userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         userInfoService.updateById(userInfoUpdate);
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();

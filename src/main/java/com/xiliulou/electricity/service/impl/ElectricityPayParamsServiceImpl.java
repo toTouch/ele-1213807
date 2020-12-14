@@ -11,7 +11,6 @@ import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -36,14 +35,21 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      * @return
      */
     @Override
-    @Klock(name = ElectricityCabinetConstant.CACHE_ELECTRICITY_BATTERY_MODEL, keys = {"milli"}, waitTime = 20)
     public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams, Long milli) {
+        // TODO: 2020/12/11 0011  加锁  yg
+        Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+                String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
+        if (!getLockerSuccess) {
+            return R.failMsg("操作频繁!");
+        }
         ElectricityPayParams electricityPayParamsDb = getElectricityPayParams();
         electricityPayParams.setUpdateTime(System.currentTimeMillis());
         if (Objects.isNull(electricityPayParamsDb)) {
             electricityPayParams.setCreateTime(System.currentTimeMillis());
             baseMapper.insert(electricityPayParams);
             redisService.deleteKeys(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+            redisService.deleteKeys(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+
             return R.ok();
         } else {
             if (ObjectUtil.notEqual(electricityPayParamsDb.getId(), electricityPayParams.getId())) {
@@ -51,6 +57,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             }
             redisService.deleteKeys(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
             baseMapper.updateById(electricityPayParams);
+            redisService.deleteKeys(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
             return R.ok();
         }
     }
@@ -58,6 +65,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
     /**
      * 获取支付参数
      * valid_days
+     *
      * @return
      */
     @Override

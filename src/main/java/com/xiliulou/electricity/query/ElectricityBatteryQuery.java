@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.query;
 
+import lombok.Data;
+
+@Data
 public class ElectricityBatteryQuery {
 
-    private Long shopId;
+    private Integer shopId;
     /**
      * 代理商id
      */
@@ -19,7 +22,7 @@ public class ElectricityBatteryQuery {
     /**
      * 0：在仓，1：在库，2：租借
      */
-    private Object status;
+    private Integer status;
     /*
      *所属电柜
      */

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
+import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -94,7 +95,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
-        electricityMemberCardOrder.setOrderNo(String.valueOf(System.currentTimeMillis()));
+        electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
@@ -152,5 +153,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public ElectricityMemberCardOrder getRecentOrder(Long uid) {
         return baseMapper.getRecentOrder(uid);
+    }
+
+    @Override
+    public R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
+        return R.ok(baseMapper.memberCardOrderPage(offset, size, memberCardOrderQuery));
     }
 }

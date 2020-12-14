@@ -20,7 +20,37 @@
 
     <!--电池分页-->
     <select id="getElectricityBatteryPage" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-            select  * from  t_electricity_battery where  del_flag = 0  order by  create_time desc limit 0, 5;
+        select tel.* , ts.name as shop_name ,tebm.name as battery_model_name ,tec.name as cabinet_name , tui.name as
+        user_name from
+        t_electricity_battery tel
+        LEFT JOIN t_store ts on ts.id = tel.shop_id
+        LEFT JOIN t_electricity_battery_model tebm on tebm.id = tel.model_id
+        LEFT JOIN t_electricity_cabinet tec on tec.id =tel.cabinet_id
+        LEFT JOIN t_user_info tui on tui.id = tel.uid
+        where tel.del_flag = 0
+        <if test="query.shopId != null">
+            and tel.shop_id =#{query.shopId}
+        </if>
+        <if test="query.agentId != null">
+            and tel.agent_id =#{query.agentId}
+        </if>
+
+        <if test="query.serialNumber != null">
+            and tel.serial_number =#{query.serialNumber}
+        </if>
+        <if test="query.modelId != null">
+            and tel.model_id =#{query.modelId}
+        </if>
+        <if test="query.status != null">
+            and tel.status =#{query.status}
+        </if>
+        <if test="query.cabinetId != null">
+            and tel.cabinet_id =#{query.cabinetId}
+        </if>
+
+
+        order by tel.create_time desc
+        limit #{offset}, #{size};
 
 
     </select>
