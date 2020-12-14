@@ -752,7 +752,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.nonNull(userInfo)) {
             //我的电池
             if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(userInfo.getNowElectricityBatterySn());
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUserSn(userInfo.getNowElectricityBatterySn());
                 if (Objects.nonNull(electricityBattery)) {
                     battery = electricityBattery.getCapacity();
                 }

@@ -33,4 +33,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> homeTwo(Integer areaId);
 
     R getSelfBattery(Long uid);
+
+    ElectricityBattery queryByUserSn(String nowElectricityBatterySn);
 }
