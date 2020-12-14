@@ -232,7 +232,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ORDER_OCCUPY);
         electricityCabinetBoxService.modify(electricityCabinetBox);
-        //TODO 4.开旧电池门
+        //放redis 订单id 定时任务处理取消订单
+        redisService.zsetAddString("orderId", electricityCabinetOrder.getOrderId(), System.currentTimeMillis() + 360 * 1000);
+        //TODO 4.开旧电池门 模拟开门
         return R.ok(electricityCabinetOrder.getOrderId());
     }
 
@@ -290,8 +292,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", electricityCabinetOrder.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        //TODO 发送命令
-        return null;
+        //TODO 发送命令 模拟开门
+        return R.ok();
     }
 
     @Override

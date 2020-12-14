@@ -32,8 +32,6 @@ public class ExpiredCancelOrderTask extends IJobHandler {
     //处理未支付寄存订单 (每分钟执行一次)
     @Override
     public ReturnT<String> execute(String s) throws Exception {
-        //放redis 订单id TODO
-        redisService.zsetAddString("orderId", "value", System.currentTimeMillis() + 360 * 1000);
         try {
             //取redis
             Set<String> orderIdList = redisService.getZsetStringByRange("orderId", 0, System.currentTimeMillis());
