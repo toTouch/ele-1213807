@@ -128,33 +128,50 @@ public class ElectricityCabinetOperateQueueHandler {
     }
 
     private void replaceNewBattery(HardwareCommandQuery commandQuery) {
+        Random random = new Random();
         OperateResultDto operateResultDto = new OperateResultDto();
         operateResultDto.setSessionId(commandQuery.getSessionId());
         operateResultDto.setResult(true);
-        try {
-            Thread.sleep(4000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        int a = 4;
+        while (a <= 6) {
+            operateResultDto.setOperateFlowNum(a);
+            boolean result = random.nextBoolean();
+            operateResultDto.setResult(true);
+            try {
+                Long sleepMilli = (random.nextInt(3) + 3) * 1000L;
+                Thread.sleep(sleepMilli);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            putQueue(operateResultDto);
+            if (!result) {
+                break;
+            }
         }
-        putQueue(operateResultDto);
-
 
     }
 
     private void replaceOldBattery(HardwareCommandQuery commandQuery) {
         Random random = new Random();
-
-        Integer flowNumber = random.nextInt(4) + 1;
         OperateResultDto operateResultDto = new OperateResultDto();
         operateResultDto.setSessionId(commandQuery.getSessionId());
-        operateResultDto.setResult(true);
-//        operateResultDto.setOperateFlowNum();
-        try {
-            Thread.sleep(4000L);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+        int a = 1;
+        while (a <= 3) {
+            operateResultDto.setOperateFlowNum(a);
+            boolean result = random.nextBoolean();
+            operateResultDto.setResult(true);
+            try {
+                Long sleepMilli = (random.nextInt(3) + 3) * 1000L;
+                Thread.sleep(sleepMilli);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            putQueue(operateResultDto);
+            if (!result) {
+                break;
+            }
         }
-        putQueue(operateResultDto);
+
 
     }
 
