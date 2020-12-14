@@ -1,10 +1,6 @@
 package com.xiliulou.electricity.query;
 
-import lombok.Builder;
 import lombok.Data;
-
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 
 /**
@@ -14,7 +10,6 @@ import javax.validation.constraints.NotNull;
  * @since 2020-11-26 16:00:45
  */
 @Data
-@Builder
 public class OpenDoorQuery {
 
     private String orderId;
