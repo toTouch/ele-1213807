@@ -105,6 +105,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public R save(StoreAddAndUpdate storeAddAndUpdate) {
         Store store = new Store();
         BeanUtil.copyProperties(storeAddAndUpdate, store);
@@ -137,6 +138,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public R edit(StoreAddAndUpdate storeAddAndUpdate) {
         Store store = new Store();
         BeanUtil.copyProperties(storeAddAndUpdate, store);
@@ -170,6 +172,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public R delete(Integer id) {
         Store store = queryByIdFromCache(id);
         if (Objects.isNull(store)) {
@@ -223,6 +226,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public R disable(Integer id) {
         Store oldStore = queryByIdFromCache(id);
         if (Objects.isNull(oldStore)) {
@@ -242,6 +246,7 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
+    @Transactional
     public R reboot(Integer id) {
         Store oldStore = queryByIdFromCache(id);
         if (Objects.isNull(oldStore)) {

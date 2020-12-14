@@ -110,6 +110,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    @Transactional
     public R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
         if (Objects.isNull(oldUserInfo)) {
@@ -159,6 +160,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
     @Override
+    @Transactional
     public R bindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
         UserInfo oldUserInfo = queryByIdFromDB(userInfoCarAddAndUpdate.getId());
         if (Objects.isNull(oldUserInfo)) {
@@ -211,6 +213,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    @Transactional
     public R disable(Long id) {
         UserInfo oldUserInfo = queryByIdFromDB(id);
         if (Objects.isNull(oldUserInfo)) {
@@ -225,6 +228,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    @Transactional
     public R reboot(Long id) {
         UserInfo oldUserInfo = queryByIdFromDB(id);
         if (Objects.isNull(oldUserInfo)) {
@@ -239,6 +243,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    @Transactional
     public R unBindBattery(Long id) {
         UserInfo oldUserInfo = queryByIdFromDB(id);
         if (Objects.isNull(oldUserInfo)) {
@@ -281,6 +286,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    @Transactional
     public R unBindCar(Long id) {
         UserInfo oldUserInfo = queryByIdFromDB(id);
         if (Objects.isNull(oldUserInfo)) {

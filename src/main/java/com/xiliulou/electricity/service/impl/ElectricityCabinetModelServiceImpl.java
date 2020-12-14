@@ -96,6 +96,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
+    @Transactional
     public R save(ElectricityCabinetModel electricityCabinetModel) {
         //插入数据库
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
@@ -111,6 +112,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
+    @Transactional
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
         if(Objects.isNull(electricityCabinetModel.getId())){
             return R.fail("ELECTRICITY.0007","不合法的参数");
@@ -134,6 +136,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
     @Override
+    @Transactional
     public R delete(Integer id) {
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
         if(Objects.isNull(electricityCabinetModel)){

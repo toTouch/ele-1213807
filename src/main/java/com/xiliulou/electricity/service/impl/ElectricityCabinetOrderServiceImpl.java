@@ -244,6 +244,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
+    @Transactional
     public R openDoor(OpenDoorQuery openDoorQuery) {
         if (Objects.isNull(openDoorQuery.getOrderId()) || Objects.isNull(openDoorQuery.getOpenType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -340,6 +341,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
+    @Transactional
     public R endOrder(String orderId) {
         return R.ok();
     }
