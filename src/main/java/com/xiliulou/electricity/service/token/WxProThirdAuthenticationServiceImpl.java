@@ -244,7 +244,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 		userOauthBindService.insert(oauthBind);
 		//添加到user_info表中
-		UserInfo insertUserInfo=UserInfo.builder()
+		UserInfo insertUserInfo = UserInfo.builder()
 				.uid(insert.getUid())
 				.updateTime(System.currentTimeMillis())
 				.createTime(System.currentTimeMillis())
@@ -285,12 +285,18 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	public static String decrypt(byte[] key, byte[] iv, byte[] encData) throws Exception {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
 		AlgorithmParameters params = AlgorithmParameters.getInstance("AES");
-		params.init(new IvParameterSpec(iv));
-		cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
+		try {
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			params.init(new IvParameterSpec(iv));
+			cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
+			return new String(cipher.doFinal(encData), "UTF-8");
+		} catch (Exception e) {
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+			cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
+			return new String(cipher.doFinal(encData), "UTF-8");
+		}
 		//解析解密后的字符串  
-		return new String(cipher.doFinal(encData), "UTF-8");
 	}
 }
