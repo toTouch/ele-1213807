@@ -3,12 +3,12 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
@@ -19,8 +19,9 @@ import java.util.Objects;
  * @author: Mr.YG
  * @create: 2020-12-03 10:35
  **/
-@Data
+
 @Slf4j
+@RestController
 public class ElectricityMemberCardOrderController {
 
     @Autowired
@@ -56,7 +57,6 @@ public class ElectricityMemberCardOrderController {
 
         return electricityMemberCardOrderService.getMemberCardOrderCount(uid);
     }
-
 
 
 }
