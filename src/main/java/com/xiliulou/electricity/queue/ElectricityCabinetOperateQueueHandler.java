@@ -124,9 +124,11 @@ public class ElectricityCabinetOperateQueueHandler {
 
         if (commandQuery.getCommand().contains("replace_update_old")) {
             //换电命令第一步 换旧电池
+            log.info("replaceOldBattery:{}", commandQuery);
             replaceOldBattery(commandQuery);
         } else if (commandQuery.getCommand().contains("replace_update_new")) {
             //换电命令第二步 ,换新电池
+            log.info("replaceNewBattery:{}", commandQuery);
             replaceNewBattery(commandQuery);
         }
 
@@ -148,7 +150,9 @@ public class ElectricityCabinetOperateQueueHandler {
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
+            log.info("replaceNewBattery putQueue:{}", operateResultDto);
             putQueue(operateResultDto);
+            a++;
             if (false) {
                 break;
             }
@@ -172,6 +176,8 @@ public class ElectricityCabinetOperateQueueHandler {
                 e.printStackTrace();
             }
             putQueue(operateResultDto);
+            a++;
+            log.info("replaceOldBattery putQueue:{}", operateResultDto);
             if (false) {
                 break;
             }
