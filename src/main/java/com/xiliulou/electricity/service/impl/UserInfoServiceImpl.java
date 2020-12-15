@@ -411,4 +411,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setDays((long) Math.round((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L)));
         return R.ok(ownMemberCardInfoVo);
     }
+
+    @Override
+    public void deleteUserInfo(UserInfo oldUserInfo) {
+        userInfoMapper.deleteById(oldUserInfo.getId());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
+        if (Objects.nonNull(oldElectricityBattery)) {
+            ElectricityBattery electricityBattery = new ElectricityBattery();
+            electricityBattery.setId(oldUserInfo.getId());
+            electricityBattery.setUid(null);
+            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.unBind(electricityBattery);
+        }
+    }
+
+
 }
