@@ -67,7 +67,7 @@ public class ElectricityMemberCardAdminController {
                                           @RequestParam(value = "agentId", required = false) Integer agentId) {
 
 
-        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, agentId);
+        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, agentId, null);
     }
 
 }

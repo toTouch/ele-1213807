@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,6 @@ public class ElectricityCabinetMemberCardController {
     public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
                                        @RequestParam(value = "size", required = true) Long size
     ) {
-        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, null);
+        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, null, ElectricityMemberCard.STATUS_USEABLE);
     }
 }
