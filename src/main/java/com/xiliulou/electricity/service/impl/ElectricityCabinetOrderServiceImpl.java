@@ -389,7 +389,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         Long now=(System.currentTimeMillis()-electricityCabinetOrder.getCreateTime())/1000;
-        Long time=300*1000-now;
+        Long time=300-now;
         map.put("time",time.toString());
         map.put("status",electricityCabinetOrder.getStatus().toString());
         return R.ok(electricityCabinetOrder.getStatus());
