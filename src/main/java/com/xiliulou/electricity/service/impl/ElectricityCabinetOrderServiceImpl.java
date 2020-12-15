@@ -377,6 +377,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public void handlerExpiredCancelOrder(String orderId) {
         log.info("handel  cancel order start ------->");
         electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
+        //修改仓门为无电池
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
+        .in(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_PAY,ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR,ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DETECT));
+        ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
+        electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
+        electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+        electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        electricityCabinetNewBox.setElectricityBatteryId(-1L);
+        electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
         log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
     }
 
