@@ -8,5 +8,5 @@ import java.util.List;
 
 public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMemberCard> {
 
-    List<ElectricityMemberCard> getElectricityMemberCardPage(@Param("offset") Long offset, @Param("size") Long size, @Param("agentId") Integer agentId);
+    List<ElectricityMemberCard> getElectricityMemberCardPage(@Param("offset") Long offset, @Param("size") Long size, @Param("agentId") Integer agentId, @Param("status") Integer status);
 }
