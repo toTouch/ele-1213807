@@ -9,10 +9,12 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.OperateResultDto;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +64,9 @@ public class ElectricityCabinetOperateQueueHandler {
 
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+
+    @Autowired
+    UserInfoService userInfoService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -434,6 +439,12 @@ public class ElectricityCabinetOperateQueueHandler {
             electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_COMPLETE);
             electricityCabinetOrderService.update(electricityCabinetOrder);
+            //用户换绑新电池
+            UserInfo userInfo = new UserInfo();
+            userInfo.setId(electricityCabinetOrder.getUid());
+            userInfo.setNowElectricityBatterySn(electricityCabinetOrder.getNewElectricityBatterySn());
+            userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.update(userInfo);
         }
     }
 
