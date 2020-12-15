@@ -82,4 +82,7 @@ public interface UserInfoService extends IService<UserInfo> {
     List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay);
 
     R getMemberCardInfo(Long uid);
+
+
+    void deleteUserInfo(UserInfo oldUserInfo);
 }

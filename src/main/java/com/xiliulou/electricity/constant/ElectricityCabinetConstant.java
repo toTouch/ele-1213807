@@ -29,6 +29,9 @@ public interface ElectricityCabinetConstant {
     //城市缓存，不变
     String CACHE_CITY = "city:";
     String CACHE_SUBSCRIPTION_MESSAGE = "CACHE_SUBSCRIPTION_MESSAGE_";
+	String CACHE_USER_ROLE_RELATION = "user_role_relation:";
+	String CACHE_ROLE_PERMISSION_RELATION = "role_permission_relation:";
+	String CACHE_PERMISSION = "permission_id:";
 
     //门店缓存
     String CACHE_STORE = "store:";

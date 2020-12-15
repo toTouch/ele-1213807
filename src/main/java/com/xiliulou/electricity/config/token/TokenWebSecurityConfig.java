@@ -4,6 +4,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
 import com.xiliulou.security.authentication.CustomAuthenticationEntryPoint;
+import com.xiliulou.security.authentication.authorization.AuthorizationService;
+import com.xiliulou.security.authentication.authorization.UrlFilterInvocationSecurityMetadataSource;
+import com.xiliulou.security.authentication.authorization.UrlFilterSecurityInterceptor;
+import com.xiliulou.security.authentication.authorization.UrlMatchVoter;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.CustomTokenAuthenticationFilter;
 import com.xiliulou.security.authentication.console.CustomUsernamePasswordAuthenticationFilter;
@@ -18,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.access.vote.AffirmativeBased;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -28,6 +33,10 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.access.ExceptionTranslationFilter;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 /**
  * @author: eclair
@@ -50,6 +59,8 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Autowired
 	CustomPasswordEncoder customPasswordEncoder;
+	@Autowired
+	AuthorizationService authorizationService;
 
 	@Bean
 	public JwtTokenManager jwtTokenManager() {
@@ -61,20 +72,19 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 		return new TokenConfig();
 	}
 
-
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
 				.and().csrf().disable()
-				.authorizeRequests()
-				.antMatchers("/auth/token/**", "/actuator/**", "/error","/user/**").permitAll()
-				.anyRequest().authenticated()
-				.and().logout().logoutUrl("/auth/token/logout")
+				.logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
+//				.authorizeRequests()
+//				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
 				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
-				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager()))
+				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager(), authorizationService))
 				.addFilterAfter(new CustomThirdAuthAuthenticationFilter(jwtTokenManager(), authenticationManager()), CustomUsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(new UrlFilterSecurityInterceptor(new UrlFilterInvocationSecurityMetadataSource(),authenticationManager(),new AffirmativeBased(Collections.singletonList(new UrlMatchVoter()))), ExceptionTranslationFilter.class)
 				.httpBasic()
 				//不缓存session
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);

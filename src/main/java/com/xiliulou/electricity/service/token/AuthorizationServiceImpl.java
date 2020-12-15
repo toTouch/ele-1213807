@@ -1,0 +1,68 @@
+package com.xiliulou.electricity.service.token;
+
+import cn.hutool.core.util.StrUtil;
+import com.google.api.client.util.Sets;
+import com.google.common.collect.Lists;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.PermissionResource;
+import com.xiliulou.electricity.entity.Role;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.service.PermissionResourceService;
+import com.xiliulou.electricity.service.RolePermissionService;
+import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.UserRoleService;
+import com.xiliulou.security.authentication.authorization.AuthorizationService;
+import com.xiliulou.security.bean.UrlGrantedAuthority;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+
+/**
+ * @author: eclair
+ * @Date: 2020/12/9 16:04
+ * @Description:
+ */
+@Service
+public class AuthorizationServiceImpl implements AuthorizationService {
+	@Autowired
+	UserRoleService userRoleService;
+	@Autowired
+	RoleService roleService;
+	@Autowired
+	PermissionResourceService permissionResourceService;
+
+	@Override
+	public Collection<? extends GrantedAuthority> acquireAllAuthorities(long uid, int type) {
+		if (type == User.TYPE_USER_NORMAL) {
+			return Lists.newArrayList();
+		}
+
+		HashSet<GrantedAuthority> grantedAuthorities = new HashSet<>();
+		List<Long> roleIds = roleService.queryRidsByUid(uid);
+		if (!DataUtil.collectionIsUsable(roleIds)) {
+			return grantedAuthorities;
+		}
+
+		for (Long roleId : roleIds) {
+			List<PermissionResource> permissionResources = permissionResourceService.queryPermissionsByRole(roleId);
+			if (DataUtil.collectionIsUsable(permissionResources)) {
+				for (PermissionResource p : permissionResources) {
+					GrantedAuthority t = new UrlGrantedAuthority(p.getMethod(), p.getUri());
+					grantedAuthorities.add(t);
+				}
+			}
+		}
+
+		return grantedAuthorities;
+
+	}
+}

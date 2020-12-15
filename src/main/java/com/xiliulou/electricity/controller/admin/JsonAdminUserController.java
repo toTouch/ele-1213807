@@ -1,7 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -21,6 +25,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/11/30 16:47
@@ -32,6 +38,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class JsonAdminUserController extends BaseController {
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	RoleService roleService;
 
 	@PostMapping("/user/register")
 	public R createUser(@Validated(value = CreateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
@@ -68,9 +77,24 @@ public class JsonAdminUserController extends BaseController {
 		return returnPairResult(userService.updateAdminUser(adminUserQuery));
 	}
 
-	//	@PreAuthorize("hasAnyAuthority('menu:system')")
 	@DeleteMapping("/user/{uid}")
 	public R deleteAdminUser(@PathVariable("uid") Long uid) {
 		return returnPairResult(userService.deleteAdminUser(uid));
 	}
+
+	@PostMapping("/user/role/bind")
+	public R bindUserRole(@RequestParam("uid") Long uid, @RequestParam("roleIds") String jsonRoleIds) {
+		List<Long> roleIds = JsonUtil.fromJsonArray(jsonRoleIds, Long.class);
+		if (!DataUtil.collectionIsUsable(roleIds)) {
+			return R.fail("SYSTEM.0002", "参数不合法");
+		}
+
+		return returnPairResult(roleService.bindUserRole(uid, roleIds));
+	}
+
+	@GetMapping("/user/menu")
+	public R getUserMenu(){
+		return returnPairResult(roleService.getMenuByUid());
+	}
+
 }

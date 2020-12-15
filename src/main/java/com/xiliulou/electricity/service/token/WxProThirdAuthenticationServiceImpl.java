@@ -94,8 +94,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			String bodyStr = restTemplateService.getForString(codeUrl, null);
 			log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
 
-//			WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
-			WXMinProAuth2SessionResult result = new WXMinProAuth2SessionResult("open2", "session1", "uni", null, null);
+			WXMinProAuth2SessionResult result = JsonUtil.fromJson(bodyStr, WXMinProAuth2SessionResult.class);
+//			WXMinProAuth2SessionResult result = new WXMinProAuth2SessionResult("open2", "session1", "uni", null, null);
 			if (Objects.isNull(result) || StrUtil.isEmpty(result.getOpenid()) || StrUtil.isEmpty(result.getSession_key())) {
 				log.error("TOKEN ERROR! wxResult has error! bodyStr={},authMap={}", bodyStr, authMap);
 				throw new AuthenticationServiceException("微信返回异常！");
@@ -104,7 +104,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			//解析手机号
 			String s = decryptWxData(data, iv, result.getSession_key());
 			if (StrUtil.isEmpty(s)) {
-				throw new AuthenticationServiceException("微信解密失败！");
+				throw new AuthenticationServiceException("WX0001");
 			}
 
 			WXMinProPhoneResultDTO wxMinProPhoneResultDTO = JsonUtil.fromJson(s, WXMinProPhoneResultDTO.class);
@@ -244,7 +244,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 		userOauthBindService.insert(oauthBind);
 		//添加到user_info表中
-		UserInfo insertUserInfo=UserInfo.builder()
+		UserInfo insertUserInfo = UserInfo.builder()
 				.uid(insert.getUid())
 				.updateTime(System.currentTimeMillis())
 				.createTime(System.currentTimeMillis())
@@ -285,12 +285,18 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	public static String decrypt(byte[] key, byte[] iv, byte[] encData) throws Exception {
 		Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
-		Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
 		SecretKeySpec keySpec = new SecretKeySpec(key, "AES");
 		AlgorithmParameters params = AlgorithmParameters.getInstance("AES");
-		params.init(new IvParameterSpec(iv));
-		cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
+		try {
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+			params.init(new IvParameterSpec(iv));
+			cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
+			return new String(cipher.doFinal(encData), "UTF-8");
+		} catch (Exception e) {
+			Cipher cipher = Cipher.getInstance("AES/CBC/PKCS7Padding");
+			cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
+			return new String(cipher.doFinal(encData), "UTF-8");
+		}
 		//解析解密后的字符串  
-		return new String(cipher.doFinal(encData), "UTF-8");
 	}
 }

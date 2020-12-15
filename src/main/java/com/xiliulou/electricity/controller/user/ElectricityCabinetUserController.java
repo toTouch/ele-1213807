@@ -27,7 +27,7 @@ public class ElectricityCabinetUserController {
     UserInfoService userInfoService;
 
     //列表查询
-    @GetMapping(value = "/user/electricityCabinet/showInfoByDistance")
+    @GetMapping(value = "/outer/electricityCabinet/showInfoByDistance")
     public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
                                 @RequestParam("lon") Double lon,
                                 @RequestParam("lat") Double lat) {
@@ -42,6 +42,17 @@ public class ElectricityCabinetUserController {
                 .lat(lat).build();
 
         return electricityCabinetService.showInfoByDistance(electricityCabinetQuery);
+    }
+
+    /**
+     * 查询换电柜 按三元组
+     *
+     * @return
+     */
+    @GetMapping(value = "/user/electricityCabinet")
+    public R queryByDevice(@RequestParam("productKey") String productKey,@RequestParam("deviceName")String deviceName
+            ,@RequestParam("deviceSecret") String deviceSecret) {
+        return electricityCabinetService.queryByDevice(productKey,deviceName,deviceSecret);
     }
 
     /**

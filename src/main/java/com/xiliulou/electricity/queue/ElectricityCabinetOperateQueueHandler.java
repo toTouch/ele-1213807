@@ -4,10 +4,12 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.OperateResultDto;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -57,6 +59,9 @@ public class ElectricityCabinetOperateQueueHandler {
 
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -305,7 +310,12 @@ public class ElectricityCabinetOperateQueueHandler {
     public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
         if (operResult) {
             //修改仓门为有电池
+            //查找电池Id
             ElectricityCabinetBox electricityCabinetOldBox = new ElectricityCabinetBox();
+            ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
+            if(Objects.nonNull(electricityBattery)){
+                electricityCabinetOldBox.setElectricityBatteryId(electricityBattery.getId());
+            }
             electricityCabinetOldBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
             electricityCabinetOldBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
             electricityCabinetOldBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
@@ -408,6 +418,7 @@ public class ElectricityCabinetOperateQueueHandler {
             electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getNewCellNo()));
             electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
             electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+            electricityCabinetNewBox.setElectricityBatteryId(-1L);
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
             //修改订单
             electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());

@@ -30,7 +30,6 @@ public class JsonAdminUserOauthBindController extends BaseController {
 	UserOauthBindService userOauthBindService;
 
 	@GetMapping("/oauth/list")
-	@PreAuthorize(value = "hasAuthority('oauth_bind_list')")
 	public R getList(@RequestParam(value = "offset") Integer offset, @RequestParam("size") Integer size,
 			@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "thirdId", required = false) String thirdId,
@@ -46,7 +45,6 @@ public class JsonAdminUserOauthBindController extends BaseController {
 	}
 
 	@PreAuthorize(value = "hasAuthority('oauth_bind_modify')")
-	@PutMapping("/oauth/bind/modify")
 	public R modifyOauthBind(@Validated @RequestBody OauthBindQuery oauthBindQuery, BindingResult bindingResult) {
 		if (bindingResult.hasFieldErrors()) {
 			return R.fail("SYSTEM.0002", bindingResult.getFieldError().getDefaultMessage());
