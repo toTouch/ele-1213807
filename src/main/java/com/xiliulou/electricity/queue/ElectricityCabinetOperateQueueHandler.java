@@ -149,7 +149,7 @@ public class ElectricityCabinetOperateQueueHandler {
                 e.printStackTrace();
             }
             putQueue(operateResultDto);
-            if (!result) {
+            if (false) {
                 break;
             }
         }
@@ -172,7 +172,7 @@ public class ElectricityCabinetOperateQueueHandler {
                 e.printStackTrace();
             }
             putQueue(operateResultDto);
-            if (!result) {
+            if (false) {
                 break;
             }
         }
@@ -312,8 +312,8 @@ public class ElectricityCabinetOperateQueueHandler {
             //修改仓门为有电池
             //查找电池Id
             ElectricityCabinetBox electricityCabinetOldBox = new ElectricityCabinetBox();
-            ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
-            if(Objects.nonNull(electricityBattery)){
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
+            if (Objects.nonNull(electricityBattery)) {
                 electricityCabinetOldBox.setElectricityBatteryId(electricityBattery.getId());
             }
             electricityCabinetOldBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
