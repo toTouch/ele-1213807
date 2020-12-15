@@ -24,5 +24,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBatteryVo selectBatteryInfo(@Param("uid") Long uid);
 
-    void unBind(@Param("query") ElectricityBattery electricityBattery);
+    void unBind(ElectricityBattery electricityBattery);
 }
