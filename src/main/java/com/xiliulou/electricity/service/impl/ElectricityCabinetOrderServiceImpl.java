@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -376,16 +377,30 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public void handlerExpiredCancelOrder(String orderId) {
         log.info("handel  cancel order start ------->");
         electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
+        //修改仓门为无电池
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
+        .in(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_PAY,ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR,ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DETECT));
+        ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
+        electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
+        electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+        electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        electricityCabinetNewBox.setElectricityBatteryId(-1L);
+        electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
         log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
     }
 
     @Override
     public R queryStatus(String orderId) {
+        Map<String,String> map=new HashMap<>();
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId));
         if (Objects.isNull(electricityCabinetOrder)) {
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+        Long now=(System.currentTimeMillis()-electricityCabinetOrder.getCreateTime())/1000;
+        Long time=300-now;
+        map.put("time",time.toString());
+        map.put("status",electricityCabinetOrder.getStatus().toString());
         return R.ok(electricityCabinetOrder.getStatus());
     }
 
