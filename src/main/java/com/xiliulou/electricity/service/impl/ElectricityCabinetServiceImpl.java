@@ -514,7 +514,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                     ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                     if (Objects.nonNull(electricityBatteryModel)) {
-                        set.add(electricityBatteryModel.getVoltage() + "V" + electricityBatteryModel.getCapacity() + "M");
+                        set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
                     }
                 }
             }
