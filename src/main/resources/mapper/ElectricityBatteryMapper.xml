@@ -16,6 +16,9 @@
         <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER"/>
     </resultMap>
+    <update id="unBind">
+        update t_electricity_battery set  status=#{status},update_time=#{updateTime},uid=#{uid} where id=#{id}
+    </update>
 
 
     <!--电池分页-->

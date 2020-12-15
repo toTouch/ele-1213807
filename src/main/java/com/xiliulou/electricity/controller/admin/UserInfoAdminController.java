@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -22,8 +23,8 @@ public class UserInfoAdminController {
     /**
      * 服务对象
      */
-    @Resource
-    private UserInfoService userInfoService;
+    @Autowired
+    UserInfoService userInfoService;
 
     //绑定电池
     @PutMapping(value = "/admin/userInfo/bindBattery")

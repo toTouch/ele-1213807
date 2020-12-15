@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -75,7 +77,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo userInfo = null;
         userInfo = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, UserInfo.class);
         if (Objects.isNull(userInfo)) {
-            userInfo = this.userInfoMapper.selectById(id);
+            userInfo = this.userInfoMapper.selectOne(Wrappers.<UserInfo>lambdaQuery().eq(UserInfo::getUid, id));
             if (Objects.nonNull(userInfo)) {
                 redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, userInfo);
             }
@@ -254,6 +256,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
+        if (Objects.isNull(oldElectricityBattery)) {
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setCarStoreId(oldUserInfo.getCarStoreId());
@@ -269,7 +275,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录=
+            //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(userInfo.getName());
@@ -281,6 +287,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
+            //电池解绑用户
+            ElectricityBattery electricityBattery = new ElectricityBattery();
+            electricityBattery.setId(oldElectricityBattery.getId());
+            electricityBattery.setUid(null);
+            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.unBind(electricityBattery);
             return null;
         });
         return R.ok();
@@ -400,4 +413,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setDays((long) Math.round((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L)));
         return R.ok(ownMemberCardInfoVo);
     }
+
+    @Override
+    public void deleteUserInfo(UserInfo oldUserInfo) {
+        userInfoMapper.deleteById(oldUserInfo.getId());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
+        if (Objects.nonNull(oldElectricityBattery)) {
+            ElectricityBattery electricityBattery = new ElectricityBattery();
+            electricityBattery.setId(oldUserInfo.getId());
+            electricityBattery.setUid(null);
+            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.unBind(electricityBattery);
+        }
+    }
+
+
 }

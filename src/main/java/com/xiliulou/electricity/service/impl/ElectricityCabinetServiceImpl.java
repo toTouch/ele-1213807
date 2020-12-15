@@ -396,6 +396,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
                 Integer noElectricityBattery = 0;
+                Set<String> set = new HashSet();
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
                     for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
@@ -404,6 +405,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         if (Objects.nonNull(electricityBattery)) {
                             if (electricityBattery.getCapacity() >= e.getFullyCharged()) {
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
+                            }
+                            ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
+                            if (Objects.nonNull(electricityBatteryModel)) {
+                                set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
                             }
                         }
                     }
@@ -415,6 +420,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
+                e.setElectricityBatteryFormat(set);
                 //TODO 在线更新柜机
                 if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS) && Objects.equals(e.getPowerStatus(), ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS)
                         && Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
@@ -484,11 +490,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        //判断是否开通服务
+        //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
-        if (Objects.isNull(userInfo)) {
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return R.fail("ELECTRICITY.0020", "未开通服务");
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        //判断是否开通服务
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0021", "未开通服务");
+        }
+        //判断用户是否开通月卡
+        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        Long now = System.currentTimeMillis();
+        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -508,9 +530,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                     ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                     if (Objects.nonNull(electricityBatteryModel)) {
-                        set.add(electricityBatteryModel.getVoltage() + "V" + electricityBatteryModel.getCapacity() + "M");
+                        set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
                     }
                 }
+            }
+            if (fullyElectricityBattery <= 0) {
+                return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
             }
             //营业时间
             if (Objects.nonNull(electricityCabinetVO.getBusinessTime())) {
@@ -527,7 +552,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         electricityCabinetVO.setBeginTime(beginTime);
                         electricityCabinetVO.setEndTime(endTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-                        Long now = System.currentTimeMillis();
                         if (firstToday + beginTime > now || firstToday + endTime < now) {
                             electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
                         } else {
@@ -794,11 +818,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        //判断是否开通服务
+        //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
-        if (Objects.isNull(userInfo)) {
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return R.fail("ELECTRICITY.0020", "未开通服务");
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        //判断是否开通服务
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0021", "未开通服务");
+        }
+        //判断用户是否开通月卡
+        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        Long now = System.currentTimeMillis();
+        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -818,9 +858,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                     ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                     if (Objects.nonNull(electricityBatteryModel)) {
-                        set.add(electricityBatteryModel.getVoltage() + "V" + electricityBatteryModel.getCapacity() + "M");
+                        set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
                     }
                 }
+            }
+            if (fullyElectricityBattery <= 0) {
+                return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
             }
             //营业时间
             if (Objects.nonNull(electricityCabinetVO.getBusinessTime())) {
@@ -837,7 +880,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         electricityCabinetVO.setBeginTime(beginTime);
                         electricityCabinetVO.setEndTime(endTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-                        Long now = System.currentTimeMillis();
                         if (firstToday + beginTime > now || firstToday + endTime < now) {
                             electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
                         } else {
