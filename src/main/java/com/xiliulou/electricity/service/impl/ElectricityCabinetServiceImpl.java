@@ -406,10 +406,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             if (electricityBattery.getCapacity() >= e.getFullyCharged()) {
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
                             }
-                        }
-                        ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
-                        if (Objects.nonNull(electricityBatteryModel)) {
-                            set.add(electricityBatteryModel.getVoltage() + "V" + electricityBatteryModel.getCapacity() + "M");
+                            ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
+                            if (Objects.nonNull(electricityBatteryModel)) {
+                                set.add(electricityBatteryModel.getVoltage() + "V" + electricityBatteryModel.getCapacity() + "M");
+                            }
                         }
                     }
                     //空仓
