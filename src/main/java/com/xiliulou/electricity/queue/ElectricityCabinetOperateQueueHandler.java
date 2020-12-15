@@ -152,6 +152,7 @@ public class ElectricityCabinetOperateQueueHandler {
             }
             log.info("replaceNewBattery putQueue:{}", operateResultDto);
             putQueue(operateResultDto);
+            a++;
             if (false) {
                 break;
             }
@@ -175,6 +176,7 @@ public class ElectricityCabinetOperateQueueHandler {
                 e.printStackTrace();
             }
             putQueue(operateResultDto);
+            a++;
             log.info("replaceOldBattery putQueue:{}", operateResultDto);
             if (false) {
                 break;
