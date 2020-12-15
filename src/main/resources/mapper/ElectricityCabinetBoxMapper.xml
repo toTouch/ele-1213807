@@ -136,6 +136,9 @@
             <if test="electricityBatteryId != null">
                 electricity_battery_id = #{electricityBatteryId},
             </if>
+            <if test="electricityBatteryId ==-1">
+                electricity_battery_id = null,
+            </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
