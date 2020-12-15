@@ -187,6 +187,7 @@ public class ElectricityCabinetOperateQueueHandler {
      * @param finalOperDTO
      */
     private void handleOrderAfterOperated(OperateResultDto finalOperDTO) {
+        log.info("finalOperDTO is -->{}"+finalOperDTO);
         String sessionId = finalOperDTO.getSessionId();
         Boolean result = finalOperDTO.getResult();
         Long oid = Long.parseLong(sessionId.substring(0, sessionId.indexOf("_")));
@@ -312,9 +313,9 @@ public class ElectricityCabinetOperateQueueHandler {
             //修改仓门为有电池
             //查找电池Id
             ElectricityCabinetBox electricityCabinetOldBox = new ElectricityCabinetBox();
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
-            if (Objects.nonNull(electricityBattery)) {
-                electricityCabinetOldBox.setElectricityBatteryId(electricityBattery.getId());
+            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
+            if (Objects.nonNull(oldElectricityBattery)) {
+                electricityCabinetOldBox.setElectricityBatteryId(oldElectricityBattery.getId());
             }
             electricityCabinetOldBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
             electricityCabinetOldBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
@@ -334,10 +335,13 @@ public class ElectricityCabinetOperateQueueHandler {
                 if (Objects.isNull(electricityCabinetBox)) {
                     return;
                 }
+                ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                if (Objects.nonNull(newElectricityBattery)) {
+                    electricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSerialNumber());
+                }
                 electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
                 electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
                 electricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
-                electricityCabinetOrder.setNewElectricityBatterySn(electricityCabinetBox.getCellNo());
                 electricityCabinetOrderService.update(electricityCabinetOrder);
                 //新电池开门
                 HashMap<String, Object> dataMap = Maps.newHashMap();
