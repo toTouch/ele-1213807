@@ -41,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -381,11 +382,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public R queryStatus(String orderId) {
+        Map<String,String> map=new HashMap<>();
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId));
         if (Objects.isNull(electricityCabinetOrder)) {
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+        Long now=(System.currentTimeMillis()-electricityCabinetOrder.getCreateTime())/1000;
+        Long time=300*1000-now;
+        map.put("time",time.toString());
+        map.put("status",electricityCabinetOrder.getStatus().toString());
         return R.ok(electricityCabinetOrder.getStatus());
     }
 
