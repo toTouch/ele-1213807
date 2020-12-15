@@ -2,7 +2,9 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -75,7 +77,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo userInfo = null;
         userInfo = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, UserInfo.class);
         if (Objects.isNull(userInfo)) {
-            userInfo = this.userInfoMapper.selectById(id);
+            userInfo = this.userInfoMapper.selectOne(Wrappers.<UserInfo>lambdaQuery().eq(UserInfo::getUid, id));
             if (Objects.nonNull(userInfo)) {
                 redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, userInfo);
             }
