@@ -254,6 +254,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
+        if (Objects.isNull(oldElectricityBattery)) {
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setCarStoreId(oldUserInfo.getCarStoreId());
@@ -269,7 +273,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录=
+            //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(userInfo.getName());
@@ -281,6 +285,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
+            //电池解绑用户
+            ElectricityBattery electricityBattery = new ElectricityBattery();
+            electricityBattery.setId(oldElectricityBattery.getId());
+            electricityBattery.setUid(null);
+            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBatteryService.unBind(electricityBattery);
             return null;
         });
         return R.ok();
