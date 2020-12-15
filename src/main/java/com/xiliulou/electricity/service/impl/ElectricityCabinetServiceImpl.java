@@ -396,6 +396,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
                 Integer noElectricityBattery = 0;
+                Set<String> set = new HashSet();
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
                     for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
@@ -406,6 +407,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                                 fullyElectricityBattery = fullyElectricityBattery + 1;
                             }
                         }
+                        ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
+                        if (Objects.nonNull(electricityBatteryModel)) {
+                            set.add(electricityBatteryModel.getVoltage() + "V" + electricityBatteryModel.getCapacity() + "M");
+                        }
                     }
                     //空仓
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
@@ -415,6 +420,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
+                e.setElectricityBatteryFormat(set);
                 //TODO 在线更新柜机
                 if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS) && Objects.equals(e.getPowerStatus(), ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS)
                         && Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
