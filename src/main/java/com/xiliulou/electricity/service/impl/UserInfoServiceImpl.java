@@ -138,7 +138,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //添加租电池记录=
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(userInfo.getName());
-            rentBatteryOrder.setPhone(userInfo.getPhone());
+            rentBatteryOrder.setPhone(oldUserInfo.getPhone());
             rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
             rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
@@ -178,7 +178,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //添加租电池记录
             rentCarOrder.setUid(oldUserInfo.getUid());
             rentCarOrder.setName(userInfo.getName());
-            rentCarOrder.setPhone(userInfo.getPhone());
+            rentCarOrder.setPhone(oldUserInfo.getPhone());
             rentCarOrder.setIdNumber(userInfo.getIdNumber());
             rentCarOrder.setCarSn(userInfo.getCarSn());
             rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
