@@ -145,6 +145,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.IS_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
+            //修改电池状态
+            ElectricityBattery electricityBattery=new ElectricityBattery();
+            electricityBattery.setId(oldElectricityBattery.getId());
+            electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.update(electricityBattery);
             return null;
         });
         return R.ok();
@@ -283,6 +289,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
+            //修改电池状态
+            ElectricityBattery electricityBattery=new ElectricityBattery();
+            electricityBattery.setId(oldElectricityBattery.getId());
+            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.update(electricityBattery);
             return null;
         });
         return R.ok();
