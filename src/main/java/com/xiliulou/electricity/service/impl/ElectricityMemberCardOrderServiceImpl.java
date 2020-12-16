@@ -91,7 +91,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.failMsg("月卡已禁用!");
         }
 
-        if (userInfo.getMemberCardExpireTime() > System.currentTimeMillis() &&
+        if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
+                userInfo.getMemberCardExpireTime() > System.currentTimeMillis() &&
                 (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
             log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
             return R.failMsg("您的月卡还未过期,无需再次购买!");
