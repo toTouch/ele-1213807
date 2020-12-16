@@ -60,4 +60,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
     Integer homeOneMemberCard(@Param("startTimeMilliDay")Long first, @Param("endTimeMilliDay") Long now);
 
     void updateByUid(UserInfo userInfo);
+
+    void plusCount(@Param("id")Long id,@Param("updateTime")Long updateTime);
 }

@@ -39,21 +39,23 @@ public class ElectricityMemberCardOrderController {
     }
 
     @GetMapping("user/memberCardOrder/page")
-    public R getMemberCardOrderPage(@RequestParam("offset") Long offset, @RequestParam("size") Long size) {
+    public R getMemberCardOrderPage(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+                                    @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-        return electricityMemberCardOrderService.getMemberCardOrderPage(uid, offset, size);
+        return electricityMemberCardOrderService.getMemberCardOrderPage(uid, offset, size, queryStartTime, queryEndTime);
     }
 
     @GetMapping("user/memberCardOrder/count")
-    public R getMemberCardOrderCount() {
+    public R getMemberCardOrderCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+                                     @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-        return electricityMemberCardOrderService.getMemberCardOrderCount(uid);
+        return electricityMemberCardOrderService.getMemberCardOrderCount(uid, queryStartTime, queryEndTime);
     }
 
 

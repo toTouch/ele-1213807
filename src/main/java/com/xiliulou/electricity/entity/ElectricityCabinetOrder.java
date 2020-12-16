@@ -114,6 +114,13 @@ public class ElectricityCabinetOrder {
     //订单取消
     public static final Integer STATUS_ORDER_CANCEL = 9;
 
+    //月卡
+    public static final Integer PAYMENT_METHOD_MONTH_CARD = 0;
+    //季卡
+    public static final Integer  PAYMENT_METHOD_SEASON_CARD = 1;
+    //年卡
+    public static final Integer  PAYMENT_METHOD_YEAR_CARD = 2;
+
 
 
 }
