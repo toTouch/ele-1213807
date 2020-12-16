@@ -332,6 +332,12 @@ public class ElectricityCabinetOperateQueueHandler {
             electricityCabinetOldBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
             electricityCabinetOldBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetOldBox);
+            //用户解绑新电池
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUid(electricityCabinetOrder.getUid());
+            userInfo.setNowElectricityBatterySn(null);
+            userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfo);
             //分配新仓门
             String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId());
             try {
@@ -441,10 +447,10 @@ public class ElectricityCabinetOperateQueueHandler {
             electricityCabinetOrderService.update(electricityCabinetOrder);
             //用户换绑新电池
             UserInfo userInfo = new UserInfo();
-            userInfo.setId(electricityCabinetOrder.getUid());
+            userInfo.setUid(electricityCabinetOrder.getUid());
             userInfo.setNowElectricityBatterySn(electricityCabinetOrder.getNewElectricityBatterySn());
             userInfo.setUpdateTime(System.currentTimeMillis());
-            userInfoService.update(userInfo);
+            userInfoService.updateByUid(userInfo);
         }
     }
 
