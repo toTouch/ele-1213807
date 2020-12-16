@@ -493,7 +493,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 excelVo.setStatus("订单取消");
             }
             ElectricityCabinetOrderExcelVOS.add(excelVo);
-            String fileName = "分账报表.xlsx";
+            String fileName = "换电订单报表.xlsx";
             try {
                 ServletOutputStream outputStream = response.getOutputStream();
                 // 告诉浏览器用什么软件可以打开此文件
