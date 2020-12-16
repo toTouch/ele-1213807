@@ -1,12 +1,17 @@
 package com.xiliulou.electricity.controller.user;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
@@ -25,6 +30,8 @@ public class ElectricityCabinetUserController {
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    RedisService redisService;
 
     //列表查询
     @GetMapping(value = "/outer/electricityCabinet/showInfoByDistance")
@@ -50,9 +57,9 @@ public class ElectricityCabinetUserController {
      * @return
      */
     @GetMapping(value = "/user/electricityCabinet")
-    public R queryByDevice(@RequestParam("productKey") String productKey,@RequestParam("deviceName")String deviceName
-            ,@RequestParam("deviceSecret") String deviceSecret) {
-        return electricityCabinetService.queryByDevice(productKey,deviceName,deviceSecret);
+    public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
+            , @RequestParam("deviceSecret") String deviceSecret) {
+        return electricityCabinetService.queryByDevice(productKey, deviceName, deviceSecret);
     }
 
     /**
@@ -92,5 +99,16 @@ public class ElectricityCabinetUserController {
         }
         return userInfoService.getMemberCardInfo(uid);
     }
+
+    /**
+     * 获取 小程序服务信息
+     *
+     * @return
+     */
+    @GetMapping("user/servicePhone")
+    public R getServicePhone() {
+        return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE));
+    }
+
 
 }
