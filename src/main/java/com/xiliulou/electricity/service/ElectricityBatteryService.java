@@ -36,4 +36,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByUserSn(String nowElectricityBatterySn);
 
+    ElectricityBattery queryByOrderSn(String oldElectricityBatterySn);
 }
