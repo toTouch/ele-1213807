@@ -190,6 +190,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
+        //判断是否电池
+        if (Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
         //判断用户是否开通月卡
         if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
             log.error("ELECTRICITY  ERROR! not found memberCard ");
@@ -393,16 +398,26 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public void handlerExpiredCancelOrder(String orderId) {
         log.info("handel  cancel order start ------->");
-        electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
-        //修改仓门为无电池
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
                 .in(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_PAY, ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR, ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DETECT));
-        ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
-        electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
-        electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-        electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-        electricityCabinetNewBox.setElectricityBatteryId(-1L);
-        electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
+        Integer row=electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
+        if(row>0) {
+            //修改仓门为无电池
+            ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
+            electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
+            electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+            electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+            electricityCabinetNewBox.setElectricityBatteryId(-1L);
+            electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
+            //回退月卡
+            UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
+            Long now =System.currentTimeMillis();
+            if(Objects.nonNull(userInfo)&&Objects.nonNull(userInfo.getMemberCardExpireTime())&&Objects.nonNull(userInfo.getRemainingNumber())
+                    &&userInfo.getMemberCardExpireTime()>now&&userInfo.getRemainingNumber()!=-1){
+                //回退月卡次数
+               userInfoService.plusCount(userInfo.getId());
+            }
+        }
         log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
     }
 
@@ -567,7 +582,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     public String generateOrderId(Integer id, Long userId, String cellNo) {
         return String.valueOf(System.currentTimeMillis() / 1000) + id +
-                cellNo + /*userId +*/
+                cellNo +userId +
                 RandomUtil.randomNumbers(2);
     }
 

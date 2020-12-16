@@ -44,7 +44,7 @@ public class ElectricityCabinetOrderOperHistory {
     /**
     * 下单的用户
     */
-    private Integer uid;
+    private Long uid;
     /**
      *操作订单的类型 1--旧电池开门 2--旧电池关门 3--旧电池检测不通过开门 4--新电池开门 5--新电池关门
      */

@@ -427,5 +427,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfoMapper.updateByUid(userInfo);
     }
 
+    @Override
+    public void plusCount(Long id) {
+        userInfoMapper.plusCount(id,System.currentTimeMillis());
+    }
+
 
 }

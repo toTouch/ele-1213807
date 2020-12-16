@@ -75,10 +75,6 @@
 		<appender-ref ref="error"/>
 	</logger>
 
-	<logger name="request" level="INFO">
-		<appender-ref ref="request"/>
-	</logger>
-
 	<logger name="com.anji" level="ERROR">
 		<appender-ref ref="debug"/>
 	</logger>

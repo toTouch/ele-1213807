@@ -9,6 +9,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
+import com.xiliulou.electricity.entity.PermissionResourceTree;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.RoleQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -31,6 +33,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -242,9 +245,10 @@ public class RoleServiceImpl implements RoleService {
 				continue;
 			}
 
-			result.addAll(permissionResources.stream().filter(e -> e.getType().equals(PermissionResource.TYPE_PAGE)).collect(Collectors.toList()));
+			result.addAll(permissionResources.stream().filter(e -> e.getType().equals(PermissionResource.TYPE_PAGE)).sorted(Comparator.comparing(PermissionResource::getSort)).collect(Collectors.toList()));
 		}
-		return Pair.of(true, result);
+		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(result, PermissionResource.MENU_ROOT);
+		return Pair.of(true, permissionResourceTrees);
 	}
 
 	@Override
