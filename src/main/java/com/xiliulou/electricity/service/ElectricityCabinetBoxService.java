@@ -69,4 +69,8 @@ public interface ElectricityCabinetBoxService {
     void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);
 
     ElectricityCabinetBox queryByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
+
+    Integer queryOrderCountByElectricityCabinetId(Integer id);
+
+    Integer queryOpenCountByElectricityCabinetId(Integer id);
 }

@@ -840,6 +840,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
+        //判断改柜子是否有未完成的订单
+        Integer orderCount=electricityCabinetBoxService.queryOrderCountByElectricityCabinetId(electricityCabinet.getId());
+        if(orderCount>0){
+            return R.fail("ELECTRICITY.0027", "换电柜有未结束订单");
+        }
+        Integer openCount=electricityCabinetBoxService.queryOpenCountByElectricityCabinetId(electricityCabinet.getId());
+        if(openCount>0){
+            return R.fail("ELECTRICITY.0028", "换电柜有仓门未关闭");
+        }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
         //查满仓空仓数

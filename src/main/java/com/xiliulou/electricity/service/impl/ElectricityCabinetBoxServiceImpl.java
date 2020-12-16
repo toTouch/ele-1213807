@@ -183,4 +183,17 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetNewBox.getElectricityCabinetId())
                 .eq(ElectricityCabinetBox::getCellNo,electricityCabinetNewBox.getCellNo()).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
     }
+
+    @Override
+    public Integer queryOrderCountByElectricityCabinetId(Integer id) {
+        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId,id)
+                .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_ORDER_OCCUPY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+
+    }
+
+    @Override
+    public Integer queryOpenCountByElectricityCabinetId(Integer id) {
+        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId,id)
+                .eq(ElectricityCabinetBox::getBoxStatus,ElectricityCabinetBox.STATUS_OPEN_DOOR).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+    }
 }
