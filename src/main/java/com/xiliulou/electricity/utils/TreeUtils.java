@@ -6,7 +6,9 @@ import com.xiliulou.electricity.entity.TreeNode;
 import org.apache.poi.ss.formula.functions.T;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * @author: eclair
@@ -26,8 +28,9 @@ public class TreeUtils {
 			node.setMethod(permissionResource.getMethod());
 			node.setName(permissionResource.getName());
 			node.setType(permissionResource.getType());
-			node.setUrl(permissionResource.getUri());
+			node.setUri(permissionResource.getUri());
 			node.setParentId(permissionResource.getParent());
+			node.setSort(permissionResource.getSort());
 			trees.add(node);
 		}
 

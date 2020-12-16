@@ -38,7 +38,7 @@
 		select
 		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag
 		from electricity.t_permission_resource
-		where del_flag = 0
+		where del_flag = 0 order by sort
 
 	</select>
 
