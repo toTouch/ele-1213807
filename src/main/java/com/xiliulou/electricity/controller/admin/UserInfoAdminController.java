@@ -9,7 +9,6 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -25,6 +24,12 @@ public class UserInfoAdminController {
      */
     @Autowired
     UserInfoService userInfoService;
+
+    //添加用户
+    @PostMapping(value = "/admin/userInfo/insertUser")
+    public R insertUser(@RequestParam Long uid) {
+        return userInfoService.insertUser(uid);
+    }
 
     //绑定电池
     @PutMapping(value = "/admin/userInfo/bindBattery")

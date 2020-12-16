@@ -12,10 +12,8 @@ import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
@@ -66,9 +64,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	@Autowired
 	CustomPasswordEncoder customPasswordEncoder;
-
-	@Autowired
-	UserInfoService userInfoService;
 
 	@Override
 	public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
@@ -243,19 +238,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.build();
 
 		userOauthBindService.insert(oauthBind);
-		//添加到user_info表中
-		UserInfo insertUserInfo = UserInfo.builder()
-				.uid(insert.getUid())
-				.updateTime(System.currentTimeMillis())
-				.createTime(System.currentTimeMillis())
-				.phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
-				.name("")
-				.serviceStatus(UserInfo.NO_SERVICE_STATUS)
-				.delFlag(User.DEL_NORMAL)
-				.usableStatus(UserInfo.USER_USABLE_STATUS)
-				.build();
-		userInfoService.insert(insertUserInfo);
-
 		return createSecurityUser(insertUser, oauthBind);
 
 	}

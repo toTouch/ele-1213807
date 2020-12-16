@@ -54,6 +54,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     RedisService redisService;
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    UserService userService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -430,6 +432,27 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public void plusCount(Long id) {
         userInfoMapper.plusCount(id,System.currentTimeMillis());
+    }
+
+    @Override
+    public R insertUser(Long uid) {
+        User user=userService.queryByIdFromCache(uid);
+        if(Objects.isNull(user)){
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        //添加到user_info表中
+        UserInfo insertUserInfo = UserInfo.builder()
+                .uid(uid)
+                .updateTime(System.currentTimeMillis())
+                .createTime(System.currentTimeMillis())
+                .phone(user.getPhone())
+                .name("")
+                .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                .delFlag(User.DEL_NORMAL)
+                .usableStatus(UserInfo.USER_USABLE_STATUS)
+                .build();
+        userInfoMapper.insert(insertUserInfo);
+        return R.ok();
     }
 
 
