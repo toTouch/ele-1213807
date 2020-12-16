@@ -72,15 +72,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      * @return
      */
     @Override
-    public UserInfo selectUsersById(Long id) {
-        UserInfo userInfo = null;
-        userInfo = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, UserInfo.class);
-        if (Objects.isNull(userInfo)) {
-            userInfo = this.userInfoMapper.selectOne(Wrappers.<UserInfo>lambdaQuery().eq(UserInfo::getUid, id));
-            if (Objects.nonNull(userInfo)) {
-                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_INFO_UID + id, userInfo);
-            }
-        }
+    public UserInfo selectUserByUid(Long id) {
+        UserInfo userInfo =
+                this.userInfoMapper.selectOne(Wrappers.<UserInfo>lambdaQuery().eq(UserInfo::getUid, id));
+
         return userInfo;
     }
 

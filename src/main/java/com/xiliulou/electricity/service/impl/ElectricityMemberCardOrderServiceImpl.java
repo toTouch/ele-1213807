@@ -70,7 +70,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", uid);
             return R.failMsg("未找到用户的第三方授权信息!");
         }
-        UserInfo userInfo = userInfoService.selectUsersById(uid);
+        UserInfo userInfo = userInfoService.selectUserByUid(uid);
         if (ObjectUtil.isNull(userInfo)) {
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USER_INFO. UID:{}", uid);
             return R.failMsg("未找到用户信息!");

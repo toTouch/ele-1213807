@@ -125,9 +125,10 @@ public class ElectricityTradeOrderServiceImpl extends
         } else {
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + weiXinPayNotify.getOutTradeNo());
         }
-        UserInfo userInfo = userInfoService.selectUsersById(electricityMemberCardOrder.getUid());
+        UserInfo userInfo = userInfoService.selectUserByUid(electricityMemberCardOrder.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", electricityMemberCardOrder.getUid(), weiXinPayNotify.getOutTradeNo());
+            return Pair.of(false, "未找到用户信息!");
         }
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setId(userInfo.getId());
@@ -137,6 +138,7 @@ public class ElectricityTradeOrderServiceImpl extends
         userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
         userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        log.info("NOTIFY info USERINFO:{}", userInfoUpdate);
         userInfoService.updateById(userInfoUpdate);
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
         electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());

@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.jpay.ext.kit.HttpKit;
 import com.jpay.ext.kit.PaymentKit;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
@@ -72,6 +74,16 @@ public class JsonOuterPayNotifyController {
 
         }
 
+    }
+
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+
+    @GetMapping("outer/user/battery")
+    public R getSelfBattery() {
+        Long uid = 13L;
+
+        return electricityBatteryService.getSelfBattery(uid);
     }
 
 
