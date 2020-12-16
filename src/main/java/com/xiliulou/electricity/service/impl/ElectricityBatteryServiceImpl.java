@@ -51,6 +51,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return R.failMsg("未找到店铺!");
             }
         }
+        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
 
