@@ -26,4 +26,31 @@
 
     </select>
 
+
+    <select id="getMemberCardOrderPage" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        SELECT * FROM
+        t_electricity_member_card_order
+        WHERE uid =#{uid}
+        and status =1
+        <if test="startTime != null">
+            and create_time BETWEEN #{startTime} and #{endTime}
+        </if>
+        order by create_time desc
+        limit #{offset},#{size}
+
+    </select>
+
+    <select id="getMemberCardOrderCount" resultType="java.lang.Long">
+
+        SELECT count(1)
+        FROM t_electricity_member_card_order
+        WHERE uid =#{uid}
+        and status =1
+        <if test="startTime != null">
+            and create_time BETWEEN #{startTime} and #{endTime}
+        </if>
+
+
+    </select>
+
 </mapper>
