@@ -71,7 +71,6 @@ public interface PermissionResourceService {
 
 	Pair<Boolean, Object> bindPermissionToRole(Long roleId, List<Long> pid);
 
-	Pair<Boolean, Object> unBindPermission(Long perId, Long rolePerId);
 
 	Pair<Boolean, Object> getList();
 

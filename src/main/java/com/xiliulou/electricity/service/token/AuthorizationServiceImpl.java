@@ -56,6 +56,10 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 			List<PermissionResource> permissionResources = permissionResourceService.queryPermissionsByRole(roleId);
 			if (DataUtil.collectionIsUsable(permissionResources)) {
 				for (PermissionResource p : permissionResources) {
+					//页面不需要校验
+					if (p.getType().equals(PermissionResource.TYPE_PAGE)) {
+						continue;
+					}
 					GrantedAuthority t = new UrlGrantedAuthority(p.getMethod(), p.getUri());
 					grantedAuthorities.add(t);
 				}

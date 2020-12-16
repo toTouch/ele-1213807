@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -23,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -34,7 +32,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -167,6 +164,10 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
+		if (isIllegalMethod(permissionResource.getMethod())) {
+			return Pair.of(false, "方法不合法！");
+		}
+
 		permissionResource.setCreateTime(System.currentTimeMillis());
 		permissionResource.setUpdateTime(System.currentTimeMillis());
 		permissionResource.setDelFlag(PermissionResource.DEL_NORMAL);
@@ -174,6 +175,20 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		PermissionResource insert = insert(permissionResource);
 
 		return Objects.isNull(insert.getId()) ? Pair.of(false, "保存失败") : Pair.of(true, "保存成功");
+	}
+
+	private boolean isIllegalMethod(String method) {
+		switch (method.toUpperCase()) {
+			case "GET":
+				return false;
+			case "DELETE":
+				return false;
+			case "PUT":
+				return false;
+			case "POST":
+				return false;
+		}
+		return true;
 	}
 
 	@Override
@@ -184,12 +199,16 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		BeanUtils.copyProperties(permissionResourceQuery, permissionResource);
 
 		//检查父元素是否存在
-		if (Objects.nonNull(permissionResource.getParent()) &&  permissionResource.getParent() != 0) {
+		if (Objects.nonNull(permissionResource.getParent()) && permissionResource.getParent() != 0) {
 			PermissionResource parentResource = queryByIdFromCache(permissionResource.getParent());
 			if (Objects.isNull(parentResource)) {
 				log.error("PERMISSION ERROR! permission no parent!,uid={},parentId={}", uid, permissionResource.getParent());
 				return Pair.of(false, "父元素不存在");
 			}
+		}
+
+		if (Objects.nonNull(permissionResource.getMethod()) && isIllegalMethod(permissionResource.getMethod())) {
+			return Pair.of(false, "方法不合法！");
 		}
 
 		permissionResource.setUpdateTime(System.currentTimeMillis());
@@ -226,43 +245,25 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return Pair.of(false, "权限查询不到！");
 		}
 
+		HashSet<Long> result = Sets.newHashSet();
+
 		permissionResources.parallelStream().forEach(e -> {
 			RolePermission rolePermission = RolePermission.builder()
 					.pId(e.getId())
 					.roleId(roleId)
 					.build();
 			rolePermissionService.insert(rolePermission);
+			result.add(e.getId());
 		});
 
 		//找缓存,过滤重复元素
-		HashSet<Long> result = Sets.newHashSet();
-		result.addAll(pids);
-		redisService.set(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + role, JsonUtil.toJson(result));
+		redisService.set(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + role.getId(), JsonUtil.toJson(result));
 
 		return Pair.of(true, null);
 	}
 
 	private List<PermissionResource> queryListByIds(List<Long> pids) {
 		return this.permissionResourceMapper.queryListByIds(pids);
-	}
-
-	@Override
-	@Klock(name = "r_p_update", keys = {"#rolePerId", "#permissionId"}, waitTime = 5, customLockTimeoutStrategy = "unBindPermissionStrategy")
-	public Pair<Boolean, Object> unBindPermission(Long rolePerId, Long permissionId) {
-
-		if (!rolePermissionService.deleteByRoleIdAndPermissionId(rolePerId, permissionId)) {
-			return Pair.of(false, "解绑失败");
-		}
-
-		//找缓存
-		String s = redisService.get(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + rolePerId);
-		if (StrUtil.isNotEmpty(s)) {
-			List<Long> permissions = JsonUtil.fromJsonArray(s, Long.class);
-			permissions.remove(permissionId);
-			redisService.set(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + rolePerId, JsonUtil.toJson(permissions));
-		}
-
-		return Pair.of(true, null);
 	}
 
 	@Override
@@ -282,8 +283,8 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	public Pair<Boolean, Object> getPermissionsByRole(Long rid) {
 
 		List<PermissionResource> permissionResources = queryPermissionsByRole(rid);
-		if(DataUtil.collectionIsUsable(permissionResources)) {
-			return Pair.of(true,permissionResources.stream().map(PermissionResource::getId).collect(Collectors.toList()));
+		if (DataUtil.collectionIsUsable(permissionResources)) {
+			return Pair.of(true, permissionResources.stream().map(PermissionResource::getId).collect(Collectors.toList()));
 		}
 		return Pair.of(true, Collections.emptyList());
 	}
