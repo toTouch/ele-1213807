@@ -462,7 +462,7 @@ public class ElectricityCabinetOperateQueueHandler {
                     .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .oId(electricityCabinetOrder.getId())
                     .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
-                    .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CLOSE_DOOR)
+                    .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CLOSE_DOOR)
                     .uid(electricityCabinetOrder.getElectricityCabinetId())
                     .build();
             electricityCabinetOrderOperHistoryService.insert(history);
