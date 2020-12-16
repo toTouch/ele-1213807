@@ -13,7 +13,6 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER"/>
     </resultMap>
     <update id="unBind">
@@ -29,7 +28,7 @@
         LEFT JOIN t_store ts on ts.id = tel.shop_id
         LEFT JOIN t_electricity_battery_model tebm on tebm.id = tel.model_id
         LEFT JOIN t_electricity_cabinet tec on tec.id =tel.cabinet_id
-        LEFT JOIN t_user_info tui on tui.id = tel.uid
+        LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.serial_number
         where tel.del_flag = 0
         <if test="query.shopId != null">
             and tel.shop_id =#{query.shopId}
@@ -70,10 +69,11 @@
         </if>
     </select>
     <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-        SELECT ebm.name  as battery_model_name , ebm.capacity as model_capacity ,  ebm.voltage as model_voltage ,eb.*
+         SELECT ebm.name  as battery_model_name , ebm.capacity as model_capacity ,  ebm.voltage as model_voltage ,eb.*
         FROM t_electricity_battery  eb
         LEFT JOIN t_electricity_battery_model ebm on eb.model_id = ebm.id
-        WHERE eb.uid = #{uid};
+				LEFT JOIN t_user_info   tui  on  tui.now_electricity_battery_sn = eb.serial_number
+        WHERE tui.uid = #{uid};
     </select>
 
 </mapper>
