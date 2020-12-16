@@ -76,7 +76,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserOauthBind insert(UserOauthBind userOauthBind) {
-        this.userOauthBindMapper.insert(userOauthBind);
+        this.userOauthBindMapper.insertOne(userOauthBind);
         return userOauthBind;
     }
 
