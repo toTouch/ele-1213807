@@ -124,6 +124,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
             userInfo.setBatteryAreaId(store.getAreaId());
+            rentBatteryOrder.setBatteryStoreId(store.getId());
             rentBatteryOrder.setBatteryStoreName(store.getName());
         }
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
@@ -136,7 +137,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setName(userInfo.getName());
             rentBatteryOrder.setPhone(userInfo.getPhone());
             rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
-            rentBatteryOrder.setBatteryStoreId(userInfo.getBatteryStoreId());
             rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
@@ -161,6 +161,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.isNull(store)) {
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
+            rentCarOrder.setCarStoreId(store.getId());
             rentCarOrder.setCarStoreName(store.getName());
         }
         UserInfo userInfo = new UserInfo();
@@ -173,7 +174,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentCarOrder.setName(userInfo.getName());
             rentCarOrder.setPhone(userInfo.getPhone());
             rentCarOrder.setIdNumber(userInfo.getIdNumber());
-            rentCarOrder.setCarStoreId(userInfo.getCarStoreId());
             rentCarOrder.setCarSn(userInfo.getCarSn());
             rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
             rentCarOrder.setNumberPlate(userInfo.getNumberPlate());
@@ -264,12 +264,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
-            rentBatteryOrder.setName(userInfo.getName());
-            rentBatteryOrder.setPhone(userInfo.getPhone());
-            rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
-            rentBatteryOrder.setBatteryStoreId(userInfo.getBatteryStoreId());
-            rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
-            rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
+            rentBatteryOrder.setName(oldUserInfo.getName());
+            rentBatteryOrder.setPhone(oldUserInfo.getPhone());
+            rentBatteryOrder.setIdNumber(oldUserInfo.getIdNumber());
+            rentBatteryOrder.setBatteryStoreId(store.getId());
+            rentBatteryOrder.setBatteryStoreName(store.getName());
+            rentBatteryOrder.setElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
+            rentBatteryOrder.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
@@ -305,14 +306,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //添加租电池记录
             RentCarOrder rentCarOrder = new RentCarOrder();
             rentCarOrder.setUid(oldUserInfo.getUid());
-            rentCarOrder.setName(userInfo.getName());
-            rentCarOrder.setPhone(userInfo.getPhone());
-            rentCarOrder.setIdNumber(userInfo.getIdNumber());
-            rentCarOrder.setCarStoreId(userInfo.getCarStoreId());
+            rentCarOrder.setName(oldUserInfo.getName());
+            rentCarOrder.setPhone(oldUserInfo.getPhone());
+            rentCarOrder.setIdNumber(oldUserInfo.getIdNumber());
+            rentCarOrder.setCarStoreId(store.getId());
             rentCarOrder.setCarStoreName(store.getName());
-            rentCarOrder.setCarSn(userInfo.getCarSn());
-            rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
-            rentCarOrder.setNumberPlate(userInfo.getNumberPlate());
+            rentCarOrder.setCarSn(oldUserInfo.getCarSn());
+            rentCarOrder.setCarDeposit(oldUserInfo.getCarDeposit());
+            rentCarOrder.setNumberPlate(oldUserInfo.getNumberPlate());
             rentCarOrder.setCreateTime(System.currentTimeMillis());
             rentCarOrder.setStatus(RentCarOrder.NO_USE_STATUS);
             rentCarOrderService.insert(rentCarOrder);
