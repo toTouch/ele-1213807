@@ -27,7 +27,6 @@ public class PermissionResourceQuery {
 
 	@NotEmpty(message = "uri不能为空", groups = CreateGroup.class)
 	private String uri;
-
 	@NotEmpty(message = "方法不能为空", groups = CreateGroup.class)
 	private String method;
 
