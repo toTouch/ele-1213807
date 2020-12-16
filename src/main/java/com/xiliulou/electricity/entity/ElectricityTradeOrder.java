@@ -2,6 +2,7 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -13,6 +14,7 @@ import java.math.BigDecimal;
  * @create: 2020-12-03 10:17
  **/
 @Data
+@TableName("t_electricity_trade_order")
 public class ElectricityTradeOrder {
 
     @TableId(value = "id", type = IdType.AUTO)
