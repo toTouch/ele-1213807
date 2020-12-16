@@ -111,6 +111,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
+        if(Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())){
+            return R.fail("ELECTRICITY.0030", "用户已绑定电池，请解绑后再绑定");
+        }
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
@@ -154,6 +157,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo oldUserInfo = queryByIdFromDB(userInfoCarAddAndUpdate.getId());
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        if(Objects.nonNull(oldUserInfo.getCarSn())){
+            return R.fail("ELECTRICITY.0031", "用户已绑定车辆，请解绑后再绑定");
         }
         RentCarOrder rentCarOrder = new RentCarOrder();
         if (Objects.nonNull(userInfoCarAddAndUpdate.getCarStoreId())) {
@@ -239,6 +245,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
+        if(Objects.isNull(oldUserInfo.getNowElectricityBatterySn())){
+            return R.fail("ELECTRICITY.0029", "用户未绑定电池，不能解绑");
+        }
         Store store = storeService.queryByIdFromCache(oldUserInfo.getBatteryStoreId());
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
@@ -285,6 +294,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo oldUserInfo = queryByIdFromDB(id);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        if(Objects.isNull(oldUserInfo.getCarSn())){
+            return R.fail("ELECTRICITY.0032", "用户未绑定车辆，不能解绑");
         }
         Store store = storeService.queryByIdFromCache(oldUserInfo.getCarStoreId());
         if (Objects.isNull(store)) {
