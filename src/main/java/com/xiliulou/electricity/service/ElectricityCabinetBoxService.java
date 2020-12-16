@@ -64,7 +64,7 @@ public interface ElectricityCabinetBoxService {
 
     List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id);
 
-    List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id);
+    List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id,String cellNo);
 
     void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);
 

@@ -361,7 +361,7 @@ public class ElectricityCabinetOperateQueueHandler {
             userInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfo);
             //分配新仓门
-            String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId());
+            String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(),electricityCabinetOrder.getOldCellNo().toString());
             try {
                 //修改新仓门状态
                 ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
@@ -515,8 +515,8 @@ public class ElectricityCabinetOperateQueueHandler {
         return false;
     }
 
-    public String findNewUsableCellNo(Integer id) {
-        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id);
+    public String findNewUsableCellNo(Integer id,String cellNo) {
+        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id,cellNo);
         if (!DataUtil.collectionIsUsable(usableBoxes)) {
             return null;
         }

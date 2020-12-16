@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
@@ -108,7 +109,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchDeleteBoxByElectricityCabinetId(Integer id) {
-        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id,System.currentTimeMillis());
+        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id, System.currentTimeMillis());
     }
 
     @Override
@@ -117,8 +118,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
             electricityCabinetBoxVOList.parallelStream().forEach(e -> {
-                ElectricityBattery electricityBattery=electricityBatteryService.queryById(e.getElectricityBatteryId());
-                if(Objects.nonNull(electricityBattery)) {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
+                if (Objects.nonNull(electricityBattery)) {
                     e.setSerialNumber(electricityBattery.getSerialNumber());
                     e.setCapacity(electricityBattery.getCapacity());
                 }
@@ -142,27 +143,28 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
     }
 
     @Override
     public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
     }
 
     @Override
-    public List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id) {
-        List<ElectricityCabinetBox> electricityCabinetBoxList=electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
-        List<ElectricityCabinetBox> electricityCabinetBoxes=new ArrayList<>();
+    public List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id, String cellNo) {
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
+                .ne(ElectricityCabinetBox::getCellNo, cellNo));
+        List<ElectricityCabinetBox> electricityCabinetBoxes = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
             electricityCabinetBoxList.parallelStream().forEach(e -> {
-                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(id);
-                if(Objects.nonNull(electricityCabinet)){
-                    ElectricityBattery electricityBattery=electricityBatteryService.queryById(e.getElectricityBatteryId());
-                    if(Objects.nonNull(electricityBattery)){
-                        if(electricityBattery.getCapacity()>=electricityCabinet.getFullyCharged()){
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+                if (Objects.nonNull(electricityCabinet)) {
+                    ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
+                    if (Objects.nonNull(electricityBattery)) {
+                        if (electricityBattery.getCapacity() >= electricityCabinet.getFullyCharged()) {
                             electricityCabinetBoxes.add(e);
                         }
                     }
@@ -179,21 +181,21 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
 
     @Override
-    public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo) {
+    public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId, String cellNo) {
         return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetId)
-                .eq(ElectricityCabinetBox::getCellNo,cellNo).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+                .eq(ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
     }
 
     @Override
     public Integer queryOrderCountByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId,id)
-                .eq(ElectricityCabinetBox::getStatus,ElectricityCabinetBox.STATUS_ORDER_OCCUPY).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ORDER_OCCUPY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
 
     }
 
     @Override
     public Integer queryOpenCountByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId,id)
-                .eq(ElectricityCabinetBox::getBoxStatus,ElectricityCabinetBox.STATUS_OPEN_DOOR).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+                .eq(ElectricityCabinetBox::getBoxStatus, ElectricityCabinetBox.STATUS_OPEN_DOOR).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
     }
 }
