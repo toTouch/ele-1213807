@@ -68,7 +68,7 @@ public interface ElectricityCabinetBoxService {
 
     void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);
 
-    ElectricityCabinetBox queryByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
+    ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo);
 
     Integer queryOrderCountByElectricityCabinetId(Integer id);
 

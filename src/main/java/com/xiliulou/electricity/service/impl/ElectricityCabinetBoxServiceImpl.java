@@ -179,9 +179,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
 
     @Override
-    public ElectricityCabinetBox queryByCellNo(ElectricityCabinetBox electricityCabinetNewBox) {
-        return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetNewBox.getElectricityCabinetId())
-                .eq(ElectricityCabinetBox::getCellNo,electricityCabinetNewBox.getCellNo()).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
+    public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo) {
+        return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetId)
+                .eq(ElectricityCabinetBox::getCellNo,cellNo).eq(ElectricityCabinetBox::getDelFlag,ElectricityCabinetBox.DEL_NORMAL));
     }
 
     @Override

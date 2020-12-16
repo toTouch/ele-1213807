@@ -370,7 +370,7 @@ public class ElectricityCabinetOperateQueueHandler {
                 electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ORDER_OCCUPY);
                 electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
                 //根据换电柜id和仓门查出电池 暂时写死
-                ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetNewBox);
+                ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetNewBox.getElectricityCabinetId(),electricityCabinetNewBox.getCellNo());
                 if (Objects.isNull(electricityCabinetBox)) {
                     return;
                 }
