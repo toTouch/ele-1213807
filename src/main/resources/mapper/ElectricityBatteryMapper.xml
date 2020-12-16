@@ -15,9 +15,6 @@
         <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
         <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER"/>
     </resultMap>
-    <update id="unBind">
-        update t_electricity_battery set  status=#{status},update_time=#{updateTime},uid=#{uid} where id=#{id}
-    </update>
 
 
     <!--电池分页-->
@@ -60,7 +57,7 @@
         select teb.id as id,teb.shop_id as shop_id,teb.agent_id as agentId,teb.serial_number as
         serial_number,teb.model_id as model_id,
         teb.capacity as capacity,teb.status as status,teb.create_time as create_time,teb.update_time as update_time,
-        teb.del_flag as del_flag,teb.uid as uid,teb.cabinet_id as cabinet_id
+        teb.del_flag as del_flag,teb.cabinet_id as cabinet_id
         from t_electricity_battery as teb
         left join electricity.t_store as ts on teb.shop_id=ts.id
         where teb.del_flag=0 and ts.del_flag=0

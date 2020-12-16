@@ -167,7 +167,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public void unBind(ElectricityBattery electricityBattery) {
-        electricitybatterymapper.unBind(electricityBattery);
+    public ElectricityBattery queryByOrderSn(String oldElectricityBatterySn) {
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, oldElectricityBatterySn));
     }
+
 }

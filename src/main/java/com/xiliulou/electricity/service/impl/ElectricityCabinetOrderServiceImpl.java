@@ -360,7 +360,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (successTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }
-        return BigDecimal.valueOf(successTotal).divide(BigDecimal.valueOf(countTotal)).multiply(BigDecimal.valueOf(100));
+        return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100).divide(BigDecimal.valueOf(countTotal),BigDecimal.ROUND_HALF_EVEN));
     }
 
     @Override
@@ -506,7 +506,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder) {
         //修改仓门为有电池
         ElectricityCabinetBox electricityCabinetOldBox = new ElectricityCabinetBox();
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByOrderSn(electricityCabinetOrder.getOldElectricityBatterySn());
         if (Objects.nonNull(oldElectricityBattery)) {
             electricityCabinetOldBox.setElectricityBatteryId(oldElectricityBattery.getId());
         }

@@ -346,7 +346,7 @@ public class ElectricityCabinetOperateQueueHandler {
         if (operResult) {
             //修改仓门为有电池
             ElectricityCabinetBox electricityCabinetOldBox = new ElectricityCabinetBox();
-            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
+            ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByOrderSn(electricityCabinetOrder.getOldElectricityBatterySn());
             if (Objects.nonNull(oldElectricityBattery)) {
                 electricityCabinetOldBox.setElectricityBatteryId(oldElectricityBattery.getId());
             }

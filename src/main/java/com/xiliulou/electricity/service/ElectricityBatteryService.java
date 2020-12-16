@@ -36,5 +36,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByUserSn(String nowElectricityBatterySn);
 
-    void unBind(ElectricityBattery electricityBattery);
+    ElectricityBattery queryByOrderSn(String oldElectricityBatterySn);
 }
