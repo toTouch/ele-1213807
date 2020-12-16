@@ -157,8 +157,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
      */
     @Override
     public UserOauthBind queryUserOauthBySysId(Long uid) {
-        userOauthBindMapper.queryUserOauthBySysId(uid);
 
-        return null;
+
+        return   userOauthBindMapper.queryUserOauthBySysId(uid);
     }
 }

@@ -39,7 +39,8 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.UserInfoVO">
         select
-        id, uid, name, phone, id_number, service_status, member_card_expire_time, remaining_number,card_type,battery_store_id,
+        id, uid, name, phone, id_number, service_status, member_card_expire_time,
+        remaining_number,card_type,battery_store_id,
         battery_area_id,
         init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, car_store_id, car_sn, number_plate,
         car_deposit, usable_status, del_flag, create_time, update_time
@@ -212,6 +213,12 @@
     </update>
     <update id="minCount">
          update electricity.t_user_info set remaining_number=remaining_number-1,update_time = #{updateTime} where del_flag=0 and  remaining_number>0
+    </update>
+    <update id="updateByUid">
+        update electricity.t_user_info set
+            now_electricity_battery_sn = #{nowElectricityBatterySn},
+            update_time = #{updateTime}
+        where uid = #{uid}
     </update>
 
 </mapper>
