@@ -720,7 +720,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 for (ElectricityBattery electricityBattery : electricityBatteryList) {
                     if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
                         cabinetCount = cabinetCount + 1;
-                        userCount = userCount + 1;
                     }
                     if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
                         userCount = userCount + 1;
