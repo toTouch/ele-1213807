@@ -111,7 +111,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
@@ -243,7 +243,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUnBindSn(oldUserInfo.getNowElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
