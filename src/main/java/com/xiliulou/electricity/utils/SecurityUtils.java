@@ -12,23 +12,30 @@ import java.util.Objects;
  * @Description:
  */
 public class SecurityUtils {
-	public static Long getUid() {
-		TokenUser userInfo = getUserInfo();
-		if(Objects.isNull(userInfo)) {
-			return null;
-		}
-		return userInfo.getUid();
-	}
+    public static Long getUid() {
+        TokenUser userInfo = getUserInfo();
+        if (Objects.isNull(userInfo)) {
+            return null;
+        }
+        return userInfo.getUid();
+    }
 
-	public static TokenUser getUserInfo() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-		if (null == authentication) {
-			return null;
-		}
-		TokenUser user = (TokenUser) authentication.getPrincipal();
-		if (Objects.isNull(user)) {
-			return null;
-		}
-		return user;
-	}
+    public static TokenUser getUserInfo() {
+        Authentication authentication = null;
+        TokenUser user = null;
+        try {
+            authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (null == authentication) {
+                return null;
+            }
+            user = (TokenUser) authentication.getPrincipal();
+        } catch (Exception e) {
+
+        }
+        if (Objects.isNull(user)) {
+            return null;
+        }
+        return user;
+    }
 }
