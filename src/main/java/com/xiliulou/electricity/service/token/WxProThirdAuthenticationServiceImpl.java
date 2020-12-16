@@ -195,6 +195,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 							.thirdId(result.getOpenid())
 							.source(UserOauthBind.SOURCE_WX_PRO)
 							.status(UserOauthBind.STATUS_BIND)
+							.accessToken("")
+							.refreshToken("")
+							.thirdNick("")
 							.build();
 					userOauthBindService.insert(userOauthBind);
 				}
