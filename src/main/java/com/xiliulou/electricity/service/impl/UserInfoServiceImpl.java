@@ -142,12 +142,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.IS_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
-           /* //电池绑定用户
-            ElectricityBattery electricityBattery = new ElectricityBattery();
-            electricityBattery.setId(oldElectricityBattery.getId());
-            electricityBattery.setUid(userInfo.getUid());
-            electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-            electricityBatteryService.update(electricityBattery);*/
             return null;
         });
         return R.ok();
@@ -279,13 +273,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
-          /*  //电池解绑用户
-            ElectricityBattery electricityBattery = new ElectricityBattery();
-            electricityBattery.setId(oldElectricityBattery.getId());
-            electricityBattery.setUid(null);
-            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-            electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.unBind(electricityBattery);*/
             return null;
         });
         return R.ok();
@@ -408,15 +395,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public void deleteUserInfo(UserInfo oldUserInfo) {
         userInfoMapper.deleteById(oldUserInfo.getId());
-        /*ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
-        if (Objects.nonNull(oldElectricityBattery)) {
-            ElectricityBattery electricityBattery = new ElectricityBattery();
-            electricityBattery.setId(oldUserInfo.getId());
-            electricityBattery.setUid(null);
-            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-            electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.unBind(electricityBattery);
-        }*/
     }
 
     @Override
