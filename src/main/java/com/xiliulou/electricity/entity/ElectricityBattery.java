@@ -61,7 +61,7 @@ public class ElectricityBattery {
     /**
      * 用户id
      */
-    private Long uid;
+//    private Long uid;
 
     private Integer cabinetId;
 
