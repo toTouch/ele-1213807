@@ -408,7 +408,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             }
                             ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                             if (Objects.nonNull(electricityBatteryModel)) {
-                                set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
+                                set.add(electricityBatteryModel.getVoltage() + "V" + " " + electricityBatteryModel.getCapacity() + "M");
                             }
                         }
                     }
@@ -530,7 +530,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                     ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                     if (Objects.nonNull(electricityBatteryModel)) {
-                        set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
+                        set.add(electricityBatteryModel.getVoltage() + "V" + " " + electricityBatteryModel.getCapacity() + "M");
                     }
                 }
             }
@@ -652,14 +652,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
         BigDecimal beforeMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
         BigDecimal totalMoney = electricityMemberCardOrderService.homeOne(0L, now);
-        if(Objects.isNull(nowMoney)){
-            nowMoney=BigDecimal.valueOf(0);
+        if (Objects.isNull(nowMoney)) {
+            nowMoney = BigDecimal.valueOf(0);
         }
-        if(Objects.isNull(beforeMoney)){
-            beforeMoney=BigDecimal.valueOf(0);
+        if (Objects.isNull(beforeMoney)) {
+            beforeMoney = BigDecimal.valueOf(0);
         }
-        if(Objects.isNull(totalMoney)){
-            totalMoney=BigDecimal.valueOf(0);
+        if (Objects.isNull(totalMoney)) {
+            totalMoney = BigDecimal.valueOf(0);
         }
         HashMap<String, String> moneyInfo = new HashMap<>();
         moneyInfo.put("nowMoney", nowMoney.toString());
@@ -696,13 +696,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         storeInfo.put("carCount", carCount.toString());
         homeTwo.put("storeInfo", storeInfo);
         //换电柜
-        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(Objects.nonNull(areaId),ElectricityCabinet::getAreaId, areaId));
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(Objects.nonNull(areaId), ElectricityCabinet::getAreaId, areaId));
         Integer total = electricityCabinetList.size();
         Integer onlineCount = 0;
         Integer offlineCount = 0;
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
                 //TODO 查询在线离线
+                if (Objects.equals(electricityCabinet.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
+                    onlineCount++;
+                } else {
+                    offlineCount++;
+                }
             }
         }
         HashMap<String, String> electricityCabinetInfo = new HashMap<>();
@@ -805,15 +810,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R queryByDevice(String productKey, String deviceName,String deviceSecret) {
+    public R queryByDevice(String productKey, String deviceName, String deviceSecret) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
-                .eq(ElectricityCabinet::getProductKey,productKey).eq(ElectricityCabinet::getDeviceName,deviceName)
-                .eq(ElectricityCabinet::getDeviceSecret,deviceSecret).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
+                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName)
+                .eq(ElectricityCabinet::getDeviceSecret, deviceSecret).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
@@ -840,12 +845,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
         //判断改柜子是否有未完成的订单
-        Integer orderCount=electricityCabinetBoxService.queryOrderCountByElectricityCabinetId(electricityCabinet.getId());
-        if(orderCount>0){
+        Integer orderCount = electricityCabinetBoxService.queryOrderCountByElectricityCabinetId(electricityCabinet.getId());
+        if (orderCount > 0) {
             return R.fail("ELECTRICITY.0027", "换电柜有未结束订单");
         }
-        Integer openCount=electricityCabinetBoxService.queryOpenCountByElectricityCabinetId(electricityCabinet.getId());
-        if(openCount>0){
+        Integer openCount = electricityCabinetBoxService.queryOpenCountByElectricityCabinetId(electricityCabinet.getId());
+        if (openCount > 0) {
             return R.fail("ELECTRICITY.0028", "换电柜有仓门未关闭");
         }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
@@ -866,7 +871,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     }
                     ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
                     if (Objects.nonNull(electricityBatteryModel)) {
-                        set.add(electricityBatteryModel.getVoltage() + "V" +" "+ electricityBatteryModel.getCapacity() + "M");
+                        set.add(electricityBatteryModel.getVoltage() + "V" + " " + electricityBatteryModel.getCapacity() + "M");
                     }
                 }
             }

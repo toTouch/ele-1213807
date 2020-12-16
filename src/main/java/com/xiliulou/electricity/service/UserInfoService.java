@@ -50,7 +50,6 @@ public interface UserInfoService extends IService<UserInfo> {
      */
     Integer update(UserInfo userInfo);
 
-
     R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
     R bindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
