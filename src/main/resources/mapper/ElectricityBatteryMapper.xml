@@ -60,7 +60,7 @@
         teb.del_flag as del_flag,teb.cabinet_id as cabinet_id
         from t_electricity_battery as teb
         left join electricity.t_store as ts on teb.shop_id=ts.id
-        where teb.del_flag=0 and ts.del_flag=0
+        where teb.del_flag=0
         <if test="areaId != null">
             and ts.area_id = #{areaId}
         </if>
