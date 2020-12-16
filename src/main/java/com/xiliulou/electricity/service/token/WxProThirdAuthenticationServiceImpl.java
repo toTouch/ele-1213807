@@ -190,6 +190,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 							.thirdId(result.getOpenid())
 							.source(UserOauthBind.SOURCE_WX_PRO)
 							.status(UserOauthBind.STATUS_BIND)
+							.accessToken("")
+							.refreshToken("")
+							.thirdNick("")
 							.build();
 					userOauthBindService.insert(userOauthBind);
 				}
@@ -223,6 +226,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.lang(MessageUtils.LOCALE_ZH_CN)
 				.userType(User.TYPE_USER_NORMAL)
 				.name("")
+				.salt("")
+				.avatar("")
 				.loginPwd(customPasswordEncoder.encode("1234#56!^1mjh"))
 				.delFlag(User.DEL_NORMAL)
 				.build();
@@ -232,6 +237,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.updateTime(System.currentTimeMillis())
 				.phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
 				.uid(insert.getUid())
+				.accessToken("")
+				.refreshToken("")
+				.thirdNick("")
 				.thirdId(result.getOpenid())
 				.source(UserOauthBind.SOURCE_WX_PRO)
 				.status(UserOauthBind.STATUS_BIND)

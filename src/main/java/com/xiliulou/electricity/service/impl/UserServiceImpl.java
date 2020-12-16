@@ -175,6 +175,7 @@ public class UserServiceImpl implements UserService {
 
         User user = User.builder()
                 .avatar("")
+                .salt("")
                 .createTime(System.currentTimeMillis())
                 .delFlag(User.DEL_NORMAL)
                 .lockFlag(User.USER_UN_LOCK)
