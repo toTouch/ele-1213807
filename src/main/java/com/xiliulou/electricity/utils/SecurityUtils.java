@@ -21,7 +21,12 @@ public class SecurityUtils {
 	}
 
 	public static TokenUser getUserInfo() {
-		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		Authentication authentication = null;
+		try {
+			authentication = SecurityContextHolder.getContext().getAuthentication();
+		}catch (Exception e) {
+
+		}
 		if (null == authentication) {
 			return null;
 		}
