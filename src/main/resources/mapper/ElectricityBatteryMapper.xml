@@ -70,7 +70,7 @@
         </if>
     </select>
     <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-        SELECT ebm.name  as battery_model_name , eb.*
+        SELECT ebm.name  as battery_model_name , ebm.capacity as model_capacity ,eb.*
         FROM t_electricity_battery  eb
         LEFT JOIN t_electricity_battery_model ebm on eb.model_id = ebm.id
         WHERE eb.uid = #{uid};
