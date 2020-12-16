@@ -24,7 +24,7 @@ public class ElectricityCabinetOrderVO {
     /**
     * 换电人id
     */
-    private Integer uid;
+    private Long uid;
     /**
     * 支付金额
     */
