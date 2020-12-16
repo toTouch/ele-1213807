@@ -32,7 +32,7 @@ public interface UserInfoService extends IService<UserInfo> {
      * @param id 主键
      * @return 实例对象
      */
-    UserInfo selectUsersById(Long id);
+    UserInfo selectUserByUid(Long id);
 
     /**
      * 新增数据
@@ -49,7 +49,6 @@ public interface UserInfoService extends IService<UserInfo> {
      * @return 实例对象
      */
     Integer update(UserInfo userInfo);
-
 
     R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 

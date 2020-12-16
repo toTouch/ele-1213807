@@ -28,7 +28,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     Integer queryCountByShopId(Integer id);
 
-    ElectricityBattery queryBySn(String initElectricityBatterySn);
+    ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
     List<ElectricityBattery> homeTwo(Integer areaId);
 
@@ -36,5 +36,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByUserSn(String nowElectricityBatterySn);
 
-    void unBind(ElectricityBattery electricityBattery);
+    ElectricityBattery queryByOrderSn(String oldElectricityBatterySn);
+
+    ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn);
 }

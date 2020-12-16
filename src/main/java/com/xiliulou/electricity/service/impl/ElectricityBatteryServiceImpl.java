@@ -51,6 +51,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 return R.failMsg("未找到店铺!");
             }
         }
+        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
 
@@ -138,7 +139,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public ElectricityBattery queryBySn(String initElectricityBatterySn) {
+    public ElectricityBattery queryByBindSn(String initElectricityBatterySn) {
         return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, initElectricityBatterySn)
                 .eq(ElectricityBattery::getStatus, ElectricityBattery.STOCK_STATUS));
     }
@@ -166,7 +167,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public void unBind(ElectricityBattery electricityBattery) {
-        electricitybatterymapper.unBind(electricityBattery);
+    public ElectricityBattery queryByOrderSn(String oldElectricityBatterySn) {
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, oldElectricityBatterySn));
     }
+
+    @Override
+    public ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn) {
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, nowElectricityBatterySn)
+                .eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS));
+    }
+
 }

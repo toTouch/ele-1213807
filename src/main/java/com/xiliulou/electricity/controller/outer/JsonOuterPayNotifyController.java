@@ -4,7 +4,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.jpay.ext.kit.HttpKit;
 import com.jpay.ext.kit.PaymentKit;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
@@ -13,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +40,7 @@ public class JsonOuterPayNotifyController {
     @Autowired
     ElectricityTradeOrderService electricityTradeOrderService;
 
-    @GetMapping("outer/pay/notify/weixin")
+    @PostMapping("outer/pay/notify/weixin")
     public String WeiXinPayNotify(HttpServletRequest request) {
         String xmlMsg = HttpKit.readData(request);
         log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
@@ -71,6 +74,16 @@ public class JsonOuterPayNotifyController {
 
         }
 
+    }
+
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+
+    @GetMapping("outer/user/battery")
+    public R getSelfBattery() {
+        Long uid = 13L;
+
+        return electricityBatteryService.getSelfBattery(uid);
     }
 
 

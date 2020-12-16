@@ -13,12 +13,8 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
         <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER"/>
     </resultMap>
-    <update id="unBind">
-        update t_electricity_battery set  status=#{status},update_time=#{updateTime},uid=#{uid} where id=#{id}
-    </update>
 
 
     <!--电池分页-->
@@ -29,7 +25,7 @@
         LEFT JOIN t_store ts on ts.id = tel.shop_id
         LEFT JOIN t_electricity_battery_model tebm on tebm.id = tel.model_id
         LEFT JOIN t_electricity_cabinet tec on tec.id =tel.cabinet_id
-        LEFT JOIN t_user_info tui on tui.id = tel.uid
+        LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.serial_number
         where tel.del_flag = 0
         <if test="query.shopId != null">
             and tel.shop_id =#{query.shopId}
@@ -61,19 +57,20 @@
         select teb.id as id,teb.shop_id as shop_id,teb.agent_id as agentId,teb.serial_number as
         serial_number,teb.model_id as model_id,
         teb.capacity as capacity,teb.status as status,teb.create_time as create_time,teb.update_time as update_time,
-        teb.del_flag as del_flag,teb.uid as uid,teb.cabinet_id as cabinet_id
+        teb.del_flag as del_flag,teb.cabinet_id as cabinet_id
         from t_electricity_battery as teb
         left join electricity.t_store as ts on teb.shop_id=ts.id
-        where teb.del_flag=0 and ts.del_flag=0
+        where teb.del_flag=0
         <if test="areaId != null">
             and ts.area_id = #{areaId}
         </if>
     </select>
     <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-        SELECT ebm.name  as battery_model_name , eb.*
+         SELECT ebm.name  as battery_model_name , ebm.capacity as model_capacity ,  ebm.voltage as model_voltage ,eb.*
         FROM t_electricity_battery  eb
         LEFT JOIN t_electricity_battery_model ebm on eb.model_id = ebm.id
-        WHERE eb.uid = #{uid};
+				LEFT JOIN t_user_info   tui  on  tui.now_electricity_battery_sn = eb.serial_number
+        WHERE tui.uid = #{uid};
     </select>
 
 </mapper>

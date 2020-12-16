@@ -187,9 +187,11 @@
             <if test="cardType != null">
                 card_type = #{cardType},
             </if>
+            <if test="initElectricityBatterySn != null and initElectricityBatterySn != ''">
+                init_electricity_battery_sn = #{initElectricityBatterySn},
+            </if>
             battery_store_id = #{batteryStoreId},
             battery_area_id = #{batteryAreaId},
-            init_electricity_battery_sn = #{initElectricityBatterySn},
             now_electricity_battery_sn = #{nowElectricityBatterySn},
             battery_deposit = #{batteryDeposit},
             car_store_id = #{carStoreId},
