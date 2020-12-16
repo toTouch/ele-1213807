@@ -228,6 +228,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.lang(MessageUtils.LOCALE_ZH_CN)
 				.userType(User.TYPE_USER_NORMAL)
 				.name("")
+				.salt("")
+				.avatar("")
 				.loginPwd(customPasswordEncoder.encode("1234#56!^1mjh"))
 				.delFlag(User.DEL_NORMAL)
 				.build();
