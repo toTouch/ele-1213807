@@ -13,13 +13,14 @@ public interface ElectricityMemberCardOrderService {
 
 
     R createOrder(Long uid, Integer memberId, HttpServletRequest request);
-    R getMemberCardOrderPage(Long uid, Long offset, Long size);
+
+    R getMemberCardOrderPage(Long uid, Long offset, Long size, Long startTime, Long endTime);
 
     BigDecimal homeOne(Long first, Long now);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay);
 
-    R getMemberCardOrderCount(Long uid);
+    R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
     ElectricityMemberCardOrder getRecentOrder(Long uid);
 
