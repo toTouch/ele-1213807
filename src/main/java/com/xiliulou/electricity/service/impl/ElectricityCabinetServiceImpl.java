@@ -650,31 +650,31 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("userInfo", userInfo);
         //查收益
         BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
-        BigDecimal beforMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
+        BigDecimal beforeMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
         BigDecimal totalMoney = electricityMemberCardOrderService.homeOne(0L, now);
         if(Objects.isNull(nowMoney)){
             nowMoney=BigDecimal.valueOf(0);
         }
-        if(Objects.isNull(beforMoney)){
-            beforMoney=BigDecimal.valueOf(0);
+        if(Objects.isNull(beforeMoney)){
+            beforeMoney=BigDecimal.valueOf(0);
         }
         if(Objects.isNull(totalMoney)){
             totalMoney=BigDecimal.valueOf(0);
         }
         HashMap<String, String> moneyInfo = new HashMap<>();
         moneyInfo.put("nowMoney", nowMoney.toString());
-        moneyInfo.put("beforMoney", beforMoney.toString());
+        moneyInfo.put("beforMoney", beforeMoney.toString());
         moneyInfo.put("totalMoney", totalMoney.toString());
         homeOne.put("moneyInfo", moneyInfo);
         //换电
         Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now);
-        Integer beforCount = electricityCabinetOrderService.homeOneCount(firstBefor, end);
+        Integer beforeCount = electricityCabinetOrderService.homeOneCount(firstBefor, end);
         Integer count = electricityCabinetOrderService.homeOneCount(0L, now);
         //成功率
         BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now);
         HashMap<String, String> orderInfo = new HashMap<>();
         orderInfo.put("nowCount", nowCount.toString());
-        orderInfo.put("beforCount", beforCount.toString());
+        orderInfo.put("beforCount", beforeCount.toString());
         orderInfo.put("successOrder", successOrder.toString());
         orderInfo.put("totalCount", count.toString());
         homeOne.put("orderInfo", orderInfo);
