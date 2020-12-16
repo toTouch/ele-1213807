@@ -184,7 +184,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		BeanUtils.copyProperties(permissionResourceQuery, permissionResource);
 
 		//检查父元素是否存在
-		if (permissionResource.getParent() != 0) {
+		if (Objects.nonNull(permissionResource.getParent()) &&  permissionResource.getParent() != 0) {
 			PermissionResource parentResource = queryByIdFromCache(permissionResource.getParent());
 			if (Objects.isNull(parentResource)) {
 				log.error("PERMISSION ERROR! permission no parent!,uid={},parentId={}", uid, permissionResource.getParent());
