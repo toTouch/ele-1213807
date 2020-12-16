@@ -8,7 +8,6 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -143,12 +142,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.IS_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
-            //电池绑定用户
+           /* //电池绑定用户
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setUid(userInfo.getUid());
             electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-            electricityBatteryService.update(electricityBattery);
+            electricityBatteryService.update(electricityBattery);*/
             return null;
         });
         return R.ok();
@@ -281,13 +280,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
-            //电池解绑用户
+          /*  //电池解绑用户
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setUid(null);
             electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.unBind(electricityBattery);
+            electricityBatteryService.unBind(electricityBattery);*/
             return null;
         });
         return R.ok();
@@ -411,7 +410,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public void deleteUserInfo(UserInfo oldUserInfo) {
         userInfoMapper.deleteById(oldUserInfo.getId());
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
+        /*ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldUserInfo.getNowElectricityBatterySn());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldUserInfo.getId());
@@ -419,7 +418,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.unBind(electricityBattery);
-        }
+        }*/
     }
 
     @Override
