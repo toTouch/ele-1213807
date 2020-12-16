@@ -109,7 +109,7 @@ public class UserServiceImpl implements UserService {
     @Transactional(rollbackFor = Exception.class)
     @DS("master")
     public User insert(User user) {
-        int insert = this.userMapper.insert(user);
+        int insert = this.userMapper.insertOne(user);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone(), user);
