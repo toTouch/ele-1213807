@@ -164,7 +164,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.equals(permissionResourceQuery.getType(),PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -207,7 +207,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.nonNull(permissionResource.getMethod()) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.nonNull(permissionResource.getMethod()) &&Objects.equals(permissionResourceQuery.getType(),PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -275,6 +275,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		}
 
 		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
+		//排序
 
 		return Pair.of(true, permissionResourceTrees);
 	}

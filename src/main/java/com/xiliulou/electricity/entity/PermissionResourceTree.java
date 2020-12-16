@@ -11,7 +11,7 @@ import lombok.Data;
 public class PermissionResourceTree extends TreeNode {
 	private String name;
 	private Integer type;
-	private String url;
+	private String uri;
 	private String method;
 	private Double sort;
 	private String desc;
