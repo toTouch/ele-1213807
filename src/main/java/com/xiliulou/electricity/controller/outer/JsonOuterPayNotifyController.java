@@ -13,6 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,7 +38,7 @@ public class JsonOuterPayNotifyController {
     @Autowired
     ElectricityTradeOrderService electricityTradeOrderService;
 
-    @GetMapping("outer/pay/notify/weixin")
+    @PostMapping("outer/pay/notify/weixin")
     public String WeiXinPayNotify(HttpServletRequest request) {
         String xmlMsg = HttpKit.readData(request);
         log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
