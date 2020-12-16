@@ -105,6 +105,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
         electricityMemberCardOrder.setMemberCardId(memberId);
         electricityMemberCardOrder.setUid(uid);
+        electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getName());
