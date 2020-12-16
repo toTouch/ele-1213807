@@ -38,6 +38,10 @@ spring:
         shared-configs[0]:
           data-id: application-${spring.profiles.active}.${spring.cloud.nacos.config.file-extension}
           refresh: true
+    sentinel:
+      transport:
+        port: 8716
+        dashboard: localhost:8080
   profiles:
     active: dev
   klock:
