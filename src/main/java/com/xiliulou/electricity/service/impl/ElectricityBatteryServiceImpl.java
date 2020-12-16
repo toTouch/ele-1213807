@@ -173,7 +173,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, initElectricityBatterySn)
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, nowElectricityBatterySn)
                 .eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS));
     }
 
