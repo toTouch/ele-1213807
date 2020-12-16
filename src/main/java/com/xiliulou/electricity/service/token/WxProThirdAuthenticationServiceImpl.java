@@ -239,6 +239,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.updateTime(System.currentTimeMillis())
 				.phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
 				.uid(insert.getUid())
+				.accessToken("")
+				.refreshToken("")
 				.thirdNick("")
 				.thirdId(result.getOpenid())
 				.source(UserOauthBind.SOURCE_WX_PRO)
