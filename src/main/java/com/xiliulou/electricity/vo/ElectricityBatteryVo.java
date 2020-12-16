@@ -26,5 +26,7 @@ public class ElectricityBatteryVo extends ElectricityBattery {
     private String userName;
     //电池型号容量
     private Integer modelCapacity;
+    //电压
+    private Integer modelVoltage;
 
 }
