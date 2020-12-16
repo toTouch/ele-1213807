@@ -106,7 +106,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setMemberCardId(memberId);
         electricityMemberCardOrder.setUid(uid);
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
-        electricityMemberCardOrder.setPayAmount(electricityMemberCard.getPrice());
+        electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         baseMapper.insert(electricityMemberCardOrder);
