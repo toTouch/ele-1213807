@@ -567,7 +567,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     public String generateOrderId(Integer id, Long userId, String cellNo) {
         return String.valueOf(System.currentTimeMillis() / 1000) + id +
-                cellNo + userId +
+                cellNo + /*userId +*/
                 RandomUtil.randomNumbers(2);
     }
 
