@@ -85,4 +85,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
 
     void deleteUserInfo(UserInfo oldUserInfo);
+
+    void updateByUid(UserInfo userInfo);
 }
