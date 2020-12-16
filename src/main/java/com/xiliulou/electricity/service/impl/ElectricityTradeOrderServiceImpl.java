@@ -130,6 +130,7 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", electricityMemberCardOrder.getUid(), weiXinPayNotify.getOutTradeNo());
             return Pair.of(false, "未找到用户信息!");
         }
+        log.info("NOTIFY ELECTRICITYMEMBERCARDORDER:{}", electricityMemberCardOrder);
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setId(userInfo.getId());
         Long memberCardExpireTime = System.currentTimeMillis() +
