@@ -364,6 +364,10 @@ public class ElectricityCabinetOperateQueueHandler {
             userInfo.setNowElectricityBatterySn(null);
             userInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfo);
+            //电池改为在仓
+            oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+            oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.update(oldElectricityBattery);
             //分配新仓门
             String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(),electricityCabinetOrder.getOldCellNo().toString());
             try {
@@ -493,6 +497,11 @@ public class ElectricityCabinetOperateQueueHandler {
             userInfo.setNowElectricityBatterySn(electricityCabinetOrder.getNewElectricityBatterySn());
             userInfo.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateByUid(userInfo);
+            //电池改为在用
+            ElectricityBattery newElectricityBattery = electricityBatteryService.queryByOrderSn(electricityCabinetOrder.getNewElectricityBatterySn());
+            newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.update(newElectricityBattery);
         }
     }
 
