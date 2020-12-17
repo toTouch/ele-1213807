@@ -27,7 +27,7 @@ import java.util.Objects;
  * @Description:
  */
 @Slf4j
-@Component("newRequestInterceptor")
+//@Component("newRequestInterceptor")
 public class RequestFilter implements Filter {
 
 	private static final String REQ_TIME = "req_time";
