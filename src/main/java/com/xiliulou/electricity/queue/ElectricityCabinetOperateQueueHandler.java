@@ -350,19 +350,6 @@ public class ElectricityCabinetOperateQueueHandler {
         if (operResult) {
             //分配新仓门 新仓门分配失败则弹开旧门
             String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
-            if (Objects.isNull(cellNo)) {
-                //弹出开门
-                HashMap<String, Object> dataMap = Maps.newHashMap();
-                dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
-                HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                        .sessionId(electricityCabinetOrder.getId() + "_" + 2)
-                        .data(dataMap)
-                        .productKey("11111")
-                        .deviceName("222222")
-                        .command("replace_update_old")
-                        .build();
-                putTerminalQueue(comm);
-            }
             try {
                 //修改新仓门状态
                 ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
