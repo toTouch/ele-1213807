@@ -25,11 +25,6 @@ public class UserInfoAdminController {
     @Autowired
     UserInfoService userInfoService;
 
-    //添加用户
-    @PostMapping(value = "/admin/userInfo/insertUser")
-    public R insertUser(@RequestParam Long uid) {
-        return userInfoService.insertUser(uid);
-    }
 
     //绑定电池
     @PutMapping(value = "/admin/userInfo/bindBattery")

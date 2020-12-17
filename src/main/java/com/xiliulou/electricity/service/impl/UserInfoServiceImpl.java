@@ -270,6 +270,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setCarSn(oldUserInfo.getCarSn());
         userInfo.setCarDeposit(oldUserInfo.getCarDeposit());
         userInfo.setNumberPlate(oldUserInfo.getNumberPlate());
+        userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryStoreId(null);
         userInfo.setBatteryAreaId(null);
@@ -319,6 +320,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setNowElectricityBatterySn(oldUserInfo.getNowElectricityBatterySn());
+        userInfo.setInitElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
         userInfo.setBatteryStoreId(oldUserInfo.getBatteryStoreId());
         userInfo.setBatteryAreaId(oldUserInfo.getBatteryAreaId());
         userInfo.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
@@ -432,27 +434,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public void plusCount(Long id) {
         userInfoMapper.plusCount(id,System.currentTimeMillis());
-    }
-
-    @Override
-    public R insertUser(Long uid) {
-        User user=userService.queryByIdFromCache(uid);
-        if(Objects.isNull(user)){
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-        //添加到user_info表中
-        UserInfo insertUserInfo = UserInfo.builder()
-                .uid(uid)
-                .updateTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis())
-                .phone(user.getPhone())
-                .name("")
-                .serviceStatus(UserInfo.NO_SERVICE_STATUS)
-                .delFlag(User.DEL_NORMAL)
-                .usableStatus(UserInfo.USER_USABLE_STATUS)
-                .build();
-        userInfoMapper.insert(insertUserInfo);
-        return R.ok();
     }
 
 
