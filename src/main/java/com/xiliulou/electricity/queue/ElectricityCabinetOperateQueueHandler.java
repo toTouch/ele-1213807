@@ -85,7 +85,11 @@ public class ElectricityCabinetOperateQueueHandler {
 
                     OperateResultDto finalOperDTO = operateResultDto;
                     executorService.execute(() -> {
-                        handleOrderAfterOperated(finalOperDTO);
+                        //去重
+                        boolean result=redisService.setNx(finalOperDTO.toString(),"1");
+                        if(result) {
+                            handleOrderAfterOperated(finalOperDTO);
+                        }
                     });
 
                 } catch (Exception e) {
