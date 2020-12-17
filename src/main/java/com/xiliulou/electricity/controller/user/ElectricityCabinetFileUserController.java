@@ -36,7 +36,7 @@ public class ElectricityCabinetFileUserController {
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("minioService")
+    @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
 
