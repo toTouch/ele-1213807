@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.List;
@@ -267,32 +268,6 @@ public class StoreServiceImpl implements StoreService {
         return R.ok();
     }
 
-    @Override
-    public R showInfoByDistance(StoreQuery storeQuery) {
-        List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
-        if (ObjectUtil.isNotEmpty(storeVOList)) {
-            storeVOList.parallelStream().forEach(e -> {
-                //营业时间
-                if (Objects.nonNull(e.getBusinessTime())) {
-                    String businessTime = e.getBusinessTime();
-                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
-                        e.setBusinessTimeType(StoreVO.ALL_DAY);
-                    } else {
-                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index = businessTime.indexOf("-");
-                        if (!Objects.equals(index, -1) && index > 0) {
-                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
-                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
-                            e.setBeginTime(beginTime);
-                            e.setEndTime(endTime);
-                        }
-                    }
-                }
-            });
-        }
-        return R.ok(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getDistance).reversed()).collect(Collectors.toList()));
-    }
 
     @Override
     public Integer homeTwoTotal(Integer areaId) {
@@ -333,5 +308,67 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Integer homeTwoCar(Integer areaId) {
         return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
+    }
+
+    @Override
+    public R rentBattery(StoreQuery storeQuery) {
+        List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
+        List<StoreVO> storeVOs = new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(storeVOList)) {
+            storeVOList.parallelStream().forEach(e -> {
+                //营业时间
+                if (Objects.nonNull(e.getBusinessTime())) {
+                    String businessTime = e.getBusinessTime();
+                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                        e.setBusinessTimeType(StoreVO.ALL_DAY);
+                    } else {
+                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
+                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
+                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                            e.setBeginTime(beginTime);
+                            e.setEndTime(endTime);
+                        }
+                    }
+                }
+                if(Objects.equals(e.getBatteryService(),Store.SUPPORT)){
+                    storeVOs.add(e);
+                }
+            });
+        }
+        return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance).reversed()).collect(Collectors.toList()));
+    }
+
+    @Override
+    public R rentCar(StoreQuery storeQuery) {
+        List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
+        List<StoreVO> storeVOs = new ArrayList<>();
+        if (ObjectUtil.isNotEmpty(storeVOList)) {
+            storeVOList.parallelStream().forEach(e -> {
+                //营业时间
+                if (Objects.nonNull(e.getBusinessTime())) {
+                    String businessTime = e.getBusinessTime();
+                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                        e.setBusinessTimeType(StoreVO.ALL_DAY);
+                    } else {
+                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
+                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
+                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                            e.setBeginTime(beginTime);
+                            e.setEndTime(endTime);
+                        }
+                    }
+                }
+                if(Objects.equals(e.getCarService(),Store.SUPPORT)){
+                    storeVOs.add(e);
+                }
+            });
+        }
+        return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance).reversed()).collect(Collectors.toList()));
     }
 }

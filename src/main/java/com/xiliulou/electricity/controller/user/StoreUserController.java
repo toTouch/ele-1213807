@@ -35,8 +35,8 @@ public class StoreUserController {
     StoreService storeService;
 
     //列表查询
-    @GetMapping(value = "/user/store/showInfoByDistance")
-    public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
+    @GetMapping(value = "/user/store/showInfoByDistance/rentBattery")
+    public R rentBattery(@RequestParam(value = "distance", required = false) Double distance,
                                 @RequestParam("lon") Double lon,
                                 @RequestParam("lat") Double lat) {
 
@@ -49,7 +49,25 @@ public class StoreUserController {
                 .lon(lon)
                 .lat(lat).build();
 
-        return storeService.showInfoByDistance(storeQuery);
+        return storeService.rentBattery(storeQuery);
+    }
+
+    //列表查询
+    @GetMapping(value = "/user/store/showInfoByDistance/rentCar")
+    public R rentCar(@RequestParam(value = "distance", required = false) Double distance,
+                         @RequestParam("lon") Double lon,
+                         @RequestParam("lat") Double lat) {
+
+        if (Objects.isNull(lon) || lon <= 0.0 || Objects.isNull(lat) || lat <= 0.0) {
+            return R.fail("ELECTRICITY.0007","不合法的参数");
+        }
+
+        StoreQuery storeQuery = StoreQuery.builder()
+                .distance(distance)
+                .lon(lon)
+                .lat(lat).build();
+
+        return storeService.rentCar(storeQuery);
     }
 
 }
