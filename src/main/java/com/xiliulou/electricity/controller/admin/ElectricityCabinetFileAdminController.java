@@ -62,7 +62,7 @@ public class ElectricityCabinetFileAdminController {
 
     //minio上传
     @PostMapping("/admin/electricityCabinetFileService/minio/upload")
-    public R minioUpload(MultipartFile file) {
+    public R minioUpload(@RequestParam("file") MultipartFile file) {
         String fileName = IdUtil.simpleUUID() + StrUtil.DOT + FileUtil.extName(file.getOriginalFilename());
         String bucketName = storageConfig.getBucketName();
         Map<String, String> resultMap = new HashMap<>(4);
