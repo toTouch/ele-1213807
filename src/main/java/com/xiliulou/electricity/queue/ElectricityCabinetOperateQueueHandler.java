@@ -480,7 +480,7 @@ public class ElectricityCabinetOperateQueueHandler {
             ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
             electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getNewCellNo()));
             electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-            electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+            electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             electricityCabinetNewBox.setElectricityBatteryId(-1L);
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
             //修改订单
