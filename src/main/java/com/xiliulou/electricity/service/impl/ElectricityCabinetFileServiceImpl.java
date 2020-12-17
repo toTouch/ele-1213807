@@ -32,7 +32,7 @@ import java.util.Objects;
 public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFileService {
     @Resource
     private ElectricityCabinetFileMapper electricityCabinetFileMapper;
-    @Qualifier("aliyunOssService")
+    @Qualifier("minioService")
     @Autowired
     StorageService storageService;
 
