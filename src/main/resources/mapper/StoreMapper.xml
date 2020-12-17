@@ -153,7 +153,7 @@
         <if test="query.distance != null">
             having distance &lt; #{query.distance}
         </if>
-        order by distance
+        order by distance asc
     </select>
 
     <!--新增所有列-->
