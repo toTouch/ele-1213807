@@ -43,12 +43,12 @@ public class ElectricityCabinetFileAdminController {
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
-    @Autowired
+    /*@Autowired
     GetStorageService getStorageService;
-    StorageService storageService=getStorageService.getStorageService(storageConfig.getIsUseOSS());
-    /*@Qualifier("minioService")
+    StorageService storageService=getStorageService.getStorageService(storageConfig.getIsUseOSS());*/
+    @Qualifier("minioService")
     @Autowired
-    StorageService storageService;*/
+    StorageService storageService;
 
     //通知前端是aili还是oss
     @GetMapping("/admin/electricityCabinetFileService/noticeIsOss")
