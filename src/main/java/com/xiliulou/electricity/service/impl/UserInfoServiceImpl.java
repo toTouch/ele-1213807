@@ -352,8 +352,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public UserInfo queryByUid(Long uid) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid)
-                .eq(UserInfo::getServiceStatus, UserInfo.IS_SERVICE_STATUS).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
     @Override
