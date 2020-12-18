@@ -25,24 +25,13 @@ import java.util.Collection;
 @Slf4j
 public class BodyReaderHttpServletRequestWrapper extends HttpServletRequestWrapper {
 	private final byte[] body;
-	private final Collection<Part> parts;
 
 	public BodyReaderHttpServletRequestWrapper(HttpServletRequest request) throws IOException, ServletException {
 		super(request);
-		//如果是form-data，必须先读，否则就不读到。
-		if (StrUtil.isNotEmpty(request.getHeader(HttpHeaders.CONTENT_TYPE)) && request.getHeader(HttpHeaders.CONTENT_TYPE).startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
-			parts = request.getParts();
-		} else {
-			parts = null;
-		}
 		String sessionStream = getBodyString(request);
 		body = sessionStream.getBytes(StandardCharsets.UTF_8);
 	}
 
-	@Override
-	public Collection<Part> getParts() {
-		return parts;
-	}
 
 	/**
 	 * 获取请求Body
