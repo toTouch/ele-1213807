@@ -96,12 +96,13 @@ public class ElectricityCabinetAdminController {
     //首页一
     @GetMapping(value = "/admin/electricityCabinet/homeOne/{type}")
     public R homeOne(@PathVariable("type") Integer type) {
+        Integer i=8/0;
         return electricityCabinetService.homeOne(type);
     }
 
     //首页二
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
-    public R homeTwo( @RequestParam(value = "areaId1", required = false) Integer areaId) {
+    public R homeTwo( @RequestParam(value = "areaId", required = false) Integer areaId) {
         return electricityCabinetService.homeTwo(areaId);
     }
 
