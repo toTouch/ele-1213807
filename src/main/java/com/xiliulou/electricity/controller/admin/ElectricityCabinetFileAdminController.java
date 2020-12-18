@@ -11,6 +11,7 @@ import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
+import com.xiliulou.storage.service.impl.GetStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -42,9 +43,9 @@ public class ElectricityCabinetFileAdminController {
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
-    @Qualifier("minioService")
     @Autowired
-    StorageService storageService;
+    GetStorageService getStorageService;
+    StorageService storageService=getStorageService.getStorageService(storageConfig.getIsUseOSS());
 
     //通知前端是aili还是oss
     @GetMapping("/admin/electricityCabinetFileService/noticeIsOss")
