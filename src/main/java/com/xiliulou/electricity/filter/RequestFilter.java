@@ -67,31 +67,24 @@ public class RequestFilter implements Filter {
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         HttpServletRequest httpServletRequest = (HttpServletRequest) servletRequest;
-        String header = httpServletRequest.getHeader(HttpHeaders.CONTENT_TYPE);
+        HttpServletRequest request = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
-        if (Objects.isNull(httpServletRequest.getAttribute(REQ_TIME)) || StrUtil.isEmpty(httpServletRequest.getAttribute(REQ_TIME).toString())) {
-            httpServletRequest.setAttribute(REQ_TIME, System.currentTimeMillis());
+        if (Objects.isNull(request.getAttribute(REQ_TIME)) || StrUtil.isEmpty(request.getAttribute(REQ_TIME).toString())) {
+            request.setAttribute(REQ_TIME, System.currentTimeMillis());
         }
-
 
         Long uid = SecurityUtils.getUid();
-
-        if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
-            log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
-            filterChain.doFilter(httpServletRequest, servletResponse);
-        }  else {
-            httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
-
+        String header = request.getHeader(HttpHeaders.CONTENT_TYPE);
+        if (StrUtil.isEmpty(header)) {
+            log.info("uid={},method={},uri={},params={}", uid, request.getMethod(), request.getRequestURI(), JsonUtil.toJson(request.getParameterMap()));
+        } else {
             if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-                log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
+                log.info("uid={},method={},uri={},params={}", uid, request.getMethod(), request.getRequestURI(), getRequestBody(request));
             } else {
-                log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+                log.info("uid={},method={},uri={},params={}", uid, request.getMethod(), request.getRequestURI(), JsonUtil.toJson(request.getParameterMap()));
             }
 
-            filterChain.doFilter(httpServletRequest, servletResponse);
-
         }
-        afterCompletion(httpServletRequest);
 
 
     }
