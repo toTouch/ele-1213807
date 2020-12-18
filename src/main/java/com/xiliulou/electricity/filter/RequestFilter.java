@@ -85,6 +85,8 @@ public class RequestFilter implements Filter {
             }
 
         }
+        filterChain.doFilter(request,servletResponse);
+        afterCompletion(request);
 
 
     }
