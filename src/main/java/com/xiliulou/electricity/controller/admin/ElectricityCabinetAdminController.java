@@ -94,8 +94,8 @@ public class ElectricityCabinetAdminController {
 
 
     //首页一
-    @GetMapping(value = "/admin/electricityCabinet/homeOne/{type}")
-    public R homeOne(@PathVariable("type") Integer type) {
+    @GetMapping(value = "/admin/electricityCabinet/homeOne/{type1}")
+    public R homeOne(@PathVariable("type1") Integer type) {
         return electricityCabinetService.homeOne(type);
     }
 
