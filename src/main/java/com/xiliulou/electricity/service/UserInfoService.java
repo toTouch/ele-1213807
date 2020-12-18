@@ -89,4 +89,5 @@ public interface UserInfoService extends IService<UserInfo> {
 
     void plusCount(Long id);
 
+    R queryUserInfo();
 }
