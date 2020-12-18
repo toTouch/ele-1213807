@@ -15,8 +15,10 @@ import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
 import com.xiliulou.electricity.vo.UserInfoVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -433,6 +435,43 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public void plusCount(Long id) {
         userInfoMapper.plusCount(id,System.currentTimeMillis());
+    }
+
+    @Override
+    public R queryUserInfo() {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //2.判断用户是否有电池是否有月卡
+        UserInfo userInfo = queryByUid(user.getUid());
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        //判断是否开通服务
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0021", "未开通服务");
+        }
+        //判断是否电池
+        if (Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
+        //判断用户是否开通月卡
+        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        Long now = System.currentTimeMillis();
+        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
+        }
+        return R.ok(userInfo);
     }
 
 
