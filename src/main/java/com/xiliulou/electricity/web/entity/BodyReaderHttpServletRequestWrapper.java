@@ -3,10 +3,12 @@ package com.xiliulou.electricity.web.entity;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.servlet.ReadListener;
+import javax.servlet.ServletException;
 import javax.servlet.ServletInputStream;
 import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletRequestWrapper;
+import javax.servlet.http.Part;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -14,16 +16,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 
 @Slf4j
 public class BodyReaderHttpServletRequestWrapper extends HttpServletRequestWrapper {
     private final byte[] body;
+    private final Collection<Part> parts;
 
-    public BodyReaderHttpServletRequestWrapper(HttpServletRequest request) throws IOException {
+    public BodyReaderHttpServletRequestWrapper(HttpServletRequest request) throws IOException, ServletException {
         super(request);
         String sessionStream = getBodyString(request);
         body = sessionStream.getBytes(StandardCharsets.UTF_8);
+        parts = request.getParts();
     }
+
+    @Override
+    public Collection<Part> getParts() {
+        return parts;
+    }
+
 
     /**
      * 获取请求Body
