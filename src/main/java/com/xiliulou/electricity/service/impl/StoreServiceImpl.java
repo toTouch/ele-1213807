@@ -369,6 +369,6 @@ public class StoreServiceImpl implements StoreService {
                 }
             });
         }
-        return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance).reversed()).collect(Collectors.toList()));
+        return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
     }
 }
