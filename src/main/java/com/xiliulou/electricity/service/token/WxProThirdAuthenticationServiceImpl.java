@@ -128,40 +128,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
             }
 
-            //检查userInfo是否存在，不存在则创建，存在手机号是否相同，不相同则更新
-            Pair<Boolean, UserInfo> existUserInfo=null;
-            Long uid=null;
-
-            if(existPhone.getLeft()) {
-                uid=existPhone.getRight().getUid();
-                existUserInfo = checkUserInfoExists(uid);
-
-            }else {
-                uid=existsOpenId.getRight().getUid();
-                existUserInfo = checkUserInfoExists(uid);
-
-            }
-            if (!existUserInfo.getLeft()) {
-                //添加到user_info表中
-                UserInfo insertUserInfo = UserInfo.builder()
-                        .uid(uid)
-                        .updateTime(System.currentTimeMillis())
-                        .createTime(System.currentTimeMillis())
-                        .phone(purePhoneNumber)
-                        .name("")
-                        .serviceStatus(UserInfo.NO_SERVICE_STATUS)
-                        .delFlag(User.DEL_NORMAL)
-                        .usableStatus(UserInfo.USER_USABLE_STATUS)
-                        .build();
-                userInfoService.insert(insertUserInfo);
-            } else {
-                UserInfo updateUserInfo = existUserInfo.getRight();
-                if (!Objects.equals( purePhoneNumber,updateUserInfo.getPhone())) {
-                    updateUserInfo.setPhone(purePhoneNumber);
-                    updateUserInfo.setUpdateTime(System.currentTimeMillis());
-                    userInfoService.update(updateUserInfo);
-                }
-            }
 
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
@@ -169,6 +135,22 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 if (!existPhone.getRight().getUid().equals(existsOpenId.getRight().getUid())) {
                     log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}", existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
                     throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
+                }
+                //添加到user_info表中
+                Long uid=existPhone.getRight().getUid();
+                Pair<Boolean, UserInfo> existUserInfo=checkUserInfoExists(uid);
+                if (!existUserInfo.getLeft()) {
+                    UserInfo insertUserInfo = UserInfo.builder()
+                            .uid(uid)
+                            .updateTime(System.currentTimeMillis())
+                            .createTime(System.currentTimeMillis())
+                            .phone(existPhone.getRight().getPhone())
+                            .name("")
+                            .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                            .delFlag(User.DEL_NORMAL)
+                            .usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .build();
+                    userInfoService.insert(insertUserInfo);
                 }
                 //相同登录
                 return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
@@ -203,6 +185,29 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     existOpenUser.setPhone(purePhoneNumber);
                     userOauthBindService.update(existOpenUser);
                 }
+                //添加到user_info表中
+                Long uid=existsOpenId.getRight().getUid();
+                Pair<Boolean, UserInfo> existUserInfo=checkUserInfoExists(uid);
+                if (!existUserInfo.getLeft()) {
+                    UserInfo insertUserInfo = UserInfo.builder()
+                            .uid(uid)
+                            .updateTime(System.currentTimeMillis())
+                            .createTime(System.currentTimeMillis())
+                            .phone(existsOpenId.getRight().getPhone())
+                            .name("")
+                            .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                            .delFlag(User.DEL_NORMAL)
+                            .usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .build();
+                    userInfoService.insert(insertUserInfo);
+                } else {
+                    UserInfo updateUserInfo = existUserInfo.getRight();
+                    if (!Objects.equals( purePhoneNumber,updateUserInfo.getPhone())) {
+                        updateUserInfo.setPhone(purePhoneNumber);
+                        updateUserInfo.setUpdateTime(System.currentTimeMillis());
+                        userInfoService.update(updateUserInfo);
+                    }
+                }
                 return createSecurityUser(user, existsOpenId.getRight());
 
             }
@@ -236,6 +241,22 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .thirdNick("")
                             .build();
                     userOauthBindService.insert(userOauthBind);
+                }
+                //添加到user_info表中
+                Long uid=existPhone.getRight().getUid();
+                Pair<Boolean, UserInfo> existUserInfo=checkUserInfoExists(uid);
+                if (!existUserInfo.getLeft()) {
+                    UserInfo insertUserInfo = UserInfo.builder()
+                            .uid(uid)
+                            .updateTime(System.currentTimeMillis())
+                            .createTime(System.currentTimeMillis())
+                            .phone(existPhone.getRight().getPhone())
+                            .name("")
+                            .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                            .delFlag(User.DEL_NORMAL)
+                            .usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .build();
+                    userInfoService.insert(insertUserInfo);
                 }
                 return createSecurityUser(existPhone.getRight(), userOauthBind);
 
