@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @since 2020-12-07 15:00:00
  */
 @RestController
-public class UserInfoAdminController {
+public class UserInfoUserController {
     /**
      * 服务对象
      */
