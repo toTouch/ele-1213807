@@ -86,7 +86,7 @@ public class ElectricityCabinetOperateQueueHandler {
                     OperateResultDto finalOperDTO = operateResultDto;
                     executorService.execute(() -> {
                         //去重
-                        boolean result = redisService.setNx(finalOperDTO.toString(), "1");
+                        boolean result = redisService.setNx(finalOperDTO.getSessionId()+finalOperDTO.getOperateFlowNum(), "1",300*1000L,false);
                         if (result) {
                             handleOrderAfterOperated(finalOperDTO);
                         }

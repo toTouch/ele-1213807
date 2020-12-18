@@ -389,6 +389,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             } else {
                                 e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
                             }
+                        } else {
+                            e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
                         }
                     }
                 }
@@ -789,7 +791,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Long now = System.currentTimeMillis();
         Integer battery = null;
         Long cardDay = null;
-        Integer serviceStatus=1;
+        Integer serviceStatus = 1;
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.nonNull(userInfo)) {
             //我的电池
@@ -803,7 +805,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) && userInfo.getMemberCardExpireTime() > now) {
                 cardDay = (userInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
             }
-            serviceStatus=userInfo.getServiceStatus();
+            serviceStatus = userInfo.getServiceStatus();
         }
         //本月换电
         Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
