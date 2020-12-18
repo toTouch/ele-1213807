@@ -32,7 +32,7 @@ public class AdminUserQuery {
 	@NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
 	private String phone;
 	@Range(min = 1, max = 10, message = "用户类型不合法", groups = {CreateGroup.class, UpdateGroup.class})
-	@NotNull(message = "语言不能为空", groups = {CreateGroup.class})
+	@NotNull(message = "用户类型不为空", groups = {CreateGroup.class})
 	private Integer userType;
 	@NotEmpty(message = "语言不能为空", groups = {CreateGroup.class})
 	private String lang;
