@@ -155,7 +155,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
-		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(),adminUserQuery.getUserType());
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
 		if (Objects.nonNull(phoneUserExists)) {
 			return Triple.of(false, null, "手机号已存在");
 		}
@@ -201,7 +201,7 @@ public class UserServiceImpl implements UserService {
 			return cacheUser;
 		}
 
-		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone));
+		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type));
 		if (Objects.isNull(user)) {
 			return null;
 		}
