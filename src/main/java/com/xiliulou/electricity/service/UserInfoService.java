@@ -88,4 +88,5 @@ public interface UserInfoService extends IService<UserInfo> {
     void updateByUid(UserInfo userInfo);
 
     void plusCount(Long id);
+
 }

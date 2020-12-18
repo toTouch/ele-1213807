@@ -54,6 +54,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     RedisService redisService;
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    UserService userService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -268,6 +270,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setCarSn(oldUserInfo.getCarSn());
         userInfo.setCarDeposit(oldUserInfo.getCarDeposit());
         userInfo.setNumberPlate(oldUserInfo.getNumberPlate());
+        userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryStoreId(null);
         userInfo.setBatteryAreaId(null);
@@ -317,6 +320,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setNowElectricityBatterySn(oldUserInfo.getNowElectricityBatterySn());
+        userInfo.setInitElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
         userInfo.setBatteryStoreId(oldUserInfo.getBatteryStoreId());
         userInfo.setBatteryAreaId(oldUserInfo.getBatteryAreaId());
         userInfo.setBatteryDeposit(oldUserInfo.getBatteryDeposit());

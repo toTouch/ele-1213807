@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.query;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
@@ -39,5 +38,7 @@ public class UserInfoBatteryAddAndUpdate {
     */
     @NotNull(message = "租电池押金不能为空!", groups = {UpdateGroup.class})
     private Double batteryDeposit;
+
+
 
 }
