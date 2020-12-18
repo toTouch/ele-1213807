@@ -373,6 +373,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     String businessTime = e.getBusinessTime();
                     if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
                         e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                        e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
                     } else {
                         e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
                         Integer index = businessTime.indexOf("-");
@@ -389,8 +390,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             } else {
                                 e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
                             }
-                        } else {
-                            e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
                         }
                     }
                 }
