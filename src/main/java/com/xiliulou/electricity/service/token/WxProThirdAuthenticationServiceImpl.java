@@ -193,7 +193,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .uid(uid)
                             .updateTime(System.currentTimeMillis())
                             .createTime(System.currentTimeMillis())
-                            .phone(existsOpenId.getRight().getPhone())
+                            .phone(purePhoneNumber)
                             .name("")
                             .serviceStatus(UserInfo.NO_SERVICE_STATUS)
                             .delFlag(User.DEL_NORMAL)
