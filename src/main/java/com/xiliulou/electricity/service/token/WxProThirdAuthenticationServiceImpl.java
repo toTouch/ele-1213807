@@ -25,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -128,14 +129,22 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             }
 
             //检查userInfo是否存在，不存在则创建，存在手机号是否相同，不相同则更新
-            Pair<Boolean, UserInfo> existUserInfo = checkUserInfoExists(existsOpenId.getRight().getUid());
+            Pair<Boolean, UserInfo> existUserInfo=null;
+            Long uid=null;
+            if(existPhone.getLeft()) {
+                existUserInfo = checkUserInfoExists(existPhone.getRight().getUid());
+                uid=existPhone.getRight().getUid();
+            }else {
+                existUserInfo = checkUserInfoExists(existsOpenId.getRight().getUid());
+                uid=existsOpenId.getRight().getUid();
+            }
             if (!existUserInfo.getLeft()) {
                 //添加到user_info表中
                 UserInfo insertUserInfo = UserInfo.builder()
-                        .uid(existPhone.getRight().getUid())
+                        .uid(uid)
                         .updateTime(System.currentTimeMillis())
                         .createTime(System.currentTimeMillis())
-                        .phone(existPhone.getRight().getPhone())
+                        .phone(purePhoneNumber)
                         .name("")
                         .serviceStatus(UserInfo.NO_SERVICE_STATUS)
                         .delFlag(User.DEL_NORMAL)
