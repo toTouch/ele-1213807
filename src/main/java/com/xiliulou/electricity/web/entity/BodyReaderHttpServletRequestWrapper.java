@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.web.entity;
 
 import cn.hutool.core.util.StrUtil;
+import com.netflix.ribbon.proxy.annotation.Http;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -21,17 +22,24 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Collection;
+import java.util.Map;
 
 @Slf4j
 public class BodyReaderHttpServletRequestWrapper extends HttpServletRequestWrapper {
 	private final byte[] body;
+	private final HttpServletRequest request;
 
 	public BodyReaderHttpServletRequestWrapper(HttpServletRequest request) throws IOException, ServletException {
 		super(request);
 		String sessionStream = getBodyString(request);
 		body = sessionStream.getBytes(StandardCharsets.UTF_8);
+		this.request = request;
 	}
 
+	@Override
+	public Map<String, String[]> getParameterMap() {
+		return request.getParameterMap();
+	}
 
 	/**
 	 * 获取请求Body

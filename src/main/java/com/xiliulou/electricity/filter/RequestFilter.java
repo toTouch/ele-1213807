@@ -19,6 +19,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -75,15 +76,16 @@ public class RequestFilter implements Filter {
 
         Long uid = SecurityUtils.getUid();
 
-        if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
+        if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
             log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             filterChain.doFilter(httpServletRequest, servletResponse);
         }  else {
             httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
+
             if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
                 log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
-            } else {
+            } else{
                 log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             }
 
