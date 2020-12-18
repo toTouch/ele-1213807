@@ -5,7 +5,7 @@
         select tel.* , tui.phone as phone from
         t_electricity_member_card_order tel
 
-        LEFT JOIN t_user_info tui on tui.id = tel.uid
+        LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
         WHERE 0= 0
         <if test="query.phone != null">
