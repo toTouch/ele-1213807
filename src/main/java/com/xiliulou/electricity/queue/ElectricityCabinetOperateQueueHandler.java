@@ -154,7 +154,7 @@ public class ElectricityCabinetOperateQueueHandler {
             boolean result = random.nextBoolean();
             operateResultDto.setResult(true);
             try {
-                Long sleepMilli = (random.nextInt(3) + 3) * 1000L;
+                Long sleepMilli = (random.nextInt(3) + 10) * 1000L;
                 Thread.sleep(sleepMilli);
             } catch (InterruptedException e) {
                 e.printStackTrace();
