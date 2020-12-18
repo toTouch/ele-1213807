@@ -90,7 +90,7 @@ public class User {
 	public static final Integer TYPE_USER_SUPER = 0;
 	//运营商
 	public static final Integer TYPE_USER_OPERATE = 1;
-	//普通用户
-	public static final Integer TYPE_USER_NORMAL = 11;
+	//普通微信小程序用户
+	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
 
 }

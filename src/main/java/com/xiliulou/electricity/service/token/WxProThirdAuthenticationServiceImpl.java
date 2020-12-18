@@ -25,7 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
@@ -292,7 +291,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .lockFlag(User.USER_UN_LOCK)
                 .gender(User.GENDER_MALE)
                 .lang(MessageUtils.LOCALE_ZH_CN)
-                .userType(User.TYPE_USER_NORMAL)
+                .userType(User.TYPE_USER_NORMAL_WX_PRO)
                 .name("")
                 .salt("")
                 .avatar("")
@@ -330,7 +329,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
     }
 
     private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber) {
-        User user = userService.queryByUserPhone(purePhoneNumber);
+        User user = userService.queryByUserPhone(purePhoneNumber,User.TYPE_USER_NORMAL_WX_PRO);
         return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
     }
 
