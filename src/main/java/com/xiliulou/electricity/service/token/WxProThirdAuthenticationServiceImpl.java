@@ -131,12 +131,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             //检查userInfo是否存在，不存在则创建，存在手机号是否相同，不相同则更新
             Pair<Boolean, UserInfo> existUserInfo=null;
             Long uid=null;
+
             if(existPhone.getLeft()) {
-                existUserInfo = checkUserInfoExists(existPhone.getRight().getUid());
                 uid=existPhone.getRight().getUid();
+                existUserInfo = checkUserInfoExists(uid);
+
             }else {
-                existUserInfo = checkUserInfoExists(existsOpenId.getRight().getUid());
                 uid=existsOpenId.getRight().getUid();
+                existUserInfo = checkUserInfoExists(uid);
+
             }
             if (!existUserInfo.getLeft()) {
                 //添加到user_info表中
