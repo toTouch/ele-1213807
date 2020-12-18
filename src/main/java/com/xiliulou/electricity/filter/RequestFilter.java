@@ -73,7 +73,6 @@ public class RequestFilter implements Filter {
             httpServletRequest.setAttribute(REQ_TIME, System.currentTimeMillis());
         }
 
-
         Long uid = SecurityUtils.getUid();
 
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE)) {
