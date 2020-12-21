@@ -1,7 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.StrUtil;
+import cn.hutool.crypto.Mode;
+import cn.hutool.crypto.Padding;
+import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -23,12 +27,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -51,6 +59,9 @@ public class UserServiceImpl implements UserService {
 	RedisService redisService;
 	@Autowired
 	UserInfoService userInfoService;
+
+	@Value("${security.encode.key:xiliu&lo@u%12345}")
+	private String encodeKey;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -167,7 +178,7 @@ public class UserServiceImpl implements UserService {
 
 		//解密密码
 		String encryptPassword = adminUserQuery.getPassword();
-		String decryptPassword = AESUtils.decrypt(encryptPassword);
+		String decryptPassword = decryptPassword(encryptPassword);
 		if (StrUtil.isEmpty(decryptPassword)) {
 			log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
 			return Triple.of(false, "SYSTEM.0001", "系统错误!");
@@ -192,6 +203,13 @@ public class UserServiceImpl implements UserService {
 		User insert = insert(user);
 
 		return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
+	}
+
+	private String decryptPassword(String encryptPassword) {
+		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
+				new IvParameterSpec(encodeKey.getBytes()));
+
+		return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -243,7 +261,7 @@ public class UserServiceImpl implements UserService {
 		if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
 			//解密密码
 			String encryptPassword = adminUserQuery.getPassword();
-			decryptPassword = AESUtils.decrypt(encryptPassword);
+			decryptPassword = decryptPassword(encryptPassword);
 			if (StrUtil.isEmpty(decryptPassword)) {
 				log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
 				return Pair.of(false, "系统错误!");
