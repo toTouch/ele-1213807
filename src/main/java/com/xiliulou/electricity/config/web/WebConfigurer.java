@@ -26,6 +26,7 @@ public class WebConfigurer implements WebMvcConfigurer {
 	public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
 		FastJsonHttpMessageConverter converter = new FastJsonHttpMessageConverter();
 		List<MediaType> mediaTypes = new ArrayList<>(16);
+
 		mediaTypes.add(MediaType.ALL);
 		mediaTypes.add(MediaType.APPLICATION_ATOM_XML);
 		mediaTypes.add(MediaType.APPLICATION_CBOR);
