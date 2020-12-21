@@ -115,7 +115,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if(Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())){
+        if (Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
             return R.fail("ELECTRICITY.0030", "用户已绑定电池，请解绑后再绑定");
         }
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
@@ -150,7 +150,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setStatus(RentBatteryOrder.IS_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
             //修改电池状态
-            ElectricityBattery electricityBattery=new ElectricityBattery();
+            ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -168,7 +168,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if(Objects.nonNull(oldUserInfo.getCarSn())){
+        if (Objects.nonNull(oldUserInfo.getCarSn())) {
             return R.fail("ELECTRICITY.0031", "用户已绑定车辆，请解绑后再绑定");
         }
         RentCarOrder rentCarOrder = new RentCarOrder();
@@ -255,7 +255,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if(Objects.isNull(oldUserInfo.getNowElectricityBatterySn())){
+        if (Objects.isNull(oldUserInfo.getNowElectricityBatterySn())) {
             return R.fail("ELECTRICITY.0029", "用户未绑定电池，不能解绑");
         }
         Store store = storeService.queryByIdFromCache(oldUserInfo.getBatteryStoreId());
@@ -295,7 +295,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
             rentBatteryOrderService.insert(rentBatteryOrder);
             //修改电池状态
-            ElectricityBattery electricityBattery=new ElectricityBattery();
+            ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -312,7 +312,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if(Objects.isNull(oldUserInfo.getCarSn())){
+        if (Objects.isNull(oldUserInfo.getCarSn())) {
             return R.fail("ELECTRICITY.0032", "用户未绑定车辆，不能解绑");
         }
         Store store = storeService.queryByIdFromCache(oldUserInfo.getCarStoreId());
@@ -408,7 +408,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
             return R.failMsg("未找到用户信息!");
         }
-        if (Objects.isNull(userInfo.getRemainingNumber()) || Objects.isNull(userInfo.getMemberCardExpireTime()) || System.currentTimeMillis() >
+        if (Objects.isNull(userInfo.getRemainingNumber()) || Objects.isNull(userInfo.getMemberCardExpireTime()) || System.currentTimeMillis() >=
                 userInfo.getMemberCardExpireTime() || userInfo.getRemainingNumber() == 0) {
             return R.ok();
         }
@@ -418,7 +418,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setMemberCardExpireTime(userInfo.getMemberCardExpireTime());
         ownMemberCardInfoVo.setRemainingNumber(userInfo.getRemainingNumber());
         ownMemberCardInfoVo.setType(userInfo.getCardType());
-        ownMemberCardInfoVo.setDays((long) Math.round((System.currentTimeMillis() - userInfo.getMemberCardExpireTime()) / (24 * 60 * 60 * 1000L)));
+        ownMemberCardInfoVo.setDays((long) Math.round((userInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         return R.ok(ownMemberCardInfoVo);
     }
 
@@ -434,7 +434,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public void plusCount(Long id) {
-        userInfoMapper.plusCount(id,System.currentTimeMillis());
+        userInfoMapper.plusCount(id, System.currentTimeMillis());
     }
 
     @Override
