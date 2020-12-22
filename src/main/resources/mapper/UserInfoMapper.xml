@@ -61,7 +61,7 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
-        order by update_time desc
+        order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 

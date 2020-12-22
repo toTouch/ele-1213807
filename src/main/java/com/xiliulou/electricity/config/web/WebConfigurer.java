@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+
 /**
  * @Auther: eclair
  * @Date: 2019/11/4 11:42
@@ -16,4 +17,5 @@ public class WebConfigurer implements WebMvcConfigurer {
 	public void addInterceptors(InterceptorRegistry registry) {
 
 	}
+
 }
