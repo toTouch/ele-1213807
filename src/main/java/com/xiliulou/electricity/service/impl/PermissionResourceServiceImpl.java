@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.PermissionResourceTree;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.RolePermissionService;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
@@ -164,7 +166,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.equals(permissionResourceQuery.getType(),PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -207,7 +209,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.nonNull(permissionResource.getMethod()) &&Objects.equals(permissionResourceQuery.getType(),PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.nonNull(permissionResource.getMethod()) && Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -269,9 +271,16 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@DS("slave_1")
 	public Pair<Boolean, Object> getList() {
+		TokenUser userInfo = SecurityUtils.getUserInfo();
+
 		List<PermissionResource> permissionResources = this.permissionResourceMapper.queryAll();
 		if (!DataUtil.collectionIsUsable(permissionResources)) {
 			return Pair.of(false, "查询不到任何权限！");
+		}
+
+		//如果不是超级管理员，就不用返回前4个权限
+		if (!Objects.equals(userInfo.getType(), User.TYPE_USER_SUPER)) {
+			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4).collect(Collectors.toList());
 		}
 
 		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
