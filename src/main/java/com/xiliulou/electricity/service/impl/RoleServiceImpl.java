@@ -277,7 +277,7 @@ public class RoleServiceImpl implements RoleService {
 	@Override
 	public R queryAll() {
 		List<Role> roles = this.roleMapper.queryAll();
-		if (DataUtil.collectionIsUsable(roles)) {
+		if (!DataUtil.collectionIsUsable(roles)) {
 			return R.ok(Collections.EMPTY_LIST);
 		}
 		//不显示超级管理员角色
