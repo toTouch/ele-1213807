@@ -225,7 +225,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             });
         }
-        return R.ok(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getUpdateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
     }
 
     @Override
