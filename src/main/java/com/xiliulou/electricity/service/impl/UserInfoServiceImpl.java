@@ -133,6 +133,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfo.setBatteryAreaId(store.getAreaId());
             rentBatteryOrder.setBatteryStoreId(store.getId());
             rentBatteryOrder.setBatteryStoreName(store.getName());
+        }else {
+            if(Objects.nonNull(oldElectricityBattery.getShopId())){
+                Store store = storeService.queryByIdFromCache(oldElectricityBattery.getShopId());
+                if (Objects.isNull(store)) {
+                    return R.fail("ELECTRICITY.0018", "未找到门店");
+                }
+                userInfo.setBatteryAreaId(store.getAreaId());
+                rentBatteryOrder.setBatteryStoreId(store.getId());
+                rentBatteryOrder.setBatteryStoreName(store.getName());
+            }
         }
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
