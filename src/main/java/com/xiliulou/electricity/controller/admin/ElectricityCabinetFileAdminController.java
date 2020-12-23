@@ -46,7 +46,7 @@ public class ElectricityCabinetFileAdminController {
    /* @Autowired
     GetStorageService getStorageService;
     StorageService storageService=getStorageService.getStorageService(storageConfig.getIsUseOSS());*/
-    @Qualifier("minioService")
+    @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
 
