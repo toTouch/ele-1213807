@@ -160,7 +160,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public User queryByUserName(String username) {
-		return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username));
+		return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
 	}
 
 	@Override
@@ -219,7 +219,7 @@ public class UserServiceImpl implements UserService {
 			return cacheUser;
 		}
 
-		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type));
+		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL));
 		if (Objects.isNull(user)) {
 			return null;
 		}
@@ -246,14 +246,14 @@ public class UserServiceImpl implements UserService {
 
 		if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
 			User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE);
-			if (!Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
+			if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
 				return Pair.of(false, "手机号已存在！无法修改!");
 			}
 		}
 
 		if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
 			User nameUser = queryByUserName(adminUserQuery.getName());
-			if (!Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
+			if (Objects.nonNull(nameUser) && !Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
 				return Pair.of(false, "用户名已经存在！无法修改！");
 			}
 		}

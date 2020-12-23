@@ -56,7 +56,7 @@ public class JsonAdminUserController extends BaseController {
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "type", required = false) Integer type,
-			@RequestParam(value = "startTime", required = false) Long startTime,
+			@RequestParam(value = "beginTime", required = false) Long startTime,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
 		if (size < 0 || size > 50) {
 			size = 10;
