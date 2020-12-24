@@ -43,4 +43,7 @@ public class ElectricityCabinetQuery {
 	private Double distance;
 	private Double lon;
 	private Double lat;
+
+	private Long beginTime;
+	private Long endTime;
 }

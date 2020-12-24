@@ -50,7 +50,7 @@
             and area_id = #{query.areaId}
         </if>
         <if test="query.address != null and query.address != ''">
-            and address = #{query.address}
+            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
         </if>
         <if test="query.usableStatus != null">
             and usable_status = #{query.usableStatus}
@@ -61,7 +61,13 @@
         <if test="query.onlineStatus != null">
             and online_status = #{query.onlineStatus}
         </if>
-        order by update_time desc
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 

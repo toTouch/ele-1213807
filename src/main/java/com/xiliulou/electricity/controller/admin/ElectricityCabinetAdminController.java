@@ -56,7 +56,9 @@ public class ElectricityCabinetAdminController {
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                        @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
-                       @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus) {
+                       @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size)) {
             size = 10;
         }
@@ -74,7 +76,9 @@ public class ElectricityCabinetAdminController {
                 .address(address)
                 .usableStatus(usableStatus)
                 .powerStatus(powerStatus)
-                .onlineStatus(onlineStatus).build();
+                .onlineStatus(onlineStatus)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }
