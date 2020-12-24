@@ -158,7 +158,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",5*1000L,false);
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",3*1000L,false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -226,7 +226,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",5*1000L,false);
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",3*1000L,false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
