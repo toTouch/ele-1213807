@@ -60,8 +60,8 @@
             <if test="query.endTime != null">
                 and teco.create_time &lt;=#{query.endTime}
             </if>
-            <if test="query.payAmount != null">
-                and teco.pay_amount = #{query.payAmount}
+            <if test="query.paymentMethod != null">
+                and teco.payment_method = #{query.paymentMethod}
             </if>
             <if test="query.areaId != null">
                 and tec.area_id = #{query.areaId}
