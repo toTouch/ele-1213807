@@ -155,7 +155,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //去重
+        //操作频繁
         boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_UID+user.getUid(), "1",15*1000L,false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");

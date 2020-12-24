@@ -152,6 +152,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     @Transactional
     public R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //操作频繁
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",5*1000L,false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
         ElectricityCabinet electricityCabinet = new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddAndUpdate, electricityCabinet);
         if (Objects.isNull(electricityCabinet.getPowerStatus())) {
@@ -210,6 +220,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     @Transactional
     public R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //操作频繁
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",5*1000L,false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
         ElectricityCabinet electricityCabinet = new ElectricityCabinet();
         BeanUtil.copyProperties(electricityCabinetAddAndUpdate, electricityCabinet);
         ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());

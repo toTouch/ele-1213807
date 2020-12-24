@@ -39,4 +39,6 @@ public interface ElectricityCabinetConstant {
     String CACHE_SERVICE_PHONE = "CACHE_SERVICE_PHONE:";
     //下单缓存
     String ORDER_UID = "order_uid:";
+    //新增换电柜缓存
+    String ELE_SAVE_UID = "ele_save_uid:";
 }
