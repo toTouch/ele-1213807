@@ -41,6 +41,8 @@ public class ElectricityCabinetOrderQuery {
      */
     private Integer areaId;
 
+    private Integer paymentMethod;
+
 
 
 }

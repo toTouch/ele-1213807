@@ -37,7 +37,8 @@ public class ElectricityCabinetOrderAdminController {
                        @RequestParam(value = "areaId", required = false) Integer areaId,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
 
         if (Objects.isNull(size)) {
             size = 10;
@@ -55,7 +56,8 @@ public class ElectricityCabinetOrderAdminController {
                 .areaId(areaId)
                 .status(status)
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .paymentMethod(paymentMethod).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
 
