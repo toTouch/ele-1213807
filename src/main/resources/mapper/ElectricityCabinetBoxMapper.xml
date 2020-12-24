@@ -126,7 +126,7 @@
         update electricity.t_electricity_cabinet_box
         set update_time = #{query.updateTime},
         <if test="query.boxStatus != null">
-            box_status = #{query.boxStatus},
+            box_status = #{query.boxStatus}
         </if>
         where electricity_cabinet_id = #{query.electricityCabinetId}
     </update>
