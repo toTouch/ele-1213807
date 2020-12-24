@@ -43,6 +43,8 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.text.DateFormat;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -172,8 +174,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (!Objects.equals(index, -1) && index > 0) {
                     Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                     Long now = System.currentTimeMillis();
-                    Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                    Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                    Long beginTime= getTime(totalBeginTime);
+                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                    Long endTime= getTime(totalEndTime);
                     if (firstToday + beginTime > now || firstToday + endTime < now) {
                         return R.fail("ELECTRICITY.0017", "换电柜已打烊");
                     }
@@ -590,6 +594,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 cellNo +userId +
                 RandomUtil.randomNumbers(2);
     }
-
+    public Long getTime(Long time) {
+        Date date1 = new Date(time);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = dateFormat.format(date1);
+        Date date2 = null;
+        try {
+            date2 = dateFormat.parse(format);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Long ts = date2.getTime();
+        return time-ts;
+    }
 
 }

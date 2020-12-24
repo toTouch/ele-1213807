@@ -42,6 +42,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -379,8 +382,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         Integer index = businessTime.indexOf("-");
                         if (!Objects.equals(index, -1) && index > 0) {
                             e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
-                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                            Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long beginTime= getTime(totalBeginTime);
+                            Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                            Long endTime= getTime(totalEndTime);
                             e.setBeginTime(beginTime);
                             e.setEndTime(endTime);
                             Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -553,8 +558,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     Integer index = businessTime.indexOf("-");
                     if (!Objects.equals(index, -1) && index > 1) {
                         electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
-                        Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                        Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long beginTime= getTime(totalBeginTime);
+                        Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long endTime= getTime(totalEndTime);
                         electricityCabinetVO.setBeginTime(beginTime);
                         electricityCabinetVO.setEndTime(endTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -902,8 +909,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     Integer index = businessTime.indexOf("-");
                     if (!Objects.equals(index, -1) && index > 1) {
                         electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
-                        Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                        Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long beginTime= getTime(totalBeginTime);
+                        Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long endTime= getTime(totalEndTime);
                         electricityCabinetVO.setBeginTime(beginTime);
                         electricityCabinetVO.setEndTime(endTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -937,5 +946,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+    }
+
+    public Long getTime(Long time) {
+        Date date1 = new Date(time);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = dateFormat.format(date1);
+        Date date2 = null;
+        try {
+            date2 = dateFormat.parse(format);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Long ts = date2.getTime();
+        return time-ts;
     }
 }
