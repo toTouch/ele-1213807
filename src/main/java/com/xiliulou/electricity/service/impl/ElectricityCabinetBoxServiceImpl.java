@@ -93,17 +93,19 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
-            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-            electricityCabinetBox.setElectricityCabinetId(id);
-            electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
-            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_CLOSE_DOOR);
-            electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
-            electricityCabinetBox.setCellNo(String.valueOf(i));
-            electricityCabinetBox.setCreateTime(System.currentTimeMillis());
-            electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-            electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-            electricityCabinetBoxMapper.insertOne(electricityCabinetBox);
+        if(Objects.nonNull(id)) {
+            for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
+                ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+                electricityCabinetBox.setElectricityCabinetId(id);
+                electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
+                electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_CLOSE_DOOR);
+                electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+                electricityCabinetBox.setCellNo(String.valueOf(i));
+                electricityCabinetBox.setCreateTime(System.currentTimeMillis());
+                electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+                electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
+                electricityCabinetBoxMapper.insertOne(electricityCabinetBox);
+            }
         }
     }
 
