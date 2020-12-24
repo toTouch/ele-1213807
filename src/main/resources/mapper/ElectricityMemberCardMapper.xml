@@ -10,6 +10,9 @@
             <if test="status != null">
                 AND status = #{status}
             </if>
+            <if test="type != null">
+                AND type = #{type}
+            </if>
 
         </where>
 

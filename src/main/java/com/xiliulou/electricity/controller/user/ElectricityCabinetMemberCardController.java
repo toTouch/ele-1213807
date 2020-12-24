@@ -32,6 +32,6 @@ public class ElectricityCabinetMemberCardController {
     public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
                                        @RequestParam(value = "size", required = true) Long size
     ) {
-        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, null, ElectricityMemberCard.STATUS_USEABLE);
+        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, null, ElectricityMemberCard.STATUS_USEABLE,null);
     }
 }
