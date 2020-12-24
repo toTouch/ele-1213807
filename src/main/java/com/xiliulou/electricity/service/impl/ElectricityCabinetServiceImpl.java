@@ -386,8 +386,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             Long beginTime= getTime(totalBeginTime);
                             Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
                             Long endTime= getTime(totalEndTime);
-                            e.setBeginTime(beginTime);
-                            e.setEndTime(endTime);
+                            e.setBeginTime(totalBeginTime);
+                            e.setEndTime(totalEndTime);
                             Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                             Long now = System.currentTimeMillis();
                             if (firstToday + beginTime > now || firstToday + endTime < now) {
@@ -562,8 +562,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         Long beginTime= getTime(totalBeginTime);
                         Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
                         Long endTime= getTime(totalEndTime);
-                        electricityCabinetVO.setBeginTime(beginTime);
-                        electricityCabinetVO.setEndTime(endTime);
+                        electricityCabinetVO.setBeginTime(totalBeginTime);
+                        electricityCabinetVO.setEndTime(totalEndTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                         if (firstToday + beginTime > now || firstToday + endTime < now) {
                             electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
@@ -913,8 +913,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         Long beginTime= getTime(totalBeginTime);
                         Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
                         Long endTime= getTime(totalEndTime);
-                        electricityCabinetVO.setBeginTime(beginTime);
-                        electricityCabinetVO.setEndTime(endTime);
+                        electricityCabinetVO.setBeginTime(totalBeginTime);
+                        electricityCabinetVO.setEndTime(totalEndTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                         if (firstToday + beginTime > now || firstToday + endTime < now) {
                             electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
