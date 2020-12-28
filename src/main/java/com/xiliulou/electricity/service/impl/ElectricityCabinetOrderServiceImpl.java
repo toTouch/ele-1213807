@@ -15,12 +15,13 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.handler.ElectricityCabinetHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.queue.ElectricityCabinetOperateQueueHandler;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -36,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -52,6 +52,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -76,7 +77,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Autowired
     CityService cityService;
     @Autowired
-    ElectricityCabinetOperateQueueHandler electricityCabinetOperateQueueHandler;
+    ElectricityCabinetHardwareHandlerManager electricityCabinetHardwareHandlerManager;
 
 
 
@@ -261,18 +262,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
             //放redis 订单id 定时任务处理取消订单
             redisService.zsetAddString("orderId", electricityCabinetOrder.getOrderId(), System.currentTimeMillis() + 360 * 1000);
-            //TODO 4.开旧电池门 模拟开门
-            //正常开门
+            //4.开旧电池门
+            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
-            dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
+            dataMap.put("cell_no", cellNo);
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(electricityCabinetOrder.getId() + "_" + 1)
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
                     .data(dataMap)
-                    .productKey("11111")
-                    .deviceName("222222")
-                    .command("replace_update_old")
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            electricityCabinetOperateQueueHandler.putTerminalQueue(comm);
+            electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(electricityCabinetOrder.getOrderId());
         } catch (Exception e) {
             log.error("order is error" + e);
@@ -336,32 +338,35 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", electricityCabinetOrder.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        //TODO 发送命令 模拟开门
         //旧电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
+            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(electricityCabinetOrder.getId() + "_" + 1)
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
                     .data(dataMap)
-                    .productKey("11111")
-                    .deviceName("222222")
-                    .command("replace_update_old")
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            electricityCabinetOperateQueueHandler.putTerminalQueue(comm);
+            electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         //新电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
+            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
-            dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
+            dataMap.put("cell_no", electricityCabinetOrder.getNewCellNo());
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(electricityCabinetOrder.getId() + "_" + 1)
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
                     .data(dataMap)
-                    .productKey("11111")
-                    .deviceName("222222")
-                    .command("replace_update_new")
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            electricityCabinetOperateQueueHandler.putTerminalQueue(comm);
+            electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         return R.ok();
     }

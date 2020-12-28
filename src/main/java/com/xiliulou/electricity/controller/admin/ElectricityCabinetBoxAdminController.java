@@ -1,15 +1,23 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
+import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.HardwareCommand;
+import com.xiliulou.electricity.handler.ElectricityCabinetHardwareHandlerManager;
+import com.xiliulou.electricity.handler.NormalElectricityCabinetCellHandlerIot;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表控制层
@@ -26,6 +34,8 @@ public class ElectricityCabinetBoxAdminController {
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    ElectricityCabinetHardwareHandlerManager electricityCabinetHardwareHandlerManager;
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetBox/list")
@@ -58,7 +68,6 @@ public class ElectricityCabinetBoxAdminController {
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("ELECTRICITY.0006","未找到此仓门");
         }
-        //TODO 发送命令
         return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 
@@ -79,7 +88,18 @@ public class ElectricityCabinetBoxAdminController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005","未找到换电柜");
         }
-        //TODO 发送命令
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
+                .build();
+        electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
         electricityCabinetBox.setId(id);
         electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
@@ -105,7 +125,16 @@ public class ElectricityCabinetBoxAdminController {
                 return R.fail("ELECTRICITY.0013","仓门有订单，不能开门");
             }
         }
-        //TODO 发送命令
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR)
+                .build();
+        electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityCabinetId(electricityCabinetId);
         electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);

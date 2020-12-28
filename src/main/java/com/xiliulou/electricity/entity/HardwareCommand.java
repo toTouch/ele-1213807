@@ -14,6 +14,7 @@ public class HardwareCommand {
 	//开门命令：
 	public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
 	public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
+	public static final String ELE_COMMAND_CELL_ALL_OPEN_DOOR = "cell_all_open_door";
 	//开灯命令
 	public static final String ELE_COMMAND_CELL_OPEN_LIGHT = "cell_open_light";
 	public static final String ELE_COMMAND_CELL_CLOSE_LIGHT = "cell_close_light";
