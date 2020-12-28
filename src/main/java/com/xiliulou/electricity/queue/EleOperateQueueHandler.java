@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
@@ -21,12 +22,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -40,14 +39,14 @@ import java.util.stream.Collectors;
 
 @Service
 @Slf4j
-public class ElectricityCabinetOperateQueueHandler {
+public class EleOperateQueueHandler {
 
     ExecutorService executorService = Executors.newFixedThreadPool(20);
     ExecutorService startService = Executors.newFixedThreadPool(1);
     ExecutorService TerminalStartService = Executors.newFixedThreadPool(1);
 
     private volatile boolean shutdown = false;
-    private final LinkedBlockingQueue<OperateResultDto> queue = new LinkedBlockingQueue<>();
+    private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
     private final LinkedBlockingQueue<HardwareCommandQuery> TerminalQueue = new LinkedBlockingQueue<>();
 
     @Autowired
@@ -78,18 +77,14 @@ public class ElectricityCabinetOperateQueueHandler {
         log.info("初始化换电柜操作响应处理器");
         startService.execute(() -> {
             while (!shutdown) {
-                OperateResultDto operateResultDto = null;
+                EleOpenDTO eleOpenDTO = null;
                 try {
-                    operateResultDto = queue.take();
-                    log.info(" QUEUE get a message ={}", operateResultDto);
+                    eleOpenDTO = queue.take();
+                    log.info(" QUEUE get a message ={}", eleOpenDTO);
 
-                    OperateResultDto finalOperDTO = operateResultDto;
+                    EleOpenDTO finalOpenDTO = eleOpenDTO;
                     executorService.execute(() -> {
-                        //去重
-                        boolean result = redisService.setNx(finalOperDTO.getSessionId()+finalOperDTO.getOperateFlowNum(), "1",300*1000L,false);
-                        if (result) {
-                            handleOrderAfterOperated(finalOperDTO);
-                        }
+                            handleOrderAfterOperated(finalOpenDTO);
                     });
 
                 } catch (Exception e) {
@@ -131,7 +126,7 @@ public class ElectricityCabinetOperateQueueHandler {
      */
     private void handleOrderAfterTerminalOperated(HardwareCommandQuery commandQuery) {
 
-        if (commandQuery.getCommand().contains("replace_update_old")) {
+     /*   if (commandQuery.getCommand().contains("replace_update_old")) {
             //换电命令第一步 换旧电池
             log.info("replaceOldBattery:{}", commandQuery);
             replaceOldBattery(commandQuery);
@@ -139,11 +134,11 @@ public class ElectricityCabinetOperateQueueHandler {
             //换电命令第二步 ,换新电池
             log.info("replaceNewBattery:{}", commandQuery);
             replaceNewBattery(commandQuery);
-        }
+        }*/
 
     }
 
-    private void replaceNewBattery(HardwareCommandQuery commandQuery) {
+   /* private void replaceNewBattery(HardwareCommandQuery commandQuery) {
         Random random = new Random();
         OperateResultDto operateResultDto = new OperateResultDto();
         operateResultDto.setSessionId(commandQuery.getSessionId());
@@ -193,24 +188,24 @@ public class ElectricityCabinetOperateQueueHandler {
         }
 
 
-    }
+    }*/
 
 
     /**
      * 接收到响应的操作信息
      *
-     * @param finalOperDTO
+     * @param finalOpenDTO
      */
-    private void handleOrderAfterOperated(OperateResultDto finalOperDTO) {
-        log.info("finalOperDTO is -->{}" + finalOperDTO);
-        String sessionId = finalOperDTO.getSessionId();
-        Boolean result = finalOperDTO.getResult();
+    private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
+        String sessionId = finalOpenDTO.getSessionId();
+        Boolean result = finalOpenDTO.getOperResult();
         Long oid = Long.parseLong(sessionId.substring(0, sessionId.indexOf("_")));
+        Integer type = Integer.parseInt(sessionId.substring(sessionId.indexOf("_")+1));
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByIdFromDB(oid);
         if (Objects.isNull(electricityCabinetOrder)) {
             return;
         }
-        if (Objects.equals(finalOperDTO.getOperateFlowNum(), OperateResultDto.OPERATE_FLOW_NUM_OPEN_OLD)) {
+        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_NUM_OPEN_OLD)) {
             Integer openType = Integer.parseInt(sessionId.substring(sessionId.indexOf("_") + 1));
             if (Objects.equals(openType, 1)) {
                 openOldBatteryDoor(electricityCabinetOrder, result);
@@ -219,19 +214,19 @@ public class ElectricityCabinetOperateQueueHandler {
                 webOpenOldBatteryDoor(electricityCabinetOrder, result);
             }
         }
-        if (Objects.equals(finalOperDTO.getOperateFlowNum(), OperateResultDto.OPERATE_FLOW_CLOSE_OLD)) {
+        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CLOSE_OLD)) {
             closeOldBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(finalOperDTO.getOperateFlowNum(), OperateResultDto.OPERATE_FLOW_CHECK_BATTERY)) {
+        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CHECK_BATTERY)) {
             checkOldBattery(electricityCabinetOrder, result);
         }
-        if (Objects.equals(finalOperDTO.getOperateFlowNum(), OperateResultDto.OPERATE_FLOW_NUM_OPEN_NEW)) {
+        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_NUM_OPEN_NEW)) {
             openNewBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(finalOperDTO.getOperateFlowNum(), OperateResultDto.OPERATE_FLOW_TAKE_BATTERY)) {
+        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_TAKE_BATTERY)) {
             closeNewBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(finalOperDTO.getOperateFlowNum(), OperateResultDto.OPERATE_FLOW_CLOSE_BOX)) {
+        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CLOSE_BOX)) {
             checkNewBattery(electricityCabinetOrder, result);
         }
 
@@ -243,9 +238,9 @@ public class ElectricityCabinetOperateQueueHandler {
         executorService.shutdown();
     }
 
-    public void putQueue(OperateResultDto operateResultDto) {
+    public void putQueue(EleOpenDTO eleOpenDTO) {
         try {
-            queue.put(operateResultDto);
+            queue.put(eleOpenDTO);
         } catch (InterruptedException e) {
             log.error("LOCKER OPERATE QUEUE ERROR!", e);
         }

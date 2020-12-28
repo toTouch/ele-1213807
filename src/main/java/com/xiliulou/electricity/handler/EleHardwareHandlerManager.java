@@ -23,9 +23,9 @@ import java.util.Objects;
  */
 @Service
 @Slf4j
-public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerManager {
+public class EleHardwareHandlerManager extends HardwareHandlerManager {
 	@Autowired
-	NormalElectricityCabinetCellHandlerIot normalElectricityCabinetCellHandlerIot;
+	NormalEleCellHandlerIot normalEleCellHandlerIot;
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
@@ -50,7 +50,7 @@ public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerMan
 				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_SET_VOLTAGE)
 				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_SET_CURRENT)
 		) {
-			return normalElectricityCabinetCellHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
+			return normalEleCellHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
 		} else {
 			log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
 			return Pair.of(false, "");
@@ -68,6 +68,7 @@ public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerMan
 				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 				return false;
 			}
+			//在线状态修改 TODO 在线状态参数
 			ElectricityCabinet newElectricityCabinet=new ElectricityCabinet();
 			newElectricityCabinet.setId(electricityCabinet.getId());
 			Integer status=1;
@@ -75,6 +76,7 @@ public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerMan
 				status=0;
 			}
 			newElectricityCabinet.setOnlineStatus(status);
+			newElectricityCabinet.setPowerStatus(status);
 			if (electricityCabinetService.update(newElectricityCabinet) > 0) {
 				redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
 				redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
@@ -86,7 +88,7 @@ public class ElectricityCabinetHardwareHandlerManager extends HardwareHandlerMan
 		}
 
 		if (receiverMessage.getType().contains("cell")) {
-			return normalElectricityCabinetCellHandlerIot.receiveMessageProcess(receiverMessage);
+			return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
 		} else if (receiverMessage.getType().contains("core")) {
 			return true;
 		} else {

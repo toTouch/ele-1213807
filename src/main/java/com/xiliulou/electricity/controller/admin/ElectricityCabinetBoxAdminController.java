@@ -5,8 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.handler.ElectricityCabinetHardwareHandlerManager;
-import com.xiliulou.electricity.handler.NormalElectricityCabinetCellHandlerIot;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -35,7 +34,7 @@ public class ElectricityCabinetBoxAdminController {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
-    ElectricityCabinetHardwareHandlerManager electricityCabinetHardwareHandlerManager;
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetBox/list")
@@ -99,7 +98,7 @@ public class ElectricityCabinetBoxAdminController {
                 .deviceName(electricityCabinet.getDeviceName())
                 .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                 .build();
-        electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
         electricityCabinetBox.setId(id);
         electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
@@ -134,7 +133,7 @@ public class ElectricityCabinetBoxAdminController {
                 .deviceName(electricityCabinet.getDeviceName())
                 .command(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR)
                 .build();
-        electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityCabinetId(electricityCabinetId);
         electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);

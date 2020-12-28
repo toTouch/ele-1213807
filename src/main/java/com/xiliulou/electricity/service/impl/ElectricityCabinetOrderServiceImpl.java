@@ -17,7 +17,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.UserInfo;
-import com.xiliulou.electricity.handler.ElectricityCabinetHardwareHandlerManager;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
@@ -77,7 +77,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Autowired
     CityService cityService;
     @Autowired
-    ElectricityCabinetHardwareHandlerManager electricityCabinetHardwareHandlerManager;
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
 
 
@@ -274,7 +274,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(electricityCabinetOrder.getOrderId());
         } catch (Exception e) {
             log.error("order is error" + e);
@@ -351,7 +351,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         //新电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
@@ -366,7 +366,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            electricityCabinetHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         return R.ok();
     }

@@ -1,13 +1,15 @@
 package com.xiliulou.electricity.handler;
 import cn.hutool.core.util.StrUtil;
-import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.dto.EleOpenDTO;
+import com.xiliulou.electricity.dto.EleOpenDTO.EleOpenDTOBuilder;
+import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import shaded.org.apache.commons.lang3.tuple.Pair;
@@ -16,16 +18,21 @@ import org.springframework.stereotype.Service;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
+
 /**
- * @author: eclair
- * @Date: 2019/11/9 17:02
+ * @author: lxc
+ * @Date: 2020/12/28 17:02
  * @Description:
  */
 @Service
 @Slf4j
-public class NormalElectricityCabinetCellHandlerIot extends AbstractIotMessageHandler {
+public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
+	@Autowired
+	RedisService redisService;
+	@Autowired
+	EleOperateQueueHandler eleOperateQueueHandler;
 
 	@Override
 	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -43,6 +50,22 @@ public class NormalElectricityCabinetCellHandlerIot extends AbstractIotMessageHa
 		if (StrUtil.isEmpty(sessionId)) {
 			log.error("no sessionId,{}", receiverMessage.getOriginContent());
 			return false;
+		}
+		EleOpenDTOBuilder builder = EleOpenDTO.builder();
+
+		//操作回调的放在redis中
+		if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
+			redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 60L, TimeUnit.SECONDS);
+			builder.operResult(true);
+		} else {
+			redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 60L, TimeUnit.SECONDS);
+			builder.operResult(false);
+		}
+
+
+		if (sessionId.contains(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX)) {
+			EleOpenDTO eleOpenDTO = builder.sessionId(sessionId).build();
+			eleOperateQueueHandler.putQueue(eleOpenDTO);
 		}
 		//处理仓门
 
