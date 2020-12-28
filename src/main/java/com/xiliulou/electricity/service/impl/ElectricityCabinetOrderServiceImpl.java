@@ -383,7 +383,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (successTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }
-        return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100).divide(BigDecimal.valueOf(countTotal),BigDecimal.ROUND_HALF_EVEN));
+        return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal),BigDecimal.ROUND_HALF_EVEN);
     }
 
     @Override
