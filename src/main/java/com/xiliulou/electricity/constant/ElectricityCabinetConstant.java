@@ -3,6 +3,8 @@ package com.xiliulou.electricity.constant;
 public interface ElectricityCabinetConstant {
     //换电柜缓存
     String CACHE_ELECTRICITY_CABINET = "electricity_cabinet:";
+    //换电柜缓存
+    String CACHE_ELECTRICITY_CABINET_DEVICE = "electricity_cabinet_device:";
     //换电柜型号缓存
     String CACHE_ELECTRICITY_CABINET_MODEL = "electricity_cabinet_model:";
     //电池型号

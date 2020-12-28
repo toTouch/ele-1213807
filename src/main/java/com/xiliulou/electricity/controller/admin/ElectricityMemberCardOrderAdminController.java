@@ -31,7 +31,7 @@ public class ElectricityMemberCardOrderAdminController {
                                           @RequestParam(value = "size") Long size,
                                           @RequestParam(value = "phone", required = false) String phone,
                                           @RequestParam(value = "orderId", required = false) String orderId,
-                                          @RequestParam(value = "cardType", required = false) Integer cardType,
+                                          @RequestParam(value = "memberCardType", required = false) Integer cardType,
                                           @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                                           @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 

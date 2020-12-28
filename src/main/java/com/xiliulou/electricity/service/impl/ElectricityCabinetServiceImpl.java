@@ -210,6 +210,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
             //添加快递柜格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
             return electricityCabinet;
@@ -289,6 +290,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
@@ -314,6 +316,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
+            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             return null;
         });
@@ -482,6 +485,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
         return R.ok();
     }
 
@@ -502,6 +506,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
         return R.ok();
     }
 
@@ -852,9 +857,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
-                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName)
-                .eq(ElectricityCabinet::getDeviceSecret, deviceSecret).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
+        ElectricityCabinet electricityCabinet =queryFromCacheByProductAndDeviceName(productKey,deviceName);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
@@ -957,6 +960,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
         electricityCabinetVO.setElectricityBatteryFormat(set);
         return R.ok(electricityCabinetVO);
+    }
+
+    @Override
+    public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
+        //先查缓存
+        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey+deviceName, ElectricityCabinet.class);
+        if (Objects.nonNull(cacheElectricityCabinet)) {
+            return cacheElectricityCabinet;
+        }
+        //缓存没有再查数据库
+        ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
+                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
+        if (Objects.isNull(electricityCabinet)) {
+            return null;
+        }
+        //放入缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey+deviceName, electricityCabinet);
+        return electricityCabinet;
     }
 
 

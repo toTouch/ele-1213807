@@ -74,4 +74,6 @@ public interface ElectricityCabinetService {
     R home();
 
     R queryByDevice(String productKey, String deviceName,String deviceSecret);
+
+    ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName);
 }

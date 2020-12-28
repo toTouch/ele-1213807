@@ -5,6 +5,7 @@ import com.xiliulou.cache.redis.EnableRedis;
 import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
 import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
 import com.xiliulou.core.xxl.EnableXllXxlJob;
+import com.xiliulou.iot.EnableIot;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.storage.EnableStorage;
 import org.mybatis.spring.annotation.MapperScan;
@@ -22,7 +23,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDiscoveryClient
 @EnableCircuitBreaker
 @EnableRedis
-/*@EnableIot*/
+@EnableIot
 @EnableStorage
 @EnableXllRestTemplate
 @EnableDynamicDataSource
