@@ -33,6 +33,8 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_CELL_CHARGE_CLOSE = "cell_charge_close";
 	public static final String ELE_COMMAND_CELL_SET_VOLTAGE = "cell_set_voltage";
 	public static final String ELE_COMMAND_CELL_SET_CURRENT = "cell_set_current";
+	//禁用可用命令
+	public static final String ELE_COMMAND_CELL_UPDATE = "cell_update";
 
 
 	public static final Map<String, String> CUPBOARD_COMMAND_MAPS = Maps.newHashMap();
@@ -54,5 +56,6 @@ public class HardwareCommand {
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_CHARGE_CLOSE, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_VOLTAGE, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_CURRENT, "OK");
+		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_UPDATE, "OK");
 	}
 }

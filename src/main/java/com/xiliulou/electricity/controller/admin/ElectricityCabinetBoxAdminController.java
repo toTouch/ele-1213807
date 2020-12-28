@@ -67,6 +67,24 @@ public class ElectricityCabinetBoxAdminController {
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("ELECTRICITY.0006","未找到此仓门");
         }
+        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005","未找到换电柜");
+        }
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+        dataMap.put("distribute", oldElectricityCabinetBox.getUsableStatus());
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+                .build();
+
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 
