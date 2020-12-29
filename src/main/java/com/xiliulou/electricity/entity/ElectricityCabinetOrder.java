@@ -99,10 +99,10 @@ public class ElectricityCabinetOrder {
     public static final Integer STATUS_ORDER_OLD_BATTERY_OPEN_DOOR = 2;
     //旧电池检测成功(旧电池门未关)
     public static final Integer STATUS_ORDER_OLD_BATTERY_DETECT = 3;
+
+
     //旧电池已存入(旧电池关门)
     public static final Integer STATUS_ORDER_OLD_BATTERY_DEPOSITED = 4;
-
-
     //新电池开门
     public static final Integer STATUS_ORDER_NEW_BATTERY_OPEN_DOOR = 5;
     //新电池关门(新电池检测中)

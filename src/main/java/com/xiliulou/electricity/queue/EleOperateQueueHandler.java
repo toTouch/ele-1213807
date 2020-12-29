@@ -284,6 +284,7 @@ public class EleOperateQueueHandler {
         electricityCabinetOrderService.update(electricityCabinetOrder);
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
+
                 .cellNo(electricityCabinetOrder.getOldCellNo())
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
