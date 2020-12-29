@@ -6,15 +6,19 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.OperateResultDto;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -66,6 +71,12 @@ public class EleOperateQueueHandler {
 
     @Autowired
     UserInfoService userInfoService;
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -383,16 +394,19 @@ public class EleOperateQueueHandler {
                 oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.update(oldElectricityBattery);
                 //新电池开门
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+                //发送命令
                 HashMap<String, Object> dataMap = Maps.newHashMap();
-                dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
+                dataMap.put("cell_no", cellNo);
+
                 HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                        .sessionId(electricityCabinetOrder.getId() + "_" + 1)
+                        .sessionId(UUID.randomUUID().toString().replace("-", ""))
                         .data(dataMap)
-                        .productKey("11111")
-                        .deviceName("222222")
-                        .command("replace_update_new")
+                        .productKey(electricityCabinet.getProductKey())
+                        .deviceName(electricityCabinet.getDeviceName())
+                        .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                         .build();
-                putTerminalQueue(comm);
+                eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             } catch (Exception e) {
                 log.error("e" + e);
             } finally {
@@ -400,16 +414,20 @@ public class EleOperateQueueHandler {
             }
         } else {
             //弹出开门
+            //新电池开门
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(electricityCabinetOrder.getId() + "_" + 2)
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
                     .data(dataMap)
-                    .productKey("11111")
-                    .deviceName("222222")
-                    .command("replace_update_old")
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                     .build();
-            putTerminalQueue(comm);
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
     }
 
