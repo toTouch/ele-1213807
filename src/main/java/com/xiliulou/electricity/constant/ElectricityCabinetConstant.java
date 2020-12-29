@@ -46,8 +46,13 @@ public interface ElectricityCabinetConstant {
     //修改换电柜缓存
     String ELE_EDIT_UID = "ele_edit_uid:";
 
-    public static final String ELE_OPERATOR_CACHE_KEY = "ele_oper:";
+    String ELE_OPERATOR_CACHE_KEY = "ele_oper:";
 
     //换电柜开门的前缀
-    public static final String ELE_OPERATOR_SESSION_PREFIX = "ele";
+    String ELE_OPERATOR_SESSION_PREFIX = "ele";
+    //用户开门
+    String ELE_OPEN_DOOR_TYPE_USER = "1";
+    //弹出门
+    String ELE_OPEN_DOOR_TYPE_WEB = "2";
+
 }

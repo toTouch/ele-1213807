@@ -94,20 +94,22 @@ public class ElectricityCabinetOrder {
     private Long updateTime;
 
     //已支付未开门
-    public static final Integer STATUS_ORDER_PAY = 1;
+    public static final Integer STATUS_ORDER_PAY = 0;
     //旧电池开门
-    public static final Integer STATUS_ORDER_OLD_BATTERY_OPEN_DOOR = 2;
-    //旧电池检测(旧电池关门)
-    public static final Integer STATUS_ORDER_OLD_BATTERY_DETECT = 3;
-    //旧电池已存入
+    public static final Integer STATUS_ORDER_OLD_BATTERY_OPEN_DOOR = 1;
+    //旧电池检测成功(旧电池门未关)
+    public static final Integer STATUS_ORDER_OLD_BATTERY_DETECT = 2;
+    //旧电池关门(旧电池检测中)
+    public static final Integer STATUS_ORDER_OLD_BATTERY_CLOSE_DOOR = 3;
+    //旧电池已存入(旧门关且旧电池检测成功)
     public static final Integer STATUS_ORDER_OLD_BATTERY_DEPOSITED = 4;
 
 
     //新电池开门
     public static final Integer STATUS_ORDER_NEW_BATTERY_OPEN_DOOR = 5;
-    //新电池检测(新电池关门)
+    //新电池关门(新电池检测中)
     public static final Integer STATUS_ORDER_NEW_BATTERY_CLOSE_DOOR = 6;
-    //订单完成
+    //订单完成(新电池检测成功)
     public static final Integer STATUS_ORDER_COMPLETE = 7;
     //订单异常结束
     public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 8;

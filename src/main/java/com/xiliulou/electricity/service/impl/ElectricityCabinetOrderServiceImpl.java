@@ -268,7 +268,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cell_no", cellNo);
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -345,7 +345,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -360,7 +360,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cell_no", electricityCabinetOrder.getNewCellNo());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
