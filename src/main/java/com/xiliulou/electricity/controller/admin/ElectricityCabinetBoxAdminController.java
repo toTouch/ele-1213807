@@ -89,7 +89,7 @@ public class ElectricityCabinetBoxAdminController {
         return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 
-    //后台一键开门
+    //后台一键开门  直接开门，如若修改用户绑定则去用户绑定修改
     @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}")
     public R openDoor(@PathVariable("id") Long id) {
         if (Objects.isNull(id)) {
@@ -103,18 +103,18 @@ public class ElectricityCabinetBoxAdminController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-            //发送命令
-            HashMap<String, Object> dataMap = Maps.newHashMap();
-            dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
-            HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
-                    .data(dataMap)
-                    .productKey(electricityCabinet.getProductKey())
-                    .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-                    .build();
-            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            return R.ok();
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
+                .build();
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        return R.ok();
     }
 
     //后台一键全开
