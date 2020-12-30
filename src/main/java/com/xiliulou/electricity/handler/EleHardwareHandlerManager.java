@@ -32,6 +32,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 	public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
 		if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("core")
+				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR)
+				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR)
 				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
 				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CORE_OPEN_DOOR)
 				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OPEN_LIGHT)

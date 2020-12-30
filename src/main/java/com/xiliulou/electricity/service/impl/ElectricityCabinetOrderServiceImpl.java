@@ -266,8 +266,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-                    .build();
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR)
+                    .orderId(electricityCabinetOrder.getOrderId())
+                    .serialNumber(electricityCabinetOrder.getOldElectricityBatterySn())
+                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(electricityCabinetOrder.getOrderId());
         } catch (Exception e) {
@@ -343,8 +345,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-                    .build();
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR)
+                    .orderId(electricityCabinetOrder.getOrderId())
+                    .serialNumber(electricityCabinetOrder.getOldElectricityBatterySn())
+                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         //新电池开门
@@ -358,8 +362,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-                    .build();
+                    .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR)
+                    .orderId(electricityCabinetOrder.getOrderId())
+                    .serialNumber(electricityCabinetOrder.getNewElectricityBatterySn())
+                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         return R.ok();

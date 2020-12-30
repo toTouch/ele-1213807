@@ -54,7 +54,7 @@ public class EleOperateQueueHandler {
 
     private volatile boolean shutdown = false;
     private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
-    private final LinkedBlockingQueue<HardwareCommandQuery> TerminalQueue = new LinkedBlockingQueue<>();
+    /*private final LinkedBlockingQueue<HardwareCommandQuery> TerminalQueue = new LinkedBlockingQueue<>();*/
 
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
@@ -345,8 +345,10 @@ public class EleOperateQueueHandler {
                         .data(dataMap)
                         .productKey(electricityCabinet.getProductKey())
                         .deviceName(electricityCabinet.getDeviceName())
-                        .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-                        .build();
+                        .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR)
+                        .orderId(electricityCabinetOrder.getOrderId())
+                        .serialNumber(electricityCabinetOrder.getNewElectricityBatterySn())
+                        .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
                 eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             } catch (Exception e) {
                 log.error("e" + e);

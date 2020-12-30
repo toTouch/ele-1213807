@@ -12,6 +12,8 @@ import java.util.Map;
 public class HardwareCommand {
 
 	//开门命令：
+	public static final String ELE_COMMAND_CELL_OLD_OPEN_DOOR = "cell_old_open_door";
+	public static final String ELE_COMMAND_CELL_NEW_OPEN_DOOR = "cell_new_open_door";
 	public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
 	public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
 	public static final String ELE_COMMAND_CELL_ALL_OPEN_DOOR = "cell_all_open_door";
@@ -40,6 +42,8 @@ public class HardwareCommand {
 	public static final Map<String, String> CUPBOARD_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
+		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_OLD_OPEN_DOOR, "OK");
+		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_NEW_OPEN_DOOR, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_DOOR, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_LIGHT, "OK");
