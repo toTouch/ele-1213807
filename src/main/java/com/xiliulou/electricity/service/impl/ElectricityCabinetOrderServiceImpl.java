@@ -260,16 +260,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", cellNo);
+            dataMap.put("order_id", electricityCabinetOrder.getOrderId());
+            dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
+            dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR)
-                    .orderId(electricityCabinetOrder.getOrderId())
-                    .serialNumber(electricityCabinetOrder.getOldElectricityBatterySn())
-                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(electricityCabinetOrder.getOrderId());
         } catch (Exception e) {
@@ -339,16 +339,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
+            dataMap.put("order_id", electricityCabinetOrder.getOrderId());
+            dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
+            dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
-                    .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR)
-                    .orderId(electricityCabinetOrder.getOrderId())
-                    .serialNumber(electricityCabinetOrder.getOldElectricityBatterySn())
-                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
+                    .deviceName(electricityCabinet.getDeviceName()).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         //新电池开门
@@ -356,16 +355,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", electricityCabinetOrder.getNewCellNo());
+            dataMap.put("order_id", electricityCabinetOrder.getOrderId());
+            dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
+            dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR)
-                    .orderId(electricityCabinetOrder.getOrderId())
-                    .serialNumber(electricityCabinetOrder.getNewElectricityBatterySn())
-                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
+                    .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         return R.ok();

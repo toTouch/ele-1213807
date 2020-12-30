@@ -339,16 +339,16 @@ public class EleOperateQueueHandler {
                 //发送命令
                 HashMap<String, Object> dataMap = Maps.newHashMap();
                 dataMap.put("cell_no", cellNo);
+                dataMap.put("order_id", electricityCabinetOrder.getOrderId());
+                dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
+                dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
 
                 HardwareCommandQuery comm = HardwareCommandQuery.builder()
                         .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId() + ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_WEB)
                         .data(dataMap)
                         .productKey(electricityCabinet.getProductKey())
                         .deviceName(electricityCabinet.getDeviceName())
-                        .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR)
-                        .orderId(electricityCabinetOrder.getOrderId())
-                        .serialNumber(electricityCabinetOrder.getNewElectricityBatterySn())
-                        .status(ElectricityCabinetOrder.STATUS_ORDER_PAY.toString()).build();
+                        .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR).build();
                 eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             } catch (Exception e) {
                 log.error("e" + e);

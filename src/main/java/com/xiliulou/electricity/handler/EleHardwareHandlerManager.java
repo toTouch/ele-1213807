@@ -31,26 +31,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 	RedisService redisService;
 
 	public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
-		if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("core")
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CORE_OPEN_DOOR)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OPEN_LIGHT)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_CLOSE_LIGHT)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CORE_OPEN_LIGHT)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CORE_CLOSE_LIGHT)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OPEN_HEAT)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_CLOSE_HEAT)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_OPEN_FAN)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_CLOSE_FAN)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CORE_OPEN_FAN)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CORE_CLOSE_FAN)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_CHARGE_OPEN)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_CHARGE_CLOSE)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_SET_VOLTAGE)
-				|| hardwareCommandQuery.getCommand().equalsIgnoreCase(HardwareCommand.ELE_COMMAND_CELL_SET_CURRENT)
-		) {
+		if (hardwareCommandQuery.getCommand().contains("cell")) {
 			return normalEleCellHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
 		} else {
 			log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
