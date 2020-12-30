@@ -149,7 +149,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
         Integer update = userInfoMapper.update(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录=
+            //添加租电池记录
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(userInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
