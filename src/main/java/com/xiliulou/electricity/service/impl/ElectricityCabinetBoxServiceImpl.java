@@ -2,18 +2,22 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.HardwareCommand;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +26,10 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -40,6 +46,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
     /**
      * 通过ID查询单条数据从DB
@@ -93,7 +101,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        if(Objects.nonNull(id)) {
+        if (Objects.nonNull(id)) {
             for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
                 ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
                 electricityCabinetBox.setElectricityCabinetId(id);
@@ -199,5 +207,64 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public Integer queryOpenCountByElectricityCabinetId(Integer id) {
         return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getBoxStatus, ElectricityCabinetBox.STATUS_OPEN_DOOR).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
+    }
+
+    @Override
+    public R openDoor(Long id, Integer type) {
+        ElectricityCabinetBox oldElectricityCabinetBox = this.queryByIdFromDB(id);
+        if (Objects.isNull(oldElectricityCabinetBox)) {
+            return R.fail("ELECTRICITY.0006", "未找到此仓门");
+        }
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        //正常开门
+        if (Objects.equals(type, 1)) {
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
+                    .build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok();
+        }
+        //开旧电池门
+        if (Objects.equals(type, 2)) {
+            //订单状态必须是
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
+                    .build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok();
+        }
+        //开新电池门
+        if (Objects.equals(type, 3)) {
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
+                    .build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok();
+        }
+        return R.ok();
     }
 }

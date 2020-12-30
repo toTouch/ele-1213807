@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
@@ -60,16 +61,16 @@ public class ElectricityCabinetBoxAdminController {
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        if(Objects.isNull(electricityCabinetBox.getId())&&Objects.isNull(electricityCabinetBox.getUsableStatus())){
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+        if (Objects.isNull(electricityCabinetBox.getId()) && Objects.isNull(electricityCabinetBox.getUsableStatus())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("ELECTRICITY.0006","未找到此仓门");
+            return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
-        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
-            return R.fail("ELECTRICITY.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
@@ -89,57 +90,32 @@ public class ElectricityCabinetBoxAdminController {
     }
 
     //后台一键开门
-    @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}")
-    public R openDoor(@PathVariable("id") Long id) {
-        if(Objects.isNull(id)){
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+    @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}/{type}")
+    public R openDoor(@PathVariable("id") Long id, @PathVariable("type") Integer type) {
+        if (Objects.isNull(id) || Objects.isNull(type)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByIdFromDB(id);
-        if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("ELECTRICITY.0006","未找到此仓门");
-        }
-        if(Objects.equals(oldElectricityCabinetBox.getStatus(),ElectricityCabinetBox.STATUS_ORDER_OCCUPY)){
-            return R.fail("ELECTRICITY.0013","仓门有订单，不能开门");
-        }
-        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
-        if (Objects.isNull(electricityCabinet)) {
-            return R.fail("ELECTRICITY.0005","未找到换电柜");
-        }
-        //发送命令
-        HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+        return electricityCabinetBoxService.openDoor(id,type);
 
-        HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(UUID.randomUUID().toString().replace("-", ""))
-                .data(dataMap)
-                .productKey(electricityCabinet.getProductKey())
-                .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
-                .build();
-        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
-        electricityCabinetBox.setId(id);
-        electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
-        return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 
     //后台一键全开
     @PostMapping(value = "/admin/electricityCabinetBox/openAllDoor/{electricityCabinetId}")
     public R openAllDoor(@PathVariable("electricityCabinetId") Integer electricityCabinetId) {
-        if(Objects.isNull(electricityCabinetId)){
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+        if (Objects.isNull(electricityCabinetId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
-            return R.fail("ELECTRICITY.0005","未找到换电柜");
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        List<ElectricityCabinetBox> electricityCabinetBoxList=electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
-            return R.fail("ELECTRICITY.0014","换电柜没有仓门，不能开门");
+            return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
         }
-        for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
-            if(Objects.equals(electricityCabinetBox.getStatus(),ElectricityCabinetBox.STATUS_ORDER_OCCUPY)){
-                return R.fail("ELECTRICITY.0013","仓门有订单，不能开门");
+        for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
+            if (Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ORDER_OCCUPY)) {
+                return R.fail("ELECTRICITY.0013", "仓门有订单，不能开门");
             }
         }
         //发送命令
@@ -152,14 +128,8 @@ public class ElectricityCabinetBoxAdminController {
                 .command(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR)
                 .build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
-        electricityCabinetBox.setElectricityCabinetId(electricityCabinetId);
-        electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        return electricityCabinetBoxService.modifyByElectricityCabinetId(electricityCabinetBox);
+        return R.ok();
     }
-
-
 
 
 }

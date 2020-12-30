@@ -59,12 +59,14 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer TYPE_OLD_BATTERY_OPEN_DOOR = 1;
     //旧电池关门
     public static final Integer TYPE_OLD_BATTERY_CLOSE_DOOR = 2;
-    //旧电池弹出
-    public static final Integer TYPE_OLD_BATTERY_WEB_OPEN_DOOR = 3;
+    //旧电池检测
+    public static final Integer TYPE_OLD_BATTERY_CHECK = 3;
     //新电池开门
     public static final Integer TYPE_NEW_BATTERY_OPEN_DOOR = 4;
     //新电池关门
     public static final Integer TYPE_NEW_BATTERY_CLOSE_DOOR = 5;
+    //旧电池检测
+    public static final Integer TYPE_NEW_BATTERY_CHECK = 6;
 
 
 }

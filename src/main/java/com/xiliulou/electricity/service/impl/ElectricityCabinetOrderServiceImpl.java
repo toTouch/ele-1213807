@@ -215,15 +215,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
-        //判断改柜子是否有未完成的订单
-        Integer orderCount = electricityCabinetBoxService.queryOrderCountByElectricityCabinetId(electricityCabinet.getId());
+        //判断改柜子是否有未完成的订单 TODO 查询app
+        /*Integer orderCount = electricityCabinetBoxService.queryOrderCountByElectricityCabinetId(electricityCabinet.getId());
         if (orderCount > 0) {
             return R.fail("ELECTRICITY.0027", "换电柜有未结束订单");
         }
         Integer openCount = electricityCabinetBoxService.queryOpenCountByElectricityCabinetId(electricityCabinet.getId());
         if (openCount > 0) {
             return R.fail("ELECTRICITY.0028", "换电柜有仓门未关闭");
-        }
+        }*/
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         try {
@@ -453,6 +453,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     @Transactional
     public R endOrder(String orderId) {
+        //结束异常订单只改订单状态，不用考虑其他
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
+        .notIn(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_COMPLETE,ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL,ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        ElectricityCabinetOrder newElectricityCabinetOrder=new ElectricityCabinetOrder();
+        newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+        newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
+        newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetOrderMapper.update(newElectricityCabinetOrder);
         return R.ok();
     }
 

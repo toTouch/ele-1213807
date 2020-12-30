@@ -73,4 +73,6 @@ public interface ElectricityCabinetBoxService {
     Integer queryOrderCountByElectricityCabinetId(Integer id);
 
     Integer queryOpenCountByElectricityCabinetId(Integer id);
+
+    R openDoor(Long id, Integer type);
 }
