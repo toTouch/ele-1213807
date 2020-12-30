@@ -254,12 +254,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
-            //修改仓门为订单中状态
-            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-            electricityCabinetBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-            electricityCabinetBox.setCellNo(cellNo);
-            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ORDER_OCCUPY);
-            electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
             //放redis 订单id 定时任务处理取消订单
             redisService.zsetAddString("orderId", electricityCabinetOrder.getOrderId(), System.currentTimeMillis() + 360 * 1000);
             //4.开旧电池门
