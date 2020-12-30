@@ -90,13 +90,31 @@ public class ElectricityCabinetBoxAdminController {
     }
 
     //后台一键开门
-    @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}/{type}")
-    public R openDoor(@PathVariable("id") Long id, @PathVariable("type") Integer type) {
-        if (Objects.isNull(id) || Objects.isNull(type)) {
+    @PostMapping(value = "/admin/electricityCabinetBox/openDoor/{id}")
+    public R openDoor(@PathVariable("id") Long id) {
+        if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        return electricityCabinetBoxService.openDoor(id,type);
-
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(id);
+        if (Objects.isNull(oldElectricityCabinetBox)) {
+            return R.fail("ELECTRICITY.0006", "未找到此仓门");
+        }
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
+                    .build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok();
     }
 
     //后台一键全开
