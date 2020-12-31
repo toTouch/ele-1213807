@@ -41,6 +41,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 	@Override
 	public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
+		//这种情况不会出现
 		if (Objects.isNull(receiverMessage.getType())) {
 			if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
 				return false;
@@ -50,7 +51,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 				return false;
 			}
-			//在线状态修改 TODO 在线状态参数
+			//在线状态修改
 			ElectricityCabinet newElectricityCabinet=new ElectricityCabinet();
 			newElectricityCabinet.setId(electricityCabinet.getId());
 			Integer status=1;
@@ -63,9 +64,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 				redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
 				redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
 			}
-		}
-
-		if (Objects.isNull(receiverMessage.getType())) {
 			return false;
 		}
 

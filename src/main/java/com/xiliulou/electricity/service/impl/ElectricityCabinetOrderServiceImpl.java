@@ -52,7 +52,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -347,7 +346,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
-                    .deviceName(electricityCabinet.getDeviceName()).build();
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_CELL_OLD_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         //新电池开门
