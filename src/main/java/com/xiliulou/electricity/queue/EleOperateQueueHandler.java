@@ -486,10 +486,6 @@ public class EleOperateQueueHandler {
     }
     //电池上报
     public void updateBattery(ElectricityCabinetBoxDTO electricityCabinetBoxDTO) {
-        //修改仓门
-        ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
-        BeanUtil.copyProperties(electricityCabinetBoxDTO,electricityCabinetNewBox);
-        electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
         //修改电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxDTO.getSerialNumber());
         ElectricityBattery newElectricityBattery=new ElectricityBattery();
