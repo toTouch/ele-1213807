@@ -465,6 +465,28 @@ public class EleOperateQueueHandler {
     //仓门上报
     public void updateCellNo(ElectricityCabinetBoxDTO electricityCabinetBoxDTO) {
         //修改仓门
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxDTO.getSerialNumber());
+        ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
+        BeanUtil.copyProperties(electricityCabinetBoxDTO,electricityCabinetNewBox);
+        electricityCabinetNewBox.setElectricityBatteryId(electricityBattery.getId());
+        electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
+        //修改电池
+        ElectricityBattery newElectricityBattery=new ElectricityBattery();
+        BeanUtil.copyProperties(electricityCabinetBoxDTO,newElectricityBattery);
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+        //仓门电池不存在则新增存在则修改
+        if(Objects.isNull(electricityBattery)){
+            newElectricityBattery.setCreateTime(System.currentTimeMillis());
+            electricityBatteryService.save(newElectricityBattery);
+        }else {
+            newElectricityBattery.setId(electricityBattery.getId());
+            electricityBatteryService.update(newElectricityBattery);
+        }
+    }
+    //电池上报
+    public void updateBattery(ElectricityCabinetBoxDTO electricityCabinetBoxDTO) {
+        //修改仓门
         ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
         BeanUtil.copyProperties(electricityCabinetBoxDTO,electricityCabinetNewBox);
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);

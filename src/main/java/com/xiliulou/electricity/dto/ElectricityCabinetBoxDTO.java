@@ -45,10 +45,6 @@ public class ElectricityCabinetBoxDTO {
      * sn码
      */
     private String serialNumber;
-    /**
-     * 电池电量
-     */
-    private Integer capacity;
 
 
 }
