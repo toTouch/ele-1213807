@@ -65,6 +65,11 @@ public class ElectricityBattery {
 
     private Integer cabinetId;
 
+    /**
+     * 0：正常 1：故障
+     */
+    private Integer healthStatus;
+
     //在仓
     public static final Integer WARE_HOUSE_STATUS = 0;
     //在库
