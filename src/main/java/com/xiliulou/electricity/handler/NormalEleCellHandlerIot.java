@@ -74,6 +74,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 			EleOpenDTO eleOpenDTO = builder.sessionId(sessionId).build();
 			eleOperateQueueHandler.putQueue(eleOpenDTO);
 		}
+
 		//修改仓门-->开门或关门
 		if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
 			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
