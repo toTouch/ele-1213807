@@ -23,6 +23,8 @@ import java.util.Objects;
 @Slf4j
 public class EleHardwareHandlerManager extends HardwareHandlerManager {
 	@Autowired
+	NormalEleOperHandlerIot normalEleOperHandlerIot;
+	@Autowired
 	NormalEleCellHandlerIot normalEleCellHandlerIot;
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
@@ -31,7 +33,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 	public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
 		if (hardwareCommandQuery.getCommand().contains("cell")) {
-			return normalEleCellHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
+			return normalEleOperHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
 		} else {
 			log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
 			return Pair.of(false, "");
@@ -67,9 +69,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 		}
 
 		if (receiverMessage.getType().contains("cell")) {
-			return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
+			return normalEleOperHandlerIot.receiveMessageProcess(receiverMessage);
 		} else if (receiverMessage.getType().contains("core")) {
-			return true;
+			return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
 		} else {
 			log.error("command not support handle,command:{}", receiverMessage.getType());
 			return false;
