@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -113,6 +114,15 @@ public class ElectricityCabinetAdminController {
     @GetMapping(value = "/admin/electricityCabinet/homeThree/{day}")
     public R homeThree(@PathVariable("day") Integer day) {
         return electricityCabinetService.homeThree(day);
+    }
+
+    //查看开门命令
+    @GetMapping("/admin/electricityCabinet/open/check")
+    public R checkOpenSession(@RequestParam("sessionId") String sessionId) {
+        if (StrUtil.isEmpty(sessionId)) {
+            return R.fail("ELECTRICITY.0007","不合法的参数");
+        }
+        return electricityCabinetService.checkOpenSessionId(sessionId);
     }
 
 

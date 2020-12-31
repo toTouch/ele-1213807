@@ -106,15 +106,16 @@ public class ElectricityCabinetBoxAdminController {
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+        String sessionId=UUID.randomUUID().toString().replace("-", "");
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .sessionId(sessionId)
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
                 .command(HardwareCommand.ELE_COMMAND_CELL_OPEN_DOOR)
                 .build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        return R.ok();
+        return R.ok(sessionId);
     }
 
     //后台一键全开
@@ -138,15 +139,16 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
+        String sessionId=UUID.randomUUID().toString().replace("-", "");
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .sessionId(sessionId)
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
                 .command(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR)
                 .build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-        return R.ok();
+        return R.ok(sessionId);
     }
 
 

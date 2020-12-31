@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
@@ -36,6 +37,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -978,6 +980,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //放入缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey+deviceName, electricityCabinet);
         return electricityCabinet;
+    }
+
+    @Override
+    public R checkOpenSessionId(String sessionId) {
+        String s = redisService.get(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId);
+        if (StrUtil.isEmpty(s)) {
+            return R.ok("0001");
+        }
+        if ("true".equalsIgnoreCase(s)) {
+            return R.ok("0002");
+        } else {
+            return R.ok("0003");
+        }
     }
 
 
