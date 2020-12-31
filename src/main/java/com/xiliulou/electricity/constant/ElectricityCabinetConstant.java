@@ -55,4 +55,7 @@ public interface ElectricityCabinetConstant {
     //弹出门
     String ELE_OPEN_DOOR_TYPE_WEB = "2";
 
+    //订单同步订单响应
+    String ELE_COMMAND_ORDER_SYNC_RSP = "new_order_sync_rsp";
+
 }

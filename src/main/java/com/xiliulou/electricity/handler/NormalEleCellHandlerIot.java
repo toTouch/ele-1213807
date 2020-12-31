@@ -14,6 +14,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
+import com.xiliulou.iot.service.PubHardwareService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import shaded.org.apache.commons.lang3.tuple.Pair;

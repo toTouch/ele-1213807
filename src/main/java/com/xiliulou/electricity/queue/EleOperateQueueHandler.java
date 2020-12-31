@@ -23,6 +23,8 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.iot.entity.SendHardwareMessage;
+import com.xiliulou.iot.service.PubHardwareService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -32,6 +34,7 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,7 +57,6 @@ public class EleOperateQueueHandler {
 
     private volatile boolean shutdown = false;
     private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
-    /*private final LinkedBlockingQueue<HardwareCommandQuery> TerminalQueue = new LinkedBlockingQueue<>();*/
 
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
@@ -79,6 +81,9 @@ public class EleOperateQueueHandler {
 
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
+
+    @Autowired
+    PubHardwareService pubHardwareService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -107,101 +112,6 @@ public class EleOperateQueueHandler {
             }
         });
     }
-
-   /* private void initElectricityCabinetTerminalOperate() {
-        log.info("初始化换电柜終端操作响应处理器");
-        TerminalStartService.execute(() -> {
-
-            while (!shutdown) {
-                HardwareCommandQuery commandQuery = null;
-                try {
-                    commandQuery = TerminalQueue.take();
-                    log.info(" QUEUE get a message ={}", commandQuery);
-
-                    HardwareCommandQuery finalCommandQuery = commandQuery;
-                    executorService.execute(() -> {
-                        handleOrderAfterTerminalOperated(finalCommandQuery);
-                    });
-
-                } catch (Exception e) {
-                    log.error("ELECTRICITY CABINET TERMINAL OPERATE QUEUE ERROR! ", e);
-                }
-
-            }
-        });
-
-    }*/
-
-    /**
-     * 接收云端命令后的操作
-     *
-     * @param commandQuery
-     */
-    private void handleOrderAfterTerminalOperated(HardwareCommandQuery commandQuery) {
-
-     /*   if (commandQuery.getCommand().contains("replace_update_old")) {
-            //换电命令第一步 换旧电池
-            log.info("replaceOldBattery:{}", commandQuery);
-            replaceOldBattery(commandQuery);
-        } else if (commandQuery.getCommand().contains("replace_update_new")) {
-            //换电命令第二步 ,换新电池
-            log.info("replaceNewBattery:{}", commandQuery);
-            replaceNewBattery(commandQuery);
-        }*/
-
-    }
-
-   /* private void replaceNewBattery(HardwareCommandQuery commandQuery) {
-        Random random = new Random();
-        OperateResultDto operateResultDto = new OperateResultDto();
-        operateResultDto.setSessionId(commandQuery.getSessionId());
-        operateResultDto.setResult(true);
-        int a = 4;
-        while (a <= 6) {
-            operateResultDto.setOperateFlowNum(a);
-            boolean result = random.nextBoolean();
-            operateResultDto.setResult(true);
-            try {
-                Long sleepMilli = (random.nextInt(3) + 3) * 1000L;
-                Thread.sleep(sleepMilli);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            log.info("replaceNewBattery putQueue:{}", operateResultDto);
-            putQueue(operateResultDto);
-            a++;
-            if (false) {
-                break;
-            }
-        }
-
-    }
-
-    private void replaceOldBattery(HardwareCommandQuery commandQuery) {
-        Random random = new Random();
-        OperateResultDto operateResultDto = new OperateResultDto();
-        operateResultDto.setSessionId(commandQuery.getSessionId());
-        int a = 1;
-        while (a <= 3) {
-            operateResultDto.setOperateFlowNum(a);
-            boolean result = random.nextBoolean();
-            operateResultDto.setResult(true);
-            try {
-                Long sleepMilli = (random.nextInt(3) + 3) * 1000L;
-                Thread.sleep(sleepMilli);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            putQueue(operateResultDto);
-            a++;
-            log.info("replaceOldBattery putQueue:{}", operateResultDto);
-            if (false) {
-                break;
-            }
-        }
-
-
-    }*/
 
 
     /**
@@ -236,6 +146,11 @@ public class EleOperateQueueHandler {
         if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CLOSE_BOX)) {
             checkNewBattery(electricityCabinetOrder, result);
         }
+        //收到消息响应
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+        Map<String, Object> data = Maps.newHashMap();
+        data.put("orderId", electricityCabinetOrder.getOrderId());
+        pubHardwareService.sendMessage(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), SendHardwareMessage.builder().data(data).sessionId(sessionId).type(ElectricityCabinetConstant.ELE_COMMAND_ORDER_SYNC_RSP).build());
 
     }
 
@@ -253,13 +168,6 @@ public class EleOperateQueueHandler {
         }
     }
 
-   /* public void putTerminalQueue(HardwareCommandQuery hardwareCommandQuery) {
-        try {
-            TerminalQueue.put(hardwareCommandQuery);
-        } catch (InterruptedException e) {
-            log.error(" OPERATE TERMINAL QUEUE ERROR!", e);
-        }
-    }*/
 
     //开旧门通知
     public void openOldBatteryDoor(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
