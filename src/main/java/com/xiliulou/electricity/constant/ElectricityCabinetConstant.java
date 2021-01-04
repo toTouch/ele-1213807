@@ -58,4 +58,6 @@ public interface ElectricityCabinetConstant {
     //订单同步订单响应
     String ELE_COMMAND_ORDER_SYNC_RSP = "new_order_sync_rsp";
 
+    String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
+
 }

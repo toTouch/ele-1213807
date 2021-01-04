@@ -13,6 +13,7 @@ import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: lxc
@@ -42,35 +43,18 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 	@Override
 	public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
-		//这种情况不会出现
-		if (Objects.isNull(receiverMessage.getType())) {
-			if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
-				return false;
-			}
-			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-			if (Objects.isNull(electricityCabinet)) {
-				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-				return false;
-			}
-			//在线状态修改
-			ElectricityCabinet newElectricityCabinet=new ElectricityCabinet();
-			newElectricityCabinet.setId(electricityCabinet.getId());
-			Integer status=1;
-			if(Objects.equals(receiverMessage.getStatus(),"online")){
-				status=0;
-			}
-			newElectricityCabinet.setOnlineStatus(status);
-			newElectricityCabinet.setPowerStatus(status);
-			if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-				redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-				redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
-			}
+		//幂等加锁
+		Boolean result=redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + receiverMessage.getSessionId(), "true", 10*1000L,true);
+		if(!result){
 			return false;
 		}
-
-		if (receiverMessage.getType().contains("cell")) {
+		//这种情况不会出现
+		if (Objects.isNull(receiverMessage.getType())) {
+			return false;
+		}
+		if (receiverMessage.getType().contains("oper")) {
 			return normalEleOperHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (receiverMessage.getType().contains("core")) {
+		} else if (receiverMessage.getType().contains("cell")) {
 			return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
 		} else {
 			log.error("command not support handle,command:{}", receiverMessage.getType());
