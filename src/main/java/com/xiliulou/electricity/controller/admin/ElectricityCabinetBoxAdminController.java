@@ -132,11 +132,6 @@ public class ElectricityCabinetBoxAdminController {
         if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
             return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
         }
-        for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
-            if (Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ORDER_OCCUPY)) {
-                return R.fail("ELECTRICITY.0013", "仓门有订单，不能开门");
-            }
-        }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         String sessionId=UUID.randomUUID().toString().replace("-", "");

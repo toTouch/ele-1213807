@@ -42,13 +42,6 @@ public interface ElectricityCabinetBoxService {
      */
     Integer update(ElectricityCabinetBox electricityCabinetBox);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteById(Long id);
 
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
 
@@ -57,8 +50,6 @@ public interface ElectricityCabinetBoxService {
     R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
     R modify(ElectricityCabinetBox electricityCabinetBox);
-
-    R modifyByElectricityCabinetId(ElectricityCabinetBox electricityCabinetBox);
 
     List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id);
 
@@ -70,8 +61,5 @@ public interface ElectricityCabinetBoxService {
 
     ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo);
 
-    Integer queryOrderCountByElectricityCabinetId(Integer id);
-
-    Integer queryOpenCountByElectricityCabinetId(Integer id);
 
 }

@@ -14,13 +14,10 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
-import com.xiliulou.iot.service.PubHardwareService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
-
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -82,12 +79,12 @@ public class NormalEleOperHandlerIot extends AbstractIotMessageHandler {
 				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 				return false;
 			}
-			Map<String,String> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
-			if (Objects.isNull(map)) {
-				log.error("ele box error! no eleBoxRo,{}", receiverMessage.getOriginContent());
+			EleCellVo eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVo.class);
+			if (Objects.isNull(eleCellVo)) {
+				log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
 				return true;
 			}
-			String cellNo=map.get("cell_no");
+			String cellNo=eleCellVo.getCell_no();
 			if (Objects.isNull(cellNo)) {
 				log.error("ele box error! no eleBoxRo,{}", receiverMessage.getOriginContent());
 				return true;
@@ -96,11 +93,11 @@ public class NormalEleOperHandlerIot extends AbstractIotMessageHandler {
 			electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
 			electricityCabinetBox.setCellNo(cellNo);
 			if(Objects.equals(receiverMessage.getType(),"open")){
-				electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_OPEN_DOOR);
+				electricityCabinetBox.setIsLock(ElectricityCabinetBox.OPEN_DOOR);
 				electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 			}
 			if(Objects.equals(receiverMessage.getType(),"close")){
-				electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_CLOSE_DOOR);
+				electricityCabinetBox.setIsLock(ElectricityCabinetBox.CLOSE_DOOR);
 				electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 			}
 		}

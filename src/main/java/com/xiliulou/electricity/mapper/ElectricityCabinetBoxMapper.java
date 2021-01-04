@@ -32,22 +32,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
 
 
     /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 对象列表
-     */
-    List<ElectricityCabinetBox> queryAll(ElectricityCabinetBox electricityCabinetBox);
-
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 影响行数
-     */
-    int insertOne(ElectricityCabinetBox electricityCabinetBox);
-
-    /**
      * 修改数据
      *
      * @param electricityCabinetBox 实例对象
@@ -55,17 +39,9 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
      */
     int update(ElectricityCabinetBox electricityCabinetBox);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
 
     void batchDeleteBoxByElectricityCabinetId(@Param("id")Integer id,@Param("updateTime")Long updateTime);
 
-    void modifyByElectricityCabinetId(@Param("query")ElectricityCabinetBox electricityCabinetBox);
 
     void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);
 }

@@ -8,8 +8,12 @@
         <result property="cellNo" column="cell_no" jdbcType="VARCHAR"/>
         <result property="electricityBatteryId" column="electricity_battery_id" jdbcType="INTEGER"/>
         <result property="usableStatus" column="usable_status" jdbcType="INTEGER"/>
-        <result property="boxStatus" column="box_status" jdbcType="INTEGER"/>
         <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="isLock" column="is_lock" jdbcType="INTEGER"/>
+        <result property="isFan" column="is_fan" jdbcType="INTEGER"/>
+        <result property="temperature" column="temperature" jdbcType="INTEGER"/>
+        <result property="isHeat" column="is_heat" jdbcType="INTEGER"/>
+        <result property="isLight" column="is_light" jdbcType="INTEGER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
         <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
@@ -18,7 +22,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="ElectricityCabinetBoxMap">
         select
-          id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag
+          id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, status,is_lock,is_fan,temperature,is_heat,is_light, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_box
         where  del_flag=0 and  id = #{id}
     </select>
@@ -26,7 +30,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
         select
-        id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time,
+        id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status,  status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
         update_time, del_flag
         from electricity.t_electricity_cabinet_box
         where del_flag=0
@@ -37,51 +41,7 @@
         limit #{query.offset}, #{query.size}
     </select>
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="ElectricityCabinetBoxMap">
-        select
-        id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time,
-        update_time, del_flag
-        from electricity.t_electricity_cabinet_box
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="electricityCabinetId != null">
-                and electricity_cabinet_id = #{electricityCabinetId}
-            </if>
-            <if test="cellNo != null and cellNo != ''">
-                and cell_no = #{cellNo}
-            </if>
-            <if test="electricityBatteryId != null">
-                and electricity_battery_id = #{electricityBatteryId}
-            </if>
-            <if test="usableStatus != null">
-                and usable_status = #{usableStatus}
-            </if>
-            <if test="boxStatus != null">
-                and box_status = #{boxStatus}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-        </where>
-    </select>
 
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_cabinet_box(electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, box_status, status, create_time, update_time, del_flag)
-        values (#{electricityCabinetId}, #{cellNo}, #{electricityBatteryId}, #{usableStatus}, #{boxStatus}, #{status}, #{createTime}, #{updateTime}, #{delFlag})
-    </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
@@ -99,11 +59,23 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
-            <if test="boxStatus != null">
-                box_status = #{boxStatus},
-            </if>
             <if test="status != null">
                 status = #{status},
+            </if>
+            <if test="isLock != null">
+                is_lock = #{isLock},
+            </if>
+            <if test="isFan != null">
+                is_fan = #{isFan},
+            </if>
+            <if test="temperature != null">
+                temperature = #{temperature},
+            </if>
+            <if test="isHeat != null">
+                is_heat = #{isHeat},
+            </if>
+            <if test="isLight != null">
+                is_light = #{isLight},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},
@@ -117,19 +89,13 @@
         </set>
         where id = #{id}
     </update>
+
     <update id="batchDeleteBoxByElectricityCabinetId">
         update electricity.t_electricity_cabinet_box
         set del_flag = 1, update_time = #{updateTime}
         where electricity_cabinet_id = #{id}
     </update>
-    <update id="modifyByElectricityCabinetId">
-        update electricity.t_electricity_cabinet_box
-        set update_time = #{query.updateTime},
-        <if test="query.boxStatus != null">
-            box_status = #{query.boxStatus}
-        </if>
-        where electricity_cabinet_id = #{query.electricityCabinetId}
-    </update>
+
     <update id="modifyByCellNo">
         update electricity.t_electricity_cabinet_box
         <set>
@@ -142,11 +108,23 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
-            <if test="boxStatus != null">
-                box_status = #{boxStatus},
-            </if>
             <if test="status != null">
                 status = #{status},
+            </if>
+            <if test="isLock != null">
+                is_lock = #{isLock},
+            </if>
+            <if test="isFan != null">
+                is_fan = #{isFan},
+            </if>
+            <if test="temperature != null">
+                temperature = #{temperature},
+            </if>
+            <if test="isHeat != null">
+                is_heat = #{isHeat},
+            </if>
+            <if test="isLight != null">
+                is_light = #{isLight},
             </if>
             <if test="createTime != null">
                 create_time = #{createTime},
@@ -157,9 +135,5 @@
         </set>
         where cell_no = #{cellNo} and electricity_cabinet_id = #{electricityCabinetId} and del_flag=0
     </update>
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from electricity.t_electricity_cabinet_box where id = #{id}
-    </delete>
 
 </mapper>

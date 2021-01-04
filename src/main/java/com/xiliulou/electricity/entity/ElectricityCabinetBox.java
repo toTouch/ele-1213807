@@ -40,13 +40,29 @@ public class ElectricityCabinetBox {
     */
     private Integer usableStatus;
     /**
-    * 仓门状态（0-开门，1-关门）
-    */
-    private Integer boxStatus;
-    /**
     * 状态（0-有电池，1-无电池，2-订单占用中）
     */
     private Integer status;
+    /**
+     * 门锁状态（0-开门，1-关门）
+     */
+    private Integer isLock;
+    /**
+     * 风扇状态（0-关，1-开）
+     */
+    private Integer isFan;
+    /**
+     * 温度
+     */
+    private String temperature;
+    /**
+     * 加热状态（0-关，1-开）
+     */
+    private Integer isHeat;
+    /**
+     * 指示灯状态（1-红灯亮，2-绿灯亮，3-黄灯亮）
+     */
+    private Integer isLight;
     /**
     * 创建时间
     */
@@ -70,11 +86,23 @@ public class ElectricityCabinetBox {
     public static final Integer STATUS_ELECTRICITY_BATTERY = 0;
     //无电池
     public static final Integer STATUS_NO_ELECTRICITY_BATTERY = 1;
-    //订单占用中
-    public static final Integer STATUS_ORDER_OCCUPY = 2;
     //关门
-    public static final Integer STATUS_CLOSE_DOOR = 1;
+    public static final Integer CLOSE_DOOR = 1;
     //开门
-    public static final Integer STATUS_OPEN_DOOR = 0;
+    public static final Integer OPEN_DOOR = 0;
+    //关风扇
+    public static final Integer CLOSE_FAN = 0;
+    //开风扇
+    public static final Integer OPEN_FAN = 1;
+    //关加热
+    public static final Integer CLOSE_HEAT = 0;
+    //开加热
+    public static final Integer OPEN_HEAT = 1;
+    //红灯
+    public static final Integer RED_LIGHT = 1;
+    //绿灯
+    public static final Integer GREEN_LIGHT = 2;
+    //黄灯
+    public static final Integer YELLOW_LIGHT = 3;
 
 }

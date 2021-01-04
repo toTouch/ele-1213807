@@ -87,17 +87,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.electricityCabinetBoxMapper.deleteById(id) > 0;
-    }
 
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
@@ -105,14 +94,11 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
                 ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
                 electricityCabinetBox.setElectricityCabinetId(id);
-                electricityCabinetBox.setUsableStatus(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE);
-                electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_CLOSE_DOOR);
-                electricityCabinetBox.setBoxStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
                 electricityCabinetBox.setCellNo(String.valueOf(i));
                 electricityCabinetBox.setCreateTime(System.currentTimeMillis());
                 electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
                 electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-                electricityCabinetBoxMapper.insertOne(electricityCabinetBox);
+                electricityCabinetBoxMapper.insert(electricityCabinetBox);
             }
         }
     }
@@ -145,11 +131,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return R.ok();
     }
 
-    @Override
-    public R modifyByElectricityCabinetId(ElectricityCabinetBox electricityCabinetBox) {
-        electricityCabinetBoxMapper.modifyByElectricityCabinetId(electricityCabinetBox);
-        return R.ok();
-    }
 
     @Override
     public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
@@ -196,17 +177,5 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 .eq(ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
     }
 
-    @Override
-    public Integer queryOrderCountByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ORDER_OCCUPY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
-
-    }
-
-    @Override
-    public Integer queryOpenCountByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectCount(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getBoxStatus, ElectricityCabinetBox.STATUS_OPEN_DOOR).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
-    }
 
 }
