@@ -4,6 +4,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -53,7 +54,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
 		log.info("receiverMessage is -->"+receiverMessage);
 		//仓门上报 TODO 类型
-		if(Objects.equals(receiverMessage.getType(),1)){
+		if(Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_CELL_REPORT_INFO)){
 			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 			if (Objects.isNull(electricityCabinet)) {
 				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
@@ -97,7 +98,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 		}
 
 		//电池上报 TODO
-		if(Objects.equals(receiverMessage.getType(),1)){
+		if(Objects.equals(receiverMessage.getType(),HardwareCommand.ELE_COMMAND_CELL_BATTERY_REPORT_INFO)){
 			EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
 			if (Objects.isNull(eleBatteryVo)) {
 				log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());

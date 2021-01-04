@@ -245,7 +245,7 @@ public class EleOperateQueueHandler {
                         .data(dataMap)
                         .productKey(electricityCabinet.getProductKey())
                         .deviceName(electricityCabinet.getDeviceName())
-                        .command(HardwareCommand.ELE_COMMAND_CELL_NEW_OPEN_DOOR).build();
+                        .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
                 eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             } catch (Exception e) {
                 log.error("e" + e);

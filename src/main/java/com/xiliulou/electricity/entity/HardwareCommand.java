@@ -12,8 +12,12 @@ import java.util.Map;
 public class HardwareCommand {
 
 	//开门命令：
-	public static final String ELE_COMMAND_CELL_OLD_OPEN_DOOR = "cell_old_open_door";
-	public static final String ELE_COMMAND_CELL_NEW_OPEN_DOOR = "cell_new_open_door";
+	//业务操作
+	//订单开旧门
+	public static final String ELE_COMMAND_ORDER_OPEN_OLD_DOOR = "order_open_old_door";
+	//订单开新门
+	public static final String ELE_COMMAND_ORDER_OPEN_NEW_DOOR = "order_open_new_door";
+	//物理操作
 	public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
 	public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
 	public static final String ELE_COMMAND_CELL_ALL_OPEN_DOOR = "cell_all_open_door";
@@ -38,12 +42,31 @@ public class HardwareCommand {
 	//禁用可用命令
 	public static final String ELE_COMMAND_CELL_UPDATE = "cell_update";
 
+	//业务操作
+	//旧门开门 order_old_door_open
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN_ = "order_old_door_open";
+	//旧门关门 order_old_door_close
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CLOSE_ = "order_old_door_close";
+	//旧门检测 order_old_door_check
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check";
+	//新门开门 order_new_door_open
+	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_new_door_open";
+	//新门关门 order_old_door_close
+	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CLOSE = "order_old_door_close";
+	//新门检测 order_old_door_check
+	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_old_door_check";
+	//物理操作
+	//仓门上报 cell_report_info
+	public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
+	//电池上报 cell_battery_report_info
+	public static final String ELE_COMMAND_CELL_BATTERY_REPORT_INFO = "cell_battery_report_info";
+
 
 	public static final Map<String, String> CUPBOARD_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
-		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_OLD_OPEN_DOOR, "OK");
-		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_NEW_OPEN_DOOR, "OK");
+		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_OLD_DOOR, "OK");
+		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_NEW_DOOR, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_DOOR, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_LIGHT, "OK");

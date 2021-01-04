@@ -56,6 +56,12 @@ public class NormalEleOperHandlerIot extends AbstractIotMessageHandler {
 			log.error("no sessionId,{}", receiverMessage.getOriginContent());
 			return false;
 		}
+		//幂等加锁
+		Boolean result=redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId, "true", 10*1000L,true);
+		if(!result){
+			log.error("sessionId is lock,{}", sessionId);
+			return false;
+		}
 		EleOpenDTOBuilder builder = EleOpenDTO.builder();
 
 		//操作回调的放在redis中

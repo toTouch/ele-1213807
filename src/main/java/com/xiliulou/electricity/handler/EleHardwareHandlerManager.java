@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.handler;
+
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -9,6 +10,7 @@ import lombok.extern.slf4j.Slf4j;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import java.util.Objects;
 
 /**
@@ -19,43 +21,51 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class EleHardwareHandlerManager extends HardwareHandlerManager {
-	@Autowired
-	NormalEleOperHandlerIot normalEleOperHandlerIot;
-	@Autowired
-	NormalEleCellHandlerIot normalEleCellHandlerIot;
-	@Autowired
-	ElectricityCabinetService electricityCabinetService;
-	@Autowired
-	RedisService redisService;
+    @Autowired
+    NormalEleOperHandlerIot normalEleOperHandlerIot;
+    @Autowired
+    NormalEleCellHandlerIot normalEleCellHandlerIot;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    RedisService redisService;
 
-	public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
-		if (hardwareCommandQuery.getCommand().contains("cell")) {
-			return normalEleOperHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
-		} else {
-			log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
-			return Pair.of(false, "");
-		}
-	}
+    public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
+        if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")) {
+            return normalEleOperHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
+        } else {
+            log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
+            return Pair.of(false, "");
+        }
+    }
 
-	@Override
-	public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
-		//幂等加锁
-		Boolean result=redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + receiverMessage.getSessionId(), "true", 10*1000L,true);
-		if(!result){
-			return false;
-		}
-		//这种情况不会出现
-		if (Objects.isNull(receiverMessage.getType())) {
-			return false;
-		}
-		if (receiverMessage.getType().contains("oper")) {
-			return normalEleOperHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (receiverMessage.getType().contains("cell")) {
-			return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
-		} else {
-			log.error("command not support handle,command:{}", receiverMessage.getType());
-			return false;
-		}
-	}
+    @Override
+    public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
+        //这种情况不会出现
+        if (Objects.isNull(receiverMessage.getType())) {
+            log.error("no type {}", receiverMessage.getOriginContent());
+            return false;
+        }
+		/*
+        业务操作
+        旧门开门 order_old_door_open
+        旧门关门 order_old_door_close
+        旧门检测 order_old_door_check
+        新门开门 order_new_door_open
+        新门关门 order_old_door_close
+        新门检测 order_old_door_check
+        物理操作
+        仓门上报 cell_report_info
+        电池上报 cell_battery_report_info
+		*/
+        if (receiverMessage.getType().contains("order")) {
+            return normalEleOperHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("cell")) {
+            return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
+        } else {
+            log.error("command not support handle,command:{}", receiverMessage.getType());
+            return false;
+        }
+    }
 
 }
