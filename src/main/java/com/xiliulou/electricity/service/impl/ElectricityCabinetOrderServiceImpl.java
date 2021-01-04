@@ -215,14 +215,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
         //判断改柜子是否有未完成的订单 TODO 查询app
-        /*Integer orderCount = electricityCabinetBoxService.queryOrderCountByElectricityCabinetId(electricityCabinet.getId());
-        if (orderCount > 0) {
-            return R.fail("ELECTRICITY.0027", "换电柜有未结束订单");
-        }
-        Integer openCount = electricityCabinetBoxService.queryOpenCountByElectricityCabinetId(electricityCabinet.getId());
-        if (openCount > 0) {
-            return R.fail("ELECTRICITY.0028", "换电柜有仓门未关闭");
-        }*/
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         try {
