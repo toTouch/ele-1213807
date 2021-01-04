@@ -17,4 +17,8 @@ import lombok.NoArgsConstructor;
 public class EleOpenDTO {
 	private String sessionId;
 	private Boolean operResult;
+	//原始信息
+	private String originContent;
+	//命令
+	private String type;
 }

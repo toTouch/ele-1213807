@@ -74,7 +74,10 @@ public class NormalEleOperHandlerIot extends AbstractIotMessageHandler {
 		}
 
 		if (sessionId.contains(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX)) {
-			EleOpenDTO eleOpenDTO = builder.sessionId(sessionId).build();
+			EleOpenDTO eleOpenDTO = builder
+					.sessionId(sessionId)
+					.originContent(receiverMessage.getOriginContent())
+					.type(receiverMessage.getType()).build();
 			eleOperateQueueHandler.putQueue(eleOpenDTO);
 		}
 

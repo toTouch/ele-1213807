@@ -111,28 +111,28 @@ public class EleOperateQueueHandler {
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
         String sessionId = finalOpenDTO.getSessionId();
         Boolean result = finalOpenDTO.getOperResult();
-        Long oid = Long.parseLong(sessionId.substring(0, sessionId.indexOf("_")));
-        Integer type = Integer.parseInt(sessionId.substring(sessionId.indexOf("_") + 1));
+        Long oid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
+        String type = finalOpenDTO.getType();
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByIdFromDB(oid);
         if (Objects.isNull(electricityCabinetOrder)) {
             return;
         }
-        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_NUM_OPEN_OLD)) {
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
             openOldBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CLOSE_OLD)) {
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CLOSE)) {
             closeOldBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CHECK_BATTERY)) {
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CHECK)) {
             checkOldBattery(electricityCabinetOrder, result);
         }
-        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_NUM_OPEN_NEW)) {
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)) {
             openNewBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_TAKE_BATTERY)) {
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CLOSE)) {
             closeNewBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(type, OperateResultDto.OPERATE_FLOW_CLOSE_BOX)) {
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CHECK)) {
             checkNewBattery(electricityCabinetOrder, result);
         }
         //收到消息响应
@@ -357,46 +357,6 @@ public class EleOperateQueueHandler {
                 .uid(electricityCabinetOrder.getUid())
                 .build();
         electricityCabinetOrderOperHistoryService.insert(history);
-    }
-
-    //仓门上报
-    public void updateCellNo(ElectricityCabinetBoxDTO electricityCabinetBoxDTO) {
-        //修改仓门
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxDTO.getSerialNumber());
-        ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
-        BeanUtil.copyProperties(electricityCabinetBoxDTO,electricityCabinetNewBox);
-        electricityCabinetNewBox.setElectricityBatteryId(electricityBattery.getId());
-        electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
-        //修改电池
-        ElectricityBattery newElectricityBattery=new ElectricityBattery();
-        BeanUtil.copyProperties(electricityCabinetBoxDTO,newElectricityBattery);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        //仓门电池不存在则新增存在则修改
-        if(Objects.isNull(electricityBattery)){
-            newElectricityBattery.setCreateTime(System.currentTimeMillis());
-            electricityBatteryService.save(newElectricityBattery);
-        }else {
-            newElectricityBattery.setId(electricityBattery.getId());
-            electricityBatteryService.update(newElectricityBattery);
-        }
-    }
-    //电池上报
-    public void updateBattery(ElectricityCabinetBoxDTO electricityCabinetBoxDTO) {
-        //修改电池
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxDTO.getSerialNumber());
-        ElectricityBattery newElectricityBattery=new ElectricityBattery();
-        BeanUtil.copyProperties(electricityCabinetBoxDTO,newElectricityBattery);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        //仓门电池不存在则新增存在则修改
-        if(Objects.isNull(electricityBattery)){
-            newElectricityBattery.setCreateTime(System.currentTimeMillis());
-            electricityBatteryService.save(newElectricityBattery);
-        }else {
-            newElectricityBattery.setId(electricityBattery.getId());
-            electricityBatteryService.update(newElectricityBattery);
-        }
     }
 
 

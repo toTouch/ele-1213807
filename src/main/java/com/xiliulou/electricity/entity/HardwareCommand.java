@@ -44,9 +44,9 @@ public class HardwareCommand {
 
 	//业务操作
 	//旧门开门 order_old_door_open
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN_ = "order_old_door_open";
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_old_door_open";
 	//旧门关门 order_old_door_close
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CLOSE_ = "order_old_door_close";
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CLOSE = "order_old_door_close";
 	//旧门检测 order_old_door_check
 	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check";
 	//新门开门 order_new_door_open
