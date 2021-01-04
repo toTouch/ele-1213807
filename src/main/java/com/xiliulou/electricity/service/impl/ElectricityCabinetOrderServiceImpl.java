@@ -225,7 +225,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (Objects.isNull(cellNo)) {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
-            //查看是否有满电电池 TODO
             if (userInfo.getRemainingNumber() != -1) {
                 //扣除月卡
                 int row = userInfoService.minCount(userInfo.getId());
