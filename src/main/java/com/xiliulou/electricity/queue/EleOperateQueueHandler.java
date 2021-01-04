@@ -106,8 +106,8 @@ public class EleOperateQueueHandler {
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
         String sessionId = finalOpenDTO.getSessionId();
         Boolean result = finalOpenDTO.getOperResult();
-        Long oid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
         String type = finalOpenDTO.getType();
+        Long oid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByIdFromDB(oid);
         if (Objects.isNull(electricityCabinetOrder)) {
             return;
@@ -165,7 +165,6 @@ public class EleOperateQueueHandler {
         electricityCabinetOrderService.update(electricityCabinetOrder);
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-
                 .cellNo(electricityCabinetOrder.getOldCellNo())
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
