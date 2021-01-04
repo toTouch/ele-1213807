@@ -219,7 +219,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
-        //判断改柜子是否有未完成的订单 TODO 查询app
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         try {
