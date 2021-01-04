@@ -52,8 +52,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         旧门关门 order_old_door_close
         旧门检测 order_old_door_check
         新门开门 order_new_door_open
-        新门关门 order_old_door_close
-        新门检测 order_old_door_check
+        新门关门 order_new_door_close
+        新门检测 order_new_door_check
         物理操作
         仓门上报 cell_report_info
         电池上报 cell_battery_report_info
