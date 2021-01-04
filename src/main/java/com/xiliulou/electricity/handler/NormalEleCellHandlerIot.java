@@ -51,6 +51,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 
 	@Override
 	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+		log.info("receiverMessage is -->"+receiverMessage);
 		//仓门上报 TODO 类型
 		if(Objects.equals(receiverMessage.getType(),1)){
 			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
@@ -65,7 +66,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 			}
 			String cellNo=eleCellVo.getCell_no();
 			if (Objects.isNull(cellNo)) {
-				log.error("ele cell error! no eleBoxRo,{}", receiverMessage.getOriginContent());
+				log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
 				return true;
 			}
 			ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
@@ -102,17 +103,25 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 				log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
 				return true;
 			}
-			String cellNo=eleBatteryVo.getCell_no();
-			if (Objects.isNull(cellNo)) {
-				log.error("ele battery error! no eleBoxRo,{}", receiverMessage.getOriginContent());
+			String serialNumber=eleBatteryVo.getSerial_number();
+			if (Objects.isNull(serialNumber)) {
+				log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
 				return true;
 			}
-			//修改电池
-			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(cellNo);
+			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(serialNumber);
 			ElectricityBattery newElectricityBattery=new ElectricityBattery();
 			newElectricityBattery.setId(electricityBattery.getId());
 			newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+			//TODO 电池上报详细信息
+			String power=eleBatteryVo.getPower();
+			if (Objects.nonNull(power)) {
+				newElectricityBattery.setCapacity(Integer.valueOf(power));
+			}
+			String health=eleBatteryVo.getHealth();
+			if (Objects.nonNull(health)) {
+				newElectricityBattery.setHealthStatus(Integer.valueOf(health));
+			}
 			electricityBatteryService.update(newElectricityBattery);
 		}
 		return true;
@@ -137,7 +146,7 @@ class EleCellVo {
 
 @Data
 class EleBatteryVo {
-	private String cell_no;
+	private String serial_number;
 	//电压
 	private String voltage;
 	//电芯数量
