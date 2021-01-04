@@ -35,6 +35,9 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.iot.entity.AliIotRsp;
+import com.xiliulou.iot.entity.AliIotRspDetail;
+import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
@@ -55,6 +58,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -89,6 +93,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetOrderService electricityCabinetOrderService;
     @Autowired
     StoreService storeService;
+    @Autowired
+    PubHardwareService pubHardwareService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -160,7 +166,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID+user.getUid(), "1",3*1000L,false);
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -212,7 +218,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
             //添加快递柜格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
             return electricityCabinet;
@@ -229,7 +235,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_EDIT_UID+user.getUid(), "1",3*1000L,false);
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -292,7 +298,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
@@ -318,7 +324,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
+            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             return null;
         });
@@ -380,6 +386,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
                 //TODO 在线更新柜机
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                if (result) {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    e.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS);
+                } else {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    e.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_NO_POWER_STATUS);
+                }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
@@ -408,9 +422,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         if (!Objects.equals(index, -1) && index > 0) {
                             e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
                             Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long beginTime= getTime(totalBeginTime);
+                            Long beginTime = getTime(totalBeginTime);
                             Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                            Long endTime= getTime(totalEndTime);
+                            Long endTime = getTime(totalEndTime);
                             e.setBeginTime(totalBeginTime);
                             e.setEndTime(totalEndTime);
                             Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -453,6 +467,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setFullyElectricityBattery(fullyElectricityBattery);
                 e.setElectricityBatteryFormat(set);
                 //TODO 在线更新柜机
+                //动态查询在线状态
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                if (result) {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    e.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS);
+                } else {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    e.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_NO_POWER_STATUS);
+                }
                 if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS) && Objects.equals(e.getPowerStatus(), ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS)
                         && Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
                     electricityCabinets.add(e);
@@ -460,6 +483,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
         return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public boolean deviceIsOnline(String productKey, String deviceName) {
+        AliIotRsp aliIotRsp = pubHardwareService.queryDeviceInfoFromIot(productKey, deviceName);
+        if (Objects.isNull(aliIotRsp)) {
+            return false;
+        }
+
+        AliIotRspDetail detail = aliIotRsp.getData();
+        if (Objects.isNull(detail)) {
+            return false;
+        }
+
+        String status = Optional.ofNullable(aliIotRsp.getData().getStatus()).orElse("UNKNOW").toLowerCase();
+        if ("online".equalsIgnoreCase(status)) {
+            return true;
+        }
+        return false;
     }
 
     @Override
@@ -487,7 +529,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
         return R.ok();
     }
 
@@ -508,7 +550,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName(),electricityCabinet);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
         return R.ok();
     }
 
@@ -522,6 +564,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        //TODO 换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
@@ -586,9 +634,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if (!Objects.equals(index, -1) && index > 1) {
                         electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
                         Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                        Long beginTime= getTime(totalBeginTime);
+                        Long beginTime = getTime(totalBeginTime);
                         Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                        Long endTime= getTime(totalEndTime);
+                        Long endTime = getTime(totalEndTime);
                         electricityCabinetVO.setBeginTime(totalBeginTime);
                         electricityCabinetVO.setEndTime(totalEndTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -742,8 +790,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer offlineCount = 0;
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
-                //TODO 查询在线离线
-                if (Objects.equals(electricityCabinet.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
+                boolean result = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                if (result) {
                     onlineCount++;
                 } else {
                     offlineCount++;
@@ -859,9 +907,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        ElectricityCabinet electricityCabinet =queryFromCacheByProductAndDeviceName(productKey,deviceName);
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        //TODO 换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
@@ -926,9 +980,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if (!Objects.equals(index, -1) && index > 1) {
                         electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
                         Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                        Long beginTime= getTime(totalBeginTime);
+                        Long beginTime = getTime(totalBeginTime);
                         Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                        Long endTime= getTime(totalEndTime);
+                        Long endTime = getTime(totalEndTime);
                         electricityCabinetVO.setBeginTime(totalBeginTime);
                         electricityCabinetVO.setEndTime(totalEndTime);
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
@@ -958,18 +1012,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
         //先查缓存
-        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey+deviceName, ElectricityCabinet.class);
+        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName, ElectricityCabinet.class);
         if (Objects.nonNull(cacheElectricityCabinet)) {
             return cacheElectricityCabinet;
         }
         //缓存没有再查数据库
         ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
-                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL));
+                .eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (Objects.isNull(electricityCabinet)) {
             return null;
         }
         //放入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey+deviceName, electricityCabinet);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName, electricityCabinet);
         return electricityCabinet;
     }
 
@@ -1006,6 +1060,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             e.printStackTrace();
         }
         Long ts = date2.getTime();
-        return time-ts;
+        return time - ts;
     }
 }

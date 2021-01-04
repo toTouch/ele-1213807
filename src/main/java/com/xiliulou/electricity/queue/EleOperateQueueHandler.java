@@ -53,42 +53,31 @@ public class EleOperateQueueHandler {
 
     ExecutorService executorService = Executors.newFixedThreadPool(20);
     ExecutorService startService = Executors.newFixedThreadPool(1);
-    ExecutorService TerminalStartService = Executors.newFixedThreadPool(1);
-
     private volatile boolean shutdown = false;
     private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
 
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
-
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
-
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
-
     @Autowired
     RedisService redisService;
-
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-
     @Autowired
     UserInfoService userInfoService;
-
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
-
     @Autowired
     PubHardwareService pubHardwareService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
         initElectricityCabinetOperate();
-        /*initElectricityCabinetTerminalOperate();*/
     }
 
     private void initElectricityCabinetOperate() {

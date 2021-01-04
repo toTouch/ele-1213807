@@ -162,10 +162,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
-            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", orderQuery.getElectricityCabinetId());
+            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", orderQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
         //TODO 换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
         //营业时间
         if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
             String businessTime = electricityCabinet.getBusinessTime();
@@ -322,8 +327,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //查找换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
-            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinet{}", electricityCabinetOrder.getElectricityCabinetId());
+            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetOrder.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        //TODO 换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
         //旧电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
