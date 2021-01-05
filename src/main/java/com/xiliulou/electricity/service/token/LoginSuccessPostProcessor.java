@@ -1,13 +1,9 @@
 package com.xiliulou.electricity.service.token;
-
-
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.net.InetAddress;
