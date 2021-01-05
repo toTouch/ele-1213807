@@ -41,6 +41,8 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_CELL_SET_CURRENT = "cell_set_current";
 	//禁用可用命令
 	public static final String ELE_COMMAND_CELL_UPDATE = "cell_update";
+	//物理操作回调结果
+	public static final String ELE_COMMAND_OPERATE = "operate_result";
 
 	//业务操作
 	//旧门开门 order_old_door_open
@@ -60,7 +62,6 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
 	//电池上报 cell_battery_report_info
 	public static final String ELE_COMMAND_CELL_BATTERY_REPORT_INFO = "cell_battery_report_info";
-
 
 	public static final Map<String, String> CUPBOARD_COMMAND_MAPS = Maps.newHashMap();
 
@@ -84,5 +85,6 @@ public class HardwareCommand {
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_VOLTAGE, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_CURRENT, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_UPDATE, "OK");
+		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_OPERATE, "OK");
 	}
 }
