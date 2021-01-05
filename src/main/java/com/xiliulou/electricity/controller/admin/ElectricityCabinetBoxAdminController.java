@@ -78,8 +78,10 @@ public class ElectricityCabinetBoxAdminController {
         List<String> cellList=new ArrayList<>();
         cellList.add(oldElectricityCabinetBox.getCellNo());
         dataMap.put("cell_list", cellList);
-        dataMap.put("isForbidden", electricityCabinetBox.getUsableStatus());
-
+        dataMap.put("isForbidden", true);
+        if(Objects.equals(electricityCabinetBox.getUsableStatus(),ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)){
+            dataMap.put("isForbidden", false);
+        }
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(UUID.randomUUID().toString().replace("-", ""))
                 .data(dataMap)
