@@ -36,7 +36,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     RedisService redisService;
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
-        if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")) {
+        if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.EXCHANGE_CABINET)
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OPERATE)) {
             log.info("hardwareCommandQuery is -->{}",hardwareCommandQuery);
             return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
         } else {
