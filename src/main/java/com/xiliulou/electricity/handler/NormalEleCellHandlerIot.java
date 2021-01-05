@@ -3,7 +3,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -30,9 +29,9 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
-	ElectricityCabinetBoxService electricityCabinetBoxService;
-	@Autowired
 	ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    ElectricityCabinetBoxService electricityCabinetBoxService;
 
 	@Override
 	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -46,8 +45,6 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 
 	@Override
 	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-		//仓门上报
-		if(Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_CELL_REPORT_INFO)){
 			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 			if (Objects.isNull(electricityCabinet)) {
 				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
@@ -111,36 +108,6 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 
 			}
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
-		}
-
-		//电池上报
-		if(Objects.equals(receiverMessage.getType(),HardwareCommand.ELE_COMMAND_CELL_BATTERY_REPORT_INFO)){
-			EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
-			if (Objects.isNull(eleBatteryVo)) {
-				log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
-				return true;
-			}
-			String serialNumber=eleBatteryVo.getSerial_number();
-			if (Objects.isNull(serialNumber)) {
-				log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
-				return true;
-			}
-			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(serialNumber);
-			ElectricityBattery newElectricityBattery=new ElectricityBattery();
-			newElectricityBattery.setId(electricityBattery.getId());
-			newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-			//TODO 电池上报详细信息
-			String power=eleBatteryVo.getPower();
-			if (Objects.nonNull(power)) {
-				newElectricityBattery.setCapacity(Integer.valueOf(power));
-			}
-			String health=eleBatteryVo.getHealth();
-			if (Objects.nonNull(health)) {
-				newElectricityBattery.setHealthStatus(Integer.valueOf(health));
-			}
-			electricityBatteryService.update(newElectricityBattery);
-		}
 		return true;
 	}
 }
@@ -165,25 +132,4 @@ class EleCellVo {
 	private String batteryStatus;
 	//电池编号
 	private String batteryName;
-}
-
-@Data
-class EleBatteryVo {
-	private String serial_number;
-	//电压
-	private String voltage;
-	//电芯数量
-	private String batteries_count;
-	//电量
-	private String power;
-	//容量
-	private String capacity;
-	//输出电流
-	private String output_current;
-	//输出电流
-	private String recharging_current;
-	//温度
-	private String temperature;
-	//健康状态
-	private String health;
 }

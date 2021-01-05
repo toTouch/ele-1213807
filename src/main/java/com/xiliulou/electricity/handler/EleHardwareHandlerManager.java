@@ -27,7 +27,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Autowired
     NormalEleOrderHandlerIot normalEleOrderHandlerIot;
     @Autowired
+    NormalEleBatteryHandlerIot normalEleBatteryHandlerIot;
+    @Autowired
     NormalEleCellHandlerIot normalEleCellHandlerIot;
+    @Autowired
+    NormalEleExchangeHandlerIot normalEleExchangeHandlerIot;
     @Autowired
     NormalEleOperateHandlerIot normalEleOperateHandlerIot;
     @Autowired
@@ -76,46 +80,17 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             log.error("type is null,{}",receiverMessage.getOriginContent());
             return false;
         }
-        //电柜版本信息
-        if(Objects.equals(receiverMessage.getType(),HardwareCommand.EXCHANGE_CABINET)){
-            if (!StrUtil.isNotEmpty(receiverMessage.getVersion())) {
-                return false;
-            }
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-            if (Objects.isNull(electricityCabinet)) {
-                log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-                return false;
-            }
-            //版本号修改
-            ElectricityCabinet newElectricityCabinet=new ElectricityCabinet();
-            newElectricityCabinet.setId(electricityCabinet.getId());
-            newElectricityCabinet.setVersion(receiverMessage.getVersion());
-            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
-            }
-            log.error("type is exchange_cabinet,{}",receiverMessage.getOriginContent());
-            return false;
-        }
-		/*
-        业务操作
-        旧门开门 order_old_door_open
-        旧门关门 order_old_door_close
-        旧门检测 order_old_door_check
-        新门开门 order_new_door_open
-        新门关门 order_new_door_close
-        新门检测 order_new_door_check
-        物理操作
-        仓门上报 cell_report_info
-        电池上报 cell_battery_report_info
-		*/
         if (receiverMessage.getType().contains("order")) {
             return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("cell")) {
-            return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (receiverMessage.getType().contains("operate")) {
             return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);
-        }else{
+        }else if (receiverMessage.getType().contains("cell")) {
+            return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
+        }  else if(receiverMessage.getType().contains("battery")){
+            return normalEleBatteryHandlerIot.receiveMessageProcess(receiverMessage);
+        }else if(Objects.equals(receiverMessage.getType(),HardwareCommand.EXCHANGE_CABINET)){
+            return normalEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
+        } else {
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;
         }
