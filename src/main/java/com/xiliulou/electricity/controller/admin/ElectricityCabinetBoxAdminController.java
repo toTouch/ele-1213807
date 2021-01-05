@@ -78,7 +78,7 @@ public class ElectricityCabinetBoxAdminController {
         List<String> cellList=new ArrayList<>();
         cellList.add(oldElectricityCabinetBox.getCellNo());
         dataMap.put("cell_list", cellList);
-        dataMap.put("forbidden", electricityCabinetBox.getUsableStatus());
+        dataMap.put("isForbidden", electricityCabinetBox.getUsableStatus());
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(UUID.randomUUID().toString().replace("-", ""))
