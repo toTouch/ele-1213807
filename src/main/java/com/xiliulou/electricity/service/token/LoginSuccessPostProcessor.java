@@ -9,7 +9,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
-@Service
 public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProcessor {
 
 
