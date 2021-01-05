@@ -44,7 +44,7 @@ public class ElectricityBattery {
     /**
      * 电池电量
      */
-    private Integer capacity;
+    private Double capacity;
     /**
      * 0：在仓，1：在库，2：租借
      */
@@ -65,7 +65,7 @@ public class ElectricityBattery {
     /**
      * 0：正常 1：故障
      */
-    private Integer powerStatus;
+    private Integer chargeStatus;
 
     //在仓
     public static final Integer WARE_HOUSE_STATUS = 0;

@@ -62,17 +62,17 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 		//TODO 电池上报详细信息
-		String power = eleBatteryVo.getPower();
+		Double power = eleBatteryVo.getPower();
 		if (Objects.nonNull(power)) {
-			newElectricityBattery.setCapacity(Integer.valueOf(power));
+			newElectricityBattery.setCapacity(power);
 		}
 		String health = eleBatteryVo.getHealth();
 		if (Objects.nonNull(health)) {
 			newElectricityBattery.setHealthStatus(Integer.valueOf(health));
 		}
-		String status = eleBatteryVo.getStatus();
-		if (Objects.nonNull(status)) {
-			newElectricityBattery.setHealthStatus(Integer.valueOf(status));
+		String chargeStatus = eleBatteryVo.getChargeStatus();
+		if (Objects.nonNull(chargeStatus)) {
+			newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
 		}
 		electricityBatteryService.update(newElectricityBattery);
 		return true;
@@ -84,22 +84,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 @Data
 class EleBatteryVo {
 	private String batteryName;
-	//电压
-	private String voltage;
-	//电芯数量
-	private String batteries_count;
 	//电量
-	private String power;
-	//容量
-	private String capacity;
-	//输出电流
-	private String output_current;
-	//输出电流
-	private String recharging_current;
-	//温度
-	private String temperature;
+	private Double power;
 	//健康状态
 	private String health;
 	//充电状态
-	private String status;
+	private String chargeStatus;
 }
