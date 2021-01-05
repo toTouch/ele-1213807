@@ -38,6 +38,6 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
         if (StringUtils.isBlank(ip) || "unknown".equalsIgnoreCase(ip)) {
             ip = request.getRemoteAddr();
         }
-        log.info("ip is -->{}",ip);
+        log.info("ip is -->{}",StringUtils.isBlank(ip) ? null : ip.split(",")[0]);
     }
 }
