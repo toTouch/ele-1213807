@@ -34,22 +34,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
 
 
     /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param electricityCabinetOrder 实例对象
-     * @return 对象列表
-     */
-    List<ElectricityCabinetOrder> queryAll(ElectricityCabinetOrder electricityCabinetOrder);
-
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetOrder 实例对象
-     * @return 影响行数
-     */
-    int insertOne(ElectricityCabinetOrder electricityCabinetOrder);
-
-    /**
      * 修改数据
      *
      * @param electricityCabinetOrder 实例对象
@@ -57,13 +41,6 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
      */
     int update(ElectricityCabinetOrder electricityCabinetOrder);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 影响行数
-     */
-    int deleteById(Long id);
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
