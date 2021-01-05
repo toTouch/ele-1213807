@@ -80,32 +80,6 @@ public class StoreServiceImpl implements StoreService {
         return store;
     }
 
-    /**
-     * 新增数据
-     *
-     * @param store 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Store insert(Store store) {
-        this.storeMapper.insert(store);
-        return store;
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param store 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(Store store) {
-        return this.storeMapper.update(store);
-
-    }
-
     @Override
     @Transactional
     public R save(StoreAddAndUpdate storeAddAndUpdate) {
@@ -130,7 +104,7 @@ public class StoreServiceImpl implements StoreService {
         store.setCreateTime(System.currentTimeMillis());
         store.setUpdateTime(System.currentTimeMillis());
         store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
-        int insert = storeMapper.insertOne(store);
+        int insert = storeMapper.insert(store);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);

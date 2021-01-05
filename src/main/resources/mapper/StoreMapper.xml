@@ -68,63 +68,6 @@
         limit #{query.offset}, #{query.size}
     </select>
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="StoreMap">
-        select
-        id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
-        create_time, update_time,usable_status,service_phone, business_time
-        from electricity.t_store
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="sn != null and sn != ''">
-                and sn = #{sn}
-            </if>
-            <if test="name != null and name != ''">
-                and name = #{name}
-            </if>
-            <if test="areaId != null">
-                and area_id = #{areaId}
-            </if>
-            <if test="address != null and address != ''">
-                and address = #{address}
-            </if>
-            <if test="longitude != null">
-                and longitude = #{longitude}
-            </if>
-            <if test="latitude != null">
-                and latitude = #{latitude}
-            </if>
-            <if test="batteryStock != null">
-                and battery_stock = #{batteryStock}
-            </if>
-            <if test="batteryService != null">
-                and battery_service = #{batteryService}
-            </if>
-            <if test="carService != null">
-                and car_service = #{carService}
-            </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="usableStatus != null">
-                and usable_status = #{usableStatus}
-            </if>
-            <if test="servicePhone != null and servicePhone != ''">
-                and service_phone = #{servicePhone}
-            </if>
-            <if test="businessTime != null and businessTime != ''">
-                and business_time = #{businessTime}
-            </if>
-        </where>
-    </select>
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.StoreVO">
         select  id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
         create_time, update_time,usable_status,  service_phone, business_time,  ROUND(
@@ -156,11 +99,6 @@
         order by distance asc
     </select>
 
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_store(sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status, service_phone, business_time)
-        values (#{sn}, #{name}, #{areaId}, #{address}, #{longitude}, #{latitude}, #{batteryStock}, #{batteryService}, #{carService}, #{delFlag}, #{createTime}, #{updateTime},#{usableStatus}, #{servicePhone}, #{businessTime})
-    </insert>
 
     <!--通过主键修改数据-->
     <update id="update">

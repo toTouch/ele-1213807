@@ -29,23 +29,6 @@ public interface StoreService {
      */
     Store queryByIdFromCache(Integer id);
 
-    /**
-     * 新增数据
-     *
-     * @param store 实例对象
-     * @return 实例对象
-     */
-    Store insert(Store store);
-
-    /**
-     * 修改数据
-     *
-     * @param store 实例对象
-     * @return 实例对象
-     */
-    Integer update(Store store);
-
-
     R save(StoreAddAndUpdate storeAddAndUpdate);
 
     R edit(StoreAddAndUpdate storeAddAndUpdate);
