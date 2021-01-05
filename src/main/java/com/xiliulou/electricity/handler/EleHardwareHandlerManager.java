@@ -2,7 +2,6 @@ package com.xiliulou.electricity.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.HardwareCommand;
@@ -15,7 +14,6 @@ import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -27,9 +25,11 @@ import java.util.Objects;
 @Slf4j
 public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Autowired
-    NormalEleOperHandlerIot normalEleOperHandlerIot;
+    NormalEleOrderHandlerIot normalEleOrderHandlerIot;
     @Autowired
     NormalEleCellHandlerIot normalEleCellHandlerIot;
+    @Autowired
+    NormalEleOperateHandlerIot normalEleOperateHandlerIot;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
@@ -38,7 +38,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")) {
             log.info("hardwareCommandQuery is -->{}",hardwareCommandQuery);
-            return normalEleOperHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
+            return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
         } else {
             log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
             return Pair.of(false, "");
@@ -108,10 +108,12 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         电池上报 cell_battery_report_info
 		*/
         if (receiverMessage.getType().contains("order")) {
-            return normalEleOperHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("cell")||receiverMessage.getType().contains("operate")) {
+            return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("cell")) {
             return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
-        } else {
+        } else if (receiverMessage.getType().contains("operate")) {
+            return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);
+        }else{
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;
         }

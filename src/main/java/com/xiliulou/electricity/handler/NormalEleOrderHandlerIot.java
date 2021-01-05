@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-public class NormalEleOperHandlerIot extends AbstractIotMessageHandler {
+public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired

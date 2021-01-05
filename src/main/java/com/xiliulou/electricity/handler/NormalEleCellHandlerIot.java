@@ -55,17 +55,6 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 
 	@Override
 	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-		String sessionId = receiverMessage.getSessionId();
-		if (StrUtil.isEmpty(sessionId)) {
-			log.error("no sessionId,{}", receiverMessage.getOriginContent());
-			return false;
-		}
-		//操作回调的放在redis中
-		if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
-			redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 60L, TimeUnit.SECONDS);
-		} else {
-			redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 60L, TimeUnit.SECONDS);
-		}
 		//仓门上报
 		if(Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_CELL_REPORT_INFO)){
 			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
