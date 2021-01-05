@@ -82,7 +82,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R getMemberCardInfo(Long uid);
 
-
     void deleteUserInfo(UserInfo oldUserInfo);
 
     void updateByUid(UserInfo userInfo);

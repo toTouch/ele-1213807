@@ -70,32 +70,6 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     }
 
 
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetModel 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ElectricityCabinetModel insert(ElectricityCabinetModel electricityCabinetModel) {
-        this.electricityCabinetModelMapper.insert(electricityCabinetModel);
-        return electricityCabinetModel;
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetModel 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(ElectricityCabinetModel electricityCabinetModel) {
-       return this.electricityCabinetModelMapper.update(electricityCabinetModel);
-         
-    }
-
     @Override
     @Transactional
     public R save(ElectricityCabinetModel electricityCabinetModel) {
@@ -103,7 +77,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-        int insert= electricityCabinetModelMapper.insertOne(electricityCabinetModel);
+        int insert= electricityCabinetModelMapper.insert(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);

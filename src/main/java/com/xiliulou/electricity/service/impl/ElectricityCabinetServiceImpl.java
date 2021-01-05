@@ -130,33 +130,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return electricityCabinet;
     }
 
-
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinet 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ElectricityCabinet insert(ElectricityCabinet electricityCabinet) {
-        this.electricityCabinetMapper.insert(electricityCabinet);
-        return electricityCabinet;
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinet 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(ElectricityCabinet electricityCabinet) {
-        return this.electricityCabinetMapper.update(electricityCabinet);
-
-    }
-
     @Override
     @Transactional
     public R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
@@ -214,7 +187,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
-        int insert = electricityCabinetMapper.insertOne(electricityCabinet);
+        int insert = electricityCabinetMapper.insert(electricityCabinet);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);

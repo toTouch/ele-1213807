@@ -24,25 +24,6 @@ public interface ElectricityCabinetBoxService {
      */
     ElectricityCabinetBox queryByIdFromDB(Long id);
 
-
-
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 实例对象
-     */
-    ElectricityCabinetBox insert(ElectricityCabinetBox electricityCabinetBox);
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 实例对象
-     */
-    Integer update(ElectricityCabinetBox electricityCabinetBox);
-
-
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
 
     void batchDeleteBoxByElectricityCabinetId(Integer id);

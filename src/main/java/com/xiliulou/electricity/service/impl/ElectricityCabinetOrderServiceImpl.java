@@ -93,19 +93,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
     /**
-     * 新增数据
-     *
-     * @param electricityCabinetOrder 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ElectricityCabinetOrder insert(ElectricityCabinetOrder electricityCabinetOrder) {
-        this.electricityCabinetOrderMapper.insert(electricityCabinetOrder);
-        return electricityCabinetOrder;
-    }
-
-    /**
      * 修改数据
      *
      * @param electricityCabinetOrder 实例对象
@@ -116,18 +103,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public Integer update(ElectricityCabinetOrder electricityCabinetOrder) {
         return this.electricityCabinetOrderMapper.update(electricityCabinetOrder);
 
-    }
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.electricityCabinetOrderMapper.deleteById(id) > 0;
     }
 
 
@@ -236,7 +211,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //3.根据用户查询旧电池
             String oldElectricityBatterySn = userInfo.getNowElectricityBatterySn();
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
-                    .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), user.getUid(), cellNo))
+                    .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), cellNo))
                     .uid(user.getUid())
                     .phone(userInfo.getPhone())
                     .electricityCabinetId(orderQuery.getElectricityCabinetId())
@@ -606,10 +581,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return resultList;
     }
 
-    public String generateOrderId(Integer id, Long userId, String cellNo) {
+    public String generateOrderId(Integer id,  String cellNo) {
         return String.valueOf(System.currentTimeMillis() / 1000) + id +
-                cellNo +userId +
-                RandomUtil.randomNumbers(2);
+                cellNo +
+                RandomUtil.randomNumbers(6);
     }
     public Long getTime(Long time) {
         Date date1 = new Date(time);

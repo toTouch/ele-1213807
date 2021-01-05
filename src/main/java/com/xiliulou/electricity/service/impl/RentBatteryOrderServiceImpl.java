@@ -22,27 +22,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Resource
     private RentBatteryOrderMapper rentBatteryOrderMapper;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public RentBatteryOrder queryByIdFromDB(Long id) {
-        return this.rentBatteryOrderMapper.queryById(id);
-    }
-    
-        /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public RentBatteryOrder queryByIdFromCache(Long id) {
-        return null;
-    }
     
     /**
      * 新增数据
@@ -57,18 +36,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrder;
     }
 
-    /**
-     * 修改数据
-     *
-     * @param rentBatteryOrder 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(RentBatteryOrder rentBatteryOrder) {
-       return this.rentBatteryOrderMapper.update(rentBatteryOrder);
-         
-    }
 
     @Override
     public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {

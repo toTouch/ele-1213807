@@ -60,34 +60,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return this.electricityCabinetBoxMapper.queryById(id);
     }
 
-
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ElectricityCabinetBox insert(ElectricityCabinetBox electricityCabinetBox) {
-        this.electricityCabinetBoxMapper.insert(electricityCabinetBox);
-        return electricityCabinetBox;
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(ElectricityCabinetBox electricityCabinetBox) {
-        return this.electricityCabinetBoxMapper.update(electricityCabinetBox);
-
-    }
-
-
     @Override
     public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
         if (Objects.nonNull(id)) {

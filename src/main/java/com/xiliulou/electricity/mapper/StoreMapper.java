@@ -32,22 +32,6 @@ public interface StoreMapper extends BaseMapper<Store>{
 
 
     /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param store 实例对象
-     * @return 对象列表
-     */
-    List<Store> queryAll(Store store);
-
-    /**
-     * 新增数据
-     *
-     * @param store 实例对象
-     * @return 影响行数
-     */
-    int insertOne(Store store);
-
-    /**
      * 修改数据
      *
      * @param store 实例对象

@@ -30,22 +30,6 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
 
 
     /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param electricityCabinetModel 实例对象
-     * @return 对象列表
-     */
-    List<ElectricityCabinetModel> queryAll(ElectricityCabinetModel electricityCabinetModel);
-
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetModel 实例对象
-     * @return 影响行数
-     */
-    int insertOne(ElectricityCabinetModel electricityCabinetModel);
-
-    /**
      * 修改数据
      *
      * @param electricityCabinetModel 实例对象

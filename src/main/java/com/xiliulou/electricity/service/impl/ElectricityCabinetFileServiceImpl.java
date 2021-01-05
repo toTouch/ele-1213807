@@ -38,46 +38,6 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
 
 
     /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-
-    @Override
-    public ElectricityCabinetFile queryByIdFromDB(Long id) {
-        return this.electricityCabinetFileMapper.queryById(id);
-    }
-
-
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-
-    @Override
-    public ElectricityCabinetFile queryByIdFromCache(Long id) {
-        return null;
-    }
-
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-
-    @Override
-    public List<ElectricityCabinetFile> queryAllByLimit(int offset, int limit) {
-        return this.electricityCabinetFileMapper.queryAllByLimit(offset, limit);
-    }
-
-
-    /**
      * 新增数据
      *
      * @param electricityCabinetFile 实例对象
@@ -87,23 +47,10 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Override
     @Transactional(rollbackFor = Exception.class)
     public ElectricityCabinetFile insert(ElectricityCabinetFile electricityCabinetFile) {
-        this.electricityCabinetFileMapper.insertOne(electricityCabinetFile);
+        this.electricityCabinetFileMapper.insert(electricityCabinetFile);
         return electricityCabinetFile;
     }
 
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetFile 实例对象
-     * @return 实例对象
-     */
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(ElectricityCabinetFile electricityCabinetFile) {
-        return this.electricityCabinetFileMapper.update(electricityCabinetFile);
-
-    }
 
     /**
      * 通过主键删除数据

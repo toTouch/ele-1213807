@@ -74,82 +74,12 @@
         limit #{query.offset}, #{query.size}
     </select>
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="ElectricityCabinetOrderMap">
-        select
-        id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn,
-        new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark,
-        switch_begin_time, switch_end_time, create_time, update_time
-        from electricity.t_electricity_cabinet_order
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="orderId != null and orderId != ''">
-                and order_id = #{orderId}
-            </if>
-            <if test="phone != null and phone != ''">
-                and phone = #{phone}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
-            </if>
-            <if test="payAmount != null">
-                and pay_amount = #{payAmount}
-            </if>
-            <if test="electricityCabinetId != null">
-                and electricity_cabinet_id = #{electricityCabinetId}
-            </if>
-            <if test="oldElectricityBatterySn != null and oldElectricityBatterySn != ''">
-                and old_electricity_battery_sn = #{oldElectricityBatterySn}
-            </if>
-            <if test="newElectricityBatterySn != null and newElectricityBatterySn != ''">
-                and new_electricity_battery_sn = #{newElectricityBatterySn}
-            </if>
-            <if test="oldCellNo != null">
-                and old_cell_no = #{oldCellNo}
-            </if>
-            <if test="newCellNo != null">
-                and new_cell_no = #{newCellNo}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="paymentMethod != null">
-                and payment_method = #{paymentMethod}
-            </if>
-            <if test="source != null">
-                and source = #{source}
-            </if>
-            <if test="remark != null and remark != ''">
-                and remark = #{remark}
-            </if>
-            <if test="switchBeginTime != null">
-                and switch_begin_time = #{switchBeginTime}
-            </if>
-            <if test="switchEndTime != null">
-                and switch_end_time = #{switchEndTime}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-        </where>
-    </select>
     <select id="homeThree" resultType="java.util.HashMap">
          select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as orderCount
         from electricity.t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
         group by from_unixtime(create_time / 1000, '%Y-%m-%d')
         order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
     </select>
-
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_electricity_cabinet_order(order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time)
-        values (#{orderId}, #{phone}, #{uid}, #{payAmount}, #{electricityCabinetId}, #{oldElectricityBatterySn}, #{newElectricityBatterySn}, #{oldCellNo}, #{newCellNo}, #{status}, #{paymentMethod}, #{source}, #{remark}, #{switchBeginTime}, #{switchEndTime}, #{createTime}, #{updateTime})
-    </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
@@ -214,10 +144,5 @@
         set status = 8 , update_time = #{updateTime}
         where  order_id = #{orderId} and status in(1,2,3);
     </update>
-
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from electricity.t_electricity_cabinet_order where id = #{id}
-    </delete>
 
 </mapper>

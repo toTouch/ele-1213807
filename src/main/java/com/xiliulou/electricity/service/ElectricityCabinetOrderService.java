@@ -27,13 +27,6 @@ public interface ElectricityCabinetOrderService {
      */
     ElectricityCabinetOrder queryByIdFromDB(Long id);
 
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinetOrder 实例对象
-     * @return 实例对象
-     */
-    ElectricityCabinetOrder insert(ElectricityCabinetOrder electricityCabinetOrder);
 
     /**
      * 修改数据
@@ -42,14 +35,6 @@ public interface ElectricityCabinetOrderService {
      * @return 实例对象
      */
     Integer update(ElectricityCabinetOrder electricityCabinetOrder);
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteById(Long id);
 
     R order(OrderQuery orderQuery);
 
