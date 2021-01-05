@@ -7,10 +7,6 @@ public class ElectricityBatteryQuery {
 
     private Integer shopId;
     /**
-     * 代理商id
-     */
-    private Integer agentId;
-    /**
      * sn码
      */
     private String serialNumber;

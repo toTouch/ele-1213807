@@ -163,6 +163,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            electricityBattery.setCabinetId(-1);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.update(electricityBattery);
             return null;
@@ -308,6 +309,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBattery.setCabinetId(-1);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.update(electricityBattery);
             return null;

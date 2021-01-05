@@ -80,13 +80,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      *
      * @param offset
      * @param size
-     * @param agentId
      * @return
      */
     @Override
     @DS("slave_1")
-    public R getElectricityMemberCardPage(Long offset, Long size, Integer agentId, Integer status,Integer type) {
-        return R.ok(baseMapper.getElectricityMemberCardPage(offset, size, agentId, status,type));
+    public R getElectricityMemberCardPage(Long offset, Long size,  Integer status,Integer type) {
+        return R.ok(baseMapper.getElectricityMemberCardPage(offset, size, status,type));
     }
 
     /**

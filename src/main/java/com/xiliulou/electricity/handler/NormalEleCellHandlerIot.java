@@ -101,6 +101,13 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 				if(Objects.nonNull(electricityBattery)) {
 					electricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
+					//电池所属仓门修改
+					ElectricityBattery newElectricityBattery=new ElectricityBattery();
+					newElectricityBattery.setId(electricityBattery.getId());
+					newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+					newElectricityBattery.setCabinetId(electricityCabinet.getId());
+					newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+					electricityBatteryService.update(newElectricityBattery);
 				}
 
 			}

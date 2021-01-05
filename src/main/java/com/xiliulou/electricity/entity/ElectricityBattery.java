@@ -30,10 +30,7 @@ public class ElectricityBattery {
      * 所属店铺
      */
     private Integer shopId;
-    /**
-     * 代理商id
-     */
-    private Integer agentId;
+
     /**
      * sn码
      */
@@ -58,10 +55,6 @@ public class ElectricityBattery {
     private Long updateTime;
 
     private Object delFlag;
-    /**
-     * 用户id
-     */
-//    private Long uid;
 
     private Integer cabinetId;
 

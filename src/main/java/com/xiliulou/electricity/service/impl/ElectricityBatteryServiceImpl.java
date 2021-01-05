@@ -41,9 +41,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R saveElectricityBattery(ElectricityBattery electricityBattery) {
-        if (Objects.nonNull(electricityBattery.getAgentId())) {
-            // TODO: 2020/11/26 0026 YG 校验代理商合法性
-        }
         if (Objects.nonNull(electricityBattery.getShopId())) {
             Store store = storeService.queryByIdFromCache(electricityBattery.getShopId());
             if (Objects.isNull(store)) {
@@ -70,9 +67,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (Objects.isNull(electricityBatteryDb)) {
             log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
             return R.fail("电池不存在!");
-        }
-        if (Objects.nonNull(electricityBattery.getAgentId())) {
-            //校验合法性
         }
         if (Objects.nonNull(electricityBattery.getShopId())) {
             //校验合法性
@@ -175,6 +169,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn) {
         return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, nowElectricityBatterySn)
                 .eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS));
+    }
+
+    @Override
+    public void updateStatus(ElectricityBattery electricityBattery) {
+        electricitybatterymapper.update(electricityBattery);
     }
 
 }

@@ -72,14 +72,12 @@ public class ElectricityCabinetBatteryAdminController {
     public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
                                        @RequestParam(value = "size", required = true) Long size,
                                        @RequestParam(value = "shopId", required = false) Integer shopId,
-                                       @RequestParam(value = "agentId", required = false) Integer agentId,
                                        @RequestParam(value = "modelId", required = false) Integer modelId,
                                        @RequestParam(value = "serialNumber", required = false) String serialNumber,
                                        @RequestParam(value = "status", required = false) Integer status,
                                        @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setShopId(shopId);
-        electricityBatteryQuery.setAgentId(agentId);
         electricityBatteryQuery.setModelId(modelId);
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setCabinetId(cabinetId);

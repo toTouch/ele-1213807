@@ -19,8 +19,6 @@ import java.math.BigDecimal;
 public class ElectricityMemberCard {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
-    //代理商id
-    private Integer agentId;
     //类型
     @NotNull(message = "套餐类型不能为空!")
     private Integer type;

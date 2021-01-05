@@ -5,7 +5,6 @@
     <resultMap type="com.xiliulou.electricity.entity.ElectricityBattery" id="ElectricityBatteryMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="shopId" column="shop_id" jdbcType="INTEGER"/>
-        <result property="agentId" column="agent" jdbcType="INTEGER"/>
         <result property="serialNumber" column="serial_number" jdbcType="VARCHAR"/>
         <result property="modelId" column="model_id" jdbcType="INTEGER"/>
         <result property="capacity" column="capacity" jdbcType="INTEGER"/>
@@ -16,6 +15,21 @@
         <result property="cabinetId" column="cabinet_id" jdbcType="INTEGER"/>
         <result property="healthStatus" column="health_status" jdbcType="INTEGER"/>
     </resultMap>
+
+    <update id="update">
+        update from t_electricity_battery
+        <set>
+            <if test="status != null">
+                status =#{status},
+            </if>
+            <if test="updateTime != null">
+                update_time =#{updateTime},
+            </if>
+            <if test="cabinetId != null or cabinetId==-1">
+                cabinet_id =#{cabinetId},
+            </if>
+        </set>
+    </update>
 
 
     <!--电池分页-->
@@ -31,10 +45,6 @@
         <if test="query.shopId != null">
             and tel.shop_id =#{query.shopId}
         </if>
-        <if test="query.agentId != null">
-            and tel.agent_id =#{query.agentId}
-        </if>
-
         <if test="query.serialNumber != null">
             and tel.serial_number =#{query.serialNumber}
         </if>
@@ -47,15 +57,11 @@
         <if test="query.cabinetId != null">
             and tel.cabinet_id =#{query.cabinetId}
         </if>
-
-
         order by tel.create_time desc
         limit #{offset}, #{size};
-
-
     </select>
     <select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select teb.id as id,teb.shop_id as shop_id,teb.agent_id as agentId,teb.serial_number as
+        select teb.id as id,teb.shop_id as shop_id,teb.serial_number as
         serial_number,teb.model_id as model_id,
         teb.capacity as capacity,teb.status as status,teb.create_time as create_time,teb.update_time as update_time,
         teb.del_flag as del_flag,teb.cabinet_id as cabinet_id
