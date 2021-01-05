@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.handler;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -45,7 +47,27 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         log.info("receiverMessage is -->{}",receiverMessage);
         //这种情况不会出现
         if (Objects.isNull(receiverMessage.getType())) {
-            log.error("no type {}", receiverMessage.getOriginContent());
+            if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
+                return false;
+            }
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            if (Objects.isNull(electricityCabinet)) {
+                log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                return false;
+            }
+            //在线状态修改
+            ElectricityCabinet newElectricityCabinet=new ElectricityCabinet();
+            newElectricityCabinet.setId(electricityCabinet.getId());
+            Integer status=1;
+            if(Objects.equals(receiverMessage.getStatus(),"online")){
+                status=0;
+            }
+            newElectricityCabinet.setOnlineStatus(status);
+            newElectricityCabinet.setPowerStatus(status);
+            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
+            }
             return false;
         }
 		/*
