@@ -19,6 +19,6 @@ public class LoginSuccessHandler implements AuthenticationSuccessHandler {
      */
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
-          log.info("登录成功啦啦啦，哈哈哈哈");
+          log.info("login success_lxc");
     }
 }
