@@ -17,11 +17,17 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
-        log.info(JsonUtil.toJson(authentication));
-        if (request.getHeader("x-forwarded-for") == null) {
-            log.info(request.getRemoteAddr());
-        }else {
-            log.info(request.getHeader("x-forwarded-for"));
+        log.info("authentication is --> {}",JsonUtil.toJson(authentication));
+        String ip = request.getHeader("x-forwarded-for");
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("Proxy-Client-IP");
         }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
+            ip = request.getRemoteAddr();
+        }
+        log.info("ip is -->{}",ip);
     }
 }
