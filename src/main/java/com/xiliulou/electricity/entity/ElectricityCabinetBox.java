@@ -60,7 +60,7 @@ public class ElectricityCabinetBox {
      */
     private Integer isHeat;
     /**
-     * 指示灯状态（1-红灯亮，2-绿灯亮，3-黄灯亮）
+     * 指示灯状态（3-红灯亮，5-绿灯亮，7-黄灯亮）
      */
     private Integer isLight;
     /**
