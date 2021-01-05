@@ -78,11 +78,11 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
-		        .and().formLogin()
-				.successHandler(new LoginSuccessHandler()).and().rememberMe()
 				.and().csrf().disable()
 				.logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
+				.and().formLogin()
+				.successHandler(new LoginSuccessHandler())
 //				.authorizeRequests()
 //				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
 				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
