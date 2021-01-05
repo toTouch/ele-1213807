@@ -13,22 +13,6 @@ import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 public interface RentBatteryOrderService {
 
     /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    RentBatteryOrder queryByIdFromDB(Long id);
-    
-      /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    RentBatteryOrder queryByIdFromCache(Long id);
-
-    /**
      * 新增数据
      *
      * @param rentBatteryOrder 实例对象
@@ -36,13 +20,6 @@ public interface RentBatteryOrderService {
      */
     RentBatteryOrder insert(RentBatteryOrder rentBatteryOrder);
 
-    /**
-     * 修改数据
-     *
-     * @param rentBatteryOrder 实例对象
-     * @return 实例对象
-     */
-    Integer update(RentBatteryOrder rentBatteryOrder);
 
 
     R queryList(RentBatteryOrderQuery rentBatteryOrderQuery);

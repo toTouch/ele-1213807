@@ -16,42 +16,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface RentCarOrderMapper extends BaseMapper<RentCarOrder>{
 
     /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    RentCarOrder queryById(Long id);
-
-    /**
      * 查询指定行数据
      *
      */
     List<RentCarOrder> queryList(@Param("query") RentCarOrderQuery rentCarOrderQuery);
 
-
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param rentCarOrder 实例对象
-     * @return 对象列表
-     */
-    List<RentCarOrder> queryAll(RentCarOrder rentCarOrder);
-
-    /**
-     * 新增数据
-     *
-     * @param rentCarOrder 实例对象
-     * @return 影响行数
-     */
-    int insertOne(RentCarOrder rentCarOrder);
-
-    /**
-     * 修改数据
-     *
-     * @param rentCarOrder 实例对象
-     * @return 影响行数
-     */
-    int update(RentCarOrder rentCarOrder);
 
 }

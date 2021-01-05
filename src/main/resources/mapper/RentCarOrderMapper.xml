@@ -17,13 +17,6 @@
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
     </resultMap>
 
-    <!--查询单个-->
-    <select id="queryById" resultMap="RentCarOrderMap">
-        select
-          id, uid, name, phone, id_number, car_store_id, car_store_name, car_sn, number_plate, car_deposit, status, create_time
-        from electricity.t_rent_car_order
-        where id = #{id}
-    </select>
 
     <!--查询指定行数据-->
     <select id="queryList" resultMap="RentCarOrderMap">
@@ -56,97 +49,5 @@
         order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
-
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="RentCarOrderMap">
-        select
-          id, uid, name, phone, id_number, car_store_id, car_store_name, car_sn, number_plate, car_deposit, status, create_time
-        from electricity.t_rent_car_order
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
-            </if>
-            <if test="name != null and name != ''">
-                and name = #{name}
-            </if>
-            <if test="phone != null and phone != ''">
-                and phone = #{phone}
-            </if>
-            <if test="idNumber != null and idNumber != ''">
-                and id_number = #{idNumber}
-            </if>
-            <if test="carStoreId != null">
-                and car_store_id = #{carStoreId}
-            </if>
-            <if test="carStoreName != null and carStoreName != ''">
-                and car_store_name = #{carStoreName}
-            </if>
-            <if test="carSn != null and carSn != ''">
-                and car_sn = #{carSn}
-            </if>
-            <if test="numberPlate != null and numberPlate != ''">
-                and number_plate = #{numberPlate}
-            </if>
-            <if test="carDeposit != null">
-                and car_deposit = #{carDeposit}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-        </where>
-    </select>
-
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_rent_car_order(uid, name, phone, id_number, car_store_id, car_store_name, car_sn, number_plate, car_deposit, status, create_time)
-        values (#{uid}, #{name}, #{phone}, #{idNumber}, #{carStoreId}, #{carStoreName}, #{carSn}, #{numberPlate}, #{carDeposit}, #{status}, #{createTime})
-    </insert>
-
-    <!--通过主键修改数据-->
-    <update id="update">
-        update electricity.t_rent_car_order
-        <set>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="name != null and name != ''">
-                name = #{name},
-            </if>
-            <if test="phone != null and phone != ''">
-                phone = #{phone},
-            </if>
-            <if test="idNumber != null and idNumber != ''">
-                id_number = #{idNumber},
-            </if>
-            <if test="carStoreId != null">
-                car_store_id = #{carStoreId},
-            </if>
-            <if test="carStoreName != null and carStoreName != ''">
-                car_store_name = #{carStoreName},
-            </if>
-            <if test="carSn != null and carSn != ''">
-                car_sn = #{carSn},
-            </if>
-            <if test="numberPlate != null and numberPlate != ''">
-                number_plate = #{numberPlate},
-            </if>
-            <if test="carDeposit != null">
-                car_deposit = #{carDeposit},
-            </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
 
 </mapper>
