@@ -2,8 +2,10 @@ package com.xiliulou.electricity.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -45,7 +47,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Override
     public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
         log.info("receiverMessage is -->{}",receiverMessage);
-        //这种情况不会出现
+        //电柜在线状态
         if (Objects.isNull(receiverMessage.getType())) {
             if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
                 return false;

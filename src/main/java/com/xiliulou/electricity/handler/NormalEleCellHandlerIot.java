@@ -107,6 +107,22 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 			if (Objects.nonNull(isLight)) {
 				electricityCabinetBox.setIsLight(Integer.valueOf(isLight));
 			}
+			String isForbidden=eleCellVo.getIs_forbidden();
+			if (Objects.nonNull(isForbidden)) {
+				electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
+			}
+			String batteryStatus=eleCellVo.getBatteryStatus();
+			if (Objects.nonNull(batteryStatus)) {
+				electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
+			}
+			String batteryName=eleCellVo.getBatteryName();
+			if (Objects.nonNull(batteryName)) {
+				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+				if(Objects.nonNull(electricityBattery)) {
+					electricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
+				}
+
+			}
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 		}
 
@@ -156,6 +172,12 @@ class EleCellVo {
 	private String is_heat;
 	//指示灯状态
 	private String is_light;
+	//可用禁用
+	private String is_forbidden;
+	//可用禁用
+	private String batteryStatus;
+	//电池编号
+	private String batteryName;
 }
 
 @Data

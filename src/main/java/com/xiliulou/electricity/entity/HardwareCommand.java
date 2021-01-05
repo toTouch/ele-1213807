@@ -62,6 +62,8 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
 	//电池上报 cell_battery_report_info
 	public static final String ELE_COMMAND_CELL_BATTERY_REPORT_INFO = "cell_battery_report_info";
+	//电柜版本上报
+	public static final String EXCHANGE_CABINET = "exchange_cabinet";
 
 	public static final Map<String, String> CUPBOARD_COMMAND_MAPS = Maps.newHashMap();
 
@@ -94,5 +96,6 @@ public class HardwareCommand {
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_CHECK, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_REPORT_INFO, "OK");
 		CUPBOARD_COMMAND_MAPS.put(ELE_COMMAND_CELL_BATTERY_REPORT_INFO, "OK");
+		CUPBOARD_COMMAND_MAPS.put(EXCHANGE_CABINET, "OK");
 	}
 }
