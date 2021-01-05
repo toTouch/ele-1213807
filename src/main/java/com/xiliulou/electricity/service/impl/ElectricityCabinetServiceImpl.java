@@ -40,7 +40,6 @@ import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -128,6 +127,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //放入缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id, electricityCabinet);
         return electricityCabinet;
+    }
+
+    /**
+     * 修改数据
+     *
+     * @param electricityCabinet 实例对象
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer update(ElectricityCabinet electricityCabinet) {
+        return this.electricityCabinetMapper.update(electricityCabinet);
+
     }
 
     @Override
