@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.handler.LoginSuccessHandler;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
 import com.xiliulou.security.authentication.CustomAuthenticationEntryPoint;
@@ -74,8 +75,11 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
+
 		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
+		        .and().formLogin()
+				.successHandler(new LoginSuccessHandler()).and().rememberMe()
 				.and().csrf().disable()
 				.logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
@@ -89,8 +93,10 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 				//不缓存session
 				.and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 
+
 		//增加第三方授权的service
 		ThirdAuthenticationServiceFactory.putService(TokenConstant.THIRD_AUTH_WX_PRO, wxProThirdAuthenticationService);
+
 
 	}
 
