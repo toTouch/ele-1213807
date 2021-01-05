@@ -32,6 +32,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")) {
+            log.info("hardwareCommandQuery is -->{}",hardwareCommandQuery);
             return normalEleOperHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
         } else {
             log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
@@ -41,6 +42,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
     @Override
     public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
+        log.info("receiverMessage is -->{}",receiverMessage);
         //这种情况不会出现
         if (Objects.isNull(receiverMessage.getType())) {
             log.error("no type {}", receiverMessage.getOriginContent());

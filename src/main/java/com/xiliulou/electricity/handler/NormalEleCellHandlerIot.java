@@ -55,7 +55,6 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 
 	@Override
 	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-		log.info("receiverMessage is -->"+receiverMessage);
 		String sessionId = receiverMessage.getSessionId();
 		if (StrUtil.isEmpty(sessionId)) {
 			log.error("no sessionId,{}", receiverMessage.getOriginContent());
