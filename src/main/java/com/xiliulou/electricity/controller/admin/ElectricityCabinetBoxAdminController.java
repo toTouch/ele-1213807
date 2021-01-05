@@ -14,6 +14,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -105,7 +106,9 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
+        List<String> cellList=new ArrayList<>();
+        cellList.add(oldElectricityCabinetBox.getCellNo());
+        dataMap.put("cell_list", cellList);
         String sessionId=UUID.randomUUID().toString().replace("-", "");
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(sessionId)
@@ -134,6 +137,11 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
+        List<String> cellList=new ArrayList<>();
+        for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+            cellList.add(electricityCabinetBox.getCellNo());
+        }
+        dataMap.put("cell_list", cellList);
         String sessionId=UUID.randomUUID().toString().replace("-", "");
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(sessionId)
