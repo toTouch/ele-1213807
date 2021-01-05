@@ -31,22 +31,6 @@ public interface ElectricityCabinetService {
     ElectricityCabinet queryByIdFromCache(Integer id);
 
 
-    /**
-     * 新增数据
-     *
-     * @param electricityCabinet 实例对象
-     * @return 实例对象
-     */
-    ElectricityCabinet insert(ElectricityCabinet electricityCabinet);
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinet 实例对象
-     * @return 实例对象
-     */
-    Integer update(ElectricityCabinet electricityCabinet);
-
     R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
 
     R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
