@@ -76,10 +76,10 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		http.formLogin()
-				.successHandler(new LoginSuccessHandler())
-				.and().exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
+				.and().formLogin()
+				.successHandler(new LoginSuccessHandler())
 				.and().csrf().disable()
 				.logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
