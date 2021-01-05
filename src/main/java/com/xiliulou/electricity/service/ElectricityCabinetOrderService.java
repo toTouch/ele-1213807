@@ -27,7 +27,6 @@ public interface ElectricityCabinetOrderService {
      */
     ElectricityCabinetOrder queryByIdFromDB(Long id);
 
-
     /**
      * 修改数据
      *
@@ -35,6 +34,8 @@ public interface ElectricityCabinetOrderService {
      * @return 实例对象
      */
     Integer update(ElectricityCabinetOrder electricityCabinetOrder);
+
+    ElectricityCabinetOrder queryByOrderId(String orderId);
 
     R order(OrderQuery orderQuery);
 
@@ -61,4 +62,6 @@ public interface ElectricityCabinetOrderService {
     R endOrder(String orderId);
 
     void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response);
+
+    void insert(ElectricityCabinetOrder electricityCabinetOrder);
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.queue;
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -104,16 +106,47 @@ public class EleOperateQueueHandler {
      * @param finalOpenDTO
      */
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(finalOpenDTO.getProductKey(), finalOpenDTO.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELE ERROR! no product and device ,p={},d={}", finalOpenDTO.getProductKey(), finalOpenDTO.getDeviceName());
+            return;
+        }
         String sessionId = finalOpenDTO.getSessionId();
         Boolean result = finalOpenDTO.getOperResult();
         String type = finalOpenDTO.getType();
-        Long oid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByIdFromDB(oid);
-        if (Objects.isNull(electricityCabinetOrder)) {
+        Long uid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
             return;
         }
-        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
-            openOldBatteryDoor(electricityCabinetOrder, result);
+        Map<String,Object> map = JsonUtil.fromJson(finalOpenDTO.getOriginContent(), Map.class);
+        String orderId=map.get("orderId").toString();
+        String serialNumber=map.get("serialNumber").toString();
+        Integer status=(int)map.get("status");
+        List<String> cellList=(List)map.get("cell_list");
+        if(ObjectUtil.isEmpty(cellList)){
+            return;
+        }
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
+        if (Objects.isNull(electricityCabinetOrder)) {
+            if(Objects.equals(type,HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)){
+                electricityCabinetOrder = ElectricityCabinetOrder.builder()
+                        .orderId(orderId)
+                        .uid(uid)
+                        .phone(userInfo.getPhone())
+                        .electricityCabinetId(electricityCabinet.getId())
+                        .oldElectricityBatterySn(serialNumber)
+                        .oldCellNo(Integer.valueOf(cellList.get(0)))
+                        .status(status)
+                        .source(2)
+                        .paymentMethod(userInfo.getCardType())
+                        .createTime(System.currentTimeMillis())
+                        .updateTime(System.currentTimeMillis()).build();
+                electricityCabinetOrderService.insert(electricityCabinetOrder);
+                openOldBatteryDoor(electricityCabinetOrder, result);
+            }
+            return;
         }
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CLOSE)) {
             closeOldBatteryDoor(electricityCabinetOrder, result);
@@ -131,7 +164,6 @@ public class EleOperateQueueHandler {
             checkNewBattery(electricityCabinetOrder, result);
         }
         //收到消息响应
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         Map<String, Object> data = Maps.newHashMap();
         data.put("orderId", electricityCabinetOrder.getOrderId());
         pubHardwareService.sendMessage(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), SendHardwareMessage.builder().data(data).sessionId(sessionId).type(ElectricityCabinetConstant.ELE_COMMAND_ORDER_SYNC_RSP).build());
@@ -159,10 +191,6 @@ public class EleOperateQueueHandler {
         if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, operResult, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_OPEN_DOOR)) {
             return;
         }
-        //订单状态
-        electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR);
-        electricityCabinetOrderService.update(electricityCabinetOrder);
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                 .cellNo(electricityCabinetOrder.getOldCellNo())
@@ -236,7 +264,7 @@ public class EleOperateQueueHandler {
                 dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
 
                 HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                        .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId() + ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_WEB)
+                        .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" +userInfo.getUid()+"_"+electricityCabinetOrder.getOrderId())
                         .data(dataMap)
                         .productKey(electricityCabinet.getProductKey())
                         .deviceName(electricityCabinet.getDeviceName())

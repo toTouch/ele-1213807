@@ -105,6 +105,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     }
 
+    /**
+     * 通过ID查询单条数据从DB
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public ElectricityCabinetOrder queryByOrderId(String orderId) {
+        return this.electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getOrderId,orderId));
+    }
+
 
     /*
       1.判断参数
@@ -210,37 +221,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
             //3.根据用户查询旧电池
             String oldElectricityBatterySn = userInfo.getNowElectricityBatterySn();
-            ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
-                    .orderId(generateOrderId(orderQuery.getElectricityCabinetId(), cellNo))
-                    .uid(user.getUid())
-                    .phone(userInfo.getPhone())
-                    .electricityCabinetId(orderQuery.getElectricityCabinetId())
-                    .oldElectricityBatterySn(oldElectricityBatterySn)
-                    .oldCellNo(Integer.valueOf(cellNo))
-                    .status(ElectricityCabinetOrder.STATUS_ORDER_PAY)
-                    .source(orderQuery.getSource())
-                    .paymentMethod(userInfo.getCardType())
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).build();
-            electricityCabinetOrderMapper.insert(electricityCabinetOrder);
-            //放redis 订单id 定时任务处理取消订单
-            redisService.zsetAddString("orderId", electricityCabinetOrder.getOrderId(), System.currentTimeMillis() + 360 * 1000);
+            String orderId=generateOrderId(orderQuery.getElectricityCabinetId(), cellNo);
             //4.开旧电池门
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", cellNo);
-            dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-            dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
-            dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
+            dataMap.put("order_id", orderId);
+            dataMap.put("serial_number", oldElectricityBatterySn);
+            dataMap.put("status",  ElectricityCabinetOrder.STATUS_ORDER_PAY);
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+userInfo.getUid()+"_"+orderId)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            return R.ok(electricityCabinetOrder.getOrderId());
+            return R.ok(orderId);
         } catch (Exception e) {
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "下单失败");
@@ -319,7 +316,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getUid()+"_"+electricityCabinetOrder.getOrderId())
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -336,7 +333,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId()+ElectricityCabinetConstant.ELE_OPEN_DOOR_TYPE_USER)
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getUid()+"_"+electricityCabinetOrder.getOrderId())
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -522,6 +519,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("导出报表失败！", e);
             }
         }
+    }
+
+    @Override
+    public void insert(ElectricityCabinetOrder electricityCabinetOrder) {
+        electricityCabinetOrderMapper.insert(electricityCabinetOrder);
     }
 
     public String findOldUsableCellNo(Integer id) {

@@ -50,10 +50,6 @@ public interface ElectricityCabinetConstant {
 
     //换电柜开门的前缀
     String ELE_OPERATOR_SESSION_PREFIX = "ele";
-    //用户开门
-    String ELE_OPEN_DOOR_TYPE_USER = "1";
-    //弹出门
-    String ELE_OPEN_DOOR_TYPE_WEB = "2";
 
     //订单同步订单响应
     String ELE_COMMAND_ORDER_SYNC_RSP = "new_order_sync_rsp";

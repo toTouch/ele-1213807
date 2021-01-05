@@ -21,4 +21,6 @@ public class EleOpenDTO {
 	private String originContent;
 	//命令
 	private String type;
+	private String productKey;
+	private String deviceName;
 }

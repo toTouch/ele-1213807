@@ -68,7 +68,9 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 			EleOpenDTO eleOpenDTO = builder
 					.sessionId(sessionId)
 					.originContent(receiverMessage.getOriginContent())
-					.type(receiverMessage.getType()).build();
+					.type(receiverMessage.getType())
+					.productKey(receiverMessage.getProductKey())
+					.deviceName(receiverMessage.getDeviceName()).build();
 			eleOperateQueueHandler.putQueue(eleOpenDTO);
 		}
 		return true;
