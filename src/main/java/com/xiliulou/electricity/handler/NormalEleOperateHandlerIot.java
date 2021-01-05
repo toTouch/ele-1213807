@@ -3,10 +3,6 @@ package com.xiliulou.electricity.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.queue.EleOperateQueueHandler;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -28,15 +24,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class NormalEleOperateHandlerIot extends AbstractIotMessageHandler {
     @Autowired
-    ElectricityCabinetService electricityCabinetService;
-    @Autowired
     RedisService redisService;
-    @Autowired
-    EleOperateQueueHandler eleOperateQueueHandler;
-    @Autowired
-    ElectricityCabinetBoxService electricityCabinetBoxService;
-    @Autowired
-    ElectricityBatteryService electricityBatteryService;
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {

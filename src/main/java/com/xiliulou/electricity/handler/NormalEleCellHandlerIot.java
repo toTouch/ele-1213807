@@ -1,13 +1,9 @@
 package com.xiliulou.electricity.handler;
-import cn.hutool.core.util.StrUtil;
-import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -34,10 +30,6 @@ import java.util.concurrent.TimeUnit;
 public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
-	@Autowired
-	RedisService redisService;
-	@Autowired
-	EleOperateQueueHandler eleOperateQueueHandler;
 	@Autowired
 	ElectricityCabinetBoxService electricityCabinetBoxService;
 	@Autowired
