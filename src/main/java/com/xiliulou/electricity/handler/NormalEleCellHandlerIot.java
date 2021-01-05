@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.handler;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -19,6 +21,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 /**
@@ -53,7 +56,18 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 	@Override
 	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
 		log.info("receiverMessage is -->"+receiverMessage);
-		//仓门上报 TODO 类型
+		String sessionId = receiverMessage.getSessionId();
+		if (StrUtil.isEmpty(sessionId)) {
+			log.error("no sessionId,{}", receiverMessage.getOriginContent());
+			return false;
+		}
+		//操作回调的放在redis中
+		if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
+			redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 60L, TimeUnit.SECONDS);
+		} else {
+			redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 60L, TimeUnit.SECONDS);
+		}
+		//仓门上报
 		if(Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_CELL_REPORT_INFO)){
 			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 			if (Objects.isNull(electricityCabinet)) {
@@ -97,7 +111,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 		}
 
-		//电池上报 TODO
+		//电池上报
 		if(Objects.equals(receiverMessage.getType(),HardwareCommand.ELE_COMMAND_CELL_BATTERY_REPORT_INFO)){
 			EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
 			if (Objects.isNull(eleBatteryVo)) {

@@ -60,7 +60,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 		*/
         if (receiverMessage.getType().contains("order")) {
             return normalEleOperHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("cell")) {
+        } else if (receiverMessage.getType().contains("cell")||receiverMessage.getType().contains("operate")) {
             return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
         } else {
             log.error("command not support handle,command:{}", receiverMessage.getType());

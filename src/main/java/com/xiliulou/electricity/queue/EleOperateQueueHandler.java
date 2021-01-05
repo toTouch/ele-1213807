@@ -192,7 +192,7 @@ public class EleOperateQueueHandler {
                 electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
                 electricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
                 electricityCabinetOrderService.update(electricityCabinetOrder);
-                //修改旧仓门为有电池，门关
+                //修改旧仓门为有电池
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
                 ElectricityCabinetBox OldElectricityCabinetBox = new ElectricityCabinetBox();
                 if (Objects.nonNull(electricityBattery)) {

@@ -80,36 +80,6 @@ public class NormalEleOperHandlerIot extends AbstractIotMessageHandler {
 					.type(receiverMessage.getType()).build();
 			eleOperateQueueHandler.putQueue(eleOpenDTO);
 		}
-
-		//修改仓门-->开门或关门
-		if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
-			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-			if (Objects.isNull(electricityCabinet)) {
-				log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-				return false;
-			}
-			EleCellVo eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVo.class);
-			if (Objects.isNull(eleCellVo)) {
-				log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
-				return true;
-			}
-			String cellNo=eleCellVo.getCell_no();
-			if (Objects.isNull(cellNo)) {
-				log.error("ele box error! no eleBoxRo,{}", receiverMessage.getOriginContent());
-				return true;
-			}
-			ElectricityCabinetBox electricityCabinetBox=new ElectricityCabinetBox();
-			electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
-			electricityCabinetBox.setCellNo(cellNo);
-			if(Objects.equals(receiverMessage.getType(),"open")){
-				electricityCabinetBox.setIsLock(ElectricityCabinetBox.OPEN_DOOR);
-				electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
-			}
-			if(Objects.equals(receiverMessage.getType(),"close")){
-				electricityCabinetBox.setIsLock(ElectricityCabinetBox.CLOSE_DOOR);
-				electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
-			}
-		}
 		return true;
 	}
 }
