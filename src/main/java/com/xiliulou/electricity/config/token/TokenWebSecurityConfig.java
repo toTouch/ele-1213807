@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.config.token;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.service.token.LoginSuccessPostProcessor;
 import com.xiliulou.electricity.service.token.WxProThirdAuthenticationServiceImpl;
 import com.xiliulou.security.authentication.CustomAccessDeniedHandler;
 import com.xiliulou.security.authentication.CustomAuthenticationEntryPoint;
@@ -47,17 +48,16 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Qualifier("userDetailServiceImpl")
 	@Autowired
 	private UserDetailsService userDetailsService;
-
 	@Autowired
 	private WxProThirdAuthenticationServiceImpl wxProThirdAuthenticationService;
-
 	@Autowired
 	RedisService redisService;
-
 	@Autowired
 	CustomPasswordEncoder customPasswordEncoder;
 	@Autowired
 	AuthorizationService authorizationService;
+	@Autowired
+	LoginSuccessPostProcessor loginSuccessPostProcessor;
 
 	@Bean
 	public JwtTokenManager jwtTokenManager() {
@@ -79,9 +79,9 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
 //				.authorizeRequests()
 //				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
-				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
+				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager(),loginSuccessPostProcessor))
 				.addFilter(new CustomTokenAuthenticationFilter(authenticationManager(), jwtTokenManager(), authorizationService))
-				.addFilterAfter(new CustomThirdAuthAuthenticationFilter(jwtTokenManager(), authenticationManager()), CustomUsernamePasswordAuthenticationFilter.class)
+				.addFilterAfter(new CustomThirdAuthAuthenticationFilter(jwtTokenManager(), authenticationManager(),loginSuccessPostProcessor), CustomUsernamePasswordAuthenticationFilter.class)
 				.addFilterAfter(new UrlFilterSecurityInterceptor(new UrlFilterInvocationSecurityMetadataSource(),authenticationManager(),new AffirmativeBased(Collections.singletonList(new UrlMatchVoter()))), ExceptionTranslationFilter.class)
 				.httpBasic()
 				//不缓存session
