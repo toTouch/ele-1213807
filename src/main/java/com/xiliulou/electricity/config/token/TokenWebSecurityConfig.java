@@ -76,13 +76,13 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
+		http.formLogin()
+				.successHandler(new LoginSuccessHandler())
+				.and().exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
 				.accessDeniedHandler(new CustomAccessDeniedHandler())
 				.and().csrf().disable()
 				.logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
-				.and().formLogin()
-				.successHandler(new LoginSuccessHandler())
 //				.authorizeRequests()
 //				.antMatchers("/auth/token/**", "/actuator/**", "/error").permitAll()
 				.and().addFilter(new CustomUsernamePasswordAuthenticationFilter(jwtTokenManager(), authenticationManager()))
