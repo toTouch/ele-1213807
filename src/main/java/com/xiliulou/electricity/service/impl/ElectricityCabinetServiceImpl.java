@@ -856,7 +856,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HashMap<String, String> homeInfo = new HashMap<>();
         Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
         Long now = System.currentTimeMillis();
-        Integer battery = null;
+        Double battery = null;
         Long cardDay = null;
         Integer serviceStatus = 1;
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());

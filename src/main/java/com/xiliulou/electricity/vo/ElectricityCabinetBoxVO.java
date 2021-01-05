@@ -55,7 +55,7 @@ public class ElectricityCabinetBoxVO {
     /**
      * 电池电量
      */
-    private Integer capacity;
+    private Double capacity;
 
 
 }
