@@ -4,10 +4,13 @@ package com.xiliulou.electricity.service.token;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
+@Service
 public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProcessor {
 
 
