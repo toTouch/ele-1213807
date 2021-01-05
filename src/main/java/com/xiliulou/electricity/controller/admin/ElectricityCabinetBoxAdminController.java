@@ -75,8 +75,10 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("cell_no", oldElectricityCabinetBox.getCellNo());
-        dataMap.put("distribute", electricityCabinetBox.getUsableStatus());
+        List<String> cellList=new ArrayList<>();
+        cellList.add(oldElectricityCabinetBox.getCellNo());
+        dataMap.put("cell_list", cellList);
+        dataMap.put("forbidden", electricityCabinetBox.getUsableStatus());
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(UUID.randomUUID().toString().replace("-", ""))
