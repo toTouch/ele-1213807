@@ -51,12 +51,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
 			return true;
 		}
-		String serialNumber = eleBatteryVo.getSerial_number();
-		if (Objects.isNull(serialNumber)) {
+		String batteryName = eleBatteryVo.getBatteryName();
+		if (Objects.isNull(batteryName)) {
 			log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
 			return true;
 		}
-		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(serialNumber);
+		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -70,6 +70,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		if (Objects.nonNull(health)) {
 			newElectricityBattery.setHealthStatus(Integer.valueOf(health));
 		}
+		String status = eleBatteryVo.getStatus();
+		if (Objects.nonNull(status)) {
+			newElectricityBattery.setHealthStatus(Integer.valueOf(status));
+		}
 		electricityBatteryService.update(newElectricityBattery);
 		return true;
 	}
@@ -79,7 +83,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
 @Data
 class EleBatteryVo {
-	private String serial_number;
+	private String batteryName;
 	//电压
 	private String voltage;
 	//电芯数量
@@ -96,4 +100,6 @@ class EleBatteryVo {
 	private String temperature;
 	//健康状态
 	private String health;
+	//充电状态
+	private String status;
 }
