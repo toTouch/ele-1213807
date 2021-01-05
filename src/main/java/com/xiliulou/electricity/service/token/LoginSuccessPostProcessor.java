@@ -19,14 +19,8 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
         log.info("authentication is --> {}",JsonUtil.toJson(authentication));
         String ip = request.getHeader("x-forwarded-for");
-        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("Proxy-Client-IP");
-        }
-        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getHeader("WL-Proxy-Client-IP");
-        }
-        if(ip == null || ip.length() == 0 || "unknown".equalsIgnoreCase(ip)) {
-            ip = request.getRemoteAddr();
+        if (ip == null) {
+            ip=request.getRemoteAddr();
         }
         log.info("ip is -->{}",ip);
     }
