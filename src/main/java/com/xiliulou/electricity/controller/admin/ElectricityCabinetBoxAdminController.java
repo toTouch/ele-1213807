@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -157,6 +158,7 @@ public class ElectricityCabinetBoxAdminController {
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         return R.ok(sessionId);
     }
+
 
 
 }

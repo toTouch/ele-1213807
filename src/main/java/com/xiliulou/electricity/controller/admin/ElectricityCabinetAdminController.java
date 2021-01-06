@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -118,6 +119,13 @@ public class ElectricityCabinetAdminController {
         return electricityCabinetService.homeThree(day);
     }
 
+    //发送命令
+    @PostMapping(value = "/admin/electricityCabinet/command")
+    public R sendCommandToEleForOuterV2(@RequestBody EleOuterCommandQuery eleOuterCommandQuery) {
+        return  electricityCabinetService.sendCommandToEleForOuter(eleOuterCommandQuery);
+
+    }
+
     //查看开门命令
     @GetMapping("/admin/electricityCabinet/open/check")
     public R checkOpenSession(@RequestParam("sessionId") String sessionId) {
@@ -126,6 +134,7 @@ public class ElectricityCabinetAdminController {
         }
         return electricityCabinetService.checkOpenSessionId(sessionId);
     }
+
 
 
 
