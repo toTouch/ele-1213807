@@ -64,22 +64,6 @@ public class ElectricityCabinetOuterController {
         return R.ok(result);
     }
 
-    //发送命令
-    @PostMapping(value = "/outer/electricityCabinet/command")
-    public R sendCommandToEleForOuterV2(@RequestBody EleOuterCommandQuery eleOuterCommandQuery) {
-        return  electricityCabinetService.sendCommandToEleForOuter(eleOuterCommandQuery);
-
-    }
-
-    //检查命令
-    @GetMapping("/outer/electricityCabinet/open/check")
-    public R checkOpenSession(@RequestParam("sessionId") String sessionId) {
-        if (StrUtil.isEmpty(sessionId)) {
-            return R.fail("ELECTRICITY.0007","不合法的参数");
-        }
-        return electricityCabinetService.checkOpenSessionId(sessionId);
-    }
-
     //上传日志
     @PostMapping(value = "/outer/electricityCabinet/log")
     public R receiverAppLog(@RequestParam("productKey") String productKey,
