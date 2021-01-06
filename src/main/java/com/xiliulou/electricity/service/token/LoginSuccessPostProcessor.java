@@ -27,6 +27,7 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
         String userInfo=JsonUtil.toJson(authentication);
         Map<String,String> map=JsonUtil.fromJson(userInfo,Map.class);
+        log.info("map is --> {}",map);
         String ip=getIP(request);
         LoginInfo loginInfo=new LoginInfo();
         loginInfo.setIp(ip);
