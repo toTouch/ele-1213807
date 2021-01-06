@@ -212,6 +212,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
 
+        //判断用户是否有未完成订单
+        Integer count=this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,user.getUid())
+        .notIn(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_COMPLETE,ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL,ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+        if(count>0){
+            return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+        }
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         try {
@@ -242,8 +248,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
-            //放redis 订单id 定时任务处理取消订单
-            redisService.zsetAddString("orderId", electricityCabinetOrder.getOrderId(), System.currentTimeMillis() + 360 * 1000);
 
             //4.开旧电池门
             //发送命令
