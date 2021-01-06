@@ -2,6 +2,7 @@ package com.xiliulou.electricity.queue;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -109,8 +110,10 @@ public class EleOperateQueueHandler {
         String sessionId = finalOpenDTO.getSessionId();
         Boolean result = finalOpenDTO.getOperResult();
         String type = finalOpenDTO.getType();
-        Long oid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByIdFromDB(oid);
+        Map<String,Object> map = JsonUtil.fromJson(finalOpenDTO.getOriginContent(), Map.class);
+        String orderId=map.get("orderId").toString();
+        Integer status=(int)map.get("status");
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
         if (Objects.isNull(electricityCabinetOrder)) {
             return;
         }
