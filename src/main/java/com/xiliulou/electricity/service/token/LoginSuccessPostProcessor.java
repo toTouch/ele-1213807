@@ -5,6 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.LoginInfo;
 import com.xiliulou.electricity.service.LoginInfoService;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
+import com.xiliulou.security.bean.SecurityUser;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -15,6 +16,7 @@ import org.springframework.util.Assert;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.util.Map;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -26,19 +28,23 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
-        String userInfo=JsonUtil.toJson(authentication);
-        Map<String,Map<String,String>> map=JsonUtil.fromJson(userInfo,Map.class);
-        log.info("map is --> {}",map);
-        Map<String,String> mapInfo=map.get("principal");
-        log.info("mapInfo is --> {}",mapInfo);
-        TokenUser user=(TokenUser)authentication.getPrincipal();
-        log.info("user is --> {}",user);
-        String ip=getIP(request);
         LoginInfo loginInfo=new LoginInfo();
+       if(type==1) {
+           SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
+           log.info("securityUser is --> {}",securityUser);
+           loginInfo.setUid(securityUser.getUid());
+           loginInfo.setName(securityUser.getUsername());
+           loginInfo.setPhone(securityUser.getPhone());
+       }
+        if(type==2) {
+            TokenUser tokenUser = (TokenUser) authentication.getPrincipal();
+            log.info("tokenUser is --> {}",tokenUser);
+            loginInfo.setUid(tokenUser.getUid());
+            loginInfo.setName(tokenUser.getUsername());
+            loginInfo.setPhone(tokenUser.getPhone());
+        }
+        String ip=getIP(request);
         loginInfo.setIp(ip);
-        loginInfo.setUid(Long.valueOf(mapInfo.get("uid")));
-        loginInfo.setName(mapInfo.get("name"));
-        loginInfo.setPhone(mapInfo.get("phone"));
         loginInfo.setType(type);
         loginInfo.setLoginTime(System.currentTimeMillis());
         loginInfoService.insert(loginInfo);
