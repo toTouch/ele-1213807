@@ -50,23 +50,19 @@ public class ElectricityCabinetOrderOperHistory {
      */
     private Integer type;
 
-    //开门状态--成功
-    public static final Integer STATUS_OPEN_DOOR_SUCCESS = 0;
+    //状态--成功
+    public static final Integer STATUS_SUCCESS = 0;
     //失败
-    public static final Integer STATUS_OPEN_DOOR_FAIL = 1;
+    public static final Integer STATUS_FAIL = 1;
 
     //旧电池开门
     public static final Integer TYPE_OLD_BATTERY_OPEN_DOOR = 1;
-    //旧电池关门
-    public static final Integer TYPE_OLD_BATTERY_CLOSE_DOOR = 2;
     //旧电池检测
-    public static final Integer TYPE_OLD_BATTERY_CHECK = 3;
+    public static final Integer TYPE_OLD_BATTERY_CHECK = 2;
     //新电池开门
-    public static final Integer TYPE_NEW_BATTERY_OPEN_DOOR = 4;
-    //新电池关门
-    public static final Integer TYPE_NEW_BATTERY_CLOSE_DOOR = 5;
+    public static final Integer TYPE_NEW_BATTERY_OPEN_DOOR = 3;
     //新电池检测
-    public static final Integer TYPE_NEW_BATTERY_CHECK = 6;
+    public static final Integer TYPE_NEW_BATTERY_CHECK = 4;
 
 
 }

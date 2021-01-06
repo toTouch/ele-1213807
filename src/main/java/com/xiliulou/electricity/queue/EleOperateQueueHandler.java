@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.queue;
-import cn.hutool.core.util.ObjectUtil;
+
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -106,50 +106,16 @@ public class EleOperateQueueHandler {
      * @param finalOpenDTO
      */
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(finalOpenDTO.getProductKey(), finalOpenDTO.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("ELE ERROR! no product and device ,p={},d={}", finalOpenDTO.getProductKey(), finalOpenDTO.getDeviceName());
-            return;
-        }
         String sessionId = finalOpenDTO.getSessionId();
         Boolean result = finalOpenDTO.getOperResult();
         String type = finalOpenDTO.getType();
-        Long uid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
-        UserInfo userInfo = userInfoService.queryByUid(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return;
-        }
-        Map<String,Object> map = JsonUtil.fromJson(finalOpenDTO.getOriginContent(), Map.class);
-        String orderId=map.get("orderId").toString();
-        String serialNumber=map.get("serialNumber").toString();
-        Integer status=(int)map.get("status");
-        List<String> cellList=(List)map.get("cell_list");
-        if(ObjectUtil.isEmpty(cellList)){
-            return;
-        }
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
+        Long oid = Long.parseLong(sessionId.substring(sessionId.indexOf(":") + 1, sessionId.indexOf("_")));
+        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByIdFromDB(oid);
         if (Objects.isNull(electricityCabinetOrder)) {
-            if(Objects.equals(type,HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)){
-                electricityCabinetOrder = ElectricityCabinetOrder.builder()
-                        .orderId(orderId)
-                        .uid(uid)
-                        .phone(userInfo.getPhone())
-                        .electricityCabinetId(electricityCabinet.getId())
-                        .oldElectricityBatterySn(serialNumber)
-                        .oldCellNo(Integer.valueOf(cellList.get(0)))
-                        .status(status)
-                        .source(2)
-                        .paymentMethod(userInfo.getCardType())
-                        .createTime(System.currentTimeMillis())
-                        .updateTime(System.currentTimeMillis()).build();
-                electricityCabinetOrderService.insert(electricityCabinetOrder);
-                openOldBatteryDoor(electricityCabinetOrder, result);
-            }
             return;
         }
-        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CLOSE)) {
-            closeOldBatteryDoor(electricityCabinetOrder, result);
+        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
+            openOldBatteryDoor(electricityCabinetOrder, result);
         }
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CHECK)) {
             checkOldBattery(electricityCabinetOrder, result);
@@ -157,17 +123,14 @@ public class EleOperateQueueHandler {
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)) {
             openNewBatteryDoor(electricityCabinetOrder, result);
         }
-        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CLOSE)) {
-            closeNewBatteryDoor(electricityCabinetOrder, result);
-        }
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CHECK)) {
             checkNewBattery(electricityCabinetOrder, result);
         }
         //收到消息响应
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         Map<String, Object> data = Maps.newHashMap();
         data.put("orderId", electricityCabinetOrder.getOrderId());
         pubHardwareService.sendMessage(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), SendHardwareMessage.builder().data(data).sessionId(sessionId).type(ElectricityCabinetConstant.ELE_COMMAND_ORDER_SYNC_RSP).build());
-
     }
 
 
@@ -191,99 +154,9 @@ public class EleOperateQueueHandler {
         if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, operResult, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_OPEN_DOOR)) {
             return;
         }
-        //加入操作记录表
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                .cellNo(electricityCabinetOrder.getOldCellNo())
-                .createTime(System.currentTimeMillis())
-                .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
-                .oId(electricityCabinetOrder.getId())
-                .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
-                .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_OPEN_DOOR)
-                .uid(electricityCabinetOrder.getUid())
-                .build();
-        electricityCabinetOrderOperHistoryService.insert(history);
-    }
-
-    //关旧门通知
-    public void closeOldBatteryDoor(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
-        if (operResult) {
-            //分配新仓门 新仓门分配失败则弹开旧门
-            String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
-            try {
-                //根据换电柜id和仓门查出电池
-                ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), cellNo);
-                ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
-                if (Objects.nonNull(newElectricityBattery)) {
-                    electricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSerialNumber());
-                }
-                electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-                electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
-                electricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
-                electricityCabinetOrderService.update(electricityCabinetOrder);
-                //修改旧仓门为有电池
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
-                ElectricityCabinetBox OldElectricityCabinetBox = new ElectricityCabinetBox();
-                if (Objects.nonNull(electricityBattery)) {
-                    OldElectricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
-                }
-                OldElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-                OldElectricityCabinetBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
-                OldElectricityCabinetBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-                electricityCabinetBoxService.modifyByCellNo(OldElectricityCabinetBox);
-                //旧电池改为在仓
-                ElectricityBattery oldElectricityBattery=new ElectricityBattery();
-                oldElectricityBattery.setId(electricityBattery.getId());
-                oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-                oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                oldElectricityBattery.setCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-                electricityBatteryService.update(oldElectricityBattery);
-                //用户解绑旧电池
-                UserInfo userInfo = new UserInfo();
-                userInfo.setUid(electricityCabinetOrder.getUid());
-                userInfo.setNowElectricityBatterySn(null);
-                userInfo.setUpdateTime(System.currentTimeMillis());
-                userInfoService.updateByUid(userInfo);
-                //加入操作记录表
-                ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                        .cellNo(electricityCabinetOrder.getOldCellNo())
-                        .createTime(System.currentTimeMillis())
-                        .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
-                        .oId(electricityCabinetOrder.getId())
-                        .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
-                        .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CLOSE_DOOR)
-                        .uid(electricityCabinetOrder.getUid())
-                        .build();
-                electricityCabinetOrderOperHistoryService.insert(history);
-                //新电池开门
-                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
-                //发送命令
-                HashMap<String, Object> dataMap = Maps.newHashMap();
-                dataMap.put("cell_no", cellNo);
-                dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-                dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
-                dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
-
-                HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                        .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" +userInfo.getUid()+"_"+electricityCabinetOrder.getOrderId())
-                        .data(dataMap)
-                        .productKey(electricityCabinet.getProductKey())
-                        .deviceName(electricityCabinet.getDeviceName())
-                        .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
-                eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            } catch (Exception e) {
-                log.error("e" + e);
-            } finally {
-                redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
-            }
-        }
-    }
-
-
-    //检查旧电池通知
-    public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
         //订单状态
         electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DETECT);
+        electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR);
         electricityCabinetOrderService.update(electricityCabinetOrder);
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
@@ -291,11 +164,88 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
-                .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
-                .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)
+                .status(ElectricityCabinetOrderOperHistory.STATUS_SUCCESS)
+                .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_OPEN_DOOR)
                 .uid(electricityCabinetOrder.getUid())
                 .build();
         electricityCabinetOrderOperHistoryService.insert(history);
+    }
+
+
+    //检查旧电池通知
+    public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
+        //旧电池检测失败
+        if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, operResult, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)) {
+            return;
+        }
+        //分配新仓门 新仓门分配失败则弹开旧门
+        String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
+        try {
+            //根据换电柜id和仓门查出电池
+            ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), cellNo);
+            ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+            if (Objects.nonNull(newElectricityBattery)) {
+                electricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSerialNumber());
+            }
+            electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
+            electricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
+            electricityCabinetOrderService.update(electricityCabinetOrder);
+            //修改旧仓门为有电池
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
+            ElectricityCabinetBox OldElectricityCabinetBox = new ElectricityCabinetBox();
+            if (Objects.nonNull(electricityBattery)) {
+                OldElectricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
+            }
+            OldElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+            OldElectricityCabinetBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
+            OldElectricityCabinetBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+            electricityCabinetBoxService.modifyByCellNo(OldElectricityCabinetBox);
+            //旧电池改为在仓
+            ElectricityBattery oldElectricityBattery = new ElectricityBattery();
+            oldElectricityBattery.setId(electricityBattery.getId());
+            oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+            oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            oldElectricityBattery.setCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+            electricityBatteryService.update(oldElectricityBattery);
+            //用户解绑旧电池
+            UserInfo userInfo = new UserInfo();
+            userInfo.setUid(electricityCabinetOrder.getUid());
+            userInfo.setNowElectricityBatterySn(null);
+            userInfo.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateByUid(userInfo);
+            //加入操作记录表
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
+                    .cellNo(electricityCabinetOrder.getOldCellNo())
+                    .createTime(System.currentTimeMillis())
+                    .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
+                    .oId(electricityCabinetOrder.getId())
+                    .status(ElectricityCabinetOrderOperHistory.STATUS_SUCCESS)
+                    .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)
+                    .uid(electricityCabinetOrder.getUid())
+                    .build();
+            electricityCabinetOrderOperHistoryService.insert(history);
+            //新电池开门
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", cellNo);
+            dataMap.put("order_id", electricityCabinetOrder.getOrderId());
+            dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
+            dataMap.put("status", electricityCabinetOrder.getStatus().toString());
+
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + userInfo.getUid() + "_" + electricityCabinetOrder.getOrderId())
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        } catch (Exception e) {
+            log.error("e" + e);
+        } finally {
+            redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
+        }
     }
 
 
@@ -315,36 +265,19 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
-                .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
+                .status(ElectricityCabinetOrderOperHistory.STATUS_SUCCESS)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR)
                 .uid(electricityCabinetOrder.getUid())
                 .build();
         electricityCabinetOrderOperHistoryService.insert(history);
     }
 
-    //关新门通知
-    public void closeNewBatteryDoor(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
-        if (operResult) {
-            //订单状态
-            electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-            electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_NEW_BATTERY_CLOSE_DOOR);
-            electricityCabinetOrderService.update(electricityCabinetOrder);
-            //加入操作记录表
-            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                    .cellNo(electricityCabinetOrder.getOldCellNo())
-                    .createTime(System.currentTimeMillis())
-                    .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
-                    .oId(electricityCabinetOrder.getId())
-                    .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
-                    .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CLOSE_DOOR)
-                    .uid(electricityCabinetOrder.getUid())
-                    .build();
-            electricityCabinetOrderOperHistoryService.insert(history);
-        }
-    }
-
     //检查新电池通知
     public void checkNewBattery(ElectricityCabinetOrder electricityCabinetOrder, Boolean operResult) {
+        //新电池检测失败
+        if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, operResult, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)) {
+            return;
+        }
         //修改仓门为无电池
         ElectricityCabinetBox newElectricityCabinetBox = new ElectricityCabinetBox();
         newElectricityCabinetBox.setCellNo(String.valueOf(electricityCabinetOrder.getNewCellNo()));
@@ -356,7 +289,7 @@ public class EleOperateQueueHandler {
         electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_COMPLETE);
         electricityCabinetOrderService.update(electricityCabinetOrder);
-        //用户换绑新电池
+        //用户绑新电池
         UserInfo userInfo = new UserInfo();
         userInfo.setUid(electricityCabinetOrder.getUid());
         userInfo.setNowElectricityBatterySn(electricityCabinetOrder.getNewElectricityBatterySn());
@@ -364,7 +297,7 @@ public class EleOperateQueueHandler {
         userInfoService.updateByUid(userInfo);
         //电池改为在用
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
-        ElectricityBattery newElectricityBattery=new ElectricityBattery();
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -376,7 +309,7 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
-                .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)
+                .status(ElectricityCabinetOrderOperHistory.STATUS_SUCCESS)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)
                 .uid(electricityCabinetOrder.getUid())
                 .build();
@@ -388,7 +321,7 @@ public class EleOperateQueueHandler {
             operResult, Integer type) {
         if (!operResult) {
             Integer cellNo = null;
-            if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR) || Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CLOSE_DOOR)) {
+            if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR) || Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)) {
                 cellNo = electricityCabinetOrder.getNewCellNo();
             } else {
                 cellNo = electricityCabinetOrder.getOldCellNo();
@@ -398,7 +331,7 @@ public class EleOperateQueueHandler {
                     .createTime(System.currentTimeMillis())
                     .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .oId(electricityCabinetOrder.getId())
-                    .status(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL)
+                    .status(ElectricityCabinetOrderOperHistory.STATUS_FAIL)
                     .type(type)
                     .uid(electricityCabinetOrder.getUid())
                     .build();
