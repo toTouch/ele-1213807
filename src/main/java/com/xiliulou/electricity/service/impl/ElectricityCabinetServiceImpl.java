@@ -48,7 +48,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.tuple.Pair;
-
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -64,7 +63,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**

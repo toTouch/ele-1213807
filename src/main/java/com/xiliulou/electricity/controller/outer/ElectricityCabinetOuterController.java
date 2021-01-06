@@ -2,16 +2,29 @@ package com.xiliulou.electricity.controller.outer;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Enumeration;
 import java.util.Map;
+import java.util.Objects;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 
 /**
@@ -20,11 +33,17 @@ import java.util.Map;
  * @author makejava
  * @since 2020-11-25 11:00:14
  */
+@Slf4j
 @RestController
 public class ElectricityCabinetOuterController {
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
+    @Autowired
+    StorageConfig storageConfig;
 
     @Value("${ele.apk.version:1.1.1}")
     String apkVersion;
@@ -59,5 +78,56 @@ public class ElectricityCabinetOuterController {
         }
         return electricityCabinetService.checkOpenSessionId(sessionId);
     }
+
+    //上传日志
+    @PostMapping(value = "/outer/electricityCabinet/log")
+    public R receiverAppLog(@RequestParam("productKey") String productKey,
+                            @RequestParam("deviceName") String deviceName,
+                            @RequestParam("name") String fileName,
+                            @RequestParam("file") MultipartFile file) throws IOException {
+
+        ElectricityCabinet electricityCabinet=electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
+        if(Objects.isNull(electricityCabinet)){
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        File tmpFile = null;
+        ZipFile zipFile = null;
+        try {
+            tmpFile = new File("/tmp/tmp.zip");
+            if (tmpFile.exists()) {
+                tmpFile.delete();
+            }
+            file.transferTo(tmpFile);
+            zipFile = new ZipFile(tmpFile);
+            Enumeration<? extends ZipEntry> entries = zipFile.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry zipEntry = entries.nextElement();
+                String innerFileName = deviceName + "_" + "electricityCabinet" + "_" + zipEntry.getName();
+                try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
+                    String bucketName = storageConfig.getBucketName();
+                    storageService.uploadMinioFile(bucketName, innerFileName, inputStream);
+                }
+
+            }
+        } catch (Exception e) {
+            log.error("unzip error! ", e);
+        } finally {
+            if (zipFile != null) {
+                try {
+                    zipFile.close();
+                } catch (IOException e) {
+                    log.error("unzip error! ", e);
+                }
+            }
+            if (tmpFile != null) {
+                tmpFile.delete();
+            }
+        }
+
+        return R.ok();
+    }
+
+
 
 }
