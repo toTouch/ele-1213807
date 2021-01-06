@@ -26,15 +26,13 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
 
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, SecurityUser user, Integer type) {
         LoginInfo loginInfo = new LoginInfo();
         String ip = getIP(request);
         loginInfo.setIp(ip);
-        SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
-        log.info("securityUser is --> {}", securityUser);
-        loginInfo.setUid(securityUser.getUid());
-        loginInfo.setName(securityUser.getUsername());
-        loginInfo.setPhone(securityUser.getPhone());
+        loginInfo.setUid(user.getUid());
+        loginInfo.setName(user.getUsername());
+        loginInfo.setPhone(user.getPhone());
         loginInfo.setType(type);
         loginInfo.setLoginTime(System.currentTimeMillis());
         loginInfoService.insert(loginInfo);
