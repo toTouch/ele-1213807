@@ -128,6 +128,17 @@ public class ElectricityCabinetOuterController {
         return R.ok();
     }
 
+    /**
+     * 查询换电柜 按三元组
+     *
+     * @return
+     */
+    @GetMapping(value = "/outer/electricityCabinet")
+    public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
+            , @RequestParam("deviceSecret") String deviceSecret) {
+        return electricityCabinetService.queryByDeviceOuter(productKey, deviceName, deviceSecret);
+    }
+
 
 
 }

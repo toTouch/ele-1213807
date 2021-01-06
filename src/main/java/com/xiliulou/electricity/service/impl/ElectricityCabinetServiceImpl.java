@@ -1089,6 +1089,72 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(result.getRight());
     }
 
+    @Override
+    public R queryByDeviceOuter(String productKey, String deviceName, String deviceSecret) {
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        Long now = System.currentTimeMillis();
+        ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+        BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
+        //查满仓空仓数
+        Integer electricityBatteryTotal = 0;
+        Integer fullyElectricityBattery = 0;
+        Integer noElectricityBattery = 0;
+        Set<String> set = new HashSet();
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
+        if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+            for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
+                //满仓个数
+                ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                if (Objects.nonNull(electricityBattery)) {
+                    if (electricityBattery.getCapacity() >= electricityCabinet.getFullyCharged()) {
+                        fullyElectricityBattery = fullyElectricityBattery + 1;
+                    }
+                    ElectricityBatteryModel electricityBatteryModel = electricityBatteryModelService.getElectricityBatteryModelById(electricityBattery.getModelId());
+                    if (Objects.nonNull(electricityBatteryModel)) {
+                        set.add(electricityBatteryModel.getVoltage() + "V" + " " + electricityBatteryModel.getCapacity() + "M");
+                    }
+                }
+            }
+            //营业时间
+            if (Objects.nonNull(electricityCabinetVO.getBusinessTime())) {
+                String businessTime = electricityCabinetVO.getBusinessTime();
+                if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                    electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                } else {
+                    electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+                    Integer index = businessTime.indexOf("-");
+                    if (!Objects.equals(index, -1) && index > 1) {
+                        electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                        Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long beginTime = getTime(totalBeginTime);
+                        Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long endTime = getTime(totalEndTime);
+                        electricityCabinetVO.setBeginTime(totalBeginTime);
+                        electricityCabinetVO.setEndTime(totalEndTime);
+                        Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                        if (firstToday + beginTime > now || firstToday + endTime < now) {
+                            electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                        } else {
+                            electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                        }
+                    }
+                }
+            }
+            //空仓
+            noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+            //电池总数
+            electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+        }
+        electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
+        electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
+        electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+        electricityCabinetVO.setElectricityBatteryFormat(set);
+        return R.ok(electricityCabinetVO);
+    }
+
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
