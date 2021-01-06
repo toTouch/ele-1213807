@@ -2,25 +2,40 @@ package com.xiliulou.electricity.service.token;
 
 
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.entity.LoginInfo;
+import com.xiliulou.electricity.service.LoginInfoService;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Map;
 
 @Slf4j
 @Service
 public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProcessor {
     private  final String UNKNOWN = "unknown";
+    @Autowired
+    LoginInfoService loginInfoService;
 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
         String userInfo=JsonUtil.toJson(authentication);
+        Map<String,String> map=JsonUtil.fromJson(userInfo,Map.class);
         String ip=getIP(request);
+        LoginInfo loginInfo=new LoginInfo();
+        loginInfo.setIp(ip);
+        loginInfo.setUid(Long.valueOf(map.get("uid")));
+        loginInfo.setName(map.get("name"));
+        loginInfo.setPhone(map.get("phone"));
+        loginInfo.setType(type);
+        loginInfo.setLoginTime(System.currentTimeMillis());
+        loginInfoService.insert(loginInfo);
     }
 
     /**
