@@ -26,14 +26,16 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
         String userInfo=JsonUtil.toJson(authentication);
-        Map<String,String> map=JsonUtil.fromJson(userInfo,Map.class);
+        Map<String,Map<String,String>> map=JsonUtil.fromJson(userInfo,Map.class);
         log.info("map is --> {}",map);
+        Map<String,String> mapInfo=map.get("principal");
+        log.info("mapInfo is --> {}",mapInfo);
         String ip=getIP(request);
         LoginInfo loginInfo=new LoginInfo();
         loginInfo.setIp(ip);
-        loginInfo.setUid(Long.valueOf(map.get("uid")));
-        loginInfo.setName(map.get("name"));
-        loginInfo.setPhone(map.get("phone"));
+        loginInfo.setUid(Long.valueOf(mapInfo.get("uid")));
+        loginInfo.setName(mapInfo.get("name"));
+        loginInfo.setPhone(mapInfo.get("phone"));
         loginInfo.setType(type);
         loginInfo.setLoginTime(System.currentTimeMillis());
         loginInfoService.insert(loginInfo);
