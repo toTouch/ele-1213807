@@ -42,7 +42,7 @@ public class ElectricityCabinetOuterController {
     @Autowired
     StorageConfig storageConfig;
 
-    @Qualifier("aliyunOssService")
+    @Qualifier("minioService")
     @Autowired
     StorageService storageService;
 
