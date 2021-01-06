@@ -13,35 +13,27 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 @Slf4j
 @Service
 public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProcessor {
-    private  final String UNKNOWN = "unknown";
+    private final String UNKNOWN = "unknown";
     @Autowired
     LoginInfoService loginInfoService;
 
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication, Integer type) {
-        LoginInfo loginInfo=new LoginInfo();
-       if(type==1) {
-           SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
-           log.info("securityUser is --> {}",securityUser);
-           loginInfo.setUid(securityUser.getUid());
-           loginInfo.setName(securityUser.getUsername());
-           loginInfo.setPhone(securityUser.getPhone());
-       }
-        if(type==2) {
-            TokenUser tokenUser = (TokenUser) authentication.getPrincipal();
-            log.info("tokenUser is --> {}",tokenUser);
-            loginInfo.setUid(tokenUser.getUid());
-            loginInfo.setName(tokenUser.getUsername());
-            loginInfo.setPhone(tokenUser.getPhone());
-        }
-        String ip=getIP(request);
+        LoginInfo loginInfo = new LoginInfo();
+        SecurityUser securityUser = (SecurityUser) authentication.getPrincipal();
+        log.info("securityUser is --> {}", securityUser);
+        loginInfo.setUid(securityUser.getUid());
+        loginInfo.setName(securityUser.getUsername());
+        loginInfo.setPhone(securityUser.getPhone());
+        String ip = getIP(request);
         loginInfo.setIp(ip);
         loginInfo.setType(type);
         loginInfo.setLoginTime(System.currentTimeMillis());
