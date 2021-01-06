@@ -58,7 +58,6 @@ public interface ElectricityCabinetService {
 
     R reboot(Integer id);
 
-    R queryOne(Integer id);
 
     R homeOne(Integer type);
 

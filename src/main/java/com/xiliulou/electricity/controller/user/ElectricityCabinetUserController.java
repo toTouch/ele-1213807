@@ -62,19 +62,6 @@ public class ElectricityCabinetUserController {
         return electricityCabinetService.queryByDevice(productKey, deviceName, deviceSecret);
     }
 
-    /**
-     * 查询换电柜
-     *
-     * @param id
-     * @return
-     */
-    @GetMapping(value = "/user/electricityCabinet/{id}")
-    public R queryOne(@PathVariable("id") Integer id) {
-        if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return electricityCabinetService.queryOne(id);
-    }
 
     /**
      * 用户端首页
