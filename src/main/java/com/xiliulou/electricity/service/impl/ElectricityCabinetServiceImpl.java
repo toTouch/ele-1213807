@@ -18,8 +18,11 @@ import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.CityService;
@@ -37,12 +40,14 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -59,6 +64,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -94,6 +100,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     StoreService storeService;
     @Autowired
     PubHardwareService pubHardwareService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
     /**
      * 通过ID查询单条数据从DB
@@ -1045,6 +1053,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } else {
             return R.ok("0003");
         }
+    }
+
+    @Override
+    public R sendCommandToEleForOuter(EleOuterCommandQuery eleOuterCommandQuery) {
+        //不合法的参数
+        if (Objects.isNull(eleOuterCommandQuery.getCommand())
+                || Objects.isNull(eleOuterCommandQuery.getDeviceName())
+                || Objects.isNull(eleOuterCommandQuery.getProductKey())
+                || Objects.isNull(eleOuterCommandQuery.getSessionId())) {
+            return R.fail("ELECTRICITY.0007","不合法的参数");
+        }
+
+        ElectricityCabinet electricityCabinet=queryFromCacheByProductAndDeviceName(eleOuterCommandQuery.getProductKey(),eleOuterCommandQuery.getDeviceName());
+        if(Objects.isNull(electricityCabinet)){
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //不合法的命令
+        if (!HardwareCommand.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
+            return R.fail("ELECTRICITY.0036", "不合法的命令");
+        }
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(eleOuterCommandQuery.getSessionId())
+                .data(eleOuterCommandQuery.getData())
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+                .build();
+
+        Pair<Boolean, String> result=eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        return R.ok(result.getRight());
     }
 
 

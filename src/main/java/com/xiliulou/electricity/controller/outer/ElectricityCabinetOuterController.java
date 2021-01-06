@@ -1,8 +1,13 @@
 package com.xiliulou.electricity.controller.outer;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Map;
 
@@ -15,6 +20,9 @@ import java.util.Map;
  */
 @RestController
 public class ElectricityCabinetOuterController {
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     @Value("${ele.apk.version:1.1.1}")
     String apkVersion;
@@ -32,6 +40,13 @@ public class ElectricityCabinetOuterController {
         result.put("version", apkVersion);
         result.put("dir", apkUrl);
         return R.ok(result);
+    }
+
+    //发送命令
+    @PostMapping(value = "/outer/new/ele/command")
+    public R sendCommandToEleForOuterV2(@RequestBody EleOuterCommandQuery eleOuterCommandQuery) {
+        return  electricityCabinetService.sendCommandToEleForOuter(eleOuterCommandQuery);
+
     }
 
 }

@@ -9,6 +9,8 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.context.request.async.DeferredResult;
+
 import java.util.Objects;
 
 /**

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 
@@ -72,4 +73,6 @@ public interface ElectricityCabinetService {
     ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName);
 
     R checkOpenSessionId(String sessionId);
+
+    R sendCommandToEleForOuter(EleOuterCommandQuery eleOuterCommandQuery);
 }
