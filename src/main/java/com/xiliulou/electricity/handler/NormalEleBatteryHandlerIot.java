@@ -19,6 +19,8 @@ import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -29,69 +31,72 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
-	@Autowired
-	ElectricityCabinetService electricityCabinetService;
-	@Autowired
-	ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-	@Override
-	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
-		String sessionId = generateSessionId(hardwareCommandQuery);
-		SendHardwareMessage message = SendHardwareMessage.builder()
-				.sessionId(sessionId)
-				.type(hardwareCommandQuery.getCommand())
-				.data(hardwareCommandQuery.getData()).build();
-		return Pair.of(message, sessionId);
-	}
+    @Override
+    protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
+        String sessionId = generateSessionId(hardwareCommandQuery);
+        SendHardwareMessage message = SendHardwareMessage.builder()
+                .sessionId(sessionId)
+                .type(hardwareCommandQuery.getCommand())
+                .data(hardwareCommandQuery.getData()).build();
+        return Pair.of(message, sessionId);
+    }
 
-	@Override
-	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-		EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
-		if (Objects.isNull(eleBatteryVo)) {
-			log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
-			return true;
-		}
-		String batteryName = eleBatteryVo.getBatteryName();
-		if (Objects.isNull(batteryName)) {
-			log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
-			return true;
-		}
-		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
-		if (Objects.isNull(electricityBattery)) {
-			log.error("ele battery error! no electricityBattery,sn,{}",batteryName);
-			return true;
-		}
-		ElectricityBattery newElectricityBattery = new ElectricityBattery();
-		newElectricityBattery.setId(electricityBattery.getId());
-		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-		//TODO 电池上报详细信息
-		Double power = eleBatteryVo.getPower();
-		if (Objects.nonNull(power)) {
-			newElectricityBattery.setCapacity(power);
-		}
-		String health = eleBatteryVo.getHealth();
-		if (Objects.nonNull(health)) {
-			newElectricityBattery.setHealthStatus(Integer.valueOf(health));
-		}
-		String chargeStatus = eleBatteryVo.getChargeStatus();
-		if (Objects.nonNull(chargeStatus)) {
-			newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
-		}
-		electricityBatteryService.update(newElectricityBattery);
-		return true;
-	}
+    @Override
+    protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+        EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
+        if (Objects.isNull(eleBatteryVo)) {
+            log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
+            return true;
+        }
+        String batteryName = eleBatteryVo.getBatteryName();
+        if (Objects.isNull(batteryName)) {
+            log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
+            return true;
+        }
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+        if (Objects.isNull(electricityBattery)) {
+            log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+            return true;
+        }
+        executorService.execute(() -> {
+            ElectricityBattery newElectricityBattery = new ElectricityBattery();
+            newElectricityBattery.setId(electricityBattery.getId());
+            newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            //TODO 电池上报详细信息
+            Double power = eleBatteryVo.getPower();
+            if (Objects.nonNull(power)) {
+                newElectricityBattery.setCapacity(power);
+            }
+            String health = eleBatteryVo.getHealth();
+            if (Objects.nonNull(health)) {
+                newElectricityBattery.setHealthStatus(Integer.valueOf(health));
+            }
+            String chargeStatus = eleBatteryVo.getChargeStatus();
+            if (Objects.nonNull(chargeStatus)) {
+                newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
+            }
+            electricityBatteryService.update(newElectricityBattery);
+        });
+        return true;
+    }
 
 }
 
 
 @Data
 class EleBatteryVo {
-	private String batteryName;
-	//电量
-	private Double power;
-	//健康状态
-	private String health;
-	//充电状态
-	private String chargeStatus;
+    private String batteryName;
+    //电量
+    private Double power;
+    //健康状态
+    private String health;
+    //充电状态
+    private String chargeStatus;
 }

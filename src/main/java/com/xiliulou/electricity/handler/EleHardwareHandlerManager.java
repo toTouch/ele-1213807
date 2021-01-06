@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * @author: lxc
@@ -38,6 +40,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     RedisService redisService;
+
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
@@ -64,20 +68,22 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
                 return false;
             }
-            //在线状态修改
-            ElectricityCabinet newElectricityCabinet=new ElectricityCabinet();
-            newElectricityCabinet.setId(electricityCabinet.getId());
-            Integer status=1;
-            if(Objects.equals(receiverMessage.getStatus(),"online")){
-                status=0;
-            }
-            newElectricityCabinet.setOnlineStatus(status);
-            newElectricityCabinet.setPowerStatus(status);
-            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey()+electricityCabinet.getDeviceName());
-            }
-            log.error("type is null,{}",receiverMessage.getOriginContent());
+            executorService.execute(() -> {
+                //在线状态修改
+                ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+                newElectricityCabinet.setId(electricityCabinet.getId());
+                Integer status = 1;
+                if (Objects.equals(receiverMessage.getStatus(), "online")) {
+                    status = 0;
+                }
+                newElectricityCabinet.setOnlineStatus(status);
+                newElectricityCabinet.setPowerStatus(status);
+                if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                }
+                log.error("type is null,{}", receiverMessage.getOriginContent());
+            });
             return false;
         }
         if (receiverMessage.getType().contains("order")) {

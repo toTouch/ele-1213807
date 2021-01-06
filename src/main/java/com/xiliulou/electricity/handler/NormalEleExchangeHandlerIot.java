@@ -15,7 +15,8 @@ import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -30,6 +31,8 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
     RedisService redisService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -51,15 +54,17 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
             log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return false;
         }
-        //版本号修改
-        ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
-        newElectricityCabinet.setId(electricityCabinet.getId());
-        newElectricityCabinet.setVersion(receiverMessage.getVersion());
-        if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-        }
-        log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
+        executorService.execute(() -> {
+            //版本号修改
+            ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+            newElectricityCabinet.setId(electricityCabinet.getId());
+            newElectricityCabinet.setVersion(receiverMessage.getVersion());
+            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            }
+            log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
+        });
 
         return true;
     }

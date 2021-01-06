@@ -18,6 +18,8 @@ import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 /**
@@ -34,6 +36,8 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
+
+    ExecutorService executorService = Executors.newFixedThreadPool(2);
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -62,55 +66,55 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
             return true;
         }
-        ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-        electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
-        electricityCabinetBox.setCellNo(cellNo);
-        //TODO 仓门上报详细信息
-        String isLock = eleCellVo.getIs_lock();
-        if (Objects.nonNull(isLock)) {
-            electricityCabinetBox.setIsLock(Integer.valueOf(isLock));
-        }
-        String isFan = eleCellVo.getIs_fan();
-        if (Objects.nonNull(isFan)) {
-            electricityCabinetBox.setIsFan(Integer.valueOf(isFan));
-        }
-        String temperature = eleCellVo.getTemperature();
-        if (Objects.nonNull(temperature)) {
-            electricityCabinetBox.setTemperature(temperature);
-        }
-        String isHeat = eleCellVo.getIs_heat();
-        if (Objects.nonNull(isHeat)) {
-            electricityCabinetBox.setIsHeat(Integer.valueOf(isHeat));
-        }
-        String isLight = eleCellVo.getIs_light();
-        if (Objects.nonNull(isLight)) {
-            electricityCabinetBox.setIsLight(Integer.valueOf(isLight));
-        }
-        String isForbidden = eleCellVo.getIs_forbidden();
-        if (Objects.nonNull(isForbidden)) {
-            electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
-        }
-        String batteryStatus = eleCellVo.getBatteryStatus();
-        if (Objects.nonNull(batteryStatus)) {
-            electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
-        }
-        String batteryName = eleCellVo.getBatteryName();
-        if (Objects.nonNull(batteryName)) {
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
-            if (Objects.isNull(electricityBattery)) {
-                log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
-                return true;
+        executorService.execute(() -> {
+            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+            electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+            electricityCabinetBox.setCellNo(cellNo);
+            String isLock = eleCellVo.getIs_lock();
+            if (Objects.nonNull(isLock)) {
+                electricityCabinetBox.setIsLock(Integer.valueOf(isLock));
             }
-            electricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
-            //电池所属仓门修改
-            ElectricityBattery newElectricityBattery = new ElectricityBattery();
-            newElectricityBattery.setId(electricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-            newElectricityBattery.setCabinetId(electricityCabinet.getId());
-            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.update(newElectricityBattery);
-        }
-        electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+            String isFan = eleCellVo.getIs_fan();
+            if (Objects.nonNull(isFan)) {
+                electricityCabinetBox.setIsFan(Integer.valueOf(isFan));
+            }
+            String temperature = eleCellVo.getTemperature();
+            if (Objects.nonNull(temperature)) {
+                electricityCabinetBox.setTemperature(temperature);
+            }
+            String isHeat = eleCellVo.getIs_heat();
+            if (Objects.nonNull(isHeat)) {
+                electricityCabinetBox.setIsHeat(Integer.valueOf(isHeat));
+            }
+            String isLight = eleCellVo.getIs_light();
+            if (Objects.nonNull(isLight)) {
+                electricityCabinetBox.setIsLight(Integer.valueOf(isLight));
+            }
+            String isForbidden = eleCellVo.getIs_forbidden();
+            if (Objects.nonNull(isForbidden)) {
+                electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
+            }
+            String batteryStatus = eleCellVo.getBatteryStatus();
+            if (Objects.nonNull(batteryStatus)) {
+                electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
+            }
+            String batteryName = eleCellVo.getBatteryName();
+            if (Objects.nonNull(batteryName)) {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+                if (Objects.isNull(electricityBattery)) {
+                    log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+                }
+                electricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
+                //电池所属仓门修改
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(electricityBattery.getId());
+                newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                newElectricityBattery.setCabinetId(electricityCabinet.getId());
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBatteryService.update(newElectricityBattery);
+            }
+            electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+        });
         return true;
     }
 }
