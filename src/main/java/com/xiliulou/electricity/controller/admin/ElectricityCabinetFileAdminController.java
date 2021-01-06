@@ -11,7 +11,6 @@ import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
-import com.xiliulou.storage.service.impl.GetStorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -67,7 +66,7 @@ public class ElectricityCabinetFileAdminController {
         resultMap.put("bucketName", bucketName);
         resultMap.put("fileName", fileName);
         try {
-            storageService.uploadMinioFile(bucketName, fileName, file.getInputStream());
+            storageService.uploadFile(bucketName, fileName, file.getInputStream());
         } catch (Exception e) {
             log.error("上传失败", e);
             return R.fail(e.getLocalizedMessage());

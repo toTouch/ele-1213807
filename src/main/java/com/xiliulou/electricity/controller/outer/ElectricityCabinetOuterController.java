@@ -39,11 +39,12 @@ public class ElectricityCabinetOuterController {
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    StorageConfig storageConfig;
+
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
-    @Autowired
-    StorageConfig storageConfig;
 
     @Value("${ele.apk.version:1.1.1}")
     String apkVersion;
@@ -106,7 +107,7 @@ public class ElectricityCabinetOuterController {
                 String innerFileName = deviceName + "_" + "electricityCabinet" + "_" + zipEntry.getName();
                 try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
                     String bucketName = storageConfig.getBucketName();
-                    storageService.uploadMinioFile(bucketName, innerFileName, inputStream);
+                    storageService.uploadFile(bucketName, innerFileName, inputStream);
                 }
 
             }

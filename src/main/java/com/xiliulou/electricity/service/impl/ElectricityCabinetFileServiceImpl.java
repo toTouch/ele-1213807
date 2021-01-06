@@ -76,7 +76,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Override
     public void getMinioFile(String fileName, HttpServletResponse response) {
         int separator = fileName.lastIndexOf(StrUtil.DASHED);
-        try (InputStream inputStream = storageService.getMinioFile(fileName.substring(0, separator),
+        try (InputStream inputStream = storageService.getFile(fileName.substring(0, separator),
                 fileName.substring(separator + 1))) {
             response.setContentType("application/octet-stream; charset=UTF-8");
             IoUtil.copy(inputStream, response.getOutputStream());
