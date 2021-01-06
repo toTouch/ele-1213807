@@ -57,6 +57,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			return true;
 		}
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+		if (Objects.isNull(electricityBattery)) {
+			log.error("ele battery error! no electricityBattery,sn,{}",batteryName);
+			return true;
+		}
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
