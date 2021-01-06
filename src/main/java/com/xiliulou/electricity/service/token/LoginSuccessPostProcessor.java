@@ -5,6 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.LoginInfo;
 import com.xiliulou.electricity.service.LoginInfoService;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,8 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
         log.info("map is --> {}",map);
         Map<String,String> mapInfo=map.get("principal");
         log.info("mapInfo is --> {}",mapInfo);
+        TokenUser user=(TokenUser)authentication.getPrincipal();
+        log.info("user is --> {}",user);
         String ip=getIP(request);
         LoginInfo loginInfo=new LoginInfo();
         loginInfo.setIp(ip);
