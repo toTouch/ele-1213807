@@ -151,12 +151,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", orderQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+
         //TODO 换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
+
         //营业时间
         if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
             String businessTime = electricityCabinet.getBusinessTime();
@@ -178,6 +180,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
+
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         //用户是否可用
@@ -185,16 +188,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
+
         //判断是否开通服务
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
+
         //判断是否电池
         if (Objects.isNull(userInfo.getNowElectricityBatterySn())) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
+
         //判断用户是否开通月卡
         if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
             log.error("ELECTRICITY  ERROR! not found memberCard ");
@@ -205,6 +211,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found memberCard ");
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
+
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         try {
@@ -219,6 +226,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     return R.fail("ELECTRICITY.0023", "月卡已过期");
                 }
             }
+
             //3.根据用户查询旧电池
             String oldElectricityBatterySn = userInfo.getNowElectricityBatterySn();
             ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
@@ -236,6 +244,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
             //放redis 订单id 定时任务处理取消订单
             redisService.zsetAddString("orderId", electricityCabinetOrder.getOrderId(), System.currentTimeMillis() + 360 * 1000);
+
             //4.开旧电池门
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
@@ -287,18 +296,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", openDoorQuery.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+
         //旧电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
             if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_PAY)) {
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
         }
+
         //新电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
             if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED)) {
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
         }
+
         //判断开门用户是否匹配
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -308,18 +320,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.equals(electricityCabinetOrder.getUid(), user.getUid())) {
             return R.fail("ELECTRICITY.0016", "订单用户不匹配，非法开门");
         }
+
         //查找换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetOrder.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+
         //TODO 换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
+
         //旧电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
             //发送命令
@@ -337,6 +352,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
+
         //新电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
             //发送命令
@@ -401,6 +417,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
                 .in(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_PAY, ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR));
         Integer row=electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
+
         if(row>0) {
             //修改仓门为无电池
             ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
@@ -460,6 +477,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
             return;
         }
+
         List<ElectricityCabinetOrderExcelVO> ElectricityCabinetOrderExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int index = 0;
@@ -517,6 +535,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 excelVo.setStatus("订单取消");
             }
             ElectricityCabinetOrderExcelVOS.add(excelVo);
+
             String fileName = "换电订单报表.xlsx";
             try {
                 ServletOutputStream outputStream = response.getOutputStream();

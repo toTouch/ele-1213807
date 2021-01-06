@@ -322,6 +322,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -339,17 +340,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         }
                     }
                 }
+
                 //地区
                 City city = cityService.queryByIdFromCache(e.getAreaId());
                 if (Objects.nonNull(city)) {
                     e.setAreaName(city.getCity());
                     e.setPid(city.getPid());
                 }
+
                 //查找型号名称
                 ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
                 if (Objects.nonNull(electricityCabinetModel)) {
                     e.setModelName(electricityCabinetModel.getName());
                 }
+
                 //查满仓空仓数
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
@@ -370,6 +374,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
                 }
+
                 //TODO 在线更新柜机
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
@@ -395,6 +400,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -422,6 +428,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         }
                     }
                 }
+
                 //查满仓空仓数
                 Integer electricityBatteryTotal = 0;
                 Integer fullyElectricityBattery = 0;
@@ -451,6 +458,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
                 e.setElectricityBatteryFormat(set);
+
                 //TODO 在线更新柜机
                 //动态查询在线状态
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
@@ -551,12 +559,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+
         //TODO 换电柜是否在线
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
+
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         //用户是否可用
@@ -586,6 +596,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
+
         //查满仓空仓数
         Integer electricityBatteryTotal = 0;
         Integer fullyElectricityBattery = 0;
@@ -769,6 +780,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         storeInfo.put("batteryCount", batteryCount.toString());
         storeInfo.put("carCount", carCount.toString());
         homeTwo.put("storeInfo", storeInfo);
+
         //换电柜
         List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(Objects.nonNull(areaId), ElectricityCabinet::getAreaId, areaId));
         Integer total = electricityCabinetList.size();
@@ -789,6 +801,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetInfo.put("onlineCount", onlineCount.toString());
         electricityCabinetInfo.put("offlineCount", offlineCount.toString());
         homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
+
         //电池
         List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(areaId);
         Integer batteryTotal = electricityBatteryList.size();
@@ -833,11 +846,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         userInfo.put("serviceCountList", serviceCountList);
         userInfo.put("MemberCardCountList", memberCardCountList);
         homeThree.put("userInfo", userInfo);
+
         //查收益
         List<HashMap<String, String>> moneyList = electricityMemberCardOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
         HashMap<String, Object> moneyInfo = new HashMap<>();
         moneyInfo.put("moneyList", moneyList);
         homeThree.put("moneyInfo", moneyInfo);
+
         //换电
         List<HashMap<String, String>> orderList = electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
         HashMap<String, Object> orderInfo = new HashMap<>();
@@ -861,6 +876,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Integer serviceStatus = 1;
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.nonNull(userInfo)) {
+
             //我的电池
             if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUserSn(userInfo.getNowElectricityBatterySn());
@@ -868,12 +884,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     battery = electricityBattery.getCapacity();
                 }
             }
+
             //套餐剩余天数
             if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) && userInfo.getMemberCardExpireTime() > now) {
                 cardDay = (userInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
             }
             serviceStatus = userInfo.getServiceStatus();
         }
+
         //本月换电
         Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
         //总换电
@@ -897,12 +915,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+
         //TODO 换电柜是否在线
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
+
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         //用户是否可用
@@ -932,6 +952,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
+
         //查满仓空仓数
         Integer electricityBatteryTotal = 0;
         Integer fullyElectricityBattery = 0;
