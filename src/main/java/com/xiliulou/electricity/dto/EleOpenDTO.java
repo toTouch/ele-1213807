@@ -16,11 +16,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EleOpenDTO {
 	private String sessionId;
-	private Boolean operResult;
-	//原始信息
-	private String originContent;
-	//命令
-	private String type;
+	//orderId
+	private String orderId;
+	//msg
+	private String msg;
+	//orderStatus
+	private Integer orderStatus;
+	//status
+	private Integer status;
 	private String productKey;
 	private String deviceName;
+	//type
+	private String type;
 }

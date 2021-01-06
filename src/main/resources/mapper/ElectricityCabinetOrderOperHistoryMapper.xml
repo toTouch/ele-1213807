@@ -11,6 +11,7 @@
         <result property="status" column="status" jdbcType="INTEGER"/>
         <result property="type" column="type" jdbcType="INTEGER"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="msg" column="msg" jdbcType="VARCHAR"/>
     </resultMap>
 
 </mapper>

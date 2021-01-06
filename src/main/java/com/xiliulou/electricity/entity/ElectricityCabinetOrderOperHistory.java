@@ -38,9 +38,9 @@ public class ElectricityCabinetOrderOperHistory {
     */
     private Integer cellNo;
     /**
-    * 操作订单的状态 0--成功 1--失败
+    * 操作订单的状态
     */
-    private Object status;
+    private Integer status;
     /**
     * 下单的用户
     */
@@ -50,10 +50,22 @@ public class ElectricityCabinetOrderOperHistory {
      */
     private Integer type;
 
-    //状态--成功
-    public static final Integer STATUS_SUCCESS = 0;
-    //失败
-    public static final Integer STATUS_FAIL = 1;
+    //错误信息
+    private String msg;
+
+    //开门系统错误
+    public static final Integer STATUS_ERROR = 1;
+    //开门成功
+    public static final Integer STATUS_OPEN_DOOR_SUCCESS = 2;
+    //开门失败
+    public static final Integer STATUS_OPEN_DOOR_FAIL = 3;
+    //开门订单不匹配
+    public static final Integer STATUS_EXISTS_ORDER_ILLEGAL = 4;
+    //电池检测失败
+    public static final Integer STATUS_BATTERY_CHECK_ERROR = 5;
+    //电池检测成功
+    public static final Integer STATUS_BATTERY_CHECK_SUCCESS = 6;
+
 
     //旧电池开门
     public static final Integer TYPE_OLD_BATTERY_OPEN_DOOR = 1;

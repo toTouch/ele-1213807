@@ -45,18 +45,14 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_OPERATE = "operate_result";
 
 	//业务操作
-	//旧门开门 order_old_door_open
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_old_door_open";
-	//旧门关门 order_old_door_close
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CLOSE = "order_old_door_close";
-	//旧门检测 order_old_door_check
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check";
-	//新门开门 order_new_door_open
-	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_new_door_open";
-	//新门关门 order_new_door_close
-	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CLOSE = "order_new_door_close";
-	//新门检测 order_new_door_check
-	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check";
+	//旧门开门 order_old_door_open_rsp
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_old_door_open_rsp";
+	//旧门检测 order_old_door_check_battery_rsp
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check_battery_rsp";
+	//新门开门 order_new_door_open_rsp
+	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_new_door_open_rsp";
+	//新门检测 order_new_door_check_battery_rsp
+	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check_battery_rsp";
 	//物理操作
 	//仓门上报 cell_report_info
 	public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
@@ -89,10 +85,8 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_UPDATE, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OPERATE, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_OPEN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_CLOSE, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_CHECK, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_OPEN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_CLOSE, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_CHECK, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_REPORT_INFO, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_REPORT_INFO, "OK");

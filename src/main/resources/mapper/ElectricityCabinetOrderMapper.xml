@@ -7,7 +7,7 @@
         <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
         <result property="phone" column="phone" jdbcType="VARCHAR"/>
         <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="payAmount" column="pay_amount" jdbcType="NUMERIC"/>
+        <result property="payAmount" column="pay_amount" jdbcType="INTEGER"/>
         <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
         <result property="oldElectricityBatterySn" column="old_electricity_battery_sn" jdbcType="VARCHAR"/>
         <result property="newElectricityBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR"/>
