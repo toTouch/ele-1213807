@@ -232,7 +232,7 @@ public class EleOperateQueueHandler {
                     .createTime(System.currentTimeMillis())
                     .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .oId(electricityCabinetOrder.getId())
-                    .status(status)
+                    .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
                     .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)
                     .uid(electricityCabinetOrder.getUid())
                     .build();
@@ -329,7 +329,7 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
-                .status(status)
+                .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)
                 .uid(electricityCabinetOrder.getUid())
                 .build();
@@ -345,6 +345,9 @@ public class EleOperateQueueHandler {
                 cellNo = electricityCabinetOrder.getNewCellNo();
             } else {
                 cellNo = electricityCabinetOrder.getOldCellNo();
+            }
+            if(Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)||Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)){
+                status=ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_ERROR;
             }
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                     .cellNo(cellNo)
