@@ -84,8 +84,7 @@ public class ElectricityCabinetOuterController {
     @PostMapping(value = "/outer/electricityCabinet/log")
     public R receiverAppLog(@RequestParam("productKey") String productKey,
                             @RequestParam("deviceName") String deviceName,
-                            @RequestParam("name") String fileName,
-                            @RequestParam("file") MultipartFile file) throws IOException {
+                            @RequestParam("file") MultipartFile file)  {
 
         ElectricityCabinet electricityCabinet=electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
         if(Objects.isNull(electricityCabinet)){
