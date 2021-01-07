@@ -32,10 +32,6 @@ public class LoginInfo {
      */
     private Long uid;
     /**
-     * 用户姓名
-     */
-    private String name;
-    /**
      * 手机号
      */
     private String phone;
