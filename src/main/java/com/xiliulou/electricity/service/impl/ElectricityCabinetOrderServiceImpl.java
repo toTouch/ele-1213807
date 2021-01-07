@@ -478,6 +478,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         electricityCabinetOrderMapper.update(newElectricityCabinetOrder);
+        //回退月卡
+        UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
+        Long now =System.currentTimeMillis();
+        if(Objects.nonNull(userInfo)&&Objects.nonNull(userInfo.getMemberCardExpireTime())&&Objects.nonNull(userInfo.getRemainingNumber())
+                &&userInfo.getMemberCardExpireTime()>now&&userInfo.getRemainingNumber()!=-1){
+            //回退月卡次数
+            userInfoService.plusCount(userInfo.getId());
+        }
         return R.ok();
     }
 
