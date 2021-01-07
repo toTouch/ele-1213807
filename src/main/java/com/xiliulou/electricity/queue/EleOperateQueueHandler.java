@@ -242,6 +242,12 @@ public class EleOperateQueueHandler {
                     .build();
             electricityCabinetOrderOperHistoryService.insert(history);
 
+            //新电池改状态
+            electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_WAIT_NEW_BATTERY);
+            electricityCabinetOrderService.update(electricityCabinetOrder);
+
+
             //新电池开门
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
             //发送命令
