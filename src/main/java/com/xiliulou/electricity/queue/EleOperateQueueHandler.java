@@ -135,11 +135,11 @@ public class EleOperateQueueHandler {
             }
         }
 
-        //收到消息响应
+      /*  //收到消息响应
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
         Map<String, Object> data = Maps.newHashMap();
         data.put("orderId", electricityCabinetOrder.getOrderId());
-        pubHardwareService.sendMessage(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), SendHardwareMessage.builder().data(data).sessionId(sessionId).type(ElectricityCabinetConstant.ELE_COMMAND_ORDER_SYNC_RSP).build());
+        pubHardwareService.sendMessage(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), SendHardwareMessage.builder().data(data).sessionId(sessionId).type(ElectricityCabinetConstant.ELE_COMMAND_ORDER_SYNC_RSP).build());*/
     }
 
 
