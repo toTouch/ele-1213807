@@ -18,7 +18,7 @@
     </resultMap>
 
     <update id="update">
-        update from t_electricity_battery
+        update  t_electricity_battery
         <set>
             <if test="status != null">
                 status =#{status},
