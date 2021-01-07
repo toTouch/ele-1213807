@@ -66,8 +66,27 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
             return true;
         }
+        Long batteryId=null;
+        String batteryName = eleCellVo.getBatteryName();
+        if (Objects.nonNull(batteryName)) {
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+            if (Objects.isNull(electricityBattery)) {
+                log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+                return true;
+            }
+            batteryId=electricityBattery.getId();
+            //电池所属仓门修改
+            ElectricityBattery newElectricityBattery = new ElectricityBattery();
+            newElectricityBattery.setId(electricityBattery.getId());
+            newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+            newElectricityBattery.setCabinetId(electricityCabinet.getId());
+            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.update(newElectricityBattery);
+        }
+        Long finalBatteryId = batteryId;
         executorService.execute(() -> {
             ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+            electricityCabinetBox.setElectricityBatteryId(finalBatteryId);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetBox.setCellNo(cellNo);
             String isLock = eleCellVo.getIs_lock();
@@ -97,21 +116,6 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             String batteryStatus = eleCellVo.getBatteryStatus();
             if (Objects.nonNull(batteryStatus)) {
                 electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
-            }
-            String batteryName = eleCellVo.getBatteryName();
-            if (Objects.nonNull(batteryName)) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
-                if (Objects.isNull(electricityBattery)) {
-                    log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
-                }
-                electricityCabinetBox.setElectricityBatteryId(electricityBattery.getId());
-                //电池所属仓门修改
-                ElectricityBattery newElectricityBattery = new ElectricityBattery();
-                newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-                newElectricityBattery.setCabinetId(electricityCabinet.getId());
-                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.update(newElectricityBattery);
             }
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
         });
