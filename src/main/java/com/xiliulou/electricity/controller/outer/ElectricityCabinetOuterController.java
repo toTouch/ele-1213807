@@ -89,7 +89,7 @@ public class ElectricityCabinetOuterController {
                 ZipEntry zipEntry = entries.nextElement();
                 String innerFileName = deviceName + "_" + "electricityCabinet" + "_" + zipEntry.getName();
                 try (InputStream inputStream = zipFile.getInputStream(zipEntry)) {
-                    String bucketName = storageConfig.getBucketName();
+                    String bucketName = storageConfig.getMinioBucketName();
                     storageService.uploadFile(bucketName, innerFileName, inputStream);
                 }
 
