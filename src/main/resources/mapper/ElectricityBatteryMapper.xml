@@ -30,6 +30,7 @@
                 cabinet_id =#{cabinetId},
             </if>
         </set>
+        where id=#{id}
     </update>
 
 
