@@ -56,4 +56,6 @@ public interface ElectricityCabinetConstant {
 
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
 
+    String ELE_ORDER_OPERATOR_CACHE_KEY = "ele_order_oper:";
+
 }

@@ -450,10 +450,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+        Integer queryStatus=0;
+        String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
+        if(Objects.nonNull(s)){
+            queryStatus=1;
+        }
         Long now = (System.currentTimeMillis() - electricityCabinetOrder.getCreateTime()) / 1000;
         Long time = 300 - now;
         map.put("time", time.toString());
         map.put("status", electricityCabinetOrder.getStatus().toString());
+        map.put("queryStatus", queryStatus.toString());
         return R.ok(electricityCabinetOrder.getStatus());
     }
 

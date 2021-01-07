@@ -69,6 +69,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
                 redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 60L, TimeUnit.SECONDS);
             } else {
                 redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 60L, TimeUnit.SECONDS);
+                redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY+eleOrderVo.getOrderId(), "false", 60L, TimeUnit.SECONDS);
             }
         }
 
