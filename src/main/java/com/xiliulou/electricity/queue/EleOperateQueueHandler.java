@@ -120,7 +120,7 @@ public class EleOperateQueueHandler {
         }
 
         //若app订单状态大于云端订单状态则处理
-        if (electricityCabinetOrder.getStatus() < orderStatus) {
+        if (electricityCabinetOrder.getStatus() <= orderStatus) {
             if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
                 openOldBatteryDoor(electricityCabinetOrder, status, msg);
             }
