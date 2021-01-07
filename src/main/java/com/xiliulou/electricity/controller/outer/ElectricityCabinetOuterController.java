@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
-import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -13,7 +11,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
