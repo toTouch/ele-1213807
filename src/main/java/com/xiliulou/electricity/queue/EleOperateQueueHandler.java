@@ -2,7 +2,6 @@ package com.xiliulou.electricity.queue;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -21,7 +20,6 @@ import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
-import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.PubHardwareService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,7 +30,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -134,12 +131,6 @@ public class EleOperateQueueHandler {
                 checkNewBattery(electricityCabinetOrder, status, msg);
             }
         }
-
-      /*  //收到消息响应
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
-        Map<String, Object> data = Maps.newHashMap();
-        data.put("orderId", electricityCabinetOrder.getOrderId());
-        pubHardwareService.sendMessage(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName(), SendHardwareMessage.builder().data(data).sessionId(sessionId).type(ElectricityCabinetConstant.ELE_COMMAND_ORDER_SYNC_RSP).build());*/
     }
 
 

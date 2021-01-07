@@ -52,57 +52,58 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
     @Override
     protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-            return false;
-        }
-        EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
-        if (Objects.isNull(eleBatteryVo)) {
-            log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return true;
-        }
-        String cellNo = eleBatteryVo.getCellNo();
-        if (Objects.isNull(cellNo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return true;
-        }
-        String batteryName = eleBatteryVo.getBatteryName();
-        if (Objects.isNull(batteryName)) {
-            log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
-            return true;
-        }
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
-        if (Objects.isNull(electricityBattery)) {
-            log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
-            return true;
-        }
-        //修改电池
-        ElectricityBattery newElectricityBattery = new ElectricityBattery();
-        newElectricityBattery.setId(electricityBattery.getId());
-        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        Double power = eleBatteryVo.getPower();
-        if (Objects.nonNull(power)) {
-            newElectricityBattery.setCapacity(power*100);
-        }
-        String health = eleBatteryVo.getHealth();
-        if (Objects.nonNull(health)) {
-            newElectricityBattery.setHealthStatus(Integer.valueOf(health));
-        }
-        String chargeStatus = eleBatteryVo.getChargeStatus();
-        if (Objects.nonNull(chargeStatus)) {
-            newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
-        }
-        electricityBatteryService.update(newElectricityBattery);
-        //修改仓门
-        ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-        electricityCabinetBox.setElectricityBatteryId(newElectricityBattery.getId());
-        electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
-        electricityCabinetBox.setCellNo(cellNo);
-        electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-        electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
-
+        executorService.execute(() -> {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            if (Objects.isNull(electricityCabinet)) {
+                log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                return;
+            }
+            EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
+            if (Objects.isNull(eleBatteryVo)) {
+                log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
+                return;
+            }
+            String cellNo = eleBatteryVo.getCellNo();
+            if (Objects.isNull(cellNo)) {
+                log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
+                return;
+            }
+            String batteryName = eleBatteryVo.getBatteryName();
+            if (Objects.isNull(batteryName)) {
+                log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
+                return;
+            }
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+            if (Objects.isNull(electricityBattery)) {
+                log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+                return;
+            }
+            //修改电池
+            ElectricityBattery newElectricityBattery = new ElectricityBattery();
+            newElectricityBattery.setId(electricityBattery.getId());
+            newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            Double power = eleBatteryVo.getPower();
+            if (Objects.nonNull(power)) {
+                newElectricityBattery.setCapacity(power * 100);
+            }
+            String health = eleBatteryVo.getHealth();
+            if (Objects.nonNull(health)) {
+                newElectricityBattery.setHealthStatus(Integer.valueOf(health));
+            }
+            String chargeStatus = eleBatteryVo.getChargeStatus();
+            if (Objects.nonNull(chargeStatus)) {
+                newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
+            }
+            electricityBatteryService.update(newElectricityBattery);
+            //修改仓门
+            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+            electricityCabinetBox.setElectricityBatteryId(newElectricityBattery.getId());
+            electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+            electricityCabinetBox.setCellNo(cellNo);
+            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+            electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+        });
         return true;
     }
 

@@ -60,28 +60,30 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         log.info("receiverMessage1 is -->{}", receiverMessage);
         //电柜在线状态
         if (Objects.isNull(receiverMessage.getType())) {
-            if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
-                return false;
-            }
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-            if (Objects.isNull(electricityCabinet)) {
-                log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-                return false;
-            }
-            //在线状态修改
-            ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
-            newElectricityCabinet.setId(electricityCabinet.getId());
-            Integer status = 1;
-            if (Objects.equals(receiverMessage.getStatus(), "online")) {
-                status = 0;
-            }
-            newElectricityCabinet.setOnlineStatus(status);
-            newElectricityCabinet.setPowerStatus(status);
-            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-            }
-            log.error("type is null,{}", receiverMessage.getOriginContent());
+            executorService.execute(() -> {
+                if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
+                    return;
+                }
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                if (Objects.isNull(electricityCabinet)) {
+                    log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                    return;
+                }
+                //在线状态修改
+                ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+                newElectricityCabinet.setId(electricityCabinet.getId());
+                Integer status = 1;
+                if (Objects.equals(receiverMessage.getStatus(), "online")) {
+                    status = 0;
+                }
+                newElectricityCabinet.setOnlineStatus(status);
+                newElectricityCabinet.setPowerStatus(status);
+                if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                }
+                log.error("type is null,{}", receiverMessage.getOriginContent());
+            });
 
             return false;
         }

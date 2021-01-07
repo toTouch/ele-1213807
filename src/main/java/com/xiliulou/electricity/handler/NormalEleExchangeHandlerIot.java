@@ -46,23 +46,25 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
 
     @Override
     protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-        if (!StrUtil.isNotEmpty(receiverMessage.getVersion())) {
-            return false;
-        }
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-            return false;
-        }
-        //版本号修改
-        ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
-        newElectricityCabinet.setId(electricityCabinet.getId());
-        newElectricityCabinet.setVersion(receiverMessage.getVersion());
-        if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-        }
-        log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
+        executorService.execute(() -> {
+            if (!StrUtil.isNotEmpty(receiverMessage.getVersion())) {
+                return;
+            }
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            if (Objects.isNull(electricityCabinet)) {
+                log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                return;
+            }
+            //版本号修改
+            ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+            newElectricityCabinet.setId(electricityCabinet.getId());
+            newElectricityCabinet.setVersion(receiverMessage.getVersion());
+            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            }
+            log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
+        });
 
         return true;
     }
