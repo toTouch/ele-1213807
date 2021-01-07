@@ -310,7 +310,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //新电池开门
         if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
-            if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED)) {
+            if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_WAIT_NEW_BATTERY)) {
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
         }
