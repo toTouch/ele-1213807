@@ -96,7 +96,7 @@ public class ElectricityCabinetFileAdminController {
                         .updateTime(System.currentTimeMillis())
                         .electricityCabinetId(callBackQuery.getElectricityCabinetId())
                         .type(callBackQuery.getFileType())
-                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getEndpoint() + "/" + fileName)
+                        .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName)
                         .name(fileName)
                         .sequence(index)
                         .isOss(StorageConfig.IS_USE_OSS).build();
