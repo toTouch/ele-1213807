@@ -315,7 +315,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
 
-        //判断开门用户是否匹配
+     /*   //判断开门用户是否匹配
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -323,7 +323,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         if (Objects.equals(electricityCabinetOrder.getUid(), user.getUid())) {
             return R.fail("ELECTRICITY.0016", "订单用户不匹配，非法开门");
-        }
+        }*/
 
         //查找换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
