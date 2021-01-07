@@ -62,9 +62,9 @@ public class ElectricityCabinetOrderOperHistory {
     //开门订单不匹配
     public static final Integer STATUS_EXISTS_ORDER_ILLEGAL = 4;
     //电池检测失败
-    public static final Integer STATUS_BATTERY_CHECK_ERROR = 5;
+    public static final Integer STATUS_BATTERY_CHECK_ERROR = 1;
     //电池检测成功
-    public static final Integer STATUS_BATTERY_CHECK_SUCCESS = 6;
+    public static final Integer STATUS_BATTERY_CHECK_SUCCESS = 2;
 
 
     //旧电池开门

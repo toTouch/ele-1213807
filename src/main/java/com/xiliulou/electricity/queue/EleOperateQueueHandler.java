@@ -186,7 +186,7 @@ public class EleOperateQueueHandler {
     //检查旧电池通知
     public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Integer status, String msg) {
         //旧电池检测失败
-        if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK, msg)) {
+        if (CheckDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK, msg)) {
             return;
         }
 
@@ -300,7 +300,7 @@ public class EleOperateQueueHandler {
     //检查新电池通知
     public void checkNewBattery(ElectricityCabinetOrder electricityCabinetOrder, Integer status, String msg) {
         //新电池检测失败
-        if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK, msg)) {
+        if (CheckDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK, msg)) {
             return;
         }
 
@@ -358,6 +358,31 @@ public class EleOperateQueueHandler {
             }
             if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK) || Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)) {
                 status = ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_ERROR;
+            }
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
+                    .cellNo(cellNo)
+                    .createTime(System.currentTimeMillis())
+                    .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
+                    .oId(electricityCabinetOrder.getId())
+                    .status(status)
+                    .type(type)
+                    .uid(electricityCabinetOrder.getUid())
+                    .msg(msg)
+                    .build();
+            electricityCabinetOrderOperHistoryService.insert(history);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean CheckDoorFailAndSaveOpenDoorFailRecord(ElectricityCabinetOrder electricityCabinetOrder, Integer
+            status, Integer type, String msg) {
+        if (!status.equals(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)) {
+            Integer cellNo = null;
+            if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR) || Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)) {
+                cellNo = electricityCabinetOrder.getNewCellNo();
+            } else {
+                cellNo = electricityCabinetOrder.getOldCellNo();
             }
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                     .cellNo(cellNo)
