@@ -46,11 +46,11 @@ public class HardwareCommand {
 
 	//业务操作
 	//旧门开门 order_old_door_open_rsp
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_old_door_open_rsp";
+	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_open_old_door_rsp";
 	//旧门检测 order_old_door_check_battery_rsp
 	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check_battery_rsp";
 	//新门开门 order_new_door_open_rsp
-	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_new_door_open_rsp";
+	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_open_new_door_rsp";
 	//新门检测 order_new_door_check_battery_rsp
 	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check_battery_rsp";
 	//物理操作
