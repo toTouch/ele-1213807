@@ -54,17 +54,15 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
             log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return false;
         }
-        executorService.execute(() -> {
-            //版本号修改
-            ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
-            newElectricityCabinet.setId(electricityCabinet.getId());
-            newElectricityCabinet.setVersion(receiverMessage.getVersion());
-            if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-            }
-            log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
-        });
+        //版本号修改
+        ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+        newElectricityCabinet.setId(electricityCabinet.getId());
+        newElectricityCabinet.setVersion(receiverMessage.getVersion());
+        if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+        }
+        log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
 
         return true;
     }

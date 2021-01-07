@@ -64,26 +64,25 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
             return true;
         }
-        executorService.execute(() -> {
-            ElectricityBattery newElectricityBattery = new ElectricityBattery();
-            newElectricityBattery.setId(electricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            //TODO 电池上报详细信息
-            Double power = eleBatteryVo.getPower();
-            if (Objects.nonNull(power)) {
-                newElectricityBattery.setCapacity(power);
-            }
-            String health = eleBatteryVo.getHealth();
-            if (Objects.nonNull(health)) {
-                newElectricityBattery.setHealthStatus(Integer.valueOf(health));
-            }
-            String chargeStatus = eleBatteryVo.getChargeStatus();
-            if (Objects.nonNull(chargeStatus)) {
-                newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
-            }
-            electricityBatteryService.update(newElectricityBattery);
-        });
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(electricityBattery.getId());
+        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        //TODO 电池上报详细信息
+        Double power = eleBatteryVo.getPower();
+        if (Objects.nonNull(power)) {
+            newElectricityBattery.setCapacity(power);
+        }
+        String health = eleBatteryVo.getHealth();
+        if (Objects.nonNull(health)) {
+            newElectricityBattery.setHealthStatus(Integer.valueOf(health));
+        }
+        String chargeStatus = eleBatteryVo.getChargeStatus();
+        if (Objects.nonNull(chargeStatus)) {
+            newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
+        }
+        electricityBatteryService.update(newElectricityBattery);
+
         return true;
     }
 

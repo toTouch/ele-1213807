@@ -66,7 +66,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
             return true;
         }
-        Long batteryId=null;
+        Long batteryId = null;
         String batteryName = eleCellVo.getBatteryName();
         if (Objects.nonNull(batteryName)) {
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
@@ -74,7 +74,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
                 log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
                 return true;
             }
-            batteryId=electricityBattery.getId();
+            batteryId = electricityBattery.getId();
             //电池所属仓门修改
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
@@ -84,41 +84,40 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             electricityBatteryService.update(newElectricityBattery);
         }
         Long finalBatteryId = batteryId;
-        executorService.execute(() -> {
-            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-            electricityCabinetBox.setElectricityBatteryId(finalBatteryId);
-            electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
-            electricityCabinetBox.setCellNo(cellNo);
-            String isLock = eleCellVo.getIs_lock();
-            if (Objects.nonNull(isLock)) {
-                electricityCabinetBox.setIsLock(Integer.valueOf(isLock));
-            }
-            String isFan = eleCellVo.getIs_fan();
-            if (Objects.nonNull(isFan)) {
-                electricityCabinetBox.setIsFan(Integer.valueOf(isFan));
-            }
-            String temperature = eleCellVo.getTemperature();
-            if (Objects.nonNull(temperature)) {
-                electricityCabinetBox.setTemperature(temperature);
-            }
-            String isHeat = eleCellVo.getIs_heat();
-            if (Objects.nonNull(isHeat)) {
-                electricityCabinetBox.setIsHeat(Integer.valueOf(isHeat));
-            }
-            String isLight = eleCellVo.getIs_light();
-            if (Objects.nonNull(isLight)) {
-                electricityCabinetBox.setIsLight(Integer.valueOf(isLight));
-            }
-            String isForbidden = eleCellVo.getIs_forbidden();
-            if (Objects.nonNull(isForbidden)) {
-                electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
-            }
-            String batteryStatus = eleCellVo.getBatteryStatus();
-            if (Objects.nonNull(batteryStatus)) {
-                electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
-            }
-            electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
-        });
+        ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+        electricityCabinetBox.setElectricityBatteryId(finalBatteryId);
+        electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+        electricityCabinetBox.setCellNo(cellNo);
+        String isLock = eleCellVo.getIs_lock();
+        if (Objects.nonNull(isLock)) {
+            electricityCabinetBox.setIsLock(Integer.valueOf(isLock));
+        }
+        String isFan = eleCellVo.getIs_fan();
+        if (Objects.nonNull(isFan)) {
+            electricityCabinetBox.setIsFan(Integer.valueOf(isFan));
+        }
+        String temperature = eleCellVo.getTemperature();
+        if (Objects.nonNull(temperature)) {
+            electricityCabinetBox.setTemperature(temperature);
+        }
+        String isHeat = eleCellVo.getIs_heat();
+        if (Objects.nonNull(isHeat)) {
+            electricityCabinetBox.setIsHeat(Integer.valueOf(isHeat));
+        }
+        String isLight = eleCellVo.getIs_light();
+        if (Objects.nonNull(isLight)) {
+            electricityCabinetBox.setIsLight(Integer.valueOf(isLight));
+        }
+        String isForbidden = eleCellVo.getIs_forbidden();
+        if (Objects.nonNull(isForbidden)) {
+            electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
+        }
+        String batteryStatus = eleCellVo.getBatteryStatus();
+        if (Objects.nonNull(batteryStatus)) {
+            electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
+        }
+        electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+
         return true;
     }
 }
