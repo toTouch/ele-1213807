@@ -370,6 +370,7 @@ public class EleOperateQueueHandler {
                     .msg(msg)
                     .build();
             electricityCabinetOrderOperHistoryService.insert(history);
+            return true;
         }
         return false;
     }
@@ -394,6 +395,7 @@ public class EleOperateQueueHandler {
                     .msg(msg)
                     .build();
             electricityCabinetOrderOperHistoryService.insert(history);
+            return true;
         }
         return false;
     }
