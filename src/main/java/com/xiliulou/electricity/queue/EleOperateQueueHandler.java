@@ -107,7 +107,7 @@ public class EleOperateQueueHandler {
      * @param finalOpenDTO
      */
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
-        String sessionId = finalOpenDTO.getSessionId();
+        log.info("finalOpenDTO is -->{}", finalOpenDTO);
         Integer status = finalOpenDTO.getStatus();
         String type = finalOpenDTO.getType();
         String orderId = finalOpenDTO.getOrderId();
@@ -370,7 +370,6 @@ public class EleOperateQueueHandler {
                     .msg(msg)
                     .build();
             electricityCabinetOrderOperHistoryService.insert(history);
-            return true;
         }
         return false;
     }
@@ -395,7 +394,6 @@ public class EleOperateQueueHandler {
                     .msg(msg)
                     .build();
             electricityCabinetOrderOperHistoryService.insert(history);
-            return true;
         }
         return false;
     }

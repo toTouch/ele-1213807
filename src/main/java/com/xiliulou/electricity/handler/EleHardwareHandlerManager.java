@@ -57,7 +57,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
     @Override
     public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
-        log.info("receiverMessage is -->{}", receiverMessage);
+        log.info("receiverMessage1 is -->{}", receiverMessage);
         //电柜在线状态
         if (Objects.isNull(receiverMessage.getType())) {
             if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
@@ -86,6 +86,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return false;
         }
         if (receiverMessage.getType().contains("order")) {
+            log.info("receiverMessage2 is -->{}", receiverMessage);
             return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (receiverMessage.getType().contains("operate")) {
             return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);

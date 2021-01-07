@@ -83,6 +83,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
                 .productKey(receiverMessage.getProductKey())
                 .deviceName(receiverMessage.getDeviceName()).build();
         eleOperateQueueHandler.putQueue(eleOpenDTO);
+        log.info("eleOpenDTO is -->{}", eleOpenDTO);
         return true;
     }
 }
