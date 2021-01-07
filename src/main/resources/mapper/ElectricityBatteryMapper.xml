@@ -26,8 +26,11 @@
             <if test="updateTime != null">
                 update_time =#{updateTime},
             </if>
-            <if test="cabinetId != null or cabinetId==-1">
+            <if test="cabinetId != null">
                 cabinet_id =#{cabinetId},
+            </if>
+            <if test="cabinetId==-1">
+                cabinet_id =null,
             </if>
         </set>
         where id=#{id}
