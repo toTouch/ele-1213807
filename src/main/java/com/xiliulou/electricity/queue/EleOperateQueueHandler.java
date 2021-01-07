@@ -187,10 +187,6 @@ public class EleOperateQueueHandler {
     public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Integer status, String msg) {
         //旧电池检测失败
         if (OpenDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK, msg)) {
-            //上报旧电池失败，订单取消
-            electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-            electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
-            electricityCabinetOrderService.update(electricityCabinetOrder);
             return;
         }
 
