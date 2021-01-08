@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.electricity.entity.BatteryFormat;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import java.util.List;
 
@@ -43,4 +44,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetVO> showInfoByDistance(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
     Integer queryFullyElectricityBattery(Integer id);
+
+    List<BatteryFormat> queryElectricityBatteryFormat(Integer id);
 }

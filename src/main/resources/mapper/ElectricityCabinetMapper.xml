@@ -112,6 +112,14 @@
         where eb.capacity&gt;=fully_charged  and ec.id = #{id}
     </select>
 
+    <select id="queryElectricityBatteryFormat" resultType="com.xiliulou.electricity.entity.BatteryFormat">
+        select ebm.voltage as voltage,ebm.capacity as capacity from  t_electricity_cabinet as ec
+        left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
+        left join t_electricity_battery as eb on ecb.electricity_battery_id is not null and ecb.electricity_battery_id=eb.id
+        left join t_electricity_battery_model as ebm on eb.model_id=ebm.id
+        WHERE ebm.voltage is not null or ebm.capacity is not null and ec.id = #{id}
+    </select>
+
     <!--通过主键修改数据-->
     <update id="update">
         update electricity.t_electricity_cabinet
