@@ -65,7 +65,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 
         //操作回调的放在redis中 只有开门命令放入
         if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN) || Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
-            if (Objects.nonNull(eleOrderVo.getStatus()) && eleOrderVo.getStatus().equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL)) {
+            if (Objects.nonNull(eleOrderVo.getStatus()) && eleOrderVo.getStatus().equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)) {
                 redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
             } else {
                 redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
