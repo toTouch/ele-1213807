@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -64,12 +65,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 return;
             }
             String cellNo = eleBatteryVo.getCellNo();
-            if (Objects.isNull(cellNo)) {
+            if (StrUtil.isNotEmpty(cellNo)) {
                 log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
                 return;
             }
             String batteryName = eleBatteryVo.getBatteryName();
-            if (Objects.isNull(batteryName)) {
+            if (StrUtil.isNotEmpty(batteryName)) {
                 log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
                 return;
             }
@@ -88,11 +89,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 newElectricityBattery.setCapacity(power * 100);
             }
             String health = eleBatteryVo.getHealth();
-            if (Objects.nonNull(health)) {
+            if (StrUtil.isNotEmpty(health)) {
                 newElectricityBattery.setHealthStatus(Integer.valueOf(health));
             }
             String chargeStatus = eleBatteryVo.getChargeStatus();
-            if (Objects.nonNull(chargeStatus)) {
+            if (StrUtil.isNotEmpty(chargeStatus)) {
                 newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
             }
             electricityBatteryService.update(newElectricityBattery);
