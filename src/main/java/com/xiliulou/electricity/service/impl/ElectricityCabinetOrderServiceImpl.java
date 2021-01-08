@@ -321,7 +321,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        if (Objects.equals(electricityCabinetOrder.getUid(), user.getUid())) {
+        if (!Objects.equals(electricityCabinetOrder.getUid(), user.getUid())) {
             return R.fail("ELECTRICITY.0016", "订单用户不匹配，非法开门");
         }
 
