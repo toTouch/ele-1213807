@@ -37,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -79,7 +80,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     EleHardwareHandlerManager eleHardwareHandlerManager;
 
 
-
     /**
      * 通过ID查询单条数据从DB
      *
@@ -113,7 +113,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
      */
     @Override
     public ElectricityCabinetOrder queryByOrderId(String orderId) {
-        return this.electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getOrderId,orderId));
+        return this.electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getOrderId, orderId));
     }
 
 
@@ -142,7 +142,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_UID+user.getUid(), "1",15*1000L,false);
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_UID + user.getUid(), "1", 15 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -168,9 +168,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                     Long now = System.currentTimeMillis();
                     Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                    Long beginTime= getTime(totalBeginTime);
+                    Long beginTime = getTime(totalBeginTime);
                     Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                    Long endTime= getTime(totalEndTime);
+                    Long endTime = getTime(totalEndTime);
                     if (firstToday + beginTime > now || firstToday + endTime < now) {
                         return R.fail("ELECTRICITY.0017", "换电柜已打烊");
                     }
@@ -213,9 +213,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //判断用户是否有未完成订单
-        Integer count=this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,user.getUid())
-        .notIn(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_COMPLETE,ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL,ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
-        if(count>0){
+        Integer count = this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, user.getUid())
+                .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+        if (count > 0) {
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
         //分配开门格挡
@@ -255,10 +255,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cell_no", cellNo);
             dataMap.put("order_id", electricityCabinetOrder.getOrderId());
             dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
-            dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
+            dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId())
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -315,7 +315,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
 
-     /*   //判断开门用户是否匹配
+        //判断开门用户是否匹配
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -323,7 +323,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         if (Objects.equals(electricityCabinetOrder.getUid(), user.getUid())) {
             return R.fail("ELECTRICITY.0016", "订单用户不匹配，非法开门");
-        }*/
+        }
 
         //查找换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
@@ -346,10 +346,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
             dataMap.put("order_id", electricityCabinetOrder.getOrderId());
             dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
-            dataMap.put("status",  electricityCabinetOrder.getStatus().toString());
+            dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId())
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -367,7 +367,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX+"-" + System.currentTimeMillis() + ":"+electricityCabinetOrder.getId())
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
@@ -389,7 +389,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (successTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }
-        return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal),BigDecimal.ROUND_HALF_EVEN);
+        return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal), BigDecimal.ROUND_HALF_EVEN);
     }
 
     @Override
@@ -420,9 +420,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         log.info("handel  cancel order start ------->");
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
                 .in(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_PAY, ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR));
-        Integer row=electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
+        Integer row = electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
 
-        if(row>0) {
+        if (row > 0) {
             //修改仓门为无电池
             ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
             electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
@@ -432,11 +432,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
             //回退月卡
             UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
-            Long now =System.currentTimeMillis();
-            if(Objects.nonNull(userInfo)&&Objects.nonNull(userInfo.getMemberCardExpireTime())&&Objects.nonNull(userInfo.getRemainingNumber())
-                    &&userInfo.getMemberCardExpireTime()>now&&userInfo.getRemainingNumber()!=-1){
+            Long now = System.currentTimeMillis();
+            if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber())
+                    && userInfo.getMemberCardExpireTime() > now && userInfo.getRemainingNumber() != -1) {
                 //回退月卡次数
-               userInfoService.plusCount(userInfo.getId());
+                userInfoService.plusCount(userInfo.getId());
             }
         }
         log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
@@ -450,10 +450,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-        Integer queryStatus=0;
+        Integer queryStatus = 0;
         String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
-        if(Objects.nonNull(s)){
-            queryStatus=1;
+        if (Objects.nonNull(s)) {
+            queryStatus = 1;
         }
         Long now = (System.currentTimeMillis() - electricityCabinetOrder.getCreateTime()) / 1000;
         Long time = 300 - now;
@@ -468,21 +468,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     public R endOrder(String orderId) {
         //结束异常订单只改订单状态，不用考虑其他
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
-        .notIn(ElectricityCabinetOrder::getStatus,ElectricityCabinetOrder.STATUS_ORDER_COMPLETE,ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL,ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+                .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
         if (Objects.isNull(electricityCabinetOrder)) {
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-        ElectricityCabinetOrder newElectricityCabinetOrder=new ElectricityCabinetOrder();
+        ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
         newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
         newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
         electricityCabinetOrderMapper.update(newElectricityCabinetOrder);
         //回退月卡
         UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
-        Long now =System.currentTimeMillis();
-        if(Objects.nonNull(userInfo)&&Objects.nonNull(userInfo.getMemberCardExpireTime())&&Objects.nonNull(userInfo.getRemainingNumber())
-                &&userInfo.getMemberCardExpireTime()>now&&userInfo.getRemainingNumber()!=-1){
+        Long now = System.currentTimeMillis();
+        if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber())
+                && userInfo.getMemberCardExpireTime() > now && userInfo.getRemainingNumber() != -1) {
             //回退月卡次数
             userInfoService.plusCount(userInfo.getId());
         }
@@ -490,7 +490,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
-    public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery ,HttpServletResponse response) {
+    public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
         if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
             return;
@@ -631,11 +631,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return resultList;
     }
 
-    public String generateOrderId(Integer id,  String cellNo) {
+    public String generateOrderId(Integer id, String cellNo) {
         return String.valueOf(System.currentTimeMillis() / 1000) + id +
                 cellNo +
                 RandomUtil.randomNumbers(6);
     }
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
@@ -647,7 +648,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             e.printStackTrace();
         }
         Long ts = date2.getTime();
-        return time-ts;
+        return time - ts;
     }
 
 }

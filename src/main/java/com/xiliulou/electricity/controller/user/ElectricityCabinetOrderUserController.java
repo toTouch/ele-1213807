@@ -37,7 +37,7 @@ public class ElectricityCabinetOrderUserController {
     }
 
     //换电柜再次开门
-    @PostMapping("/admin/electricityCabinetOrder/openDoor")
+    @PostMapping("/user/electricityCabinetOrder/openDoor")
     public R openDoor(@RequestBody OpenDoorQuery openDoorQuery) {
         return electricityCabinetOrderService.openDoor(openDoorQuery);
     }
