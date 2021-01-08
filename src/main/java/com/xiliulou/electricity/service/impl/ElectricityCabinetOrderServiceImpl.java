@@ -460,7 +460,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         map.put("time", time.toString());
         map.put("status", electricityCabinetOrder.getStatus().toString());
         map.put("queryStatus", queryStatus.toString());
-        return R.ok(electricityCabinetOrder.getStatus());
+        return R.ok(map);
     }
 
     @Override
