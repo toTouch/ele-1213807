@@ -21,8 +21,11 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.electricity.web.query.PasswordQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -313,6 +316,33 @@ public class UserServiceImpl implements UserService {
 			userInfoService.deleteUserInfo(oldUserInfo);
 		}
 		return Pair.of(true, null);
+	}
+
+	@Override
+	public Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery) {
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("updatePassword  ERROR! not found user ");
+			Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+		}
+
+		User oldUser=queryByUserName(passwordQuery.getName());
+		if(Objects.isNull(oldUser)){
+			log.error("updatePassword  ERROR! not found userName{} ",passwordQuery.getName());
+			Triple.of(false, null, "用户名不存在");
+		}
+
+		if(!Objects.equals(user,oldUser)){
+			log.error("updatePassword  ERROR! not found userId{},oldUserId{} ",user.getUid(),oldUser.getUid());
+			Triple.of(false, null, "不能修改别人的密码");
+		}
+
+		User updateUser=new User();
+		updateUser.setUid(oldUser.getUid());
+		updateUser.setLoginPwd(passwordQuery.getPassword());
+		Integer update=updateUser(updateUser,oldUser);
+
+		return update>0 ? Triple.of(true, null, null) : Triple.of(false, null, "修改密码失败!");
 	}
 
 	@Override

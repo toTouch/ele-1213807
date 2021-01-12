@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.electricity.web.query.PasswordQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -76,4 +77,5 @@ public interface UserService {
 
 	Pair<Boolean, Object> deleteAdminUser(Long uid);
 
+	Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery);
 }
