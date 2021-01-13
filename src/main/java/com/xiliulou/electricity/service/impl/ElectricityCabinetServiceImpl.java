@@ -300,11 +300,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok();
     }
 
+    public static void main(String[] args) {
+        System.out.println(Long.valueOf((new Double(Math.ceil(1.1))).longValue()));
+    }
+
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         Page page = new Page();
-        page.setCurrent(electricityCabinetQuery.getOffset()+1);
+
+
+        page.setCurrent(ObjectUtil.equal(0, electricityCabinetQuery.getOffset()) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetQuery.getOffset())) / electricityCabinetQuery.getSize())).longValue());
         page.setSize(electricityCabinetQuery.getSize());
         IPage iPage = electricityCabinetMapper.queryList(page, electricityCabinetQuery);
         if (ObjectUtil.isEmpty(iPage.getRecords())) {
