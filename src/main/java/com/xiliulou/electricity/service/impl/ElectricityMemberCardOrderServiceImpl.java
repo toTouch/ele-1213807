@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -159,6 +160,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @DS("slave_1")
     public R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
-        return R.ok(baseMapper.memberCardOrderPage(offset, size, memberCardOrderQuery));
+        Page page = new Page();
+        page.setCurrent(ObjectUtil.equal(0, offset) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
+        page.setSize(size);
+        return R.ok(baseMapper.memberCardOrderPage(page, offset, size, memberCardOrderQuery));
     }
 }

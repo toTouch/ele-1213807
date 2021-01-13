@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.Store;
-import java.util.List;
-
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * 门店表(TStore)表数据库访问层
@@ -14,7 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2020-12-07 14:59:37
  */
-public interface StoreMapper extends BaseMapper<Store>{
+public interface StoreMapper extends BaseMapper<Store> {
 
     /**
      * 通过ID查询单条数据
@@ -26,9 +28,8 @@ public interface StoreMapper extends BaseMapper<Store>{
 
     /**
      * 查询指定行数据
-     *
      */
-    List<StoreVO> queryList(@Param("query") StoreQuery storeQuery);
+    IPage queryList(Page page, @Param("query") StoreQuery storeQuery);
 
 
     /**
@@ -39,5 +40,5 @@ public interface StoreMapper extends BaseMapper<Store>{
      */
     int update(Store store);
 
-    List<StoreVO> showInfoByDistance(@Param("query")StoreQuery storeQuery);
+    List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);
 }

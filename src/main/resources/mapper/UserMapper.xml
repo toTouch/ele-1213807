@@ -164,7 +164,7 @@
 			</if>
 		</where>
 		order by create_time desc
-		limit #{offset} ,#{size}
+		l
 	</select>
 
 </mapper>
