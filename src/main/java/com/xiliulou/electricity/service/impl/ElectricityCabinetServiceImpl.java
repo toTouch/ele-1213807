@@ -304,7 +304,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @DS("slave_1")
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
         Page page = new Page();
-        page.setCurrent(electricityCabinetQuery.getOffset());
+        page.setCurrent(electricityCabinetQuery.getOffset()+1);
         page.setSize(electricityCabinetQuery.getSize());
         IPage iPage = electricityCabinetMapper.queryList(page, electricityCabinetQuery);
         if (ObjectUtil.isEmpty(iPage.getRecords())) {
