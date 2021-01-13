@@ -1,15 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.google.common.collect.Maps;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -17,19 +17,14 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -83,7 +78,18 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
+        Page page = new Page();
+
+        page.setCurrent(ObjectUtil.equal(0, electricityCabinetBoxQuery.getOffset()) ? 1L :
+                new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetBoxQuery.getOffset())) / electricityCabinetBoxQuery.getSize())).longValue());
+        page.setSize(electricityCabinetBoxQuery.getSize());
+
+        IPage pageResult = electricityCabinetBoxMapper.queryList(page, electricityCabinetBoxQuery);
+        if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+            return R.ok();
+        }
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = pageResult.getRecords();
+
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
             electricityCabinetBoxVOList.parallelStream().forEach(e -> {
                 ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
@@ -93,7 +99,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 }
             });
         }
-        return R.ok(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo).reversed()).collect(Collectors.toList()));
+        pageResult.setRecords(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo).reversed()).collect(Collectors.toList()));
+        return R.ok(pageResult);
     }
 
     @Override

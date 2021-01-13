@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -130,6 +132,10 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
     @Override
     @DS("slave_1")
     public R getElectricityBatteryModelPage(Long offset, Long size, String name) {
-        return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(offset, size, name));
+        Page page = new Page();
+
+        page.setCurrent(ObjectUtil.equal(0, offset) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
+        page.setSize(size);
+        return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(page, offset, size, name));
     }
 }

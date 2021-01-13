@@ -1,11 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import java.util.List;
-
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
 /**
  * 换电柜型号表(TElectricityCabinetModel)表数据库访问层
@@ -13,7 +13,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2020-11-25 11:01:04
  */
-public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCabinetModel>{
+public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCabinetModel> {
 
     /**
      * 通过ID查询单条数据
@@ -26,7 +26,7 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
     /**
      * @return 对象列表
      */
-    List<ElectricityCabinetModel> queryList(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
+    IPage queryList(Page page, @Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 
     /**

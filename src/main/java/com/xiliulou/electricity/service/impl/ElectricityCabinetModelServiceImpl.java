@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -15,8 +17,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -45,8 +47,8 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     public ElectricityCabinetModel queryByIdFromDB(Integer id) {
         return this.electricityCabinetModelMapper.queryById(id);
     }
-    
-        /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -55,17 +57,17 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     public ElectricityCabinetModel queryByIdFromCache(Integer id) {
         //先查缓存
-        ElectricityCabinetModel cacheElectricityCabinetModel=redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +id,ElectricityCabinetModel.class);
-        if(Objects.nonNull(cacheElectricityCabinetModel)){
+        ElectricityCabinetModel cacheElectricityCabinetModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, ElectricityCabinetModel.class);
+        if (Objects.nonNull(cacheElectricityCabinetModel)) {
             return cacheElectricityCabinetModel;
         }
         //缓存没有再查数据库
-        ElectricityCabinetModel electricityCabinetModel=electricityCabinetModelMapper.queryById(id);
-        if(Objects.isNull(electricityCabinetModel)){
+        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelMapper.queryById(id);
+        if (Objects.isNull(electricityCabinetModel)) {
             return null;
         }
         //插入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL +id,electricityCabinetModel);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, electricityCabinetModel);
         return electricityCabinetModel;
     }
 
@@ -77,7 +79,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-        int insert= electricityCabinetModelMapper.insert(electricityCabinetModel);
+        int insert = electricityCabinetModelMapper.insert(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
@@ -89,19 +91,19 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @Transactional
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
-        if(Objects.isNull(electricityCabinetModel.getId())){
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+        if (Objects.isNull(electricityCabinetModel.getId())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         ElectricityCabinetModel oldElectricityCabinetModel = queryByIdFromCache(electricityCabinetModel.getId());
-        if(Objects.isNull(oldElectricityCabinetModel)){
-            return R.fail("ELECTRICITY.0004","未找到换电柜型号");
+        if (Objects.isNull(oldElectricityCabinetModel)) {
+            return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
-        Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
-        if(count>0){
-            return R.fail("ELECTRICITY.0011","型号已绑定换电柜，不能操作");
+        Integer count = electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
+        if (count > 0) {
+            return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
-        int update= electricityCabinetModelMapper.update(electricityCabinetModel);
+        int update = electricityCabinetModelMapper.update(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
@@ -114,18 +116,18 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Transactional
     public R delete(Integer id) {
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
-        if(Objects.isNull(electricityCabinetModel)){
-            return R.fail("ELECTRICITY.0004","未找到换电柜型号");
+        if (Objects.isNull(electricityCabinetModel)) {
+            return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
-        Integer count= electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
-        if(count>0){
-            return R.fail("ELECTRICITY.0011","型号已绑定换电柜，不能操作");
+        Integer count = electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
+        if (count > 0) {
+            return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
         }
         //删除数据库
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
-        int update= electricityCabinetModelMapper.update(electricityCabinetModel);
+        int update = electricityCabinetModelMapper.update(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
@@ -137,8 +139,12 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
-        List<ElectricityCabinetModel> electricityCabinetModelList= electricityCabinetModelMapper.queryList(electricityCabinetModelQuery);
-        return R.ok(electricityCabinetModelList);
+        Page page = new Page();
+
+        page.setCurrent(ObjectUtil.equal(0, electricityCabinetModelQuery.getOffset()) ? 1L
+                : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetModelQuery.getOffset())) / electricityCabinetModelQuery.getSize())).longValue());
+        page.setSize(electricityCabinetModelQuery.getSize());
+        return R.ok(electricityCabinetModelMapper.queryList(page, electricityCabinetModelQuery));
     }
 
 }

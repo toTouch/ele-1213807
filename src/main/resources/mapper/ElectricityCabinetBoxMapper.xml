@@ -38,7 +38,7 @@
             and electricity_cabinet_id = #{query.electricityCabinetId}
         </if>
         order by id desc
-        limit #{query.offset}, #{query.size}
+
     </select>
 
 

@@ -24,7 +24,7 @@
             and name LIKE concat(#{name},"%")
         </if>
         ORDER BY create_time desc
-        LIMIT #{offset},#{size}
+
 
     </select>
 

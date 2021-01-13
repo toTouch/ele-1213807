@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import org.apache.ibatis.annotations.Param;
-
-import java.util.List;
 
 /**
  * 电池型号(ElectricityBatteryModel)表数据库访问层
@@ -15,5 +15,5 @@ import java.util.List;
 public interface ElectricityBatteryModelMapper extends BaseMapper<ElectricityBatteryModel> {
 
 
-    List<ElectricityBatteryModel> getElectricityBatteryModelPage(@Param("offset") Long offset, @Param("size") Long size, @Param("name") String name);
+    IPage getElectricityBatteryModelPage(Page page, @Param("offset") Long offset, @Param("size") Long size, @Param("name") String name);
 }
