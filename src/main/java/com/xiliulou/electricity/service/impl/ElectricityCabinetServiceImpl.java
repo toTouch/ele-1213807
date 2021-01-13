@@ -593,7 +593,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok();
     }
 
-    public R getHomeOne(Long first, Long firstBefor, Long end) {
+    public R getHomeOne(Long first, Long firstBefore, Long end) {
         HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
         Long now = System.currentTimeMillis();
         Integer totalCount = userInfoService.homeOneTotal(first, now);
@@ -608,7 +608,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("userInfo", userInfo);
         //查收益
         BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
-        BigDecimal beforeMoney = electricityMemberCardOrderService.homeOne(firstBefor, end);
+        BigDecimal beforeMoney = electricityMemberCardOrderService.homeOne(firstBefore, end);
         BigDecimal totalMoney = electricityMemberCardOrderService.homeOne(0L, now);
         if (Objects.isNull(nowMoney)) {
             nowMoney = BigDecimal.valueOf(0);
@@ -626,7 +626,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("moneyInfo", moneyInfo);
         //换电
         Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now);
-        Integer beforeCount = electricityCabinetOrderService.homeOneCount(firstBefor, end);
+        Integer beforeCount = electricityCabinetOrderService.homeOneCount(firstBefore, end);
         Integer count = electricityCabinetOrderService.homeOneCount(0L, now);
         //成功率
         BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now);
