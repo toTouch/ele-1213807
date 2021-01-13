@@ -1,14 +1,15 @@
 package com.xiliulou.electricity.mapper;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.BatteryFormat;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import java.util.List;
-
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -16,7 +17,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2020-11-25 11:00:14
  */
-public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>{
+public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet> {
 
     /**
      * 通过ID查询单条数据
@@ -27,10 +28,10 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     ElectricityCabinet queryById(Integer id);
 
     /**
-     * @return 对象列表
      * @param electricityCabinetQuery
+     * @return 对象列表
      */
-    List<ElectricityCabinetVO> queryList(@Param("query")ElectricityCabinetQuery electricityCabinetQuery);
+    IPage queryList(Page page, @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
     /**
      * 修改数据

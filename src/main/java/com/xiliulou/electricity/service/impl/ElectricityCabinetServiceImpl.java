@@ -6,36 +6,21 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.BatteryFormat;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityBatteryModel;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryModelService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetModelService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -49,21 +34,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.tuple.Pair;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -326,7 +303,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
-        List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.queryList(electricityCabinetQuery);
+        Page page = new Page();
+        page.setCurrent(electricityCabinetQuery.getOffset());
+        page.setSize(electricityCabinetQuery.getSize());
+        IPage iPage = electricityCabinetMapper.queryList(page, electricityCabinetQuery);
+        if (ObjectUtil.isEmpty(iPage.getRecords())) {
+            return R.ok(iPage);
+        }
+        List<ElectricityCabinetVO> electricityCabinetList = iPage.getRecords();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
 
@@ -362,7 +346,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery= electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
                 Integer electricityBatteryTotal = 0;
                 Integer noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -386,7 +370,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setFullyElectricityBattery(fullyElectricityBattery);
             });
         }
-        return R.ok(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        iPage.setRecords(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(iPage);
     }
 
 
@@ -427,7 +412,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery= electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
                 //查满仓空仓数
                 Integer electricityBatteryTotal = 0;
                 Integer noElectricityBattery = 0;
@@ -441,9 +426,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //电池型号
-                List<BatteryFormat> batteryFormatList= electricityCabinetMapper.queryElectricityBatteryFormat(e.getId());
-                if(ObjectUtil.isNotEmpty(batteryFormatList)){
-                    for (BatteryFormat batteryFormat:batteryFormatList) {
+                List<BatteryFormat> batteryFormatList = electricityCabinetMapper.queryElectricityBatteryFormat(e.getId());
+                if (ObjectUtil.isNotEmpty(batteryFormatList)) {
+                    for (BatteryFormat batteryFormat : batteryFormatList) {
                         set.add(batteryFormat.getVoltage() + "V" + " " + batteryFormat.getCapacity() + "M");
                     }
                 }
@@ -474,7 +459,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public boolean deviceIsOnline(String productKey, String deviceName) {
         AliIotRsp aliIotRsp = pubHardwareService.queryDeviceInfoFromIot(productKey, deviceName);
-        log.info("aliIotRsp is --> {}",aliIotRsp);
+        log.info("aliIotRsp is --> {}", aliIotRsp);
         if (Objects.isNull(aliIotRsp)) {
             return false;
         }
@@ -862,7 +847,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //查满仓空仓数
-        Integer fullyElectricityBattery= electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
+        Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
         if (fullyElectricityBattery <= 0) {
             return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
         }
@@ -926,11 +911,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 || Objects.isNull(eleOuterCommandQuery.getDeviceName())
                 || Objects.isNull(eleOuterCommandQuery.getProductKey())
                 || Objects.isNull(eleOuterCommandQuery.getSessionId())) {
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        ElectricityCabinet electricityCabinet=queryFromCacheByProductAndDeviceName(eleOuterCommandQuery.getProductKey(),eleOuterCommandQuery.getDeviceName());
-        if(Objects.isNull(electricityCabinet)){
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(eleOuterCommandQuery.getProductKey(), eleOuterCommandQuery.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
@@ -947,7 +932,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
                 .build();
 
-        Pair<Boolean, String> result=eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //发送命令失败
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
@@ -992,7 +977,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //查满仓空仓数
-        Integer fullyElectricityBattery= electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
+        Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
         //查满仓空仓数
         Integer electricityBatteryTotal = 0;
         Integer noElectricityBattery = 0;
