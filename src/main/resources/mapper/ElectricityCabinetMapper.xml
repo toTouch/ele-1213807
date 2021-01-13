@@ -70,7 +70,7 @@
             and create_time &lt;=#{query.endTime}
         </if>
         order by create_time desc
-        limit #{query.offset}, #{query.size}
+
     </select>
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
