@@ -37,73 +37,73 @@ import java.util.List;
 @RequestMapping("/admin")
 @Slf4j
 public class JsonAdminUserController extends BaseController {
-	@Autowired
-	UserService userService;
+    @Autowired
+    UserService userService;
 
-	@Autowired
-	RoleService roleService;
+    @Autowired
+    RoleService roleService;
 
-	@PostMapping("/user/register")
-	public R createUser(@Validated(value = CreateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
-		if (result.hasFieldErrors()) {
-			return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
-		}
-		return returnTripleResult(userService.addAdminUser(adminUserQuery));
-	}
+    @PostMapping("/user/register")
+    public R createUser(@Validated(value = CreateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
+        if (result.hasFieldErrors()) {
+            return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
+        }
+        return returnTripleResult(userService.addAdminUser(adminUserQuery));
+    }
 
-	@GetMapping("/user/list")
-	public R listUser(@RequestParam("size") Integer size, @RequestParam("offset") Integer offset,
-			@RequestParam(value = "uid", required = false) Long uid,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "phone", required = false) String phone,
-			@RequestParam(value = "type", required = false) Integer type,
-			@RequestParam(value = "beginTime", required = false) Long startTime,
-			@RequestParam(value = "endTime", required = false) Long endTime) {
-		if (size < 0 || size > 50) {
-			size = 10;
-		}
+    @GetMapping("/user/list")
+    public R listUser(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+                      @RequestParam(value = "uid", required = false) Long uid,
+                      @RequestParam(value = "name", required = false) String name,
+                      @RequestParam(value = "phone", required = false) String phone,
+                      @RequestParam(value = "type", required = false) Integer type,
+                      @RequestParam(value = "beginTime", required = false) Long startTime,
+                      @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (offset < 0) {
-			offset = 0;
-		}
-		return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime));
-	}
+        if (offset < 0) {
+            offset = 0L;
+        }
+        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime));
+    }
 
-	@PutMapping("/user")
-	public R updateAdminUser(@Validated(value = UpdateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
-		if (result.hasFieldErrors()) {
-			return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
-		}
+    @PutMapping("/user")
+    public R updateAdminUser(@Validated(value = UpdateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
+        if (result.hasFieldErrors()) {
+            return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
+        }
 
-		return returnPairResult(userService.updateAdminUser(adminUserQuery));
-	}
+        return returnPairResult(userService.updateAdminUser(adminUserQuery));
+    }
 
-	@DeleteMapping("/user/{uid}")
-	public R deleteAdminUser(@PathVariable("uid") Long uid) {
-		return returnPairResult(userService.deleteAdminUser(uid));
-	}
+    @DeleteMapping("/user/{uid}")
+    public R deleteAdminUser(@PathVariable("uid") Long uid) {
+        return returnPairResult(userService.deleteAdminUser(uid));
+    }
 
-	@PostMapping("/user/role/bind")
-	public R bindUserRole(@RequestParam("uid") Long uid, @RequestParam("roleIds") String jsonRoleIds) {
-		List<Long> roleIds = JsonUtil.fromJsonArray(jsonRoleIds, Long.class);
-		if (!DataUtil.collectionIsUsable(roleIds)) {
-			return R.fail("SYSTEM.0002", "参数不合法");
-		}
+    @PostMapping("/user/role/bind")
+    public R bindUserRole(@RequestParam("uid") Long uid, @RequestParam("roleIds") String jsonRoleIds) {
+        List<Long> roleIds = JsonUtil.fromJsonArray(jsonRoleIds, Long.class);
+        if (!DataUtil.collectionIsUsable(roleIds)) {
+            return R.fail("SYSTEM.0002", "参数不合法");
+        }
 
-		return returnPairResult(roleService.bindUserRole(uid, roleIds));
-	}
+        return returnPairResult(roleService.bindUserRole(uid, roleIds));
+    }
 
-	@GetMapping("/user/menu")
-	public R getUserMenu(){
-		return returnPairResult(roleService.getMenuByUid());
-	}
+    @GetMapping("/user/menu")
+    public R getUserMenu() {
+        return returnPairResult(roleService.getMenuByUid());
+    }
 
-	@PostMapping("/user/updatePassword")
-	public R updatePassword(@Validated(value = CreateGroup.class) @RequestBody PasswordQuery passwordQuery, BindingResult result) {
-		if (result.hasFieldErrors()) {
-			return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
-		}
-		return returnTripleResult(userService.updatePassword(passwordQuery));
-	}
+    @PostMapping("/user/updatePassword")
+    public R updatePassword(@Validated(value = CreateGroup.class) @RequestBody PasswordQuery passwordQuery, BindingResult result) {
+        if (result.hasFieldErrors()) {
+            return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
+        }
+        return returnTripleResult(userService.updatePassword(passwordQuery));
+    }
 
 }

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -160,9 +161,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @DS("slave_1")
     public R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
-        Page page = new Page();
-        page.setCurrent(ObjectUtil.equal(0, offset) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
-        page.setSize(size);
+        Page page = PageUtil.getPage(offset, size);
+
         return R.ok(baseMapper.memberCardOrderPage(page, offset, size, memberCardOrderQuery));
     }
 }

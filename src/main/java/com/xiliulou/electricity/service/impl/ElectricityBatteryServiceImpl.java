@@ -12,6 +12,7 @@ import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -92,10 +93,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     @DS("slave_1")
     public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-        Page page = new Page();
-
-        page.setCurrent(ObjectUtil.equal(0, offset) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
-        page.setSize(size);
+        Page page = PageUtil.getPage(offset, size);
         return R.ok(electricitybatterymapper.getElectricityBatteryPage(page, electricityBatteryQuery, offset, size));
     }
 

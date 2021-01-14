@@ -7,7 +7,6 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -15,11 +14,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表控制层
@@ -41,15 +36,15 @@ public class ElectricityCabinetBoxAdminController {
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetBox/list")
-    public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
         if (Objects.isNull(size)) {
-            size = 10;
+            size = 10L;
         }
 
         if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            offset = 0L;
         }
 
         ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
@@ -76,11 +71,11 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        List<String> cellList=new ArrayList<>();
+        List<String> cellList = new ArrayList<>();
         cellList.add(oldElectricityCabinetBox.getCellNo());
         dataMap.put("cell_list", cellList);
         dataMap.put("isForbidden", true);
-        if(Objects.equals(electricityCabinetBox.getUsableStatus(),ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)){
+        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
             dataMap.put("isForbidden", false);
         }
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -111,10 +106,10 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        List<String> cellList=new ArrayList<>();
+        List<String> cellList = new ArrayList<>();
         cellList.add(oldElectricityCabinetBox.getCellNo());
         dataMap.put("cell_list", cellList);
-        String sessionId=UUID.randomUUID().toString().replace("-", "");
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(sessionId)
                 .data(dataMap)
@@ -142,12 +137,12 @@ public class ElectricityCabinetBoxAdminController {
         }
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        List<String> cellList=new ArrayList<>();
-        for (ElectricityCabinetBox electricityCabinetBox:electricityCabinetBoxList) {
+        List<String> cellList = new ArrayList<>();
+        for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
             cellList.add(electricityCabinetBox.getCellNo());
         }
         dataMap.put("cell_list", cellList);
-        String sessionId=UUID.randomUUID().toString().replace("-", "");
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(sessionId)
                 .data(dataMap)
@@ -158,7 +153,6 @@ public class ElectricityCabinetBoxAdminController {
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         return R.ok(sessionId);
     }
-
 
 
 }

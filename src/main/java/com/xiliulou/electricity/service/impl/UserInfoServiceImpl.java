@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -17,6 +16,7 @@ import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
 import com.xiliulou.electricity.vo.UserInfoVO;
@@ -211,19 +211,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
 
+
     @Override
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
-        Page page = new Page();
-
-        page.setCurrent(ObjectUtil.equal(0, userInfoQuery.getOffset()) ? 1L
-                : new Double(Math.ceil(Double.parseDouble(String.valueOf(userInfoQuery.getOffset())) / userInfoQuery.getSize())).longValue());
+        Page page = PageUtil.getPage(userInfoQuery.getOffset(), userInfoQuery.getSize());
         page.setSize(userInfoQuery.getSize());
-        IPage pageResult = userInfoMapper.queryList(page, userInfoQuery);
-        if (ObjectUtil.isEmpty(pageResult)) {
+        userInfoMapper.queryList(page, userInfoQuery);
+        if (ObjectUtil.isEmpty(page)) {
             return R.ok(new ArrayList<>());
         }
-        List<UserInfoVO> UserInfoVOList = pageResult.getRecords();
+        List<UserInfoVO> UserInfoVOList = page.getRecords();
         if (ObjectUtil.isNotEmpty(UserInfoVOList)) {
             UserInfoVOList.parallelStream().forEach(e -> {
                 //地区
@@ -234,8 +232,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             });
         }
-        pageResult.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
-        return R.ok(pageResult);
+        page.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
     }
 
     @Override

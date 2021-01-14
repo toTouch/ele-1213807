@@ -9,6 +9,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Objects;
 
 /**
@@ -53,8 +54,8 @@ public class UserInfoAdminController {
     //修改用户绑定电池
     @PutMapping(value = "/admin/userInfo/updateBattery")
     public R updateBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
-        R result= userInfoService.unBindBattery(userInfoBatteryAddAndUpdate.getId());
-        if(result.getCode()==0) {
+        R result = userInfoService.unBindBattery(userInfoBatteryAddAndUpdate.getId());
+        if (result.getCode() == 0) {
             return userInfoService.bindBattery(userInfoBatteryAddAndUpdate);
         }
         return result;
@@ -62,19 +63,19 @@ public class UserInfoAdminController {
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
-    public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "batteryAreaId", required = false) Integer batteryAreaId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size)) {
-            size = 10;
+            size = 10L;
         }
 
         if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            offset = 0L;
         }
 
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()

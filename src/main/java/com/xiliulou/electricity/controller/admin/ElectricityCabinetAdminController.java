@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Objects;
 
 /**
@@ -34,7 +36,7 @@ public class ElectricityCabinetAdminController {
 
     //修改换电柜
     @PutMapping(value = "/admin/electricityCabinet")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class)  ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         return electricityCabinetService.edit(electricityCabinetAddAndUpdate);
     }
 
@@ -42,16 +44,16 @@ public class ElectricityCabinetAdminController {
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return electricityCabinetService.delete(id);
     }
 
 
-   //列表查询
+    //列表查询
     @GetMapping(value = "/admin/electricityCabinet/list")
-    public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "areaId", required = false) Integer areaId,
@@ -62,11 +64,11 @@ public class ElectricityCabinetAdminController {
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size)) {
-            size = 10;
+            size = 10L;
         }
 
         if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            offset = 0L;
         }
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
@@ -107,7 +109,7 @@ public class ElectricityCabinetAdminController {
 
     //首页二
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
-    public R homeTwo( @RequestParam(value = "areaId", required = false) Integer areaId) {
+    public R homeTwo(@RequestParam(value = "areaId", required = false) Integer areaId) {
         return electricityCabinetService.homeTwo(areaId);
     }
 
@@ -120,7 +122,7 @@ public class ElectricityCabinetAdminController {
     //发送命令
     @PostMapping(value = "/admin/electricityCabinet/command")
     public R sendCommandToEleForOuterV2(@RequestBody EleOuterCommandQuery eleOuterCommandQuery) {
-        return  electricityCabinetService.sendCommandToEleForOuter(eleOuterCommandQuery);
+        return electricityCabinetService.sendCommandToEleForOuter(eleOuterCommandQuery);
 
     }
 
@@ -128,12 +130,10 @@ public class ElectricityCabinetAdminController {
     @GetMapping("/admin/electricityCabinet/open/check")
     public R checkOpenSession(@RequestParam("sessionId") String sessionId) {
         if (StrUtil.isEmpty(sessionId)) {
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return electricityCabinetService.checkOpenSessionId(sessionId);
     }
-
-
 
 
 }
