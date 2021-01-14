@@ -312,11 +312,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         page.setCurrent(ObjectUtil.equal(0, electricityCabinetQuery.getOffset()) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetQuery.getOffset())) / electricityCabinetQuery.getSize())).longValue());
         page.setSize(electricityCabinetQuery.getSize());
-        IPage iPage = electricityCabinetMapper.queryList(page, electricityCabinetQuery);
-        if (ObjectUtil.isEmpty(iPage.getRecords())) {
-            return R.ok(iPage);
+         electricityCabinetMapper.queryList(page, electricityCabinetQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return R.ok(page);
         }
-        List<ElectricityCabinetVO> electricityCabinetList = iPage.getRecords();
+        List<ElectricityCabinetVO> electricityCabinetList = page.getRecords();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
 
@@ -376,8 +376,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setFullyElectricityBattery(fullyElectricityBattery);
             });
         }
-        iPage.setRecords(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
-        return R.ok(iPage);
+        page.setRecords(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
     }
 
 
