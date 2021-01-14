@@ -18,7 +18,7 @@
     </resultMap>
 
     <update id="update">
-        update  t_electricity_battery
+        update t_electricity_battery
         <set>
             <if test="status != null">
                 status =#{status},
@@ -63,7 +63,7 @@
             and tel.cabinet_id =#{query.cabinetId}
         </if>
         order by tel.create_time desc
-        limit #{offset}, #{size};
+
     </select>
     <select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select teb.id as id,teb.shop_id as shop_id,teb.serial_number as

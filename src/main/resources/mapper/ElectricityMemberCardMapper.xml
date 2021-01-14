@@ -16,7 +16,7 @@
 
         </where>
 
-        ORDER BY create_time DESC  LIMIT #{offset},#{size};
+        ORDER BY create_time DESC
 
 
     </select>

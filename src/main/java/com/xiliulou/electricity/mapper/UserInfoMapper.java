@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
-import com.xiliulou.electricity.vo.UserInfoVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import java.util.List;
  * @author makejava
  * @since 2020-12-07 15:00:00
  */
-public interface UserInfoMapper extends BaseMapper<UserInfo>{
+public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     /**
      * 通过ID查询单条数据
@@ -27,10 +28,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
 
     /**
      * 查询指定行数据
-     *
      */
-    List<UserInfoVO> queryList(@Param("query") UserInfoQuery userInfoQuery);
-
+    IPage queryList(Page page, @Param("query") UserInfoQuery userInfoQuery);
 
 
     /**
@@ -49,17 +48,17 @@ public interface UserInfoMapper extends BaseMapper<UserInfo>{
      */
     int unBind(UserInfo userInfo);
 
-    int minCount(@Param("id")Long id,@Param("updateTime")Long updateTime);
+    int minCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
 
     List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-    List<HashMap<String, String>> homeThreeService(@Param("startTimeMilliDay") long startTimeMilliDay,@Param("endTimeMilliDay") Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThreeService(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-    List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay,@Param("endTimeMilliDay") Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-    Integer homeOneMemberCard(@Param("startTimeMilliDay")Long first, @Param("endTimeMilliDay") Long now);
+    Integer homeOneMemberCard(@Param("startTimeMilliDay") Long first, @Param("endTimeMilliDay") Long now);
 
     void updateByUid(UserInfo userInfo);
 
-    void plusCount(@Param("id")Long id,@Param("updateTime")Long updateTime);
+    void plusCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
 }

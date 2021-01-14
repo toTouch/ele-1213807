@@ -1,13 +1,14 @@
 package com.xiliulou.electricity.mapper;
 
-import java.util.HashMap;
-import java.util.List;
-
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * 订单表(TElectricityCabinetOrder)表数据库访问层
@@ -15,7 +16,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2020-11-26 10:56:56
  */
-public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCabinetOrder>{
+public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCabinetOrder> {
 
     /**
      * 通过ID查询单条数据
@@ -30,7 +31,7 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
      *
      * @return 对象列表
      */
-    List<ElectricityCabinetOrderVO> queryList(@Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    IPage queryList(Page page, @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
 
     /**
@@ -44,5 +45,5 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-    int updateExpiredCancelOrder(@Param("orderId")String orderId,@Param("updateTime") Long updateTime);
+    int updateExpiredCancelOrder(@Param("orderId") String orderId, @Param("updateTime") Long updateTime);
 }

@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -84,8 +86,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @DS("slave_1")
-    public R getElectricityMemberCardPage(Long offset, Long size,  Integer status,Integer type) {
-        return R.ok(baseMapper.getElectricityMemberCardPage(offset, size, status,type));
+    public R getElectricityMemberCardPage(Long offset, Long size, Integer status, Integer type) {
+
+        Page page = new Page();
+        page.setCurrent(ObjectUtil.equal(0, offset) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
+        page.setSize(size);
+        return R.ok(baseMapper.getElectricityMemberCardPage(page, offset, size, status, type));
     }
 
     /**

@@ -1,12 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import java.util.List;
-
-import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
-import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
-import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import org.apache.ibatis.annotations.Param;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表数据库访问层
@@ -14,7 +13,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2020-11-25 11:00:37
  */
-public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabinetBox>{
+public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabinetBox> {
 
     /**
      * 通过ID查询单条数据
@@ -25,10 +24,9 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     ElectricityCabinetBox queryById(Long id);
 
     /**
-     *
      * @return 对象列表
      */
-    List<ElectricityCabinetBoxVO> queryList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
+    IPage  queryList(Page page, @Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
 
     /**
@@ -40,7 +38,7 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     int update(ElectricityCabinetBox electricityCabinetBox);
 
 
-    void batchDeleteBoxByElectricityCabinetId(@Param("id")Integer id,@Param("updateTime")Long updateTime);
+    void batchDeleteBoxByElectricityCabinetId(@Param("id") Integer id, @Param("updateTime") Long updateTime);
 
 
     void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);

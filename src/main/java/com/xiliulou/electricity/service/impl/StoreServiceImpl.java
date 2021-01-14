@@ -4,6 +4,8 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -168,7 +170,16 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @DS("slave_1")
     public R queryList(StoreQuery storeQuery) {
-        List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
+        Page page = new Page();
+
+        page.setCurrent(ObjectUtil.equal(0, storeQuery.getOffset()) ? 1L
+                : new Double(Math.ceil(Double.parseDouble(String.valueOf(storeQuery.getOffset())) / storeQuery.getSize())).longValue());
+        page.setSize(storeQuery.getSize());
+        IPage pageResult = storeMapper.queryList(page, storeQuery);
+        if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+            return R.ok(new ArrayList<>());
+        }
+        List<StoreVO> storeVOList = pageResult.getRecords();
         if (ObjectUtil.isNotEmpty(storeVOList)) {
             storeVOList.parallelStream().forEach(e -> {
                 //营业时间
@@ -199,7 +210,8 @@ public class StoreServiceImpl implements StoreService {
                 e.setUseStock(count);
             });
         }
-        return R.ok(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        pageResult.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(pageResult);
     }
 
     @Override
@@ -245,12 +257,12 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Integer homeTwoTotal(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
     }
 
     @Override
     public Integer homeTwoBusiness(Integer areaId) {
-        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
+        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
         Integer countBusiness = 0;
         if (ObjectUtil.isNotEmpty(storeList)) {
             for (Store store : storeList) {
@@ -276,12 +288,12 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Integer homeTwoBattery(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
     }
 
     @Override
     public Integer homeTwoCar(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId),Store::getAreaId,areaId));
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
     }
 
     @Override
@@ -307,7 +319,7 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
-                if(Objects.equals(e.getBatteryService(),Store.SUPPORT)){
+                if (Objects.equals(e.getBatteryService(), Store.SUPPORT)) {
                     storeVOs.add(e);
                 }
             });
@@ -338,7 +350,7 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
-                if(Objects.equals(e.getCarService(),Store.SUPPORT)){
+                if (Objects.equals(e.getCarService(), Store.SUPPORT)) {
                     storeVOs.add(e);
                 }
             });

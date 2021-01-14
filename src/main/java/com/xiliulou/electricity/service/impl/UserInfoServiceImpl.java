@@ -3,7 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -25,10 +27,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -133,8 +132,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userInfo.setBatteryAreaId(store.getAreaId());
             rentBatteryOrder.setBatteryStoreId(store.getId());
             rentBatteryOrder.setBatteryStoreName(store.getName());
-        }else {
-            if(Objects.nonNull(oldElectricityBattery.getShopId())){
+        } else {
+            if (Objects.nonNull(oldElectricityBattery.getShopId())) {
                 Store store = storeService.queryByIdFromCache(oldElectricityBattery.getShopId());
                 if (Objects.isNull(store)) {
                     return R.fail("ELECTRICITY.0018", "未找到门店");
@@ -215,7 +214,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
-        List<UserInfoVO> UserInfoVOList = userInfoMapper.queryList(userInfoQuery);
+        Page page = new Page();
+
+        page.setCurrent(ObjectUtil.equal(0, userInfoQuery.getOffset()) ? 1L
+                : new Double(Math.ceil(Double.parseDouble(String.valueOf(userInfoQuery.getOffset())) / userInfoQuery.getSize())).longValue());
+        page.setSize(userInfoQuery.getSize());
+        IPage pageResult = userInfoMapper.queryList(page, userInfoQuery);
+        if (ObjectUtil.isEmpty(pageResult)) {
+            return R.ok(new ArrayList<>());
+        }
+        List<UserInfoVO> UserInfoVOList = pageResult.getRecords();
         if (ObjectUtil.isNotEmpty(UserInfoVOList)) {
             UserInfoVOList.parallelStream().forEach(e -> {
                 //地区
@@ -226,7 +234,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
             });
         }
-        return R.ok(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        pageResult.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(pageResult);
     }
 
     @Override

@@ -6,7 +6,9 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -276,7 +278,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        Page page = new Page();
+
+
+        page.setCurrent(ObjectUtil.equal(0, electricityCabinetOrderQuery.getOffset()) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetOrderQuery.getOffset())) / electricityCabinetOrderQuery.getSize())).longValue());
+        page.setSize(electricityCabinetOrderQuery.getSize());
+
+        IPage pageResult = electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
+        if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+            return R.ok(new ArrayList<>());
+        }
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = pageResult.getRecords();
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
                 //地区
@@ -287,7 +299,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             });
         }
-        return R.ok(electricityCabinetOrderVOList);
+        pageResult.setRecords(electricityCabinetOrderVOList);
+        return R.ok(pageResult);
     }
 
     @Override
@@ -493,7 +506,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        // TODO: 2021/1/13 0013  李雪纯让改的
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = new ArrayList<>();
         if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
             return;
         }
