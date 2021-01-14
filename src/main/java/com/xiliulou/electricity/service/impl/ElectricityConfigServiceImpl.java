@@ -21,7 +21,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2020-12-07 15:00:00
  */
-@Service("loginInfoService")
+@Service("electricityConfig")
 @Slf4j
 public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigMapper, ElectricityConfig> implements ElectricityConfigService {
 
