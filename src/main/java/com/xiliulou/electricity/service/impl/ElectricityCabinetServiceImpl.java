@@ -543,10 +543,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(Calendar.DATE, -1);
-            Date dateBefor = cal.getTime();
-            Long firstTodayBefor = DateUtil.beginOfDay(dateBefor).getTime();
-            Long endToday = DateUtil.endOfDay(dateBefor).getTime();
-            return getHomeOne(firstToday, firstTodayBefor, endToday);
+            Date dateBefore = cal.getTime();
+            Long firstTodayBefore = DateUtil.beginOfDay(dateBefore).getTime();
+            Long endToday = DateUtil.endOfDay(dateBefore).getTime();
+            return getHomeOne(firstToday, firstTodayBefore, endToday);
         }
         if (type == 2) {
             //查用户
@@ -554,10 +554,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(Calendar.DATE, -7);
-            Date dateBefor = cal.getTime();
-            Long firstWeekBefor = DateUtil.beginOfWeek(dateBefor).getTime();
-            Long endWeek = DateUtil.endOfWeek(dateBefor).getTime();
-            return getHomeOne(firstWeek, firstWeekBefor, endWeek);
+            Date dateBefore = cal.getTime();
+            Long firstWeekBefore = DateUtil.beginOfWeek(dateBefore).getTime();
+            Long endWeek = DateUtil.endOfWeek(dateBefore).getTime();
+            return getHomeOne(firstWeek, firstWeekBefore, endWeek);
         }
         if (type == 3) {
             //查用户
@@ -565,10 +565,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(Calendar.MONTH, -1);
-            Date dateBefor = cal.getTime();
-            Long firstMonthBefor = DateUtil.beginOfMonth(dateBefor).getTime();
-            Long endMonth = DateUtil.endOfMonth(dateBefor).getTime();
-            return getHomeOne(firstMonth, firstMonthBefor, endMonth);
+            Date dateBefore = cal.getTime();
+            Long firstMonthBefore = DateUtil.beginOfMonth(dateBefore).getTime();
+            Long endMonth = DateUtil.endOfMonth(dateBefore).getTime();
+            return getHomeOne(firstMonth, firstMonthBefore, endMonth);
         }
         if (type == 4) {
             //查用户
@@ -576,10 +576,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(Calendar.MONTH, ((int) cal.get(Calendar.MONTH) / 3 - 1) * 3 - (int) cal.get(Calendar.MONTH));
-            Date dateBefor = cal.getTime();
-            Long firstQuarterBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
-            Long endQuarter = DateUtil.endOfQuarter(dateBefor).getTime();
-            return getHomeOne(firstQuarter, firstQuarterBefor, endQuarter);
+            Date dateBefore = cal.getTime();
+            Long firstQuarterBefore = DateUtil.beginOfQuarter(dateBefore).getTime();
+            Long endQuarter = DateUtil.endOfQuarter(dateBefore).getTime();
+            return getHomeOne(firstQuarter, firstQuarterBefore, endQuarter);
         }
         if (type == 5) {
             //查用户
@@ -587,10 +587,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             Calendar cal = Calendar.getInstance();
             cal.setTime(new Date());
             cal.add(Calendar.YEAR, -1);
-            Date dateBefor = cal.getTime();
-            Long firstYearBefor = DateUtil.beginOfQuarter(dateBefor).getTime();
-            Long endYear = DateUtil.endOfQuarter(dateBefor).getTime();
-            return getHomeOne(firstYear, firstYearBefor, endYear);
+            Date dateBefore = cal.getTime();
+            Long firstYearBefore = DateUtil.beginOfYear(dateBefore).getTime();
+            Long endYear = DateUtil.endOfYear(dateBefore).getTime();
+            return getHomeOne(firstYear, firstYearBefore, endYear);
         }
         return R.ok();
     }
