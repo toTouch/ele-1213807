@@ -69,8 +69,8 @@ public class ElectricityCabinetBatteryAdminController {
      * @return
      */
     @GetMapping(value = "/admin/battery/page")
-    public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
-                                       @RequestParam(value = "size", required = true) Long size,
+    public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
+                                       @RequestParam(value = "size") Long size,
                                        @RequestParam(value = "shopId", required = false) Integer shopId,
                                        @RequestParam(value = "modelId", required = false) Integer modelId,
                                        @RequestParam(value = "serialNumber", required = false) String serialNumber,

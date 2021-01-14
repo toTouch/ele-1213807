@@ -22,6 +22,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.iot.entity.AliIotRsp;
@@ -309,12 +310,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetQuery electricityCabinetQuery) {
-        Page page = new Page();
-
-
-        page.setCurrent(ObjectUtil.equal(0, electricityCabinetQuery.getOffset()) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetQuery.getOffset())) / electricityCabinetQuery.getSize())).longValue());
-        page.setSize(electricityCabinetQuery.getSize());
-         electricityCabinetMapper.queryList(page, electricityCabinetQuery);
+        Page page = PageUtil.getPage(electricityCabinetQuery.getOffset(), electricityCabinetQuery.getSize());
+        electricityCabinetMapper.queryList(page, electricityCabinetQuery);
         if (ObjectUtil.isEmpty(page.getRecords())) {
             return R.ok(page);
         }

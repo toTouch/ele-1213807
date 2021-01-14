@@ -1,12 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.utils.PageUtil;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,12 +40,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Override
     public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
-        Page page = new Page();
+        Page page = PageUtil.getPage(rentBatteryOrderQuery.getOffset(), rentBatteryOrderQuery.getSize());
 
-        page.setCurrent(ObjectUtil.equal(0, rentBatteryOrderQuery.getOffset()) ? 1L
-                : new Double(Math.ceil(Double.parseDouble(String.valueOf(rentBatteryOrderQuery.getOffset())) / rentBatteryOrderQuery.getSize())).longValue());
-        page.setSize(rentBatteryOrderQuery.getSize());
-
-        return R.ok( rentBatteryOrderMapper.queryList(page, rentBatteryOrderQuery));
+        return R.ok(rentBatteryOrderMapper.queryList(page, rentBatteryOrderQuery));
     }
 }

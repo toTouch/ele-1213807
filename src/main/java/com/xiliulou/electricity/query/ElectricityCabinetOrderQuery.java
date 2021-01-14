@@ -15,21 +15,21 @@ import lombok.Data;
 public class ElectricityCabinetOrderQuery {
 
     /**
-    * 订单编号--时间戳+柜子id+仓门号+用户id+5位随机数,20190203 21 155 1232)
-    */
+     * 订单编号--时间戳+柜子id+仓门号+用户id+5位随机数,20190203 21 155 1232)
+     */
     private String orderId;
     /**
-    * 换电人手机号
-    */
+     * 换电人手机号
+     */
     private String phone;
 
     /**
-    * 订单的状态
-    */
+     * 订单的状态
+     */
     private Integer status;
 
-    private Integer size;
-    private Integer offset;
+    private Long size;
+    private Long offset;
 
     private Long uid;
 
@@ -42,7 +42,6 @@ public class ElectricityCabinetOrderQuery {
     private Integer areaId;
 
     private Integer paymentMethod;
-
 
 
 }

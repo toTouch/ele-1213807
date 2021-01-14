@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.query;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,17 +11,17 @@ import lombok.Data;
 @Data
 @Builder
 public class UserInfoQuery {
-	private Integer size;
-	private Integer offset;
-	/**
-	 * 用户名字
-	 */
-	private String name;
-	private String phone;
-	/**
-	 * 门店地区Id
-	 */
-	private Integer batteryAreaId;
-	private Long beginTime;
-	private Long endTime;
+    private Long size;
+    private Long offset;
+    /**
+     * 用户名字
+     */
+    private String name;
+    private String phone;
+    /**
+     * 门店地区Id
+     */
+    private Integer batteryAreaId;
+    private Long beginTime;
+    private Long endTime;
 }

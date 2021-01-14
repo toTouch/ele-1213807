@@ -15,7 +15,7 @@ import lombok.NoArgsConstructor;
 @Data
 @Builder
 public class ElectricityCabinetBoxQuery {
-	private Integer size;
-	private Integer offset;
-	private Integer  electricityCabinetId;
+    private Long size;
+    private Long offset;
+    private Integer electricityCabinetId;
 }

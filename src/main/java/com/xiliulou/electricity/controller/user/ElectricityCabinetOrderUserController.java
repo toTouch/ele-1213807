@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
@@ -44,17 +43,17 @@ public class ElectricityCabinetOrderUserController {
 
     //换电柜订单查询
     @GetMapping("/user/electricityCabinetOrder/list")
-    public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
         if (Objects.isNull(size)) {
-            size = 10;
+            size = 10L;
         }
 
         if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            offset = 0L;
         }
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -75,7 +74,7 @@ public class ElectricityCabinetOrderUserController {
     //换电柜订单量
     @GetMapping("/user/electricityCabinetOrder/count")
     public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -92,7 +91,7 @@ public class ElectricityCabinetOrderUserController {
 
     //查订单状态
     @GetMapping("/user/electricityCabinetOrder/queryStatus")
-    public R queryStatus( @RequestParam("orderId") String orderId) {
+    public R queryStatus(@RequestParam("orderId") String orderId) {
         return electricityCabinetOrderService.queryStatus(orderId);
     }
 

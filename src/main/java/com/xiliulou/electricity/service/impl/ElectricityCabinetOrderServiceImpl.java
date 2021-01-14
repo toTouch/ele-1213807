@@ -6,7 +6,6 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
@@ -14,22 +13,14 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -50,12 +41,7 @@ import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -278,17 +264,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-        Page page = new Page();
+        Page page = PageUtil.getPage(electricityCabinetOrderQuery.getOffset(), electricityCabinetOrderQuery.getSize());
 
 
-        page.setCurrent(ObjectUtil.equal(0, electricityCabinetOrderQuery.getOffset()) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetOrderQuery.getOffset())) / electricityCabinetOrderQuery.getSize())).longValue());
-        page.setSize(electricityCabinetOrderQuery.getSize());
-
-        IPage pageResult = electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
-        if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+        electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
             return R.ok(new ArrayList<>());
         }
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = pageResult.getRecords();
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
                 //地区
@@ -299,8 +282,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
             });
         }
-        pageResult.setRecords(electricityCabinetOrderVOList);
-        return R.ok(pageResult);
+        page.setRecords(electricityCabinetOrderVOList);
+        return R.ok(page);
     }
 
     @Override

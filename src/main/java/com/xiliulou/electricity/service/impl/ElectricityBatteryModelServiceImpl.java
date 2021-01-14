@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.entity.ElectricityBatteryModel;
 import com.xiliulou.electricity.mapper.ElectricityBatteryModelMapper;
 import com.xiliulou.electricity.service.ElectricityBatteryModelService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -132,10 +132,7 @@ public class ElectricityBatteryModelServiceImpl implements ElectricityBatteryMod
     @Override
     @DS("slave_1")
     public R getElectricityBatteryModelPage(Long offset, Long size, String name) {
-        Page page = new Page();
-
-        page.setCurrent(ObjectUtil.equal(0, offset) ? 1L : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
-        page.setSize(size);
+        Page page = PageUtil.getPage(offset, size);
         return R.ok(electricityBatteryModelMapper.getElectricityBatteryModelPage(page, offset, size, name));
     }
 }

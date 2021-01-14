@@ -60,8 +60,8 @@ public class ElectricityCabinetBatteryModelAdminController {
      * @return
      */
     @GetMapping("admin/battery/model/page")
-    public R getBatteryModelPage(@RequestParam(value = "offset", required = true) Long offset,
-                                 @RequestParam(value = "size", required = true) Long size,
+    public R getBatteryModelPage(@RequestParam(value = "offset") Long offset,
+                                 @RequestParam(value = "size") Long size,
                                  @RequestParam(value = "name", required = false) String name) {
 
         return electricityBatteryModelService.getElectricityBatteryModelPage(offset, size, name);

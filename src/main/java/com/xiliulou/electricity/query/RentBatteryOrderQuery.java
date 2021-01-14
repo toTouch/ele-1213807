@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.query;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -10,18 +11,18 @@ import lombok.Data;
 @Data
 @Builder
 public class RentBatteryOrderQuery {
-	private Integer size;
-	private Integer offset;
-	/**
-	 * 用户名字
-	 */
-	private String name;
-	private String phone;
-	/**
-	 * 门店Id
-	 */
-	private Integer batteryStoreId;
-	private Long beginTime;
-	private Long endTime;
-	private Integer status;
+    private Long size;
+    private Long offset;
+    /**
+     * 用户名字
+     */
+    private String name;
+    private String phone;
+    /**
+     * 门店Id
+     */
+    private Integer batteryStoreId;
+    private Long beginTime;
+    private Long endTime;
+    private Integer status;
 }

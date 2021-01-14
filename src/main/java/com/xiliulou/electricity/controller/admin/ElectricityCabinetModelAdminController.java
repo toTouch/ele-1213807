@@ -24,6 +24,7 @@ public class ElectricityCabinetModelAdminController {
      */
     @Autowired
     ElectricityCabinetModelService electricityCabinetModelService;
+
     //新增换电柜型号
     @PostMapping(value = "/admin/electricityCabinetModel")
     public R save(@RequestBody @Validated ElectricityCabinetModel electricityCabinetModel) {
@@ -40,22 +41,22 @@ public class ElectricityCabinetModelAdminController {
     @DeleteMapping(value = "/admin/electricityCabinetModel/{id}")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return electricityCabinetModelService.delete(id);
     }
 
     //列表查询
     @GetMapping(value = "/admin/electricityCabinetModel/list")
-    public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name) {
         if (Objects.isNull(size)) {
-            size = 10;
+            size = 10L;
         }
 
         if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            offset = 0L;
         }
 
         ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()

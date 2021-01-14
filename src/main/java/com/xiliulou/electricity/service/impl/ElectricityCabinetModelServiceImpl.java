@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -13,6 +12,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -139,11 +139,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
-        Page page = new Page();
-
-        page.setCurrent(ObjectUtil.equal(0, electricityCabinetModelQuery.getOffset()) ? 1L
-                : new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetModelQuery.getOffset())) / electricityCabinetModelQuery.getSize())).longValue());
-        page.setSize(electricityCabinetModelQuery.getSize());
+        Page page = PageUtil.getPage(electricityCabinetModelQuery.getOffset(), electricityCabinetModelQuery.getSize());
         return R.ok(electricityCabinetModelMapper.queryList(page, electricityCabinetModelQuery));
     }
 

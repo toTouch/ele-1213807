@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
@@ -16,6 +15,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -78,17 +78,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
-        Page page = new Page();
+        Page page = PageUtil.getPage(electricityCabinetBoxQuery.getOffset(), electricityCabinetBoxQuery.getSize());
 
-        page.setCurrent(ObjectUtil.equal(0, electricityCabinetBoxQuery.getOffset()) ? 1L :
-                new Double(Math.ceil(Double.parseDouble(String.valueOf(electricityCabinetBoxQuery.getOffset())) / electricityCabinetBoxQuery.getSize())).longValue());
-        page.setSize(electricityCabinetBoxQuery.getSize());
-
-        IPage pageResult = electricityCabinetBoxMapper.queryList(page, electricityCabinetBoxQuery);
-        if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+        electricityCabinetBoxMapper.queryList(page, electricityCabinetBoxQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
             return R.ok();
         }
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = pageResult.getRecords();
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = page.getRecords();
 
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
             electricityCabinetBoxVOList.parallelStream().forEach(e -> {
@@ -99,8 +95,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 }
             });
         }
-        pageResult.setRecords(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo).reversed()).collect(Collectors.toList()));
-        return R.ok(pageResult);
+        page.setRecords(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
     }
 
     @Override
