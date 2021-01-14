@@ -14,5 +14,5 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
 
     R edit(String name);
 
-    R queryOne();
+    ElectricityConfig queryOne();
 }

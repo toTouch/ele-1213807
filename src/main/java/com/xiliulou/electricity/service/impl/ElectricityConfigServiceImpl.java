@@ -59,8 +59,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     }
 
     @Override
-    public R queryOne() {
-        ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<>());
-        return R.ok(electricityConfig);
+    public ElectricityConfig queryOne() {
+        return electricityConfigMapper.selectOne(new LambdaQueryWrapper<>());
     }
 }

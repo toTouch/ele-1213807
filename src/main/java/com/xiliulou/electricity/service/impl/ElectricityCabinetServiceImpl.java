@@ -78,6 +78,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     PubHardwareService pubHardwareService;
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -990,6 +992,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
         }
 
+        //换电柜名称换成平台名称
+        String name=null;
+        ElectricityConfig electricityConfig=electricityConfigService.queryOne();
+        if(Objects.nonNull(electricityConfig)){
+            name=electricityConfig.getName();
+        }
+
+        electricityCabinetVO.setName(name);
         electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
         electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
         electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);

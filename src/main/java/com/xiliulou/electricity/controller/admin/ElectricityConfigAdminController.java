@@ -30,7 +30,7 @@ public class ElectricityConfigAdminController {
     //查询平台名称
     @GetMapping(value = "/admin/electricityConfig")
     public R queryOne() {
-        return electricityConfigService.queryOne();
+        return R.ok(electricityConfigService.queryOne());
     }
 
 }
