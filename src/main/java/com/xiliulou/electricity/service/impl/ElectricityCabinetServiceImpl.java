@@ -963,7 +963,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //发送命令失败
-        if (result.getLeft()) {
+        if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
         return R.ok(sessionId);
