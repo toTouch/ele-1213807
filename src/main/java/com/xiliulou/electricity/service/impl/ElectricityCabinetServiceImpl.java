@@ -927,12 +927,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-        //换电柜是否在线
+      /*  //换电柜是否在线
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }
+        }*/
 
         //不合法的命令
         if (!HardwareCommand.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
@@ -963,7 +963,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //发送命令失败
-        if (!result.getLeft()) {
+        if (result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
         return R.ok(sessionId);
