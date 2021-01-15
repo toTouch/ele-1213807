@@ -334,7 +334,7 @@ public class UserServiceImpl implements UserService {
 
         User updateUser = new User();
         updateUser.setUid(oldUser.getUid());
-        updateUser.setLoginPwd(passwordQuery.getPassword());
+        updateUser.setLoginPwd(customPasswordEncoder.encode(passwordQuery.getPassword()));
         updateUser.setUpdateTime(System.currentTimeMillis());
         Integer update = updateUser(updateUser, oldUser);
 
@@ -350,5 +350,6 @@ public class UserServiceImpl implements UserService {
         }
         return update;
     }
+
 
 }
