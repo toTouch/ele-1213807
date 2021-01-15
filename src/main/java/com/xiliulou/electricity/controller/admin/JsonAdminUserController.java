@@ -99,7 +99,7 @@ public class JsonAdminUserController extends BaseController {
     }
 
     @PostMapping("/user/updatePassword")
-    public R updatePassword(@Validated(value = CreateGroup.class) @RequestBody PasswordQuery passwordQuery, BindingResult result) {
+    public R updatePassword(@Validated(value = CreateGroup.class)  PasswordQuery passwordQuery, BindingResult result) {
         if (result.hasFieldErrors()) {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
         }
