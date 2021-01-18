@@ -146,6 +146,7 @@ public class ElectricityCabinetAdminController {
     @GetMapping("/outer/sendMessage")
     public void sendMessage() {
         HashMap<String, Object> params = Maps.newHashMap();
+        params.put("code", "1314");
         etuoSmsService.sendSmsCode("15371639767", "SMS_185846411", JsonUtil.toJson(params), "西六楼");
     }
 
