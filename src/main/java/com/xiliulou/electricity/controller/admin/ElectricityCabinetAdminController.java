@@ -147,12 +147,14 @@ public class ElectricityCabinetAdminController {
     @GetMapping("/outer/sendMessage")
     public void sendMessage() {
         HashMap<String, Object> params = Maps.newHashMap();
-        params.put("name", "lxc");
+        params.put("code", "1314");
+        smsService.sendSmsCode("15371639767", "SMS_185846411", JsonUtil.toJson(params), "西六楼");
+
+      /*  params.put("name", "lxc");
         params.put("code","1314");
         params.put("cellNo","520");
         params.put("adress", "i love you");
-        smsService.sendSmsCode("15371639767", SmsTemplateConstant.SMS_AILI_TEMPLATE,
-                JsonUtil.toJson(params), "西六楼");
+        smsService.sendSmsCode("15371639767","SMS_192570048", JsonUtil.toJson(params), "西六楼");*/
     }
 
 
