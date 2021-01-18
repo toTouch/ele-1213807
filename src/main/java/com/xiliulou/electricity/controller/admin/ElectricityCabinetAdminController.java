@@ -3,6 +3,7 @@ import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
+import com.xiliulou.core.sms.SmsTemplateConstant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -33,7 +34,7 @@ public class ElectricityCabinetAdminController {
     ElectricityCabinetService electricityCabinetService;
     @Qualifier("alibabaSmsService")
     @Autowired
-    SmsService etuoSmsService;
+    SmsService smsService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -146,8 +147,12 @@ public class ElectricityCabinetAdminController {
     @GetMapping("/outer/sendMessage")
     public void sendMessage() {
         HashMap<String, Object> params = Maps.newHashMap();
-        params.put("code", "1314");
-        etuoSmsService.sendSmsCode("15371639767", "SMS_185846411", JsonUtil.toJson(params), "西六楼");
+        params.put("name", "lxc");
+        params.put("code","1314");
+        params.put("cellNo","520");
+        params.put("adress", "i love you");
+        smsService.sendSmsCode("15371639767", SmsTemplateConstant.SMS_AILI_TEMPLATE,
+                JsonUtil.toJson(params), "西六楼");
     }
 
 
