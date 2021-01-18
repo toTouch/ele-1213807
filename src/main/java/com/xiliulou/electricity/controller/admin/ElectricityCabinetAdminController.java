@@ -151,6 +151,7 @@ public class ElectricityCabinetAdminController {
     //短信测试
     @GetMapping("/outer/sendMessage")
     public void sendMessage() {
+        eTuoRestTemplateService.getRestTemplate();
         HashMap<String, Object> params = Maps.newHashMap();
         params.put("code", "1314");
         smsService.sendSmsCode("15371639767", "SMS_185846411", JsonUtil.toJson(params), "西六楼");
