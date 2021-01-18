@@ -32,7 +32,7 @@ public class ElectricityCabinetAdminController {
      */
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-    @Qualifier("alibabaSmsService")
+    @Qualifier("etuoSmsService")
     @Autowired
     SmsService smsService;
 
