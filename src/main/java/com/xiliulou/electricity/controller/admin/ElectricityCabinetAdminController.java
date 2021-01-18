@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
+import com.xiliulou.core.http.resttemplate.service.impl.ETuoRestTemplateServiceImpl;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
-import com.xiliulou.core.sms.SmsTemplateConstant;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
@@ -35,6 +37,9 @@ public class ElectricityCabinetAdminController {
     @Qualifier("etuoSmsService")
     @Autowired
     SmsService smsService;
+    @Qualifier("eTuoRestTemplateServiceImpl")
+    @Autowired
+    RestTemplateService eTuoRestTemplateService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
