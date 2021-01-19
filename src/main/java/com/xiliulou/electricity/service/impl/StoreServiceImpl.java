@@ -4,7 +4,6 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -21,17 +20,14 @@ import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -170,16 +166,14 @@ public class StoreServiceImpl implements StoreService {
     @Override
     @DS("slave_1")
     public R queryList(StoreQuery storeQuery) {
-        Page page = new Page();
+        Page page = PageUtil.getPage(storeQuery.getOffset(), storeQuery.getSize());
 
-        page.setCurrent(ObjectUtil.equal(0, storeQuery.getOffset()) ? 1L
-                : new Double(Math.ceil(Double.parseDouble(String.valueOf(storeQuery.getOffset())) / storeQuery.getSize())).longValue());
-        page.setSize(storeQuery.getSize());
-        IPage pageResult = storeMapper.queryList(page, storeQuery);
-        if (ObjectUtil.isEmpty(pageResult.getRecords())) {
+
+        storeMapper.queryList(page, storeQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
             return R.ok(new ArrayList<>());
         }
-        List<StoreVO> storeVOList = pageResult.getRecords();
+        List<StoreVO> storeVOList = page.getRecords();
         if (ObjectUtil.isNotEmpty(storeVOList)) {
             storeVOList.parallelStream().forEach(e -> {
                 //营业时间
@@ -210,8 +204,8 @@ public class StoreServiceImpl implements StoreService {
                 e.setUseStock(count);
             });
         }
-        pageResult.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
-        return R.ok(pageResult);
+        page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
     }
 
     @Override
