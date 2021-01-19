@@ -61,6 +61,9 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
+        <if test="query.serviceStatus != null">
+            and service_status = #{query.serviceStatus}
+        </if>
         order by create_time desc
 
     </select>

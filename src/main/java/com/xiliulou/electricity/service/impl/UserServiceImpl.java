@@ -334,7 +334,8 @@ public class UserServiceImpl implements UserService {
 
         User updateUser = new User();
         updateUser.setUid(oldUser.getUid());
-        updateUser.setLoginPwd(passwordQuery.getPassword());
+        updateUser.setLoginPwd(customPasswordEncoder.encode(passwordQuery.getPassword()));
+        updateUser.setUpdateTime(System.currentTimeMillis());
         Integer update = updateUser(updateUser, oldUser);
 
         return update > 0 ? Triple.of(true, null, null) : Triple.of(false, null, "修改密码失败!");
@@ -349,5 +350,6 @@ public class UserServiceImpl implements UserService {
         }
         return update;
     }
+
 
 }

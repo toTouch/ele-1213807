@@ -5,7 +5,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -13,7 +12,6 @@ import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -99,7 +97,7 @@ public class JsonAdminUserController extends BaseController {
     }
 
     @PostMapping("/user/updatePassword")
-    public R updatePassword(@Validated(value = CreateGroup.class) @RequestBody PasswordQuery passwordQuery, BindingResult result) {
+    public R updatePassword(@Validated(value = CreateGroup.class)  PasswordQuery passwordQuery, BindingResult result) {
         if (result.hasFieldErrors()) {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
         }

@@ -9,6 +9,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -914,19 +915,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //不合法的参数
         if (Objects.isNull(eleOuterCommandQuery.getCommand())
                 || Objects.isNull(eleOuterCommandQuery.getDeviceName())
-                || Objects.isNull(eleOuterCommandQuery.getProductKey())
-                || Objects.isNull(eleOuterCommandQuery.getSessionId())) {
+                || Objects.isNull(eleOuterCommandQuery.getProductKey())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
+        eleOuterCommandQuery.setSessionId(sessionId);
 
         ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(eleOuterCommandQuery.getProductKey(), eleOuterCommandQuery.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
+        //换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
         //不合法的命令
         if (!HardwareCommand.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
             return R.fail("ELECTRICITY.0036", "不合法的命令");
+        }
+
+        if(Objects.equals(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR,eleOuterCommandQuery.getCommand())){
+            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
+            if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
+                return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
+            }
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            List<String> cellList = new ArrayList<>();
+            for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
+                cellList.add(electricityCabinetBox.getCellNo());
+            }
+            dataMap.put("cell_list", cellList);
+            eleOuterCommandQuery.setData(dataMap);
         }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -942,7 +966,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!result.getLeft()) {
             return R.fail("ELECTRICITY.0037", "发送命令失败");
         }
-        return R.ok(result.getRight());
+        return R.ok(sessionId);
     }
 
     @Override

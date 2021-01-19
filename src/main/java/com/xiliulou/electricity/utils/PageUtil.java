@@ -15,7 +15,7 @@ public class PageUtil {
     public static Page getPage(Long offset, Long size) {
         Page page = new Page();
         page.setCurrent(ObjectUtil.equal(0, offset) ? 1L
-                : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset)) / size)).longValue());
+                : new Double(Math.ceil(Double.parseDouble(String.valueOf(offset+1L)) / size)).longValue());
         page.setSize(size);
         return page;
     }

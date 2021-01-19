@@ -1,5 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.StrUtil;
+import com.google.common.collect.Maps;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -8,8 +11,11 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -25,6 +31,9 @@ public class ElectricityCabinetAdminController {
      */
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Qualifier("alibabaSmsService")
+    @Autowired
+    SmsService smsService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -131,6 +140,19 @@ public class ElectricityCabinetAdminController {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return electricityCabinetService.checkOpenSessionId(sessionId);
+    }
+
+    //短信测试
+    @GetMapping("/outer/sendMessage")
+    public void sendMessage() {
+        HashMap<String, Object> params = Maps.newHashMap();
+     /*   params.put("code", "1314");
+        smsService.sendSmsCode("15371639767", "SMS_185846411", JsonUtil.toJson(params), "西六楼");*/
+
+        params.put("code","1314");
+        params.put("address", "i love you");
+        smsService.sendSmsCode("15371639767","SMS_183160573", JsonUtil.toJson(params), "西六楼");
+
     }
 
 
