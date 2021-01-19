@@ -74,6 +74,7 @@ public class StoreAdminController {
                 .size(size)
                 .name(name)
                 .areaId(areaId)
+
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .sn(sn)
