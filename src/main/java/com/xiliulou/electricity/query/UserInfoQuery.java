@@ -24,4 +24,5 @@ public class UserInfoQuery {
     private Integer batteryAreaId;
     private Long beginTime;
     private Long endTime;
+    private Integer serviceStatus;
 }
