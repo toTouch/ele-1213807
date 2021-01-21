@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -63,7 +62,6 @@ public class ElectricityCabinetAdminController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "areaId", required = false) Integer areaId,
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                        @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
@@ -83,7 +81,6 @@ public class ElectricityCabinetAdminController {
                 .size(size)
                 .sn(sn)
                 .name(name)
-                .areaId(areaId)
                 .address(address)
                 .usableStatus(usableStatus)
                 .powerStatus(powerStatus)
@@ -116,8 +113,8 @@ public class ElectricityCabinetAdminController {
 
     //首页二
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
-    public R homeTwo(@RequestParam(value = "areaId", required = false) Integer areaId) {
-        return electricityCabinetService.homeTwo(areaId);
+    public R homeTwo() {
+        return electricityCabinetService.homeTwo();
     }
 
     //首页三

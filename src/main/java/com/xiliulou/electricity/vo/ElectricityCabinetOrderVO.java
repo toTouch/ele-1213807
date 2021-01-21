@@ -81,17 +81,6 @@ public class ElectricityCabinetOrderVO {
     * 更新时间
     */
     private Long updateTime;
-    /**
-     * 换电柜地区
-     */
-    private String areaName;
-    /**
-     * 换电柜地区Id
-     */
-    private Integer areaId;
-    /**
-     * 省id
-     */
-    private Integer pid;
+
 
 }

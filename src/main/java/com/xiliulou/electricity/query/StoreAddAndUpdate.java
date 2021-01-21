@@ -31,11 +31,6 @@ public class StoreAddAndUpdate {
     @NotEmpty(message = "门店名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
-    * 门店地区Id
-    */
-    @NotNull(message = "门店地区Id不能为空!", groups = {CreateGroup.class})
-    private Integer areaId;
-    /**
     * 门店地址
     */
     @NotEmpty(message = "门店地址不能为空!", groups = {CreateGroup.class})
@@ -50,11 +45,6 @@ public class StoreAddAndUpdate {
     */
     @NotNull(message = " 地址纬度不能为空!", groups = {CreateGroup.class})
     private Double latitude;
-    /**
-    * 电池库存
-    */
-    @NotNull(message = " 电池库存不能为空!", groups = {CreateGroup.class})
-    private Integer batteryStock;
     /**
     * 租电池服务(0--支持，1--不支持)
     */

@@ -67,7 +67,6 @@ public class UserInfoAdminController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "batteryAreaId", required = false) Integer batteryAreaId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
@@ -84,7 +83,6 @@ public class UserInfoAdminController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .batteryAreaId(batteryAreaId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .serviceStatus(serviceStatus).build();

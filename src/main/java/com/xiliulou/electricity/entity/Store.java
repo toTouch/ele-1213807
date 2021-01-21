@@ -28,14 +28,12 @@ public class Store {
     * 门店账号
     */
     private String sn;
+
+    private Long uid;
     /**
     * 门店名称
     */
     private String name;
-    /**
-    * 门店地区Id
-    */
-    private Integer areaId;
     /**
     * 门店地址
     */
@@ -48,10 +46,6 @@ public class Store {
     * 地址纬度
     */
     private Double latitude;
-    /**
-    * 电池库存
-    */
-    private Integer batteryStock;
     /**
     * 租电池服务(0--支持，1--不支持)
     */

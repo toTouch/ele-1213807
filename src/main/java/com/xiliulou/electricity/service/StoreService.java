@@ -41,13 +41,13 @@ public interface StoreService {
 
     R reboot(Integer id);
 
-    Integer homeTwoTotal(Integer areaId);
+    Integer homeTwoTotal();
 
-    Integer homeTwoBusiness(Integer areaId);
+    Integer homeTwoBusiness();
 
-    Integer homeTwoBattery(Integer areaId);
+    Integer homeTwoBattery();
 
-    Integer homeTwoCar(Integer areaId);
+    Integer homeTwoCar();
 
     R rentBattery(StoreQuery storeQuery);
 

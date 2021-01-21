@@ -6,7 +6,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
@@ -36,7 +35,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.tuple.Pair;
-
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.text.DateFormat;
@@ -64,8 +62,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    ElectricityBatteryModelService electricityBatteryModelService;
     @Autowired
     CityService cityService;
     @Autowired
@@ -336,13 +332,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             e.setEndTime(endTime);
                         }
                     }
-                }
-
-                //地区
-                City city = cityService.queryByIdFromCache(e.getAreaId());
-                if (Objects.nonNull(city)) {
-                    e.setAreaName(city.getCity());
-                    e.setPid(city.getPid());
                 }
 
                 //查找型号名称
@@ -640,13 +629,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R homeTwo(Integer areaId) {
+    public R homeTwo() {
         HashMap<String, HashMap<String, String>> homeTwo = new HashMap<>();
         //门店
-        Integer totalCount = storeService.homeTwoTotal(areaId);
-        Integer businessCount = storeService.homeTwoBusiness(areaId);
-        Integer batteryCount = storeService.homeTwoBattery(areaId);
-        Integer carCount = storeService.homeTwoCar(areaId);
+        Integer totalCount = storeService.homeTwoTotal();
+        Integer businessCount = storeService.homeTwoBusiness();
+        Integer batteryCount = storeService.homeTwoBattery();
+        Integer carCount = storeService.homeTwoCar();
         HashMap<String, String> storeInfo = new HashMap<>();
         storeInfo.put("totalCount", totalCount.toString());
         storeInfo.put("businessCount", businessCount.toString());
@@ -655,7 +644,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeTwo.put("storeInfo", storeInfo);
 
         //换电柜
-        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).eq(Objects.nonNull(areaId), ElectricityCabinet::getAreaId, areaId));
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         Integer total = electricityCabinetList.size();
         Integer onlineCount = 0;
         Integer offlineCount = 0;
@@ -676,7 +665,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
 
         //电池
-        List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(areaId);
+        List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo();
         Integer batteryTotal = electricityBatteryList.size();
         Integer cabinetCount = 0;
         Integer userCount = 0;
@@ -752,9 +741,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //我的电池
             if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByUserSn(userInfo.getNowElectricityBatterySn());
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(userInfo.getNowElectricityBatterySn());
                 if (Objects.nonNull(electricityBattery)) {
-                    battery = electricityBattery.getCapacity();
+                    battery = electricityBattery.getPower();
                 }
             }
 

@@ -31,10 +31,6 @@ public class StoreVO {
     */
     private String name;
     /**
-    * 门店地区Id
-    */
-    private Integer areaId;
-    /**
     * 门店地址
     */
     private String address;
@@ -46,10 +42,6 @@ public class StoreVO {
     * 地址纬度
     */
     private Double latitude;
-    /**
-    * 电池库存
-    */
-    private Integer batteryStock;
     /**
     * 租电池服务(0--支持，1--不支持)
     */
@@ -71,17 +63,6 @@ public class StoreVO {
     */
     private Long updateTime;
 
-    /**
-     * 门店地区
-     */
-    private String areaName;
-
-    /**
-     * 电池在用数量
-     */
-    private Integer useStock;
-
-    private Integer pid;
     /**
      * 可用状态(0--启用，1--禁用)
      */

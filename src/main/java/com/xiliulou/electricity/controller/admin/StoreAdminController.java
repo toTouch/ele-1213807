@@ -51,7 +51,6 @@ public class StoreAdminController {
     public R queryList(@RequestParam(value = "size", required = false) Integer size,
                        @RequestParam(value = "offset", required = false) Integer offset,
                        @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "areaId", required = false) Integer areaId,
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -71,7 +70,6 @@ public class StoreAdminController {
                 .offset(offset)
                 .size(size)
                 .name(name)
-                .areaId(areaId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .sn(sn)

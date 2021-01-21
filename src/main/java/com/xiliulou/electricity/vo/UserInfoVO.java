@@ -37,14 +37,6 @@ public class UserInfoVO {
     * 电池门店Id
     */
     private Integer batteryStoreId;
-    /**
-    * 电池门店地区Id
-    */
-    private Integer batteryAreaId;
-    /**
-     * 门店地区
-     */
-    private String areaName;
 
     private Integer pid;
 
@@ -60,10 +52,6 @@ public class UserInfoVO {
     * 租电池押金
     */
     private Double batteryDeposit;
-    /**
-    * 车辆门店Id
-    */
-    private Integer carStoreId;
     /**
     * 车辆编号
     */

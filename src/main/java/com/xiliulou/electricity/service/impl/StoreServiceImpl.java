@@ -10,7 +10,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.mapper.StoreMapper;
@@ -199,15 +198,6 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
-                //地区
-                City city = cityService.queryByIdFromCache(e.getAreaId());
-                if (Objects.nonNull(city)) {
-                    e.setAreaName(city.getCity());
-                    e.setPid(city.getPid());
-                }
-                //电池在用
-                Integer count = electricityBatteryService.queryCountByShopId(e.getId());
-                e.setUseStock(count);
             });
         }
         pageResult.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
@@ -256,13 +246,13 @@ public class StoreServiceImpl implements StoreService {
 
 
     @Override
-    public Integer homeTwoTotal(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
+    public Integer homeTwoTotal() {
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
     @Override
-    public Integer homeTwoBusiness(Integer areaId) {
-        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
+    public Integer homeTwoBusiness() {
+        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL));
         Integer countBusiness = 0;
         if (ObjectUtil.isNotEmpty(storeList)) {
             for (Store store : storeList) {
@@ -287,13 +277,13 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public Integer homeTwoBattery(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
+    public Integer homeTwoBattery() {
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
     @Override
-    public Integer homeTwoCar(Integer areaId) {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL).eq(Objects.nonNull(areaId), Store::getAreaId, areaId));
+    public Integer homeTwoCar() {
+        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
     @Override

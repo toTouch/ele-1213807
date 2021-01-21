@@ -129,19 +129,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.isNull(store)) {
                 return R.fail("ELECTRICITY.0018", "未找到门店");
             }
-            userInfo.setBatteryAreaId(store.getAreaId());
             rentBatteryOrder.setBatteryStoreId(store.getId());
             rentBatteryOrder.setBatteryStoreName(store.getName());
-        } else {
-            if (Objects.nonNull(oldElectricityBattery.getShopId())) {
-                Store store = storeService.queryByIdFromCache(oldElectricityBattery.getShopId());
-                if (Objects.isNull(store)) {
-                    return R.fail("ELECTRICITY.0018", "未找到门店");
-                }
-                userInfo.setBatteryAreaId(store.getAreaId());
-                rentBatteryOrder.setBatteryStoreId(store.getId());
-                rentBatteryOrder.setBatteryStoreName(store.getName());
-            }
         }
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
@@ -162,7 +151,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-            electricityBattery.setCabinetId(-1);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.update(electricityBattery);
             return null;
@@ -222,16 +210,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok(new ArrayList<>());
         }
         List<UserInfoVO> UserInfoVOList = page.getRecords();
-        if (ObjectUtil.isNotEmpty(UserInfoVOList)) {
-            UserInfoVOList.parallelStream().forEach(e -> {
-                //地区
-                City city = cityService.queryByIdFromCache(e.getBatteryAreaId());
-                if (Objects.nonNull(city)) {
-                    e.setAreaName(city.getCity());
-                    e.setPid(city.getPid());
-                }
-            });
-        }
         page.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
         return R.ok(page);
     }
@@ -276,24 +254,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo.getNowElectricityBatterySn())) {
             return R.fail("ELECTRICITY.0029", "用户未绑定电池，不能解绑");
         }
-        Store store = storeService.queryByIdFromCache(oldUserInfo.getBatteryStoreId());
-        if (Objects.isNull(store)) {
-            return R.fail("ELECTRICITY.0018", "未找到门店");
-        }
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUnBindSn(oldUserInfo.getNowElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
-        userInfo.setCarStoreId(oldUserInfo.getCarStoreId());
         userInfo.setCarSn(oldUserInfo.getCarSn());
         userInfo.setCarDeposit(oldUserInfo.getCarDeposit());
         userInfo.setNumberPlate(oldUserInfo.getNumberPlate());
         userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
-        userInfo.setBatteryStoreId(null);
-        userInfo.setBatteryAreaId(null);
         userInfo.setBatteryDeposit(null);
         userInfo.setServiceStatus(UserInfo.NO_SERVICE_STATUS);
         userInfo.setUpdateTime(System.currentTimeMillis());
@@ -305,8 +276,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setName(oldUserInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
             rentBatteryOrder.setIdNumber(oldUserInfo.getIdNumber());
-            rentBatteryOrder.setBatteryStoreId(store.getId());
-            rentBatteryOrder.setBatteryStoreName(store.getName());
             rentBatteryOrder.setElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
@@ -316,7 +285,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
             electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-            electricityBattery.setCabinetId(-1);
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.update(electricityBattery);
             return null;
@@ -334,18 +302,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo.getCarSn())) {
             return R.fail("ELECTRICITY.0032", "用户未绑定车辆，不能解绑");
         }
-        Store store = storeService.queryByIdFromCache(oldUserInfo.getCarStoreId());
-        if (Objects.isNull(store)) {
-            return R.fail("ELECTRICITY.0018", "未找到门店");
-        }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setNowElectricityBatterySn(oldUserInfo.getNowElectricityBatterySn());
         userInfo.setInitElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
-        userInfo.setBatteryStoreId(oldUserInfo.getBatteryStoreId());
-        userInfo.setBatteryAreaId(oldUserInfo.getBatteryAreaId());
         userInfo.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
-        userInfo.setCarStoreId(null);
         userInfo.setCarSn(null);
         userInfo.setCarDeposit(null);
         userInfo.setNumberPlate(null);
@@ -358,8 +319,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentCarOrder.setName(oldUserInfo.getName());
             rentCarOrder.setPhone(oldUserInfo.getPhone());
             rentCarOrder.setIdNumber(oldUserInfo.getIdNumber());
-            rentCarOrder.setCarStoreId(store.getId());
-            rentCarOrder.setCarStoreName(store.getName());
             rentCarOrder.setCarSn(oldUserInfo.getCarSn());
             rentCarOrder.setCarDeposit(oldUserInfo.getCarDeposit());
             rentCarOrder.setNumberPlate(oldUserInfo.getNumberPlate());

@@ -36,10 +36,6 @@ public class ElectricityCabinetOrderQuery {
     private Long beginTime;
     private Long endTime;
 
-    /**
-     * 换电柜地区Id
-     */
-    private Integer areaId;
 
     private Integer paymentMethod;
 

@@ -16,10 +16,6 @@ public class StoreQuery {
 	 * 门店名称
 	 */
 	private String name;
-	/**
-	 * 门店地区Id
-	 */
-	private Integer areaId;
 	private Long beginTime;
 	private Long endTime;
 	private Double distance;

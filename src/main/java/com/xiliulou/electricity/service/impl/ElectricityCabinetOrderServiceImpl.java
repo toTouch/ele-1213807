@@ -272,16 +272,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.ok(new ArrayList<>());
         }
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
-        if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
-            electricityCabinetOrderVOList.parallelStream().forEach(e -> {
-                //地区
-                City city = cityService.queryByIdFromCache(e.getAreaId());
-                if (Objects.nonNull(city)) {
-                    e.setAreaName(city.getCity());
-                    e.setPid(city.getPid());
-                }
-            });
-        }
         page.setRecords(electricityCabinetOrderVOList);
         return R.ok(page);
     }

@@ -20,7 +20,7 @@ public class ElectricityCabinetAddAndUpdate {
     /**
      * 换电柜Id
      */
-    @NotNull(message = "换电柜地区Id不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "换电柜Id不能为空!", groups = {UpdateGroup.class})
     private Integer id;
     /**
      * 电池编号
@@ -31,11 +31,6 @@ public class ElectricityCabinetAddAndUpdate {
      */
     @NotEmpty(message = "换电柜名称不能为空!", groups = {CreateGroup.class})
     private String name;
-    /**
-     * 换电柜地区Id
-     */
-    @NotNull(message = "换电柜地区Id不能为空!", groups = {CreateGroup.class})
-    private Integer areaId;
     /**
      * 换电柜地址
      */

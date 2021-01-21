@@ -18,10 +18,6 @@ public class UserInfoQuery {
      */
     private String name;
     private String phone;
-    /**
-     * 门店地区Id
-     */
-    private Integer batteryAreaId;
     private Long beginTime;
     private Long endTime;
     private Integer serviceStatus;
