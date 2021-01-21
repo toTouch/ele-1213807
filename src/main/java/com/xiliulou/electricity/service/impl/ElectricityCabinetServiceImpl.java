@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
@@ -62,8 +61,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    CityService cityService;
     @Autowired
     UserInfoService userInfoService;
     @Autowired

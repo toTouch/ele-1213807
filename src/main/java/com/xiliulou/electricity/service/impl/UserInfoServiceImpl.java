@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -25,7 +24,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -47,8 +45,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     RentBatteryOrderService rentBatteryOrderService;
     @Autowired
     RentCarOrderService rentCarOrderService;
-    @Autowired
-    CityService cityService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
