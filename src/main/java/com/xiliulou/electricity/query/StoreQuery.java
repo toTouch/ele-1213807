@@ -10,8 +10,8 @@ import lombok.Data;
 @Data
 @Builder
 public class StoreQuery {
-	private Integer size;
-	private Integer offset;
+	private Long size;
+	private Long offset;
 	/**
 	 * 门店名称
 	 */
