@@ -45,10 +45,6 @@ public interface StoreService {
 
     Integer homeTwoBusiness();
 
-    Integer homeTwoBattery();
-
-    Integer homeTwoCar();
-
     R rentBattery(StoreQuery storeQuery);
 
     R rentCar(StoreQuery storeQuery);

@@ -267,15 +267,6 @@ public class StoreServiceImpl implements StoreService {
         return countBusiness;
     }
 
-    @Override
-    public Integer homeTwoBattery() {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getBatteryService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL));
-    }
-
-    @Override
-    public Integer homeTwoCar() {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getCarService, Store.SUPPORT).eq(Store::getDelFlag, Store.DEL_NORMAL));
-    }
 
     @Override
     public R rentBattery(StoreQuery storeQuery) {

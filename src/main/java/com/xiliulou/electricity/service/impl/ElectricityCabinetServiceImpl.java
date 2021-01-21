@@ -631,13 +631,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //门店
         Integer totalCount = storeService.homeTwoTotal();
         Integer businessCount = storeService.homeTwoBusiness();
-        Integer batteryCount = storeService.homeTwoBattery();
-        Integer carCount = storeService.homeTwoCar();
         HashMap<String, String> storeInfo = new HashMap<>();
         storeInfo.put("totalCount", totalCount.toString());
         storeInfo.put("businessCount", businessCount.toString());
-        storeInfo.put("batteryCount", batteryCount.toString());
-        storeInfo.put("carCount", carCount.toString());
         homeTwo.put("storeInfo", storeInfo);
 
         //换电柜
