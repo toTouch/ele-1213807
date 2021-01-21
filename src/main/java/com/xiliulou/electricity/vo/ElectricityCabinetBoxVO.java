@@ -51,11 +51,11 @@ public class ElectricityCabinetBoxVO {
     */
     private Integer delFlag;
     //电池编号
-    private String serialNumber;
+    private String sn;
     /**
      * 电池电量
      */
-    private Double capacity;
+    private Double power;
 
 
 }

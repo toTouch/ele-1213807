@@ -44,7 +44,7 @@ public class ElectricityCabinetBoxDTO {
     /**
      * sn码
      */
-    private String serialNumber;
+    private String sn;
 
 
 }

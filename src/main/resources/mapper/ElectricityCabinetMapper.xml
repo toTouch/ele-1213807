@@ -6,7 +6,6 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="sn" column="sn" jdbcType="VARCHAR"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
         <result property="address" column="address" jdbcType="VARCHAR"/>
         <result property="longitude" column="longitude" jdbcType="NUMERIC"/>
         <result property="latitude" column="latitude" jdbcType="NUMERIC"/>
@@ -29,7 +28,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="ElectricityCabinetMap">
         select
-          id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+          id, sn, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet
         where del_flag=0 and id = #{id}
     </select>
@@ -37,7 +36,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
-        id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
+        id, sn, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status,
         power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
         update_time, del_flag
         from electricity.t_electricity_cabinet
@@ -47,9 +46,6 @@
         </if>
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
-        </if>
-        <if test="query.areaId != null">
-            and area_id = #{query.areaId}
         </if>
         <if test="query.address != null and query.address != ''">
             and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
@@ -74,7 +70,7 @@
     </select>
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select id, sn, name, area_id, address, longitude, latitude, product_key, device_name, device_secret,
+        select id, sn, name, address, longitude, latitude, product_key, device_name, device_secret,
         usable_status, power_status, online_status, model_id, version,
         fully_charged, service_phone, business_time, create_time, update_time, ROUND(
         6378.138 * 2 * ASIN(
@@ -129,9 +125,6 @@
             </if>
             <if test="name != null and name != ''">
                 name = #{name},
-            </if>
-            <if test="areaId != null">
-                area_id = #{areaId},
             </if>
             <if test="address != null and address != ''">
                 address = #{address},

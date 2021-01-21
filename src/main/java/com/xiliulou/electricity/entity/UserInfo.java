@@ -53,15 +53,6 @@ public class UserInfo {
      * 类型(0:月卡,1:季卡,2:年卡)
      */
     private Integer cardType;
-
-    /**
-     * 电池门店Id
-     */
-    private Integer batteryStoreId;
-    /**
-     * 电池门店地区Id
-     */
-    private Integer batteryAreaId;
     /**
      * 初始电池编号
      */
@@ -74,22 +65,6 @@ public class UserInfo {
      * 租电池押金
      */
     private Double batteryDeposit;
-    /**
-     * 车辆门店Id
-     */
-    private Integer carStoreId;
-    /**
-     * 车辆编号
-     */
-    private String carSn;
-    /**
-     * 车牌号
-     */
-    private String numberPlate;
-    /**
-     * 租车辆押金
-     */
-    private Double carDeposit;
     /**
      * 0--正常 1--删除
      */

@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -39,17 +38,6 @@ public class UserInfoAdminController {
         return userInfoService.unBindBattery(id);
     }
 
-    //绑定车辆
-    @PutMapping(value = "/admin/userInfo/bindCar")
-    public R bindCar(@RequestBody @Validated(value = UpdateGroup.class) UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
-        return userInfoService.bindCar(userInfoCarAddAndUpdate);
-    }
-
-    //解绑车辆
-    @PutMapping(value = "/admin/userInfo/unBindCar/{id}")
-    public R unBindCar(@PathVariable("id") Long id) {
-        return userInfoService.unBindCar(id);
-    }
 
     //修改用户绑定电池
     @PutMapping(value = "/admin/userInfo/updateBattery")
@@ -67,7 +55,6 @@ public class UserInfoAdminController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "batteryAreaId", required = false) Integer batteryAreaId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
@@ -84,7 +71,6 @@ public class UserInfoAdminController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .batteryAreaId(batteryAreaId)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .serviceStatus(serviceStatus).build();

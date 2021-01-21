@@ -33,7 +33,6 @@ public class ElectricityCabinetOrderAdminController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "areaId", required = false) Integer areaId,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -52,7 +51,6 @@ public class ElectricityCabinetOrderAdminController {
                 .size(size)
                 .orderId(orderId)
                 .phone(phone)
-                .areaId(areaId)
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -72,7 +70,6 @@ public class ElectricityCabinetOrderAdminController {
     @GetMapping("/admin/electricityCabinetOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "orderId", required = false) String orderId,
                             @RequestParam(value = "phone", required = false) String phone,
-                            @RequestParam(value = "areaId", required = false) Integer areaId,
                             @RequestParam(value = "status", required = false) Integer status,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
                             @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
@@ -84,7 +81,6 @@ public class ElectricityCabinetOrderAdminController {
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .orderId(orderId)
                 .phone(phone)
-                .areaId(areaId)
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime).build();

@@ -41,9 +41,8 @@
         as new_cell_no, teco.status as status, teco.payment_method as payment_method, teco.source as source, teco.remark
         as remark,
         teco.switch_begin_time as switch_begin_time, teco.switch_end_time as switch_end_time, teco.create_time
-        as create_time, teco.update_time as update_time,tec.area_id as area_id
+        as create_time, teco.update_time as update_time
         from electricity.t_electricity_cabinet_order as teco
-        left join electricity.t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and teco.order_id = #{query.orderId}
@@ -62,9 +61,6 @@
             </if>
             <if test="query.paymentMethod != null">
                 and teco.payment_method = #{query.paymentMethod}
-            </if>
-            <if test="query.areaId != null">
-                and tec.area_id = #{query.areaId}
             </if>
             <if test="query.uid != null">
                 and teco.uid = #{query.uid}

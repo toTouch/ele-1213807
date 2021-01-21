@@ -41,13 +41,9 @@ public interface StoreService {
 
     R reboot(Integer id);
 
-    Integer homeTwoTotal(Integer areaId);
+    Integer homeTwoTotal();
 
-    Integer homeTwoBusiness(Integer areaId);
-
-    Integer homeTwoBattery(Integer areaId);
-
-    Integer homeTwoCar(Integer areaId);
+    Integer homeTwoBusiness();
 
     R rentBattery(StoreQuery storeQuery);
 

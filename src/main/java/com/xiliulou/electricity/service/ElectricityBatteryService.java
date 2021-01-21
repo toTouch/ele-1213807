@@ -26,15 +26,12 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R deleteElectricityBattery(Long id);
 
-    Integer queryCountByShopId(Integer id);
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
-    List<ElectricityBattery> homeTwo(Integer areaId);
+    List<ElectricityBattery> homeTwo();
 
     R getSelfBattery(Long uid);
-
-    ElectricityBattery queryByUserSn(String nowElectricityBatterySn);
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 

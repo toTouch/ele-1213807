@@ -86,7 +86,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             Double power = eleBatteryVo.getPower();
             if (Objects.nonNull(power)) {
-                newElectricityBattery.setCapacity(power * 100);
+                newElectricityBattery.setPower(power * 100);
             }
             String health = eleBatteryVo.getHealth();
             if (StrUtil.isNotEmpty(health)) {

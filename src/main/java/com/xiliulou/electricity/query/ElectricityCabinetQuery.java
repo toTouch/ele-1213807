@@ -22,10 +22,6 @@ public class ElectricityCabinetQuery {
      */
     private String name;
     /**
-     * 换电柜地区Id
-     */
-    private Integer areaId;
-    /**
      * 换电柜地址
      */
     private String address;

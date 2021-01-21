@@ -71,17 +71,9 @@ public class ElectricityCabinetBatteryAdminController {
     @GetMapping(value = "/admin/battery/page")
     public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "shopId", required = false) Integer shopId,
-                                       @RequestParam(value = "modelId", required = false) Integer modelId,
-                                       @RequestParam(value = "serialNumber", required = false) String serialNumber,
-                                       @RequestParam(value = "status", required = false) Integer status,
-                                       @RequestParam(value = "cabinetId", required = false) Integer cabinetId) {
+                                       @RequestParam(value = "status", required = false) Integer status) {
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setShopId(shopId);
-        electricityBatteryQuery.setModelId(modelId);
         electricityBatteryQuery.setStatus(status);
-        electricityBatteryQuery.setCabinetId(cabinetId);
-        electricityBatteryQuery.setSerialNumber(serialNumber);
         return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
     }
 }

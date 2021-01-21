@@ -6,13 +6,9 @@
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="sn" column="sn" jdbcType="VARCHAR"/>
         <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="areaId" column="area_id" jdbcType="INTEGER"/>
         <result property="address" column="address" jdbcType="VARCHAR"/>
         <result property="longitude" column="longitude" jdbcType="NUMERIC"/>
         <result property="latitude" column="latitude" jdbcType="NUMERIC"/>
-        <result property="batteryStock" column="battery_stock" jdbcType="INTEGER"/>
-        <result property="batteryService" column="battery_service" jdbcType="OTHER"/>
-        <result property="carService" column="car_service" jdbcType="OTHER"/>
         <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
@@ -24,7 +20,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="StoreMap">
         select
-          id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag, create_time, update_time,usable_status,service_phone, business_time
+          id, sn, name, address, longitude, latitude, del_flag, create_time, update_time,usable_status,service_phone, business_time
         from electricity.t_store
         where id = #{id}
     </select>
@@ -33,15 +29,12 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.StoreVO">
         select
-        id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
+        id, sn, name,  address, longitude, latitude, del_flag,
         create_time, update_time,usable_status,service_phone, business_time
         from electricity.t_store
         where del_flag=0
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
-        </if>
-        <if test="query.areaId != null">
-            and area_id = #{query.areaId}
         </if>
         <if test="query.beginTime != null">
             and create_time &gt;=#{query.beginTime}
@@ -51,12 +44,6 @@
         </if>
         <if test="query.address != null and query.address != ''">
             and address = #{query.address}
-        </if>
-        <if test="query.batteryService != null">
-            and battery_service = #{query.batteryService}
-        </if>
-        <if test="query.carService != null">
-            and car_service = #{query.carService}
         </if>
         <if test="query.sn != null and query.sn != ''">
             and sn = #{query.sn}
@@ -69,7 +56,7 @@
     </select>
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.StoreVO">
-        select  id, sn, name, area_id, address, longitude, latitude, battery_stock, battery_service, car_service, del_flag,
+        select  id, sn, name,  address, longitude, latitude, del_flag,
         create_time, update_time,usable_status,  service_phone, business_time,  ROUND(
         6378.138 * 2 * ASIN(
         SQRT(
@@ -110,9 +97,6 @@
             <if test="name != null and name != ''">
                 name = #{name},
             </if>
-            <if test="areaId != null">
-                area_id = #{areaId},
-            </if>
             <if test="address != null and address != ''">
                 address = #{address},
             </if>
@@ -121,15 +105,6 @@
             </if>
             <if test="latitude != null">
                 latitude = #{latitude},
-            </if>
-            <if test="batteryStock != null">
-                battery_stock = #{batteryStock},
-            </if>
-            <if test="batteryService != null">
-                battery_service = #{batteryService},
-            </if>
-            <if test="carService != null">
-                car_service = #{carService},
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},

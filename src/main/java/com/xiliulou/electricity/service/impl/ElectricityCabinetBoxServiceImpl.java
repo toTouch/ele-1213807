@@ -90,8 +90,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             electricityCabinetBoxVOList.parallelStream().forEach(e -> {
                 ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
                 if (Objects.nonNull(electricityBattery)) {
-                    e.setSerialNumber(electricityBattery.getSerialNumber());
-                    e.setCapacity(electricityBattery.getCapacity());
+                    e.setSn(electricityBattery.getSn());
+                    e.setPower(electricityBattery.getPower());
                 }
             });
         }

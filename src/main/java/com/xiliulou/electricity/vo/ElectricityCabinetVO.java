@@ -24,10 +24,6 @@ public class ElectricityCabinetVO {
     */
     private String name;
     /**
-    * 换电柜地区Id
-    */
-    private Integer areaId;
-    /**
     * 换电柜地址
     */
     private String address;
@@ -119,16 +115,8 @@ public class ElectricityCabinetVO {
      * 电池规格
      */
     private Set<String> electricityBatteryFormat;
-    /**
-     * 换电柜地区
-     */
-    private String areaName;
 
     private Double distance;
-    /**
-     * 省id
-     */
-    private Integer pid;
 
     /**
      * 营业开始时间

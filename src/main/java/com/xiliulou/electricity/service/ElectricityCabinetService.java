@@ -39,7 +39,6 @@ public interface ElectricityCabinetService {
      */
     Integer update(ElectricityCabinet electricityCabinet);
 
-
     R save(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
 
     R edit(ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate);
@@ -60,7 +59,7 @@ public interface ElectricityCabinetService {
 
     R homeOne(Integer type);
 
-    R homeTwo(Integer areaId);
+    R homeTwo();
 
     R homeThree(Integer day);
 

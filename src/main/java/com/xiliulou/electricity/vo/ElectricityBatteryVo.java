@@ -12,12 +12,6 @@ import lombok.Data;
 @Data
 public class ElectricityBatteryVo extends ElectricityBattery {
 
-    //店铺名称
-    private String shopName;
-    //代理商名称
-    private String agentName;
-    //电池型号
-    private String batteryModelName;
     //所在电柜名称
     private String cabinetName;
     /**
@@ -25,8 +19,8 @@ public class ElectricityBatteryVo extends ElectricityBattery {
      */
     private String userName;
     //电池型号容量
-    private Integer modelCapacity;
+    private Integer capacity;
     //电压
-    private Integer modelVoltage;
+    private Integer voltage;
 
 }

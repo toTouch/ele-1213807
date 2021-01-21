@@ -43,17 +43,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R saveElectricityBattery(ElectricityBattery electricityBattery) {
-        if (Objects.nonNull(electricityBattery.getShopId())) {
-            Store store = storeService.queryByIdFromCache(electricityBattery.getShopId());
-            if (Objects.isNull(store)) {
-                log.error("SAVE_ELECTRICITY_BATTERY ERROR, ,NOT FOUND SHOP ,SHOPID:{}", electricityBattery.getShopId());
-                return R.failMsg("未找到店铺!");
-            }
-        }
         electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
-
         return R.ok(electricitybatterymapper.insert(electricityBattery));
     }
 
@@ -69,9 +61,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (Objects.isNull(electricityBatteryDb)) {
             log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
             return R.fail("电池不存在!");
-        }
-        if (Objects.nonNull(electricityBattery.getShopId())) {
-            //校验合法性
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         Integer rows = electricitybatterymapper.updateById(electricityBattery);
@@ -129,21 +118,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
     }
 
-    @Override
-    public Integer queryCountByShopId(Integer id) {
-        return electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getShopId, id)
-                .in(ElectricityBattery::getStatus, ElectricityBattery.WARE_HOUSE_STATUS, ElectricityBattery.LEASE_STATUS));
-    }
 
     @Override
     public ElectricityBattery queryByBindSn(String initElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, initElectricityBatterySn)
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, initElectricityBatterySn)
                 .eq(ElectricityBattery::getStatus, ElectricityBattery.STOCK_STATUS));
     }
 
     @Override
-    public List<ElectricityBattery> homeTwo(Integer areaId) {
-        return electricitybatterymapper.homeTwo(areaId);
+    public List<ElectricityBattery> homeTwo() {
+        return electricitybatterymapper.homeTwo();
     }
 
     /**
@@ -158,19 +142,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return R.ok(baseMapper.selectBatteryInfo(uid));
     }
 
-    @Override
-    public ElectricityBattery queryByUserSn(String nowElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, nowElectricityBatterySn));
-    }
 
     @Override
     public ElectricityBattery queryBySn(String oldElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, oldElectricityBatterySn));
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, oldElectricityBatterySn));
     }
 
     @Override
     public ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSerialNumber, nowElectricityBatterySn)
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, nowElectricityBatterySn)
                 .eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS));
     }
 

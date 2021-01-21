@@ -26,25 +26,24 @@ import javax.validation.constraints.NotNull;
 public class ElectricityBattery {
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    /**
-     * 所属店铺
-     */
-    private Integer shopId;
 
     /**
      * sn码
      */
     @NotEmpty(message = "电池编码不能不能为空!")
-    private String serialNumber;
-    /**
-     * 型号id
-     */
-    @NotNull(message = "电池型号不能为空!")
-    private Integer modelId;
+    private String sn;
     /**
      * 电池电量
      */
-    private Double capacity;
+    private Double power;
+    /**
+     * 电压
+     */
+    private Integer voltage;
+    /**
+     * 电池容量,单位(mah)
+     */
+    private Integer capacity;
     /**
      * 0：在仓，1：在库，2：租借
      */
@@ -56,7 +55,6 @@ public class ElectricityBattery {
 
     private Object delFlag;
 
-    private Integer cabinetId;
 
     /**
      * 0：正常 1：故障
