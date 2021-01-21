@@ -41,4 +41,8 @@ public class AdminUserQuery {
 	private Integer gender;
 	@Range(min = 0, max = 1, message = "锁定类型不合法", groups = {UpdateGroup.class})
 	private Integer lock;
+
+	private Integer cityId;
+
+	private Integer provinceId;
 }

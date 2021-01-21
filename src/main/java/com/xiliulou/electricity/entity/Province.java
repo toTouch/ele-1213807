@@ -6,29 +6,25 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 /**
- * (City)实体类
+ * (Province)实体类
  *
  * @author Eclair
- * @since 2021-01-21 18:05:37
+ * @since 2021-01-21 18:05:46
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_city")
-public class City {
+@TableName("t_province")
+public class Province {
     
     private Integer id;
     /**
-    * 市code
+    * 省份code
     */
     private String code;
     /**
-    * pid
-    */
-    private Integer pid;
-    /**
-    * 城市名称
+    * 名称
     */
     private String name;
 

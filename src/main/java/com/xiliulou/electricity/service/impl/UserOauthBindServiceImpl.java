@@ -139,7 +139,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
                 .build();
 
         if (Objects.nonNull(oauthBindQuery.getStatus())) {
-            User user = userService.queryByIdFromCache(userOauthBind.getUid());
+            User user = userService.queryByUidFromCache(userOauthBind.getUid());
             User updateUser = User.builder()
                     .updateTime(System.currentTimeMillis())
                     .lockFlag(oauthBindQuery.getStatus() - 1)

@@ -10,9 +10,13 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.Province;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.UserMapper;
+import com.xiliulou.electricity.service.CityService;
+import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -47,309 +51,358 @@ import java.util.Objects;
 @Slf4j
 public class UserServiceImpl implements UserService {
 
-    @Autowired
-    CustomPasswordEncoder customPasswordEncoder;
-    @Resource
-    private UserMapper userMapper;
-    @Autowired
-    RedisService redisService;
-    @Autowired
-    UserInfoService userInfoService;
+	@Autowired
+	CustomPasswordEncoder customPasswordEncoder;
+	@Resource
+	private UserMapper userMapper;
+	@Autowired
+	RedisService redisService;
+	@Autowired
+	UserInfoService userInfoService;
 
-    @Value("${security.encode.key:xiliu&lo@u%12345}")
-    private String encodeKey;
+	@Autowired
+	CityService cityService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param uid 主键
-     * @return 实例对象
-     */
-    @Override
-    public User queryByIdFromDB(Long uid) {
-        return this.userMapper.queryById(uid);
-    }
+	@Autowired
+	ProvinceService provinceService;
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param uid 主键
-     * @return 实例对象
-     */
-    @Override
-    public User queryByIdFromCache(Long uid) {
-        User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_UID + uid, User.class);
-        if (Objects.nonNull(cacheUser)) {
-            return cacheUser;
-        }
+	@Value("${security.encode.key:xiliu&lo@u%12345}")
+	private String encodeKey;
 
-        User user = queryByIdFromDB(uid);
-        if (Objects.isNull(user)) {
-            return null;
-        }
+	/**
+	 * 通过ID查询单条数据从DB
+	 *
+	 * @param uid 主键
+	 * @return 实例对象
+	 */
+	@Override
+	public User queryByIdFromDB(Long uid) {
+		return this.userMapper.queryById(uid);
+	}
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + uid, user);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+	/**
+	 * 通过ID查询单条数据从缓存
+	 *
+	 * @param uid 主键
+	 * @return 实例对象
+	 */
+	@Override
+	public User queryByUidFromCache(Long uid) {
+		User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_UID + uid, User.class);
+		if (Objects.nonNull(cacheUser)) {
+			return cacheUser;
+		}
 
-        return user;
-    }
+		User user = queryByIdFromDB(uid);
+		if (Objects.isNull(user)) {
+			return null;
+		}
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<User> queryAllByLimit(int offset, int limit) {
-        return this.userMapper.queryAllByLimit(offset, limit);
-    }
+		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + uid, user);
+		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
 
-    /**
-     * 新增数据
-     *
-     * @param user 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    @DS("master")
-    public User insert(User user) {
-        int insert = this.userMapper.insertOne(user);
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
-            return user;
-        });
+		return user;
+	}
 
-        return user;
-    }
+	/**
+	 * 查询多条数据
+	 *
+	 * @param offset 查询起始位置
+	 * @param limit  查询条数
+	 * @return 对象列表
+	 */
+	@Override
+	public List<User> queryAllByLimit(int offset, int limit) {
+		return this.userMapper.queryAllByLimit(offset, limit);
+	}
 
-    /**
-     * 修改数据
-     *
-     * @param user 实例对象
-     * @return 实例对象
-     */
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(User user) {
-        int update = this.userMapper.update(user);
-        if (update > 0) {
+	/**
+	 * 新增数据
+	 *
+	 * @param user 实例对象
+	 * @return 实例对象
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	@DS("master")
+	public User insert(User user) {
+		int insert = this.userMapper.insertOne(user);
+		DbUtils.dbOperateSuccessThen(insert, () -> {
+			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
+			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+			return user;
+		});
 
-        }
-        return update;
+		return user;
+	}
 
-    }
+	/**
+	 * 修改数据
+	 *
+	 * @param user 实例对象
+	 * @return 实例对象
+	 */
+	@Transactional(rollbackFor = Exception.class)
+	@Deprecated
+	public Integer update(User user) {
+		int update = this.userMapper.update(user);
+		if (update > 0) {
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param uid 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long uid) {
-        return this.userMapper.deleteById(uid) > 0;
-    }
+		}
+		return update;
 
-    @Override
-    public User queryByUserName(String username) {
-        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
-    }
+	}
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
-        User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
-        if (Objects.nonNull(phoneUserExists)) {
-            return Triple.of(false, null, "手机号已存在");
-        }
+	/**
+	 * 通过主键删除数据
+	 *
+	 * @param uid 主键
+	 * @return 是否成功
+	 */
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Boolean deleteById(Long uid) {
+		return this.userMapper.deleteById(uid) > 0;
+	}
 
-        User userNameExists = queryByUserName(adminUserQuery.getName());
-        if (Objects.nonNull(userNameExists)) {
-            return Triple.of(false, null, "用户名已存在");
-        }
+	@Override
+	public User queryByUserName(String username) {
+		return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL));
+	}
 
-        //解密密码
-        String encryptPassword = adminUserQuery.getPassword();
-        String decryptPassword = decryptPassword(encryptPassword);
-        if (StrUtil.isEmpty(decryptPassword)) {
-            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
-            return Triple.of(false, "SYSTEM.0001", "系统错误!");
-        }
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
+		if (Objects.nonNull(phoneUserExists)) {
+			return Triple.of(false, null, "手机号已存在");
+		}
 
-        User user = User.builder()
-                .avatar("")
-                .salt("")
-                .createTime(System.currentTimeMillis())
-                .delFlag(User.DEL_NORMAL)
-                .lockFlag(User.USER_UN_LOCK)
-                .gender(adminUserQuery.getGender())
-                .lang(adminUserQuery.getLang())
-                .loginPwd(customPasswordEncoder.encode(decryptPassword))
-                .name(adminUserQuery.getName())
-                .phone(adminUserQuery.getPhone())
-                .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
-                .salt("")
-                .build();
-        //设置角色
-        User insert = insert(user);
+		User userNameExists = queryByUserName(adminUserQuery.getName());
+		if (Objects.nonNull(userNameExists)) {
+			return Triple.of(false, null, "用户名已存在");
+		}
 
-        return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
-    }
+		//解密密码
+		String encryptPassword = adminUserQuery.getPassword();
+		String decryptPassword = decryptPassword(encryptPassword);
+		if (StrUtil.isEmpty(decryptPassword)) {
+			log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+			return Triple.of(false, "SYSTEM.0001", "系统错误!");
+		}
 
-    private String decryptPassword(String encryptPassword) {
-        AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
-                new IvParameterSpec(encodeKey.getBytes()));
+		//处理城市和省份
+		City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
+		Province province = provinceService.queryByIdFromDB(adminUserQuery.getProvinceId());
 
-        return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
-    }
+		User user = User.builder()
+				.avatar("")
+				.salt("")
+				.createTime(System.currentTimeMillis())
+				.delFlag(User.DEL_NORMAL)
+				.lockFlag(User.USER_UN_LOCK)
+				.gender(adminUserQuery.getGender())
+				.lang(adminUserQuery.getLang())
+				.loginPwd(customPasswordEncoder.encode(decryptPassword))
+				.name(adminUserQuery.getName())
+				.phone(adminUserQuery.getPhone())
+				.updateTime(System.currentTimeMillis())
+				.userType(adminUserQuery.getUserType())
+				.salt("")
+				.city(Objects.nonNull(city)?city.getName():null)
+				.province(Objects.nonNull(province)?province.getName():null)
+				.cid(Objects.nonNull(city)?city.getId():null)
+				.build();
+		//设置角色
+		User insert = insert(user);
 
-    @Override
-    public User queryByUserPhone(String phone, Integer type) {
-        User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + phone + ":" + type, User.class);
-        if (Objects.nonNull(cacheUser)) {
-            return cacheUser;
-        }
+		return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
+	}
 
-        User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL));
-        if (Objects.isNull(user)) {
-            return null;
-        }
+	private String decryptPassword(String encryptPassword) {
+		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
+				new IvParameterSpec(encodeKey.getBytes()));
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+		return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
+	}
 
-        return user;
-    }
+	@Override
+	public User queryByUserPhone(String phone, Integer type) {
+		User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + phone + ":" + type, User.class);
+		if (Objects.nonNull(cacheUser)) {
+			return cacheUser;
+		}
 
-    @Override
-    @DS("slave_1")
-    public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime) {
-        Page page = PageUtil.getPage(offset, size);
+		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL));
+		if (Objects.isNull(user)) {
+			return null;
+		}
 
-        return Pair.of(true, this.userMapper.queryListUserByCriteria(page, uid, size, offset, name, phone, type, startTime, endTime));
+		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
+		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
 
-    }
+		return user;
+	}
 
-    @Override
-    public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
-        User user = queryByIdFromCache(adminUserQuery.getUid());
-        if (Objects.isNull(user)) {
-            return Pair.of(false, "uid:" + adminUserQuery.getUid() + "用户不存在!");
-        }
+	@Override
+	@DS("slave_1")
+	public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime) {
+		Page page = PageUtil.getPage(offset, size);
 
-        if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
-            User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE);
-            if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
-                return Pair.of(false, "手机号已存在！无法修改!");
-            }
-        }
+		return Pair.of(true, this.userMapper.queryListUserByCriteria(page, uid, size, offset, name, phone, type, startTime, endTime));
 
-        if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
-            User nameUser = queryByUserName(adminUserQuery.getName());
-            if (Objects.nonNull(nameUser) && !Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
-                return Pair.of(false, "用户名已经存在！无法修改！");
-            }
-        }
-        String decryptPassword = null;
-        if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
-            //解密密码
-            String encryptPassword = adminUserQuery.getPassword();
-            decryptPassword = decryptPassword(encryptPassword);
-            if (StrUtil.isEmpty(decryptPassword)) {
-                log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
-                return Pair.of(false, "系统错误!");
-            }
-        }
+	}
 
-        User updateUser = User.builder()
-                .uid(user.getUid())
-                .delFlag(User.DEL_NORMAL)
-                .lockFlag(User.USER_UN_LOCK)
-                .gender(adminUserQuery.getGender())
-                .lang(adminUserQuery.getLang())
-                .loginPwd(StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword))
-                .name(adminUserQuery.getName())
-                .phone(adminUserQuery.getPhone())
-                .updateTime(System.currentTimeMillis())
-                .userType(adminUserQuery.getUserType())
-                .lockFlag(adminUserQuery.getLock())
-                .build();
-        int i = updateUser(updateUser, user);
-        //更新userInfo
-        if (i > 0) {
-            UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
-            if (Objects.nonNull(oldUserInfo)) {
-                UserInfo userInfo = new UserInfo();
-                userInfo.setId(oldUserInfo.getId());
-                userInfo.setUpdateTime(System.currentTimeMillis());
-                userInfo.setPhone(updateUser.getPhone());
-                userInfoService.update(userInfo);
-            }
-        }
-        return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
-    }
+	@Override
+	public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
+		User user = queryByUidFromCache(adminUserQuery.getUid());
+		if (Objects.isNull(user)) {
+			return Pair.of(false, "uid:" + adminUserQuery.getUid() + "用户不存在!");
+		}
 
-    @Override
-    public Pair<Boolean, Object> deleteAdminUser(Long uid) {
-        User user = queryByIdFromCache(uid);
-        if (Objects.isNull(user)) {
-            return Pair.of(false, "uid:" + uid + "用户不存在!");
-        }
+		if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
+			User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE);
+			if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
+				return Pair.of(false, "手机号已存在！无法修改!");
+			}
+		}
 
-        if (deleteById(uid)) {
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + uid);
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
-        }
-        //删除userInfo
-        UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
-        if (Objects.nonNull(oldUserInfo)) {
-            userInfoService.deleteUserInfo(oldUserInfo);
-        }
-        return Pair.of(true, null);
-    }
+		if (StrUtil.isNotEmpty(adminUserQuery.getName())) {
+			User nameUser = queryByUserName(adminUserQuery.getName());
+			if (Objects.nonNull(nameUser) && !Objects.equals(nameUser.getUid(), adminUserQuery.getUid())) {
+				return Pair.of(false, "用户名已经存在！无法修改！");
+			}
+		}
+		String decryptPassword = null;
+		if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
+			//解密密码
+			String encryptPassword = adminUserQuery.getPassword();
+			decryptPassword = decryptPassword(encryptPassword);
+			if (StrUtil.isEmpty(decryptPassword)) {
+				log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+				return Pair.of(false, "系统错误!");
+			}
+		}
 
-    @Override
-    public Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery) {
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("updatePassword  ERROR! not found user ");
-            Triple.of(false, "ELECTRICITY.0001", "未找到用户");
-        }
+		User updateUser = User.builder()
+				.uid(user.getUid())
+				.delFlag(User.DEL_NORMAL)
+				.lockFlag(User.USER_UN_LOCK)
+				.gender(adminUserQuery.getGender())
+				.lang(adminUserQuery.getLang())
+				.loginPwd(StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword))
+				.name(adminUserQuery.getName())
+				.phone(adminUserQuery.getPhone())
+				.updateTime(System.currentTimeMillis())
+				.userType(adminUserQuery.getUserType())
+				.lockFlag(adminUserQuery.getLock())
+				.build();
+		int i = updateUser(updateUser, user);
+		//更新userInfo
+		if (i > 0) {
+			UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
+			if (Objects.nonNull(oldUserInfo)) {
+				UserInfo userInfo = new UserInfo();
+				userInfo.setId(oldUserInfo.getId());
+				userInfo.setUpdateTime(System.currentTimeMillis());
+				userInfo.setPhone(updateUser.getPhone());
+				userInfoService.update(userInfo);
+			}
+		}
+		return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
+	}
 
-        User oldUser = queryByUserName(passwordQuery.getName());
-        if (Objects.isNull(oldUser)) {
-            log.error("updatePassword  ERROR! not found userName{} ", passwordQuery.getName());
-            Triple.of(false, null, "用户名不存在");
-        }
+	@Override
+	public Pair<Boolean, Object> deleteAdminUser(Long uid) {
+		User user = queryByUidFromCache(uid);
+		if (Objects.isNull(user)) {
+			return Pair.of(false, "uid:" + uid + "用户不存在!");
+		}
 
-        if (!Objects.equals(user, oldUser)) {
-            log.error("updatePassword  ERROR! not found userId{},oldUserId{} ", user.getUid(), oldUser.getUid());
-            Triple.of(false, null, "不能修改别人的密码");
-        }
+		if (deleteById(uid)) {
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + uid);
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+		}
+		//删除userInfo
+		UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
+		if (Objects.nonNull(oldUserInfo)) {
+			userInfoService.deleteUserInfo(oldUserInfo);
+		}
+		return Pair.of(true, null);
+	}
 
-        User updateUser = new User();
-        updateUser.setUid(oldUser.getUid());
-        updateUser.setLoginPwd(customPasswordEncoder.encode(passwordQuery.getPassword()));
-        updateUser.setUpdateTime(System.currentTimeMillis());
-        Integer update = updateUser(updateUser, oldUser);
+	@Override
+	public Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery) {
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("updatePassword  ERROR! not found user ");
+			Triple.of(false, "ELECTRICITY.0001", "未找到用户");
+		}
 
-        return update > 0 ? Triple.of(true, null, null) : Triple.of(false, null, "修改密码失败!");
-    }
+		User oldUser = queryByUserName(passwordQuery.getName());
+		if (Objects.isNull(oldUser)) {
+			log.error("updatePassword  ERROR! not found userName{} ", passwordQuery.getName());
+			Triple.of(false, null, "用户名不存在");
+		}
 
-    @Override
-    public Integer updateUser(User updateUser, User oldUser) {
-        Integer update = update(updateUser);
-        if (update > 0) {
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
-        }
-        return update;
-    }
+		if (!Objects.equals(user, oldUser)) {
+			log.error("updatePassword  ERROR! not found userId{},oldUserId{} ", user.getUid(), oldUser.getUid());
+			Triple.of(false, null, "不能修改别人的密码");
+		}
 
+		User updateUser = new User();
+		updateUser.setUid(oldUser.getUid());
+		updateUser.setLoginPwd(customPasswordEncoder.encode(passwordQuery.getPassword()));
+		updateUser.setUpdateTime(System.currentTimeMillis());
+		Integer update = updateUser(updateUser, oldUser);
+
+		return update > 0 ? Triple.of(true, null, null) : Triple.of(false, null, "修改密码失败!");
+	}
+
+	@Override
+	public Integer updateUser(User updateUser, User oldUser) {
+		Integer update = update(updateUser);
+		if (update > 0) {
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());
+			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
+		}
+		return update;
+	}
+
+	@Override
+	public Pair<Boolean, Object> addUserAddress(String cityCode) {
+		Long uid = SecurityUtils.getUid();
+		if (Objects.isNull(uid)) {
+			log.error("USER ERROR! no user!");
+			return Pair.of(false, "未能查到用户信息!");
+		}
+
+		User user = queryByUidFromCache(uid);
+		if (Objects.isNull(user)) {
+			log.error("USER ERROR! no user! uid={}", uid);
+			return Pair.of(false, "未能查到用户信息!");
+		}
+
+		City city = cityService.queryCityByCode(cityCode);
+		if (Objects.isNull(city)) {
+			log.error("USER ERROR! no city! cityCode={},uid={}", cityCode, uid);
+			return Pair.of(false, "未能查到相关城市信息");
+		}
+
+		Province province = provinceService.queryByIdFromDB(city.getPid());
+		if (Objects.isNull(province)) {
+			log.error("USER ERROR! no province! provinceId={},uid={}", city.getPid(), uid);
+			return Pair.of(false, "未能查到相关省份信息");
+		}
+
+		User updateUser = new User();
+		updateUser.setCid(city.getId());
+		updateUser.setCity(city.getName());
+		updateUser.setProvince(province.getName());
+		updateUser.setUpdateTime(System.currentTimeMillis());
+		updateUser(updateUser, user);
+
+		return Pair.of(true, null);
+	}
 
 }

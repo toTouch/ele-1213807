@@ -70,6 +70,22 @@ public class User {
 	 * 语言和国家
 	 */
 	private String lang;
+	/**
+	 * 城市
+	 */
+	private String city;
+	/**
+	 * 省份
+	 */
+	private String province;
+	/**
+	 * 详细地址
+	 */
+	private String address;
+	/**
+	 * 城市id
+	 */
+	private Integer cid;
 
 	public boolean isLock() {
 		return this.lockFlag.equals(USER_LOCK);
@@ -90,6 +106,12 @@ public class User {
 	public static final Integer TYPE_USER_SUPER = 0;
 	//运营商
 	public static final Integer TYPE_USER_OPERATE = 1;
+	//加盟商
+	public static final Integer TYPE_USER_FRANCHISEE =2;
+	//门店
+	public static final Integer TYPE_USER_STORE=3;
+	//柜子负责人
+	public static final Integer TYPE_USER_CABINET = 4;
 	//普通微信小程序用户
 	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
 

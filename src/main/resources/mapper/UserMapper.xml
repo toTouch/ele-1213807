@@ -15,13 +15,17 @@
 		<result property="userType" column="user_type" jdbcType="INTEGER"/>
 		<result property="createTime" column="create_time" jdbcType="INTEGER"/>
 		<result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+		<result property="city" column="city" jdbcType="VARCHAR"/>
+		<result property="address" column="address" jdbcType="VARCHAR"/>
+		<result property="province" column="province" jdbcType="VARCHAR"/>
+		<result property="cid" column="cid" jdbcType="INTEGER"/>
 		<result property="lang" column="lang" jdbcType="VARCHAR"/>
 	</resultMap>
 
 	<!--查询单个-->
 	<select id="queryById" resultMap="UserMap">
         select
-          uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang
+          uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang,city,province,address,cid
         from electricity.t_user
         where uid = #{uid}
     </select>
@@ -29,7 +33,7 @@
 	<!--查询指定行数据-->
 	<select id="queryAllByLimit" resultMap="UserMap">
         select
-          uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang
+          uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang,city,province,address,cid
         from electricity.t_user
         limit #{offset}, #{limit}
     </select>
@@ -37,7 +41,7 @@
 	<!--通过实体作为筛选条件查询-->
 	<select id="queryAll" resultMap="UserMap">
 		select
-		uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,
+		uid, phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,city,province,address,cid,
 		lang
 		from electricity.t_user
 		<where>
@@ -85,8 +89,8 @@
 
 	<!--新增所有列-->
 	<insert id="insertOne" keyProperty="uid" useGeneratedKeys="true">
-        insert into electricity.t_user(phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang)
-        values (#{phone}, #{loginPwd}, #{salt}, #{avatar}, #{name}, #{gender}, #{delFlag}, #{lockFlag}, #{userType}, #{createTime}, #{updateTime}, #{lang})
+        insert into electricity.t_user(phone, login_pwd, salt, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time, lang,city,province,address,cid)
+        values (#{phone}, #{loginPwd}, #{salt}, #{avatar}, #{name}, #{gender}, #{delFlag}, #{lockFlag}, #{userType}, #{createTime}, #{updateTime}, #{lang},#{city},#{province},#{address},#{cid})
     </insert>
 
 	<!--通过主键修改数据-->
@@ -140,6 +144,7 @@
 
 	<select id="queryListUserByCriteria" resultMap="UserMap">
 		select uid, phone, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,
+		city,province,address,cid,
 		lang
 		from t_user
 		<where>

@@ -60,7 +60,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
             return R.failMsg("未配置支付参数!");
         }
-        User user = userService.queryByIdFromCache(uid);
+        User user = userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND SYS_USER UID:{}", uid);
             return R.failMsg("未找到系统用户信息!");

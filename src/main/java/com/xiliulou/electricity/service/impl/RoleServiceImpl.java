@@ -15,7 +15,6 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.RoleMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
-import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
@@ -176,7 +175,7 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public Pair<Boolean, Object> bindUserRole(Long uid, List<Long> roleIds) {
-		User user = userService.queryByIdFromCache(uid);
+		User user = userService.queryByUidFromCache(uid);
 		if (Objects.isNull(user)) {
 			return Pair.of(false, "用户不存在，无法绑定！");
 		}

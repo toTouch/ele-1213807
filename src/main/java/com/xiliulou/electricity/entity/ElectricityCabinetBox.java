@@ -1,11 +1,16 @@
 package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.google.gson.reflect.TypeToken;
+import com.xiliulou.core.json.JsonUtil;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.util.Map;
+
 /**
  * 换电柜仓门表(TElectricityCabinetBox)实体类
  *

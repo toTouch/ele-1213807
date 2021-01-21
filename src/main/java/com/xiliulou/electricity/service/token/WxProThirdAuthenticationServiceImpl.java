@@ -159,7 +159,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             //如果openId存在.手机号不存在,替换掉以前的手机号
             if (existsOpenId.getLeft() && !existPhone.getLeft()) {
                 //这里不能为空
-                User user = userService.queryByIdFromCache(existsOpenId.getRight().getUid());
+                User user = userService.queryByUidFromCache(existsOpenId.getRight().getUid());
                 if (Objects.isNull(user)) {
                     log.error("TOKEN ERROR! can't found user!uid={}", existsOpenId.getRight().getUid());
                     throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
