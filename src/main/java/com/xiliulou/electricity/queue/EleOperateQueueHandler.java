@@ -188,7 +188,7 @@ public class EleOperateQueueHandler {
             ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), cellNo);
             ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
             if (Objects.nonNull(newElectricityBattery)) {
-                electricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSerialNumber());
+                electricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSn());
             }
             electricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             electricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
@@ -211,7 +211,6 @@ public class EleOperateQueueHandler {
             oldElectricityBattery.setId(electricityBattery.getId());
             oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
             oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            oldElectricityBattery.setCabinetId(electricityCabinetOrder.getElectricityCabinetId());
             electricityBatteryService.update(oldElectricityBattery);
 
             //用户解绑旧电池
@@ -321,7 +320,6 @@ public class EleOperateQueueHandler {
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        newElectricityBattery.setCabinetId(-1);
         electricityBatteryService.updateStatus(newElectricityBattery);
 
         //加入操作记录表
