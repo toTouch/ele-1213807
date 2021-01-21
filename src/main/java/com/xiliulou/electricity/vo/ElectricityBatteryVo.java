@@ -12,8 +12,6 @@ import lombok.Data;
 @Data
 public class ElectricityBatteryVo extends ElectricityBattery {
 
-    //店铺名称
-    private String shopName;
     //所在电柜名称
     private String cabinetName;
     /**

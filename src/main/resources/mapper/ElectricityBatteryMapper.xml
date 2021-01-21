@@ -31,25 +31,15 @@
 
     <!--电池分页-->
     <select id="getElectricityBatteryPage" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-        select tel.* , ts.name as shop_name ,tebm.name as battery_model_name ,tec.name as cabinet_name , tui.name as
-        user_name from
+        select tel.* ,  tui.name as user_name from
         t_electricity_battery tel
-        LEFT JOIN t_store ts on ts.id = tel.shop_id
-        LEFT JOIN t_electricity_battery_model tebm on tebm.id = tel.model_id
-        LEFT JOIN t_electricity_cabinet tec on tec.id =tel.cabinet_id
         LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.serial_number
         where tel.del_flag = 0
         <if test="query.sn != null">
             and tel.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="query.modelId != null">
-            and tel.model_id =#{query.modelId}
-        </if>
+        </if
         <if test="query.status != null">
             and tel.status =#{query.status}
-        </if>
-        <if test="query.cabinetId != null">
-            and tel.cabinet_id =#{query.cabinetId}
         </if>
         order by tel.create_time desc
 
