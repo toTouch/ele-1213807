@@ -8,6 +8,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Objects;
 
 /**
@@ -32,7 +33,7 @@ public class StoreAdminController {
 
     //修改门店
     @PutMapping(value = "/admin/store")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class)  StoreAddAndUpdate storeAddAndUpdate) {
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) StoreAddAndUpdate storeAddAndUpdate) {
         return storeService.edit(storeAddAndUpdate);
     }
 
@@ -40,7 +41,7 @@ public class StoreAdminController {
     @DeleteMapping(value = "/admin/store/{id}")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007","不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         return storeService.delete(id);
     }
@@ -48,8 +49,8 @@ public class StoreAdminController {
 
     //列表查询
     @GetMapping(value = "/admin/store/list")
-    public R queryList(@RequestParam(value = "size", required = false) Integer size,
-                       @RequestParam(value = "offset", required = false) Integer offset,
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "sn", required = false) String sn,
@@ -59,11 +60,11 @@ public class StoreAdminController {
                        @RequestParam(value = "carService", required = false) Integer carService,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
         if (Objects.isNull(size)) {
-            size = 10;
+            size = 10L;
         }
 
         if (Objects.isNull(offset) || offset < 0) {
-            offset = 0;
+            offset = 0L;
         }
 
         StoreQuery storeQuery = StoreQuery.builder()

@@ -64,10 +64,11 @@ public class ElectricityMemberCardAdminController {
     @GetMapping("admin/electricityMemberCard/page")
     public R getElectricityMemberCardPage(@RequestParam(value = "offset") Long offset,
                                           @RequestParam(value = "size") Long size,
-                                          @RequestParam(value = "type", required = false) Integer type) {
+                                          @RequestParam(value = "type", required = false) Integer type,
+                                          @RequestParam(value = "status", required = false) Integer status) {
 
 
-        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, null,type);
+        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, status, type);
     }
 
 }
