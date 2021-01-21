@@ -4,7 +4,6 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 
 import java.util.HashMap;
@@ -52,8 +51,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
-    R bindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate);
-
     R queryList(UserInfoQuery userInfoQuery);
 
     R disable(Long id);
@@ -61,8 +58,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R reboot(Long id);
 
     R unBindBattery(Long id);
-
-    R unBindCar(Long id);
 
     UserInfo queryByUid(Long uid);
 

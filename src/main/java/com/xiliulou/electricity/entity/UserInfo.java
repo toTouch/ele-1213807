@@ -66,18 +66,6 @@ public class UserInfo {
      */
     private Double batteryDeposit;
     /**
-     * 车辆编号
-     */
-    private String carSn;
-    /**
-     * 车牌号
-     */
-    private String numberPlate;
-    /**
-     * 租车辆押金
-     */
-    private Double carDeposit;
-    /**
      * 0--正常 1--删除
      */
     private Integer delFlag;

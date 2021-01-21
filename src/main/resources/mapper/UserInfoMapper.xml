@@ -15,9 +15,6 @@
         <result property="initElectricityBatterySn" column="init_electricity_battery_sn" jdbcType="VARCHAR"/>
         <result property="nowElectricityBatterySn" column="now_electricity_battery_sn" jdbcType="VARCHAR"/>
         <result property="batteryDeposit" column="battery_deposit" jdbcType="NUMERIC"/>
-        <result property="carSn" column="car_sn" jdbcType="VARCHAR"/>
-        <result property="numberPlate" column="number_plate" jdbcType="VARCHAR"/>
-        <result property="carDeposit" column="car_deposit" jdbcType="NUMERIC"/>
         <result property="usableStatus" column="usable_status" jdbcType="OTHER"/>
         <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
@@ -27,7 +24,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="UserInfoMap">
         select
-          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number,card_type,  init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit,  car_sn, number_plate, car_deposit, usable_status, del_flag, create_time, update_time
+          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number,card_type,  init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where id = #{id}
     </select>
@@ -38,8 +35,7 @@
         select
         id, uid, name, phone, id_number, service_status, member_card_expire_time,
         remaining_number,card_type,
-        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit,  car_sn, number_plate,
-        car_deposit, usable_status, del_flag, create_time, update_time
+        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit,  usable_status, del_flag, create_time, update_time
         from electricity.t_user_info
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -121,15 +117,6 @@
             <if test="batteryDeposit != null">
                 battery_deposit = #{batteryDeposit},
             </if>
-            <if test="carSn != null and carSn != ''">
-                car_sn = #{carSn},
-            </if>
-            <if test="numberPlate != null and numberPlate != ''">
-                number_plate = #{numberPlate},
-            </if>
-            <if test="carDeposit != null">
-                car_deposit = #{carDeposit},
-            </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
@@ -177,9 +164,6 @@
             init_electricity_battery_sn = #{initElectricityBatterySn},
             now_electricity_battery_sn = #{nowElectricityBatterySn},
             battery_deposit = #{batteryDeposit},
-            car_sn = #{carSn},
-            number_plate = #{numberPlate},
-            car_deposit = #{carDeposit},
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>

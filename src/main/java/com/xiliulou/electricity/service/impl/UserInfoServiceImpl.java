@@ -11,7 +11,6 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
-import com.xiliulou.electricity.query.UserInfoCarAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -43,8 +42,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     StoreService storeService;
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
-    @Autowired
-    RentCarOrderService rentCarOrderService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
@@ -120,14 +117,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo userInfo = new UserInfo();
         BeanUtil.copyProperties(userInfoBatteryAddAndUpdate, userInfo);
         RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
-        if (Objects.nonNull(userInfoBatteryAddAndUpdate.getBatteryStoreId())) {
-            Store store = storeService.queryByIdFromCache(userInfoBatteryAddAndUpdate.getBatteryStoreId());
-            if (Objects.isNull(store)) {
-                return R.fail("ELECTRICITY.0018", "未找到门店");
-            }
-            rentBatteryOrder.setBatteryStoreId(store.getId());
-            rentBatteryOrder.setBatteryStoreName(store.getName());
-        }
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
@@ -155,45 +144,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
 
-    @Override
-    @Transactional
-    public R bindCar(UserInfoCarAddAndUpdate userInfoCarAddAndUpdate) {
-        UserInfo oldUserInfo = queryByIdFromDB(userInfoCarAddAndUpdate.getId());
-        if (Objects.isNull(oldUserInfo)) {
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-        if (Objects.nonNull(oldUserInfo.getCarSn())) {
-            return R.fail("ELECTRICITY.0031", "用户已绑定车辆，请解绑后再绑定");
-        }
-        RentCarOrder rentCarOrder = new RentCarOrder();
-        if (Objects.nonNull(userInfoCarAddAndUpdate.getCarStoreId())) {
-            Store store = storeService.queryByIdFromCache(userInfoCarAddAndUpdate.getCarStoreId());
-            if (Objects.isNull(store)) {
-                return R.fail("ELECTRICITY.0018", "未找到门店");
-            }
-            rentCarOrder.setCarStoreId(store.getId());
-            rentCarOrder.setCarStoreName(store.getName());
-        }
-        UserInfo userInfo = new UserInfo();
-        BeanUtil.copyProperties(userInfoCarAddAndUpdate, userInfo);
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update = userInfoMapper.update(userInfo);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录
-            rentCarOrder.setUid(oldUserInfo.getUid());
-            rentCarOrder.setName(userInfo.getName());
-            rentCarOrder.setPhone(oldUserInfo.getPhone());
-            rentCarOrder.setIdNumber(userInfo.getIdNumber());
-            rentCarOrder.setCarSn(userInfo.getCarSn());
-            rentCarOrder.setCarDeposit(userInfo.getCarDeposit());
-            rentCarOrder.setNumberPlate(userInfo.getNumberPlate());
-            rentCarOrder.setCreateTime(System.currentTimeMillis());
-            rentCarOrder.setStatus(RentCarOrder.IS_USE_STATUS);
-            rentCarOrderService.insert(rentCarOrder);
-            return null;
-        });
-        return R.ok();
-    }
 
 
     @Override
@@ -256,9 +206,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
-        userInfo.setCarSn(oldUserInfo.getCarSn());
-        userInfo.setCarDeposit(oldUserInfo.getCarDeposit());
-        userInfo.setNumberPlate(oldUserInfo.getNumberPlate());
         userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryDeposit(null);
@@ -288,43 +235,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
 
-    @Override
-    @Transactional
-    public R unBindCar(Long id) {
-        UserInfo oldUserInfo = queryByIdFromDB(id);
-        if (Objects.isNull(oldUserInfo)) {
-            return R.fail("ELECTRICITY.0019", "未找到用户");
-        }
-        if (Objects.isNull(oldUserInfo.getCarSn())) {
-            return R.fail("ELECTRICITY.0032", "用户未绑定车辆，不能解绑");
-        }
-        UserInfo userInfo = new UserInfo();
-        userInfo.setId(id);
-        userInfo.setNowElectricityBatterySn(oldUserInfo.getNowElectricityBatterySn());
-        userInfo.setInitElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
-        userInfo.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
-        userInfo.setCarSn(null);
-        userInfo.setCarDeposit(null);
-        userInfo.setNumberPlate(null);
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update = userInfoMapper.unBind(userInfo);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            //添加租电池记录
-            RentCarOrder rentCarOrder = new RentCarOrder();
-            rentCarOrder.setUid(oldUserInfo.getUid());
-            rentCarOrder.setName(oldUserInfo.getName());
-            rentCarOrder.setPhone(oldUserInfo.getPhone());
-            rentCarOrder.setIdNumber(oldUserInfo.getIdNumber());
-            rentCarOrder.setCarSn(oldUserInfo.getCarSn());
-            rentCarOrder.setCarDeposit(oldUserInfo.getCarDeposit());
-            rentCarOrder.setNumberPlate(oldUserInfo.getNumberPlate());
-            rentCarOrder.setCreateTime(System.currentTimeMillis());
-            rentCarOrder.setStatus(RentCarOrder.NO_USE_STATUS);
-            rentCarOrderService.insert(rentCarOrder);
-            return null;
-        });
-        return R.ok();
-    }
+
 
     @Override
     public UserInfo queryByUid(Long uid) {

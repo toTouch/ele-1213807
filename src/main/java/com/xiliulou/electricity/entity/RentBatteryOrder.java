@@ -35,14 +35,6 @@ public class RentBatteryOrder {
     */
     private String idNumber;
     /**
-    * 电池门店Id
-    */
-    private Integer batteryStoreId;
-    /**
-    * 电池门店名称
-    */
-    private String batteryStoreName;
-    /**
     * 电池编号
     */
     private String electricityBatterySn;
