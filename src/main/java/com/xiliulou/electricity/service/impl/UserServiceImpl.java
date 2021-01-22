@@ -151,13 +151,8 @@ public class UserServiceImpl implements UserService {
 	 * @return 实例对象
 	 */
 	@Transactional(rollbackFor = Exception.class)
-	@Deprecated
 	public Integer update(User user) {
-		int update = this.userMapper.update(user);
-		if (update > 0) {
-
-		}
-		return update;
+		return this.userMapper.updateById(user);
 
 	}
 
@@ -418,6 +413,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		User updateUser = new User();
+		updateUser.setUid(user.getUid());
 		updateUser.setCid(city.getId());
 		updateUser.setCity(city.getName());
 		updateUser.setProvince(province.getName());
