@@ -63,4 +63,5 @@ public interface CityService {
     City queryCityByCode(String cityCode);
 
     List<City> queryCityListByPid(Integer pid);
+
 }
