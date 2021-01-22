@@ -106,5 +106,10 @@ public class ElectricityCabinetUserController extends BaseController {
 		return returnPairResult(userService.addUserAddress(cityCode));
 	}
 
+	@GetMapping("/user/detail")
+	public R userDetail() {
+		return returnPairResult(userService.getUserDetail());
+	}
+
 
 }

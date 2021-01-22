@@ -243,9 +243,9 @@ public class RoleServiceImpl implements RoleService {
 			if (!DataUtil.collectionIsUsable(permissionResources)) {
 				continue;
 			}
-
 			result.addAll(permissionResources.stream().filter(e -> e.getType().equals(PermissionResource.TYPE_PAGE)).sorted(Comparator.comparing(PermissionResource::getSort)).collect(Collectors.toList()));
 		}
+
 		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(result, PermissionResource.MENU_ROOT);
 		return Pair.of(true, permissionResourceTrees);
 	}

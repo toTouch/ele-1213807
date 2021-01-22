@@ -81,4 +81,6 @@ public interface UserService {
 
 	Pair<Boolean, Object> addUserAddress(String cityCode);
 
+    Pair<Boolean, Object> getUserDetail();
+
 }

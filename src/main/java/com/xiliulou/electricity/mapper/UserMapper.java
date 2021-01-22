@@ -55,6 +55,7 @@ public interface UserMapper extends BaseMapper<User> {
      * @param user 实例对象
      * @return 影响行数
      */
+    @Deprecated
     int update(User user);
 
     /**

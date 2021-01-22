@@ -86,6 +86,10 @@ public class User {
 	 * 城市id
 	 */
 	private Integer cid;
+	/**
+	 * 推荐人id
+	 */
+	private Long refId;
 
 	public boolean isLock() {
 		return this.lockFlag.equals(USER_LOCK);

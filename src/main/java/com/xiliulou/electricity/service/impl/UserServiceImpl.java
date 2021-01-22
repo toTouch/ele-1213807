@@ -7,6 +7,7 @@ import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -14,14 +15,17 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Province;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
@@ -29,6 +33,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -38,6 +43,7 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,6 +65,8 @@ public class UserServiceImpl implements UserService {
 	RedisService redisService;
 	@Autowired
 	UserInfoService userInfoService;
+	@Autowired
+	UserRoleService userRoleService;
 
 	@Autowired
 	CityService cityService;
@@ -173,6 +181,15 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
+		TokenUser tokenUser = SecurityUtils.getUserInfo();
+		if (Objects.isNull(tokenUser)) {
+			return Triple.of(false, "USER.0001", "查询不到用户！");
+		}
+
+		if (!Objects.equals(tokenUser.getType(), User.TYPE_USER_SUPER) && Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_SUPER)) {
+			return Triple.of(false, null, "无权限操作！");
+		}
+
 		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
 		if (Objects.nonNull(phoneUserExists)) {
 			return Triple.of(false, null, "手机号已存在");
@@ -209,12 +226,17 @@ public class UserServiceImpl implements UserService {
 				.updateTime(System.currentTimeMillis())
 				.userType(adminUserQuery.getUserType())
 				.salt("")
-				.city(Objects.nonNull(city)?city.getName():null)
-				.province(Objects.nonNull(province)?province.getName():null)
-				.cid(Objects.nonNull(city)?city.getId():null)
+				.city(Objects.nonNull(city) ? city.getName() : null)
+				.province(Objects.nonNull(province) ? province.getName() : null)
+				.cid(Objects.nonNull(city) ? city.getId() : null)
 				.build();
-		//设置角色
 		User insert = insert(user);
+		
+		//设置角色
+		UserRole userRole = new UserRole();
+		userRole.setRoleId(adminUserQuery.getUserType().longValue());
+		userRole.setUid(insert.getUid());
+		userRoleService.insert(userRole);
 
 		return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
 	}
@@ -403,6 +425,30 @@ public class UserServiceImpl implements UserService {
 		updateUser(updateUser, user);
 
 		return Pair.of(true, null);
+	}
+
+	@Override
+	public Pair<Boolean, Object> getUserDetail() {
+		Long uid = SecurityUtils.getUid();
+		if (Objects.isNull(uid)) {
+			log.error("USER ERROR! no use!");
+			return Pair.of(false, "USER.0001");
+		}
+
+		User user = queryByUidFromCache(uid);
+		if (Objects.isNull(user)) {
+			log.error("USER ERROR! no found user! uid={}", uid);
+			return Pair.of(false, "USER.0001");
+		}
+
+		HashMap<String, Object> resultMap = Maps.newHashMap();
+
+		//处理用户信息
+		UserVo userVo = new UserVo();
+		BeanUtils.copyProperties(user, userVo);
+		resultMap.put("user", userVo);
+
+		return Pair.of(true, resultMap);
 	}
 
 }
