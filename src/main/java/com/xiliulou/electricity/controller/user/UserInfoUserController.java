@@ -6,7 +6,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-
 /**
  * 用户列表(TUserInfo)表控制层
  *
@@ -26,6 +25,7 @@ public class UserInfoUserController {
     public R queryUserInfo() {
         return userInfoService.queryUserInfo();
     }
+
 
 
 

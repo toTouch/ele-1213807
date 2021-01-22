@@ -1,15 +1,15 @@
 package com.xiliulou.electricity.service;
 
-import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.Province;
 import java.util.List;
 
 /**
- * (City)表服务接口
+ * (Province)表服务接口
  *
  * @author makejava
- * @since 2021-01-21 18:05:41
+ * @since 2021-01-21 18:05:46
  */
-public interface CityService {
+public interface ProvinceService {
 
     /**
      * 通过ID查询单条数据从数据库
@@ -17,7 +17,7 @@ public interface CityService {
      * @param id 主键
      * @return 实例对象
      */
-    City queryByIdFromDB(Integer id);
+    Province queryByIdFromDB(Integer id);
     
       /**
      * 通过ID查询单条数据从缓存
@@ -25,7 +25,7 @@ public interface CityService {
      * @param id 主键
      * @return 实例对象
      */
-    City queryByIdFromCache(Integer id);
+    Province queryByIdFromCache(Integer id);
 
     /**
      * 查询多条数据
@@ -34,23 +34,23 @@ public interface CityService {
      * @param limit 查询条数
      * @return 对象列表
      */
-    List<City> queryAllByLimit(int offset, int limit);
+    List<Province> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据
      *
-     * @param city 实例对象
+     * @param province 实例对象
      * @return 实例对象
      */
-    City insert(City city);
+    Province insert(Province province);
 
     /**
      * 修改数据
      *
-     * @param city 实例对象
+     * @param province 实例对象
      * @return 实例对象
      */
-    Integer update(City city);
+    Integer update(Province province);
 
     /**
      * 通过主键删除数据
@@ -60,8 +60,5 @@ public interface CityService {
      */
     Boolean deleteById(Integer id);
 
-    City queryCityByCode(String cityCode);
-
-    List<City> queryCityListByPid(Integer pid);
-
+	List<Province> queryList();
 }

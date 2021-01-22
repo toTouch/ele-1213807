@@ -64,7 +64,7 @@ public class ProvincialServiceImpl implements ProvincialService {
             for (Provincial provincial:provincialList) {
                 ProvincialVO provincialVO=new ProvincialVO();
                 BeanUtil.copyProperties(provincial,provincialVO);
-                List<City> cityList=cityService.queryByPid(provincialVO.getPid());
+                List<City> cityList=cityService.queryCityListByPid(provincialVO.getPid());
                 provincialVO.setCityList(cityList);
                 provincialVOList.add(provincialVO);
             }

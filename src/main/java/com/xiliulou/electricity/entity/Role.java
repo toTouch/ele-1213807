@@ -40,4 +40,10 @@ public class Role {
 	public static final Integer DEL_NORMAL = 0;
 	public static final Integer DEL_DEL = 1;
 
+	public static final Integer ROLE_ADMIN = 1;
+	public static final Integer ROLE_OPERATE_USER = 2;
+	public static final Integer ROLE_FRANCHISEE_USER = 3;
+	public static final Integer ROLE_STORE_USER = 4;
+	public static final Integer ROLE_CABINET_USER = 5;
+
 }

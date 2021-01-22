@@ -30,7 +30,7 @@ public interface UserService {
      * @param uid 主键
      * @return 实例对象
      */
-    User queryByIdFromCache(Long uid);
+    User queryByUidFromCache(Long uid);
 
     /**
      * 查询多条数据
@@ -78,4 +78,9 @@ public interface UserService {
     Pair<Boolean, Object> deleteAdminUser(Long uid);
 
     Triple<Boolean, String, Object> updatePassword(PasswordQuery passwordQuery);
+
+	Pair<Boolean, Object> addUserAddress(String cityCode);
+
+    Pair<Boolean, Object> getUserDetail();
+
 }
