@@ -231,7 +231,7 @@ public class UserServiceImpl implements UserService {
 				.cid(Objects.nonNull(city) ? city.getId() : null)
 				.build();
 		User insert = insert(user);
-		
+
 		//设置角色
 		UserRole userRole = new UserRole();
 		userRole.setRoleId(adminUserQuery.getUserType().longValue());
