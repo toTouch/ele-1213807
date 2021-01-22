@@ -44,7 +44,7 @@ public class StoreServiceImpl implements StoreService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
-    ElectricityCabinetBindService   electricityCabinetBindService;
+    ElectricityCabinetBindService  electricityCabinetBindService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -348,5 +348,10 @@ public class StoreServiceImpl implements StoreService {
             electricityCabinetBindService.insert(electricityCabinetBind);
         }
         return R.ok();
+    }
+
+    @Override
+    public Store queryByUid(Long uid) {
+        return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid,uid).eq(Store::getDelFlag,Store.DEL_NORMAL));
     }
 }

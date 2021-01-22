@@ -51,4 +51,6 @@ public interface StoreService {
     R rentCar(StoreQuery storeQuery);
 
     R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
+
+    Store queryByUid(Long uid);
 }

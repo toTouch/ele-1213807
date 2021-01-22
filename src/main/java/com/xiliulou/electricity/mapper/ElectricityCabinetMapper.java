@@ -33,6 +33,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      */
     IPage queryList(Page page, @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
+    IPage listByUid(Page page, @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+
     /**
      * 修改数据
      *

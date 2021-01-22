@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.mapper.StoreBindMapper;
 import com.xiliulou.electricity.service.StoreBindService;
@@ -6,6 +7,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * (StoreBind)表服务实现类
@@ -26,5 +28,10 @@ public class StoreBindServiceImpl implements StoreBindService {
     @Override
     public void insert(StoreBind storeBind) {
         storeBindMapper.insert(storeBind);
+    }
+
+    @Override
+    public List<StoreBind> queryByStoreId(Integer id) {
+        return storeBindMapper.selectList(new LambdaQueryWrapper<StoreBind>().eq(StoreBind::getStoreId,id));
     }
 }

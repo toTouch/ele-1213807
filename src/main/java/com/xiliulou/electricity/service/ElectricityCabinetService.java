@@ -74,4 +74,6 @@ public interface ElectricityCabinetService {
     R sendCommandToEleForOuter(EleOuterCommandQuery eleOuterCommandQuery);
 
     R queryByDeviceOuter(String productKey, String deviceName, String deviceSecret);
+
+    R listByUid(ElectricityCabinetQuery electricityCabinetQuery);
 }

@@ -1015,6 +1015,70 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetVO);
     }
 
+    @Override
+    public R listByUid(ElectricityCabinetQuery electricityCabinetQuery) {
+        Page page = PageUtil.getPage(electricityCabinetQuery.getOffset(), electricityCabinetQuery.getSize());
+        electricityCabinetMapper.listByUid(page, electricityCabinetQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return R.ok(page);
+        }
+        List<ElectricityCabinetVO> electricityCabinetList = page.getRecords();
+        if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+            electricityCabinetList.parallelStream().forEach(e -> {
+
+                //营业时间
+                if (Objects.nonNull(e.getBusinessTime())) {
+                    String businessTime = e.getBusinessTime();
+                    if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                        e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+                    } else {
+                        e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
+                            e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                            e.setBeginTime(beginTime);
+                            e.setEndTime(endTime);
+                        }
+                    }
+                }
+
+                //查找型号名称
+                ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
+                if (Objects.nonNull(electricityCabinetModel)) {
+                    e.setModelName(electricityCabinetModel.getName());
+                }
+
+                //查满仓空仓数
+                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer electricityBatteryTotal = 0;
+                Integer noElectricityBattery = 0;
+                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+                    //空仓
+                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+                    //电池总数
+                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+                }
+
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                if (result) {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    e.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_POWER_STATUS);
+                } else {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    e.setPowerStatus(ElectricityCabinet.ELECTRICITY_CABINET_NO_POWER_STATUS);
+                }
+                e.setElectricityBatteryTotal(electricityBatteryTotal);
+                e.setNoElectricityBattery(noElectricityBattery);
+                e.setFullyElectricityBattery(fullyElectricityBattery);
+            });
+        }
+        page.setRecords(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
+    }
+
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
