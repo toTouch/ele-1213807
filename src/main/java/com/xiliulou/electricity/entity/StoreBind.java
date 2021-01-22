@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * 换电柜绑定表(ElectricityCabinetBind)实体类
+ * (StoreBind)实体类
  *
  * @author lxc
  * @since 2020-11-25 11:00:14
@@ -33,6 +33,6 @@ public class StoreBind {
     /**
      * 门店ID
      */
-    private Long storeId;
+    private Integer storeId;
 
 }

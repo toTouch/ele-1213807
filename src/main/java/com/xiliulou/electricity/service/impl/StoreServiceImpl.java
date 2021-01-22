@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -10,12 +9,17 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
+import com.xiliulou.electricity.query.StoreBindQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetBindService;
+import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
@@ -23,7 +27,6 @@ import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -42,6 +45,8 @@ public class StoreServiceImpl implements StoreService {
     RedisService redisService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    ElectricityCabinetBindService   electricityCabinetBindService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -328,5 +333,22 @@ public class StoreServiceImpl implements StoreService {
             });
         }
         return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public R bindElectricityCabinet(StoreBindQuery storeBindQuery) {
+        //先删除
+        electricityCabinetBindService.deleteByUid(storeBindQuery.getUid());
+        if(ObjectUtil.isEmpty(storeBindQuery.getElectricityCabinetIdList())){
+            return R.ok();
+        }
+        //再新增
+        for (Integer electricityCabinetId :storeBindQuery.getElectricityCabinetIdList()) {
+            ElectricityCabinetBind electricityCabinetBind=new ElectricityCabinetBind();
+            electricityCabinetBind.setUid(storeBindQuery.getUid());
+            electricityCabinetBind.setElectricityCabinetId(electricityCabinetId);
+            electricityCabinetBindService.insert(electricityCabinetBind);
+        }
+        return R.ok();
     }
 }

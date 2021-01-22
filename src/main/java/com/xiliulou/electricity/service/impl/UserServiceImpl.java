@@ -233,6 +233,7 @@ public class UserServiceImpl implements UserService {
 		userRole.setUid(insert.getUid());
 		userRoleService.insert(userRole);
 
+
 		return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
 	}
 

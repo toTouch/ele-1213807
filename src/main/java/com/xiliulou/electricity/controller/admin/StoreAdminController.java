@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
+import com.xiliulou.electricity.query.StoreBindQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -93,6 +94,12 @@ public class StoreAdminController {
     @PostMapping(value = "/admin/store/reboot/{id}")
     public R reboot(@PathVariable("id") Integer id) {
         return storeService.reboot(id);
+    }
+
+    //门店绑定电柜
+    @PostMapping(value = "/admin/store/bindElectricityCabinet")
+    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) StoreBindQuery storeBindQuery){
+        return storeService.bindElectricityCabinet(storeBindQuery);
     }
 
 }

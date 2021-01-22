@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * 换电柜绑定表(ElectricityCabinetBind)实体类
+ * (ElectricityCabinetBind)实体类
  *
  * @author lxc
  * @since 2020-11-25 11:00:14
@@ -33,6 +33,6 @@ public class ElectricityCabinetBind {
     /**
      * 换电柜ID
      */
-    private Long electricityCabinetId;
+    private Integer electricityCabinetId;
 
 }
