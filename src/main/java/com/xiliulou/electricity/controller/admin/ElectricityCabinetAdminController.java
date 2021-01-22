@@ -16,14 +16,12 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
-import io.netty.util.internal.ObjectUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
