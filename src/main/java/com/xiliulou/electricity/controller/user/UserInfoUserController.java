@@ -4,9 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.UserInfoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
-import retrofit2.http.POST;
 
 /**
  * 用户列表(TUserInfo)表控制层
