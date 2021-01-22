@@ -4,6 +4,9 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.BindStoreQuery;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -102,6 +105,24 @@ public class JsonAdminUserController extends BaseController {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
         }
         return returnTripleResult(userService.updatePassword(passwordQuery));
+    }
+
+    //加盟商绑定电池
+    @PostMapping(value = "/user/bindElectricityBattery")
+    public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery){
+        return userService.bindElectricityBattery(bindElectricityBatteryQuery);
+    }
+
+    //加盟商绑定门店
+    @PostMapping(value = "/user/bindStore")
+    public R bindStore(@RequestBody @Validated(value = CreateGroup.class) BindStoreQuery bindStoreQuery){
+        return userService.bindStore(bindStoreQuery);
+    }
+
+    //加盟商绑定门店
+    @PostMapping(value = "/user/bindElectricityCabinet")
+    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) BindElectricityCabinetQuery bindElectricityCabinetQuery){
+        return userService.bindElectricityCabinet(bindElectricityCabinetQuery);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.codec.Base64;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
@@ -9,16 +10,26 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.ElectricityBatteryBind;
+import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Province;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.BindStoreQuery;
 import com.xiliulou.electricity.service.CityService;
+import com.xiliulou.electricity.service.ElectricityBatteryBindService;
+import com.xiliulou.electricity.service.ElectricityCabinetBindService;
 import com.xiliulou.electricity.service.ProvinceService;
+import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
@@ -73,6 +84,15 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	ProvinceService provinceService;
+
+	@Autowired
+	ElectricityCabinetBindService electricityCabinetBindService;
+
+	@Autowired
+	ElectricityBatteryBindService electricityBatteryBindService;
+
+	@Autowired
+	StoreBindService storeBindService;
 
 	@Value("${security.encode.key:xiliu&lo@u%12345}")
 	private String encodeKey;
@@ -446,6 +466,57 @@ public class UserServiceImpl implements UserService {
 		resultMap.put("user", userVo);
 
 		return Pair.of(true, resultMap);
+	}
+
+	@Override
+	public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
+		//先删除
+		electricityBatteryBindService.deleteByUid(bindElectricityBatteryQuery.getUid());
+		if(ObjectUtil.isEmpty(bindElectricityBatteryQuery.getElectricityBatteryIdList())){
+			return R.ok();
+		}
+		//再新增
+		for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
+			ElectricityBatteryBind electricityBatteryBind=new ElectricityBatteryBind();
+			electricityBatteryBind.setUid(bindElectricityBatteryQuery.getUid());
+			electricityBatteryBind.setElectricityBatteryId(electricityBatteryId);
+			electricityBatteryBindService.insert(electricityBatteryBind);
+		}
+		return R.ok();
+	}
+
+	@Override
+	public R bindStore(BindStoreQuery bindStoreQuery) {
+		//先删除
+		storeBindService.deleteByUid(bindStoreQuery.getUid());
+		if(ObjectUtil.isEmpty(bindStoreQuery.getStoreIdList())){
+			return R.ok();
+		}
+		//再新增
+		for (Integer storeId : bindStoreQuery.getStoreIdList()) {
+			StoreBind storeBind=new StoreBind();
+			storeBind.setUid(bindStoreQuery.getUid());
+			storeBind.setStoreId(storeId);
+			storeBindService.insert(storeBind);
+		}
+		return R.ok();
+	}
+
+	@Override
+	public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
+		//先删除
+		electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
+		if(ObjectUtil.isEmpty(bindElectricityCabinetQuery.getElectricityCabinetIdList())){
+			return R.ok();
+		}
+		//再新增
+		for (Integer electricityCabinetId : bindElectricityCabinetQuery.getElectricityCabinetIdList()) {
+			ElectricityCabinetBind electricityCabinetBind=new ElectricityCabinetBind();
+			electricityCabinetBind.setUid(bindElectricityCabinetQuery.getUid());
+			electricityCabinetBind.setElectricityCabinetId(electricityCabinetId);
+			electricityCabinetBindService.insert(electricityCabinetBind);
+		}
+		return R.ok();
 	}
 
 }

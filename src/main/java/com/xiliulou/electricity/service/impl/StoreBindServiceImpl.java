@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.mapper.StoreBindMapper;
 import com.xiliulou.electricity.service.StoreBindService;
 import lombok.extern.slf4j.Slf4j;
@@ -15,4 +16,15 @@ import javax.annotation.Resource;
 @Service("storeBindService")
 @Slf4j
 public class StoreBindServiceImpl implements StoreBindService {
+    @Resource
+    StoreBindMapper storeBindMapper;
+    @Override
+    public void deleteByUid(Long uid) {
+        storeBindMapper.deleteByUid(uid);
+    }
+
+    @Override
+    public void insert(StoreBind storeBind) {
+        storeBindMapper.insert(storeBind);
+    }
 }

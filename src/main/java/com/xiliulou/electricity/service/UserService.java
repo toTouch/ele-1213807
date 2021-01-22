@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.BindStoreQuery;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.electricity.web.query.PasswordQuery;
 import org.apache.commons.lang3.tuple.Pair;
@@ -83,4 +87,9 @@ public interface UserService {
 
     Pair<Boolean, Object> getUserDetail();
 
+    R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
+
+    R bindStore(BindStoreQuery bindStoreQuery);
+
+    R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityBatteryBind;
+import org.apache.ibatis.annotations.Delete;
 
 /**
  * (ElectricityBatteryBind)表数据库访问层
@@ -10,4 +11,6 @@ import com.xiliulou.electricity.entity.ElectricityBatteryBind;
  */
 public interface ElectricityBatteryBindMapper extends BaseMapper<ElectricityBatteryBind> {
 
+    @Delete("delete  FROM t_electricity_battery_bind  WHERE uid = #{uid}")
+    void deleteByUid(Long uid);
 }

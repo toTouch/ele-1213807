@@ -11,15 +11,13 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.StoreBindQuery;
+import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBindService;
-import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
@@ -336,16 +334,16 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public R bindElectricityCabinet(StoreBindQuery storeBindQuery) {
+    public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
         //先删除
-        electricityCabinetBindService.deleteByUid(storeBindQuery.getUid());
-        if(ObjectUtil.isEmpty(storeBindQuery.getElectricityCabinetIdList())){
+        electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
+        if(ObjectUtil.isEmpty(bindElectricityCabinetQuery.getElectricityCabinetIdList())){
             return R.ok();
         }
         //再新增
-        for (Integer electricityCabinetId :storeBindQuery.getElectricityCabinetIdList()) {
+        for (Integer electricityCabinetId : bindElectricityCabinetQuery.getElectricityCabinetIdList()) {
             ElectricityCabinetBind electricityCabinetBind=new ElectricityCabinetBind();
-            electricityCabinetBind.setUid(storeBindQuery.getUid());
+            electricityCabinetBind.setUid(bindElectricityCabinetQuery.getUid());
             electricityCabinetBind.setElectricityCabinetId(electricityCabinetId);
             electricityCabinetBindService.insert(electricityCabinetBind);
         }

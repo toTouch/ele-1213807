@@ -2,6 +2,7 @@ package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.Data;
+
 import javax.validation.constraints.NotNull;
 import java.util.List;
 
@@ -12,16 +13,16 @@ import java.util.List;
  * @since 2020-12-07 14:59:37
  */
 @Data
-public class StoreBindQuery {
+public class BindStoreQuery {
     /**
     * 门店Id
     */
     @NotNull(message = "uid不能为空!", groups = {CreateGroup.class})
     private Long uid;
     /**
-     * 换电柜Id
+     * 门店Id
      */
-    private List<Integer> electricityCabinetIdList;
+    private List<Integer> storeIdList;
 
 
 }

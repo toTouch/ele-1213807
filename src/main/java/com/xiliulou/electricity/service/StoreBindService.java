@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.electricity.entity.StoreBind;
 
 /**
  * (ElectricityCabinetBind)表服务接口
@@ -10,4 +11,7 @@ package com.xiliulou.electricity.service;
  */
 public interface StoreBindService {
 
+    void deleteByUid(Long uid);
+
+    void insert(StoreBind storeBind);
 }

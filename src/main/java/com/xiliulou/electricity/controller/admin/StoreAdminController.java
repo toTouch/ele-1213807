@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.StoreBindQuery;
+import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -98,8 +98,9 @@ public class StoreAdminController {
 
     //门店绑定电柜
     @PostMapping(value = "/admin/store/bindElectricityCabinet")
-    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) StoreBindQuery storeBindQuery){
-        return storeService.bindElectricityCabinet(storeBindQuery);
+    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) BindElectricityCabinetQuery bindElectricityCabinetQuery){
+        return storeService.bindElectricityCabinet(bindElectricityCabinetQuery);
     }
+
 
 }

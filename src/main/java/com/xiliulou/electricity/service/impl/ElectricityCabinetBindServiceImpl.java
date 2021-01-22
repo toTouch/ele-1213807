@@ -19,8 +19,8 @@ public class ElectricityCabinetBindServiceImpl implements ElectricityCabinetBind
     @Resource
     ElectricityCabinetBindMapper electricityCabinetBindMapper;
     @Override
-    public void deleteByUid(Long id) {
-        electricityCabinetBindMapper.deleteByUid(id);
+    public void deleteByUid(Long uid) {
+        electricityCabinetBindMapper.deleteByUid(uid);
     }
 
     @Override
