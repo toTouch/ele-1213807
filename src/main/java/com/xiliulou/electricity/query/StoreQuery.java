@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -41,4 +43,6 @@ public class StoreQuery {
 	 * 门店地址
 	 */
 	private String address;
+	private Long uid;
+
 }

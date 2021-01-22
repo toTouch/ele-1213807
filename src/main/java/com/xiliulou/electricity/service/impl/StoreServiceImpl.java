@@ -166,8 +166,6 @@ public class StoreServiceImpl implements StoreService {
     @DS("slave_1")
     public R queryList(StoreQuery storeQuery) {
         Page page = PageUtil.getPage(storeQuery.getOffset(), storeQuery.getSize());
-
-
         storeMapper.queryList(page, storeQuery);
         if (ObjectUtil.isEmpty(page.getRecords())) {
             return R.ok(new ArrayList<>());
@@ -353,5 +351,38 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public Store queryByUid(Long uid) {
         return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid,uid).eq(Store::getDelFlag,Store.DEL_NORMAL));
+    }
+
+    @Override
+    public R listByFranchisee(StoreQuery storeQuery) {
+        Page page = PageUtil.getPage(storeQuery.getOffset(), storeQuery.getSize());
+        storeMapper.listByFranchisee(page, storeQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return R.ok(new ArrayList<>());
+        }
+        List<StoreVO> storeVOList = page.getRecords();
+        if (ObjectUtil.isNotEmpty(storeVOList)) {
+            storeVOList.parallelStream().forEach(e -> {
+                //营业时间
+                if (Objects.nonNull(e.getBusinessTime())) {
+                    String businessTime = e.getBusinessTime();
+                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
+                        e.setBusinessTimeType(StoreVO.ALL_DAY);
+                    } else {
+                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
+                        Integer index = businessTime.indexOf("-");
+                        if (!Objects.equals(index, -1) && index > 0) {
+                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
+                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
+                            e.setBeginTime(beginTime);
+                            e.setEndTime(endTime);
+                        }
+                    }
+                }
+            });
+        }
+        page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
     }
 }

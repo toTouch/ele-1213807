@@ -149,14 +149,18 @@ public class ElectricityCabinetAdminController {
 
         //查询用户id
         Store store=storeService.queryByUid(user.getUid());
-        List<StoreBind> storeBindList=storeBindService.queryByStoreId(store.getId());
-        if(ObjectUtils.isNotEmpty(storeBindList)) {
-            List<Long> uidList = new ArrayList<>();
-            for (StoreBind storeBind : storeBindList) {
-                uidList.add(storeBind.getUid());
-            }
-            electricityCabinetQuery.setUidList(uidList);
+        if (Objects.isNull(store)) {
+            return R.fail("ELECTRICITY.0018", "未找到门店");
         }
+        List<StoreBind> storeBindList=storeBindService.queryByStoreId(store.getId());
+        if (ObjectUtils.isEmpty(storeBindList)) {
+            return R.ok();
+        }
+        List<Long> uidList = new ArrayList<>();
+        for (StoreBind storeBind : storeBindList) {
+            uidList.add(storeBind.getUid());
+        }
+        electricityCabinetQuery.setUidList(uidList);
 
         return electricityCabinetService.listByUid(electricityCabinetQuery);
     }
@@ -192,6 +196,16 @@ public class ElectricityCabinetAdminController {
                 .onlineStatus(onlineStatus)
                 .beginTime(beginTime)
                 .endTime(endTime).build();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Long> uidList = new ArrayList<>();
+        uidList.add(user.getUid());
+        electricityCabinetQuery.setUidList(uidList);
 
 
         return electricityCabinetService.listByUid(electricityCabinetQuery);

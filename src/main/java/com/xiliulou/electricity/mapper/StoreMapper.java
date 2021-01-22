@@ -31,6 +31,8 @@ public interface StoreMapper extends BaseMapper<Store> {
      */
     IPage queryList(Page page, @Param("query") StoreQuery storeQuery);
 
+    IPage listByFranchisee(Page page, StoreQuery storeQuery);
+
 
     /**
      * 修改数据
@@ -41,4 +43,5 @@ public interface StoreMapper extends BaseMapper<Store> {
     int update(Store store);
 
     List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);
+
 }
