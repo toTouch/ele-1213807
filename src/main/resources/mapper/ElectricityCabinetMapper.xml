@@ -150,9 +150,9 @@
         <if test="query.endTime != null">
             and tec.create_time &lt;=#{query.endTime}
         </if>
-        <if test="query.uidList!=null and query.uidList!=''">
+        <if test="query.storeIdList!=null and query.storeIdList!=''">
             and tsbec.store_id in
-            <foreach collection="query.uidList" item="id" index="index" open="(" close=")" separator=",">
+            <foreach collection="query.storeIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
         </if>

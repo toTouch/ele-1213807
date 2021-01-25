@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -13,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,6 +34,8 @@ public class StoreAdminController {
      */
     @Autowired
     StoreService storeService;
+    @Autowired
+    StoreBindService storeBindService;
 
     //新增门店
     @PostMapping(value = "/admin/store")
@@ -107,12 +114,6 @@ public class StoreAdminController {
             offset = 0L;
         }
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
 
         StoreQuery storeQuery = StoreQuery.builder()
                 .offset(offset)
@@ -124,8 +125,28 @@ public class StoreAdminController {
                 .address(address)
                 .batteryService(batteryService)
                 .carService(carService)
-                .usableStatus(usableStatus)
-                .uid(user.getUid()).build();
+                .usableStatus(usableStatus).build();
+
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<StoreBind> storeBindList=storeBindService.queryByUid(user.getUid());
+
+        if(ObjectUtil.isEmpty(storeBindList)){
+            return R.ok();
+        }
+        List<Integer> storeIdList=new ArrayList<>();
+        for (StoreBind storeBind:storeBindList) {
+            storeIdList.add(storeBind.getStoreId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return R.ok();
+        }
+        storeQuery.setStoreIdList(storeIdList);
 
         return storeService.listByFranchisee(storeQuery);
     }
