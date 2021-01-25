@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -10,6 +9,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,7 +61,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         //电柜在线状态
         if (Objects.isNull(receiverMessage.getType())) {
             executorService.execute(() -> {
-                if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
+                if (StringUtils.isEmpty(receiverMessage.getStatus())) {
                     return;
                 }
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());

@@ -1,11 +1,9 @@
 package com.xiliulou.electricity.handler;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -17,6 +15,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
@@ -65,12 +64,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 return;
             }
             String cellNo = eleBatteryVo.getCellNo();
-            if (StrUtil.isNotEmpty(cellNo)) {
+            if (StringUtils.isEmpty(cellNo)) {
                 log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
                 return;
             }
             String batteryName = eleBatteryVo.getBatteryName();
-            if (StrUtil.isNotEmpty(batteryName)) {
+            if (StringUtils.isEmpty(batteryName)) {
                 log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
                 return;
             }
@@ -89,11 +88,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 newElectricityBattery.setPower(power * 100);
             }
             String health = eleBatteryVo.getHealth();
-            if (StrUtil.isNotEmpty(health)) {
+            if (StringUtils.isNotEmpty(health)) {
                 newElectricityBattery.setHealthStatus(Integer.valueOf(health));
             }
             String chargeStatus = eleBatteryVo.getChargeStatus();
-            if (StrUtil.isNotEmpty(chargeStatus)) {
+            if (StringUtils.isNotEmpty(chargeStatus)) {
                 newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
             }
             electricityBatteryService.update(newElectricityBattery);

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -12,6 +11,7 @@ import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
@@ -47,7 +47,7 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
     @Override
     protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
         executorService.execute(() -> {
-            if (!StrUtil.isNotEmpty(receiverMessage.getVersion())) {
+            if (StringUtils.isEmpty(receiverMessage.getVersion())) {
                 return;
             }
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
