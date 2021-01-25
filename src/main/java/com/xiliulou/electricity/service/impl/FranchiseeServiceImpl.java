@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBatteryBind;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -16,12 +17,16 @@ import com.xiliulou.electricity.service.ElectricityBatteryBindService;
 import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.utils.DbUtils;
+import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * ( Franchisee)表服务实现类
@@ -91,7 +96,14 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R queryList(FranchiseeQuery franchiseeQuery) {
-        return null;
+        Page page = PageUtil.getPage(franchiseeQuery.getOffset(), franchiseeQuery.getSize());
+        franchiseeMapper.queryList(page, franchiseeQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return R.ok(new ArrayList<>());
+        }
+        List<Franchisee> franchiseeVOList = page.getRecords();
+        page.setRecords(franchiseeVOList.stream().sorted(Comparator.comparing(Franchisee::getCreateTime).reversed()).collect(Collectors.toList()));
+        return R.ok(page);
     }
 
     @Override
