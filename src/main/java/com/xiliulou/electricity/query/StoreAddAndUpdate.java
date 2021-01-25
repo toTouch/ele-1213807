@@ -91,5 +91,10 @@ public class StoreAddAndUpdate {
      */
     private Long endTime;
 
+    /**
+     * uid
+     */
+    private Long uid;
+
 
 }

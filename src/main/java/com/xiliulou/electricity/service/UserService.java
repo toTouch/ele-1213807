@@ -89,7 +89,6 @@ public interface UserService {
 
     R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
-    R bindStore(BindStoreQuery bindStoreQuery);
 
     R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
 }

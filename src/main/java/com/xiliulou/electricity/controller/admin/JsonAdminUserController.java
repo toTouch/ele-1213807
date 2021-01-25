@@ -113,11 +113,6 @@ public class JsonAdminUserController extends BaseController {
         return userService.bindElectricityBattery(bindElectricityBatteryQuery);
     }
 
-    //加盟商绑定门店
-    @PostMapping(value = "/user/bindStore")
-    public R bindStore(@RequestBody @Validated(value = CreateGroup.class) BindStoreQuery bindStoreQuery){
-        return userService.bindStore(bindStoreQuery);
-    }
 
     //加盟商绑定门店
     @PostMapping(value = "/user/bindElectricityCabinet")

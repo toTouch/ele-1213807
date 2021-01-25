@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
@@ -18,6 +20,7 @@ import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBindService;
+import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
@@ -25,6 +28,7 @@ import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -44,7 +48,9 @@ public class StoreServiceImpl implements StoreService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
-    ElectricityCabinetBindService  electricityCabinetBindService;
+    ElectricityCabinetBindService electricityCabinetBindService;
+    @Autowired
+    StoreBindService storeBindService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -105,6 +111,13 @@ public class StoreServiceImpl implements StoreService {
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
+            //新增门店绑定
+            if (Objects.nonNull(storeAddAndUpdate.getUid())) {
+                StoreBind storeBind = new StoreBind();
+                storeBind.setStoreId(store.getId());
+                storeBind.setUid(storeAddAndUpdate.getUid());
+                storeBindService.insert(storeBind);
+            }
             return null;
         });
         return R.ok();
@@ -139,10 +152,18 @@ public class StoreServiceImpl implements StoreService {
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
-            return null;
-        });
+            //先删除再新增
+            storeBindService.deleteByStoreId(store.getId());
+            if (Objects.nonNull(storeAddAndUpdate.getUid())) {
+                StoreBind storeBind = new StoreBind();
+                storeBind.setStoreId(store.getId());
+                storeBind.setUid(storeAddAndUpdate.getUid());
+                storeBindService.insert(storeBind);
+            }
+        return null;
+    });
         return R.ok();
-    }
+}
 
     @Override
     @Transactional
@@ -157,6 +178,8 @@ public class StoreServiceImpl implements StoreService {
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.deleteKeys(ElectricityCabinetConstant.CACHE_STORE + id);
+            //删除绑定
+            storeBindService.deleteByStoreId(store.getId());
             return null;
         });
         return R.ok();
@@ -335,12 +358,12 @@ public class StoreServiceImpl implements StoreService {
     public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
         //先删除
         electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
-        if(ObjectUtil.isEmpty(bindElectricityCabinetQuery.getElectricityCabinetIdList())){
+        if (ObjectUtil.isEmpty(bindElectricityCabinetQuery.getElectricityCabinetIdList())) {
             return R.ok();
         }
         //再新增
         for (Integer electricityCabinetId : bindElectricityCabinetQuery.getElectricityCabinetIdList()) {
-            ElectricityCabinetBind electricityCabinetBind=new ElectricityCabinetBind();
+            ElectricityCabinetBind electricityCabinetBind = new ElectricityCabinetBind();
             electricityCabinetBind.setUid(bindElectricityCabinetQuery.getUid());
             electricityCabinetBind.setElectricityCabinetId(electricityCabinetId);
             electricityCabinetBindService.insert(electricityCabinetBind);
@@ -350,7 +373,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public Store queryByUid(Long uid) {
-        return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid,uid).eq(Store::getDelFlag,Store.DEL_NORMAL));
+        return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid, uid).eq(Store::getDelFlag, Store.DEL_NORMAL));
     }
 
     @Override

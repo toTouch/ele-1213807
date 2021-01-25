@@ -486,23 +486,6 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public R bindStore(BindStoreQuery bindStoreQuery) {
-		//先删除
-		storeBindService.deleteByUid(bindStoreQuery.getUid());
-		if(ObjectUtil.isEmpty(bindStoreQuery.getStoreIdList())){
-			return R.ok();
-		}
-		//再新增
-		for (Integer storeId : bindStoreQuery.getStoreIdList()) {
-			StoreBind storeBind=new StoreBind();
-			storeBind.setUid(bindStoreQuery.getUid());
-			storeBind.setStoreId(storeId);
-			storeBindService.insert(storeBind);
-		}
-		return R.ok();
-	}
-
-	@Override
 	public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
 		//先删除
 		electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
