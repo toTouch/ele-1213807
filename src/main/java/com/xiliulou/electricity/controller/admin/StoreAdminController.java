@@ -1,10 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeBind;
 import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.service.FranchiseeBindService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -15,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +39,10 @@ public class StoreAdminController {
     StoreService storeService;
     @Autowired
     StoreBindService storeBindService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    FranchiseeBindService franchiseeBindService;
 
     //新增门店
     @PostMapping(value = "/admin/store")
@@ -134,14 +141,21 @@ public class StoreAdminController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<StoreBind> storeBindList=storeBindService.queryByUid(user.getUid());
-
-        if(ObjectUtil.isEmpty(storeBindList)){
+        List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(franchiseeList)){
+            return R.ok();
+        }
+        List<FranchiseeBind> franchiseeBinds=new ArrayList<>();
+        for (Franchisee franchisee:franchiseeList) {
+            List<FranchiseeBind> franchiseeBindList= franchiseeBindService.queryByFranchiseeId(franchisee.getId());
+            franchiseeBinds.addAll(franchiseeBindList);
+        }
+        if(ObjectUtil.isEmpty(franchiseeBinds)){
             return R.ok();
         }
         List<Integer> storeIdList=new ArrayList<>();
-        for (StoreBind storeBind:storeBindList) {
-            storeIdList.add(storeBind.getStoreId());
+        for (FranchiseeBind franchiseeBind:franchiseeBinds) {
+            storeIdList.add(franchiseeBind.getStoreId());
         }
         if(ObjectUtil.isEmpty(storeIdList)){
             return R.ok();

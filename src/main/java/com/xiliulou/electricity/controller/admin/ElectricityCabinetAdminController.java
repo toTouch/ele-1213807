@@ -155,7 +155,7 @@ public class ElectricityCabinetAdminController {
 
         List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
         if(ObjectUtil.isEmpty(franchiseeList)){
-            return R.fail("ELECTRICITY.0039", "无权访问");
+            return R.ok();
         }
         List<FranchiseeBind> franchiseeBinds=new ArrayList<>();
         for (Franchisee franchisee:franchiseeList) {
