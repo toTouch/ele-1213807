@@ -16,5 +16,7 @@ public class ElectricityBatteryQuery {
      */
     private Integer status;
 
+    private Long uid;
+
 
 }

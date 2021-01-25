@@ -38,4 +38,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn);
 
     void updateStatus(ElectricityBattery newElectricityBattery);
+
+    R pageByFranchisee(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 }

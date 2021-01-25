@@ -3,6 +3,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -68,9 +70,36 @@ public class ElectricityCabinetBatteryAdminController {
     @GetMapping(value = "/admin/battery/page")
     public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "status", required = false) Integer status) {
+                                       @RequestParam(value = "status", required = false) Integer status,
+                                       @RequestParam(value = "sn", required = false) String sn) {
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setSn(sn);
         return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
+    }
+
+    /**
+     * 加盟商电池
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/admin/battery/pageByFranchisee")
+    public R pageByFranchisee(@RequestParam(value = "offset") Long offset,
+                                       @RequestParam(value = "size") Long size,
+                                       @RequestParam(value = "status", required = false) Integer status,
+                                       @RequestParam(value = "sn", required = false) String sn) {
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setUid(user.getUid());
+        electricityBatteryQuery.setSn(sn);
+        return electricityBatteryService.pageByFranchisee(electricityBatteryQuery, offset, size);
     }
 }

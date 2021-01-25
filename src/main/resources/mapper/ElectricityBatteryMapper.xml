@@ -44,6 +44,26 @@
         order by tel.create_time desc
 
     </select>
+
+    <!--电池分页-->
+    <select id="pageByFranchisee" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
+        select tel.* ,  tui.name as user_name from
+        t_electricity_battery tel
+        LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.sn
+        left join electricity.t_electricity_battery_bind as  tebb on tel.id=tebb.electricity_battery_id
+        where tel.del_flag = 0
+        <if test="query.sn != null">
+            and tel.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.status != null">
+            and tel.status =#{query.status}
+        </if>
+        <if test="query.uid != null">
+            and  tebb.uid = #{query.uid}
+        </if>
+        order by tel.create_time desc
+
+    </select>
     <select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select teb.id as id,teb.sn as sn,
         teb.power as power,teb.voltage as voltage,teb.capacity as capacity,
