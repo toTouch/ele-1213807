@@ -55,7 +55,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
         }
         EleOrderVo eleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderVo.class);
         //幂等加锁
-        Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId+eleOrderVo.getStatus(), "true", 10 * 1000L, true);
+        Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId+eleOrderVo.getOrderStatus(), "true", 10 * 1000L, true);
         if (!result) {
             log.error("sessionId is lock,{}", sessionId);
             return false;
