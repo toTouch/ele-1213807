@@ -27,6 +27,10 @@ public class Franchisee {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
+     * 门店名称
+     */
+    private String name;
+    /**
      * 城市Id
      */
     private Integer cid;
