@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * (ElectricityBatteryBind)实体类
+ * (Franchisee)实体类
  *
  * @author lxc
  * @since 2020-11-25 11:00:14
@@ -19,20 +19,35 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_electricity_battery_bind")
-public class ElectricityBatteryBind {
+@TableName("t_franchisee")
+public class Franchisee {
     /**
-     * 换电柜Id
+     * Id
      */
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
+     * 城市Id
+     */
+    private Integer cid;
+    /**
      * uid
      */
-    private Long franchiseeId;
+    private Long uid;
     /**
-     * 电池ID
+     * 0--正常 1--删除
      */
-    private Long electricityBatteryId;
+    private Integer delFlag;
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
+
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 
 }

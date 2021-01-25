@@ -54,7 +54,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
             return false;
         }
         //幂等加锁
-        Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId, "true", 10 * 1000L, true);
+        Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId, "true", 5 * 1000L, true);
         if (!result) {
             log.error("sessionId is lock,{}", sessionId);
             return false;
