@@ -9,7 +9,7 @@ import org.springframework.stereotype.Service;
  * @author makejava
  * @since 2020-11-25 11:00:14
  */
-@Service("franchiseeService")
+@Service("franchiseeBindService")
 @Slf4j
 public class FranchiseeBindServiceImpl implements FranchiseeBindService {
 
