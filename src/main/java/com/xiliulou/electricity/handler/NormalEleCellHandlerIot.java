@@ -70,7 +70,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             }
             Long batteryId = null;
             String batteryName = eleCellVo.getBatteryName();
-            if (StringUtils.isEmpty(batteryName)) {
+            if (StringUtils.isNotEmpty(batteryName)) {
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
                 if (Objects.isNull(electricityBattery)) {
                     log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
