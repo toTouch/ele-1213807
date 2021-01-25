@@ -1,15 +1,20 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeBind;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeBindService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -17,7 +22,6 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
@@ -26,6 +30,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+
 
 /**
  * 换电柜表(TElectricityCabinet)表控制层
@@ -48,6 +53,10 @@ public class ElectricityCabinetAdminController {
     StoreService storeService;
     @Autowired
     StoreBindService storeBindService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    FranchiseeBindService franchiseeBindService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -138,6 +147,67 @@ public class ElectricityCabinetAdminController {
                 .beginTime(beginTime)
                 .endTime(endTime).build();
 
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(franchiseeList)){
+            return R.fail("ELECTRICITY.0039", "无权访问");
+        }
+        List<FranchiseeBind> franchiseeBinds=new ArrayList<>();
+        for (Franchisee franchisee:franchiseeList) {
+            List<FranchiseeBind> franchiseeBindList= franchiseeBindService.queryByFranchiseeId(franchisee.getId());
+            franchiseeBinds.addAll(franchiseeBindList);
+        }
+        if(ObjectUtil.isEmpty(franchiseeBinds)){
+            return R.ok();
+        }
+        List<Integer> storeIdList=new ArrayList<>();
+        for (FranchiseeBind franchiseeBind:franchiseeBinds) {
+            storeIdList.add(franchiseeBind.getStoreId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return R.ok();
+        }
+        electricityCabinetQuery.setStoreIdList(storeIdList);
+
+        return electricityCabinetService.listByStoreId(electricityCabinetQuery);
+    }
+
+    //网点列表查询
+    @GetMapping(value = "/admin/electricityCabinet/listByStoreId")
+    public R listByStoreId(@RequestParam(value = "size", required = false) Long size,
+                              @RequestParam(value = "offset", required = false) Long offset,
+                              @RequestParam(value = "sn", required = false) String sn,
+                              @RequestParam(value = "name", required = false) String name,
+                              @RequestParam(value = "address", required = false) String address,
+                              @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                              @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
+                              @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+                              @RequestParam(value = "beginTime", required = false) Long beginTime,
+                              @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (Objects.isNull(size)) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
+                .offset(offset)
+                .size(size)
+                .sn(sn)
+                .name(name)
+                .address(address)
+                .usableStatus(usableStatus)
+                .powerStatus(powerStatus)
+                .onlineStatus(onlineStatus)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -145,17 +215,24 @@ public class ElectricityCabinetAdminController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //查询用户id
-        Store store=storeService.queryByUid(user.getUid());
-        if (Objects.isNull(store)) {
-            return R.fail("ELECTRICITY.0018", "未找到门店");
+        List<StoreBind> storeBindList=storeBindService.queryByUid(user.getUid());
+
+        if(ObjectUtil.isEmpty(storeBindList)){
+            return R.ok();
+        }
+        List<Integer> storeIdList=new ArrayList<>();
+        for (StoreBind storeBind:storeBindList) {
+            storeIdList.add(storeBind.getStoreId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return R.ok();
         }
 
-
-        return electricityCabinetService.listByUid(electricityCabinetQuery);
+        electricityCabinetQuery.setStoreIdList(storeIdList);
+        return electricityCabinetService.listByStoreId(electricityCabinetQuery);
     }
 
-    //网点/柜子负责人列表查询
+    //柜子负责人列表查询
     @GetMapping(value = "/admin/electricityCabinet/listByUid")
     public R listByUid(@RequestParam(value = "size", required = false) Long size,
                               @RequestParam(value = "offset", required = false) Long offset,

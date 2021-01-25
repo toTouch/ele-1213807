@@ -76,4 +76,6 @@ public interface ElectricityCabinetService {
     R queryByDeviceOuter(String productKey, String deviceName, String deviceSecret);
 
     R listByUid(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R listByStoreId(ElectricityCabinetQuery electricityCabinetQuery);
 }

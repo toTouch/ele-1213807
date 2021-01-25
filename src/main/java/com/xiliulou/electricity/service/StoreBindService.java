@@ -16,7 +16,8 @@ public interface StoreBindService {
 
     void insert(StoreBind storeBind);
 
-    StoreBind queryByStoreId(Integer id);
 
     void deleteByStoreId(Integer id);
+
+    List<StoreBind> queryByUid(Long uid);
 }

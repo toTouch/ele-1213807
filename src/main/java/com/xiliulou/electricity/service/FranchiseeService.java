@@ -8,6 +8,8 @@ import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 
+import java.util.List;
+
 /**
  * (Franchisee)表服务接口
  *
@@ -33,4 +35,6 @@ public interface FranchiseeService {
     R getElectricityBatteryList(Integer id);
 
     R getStoreList(Integer id);
+
+    List<Franchisee> queryByUid(Long uid);
 }

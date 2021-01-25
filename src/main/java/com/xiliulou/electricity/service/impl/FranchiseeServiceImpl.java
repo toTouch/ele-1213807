@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBatteryBind;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -19,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -134,5 +136,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     public R getStoreList(Integer id) {
         return R.ok(franchiseeBindService.queryByFranchiseeId(id));
+    }
+
+    @Override
+    public List<Franchisee> queryByUid(Long uid) {
+        return franchiseeMapper.selectList(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid));
     }
 }
