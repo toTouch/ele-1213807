@@ -150,15 +150,7 @@ public class ElectricityCabinetAdminController {
         if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        List<StoreBind> storeBindList=storeBindService.queryByStoreId(store.getId());
-        if (ObjectUtils.isEmpty(storeBindList)) {
-            return R.ok();
-        }
-        List<Long> uidList = new ArrayList<>();
-        for (StoreBind storeBind : storeBindList) {
-            uidList.add(storeBind.getUid());
-        }
-        electricityCabinetQuery.setUidList(uidList);
+
 
         return electricityCabinetService.listByUid(electricityCabinetQuery);
     }
