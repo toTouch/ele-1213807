@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FranchiseeBind;
+import org.apache.ibatis.annotations.Delete;
 
 /**
  * (FranchiseeBind)表数据库访问层
@@ -10,4 +11,6 @@ import com.xiliulou.electricity.entity.FranchiseeBind;
  */
 public interface FranchiseeBindMapper extends BaseMapper<FranchiseeBind> {
 
+    @Delete("delete  FROM t_franchisee_bind  WHERE franchisee_id = #{franchiseeId}")
+    void deleteByFranchiseeId(Integer franchiseeId);
 }

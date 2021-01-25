@@ -6,7 +6,6 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
-import com.xiliulou.electricity.query.BindStoreQuery;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -107,17 +106,12 @@ public class JsonAdminUserController extends BaseController {
         return returnTripleResult(userService.updatePassword(passwordQuery));
     }
 
-    //加盟商绑定电池
-    @PostMapping(value = "/user/bindElectricityBattery")
-    public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery){
-        return userService.bindElectricityBattery(bindElectricityBatteryQuery);
-    }
-
-
-    //加盟商绑定门店
+    //电柜负责人绑定电柜
     @PostMapping(value = "/user/bindElectricityCabinet")
     public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) BindElectricityCabinetQuery bindElectricityCabinetQuery){
         return userService.bindElectricityCabinet(bindElectricityCabinetQuery);
     }
+
+
 
 }

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service;
-
-
 import com.xiliulou.electricity.entity.ElectricityBatteryBind;
+
+import java.util.List;
 
 /**
  * (ElectricityBatteryBind)表服务接口
@@ -14,4 +14,6 @@ public interface ElectricityBatteryBindService {
     void deleteByFranchiseeId(Long franchiseeId);
 
     void insert(ElectricityBatteryBind electricityBatteryBind);
+
+    List<ElectricityBatteryBind> queryByFranchiseeId(Integer id);
 }

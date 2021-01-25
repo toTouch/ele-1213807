@@ -87,8 +87,6 @@ public interface UserService {
 
     Pair<Boolean, Object> getUserDetail();
 
-    R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
-
 
     R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
 }

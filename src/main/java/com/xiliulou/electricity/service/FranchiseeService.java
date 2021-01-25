@@ -1,6 +1,13 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
+import com.xiliulou.electricity.query.BindFranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
+import com.xiliulou.electricity.query.FranchiseeQuery;
+
 /**
  * (Franchisee)表服务接口
  *
@@ -9,4 +16,21 @@ package com.xiliulou.electricity.service;
  */
 public interface FranchiseeService {
 
+    R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate);
+
+    R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate);
+
+    R delete(Integer id);
+    
+    Franchisee queryByIdFromDB(Integer id);
+
+    R queryList(FranchiseeQuery franchiseeQuery);
+
+    R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
+
+    R bindStore(BindFranchiseeQuery bindFranchiseeQuery);
+
+    R getElectricityBatteryList(Integer id);
+
+    R getStoreList(Integer id);
 }

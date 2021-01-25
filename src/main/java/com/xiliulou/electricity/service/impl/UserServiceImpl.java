@@ -17,14 +17,11 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBatteryBind;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Province;
-import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
-import com.xiliulou.electricity.query.BindStoreQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryBindService;
 import com.xiliulou.electricity.service.ElectricityCabinetBindService;
@@ -466,23 +463,6 @@ public class UserServiceImpl implements UserService {
 		resultMap.put("user", userVo);
 
 		return Pair.of(true, resultMap);
-	}
-
-	@Override
-	public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
-		//先删除
-		electricityBatteryBindService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
-		if(ObjectUtil.isEmpty(bindElectricityBatteryQuery.getElectricityBatteryIdList())){
-			return R.ok();
-		}
-		//再新增
-		for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
-			ElectricityBatteryBind electricityBatteryBind=new ElectricityBatteryBind();
-			electricityBatteryBind.setFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
-			electricityBatteryBind.setElectricityBatteryId(electricityBatteryId);
-			electricityBatteryBindService.insert(electricityBatteryBind);
-		}
-		return R.ok();
 	}
 
 	@Override

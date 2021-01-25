@@ -1,6 +1,10 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.electricity.entity.FranchiseeBind;
+
+import java.util.List;
+
 /**
  * (FranchiseeBind)表服务接口
  *
@@ -9,4 +13,9 @@ package com.xiliulou.electricity.service;
  */
 public interface FranchiseeBindService {
 
+    void deleteByFranchiseeId(Integer franchiseeId);
+
+    void insert(FranchiseeBind franchiseeBind);
+
+    List<FranchiseeBind> queryByFranchiseeId(Integer id);
 }
