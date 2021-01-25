@@ -19,8 +19,8 @@ public class ElectricityBatteryBindServiceImpl implements ElectricityBatteryBind
     @Resource
     ElectricityBatteryBindMapper electricityBatteryBindMapper;
     @Override
-    public void deleteByUid(Long uid) {
-        electricityBatteryBindMapper.deleteByUid(uid);
+    public void deleteByFranchiseeId(Long franchiseeId) {
+        electricityBatteryBindMapper.deleteByFranchiseeId(franchiseeId);
     }
 
     @Override

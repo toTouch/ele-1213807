@@ -471,14 +471,14 @@ public class UserServiceImpl implements UserService {
 	@Override
 	public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
 		//先删除
-		electricityBatteryBindService.deleteByUid(bindElectricityBatteryQuery.getUid());
+		electricityBatteryBindService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
 		if(ObjectUtil.isEmpty(bindElectricityBatteryQuery.getElectricityBatteryIdList())){
 			return R.ok();
 		}
 		//再新增
 		for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
 			ElectricityBatteryBind electricityBatteryBind=new ElectricityBatteryBind();
-			electricityBatteryBind.setUid(bindElectricityBatteryQuery.getUid());
+			electricityBatteryBind.setFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
 			electricityBatteryBind.setElectricityBatteryId(electricityBatteryId);
 			electricityBatteryBindService.insert(electricityBatteryBind);
 		}

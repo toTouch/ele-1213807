@@ -11,7 +11,7 @@ import com.xiliulou.electricity.entity.ElectricityBatteryBind;
  */
 public interface ElectricityBatteryBindService {
 
-    void deleteByUid(Long uid);
+    void deleteByFranchiseeId(Long franchiseeId);
 
     void insert(ElectricityBatteryBind electricityBatteryBind);
 }

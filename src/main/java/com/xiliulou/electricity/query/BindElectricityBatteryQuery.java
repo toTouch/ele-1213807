@@ -15,10 +15,10 @@ import java.util.List;
 @Data
 public class BindElectricityBatteryQuery {
     /**
-    * 门店Id
+    * 加盟商Id
     */
-    @NotNull(message = "uid不能为空!", groups = {CreateGroup.class})
-    private Long uid;
+    @NotNull(message = "加盟商Id不能为空!", groups = {CreateGroup.class})
+    private Long franchiseeId;
     /**
      * 换电柜Id
      */

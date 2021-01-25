@@ -11,6 +11,6 @@ import org.apache.ibatis.annotations.Delete;
  */
 public interface ElectricityBatteryBindMapper extends BaseMapper<ElectricityBatteryBind> {
 
-    @Delete("delete  FROM t_electricity_battery_bind  WHERE uid = #{uid}")
-    void deleteByUid(Long uid);
+    @Delete("delete  FROM t_electricity_battery_bind  WHERE franchisee_id = #{franchiseeId}")
+    void deleteByFranchiseeId(Long franchiseeId);
 }
