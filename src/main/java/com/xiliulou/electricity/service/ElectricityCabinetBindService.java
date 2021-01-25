@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 
 /**
@@ -14,4 +15,5 @@ public interface ElectricityCabinetBindService {
     void deleteByUid(Long id);
 
     void insert(ElectricityCabinetBind electricityCabinetBind);
+
 }

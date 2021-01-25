@@ -3,6 +3,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -146,8 +147,14 @@ public class StoreAdminController {
 
     //门店绑定电柜
     @PostMapping(value = "/admin/store/bindElectricityCabinet")
-    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) BindElectricityCabinetQuery bindElectricityCabinetQuery){
-        return storeService.bindElectricityCabinet(bindElectricityCabinetQuery);
+    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery){
+        return storeService.bindElectricityCabinet(storeBindElectricityCabinetQuery);
+    }
+
+    //门店绑定电柜查询
+    @GetMapping(value = "/admin/store/getElectricityCabinetList/{id}")
+    public R getElectricityCabinetList(@PathVariable("id") Integer id){
+        return storeService.getElectricityCabinetList(id);
     }
 
 

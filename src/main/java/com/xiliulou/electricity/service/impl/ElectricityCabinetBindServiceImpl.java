@@ -1,4 +1,6 @@
 package com.xiliulou.electricity.service.impl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBindMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetBindService;
@@ -27,4 +29,5 @@ public class ElectricityCabinetBindServiceImpl implements ElectricityCabinetBind
     public void insert(ElectricityCabinetBind electricityCabinetBind) {
         electricityCabinetBindMapper.insert(electricityCabinetBind);
     }
+
 }

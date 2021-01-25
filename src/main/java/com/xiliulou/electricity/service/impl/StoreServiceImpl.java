@@ -13,13 +13,14 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreBind;
+import com.xiliulou.electricity.entity.StoreBindElectricityCabinet;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBindService;
+import com.xiliulou.electricity.service.StoreBindElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -48,7 +49,7 @@ public class StoreServiceImpl implements StoreService {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
-    ElectricityCabinetBindService electricityCabinetBindService;
+    StoreBindElectricityCabinetService storeBindElectricityCabinetService;
     @Autowired
     StoreBindService storeBindService;
 
@@ -355,18 +356,18 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
+    public R bindElectricityCabinet(StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery) {
         //先删除
-        electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
-        if (ObjectUtil.isEmpty(bindElectricityCabinetQuery.getElectricityCabinetIdList())) {
+        storeBindElectricityCabinetService.deleteByStoreId(storeBindElectricityCabinetQuery.getStoreId());
+        if (ObjectUtil.isEmpty(storeBindElectricityCabinetQuery.getElectricityCabinetIdList())) {
             return R.ok();
         }
         //再新增
-        for (Integer electricityCabinetId : bindElectricityCabinetQuery.getElectricityCabinetIdList()) {
-            ElectricityCabinetBind electricityCabinetBind = new ElectricityCabinetBind();
-            electricityCabinetBind.setUid(bindElectricityCabinetQuery.getUid());
-            electricityCabinetBind.setElectricityCabinetId(electricityCabinetId);
-            electricityCabinetBindService.insert(electricityCabinetBind);
+        for (Integer electricityCabinetId : storeBindElectricityCabinetQuery.getElectricityCabinetIdList()) {
+            StoreBindElectricityCabinet storeBindElectricityCabinet = new StoreBindElectricityCabinet();
+            storeBindElectricityCabinet.setStoreId(storeBindElectricityCabinetQuery.getStoreId());
+            storeBindElectricityCabinet.setElectricityCabinetId(electricityCabinetId);
+            storeBindElectricityCabinetService.insert(storeBindElectricityCabinet);
         }
         return R.ok();
     }
@@ -407,5 +408,10 @@ public class StoreServiceImpl implements StoreService {
         }
         page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
         return R.ok(page);
+    }
+
+    @Override
+    public R getElectricityCabinetList(Integer id) {
+        return R.ok(storeBindElectricityCabinetService.queryByStoreId(id));
     }
 }
