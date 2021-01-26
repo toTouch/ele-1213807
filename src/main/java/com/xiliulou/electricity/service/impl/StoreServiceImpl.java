@@ -102,6 +102,7 @@ public class StoreServiceImpl implements StoreService {
         if (Objects.isNull(store.getBusinessTime())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+        //TODO 判断用户存不存在
         if (Objects.isNull(store.getUsableStatus())) {
             store.setUsableStatus(Store.STORE_UN_USABLE_STATUS);
         }
@@ -148,6 +149,7 @@ public class StoreServiceImpl implements StoreService {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
         }
+        //TODO 判断用户存不存在
         store.setUpdateTime(System.currentTimeMillis());
         int update = storeMapper.update(store);
         DbUtils.dbOperateSuccessThen(update, () -> {

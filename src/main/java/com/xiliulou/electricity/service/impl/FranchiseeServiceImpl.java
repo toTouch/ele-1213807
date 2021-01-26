@@ -50,6 +50,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     FranchiseeBindService franchiseeBindService;
     @Override
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+        //TODO 判断用户存不存在
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setCreateTime(System.currentTimeMillis());
@@ -64,6 +65,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+        //TODO 判断用户存不存在
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setUpdateTime(System.currentTimeMillis());
