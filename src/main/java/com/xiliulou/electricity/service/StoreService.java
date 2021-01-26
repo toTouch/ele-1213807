@@ -53,7 +53,6 @@ public interface StoreService {
 
     R bindElectricityCabinet(StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery);
 
-    Store queryByUid(Long uid);
 
     R listByFranchisee(StoreQuery storeQuery);
 
