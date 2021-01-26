@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_electricity_battery_bind")
+@TableName("t_store_bind")
 public class StoreBind {
     /**
      * 换电柜Id
