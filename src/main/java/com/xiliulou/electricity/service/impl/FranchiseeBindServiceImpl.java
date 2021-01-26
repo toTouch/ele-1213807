@@ -34,6 +34,6 @@ public class FranchiseeBindServiceImpl implements FranchiseeBindService {
 
     @Override
     public List<FranchiseeBind> queryByFranchiseeId(Integer id) {
-        return franchiseeBindMapper.selectList(new LambdaQueryWrapper<FranchiseeBind>().eq(FranchiseeBind::getFranchiseId,id));
+        return franchiseeBindMapper.selectList(new LambdaQueryWrapper<FranchiseeBind>().eq(FranchiseeBind::getFranchiseeId,id));
     }
 }
