@@ -20,4 +20,6 @@ public interface StoreBindService {
     void deleteByStoreId(Integer id);
 
     List<StoreBind> queryByUid(Long uid);
+
+    StoreBind queryByStoreId(Integer id);
 }

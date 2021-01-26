@@ -214,6 +214,10 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
+                StoreBind storeBind=storeBindService.queryByStoreId(e.getId());
+                if(Objects.nonNull(storeBind)){
+                    e.setUid(storeBind.getUid());
+                }
             });
         }
         page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
