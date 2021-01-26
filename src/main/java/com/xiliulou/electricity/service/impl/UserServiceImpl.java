@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,7 +13,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityBatteryBind;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Province;
 import com.xiliulou.electricity.entity.User;
@@ -46,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -480,6 +477,11 @@ public class UserServiceImpl implements UserService {
 			electricityCabinetBindService.insert(electricityCabinetBind);
 		}
 		return R.ok();
+	}
+
+	@Override
+	public R queryElectricityCabinetList(Long uid) {
+		return R.ok(electricityCabinetBindService.queryElectricityCabinetList(uid));
 	}
 
 }

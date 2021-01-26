@@ -112,6 +112,12 @@ public class JsonAdminUserController extends BaseController {
         return userService.bindElectricityCabinet(bindElectricityCabinetQuery);
     }
 
+    //电柜负责人绑定电柜查询
+    @PostMapping(value = "/user/queryElectricityCabinetList/{uid}")
+    public R queryElectricityCabinetList(@PathVariable("uid") Long uid){
+        return userService.queryElectricityCabinetList(uid);
+    }
+
 
 
 }

@@ -89,4 +89,6 @@ public interface UserService {
 
 
     R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
+
+    R queryElectricityCabinetList(Long uid);
 }
