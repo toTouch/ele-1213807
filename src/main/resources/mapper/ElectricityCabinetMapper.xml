@@ -125,7 +125,7 @@
         tec.update_time as updateTime, tec.del_flag as delFlag
         from electricity.t_electricity_cabinet tec
         left join electricity.t_store_bind_electricity_cabinet as tsbec on tec.id=tsbec.electricity_cabinet_id
-        where del_flag=0
+        where tec.del_flag=0
         <if test="query.sn != null and query.sn != ''">
             and tec.sn = #{query.sn}
         </if>
