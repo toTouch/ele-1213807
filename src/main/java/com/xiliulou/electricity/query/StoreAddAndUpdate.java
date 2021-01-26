@@ -46,16 +46,6 @@ public class StoreAddAndUpdate {
     @NotNull(message = " 地址纬度不能为空!", groups = {CreateGroup.class})
     private Double latitude;
     /**
-    * 租电池服务(0--支持，1--不支持)
-    */
-    @NotNull(message = " 租电池服务不能为空!", groups = {CreateGroup.class})
-    private Integer batteryService;
-    /**
-    * 租车服务(0--支持，1--不支持)
-    */
-    @NotNull(message = "租车服务不能为空!", groups = {CreateGroup.class})
-    private Integer carService;
-    /**
     * 0--正常 1--删除
     */
     private Object delFlag;
