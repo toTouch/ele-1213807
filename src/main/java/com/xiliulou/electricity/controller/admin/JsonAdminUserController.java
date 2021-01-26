@@ -102,6 +102,8 @@ public class JsonAdminUserController extends BaseController {
         }
 
         List<Integer> cidList=new ArrayList<>();
+
+
         for (Franchisee franchisee:franchiseeList) {
             cidList.add(franchisee.getCid());
         }

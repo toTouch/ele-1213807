@@ -62,6 +62,8 @@ public class HardwareCommand {
 	public static final String EXCHANGE_CABINET = "exchange_cabinet";
 	//配柜子
 	public static final String ELE_COMMAND_CELL_CONFIG = "cell_config";
+	//远程更新
+	public static final String ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION = "cupboard_update_application";
 
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 

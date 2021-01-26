@@ -25,12 +25,16 @@ import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -300,7 +304,7 @@ public class StoreServiceImpl implements StoreService {
 
 
     @Override
-    public R rentBattery(StoreQuery storeQuery) {
+    public R showInfoByDistance(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
         List<StoreVO> storeVOs = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(storeVOList)) {
@@ -310,52 +314,30 @@ public class StoreServiceImpl implements StoreService {
                     String businessTime = e.getBusinessTime();
                     if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
                         e.setBusinessTimeType(StoreVO.ALL_DAY);
+                        e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
                     } else {
                         e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
                         Integer index = businessTime.indexOf("-");
                         if (!Objects.equals(index, -1) && index > 0) {
-                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
-                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
-                            e.setBeginTime(beginTime);
-                            e.setEndTime(endTime);
+                            e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+                            Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                            Long beginTime = getTime(totalBeginTime);
+                            Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                            Long endTime = getTime(totalEndTime);
+                            e.setBeginTime(totalBeginTime);
+                            e.setEndTime(totalEndTime);
+                            Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                            Long now = System.currentTimeMillis();
+                            if (firstToday + beginTime > now || firstToday + endTime < now) {
+                                e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
+                            } else {
+                                e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
+                            }
                         }
                     }
                 }
-                if (Objects.equals(e.getBatteryService(), Store.SUPPORT)) {
-                    storeVOs.add(e);
-                }
-            });
-        }
-        return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
-    }
-
-    @Override
-    public R rentCar(StoreQuery storeQuery) {
-        List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
-        List<StoreVO> storeVOs = new ArrayList<>();
-        if (ObjectUtil.isNotEmpty(storeVOList)) {
-            storeVOList.parallelStream().forEach(e -> {
-                //营业时间
-                if (Objects.nonNull(e.getBusinessTime())) {
-                    String businessTime = e.getBusinessTime();
-                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
-                        e.setBusinessTimeType(StoreVO.ALL_DAY);
-                    } else {
-                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index = businessTime.indexOf("-");
-                        if (!Objects.equals(index, -1) && index > 0) {
-                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
-                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
-                            e.setBeginTime(beginTime);
-                            e.setEndTime(endTime);
-                        }
-                    }
-                }
-                if (Objects.equals(e.getCarService(), Store.SUPPORT)) {
-                    storeVOs.add(e);
-                }
+                //电柜数
+                //满电电池数
             });
         }
         return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
@@ -415,5 +397,19 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public R getElectricityCabinetList(Integer id) {
         return R.ok(storeBindElectricityCabinetService.queryByStoreId(id));
+    }
+
+    public Long getTime(Long time) {
+        Date date1 = new Date(time);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = dateFormat.format(date1);
+        Date date2 = null;
+        try {
+            date2 = dateFormat.parse(format);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Long ts = date2.getTime();
+        return time - ts;
     }
 }
