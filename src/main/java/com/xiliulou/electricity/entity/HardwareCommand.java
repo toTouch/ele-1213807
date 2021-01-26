@@ -60,6 +60,8 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_BATTERY_REPORT_INFO = "battery_report_info";
 	//电柜版本上报
 	public static final String EXCHANGE_CABINET = "exchange_cabinet";
+	//配柜子
+	public static final String ELE_COMMAND_CELL_CONFIG = "cell_config";
 
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
@@ -92,5 +94,6 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_REPORT_INFO, "OK");
 		ELE_COMMAND_MAPS.put(EXCHANGE_CABINET, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_ALL_OPEN_DOOR, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CONFIG, "OK");
 	}
 }
