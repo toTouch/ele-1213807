@@ -133,7 +133,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         //再新增
         for (Integer storeId : bindFranchiseeQuery.getStoreIdList()) {
             FranchiseeBind franchiseeBind=new FranchiseeBind();
-            franchiseeBind.setFranchiseId(bindFranchiseeQuery.getFranchiseeId());
+            franchiseeBind.setFranchiseeId(bindFranchiseeQuery.getFranchiseeId());
             franchiseeBind.setStoreId(storeId);
             franchiseeBindService.insert(franchiseeBind);
         }
