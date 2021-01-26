@@ -1,10 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
-
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserService;
@@ -25,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import java.util.List;
 
 /**
