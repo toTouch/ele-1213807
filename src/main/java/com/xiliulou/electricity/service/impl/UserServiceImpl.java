@@ -484,4 +484,11 @@ public class UserServiceImpl implements UserService {
 		return R.ok(electricityCabinetBindService.queryElectricityCabinetList(uid));
 	}
 
+	@Override
+	public Pair<Boolean, Object> listByFranchisee(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, List<Integer> cidList) {
+		Page page = PageUtil.getPage(offset, size);
+
+		return Pair.of(true, this.userMapper.listByFranchisee(page, uid, size, offset, name, phone, type, startTime, endTime,cidList));
+	}
+
 }
