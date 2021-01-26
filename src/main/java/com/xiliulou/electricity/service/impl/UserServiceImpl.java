@@ -246,7 +246,7 @@ public class UserServiceImpl implements UserService {
 
 		//设置角色
 		UserRole userRole = new UserRole();
-		userRole.setRoleId(adminUserQuery.getUserType().longValue());
+		userRole.setRoleId(adminUserQuery.getUserType().longValue() + 1);
 		userRole.setUid(insert.getUid());
 		userRoleService.insert(userRole);
 
