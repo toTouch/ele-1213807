@@ -1,35 +1,12 @@
 package com.xiliulou.electricity.entity;
 
-
-    
-
-
-
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-
-                            import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
-                            import sun.util.resources.LocaleData;
 
-                            import java.time.LocalDate;
+import java.time.LocalDate;
 
 /**
  * 换电柜电量表(ElectricityCabinetPower)实体类
