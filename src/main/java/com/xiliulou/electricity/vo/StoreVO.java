@@ -1,16 +1,6 @@
 package com.xiliulou.electricity.vo;
-
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 /**
  * 门店表(TStore)实体类
@@ -96,6 +86,12 @@ public class StoreVO {
     private Integer isBusiness;
 
     private Long uid;
+
+    //在线柜机数
+    private Integer onlineElectricityCabinet;
+
+    //满电电池
+    private Integer fullyElectricityBattery;
 
     //全天
     public static final String ALL_DAY = "-1";

@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
@@ -10,7 +9,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.StoreBindElectricityCabinet;
@@ -20,6 +18,7 @@ import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
@@ -30,7 +29,6 @@ import com.xiliulou.electricity.vo.StoreVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -56,6 +54,8 @@ public class StoreServiceImpl implements StoreService {
     StoreBindElectricityCabinetService storeBindElectricityCabinetService;
     @Autowired
     StoreBindService storeBindService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -336,8 +336,27 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
-                //电柜数
+                Integer onlineElectricityCabinetCount=0;
+                Integer fullyElectricityBatteryCount=0;
+                //在线电柜数
                 //满电电池数
+                List<StoreBindElectricityCabinet> storeBindElectricityCabinetList=storeBindElectricityCabinetService.queryByStoreId(e.getId());
+                if(ObjectUtil.isNotEmpty(storeBindElectricityCabinetList)){
+                    for (StoreBindElectricityCabinet storeBindElectricityCabinet:storeBindElectricityCabinetList) {
+                        ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(storeBindElectricityCabinet.getElectricityCabinetId());
+                        if(Objects.nonNull(electricityCabinet)){
+                            //动态查询在线状态
+                            boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                            if (result) {
+                                onlineElectricityCabinetCount=onlineElectricityCabinetCount+1;
+                                Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(e.getId());
+                                fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
+                            }
+                        }
+                    }
+                }
+                e.setOnlineElectricityCabinet(onlineElectricityCabinetCount);
+                e.setFullyElectricityBattery(fullyElectricityBatteryCount);
             });
         }
         return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));

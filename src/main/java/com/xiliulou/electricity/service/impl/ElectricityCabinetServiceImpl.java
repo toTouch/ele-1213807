@@ -403,7 +403,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
                 //查满仓空仓数
                 Integer electricityBatteryTotal = 0;
                 Integer noElectricityBattery = 0;
@@ -445,6 +445,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             });
         }
         return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
+    }
+
+    @Override
+    public Integer queryFullyElectricityBattery(Integer id) {
+        return electricityCabinetMapper.queryFullyElectricityBattery(id);
     }
 
     @Override

@@ -49,6 +49,8 @@ public interface ElectricityCabinetService {
 
     R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery);
 
+    Integer queryFullyElectricityBattery(Integer id);
+
     boolean deviceIsOnline(String productKey, String deviceName);
 
     Integer queryByModelId(Integer id);
