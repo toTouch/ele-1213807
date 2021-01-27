@@ -25,7 +25,7 @@ public class StoreUserController {
     StoreService storeService;
 
     //列表查询
-    @GetMapping(value = "/user/store/showInfoByDistance")
+    @GetMapping(value = "/outer/store/showInfoByDistance")
     public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
                                 @RequestParam("lon") Double lon,
                                 @RequestParam("lat") Double lat) {
