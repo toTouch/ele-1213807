@@ -33,6 +33,10 @@ public class ElectricityBattery {
     @NotEmpty(message = "电池编码不能不能为空!")
     private String sn;
     /**
+     * 电池型号
+     */
+    private String model;
+    /**
      * 电池电量
      */
     private Double power;
