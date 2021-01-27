@@ -57,7 +57,7 @@ public class ElectricityCabinetUserController extends BaseController {
 	}
 
 	//列表查询
-	@GetMapping(value = "/outer/electricityCabinet/showInfoByStoreId/{storeId}")
+	@GetMapping(value = "/user/electricityCabinet/showInfoByStoreId/{storeId}")
 	public R showInfoByStoreId(@PathVariable("storeId") Integer storeId) {
 
 		if (Objects.isNull(storeId)) {
