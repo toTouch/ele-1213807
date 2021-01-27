@@ -310,7 +310,6 @@ public class StoreServiceImpl implements StoreService {
         if (ObjectUtil.isNotEmpty(storeVOList)) {
             storeVOList.parallelStream().forEach(e -> {
 
-
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -361,6 +360,7 @@ public class StoreServiceImpl implements StoreService {
                 }
                 e.setOnlineElectricityCabinet(onlineElectricityCabinetCount);
                 e.setFullyElectricityBattery(fullyElectricityBatteryCount);
+                storeVOs.add(e);
             });
         }
         return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
