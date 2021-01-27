@@ -1,9 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeBind;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.service.FranchiseeBindService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -13,7 +18,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -30,6 +36,12 @@ public class StoreAdminController {
      */
     @Autowired
     StoreService storeService;
+    @Autowired
+    StoreBindService storeBindService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    FranchiseeBindService franchiseeBindService;
 
     //新增门店
     @PostMapping(value = "/admin/store")
@@ -108,12 +120,6 @@ public class StoreAdminController {
             offset = 0L;
         }
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
 
         StoreQuery storeQuery = StoreQuery.builder()
                 .offset(offset)
@@ -125,8 +131,35 @@ public class StoreAdminController {
                 .address(address)
                 .batteryService(batteryService)
                 .carService(carService)
-                .usableStatus(usableStatus)
-                .uid(user.getUid()).build();
+                .usableStatus(usableStatus).build();
+
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(franchiseeList)){
+            return R.ok();
+        }
+        List<FranchiseeBind> franchiseeBinds=new ArrayList<>();
+        for (Franchisee franchisee:franchiseeList) {
+            List<FranchiseeBind> franchiseeBindList= franchiseeBindService.queryByFranchiseeId(franchisee.getId());
+            franchiseeBinds.addAll(franchiseeBindList);
+        }
+        if(ObjectUtil.isEmpty(franchiseeBinds)){
+            return R.ok();
+        }
+        List<Integer> storeIdList=new ArrayList<>();
+        for (FranchiseeBind franchiseeBind:franchiseeBinds) {
+            storeIdList.add(franchiseeBind.getStoreId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return R.ok();
+        }
+        storeQuery.setStoreIdList(storeIdList);
 
         return storeService.listByFranchisee(storeQuery);
     }
@@ -146,8 +179,14 @@ public class StoreAdminController {
 
     //门店绑定电柜
     @PostMapping(value = "/admin/store/bindElectricityCabinet")
-    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) BindElectricityCabinetQuery bindElectricityCabinetQuery){
-        return storeService.bindElectricityCabinet(bindElectricityCabinetQuery);
+    public R bindElectricityCabinet(@RequestBody @Validated(value = CreateGroup.class) StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery){
+        return storeService.bindElectricityCabinet(storeBindElectricityCabinetQuery);
+    }
+
+    //门店绑定电柜查询
+    @GetMapping(value = "/admin/store/getElectricityCabinetList/{id}")
+    public R getElectricityCabinetList(@PathVariable("id") Integer id){
+        return storeService.getElectricityCabinetList(id);
     }
 
 

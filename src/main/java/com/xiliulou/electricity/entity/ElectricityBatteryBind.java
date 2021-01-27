@@ -29,7 +29,7 @@ public class ElectricityBatteryBind {
     /**
      * uid
      */
-    private Long uid;
+    private Long franchiseeId;
     /**
      * 电池ID
      */

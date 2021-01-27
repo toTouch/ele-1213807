@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.service;
-
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
-import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 
 /**
@@ -46,13 +45,11 @@ public interface StoreService {
 
     Integer homeTwoBusiness();
 
-    R rentBattery(StoreQuery storeQuery);
+    R showInfoByDistance(StoreQuery storeQuery);
 
-    R rentCar(StoreQuery storeQuery);
-
-    R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
-
-    Store queryByUid(Long uid);
+    R bindElectricityCabinet(StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery);
 
     R listByFranchisee(StoreQuery storeQuery);
+
+    R getElectricityCabinetList(Integer id);
 }

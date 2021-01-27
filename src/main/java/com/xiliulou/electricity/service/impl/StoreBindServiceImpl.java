@@ -20,18 +20,26 @@ import java.util.List;
 public class StoreBindServiceImpl implements StoreBindService {
     @Resource
     StoreBindMapper storeBindMapper;
-    @Override
-    public void deleteByUid(Long uid) {
-        storeBindMapper.deleteByUid(uid);
-    }
+
 
     @Override
     public void insert(StoreBind storeBind) {
         storeBindMapper.insert(storeBind);
     }
 
+
     @Override
-    public List<StoreBind> queryByStoreId(Integer id) {
-        return storeBindMapper.selectList(new LambdaQueryWrapper<StoreBind>().eq(StoreBind::getStoreId,id));
+    public void deleteByStoreId(Integer storeId) {
+        storeBindMapper.deleteByStoreId(storeId);
+    }
+
+    @Override
+    public List<StoreBind> queryByUid(Long uid) {
+        return storeBindMapper.selectList(new LambdaQueryWrapper<StoreBind>().eq(StoreBind::getUid,uid));
+    }
+
+    @Override
+    public StoreBind queryByStoreId(Integer id) {
+        return storeBindMapper.selectOne(new LambdaQueryWrapper<StoreBind>().eq(StoreBind::getStoreId,id));
     }
 }

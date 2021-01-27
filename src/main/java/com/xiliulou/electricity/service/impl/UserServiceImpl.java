@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -14,17 +13,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityBatteryBind;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Province;
-import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
-import com.xiliulou.electricity.query.BindStoreQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryBindService;
 import com.xiliulou.electricity.service.ElectricityCabinetBindService;
@@ -49,7 +44,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -249,7 +243,7 @@ public class UserServiceImpl implements UserService {
 
 		//设置角色
 		UserRole userRole = new UserRole();
-		userRole.setRoleId(adminUserQuery.getUserType().longValue());
+		userRole.setRoleId(adminUserQuery.getUserType().longValue() + 1);
 		userRole.setUid(insert.getUid());
 		userRoleService.insert(userRole);
 
@@ -469,40 +463,6 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
-		//先删除
-		electricityBatteryBindService.deleteByUid(bindElectricityBatteryQuery.getUid());
-		if(ObjectUtil.isEmpty(bindElectricityBatteryQuery.getElectricityBatteryIdList())){
-			return R.ok();
-		}
-		//再新增
-		for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
-			ElectricityBatteryBind electricityBatteryBind=new ElectricityBatteryBind();
-			electricityBatteryBind.setUid(bindElectricityBatteryQuery.getUid());
-			electricityBatteryBind.setElectricityBatteryId(electricityBatteryId);
-			electricityBatteryBindService.insert(electricityBatteryBind);
-		}
-		return R.ok();
-	}
-
-	@Override
-	public R bindStore(BindStoreQuery bindStoreQuery) {
-		//先删除
-		storeBindService.deleteByUid(bindStoreQuery.getUid());
-		if(ObjectUtil.isEmpty(bindStoreQuery.getStoreIdList())){
-			return R.ok();
-		}
-		//再新增
-		for (Integer storeId : bindStoreQuery.getStoreIdList()) {
-			StoreBind storeBind=new StoreBind();
-			storeBind.setUid(bindStoreQuery.getUid());
-			storeBind.setStoreId(storeId);
-			storeBindService.insert(storeBind);
-		}
-		return R.ok();
-	}
-
-	@Override
 	public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
 		//先删除
 		electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
@@ -517,6 +477,18 @@ public class UserServiceImpl implements UserService {
 			electricityCabinetBindService.insert(electricityCabinetBind);
 		}
 		return R.ok();
+	}
+
+	@Override
+	public R queryElectricityCabinetList(Long uid) {
+		return R.ok(electricityCabinetBindService.queryElectricityCabinetList(uid));
+	}
+
+	@Override
+	public Pair<Boolean, Object> listByFranchisee(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, List<Integer> cidList) {
+		Page page = PageUtil.getPage(offset, size);
+
+		return Pair.of(true, this.userMapper.listByFranchisee(page, uid, size, offset, name, phone, type, startTime, endTime,cidList));
 	}
 
 }

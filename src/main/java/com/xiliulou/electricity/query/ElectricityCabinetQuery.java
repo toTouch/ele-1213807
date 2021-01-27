@@ -46,5 +46,7 @@ public class ElectricityCabinetQuery {
     private Long beginTime;
     private Long endTime;
 
+    private List<Integer> storeIdList;
+
     private List<Long> uidList;
 }

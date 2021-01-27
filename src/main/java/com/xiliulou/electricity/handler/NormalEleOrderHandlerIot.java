@@ -53,15 +53,15 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return false;
         }
+        EleOrderVo eleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderVo.class);
         //幂等加锁
-        Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId, "true", 10 * 1000L, true);
+        Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId+eleOrderVo.getOrderStatus(), "true", 10 * 1000L, true);
         if (!result) {
             log.error("sessionId is lock,{}", sessionId);
             return false;
         }
         EleOpenDTOBuilder builder = EleOpenDTO.builder();
 
-        EleOrderVo eleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderVo.class);
 
         //操作回调的放在redis中 只有开门命令放入
         if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN) || Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {

@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * (StoreBind)实体类
+ * (FranchiseeBind)实体类
  *
  * @author lxc
  * @since 2020-11-25 11:00:14
@@ -19,19 +19,19 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_store_bind")
-public class StoreBind {
+@TableName("t_franchisee_bind")
+public class FranchiseeBind {
     /**
      * 换电柜Id
      */
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
-     * uid
+     * 加盟商Id
      */
-    private Long uid;
+    private Integer franchiseeId;
     /**
-     * 门店ID
+     * 门店Id
      */
     private Integer storeId;
 

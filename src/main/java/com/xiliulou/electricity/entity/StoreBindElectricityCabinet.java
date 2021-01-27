@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * (StoreBind)实体类
+ * (StoreBindElectricityCabinetBind)实体类
  *
  * @author lxc
  * @since 2020-11-25 11:00:14
@@ -19,20 +19,20 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_store_bind")
-public class StoreBind {
+@TableName("t_store_bind_electricity_cabinet")
+public class StoreBindElectricityCabinet {
     /**
      * 换电柜Id
      */
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
-     * uid
-     */
-    private Long uid;
-    /**
-     * 门店ID
+     * 门店Id
      */
     private Integer storeId;
+    /**
+     * 换电柜Id
+     */
+    private Integer electricityCabinetId;
 
 }

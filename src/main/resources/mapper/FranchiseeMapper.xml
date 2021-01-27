@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FranchiseeMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.Franchisee" id="FranchiseeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="cid" column="cid" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+
+    <!--查询指定行数据-->
+    <select id="queryList"
+            resultType="com.xiliulou.electricity.vo.FranchiseeVO">
+        select
+        id, cid, name, uid, del_flag,
+        create_time, update_time
+        from electricity.t_franchisee
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        order by create_time desc
+
+    </select>
+
+</mapper>

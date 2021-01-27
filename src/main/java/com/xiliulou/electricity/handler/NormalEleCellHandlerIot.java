@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -16,6 +15,7 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
@@ -64,13 +64,13 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
                 return;
             }
             String cellNo = eleCellVo.getCell_no();
-            if (StrUtil.isNotEmpty(cellNo)) {
+            if (StringUtils.isEmpty(cellNo)) {
                 log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
                 return;
             }
-            Long batteryId = null;
+            Long batteryId = -1L;
             String batteryName = eleCellVo.getBatteryName();
-            if (StrUtil.isNotEmpty(batteryName)) {
+            if (StringUtils.isNotEmpty(batteryName)) {
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
                 if (Objects.isNull(electricityBattery)) {
                     log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
@@ -84,31 +84,31 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetBox.setCellNo(cellNo);
             String isLock = eleCellVo.getIs_lock();
-            if (StrUtil.isNotEmpty(isLock)) {
+            if (StringUtils.isNotEmpty(isLock)) {
                 electricityCabinetBox.setIsLock(Integer.valueOf(isLock));
             }
             String isFan = eleCellVo.getIs_fan();
-            if (StrUtil.isNotEmpty(isFan)) {
+            if (StringUtils.isNotEmpty(isFan)) {
                 electricityCabinetBox.setIsFan(Integer.valueOf(isFan));
             }
             String temperature = eleCellVo.getTemperature();
-            if (StrUtil.isNotEmpty(temperature)) {
+            if (StringUtils.isNotEmpty(temperature)) {
                 electricityCabinetBox.setTemperature(temperature);
             }
             String isHeat = eleCellVo.getIs_heat();
-            if (StrUtil.isNotEmpty(isHeat)) {
+            if (StringUtils.isNotEmpty(isHeat)) {
                 electricityCabinetBox.setIsHeat(Integer.valueOf(isHeat));
             }
             String isLight = eleCellVo.getIs_light();
-            if (StrUtil.isNotEmpty(isLight)) {
+            if (StringUtils.isNotEmpty(isLight)) {
                 electricityCabinetBox.setIsLight(Integer.valueOf(isLight));
             }
             String isForbidden = eleCellVo.getIs_forbidden();
-            if (StrUtil.isNotEmpty(isForbidden)) {
+            if (StringUtils.isNotEmpty(isForbidden)) {
                 electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
             }
             String batteryStatus = eleCellVo.getBatteryStatus();
-            if (StrUtil.isNotEmpty(batteryStatus)) {
+            if (StringUtils.isNotEmpty(batteryStatus)) {
                 electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
             }
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);

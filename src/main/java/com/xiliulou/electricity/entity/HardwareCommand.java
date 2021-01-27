@@ -60,6 +60,10 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_BATTERY_REPORT_INFO = "battery_report_info";
 	//电柜版本上报
 	public static final String EXCHANGE_CABINET = "exchange_cabinet";
+	//配柜子
+	public static final String ELE_COMMAND_CELL_CONFIG = "cell_config";
+	//远程更新
+	public static final String ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION = "cupboard_update_application";
 
 	public static final String ELE_COMMAND_POWER_CONSUMPTION = "power_consumption";
 	public static final String ELE_COMMAND_POWER_CONSUMPTION_RSP = "power_consumption_rsp";
@@ -97,5 +101,7 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_ALL_OPEN_DOOR, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CONFIG, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, "OK");
 	}
 }

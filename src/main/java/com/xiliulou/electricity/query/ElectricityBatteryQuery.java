@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ElectricityBatteryQuery {
 
@@ -17,6 +19,8 @@ public class ElectricityBatteryQuery {
     private Integer status;
 
     private Long uid;
+
+    private List<Long> electricityBatteryIdList;
 
 
 }

@@ -13,9 +13,13 @@ import java.util.List;
  */
 public interface StoreBindService {
 
-    void deleteByUid(Long uid);
 
     void insert(StoreBind storeBind);
 
-    List<StoreBind> queryByStoreId(Integer id);
+
+    void deleteByStoreId(Integer id);
+
+    List<StoreBind> queryByUid(Long uid);
+
+    StoreBind queryByStoreId(Integer id);
 }

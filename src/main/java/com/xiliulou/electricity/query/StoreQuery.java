@@ -43,6 +43,7 @@ public class StoreQuery {
 	 * 门店地址
 	 */
 	private String address;
-	private Long uid;
+
+	private List<Integer> storeIdList;
 
 }

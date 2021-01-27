@@ -13,16 +13,16 @@ import java.util.List;
  * @since 2020-12-07 14:59:37
  */
 @Data
-public class BindElectricityBatteryQuery {
+public class StoreBindElectricityCabinetQuery {
     /**
-    * 加盟商Id
+    * 门店Id
     */
-    @NotNull(message = "加盟商Id不能为空!", groups = {CreateGroup.class})
-    private Long franchiseeId;
+    @NotNull(message = "门店Id不能为空!", groups = {CreateGroup.class})
+    private Integer storeId;
     /**
      * 换电柜Id
      */
-    private List<Long> electricityBatteryIdList;
+    private List<Integer> electricityCabinetIdList;
 
 
 }

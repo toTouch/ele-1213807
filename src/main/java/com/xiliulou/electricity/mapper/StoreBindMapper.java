@@ -11,6 +11,7 @@ import org.apache.ibatis.annotations.Delete;
  */
 public interface StoreBindMapper extends BaseMapper<StoreBind> {
 
-    @Delete("delete  FROM t_store_bind  WHERE uid = #{uid}")
-    void deleteByUid(Long uid);
+
+    @Delete("delete  FROM t_store_bind  WHERE store_id = #{storeId}")
+    void deleteByStoreId(Integer storeId);
 }

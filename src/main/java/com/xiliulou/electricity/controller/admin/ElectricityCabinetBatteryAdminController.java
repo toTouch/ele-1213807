@@ -1,14 +1,21 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityBatteryBind;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.service.ElectricityBatteryBindService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,6 +29,10 @@ import java.util.Objects;
 public class ElectricityCabinetBatteryAdminController {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    ElectricityBatteryBindService electricityBatteryBindService;
+    @Autowired
+    FranchiseeService franchiseeService;
 
     /**
      * 新增电池
@@ -96,10 +107,30 @@ public class ElectricityCabinetBatteryAdminController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(franchiseeList)){
+            return R.ok();
+        }
+        List<ElectricityBatteryBind> electricityBatteryBindBinds=new ArrayList<>();
+        for (Franchisee franchisee:franchiseeList) {
+            List<ElectricityBatteryBind> electricityBatteryBindBindList=electricityBatteryBindService.queryByFranchiseeId(franchisee.getId());
+            electricityBatteryBindBinds.addAll(electricityBatteryBindBindList);
+        }
+        if(ObjectUtil.isEmpty(electricityBatteryBindBinds)){
+            return R.ok();
+        }
+        List<Long> electricityBatteryIdList=new ArrayList<>();
+        for (ElectricityBatteryBind electricityBatteryBind:electricityBatteryBindBinds) {
+            electricityBatteryIdList.add(electricityBatteryBind.getElectricityBatteryId());
+        }
+        if(ObjectUtil.isEmpty(electricityBatteryIdList)){
+            return R.ok();
+        }
+
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setStatus(status);
-        electricityBatteryQuery.setUid(user.getUid());
         electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         return electricityBatteryService.pageByFranchisee(electricityBatteryQuery, offset, size);
     }
 }

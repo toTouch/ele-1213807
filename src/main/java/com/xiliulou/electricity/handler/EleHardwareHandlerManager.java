@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -10,10 +9,10 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -43,18 +42,20 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 	ExecutorService executorService = Executors.newFixedThreadPool(2);
 
-	public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
-		if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
-				|| hardwareCommandQuery.getCommand().equals(HardwareCommand.EXCHANGE_CABINET)
-				|| hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OPERATE)
-				|| hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION)) {
-			log.info("hardwareCommandQuery is -->{}", hardwareCommandQuery);
-			return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
-		} else {
-			log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
-			return Pair.of(false, "");
-		}
-	}
+    public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
+        if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.EXCHANGE_CABINET)
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OPERATE)
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CELL_CONFIG)
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION)
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION)) {
+            log.info("hardwareCommandQuery is -->{}", hardwareCommandQuery);
+            return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
+        } else {
+            log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
+            return Pair.of(false, "");
+        }
+    }
 
 	@Override
 	public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
