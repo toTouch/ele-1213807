@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service;
-
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
