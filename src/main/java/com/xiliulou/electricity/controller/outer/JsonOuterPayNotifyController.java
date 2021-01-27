@@ -5,8 +5,10 @@ import com.jpay.ext.kit.HttpKit;
 import com.jpay.ext.kit.PaymentKit;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
@@ -19,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDate;
 import java.util.Map;
 
 /**
@@ -30,61 +33,62 @@ import java.util.Map;
 @RestController
 @Slf4j
 public class JsonOuterPayNotifyController {
-    @Autowired
-    WeiXinPayNotifyService weiXinPayNotifyService;
+	@Autowired
+	WeiXinPayNotifyService weiXinPayNotifyService;
 
-    @Autowired
-    RedisService redisService;
-    @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
-    @Autowired
-    ElectricityTradeOrderService electricityTradeOrderService;
+	@Autowired
+	RedisService redisService;
+	@Autowired
+	ElectricityPayParamsService electricityPayParamsService;
+	@Autowired
+	ElectricityTradeOrderService electricityTradeOrderService;
 
-    @PostMapping("outer/pay/notify/weixin")
-    public String WeiXinPayNotify(HttpServletRequest request) {
-        String xmlMsg = HttpKit.readData(request);
-        log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
-        //转换成map
-        Map<String, String> params = PaymentKit.xmlToMap(xmlMsg);
-        String orderNo = params.get("out_trade_no");
+	@PostMapping("outer/pay/notify/weixin")
+	public String WeiXinPayNotify(HttpServletRequest request) {
+		String xmlMsg = HttpKit.readData(request);
+		log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
+		//转换成map
+		Map<String, String> params = PaymentKit.xmlToMap(xmlMsg);
+		String orderNo = params.get("out_trade_no");
 
-        if (!redisService.setNx("notify_order_no" + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-            return "FAILED";
-        }
-        //去重
-        ElectricityPayParams electricityPayParams
-                = electricityPayParamsService.getElectricityPayParams();
-        if (ObjectUtil.isEmpty(electricityPayParams)) {
-            log.error("WEIXIN_PAY_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
-            return "FAILED";
-        }
-        Pair<Boolean, Object> paramPair = weiXinPayNotifyService.handlerNotify(params, electricityPayParams.getPaternerKey());
-        if (!paramPair.getLeft()) {
-            return "FAILED";
-        }
-        WeiXinPayNotify weiXinPayNotify = (WeiXinPayNotify) paramPair.getRight();
-        Pair<Boolean, Object> notifyMemberOrderPair = electricityTradeOrderService.notifyMemberOrder(weiXinPayNotify);
+		if (!redisService.setNx("notify_order_no" + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+			return "FAILED";
+		}
+		//去重
+		ElectricityPayParams electricityPayParams
+				= electricityPayParamsService.getElectricityPayParams();
+		if (ObjectUtil.isEmpty(electricityPayParams)) {
+			log.error("WEIXIN_PAY_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
+			return "FAILED";
+		}
+		Pair<Boolean, Object> paramPair = weiXinPayNotifyService.handlerNotify(params, electricityPayParams.getPaternerKey());
+		if (!paramPair.getLeft()) {
+			return "FAILED";
+		}
+		WeiXinPayNotify weiXinPayNotify = (WeiXinPayNotify) paramPair.getRight();
+		Pair<Boolean, Object> notifyMemberOrderPair = electricityTradeOrderService.notifyMemberOrder(weiXinPayNotify);
 
-        redisService.deleteKeys("notify_order_no" + orderNo);
-        if (notifyMemberOrderPair.getLeft()) {
+		redisService.deleteKeys("notify_order_no" + orderNo);
+		if (notifyMemberOrderPair.getLeft()) {
 
-            return "OK";
-        } else {
-            return "FAILED";
+			return "OK";
+		} else {
+			return "FAILED";
 
-        }
+		}
 
-    }
+	}
 
-    @Autowired
-    ElectricityBatteryService electricityBatteryService;
+	@Autowired
+	ElectricityBatteryService electricityBatteryService;
 
-    @GetMapping("outer/user/battery")
-    public R getSelfBattery() {
-        Long uid = 13L;
 
-        return electricityBatteryService.getSelfBattery(uid);
-    }
+	@GetMapping("outer/user/battery")
+	public R getSelfBattery() {
+		Long uid = 13L;
+
+		return electricityBatteryService.getSelfBattery(uid);
+	}
 
 
 }
