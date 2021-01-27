@@ -56,6 +56,17 @@ public class ElectricityCabinetUserController extends BaseController {
 		return electricityCabinetService.showInfoByDistance(electricityCabinetQuery);
 	}
 
+	//列表查询
+	@GetMapping(value = "/outer/electricityCabinet/showInfoByStoreId/{storeId}")
+	public R showInfoByStoreId(@PathVariable("storeId") Integer storeId) {
+
+		if (Objects.isNull(storeId)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+
+		return electricityCabinetService.showInfoByStoreId(storeId);
+	}
+
 	/**
 	 * 查询换电柜 按三元组
 	 *

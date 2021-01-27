@@ -309,6 +309,8 @@ public class StoreServiceImpl implements StoreService {
         List<StoreVO> storeVOs = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(storeVOList)) {
             storeVOList.parallelStream().forEach(e -> {
+
+
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -336,10 +338,12 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
-                Integer onlineElectricityCabinetCount=0;
-                Integer fullyElectricityBatteryCount=0;
+
+
                 //在线电柜数
+                Integer onlineElectricityCabinetCount=0;
                 //满电电池数
+                Integer fullyElectricityBatteryCount=0;
                 List<StoreBindElectricityCabinet> storeBindElectricityCabinetList=storeBindElectricityCabinetService.queryByStoreId(e.getId());
                 if(ObjectUtil.isNotEmpty(storeBindElectricityCabinetList)){
                     for (StoreBindElectricityCabinet storeBindElectricityCabinet:storeBindElectricityCabinetList) {

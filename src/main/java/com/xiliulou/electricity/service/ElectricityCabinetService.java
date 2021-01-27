@@ -80,4 +80,6 @@ public interface ElectricityCabinetService {
     R listByUid(ElectricityCabinetQuery electricityCabinetQuery);
 
     R listByStoreId(ElectricityCabinetQuery electricityCabinetQuery);
+
+    R showInfoByStoreId(Integer storeId);
 }
