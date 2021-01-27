@@ -32,7 +32,11 @@ public class ElectricityCabinetOrderVO {
     /**
     * 换电柜id
     */
-    private Long electricityCabinetId;
+    private Integer electricityCabinetId;
+    /**
+     * 换电柜名称
+     */
+    private String electricityCabinetName;
     /**
     * 老电池编号
     */

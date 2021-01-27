@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -269,6 +270,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.ok(new ArrayList<>());
         }
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
+        if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+            electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+                ElectricityCabinet  electricityCabinet=electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+                if(Objects.nonNull(electricityCabinet)){
+                    e.setElectricityCabinetName(electricityCabinet.getName());
+                }
+            });
+        }
+
         page.setRecords(electricityCabinetOrderVOList);
         return R.ok(page);
     }

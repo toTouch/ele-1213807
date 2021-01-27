@@ -29,7 +29,6 @@ public class Store {
     */
     private String sn;
 
-    private Long uid;
     /**
     * 门店名称
     */

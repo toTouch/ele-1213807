@@ -12,15 +12,9 @@ import lombok.Data;
 @Data
 public class ElectricityBatteryVo extends ElectricityBattery {
 
-    //所在电柜名称
-    private String cabinetName;
     /**
      * 所属用户
      */
     private String userName;
-    //电池型号容量
-    private Integer capacity;
-    //电压
-    private Integer voltage;
 
 }

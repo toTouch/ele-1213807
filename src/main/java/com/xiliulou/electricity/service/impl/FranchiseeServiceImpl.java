@@ -4,20 +4,25 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityBatteryBind;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeBind;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.ElectricityBatteryBindService;
 import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
+import com.xiliulou.electricity.vo.FranchiseeVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,8 +53,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     FranchiseeBindService franchiseeBindService;
+    @Autowired
+    CityService cityService;
+    @Autowired
+    UserService userService;
     @Override
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+        //TODO 判断用户存不存在
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setCreateTime(System.currentTimeMillis());
@@ -64,6 +74,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+        //TODO 判断用户存不存在
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setUpdateTime(System.currentTimeMillis());
@@ -101,8 +112,24 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (ObjectUtil.isEmpty(page.getRecords())) {
             return R.ok(new ArrayList<>());
         }
-        List<Franchisee> franchiseeVOList = page.getRecords();
-        page.setRecords(franchiseeVOList.stream().sorted(Comparator.comparing(Franchisee::getCreateTime).reversed()).collect(Collectors.toList()));
+        List<FranchiseeVO> franchiseeVOList = page.getRecords();
+        if (ObjectUtil.isNotEmpty(franchiseeVOList)) {
+            franchiseeVOList.parallelStream().forEach(e -> {
+              //获取城市名称
+                City city=cityService.queryByIdFromDB(e.getCid());
+                if(Objects.nonNull(city)){
+                    e.setCityName(city.getName());
+                }
+                //获取用户名称
+                if(Objects.nonNull(e.getUid())) {
+                    User user=userService.queryByUidFromCache(e.getUid());
+                    if(Objects.nonNull(user)){
+                        e.setUserName(user.getName());
+                    }
+                }
+            });
+        }
+        page.setRecords(franchiseeVOList.stream().sorted(Comparator.comparing(FranchiseeVO::getCreateTime).reversed()).collect(Collectors.toList()));
         return R.ok(page);
     }
 
@@ -133,7 +160,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         //再新增
         for (Integer storeId : bindFranchiseeQuery.getStoreIdList()) {
             FranchiseeBind franchiseeBind=new FranchiseeBind();
-            franchiseeBind.setFranchiseId(bindFranchiseeQuery.getFranchiseeId());
+            franchiseeBind.setFranchiseeId(bindFranchiseeQuery.getFranchiseeId());
             franchiseeBind.setStoreId(storeId);
             franchiseeBindService.insert(franchiseeBind);
         }

@@ -15,7 +15,7 @@
 
     <!--查询指定行数据-->
     <select id="queryList"
-            resultType="com.xiliulou.electricity.entity.Franchisee">
+            resultType="com.xiliulou.electricity.vo.FranchiseeVO">
         select
         id, cid, name, uid, del_flag,
         create_time, update_time

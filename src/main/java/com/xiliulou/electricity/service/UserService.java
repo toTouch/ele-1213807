@@ -89,4 +89,8 @@ public interface UserService {
 
 
     R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
+
+    R queryElectricityCabinetList(Long uid);
+
+    Pair<Boolean, Object> listByFranchisee(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, List<Integer> cidList);
 }

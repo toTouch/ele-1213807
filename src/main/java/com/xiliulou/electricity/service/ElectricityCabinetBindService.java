@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.service;
-
-
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetBind;
+import java.util.List;
 
 /**
  * (ElectricityCabinetBind)表服务接口
@@ -16,4 +14,5 @@ public interface ElectricityCabinetBindService {
 
     void insert(ElectricityCabinetBind electricityCabinetBind);
 
+    List<ElectricityCabinetBind> queryElectricityCabinetList(Long uid);
 }

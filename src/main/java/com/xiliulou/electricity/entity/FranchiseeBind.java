@@ -29,7 +29,7 @@ public class FranchiseeBind {
     /**
      * 加盟商Id
      */
-    private Integer franchiseId;
+    private Integer franchiseeId;
     /**
      * 门店Id
      */

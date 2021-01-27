@@ -37,4 +37,9 @@ public class StoreBindServiceImpl implements StoreBindService {
     public List<StoreBind> queryByUid(Long uid) {
         return storeBindMapper.selectList(new LambdaQueryWrapper<StoreBind>().eq(StoreBind::getUid,uid));
     }
+
+    @Override
+    public StoreBind queryByStoreId(Integer id) {
+        return storeBindMapper.selectOne(new LambdaQueryWrapper<StoreBind>().eq(StoreBind::getStoreId,id));
+    }
 }

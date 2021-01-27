@@ -31,7 +31,7 @@ public interface StoreMapper extends BaseMapper<Store> {
      */
     IPage queryList(Page page, @Param("query") StoreQuery storeQuery);
 
-    IPage listByFranchisee(Page page, StoreQuery storeQuery);
+    IPage listByFranchisee(Page page, @Param("query") StoreQuery storeQuery);
 
 
     /**
