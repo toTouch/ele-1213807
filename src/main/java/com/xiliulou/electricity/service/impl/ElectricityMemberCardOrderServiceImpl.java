@@ -98,6 +98,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
             return R.failMsg("您的月卡还未过期,无需再次购买!");
         }
+        log.info("electricityMemberCard.getHolidayPrice() is -->{}",electricityMemberCard.getHolidayPrice());
 
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
