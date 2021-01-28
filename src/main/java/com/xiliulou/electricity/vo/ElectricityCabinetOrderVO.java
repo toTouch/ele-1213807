@@ -38,6 +38,10 @@ public class ElectricityCabinetOrderVO {
      */
     private String electricityCabinetName;
     /**
+     * 换电柜Sn
+     */
+    private String electricityCabinetSn;
+    /**
     * 老电池编号
     */
     private String oldElectricityBatterySn;

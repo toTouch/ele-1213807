@@ -275,6 +275,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 ElectricityCabinet  electricityCabinet=electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
                 if(Objects.nonNull(electricityCabinet)){
                     e.setElectricityCabinetName(electricityCabinet.getName());
+                    e.setElectricityCabinetSn(electricityCabinet.getSn());
                 }
             });
         }
