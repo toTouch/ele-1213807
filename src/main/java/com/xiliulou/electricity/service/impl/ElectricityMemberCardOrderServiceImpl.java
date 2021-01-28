@@ -113,6 +113,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         baseMapper.insert(electricityMemberCardOrder);
+        if(electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01))<0){
+            return R.ok();
+        }
         Pair<Boolean, Object> getPayParamsPair =
                 electricityTradeOrderService.createTradeOrderAndGetPayParams(electricityMemberCardOrder, electricityPayParams, userOauthBind.getThirdId(), request);
         if (!getPayParamsPair.getLeft()) {
