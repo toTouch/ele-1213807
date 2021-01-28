@@ -30,7 +30,6 @@ public class ElectricityMemberCardOrderController {
 
     @GetMapping("user/memberCard/payParams/{memberId}")
     public R payMemberCard(@PathVariable(value = "memberId") Integer memberId, HttpServletRequest request) {
-        log.info("进入方法______________________________");
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
