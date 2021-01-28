@@ -52,7 +52,7 @@ public class ElectricityMemberCard {
     public static final Integer TYPE_QUARTERLY = 1;
     public static final Integer TYPE_YEAR = 2;
     //无限制使用次数
-    public static final Integer UN_LIMITED_COUNT = -1;
+    public static final Long UN_LIMITED_COUNT = -1L;
 
 
     public static final Integer UN_LIMITED_COUNT_TYPE = 0;

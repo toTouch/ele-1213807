@@ -101,7 +101,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if( userInfo.getMemberCardExpireTime() > System.currentTimeMillis()){
             log.info("userInfo4 is -->{}",userInfo);
         }
-        if(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0){
+        log.info("userInfo.getRemainingNumber() is -->{}",userInfo.getRemainingNumber());
+        if(ElectricityMemberCard.UN_LIMITED_COUNT==userInfo.getRemainingNumber() || userInfo.getRemainingNumber() > 0){
             log.info("userInfo5 is -->{}",userInfo);
         }
 
