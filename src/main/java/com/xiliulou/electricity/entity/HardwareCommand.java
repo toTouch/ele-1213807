@@ -68,6 +68,8 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_POWER_CONSUMPTION = "power_consumption";
 	public static final String ELE_COMMAND_POWER_CONSUMPTION_RSP = "power_consumption_rsp";
 
+	public static final String ELE_COMMAND_CUPBOARD_REQUEST_LOG = "cupboard_request_log";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
@@ -103,5 +105,6 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CONFIG, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_REQUEST_LOG, "OK");
 	}
 }
