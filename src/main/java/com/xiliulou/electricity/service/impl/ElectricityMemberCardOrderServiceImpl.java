@@ -91,7 +91,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", memberId);
             return R.failMsg("月卡已禁用!");
         }
-        log.info("userInfo is -->{}",userInfo);
+        log.info("userInfo1 is -->{}",userInfo);
+        if(Objects.nonNull(userInfo.getMemberCardExpireTime())){
+            log.info("userInfo2 is -->{}",userInfo);
+        }
+        if(Objects.nonNull(userInfo.getRemainingNumber())){
+            log.info("userInfo3 is -->{}",userInfo);
+        }
+        if( userInfo.getMemberCardExpireTime() > System.currentTimeMillis()){
+            log.info("userInfo4 is -->{}",userInfo);
+        }
+        if(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0){
+            log.info("userInfo5 is -->{}",userInfo);
+        }
 
         if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
                 userInfo.getMemberCardExpireTime() > System.currentTimeMillis() &&
@@ -115,7 +127,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         baseMapper.insert(electricityMemberCardOrder);
         //支付零元
         if(electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01))<0){
-            log.info("购买套餐");
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setId(userInfo.getId());
             Long memberCardExpireTime = System.currentTimeMillis() +
