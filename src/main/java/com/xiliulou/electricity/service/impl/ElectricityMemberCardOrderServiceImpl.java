@@ -55,6 +55,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R createOrder(Long uid, Integer memberId, HttpServletRequest request) {
+        log.info("进入方法=========================");
         ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
         if (Objects.isNull(electricityPayParams)) {
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
