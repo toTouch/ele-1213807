@@ -49,7 +49,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.EXCHANGE_CABINET)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OPERATE)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CELL_CONFIG)
-                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION)) {
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION)
+				|| hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG)) {
             log.info("hardwareCommandQuery is -->{}", hardwareCommandQuery);
             return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
         } else {
