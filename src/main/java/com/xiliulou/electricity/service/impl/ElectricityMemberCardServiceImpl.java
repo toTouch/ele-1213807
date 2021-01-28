@@ -60,7 +60,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                 electricityMemberCard.setMaxUseCount(Long.valueOf(ElectricityMemberCard.UN_LIMITED_COUNT));
             }
         }
-        return R.ok(baseMapper.updateById(electricityMemberCard));
+        baseMapper.updateById(electricityMemberCard);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
+        return R.ok();
     }
 
     /**
