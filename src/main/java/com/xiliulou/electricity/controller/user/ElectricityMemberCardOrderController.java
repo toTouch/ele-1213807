@@ -35,7 +35,6 @@ public class ElectricityMemberCardOrderController {
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
-//
         return electricityMemberCardOrderService.createOrder(uid, memberId, request);
     }
 
