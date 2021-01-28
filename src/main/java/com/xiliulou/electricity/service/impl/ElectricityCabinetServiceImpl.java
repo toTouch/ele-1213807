@@ -946,7 +946,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 .data(eleOuterCommandQuery.getData())
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+                .command(eleOuterCommandQuery.getCommand())
                 .build();
 
         Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
