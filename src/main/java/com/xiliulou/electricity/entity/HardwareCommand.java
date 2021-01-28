@@ -65,6 +65,9 @@ public class HardwareCommand {
 	//远程更新
 	public static final String ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION = "cupboard_update_application";
 
+	public static final String ELE_COMMAND_POWER_CONSUMPTION = "power_consumption";
+	public static final String ELE_COMMAND_POWER_CONSUMPTION_RSP = "power_consumption_rsp";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
@@ -96,6 +99,8 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_REPORT_INFO, "OK");
 		ELE_COMMAND_MAPS.put(EXCHANGE_CABINET, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_ALL_OPEN_DOOR, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CONFIG, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, "OK");
 	}
