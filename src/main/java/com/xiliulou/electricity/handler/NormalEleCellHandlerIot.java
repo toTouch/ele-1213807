@@ -68,19 +68,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
                 log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
                 return;
             }
-            Long batteryId = -1L;
-            String batteryName = eleCellVo.getBatteryName();
-            if (StringUtils.isNotEmpty(batteryName)) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
-                if (Objects.isNull(electricityBattery)) {
-                    log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
-                    return;
-                }
-                batteryId = electricityBattery.getId();
-            }
-            Long finalBatteryId = batteryId;
             ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-            electricityCabinetBox.setElectricityBatteryId(finalBatteryId);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetBox.setCellNo(cellNo);
             String isLock = eleCellVo.getIs_lock();
@@ -107,13 +95,8 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             if (StringUtils.isNotEmpty(isForbidden)) {
                 electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
             }
-            String batteryStatus = eleCellVo.getBatteryStatus();
-            if (StringUtils.isNotEmpty(batteryStatus)) {
-                electricityCabinetBox.setStatus(Integer.valueOf(batteryStatus));
-            }
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
         });
-
         return true;
     }
 }
@@ -134,8 +117,5 @@ class EleCellVo {
     private String is_light;
     //可用禁用
     private String is_forbidden;
-    //可用禁用
-    private String batteryStatus;
-    //电池编号
-    private String batteryName;
+
 }

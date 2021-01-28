@@ -70,7 +70,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             }
             String batteryName = eleBatteryVo.getBatteryName();
             if (StringUtils.isEmpty(batteryName)) {
-                log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
+                ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+                electricityCabinetBox.setElectricityBatteryId(-1L);
+                electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+                electricityCabinetBox.setCellNo(cellNo);
+                electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+                electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
                 return;
             }
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
