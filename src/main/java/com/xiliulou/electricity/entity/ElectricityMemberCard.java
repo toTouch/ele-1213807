@@ -55,4 +55,6 @@ public class ElectricityMemberCard {
     public static final Integer UN_LIMITED_COUNT = -1;
 
 
+    public static final Integer UN_LIMITED_COUNT_TYPE = 0;
+
 }

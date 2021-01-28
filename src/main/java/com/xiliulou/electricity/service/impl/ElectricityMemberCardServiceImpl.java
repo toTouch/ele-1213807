@@ -40,6 +40,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setCreateTime(System.currentTimeMillis());
         electricityMemberCard.setUpdateTime(System.currentTimeMillis());
         electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
+        if(Objects.equals(electricityMemberCard.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
+            electricityMemberCard.setMaxUseCount(Long.valueOf(ElectricityMemberCard.UN_LIMITED_COUNT));
+        }
         return R.ok(baseMapper.insert(electricityMemberCard));
     }
 
