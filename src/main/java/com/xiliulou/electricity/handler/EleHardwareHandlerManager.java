@@ -91,7 +91,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 			return false;
 		}
 		if (receiverMessage.getType().contains("order")) {
-			log.info("receiverMessage2 is -->{}", receiverMessage);
 			return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
 		} else if (receiverMessage.getType().contains("operate")) {
 			return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);
