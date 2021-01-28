@@ -55,6 +55,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public R updateElectricityMemberCard(ElectricityMemberCard electricityMemberCard) {
         electricityMemberCard.setUpdateTime(System.currentTimeMillis());
+        if(Objects.nonNull(electricityMemberCard.getLimitCount())) {
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                electricityMemberCard.setMaxUseCount(Long.valueOf(ElectricityMemberCard.UN_LIMITED_COUNT));
+            }
+        }
         return R.ok(baseMapper.updateById(electricityMemberCard));
     }
 
