@@ -91,6 +91,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", memberId);
             return R.failMsg("月卡已禁用!");
         }
+        log.info("userInfo is -->{}",userInfo);
 
         if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
                 userInfo.getMemberCardExpireTime() > System.currentTimeMillis() &&
