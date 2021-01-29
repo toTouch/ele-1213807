@@ -91,6 +91,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             String codeUrl = String.format(ElectricityCabinetConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL
                     , electricityPayParams.getAppId(), electricityPayParams.getAppSecret(), code);
 
+            //
+            log.info("codeUrl is -->{}",codeUrl);
             String bodyStr = restTemplateService.getForString(codeUrl, null);
             log.info("TOKEN INFO! call wxpro get openId message={}", bodyStr);
 

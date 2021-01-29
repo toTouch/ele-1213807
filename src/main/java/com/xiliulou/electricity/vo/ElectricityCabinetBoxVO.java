@@ -31,13 +31,29 @@ public class ElectricityCabinetBoxVO {
     */
     private Integer usableStatus;
     /**
-    * 仓门状态（0-开门，1-关门）
-    */
-    private Integer boxStatus;
-    /**
     * 状态（0-无电池，1-有电池）
     */
     private Integer status;
+    /**
+     * 门锁状态（0-开门，1-关门）
+     */
+    private Integer isLock;
+    /**
+     * 风扇状态（0-开，1-关）
+     * */
+    private Integer isFan;
+    /**
+     * 温度
+     */
+    private String temperature;
+    /**
+     * 加热状态（0-关，1-开）
+     */
+    private Integer isHeat;
+    /**
+     * 指示灯状态（3-红灯亮，5-绿灯亮，7-黄灯亮）
+     */
+    private Integer isLight;
     /**
     * 创建时间
     */

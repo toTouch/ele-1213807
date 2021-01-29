@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.handler;
-
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
-
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -70,7 +68,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             }
             String batteryName = eleBatteryVo.getBatteryName();
             if (StringUtils.isEmpty(batteryName)) {
-                log.error("ele battery error! no eleBatteryVo,{}", receiverMessage.getOriginContent());
+                ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+                electricityCabinetBox.setElectricityBatteryId(-1L);
+                electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+                electricityCabinetBox.setCellNo(cellNo);
+                electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+                electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
                 return;
             }
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);

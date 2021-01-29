@@ -112,6 +112,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUserName(userInfo.getName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         baseMapper.insert(electricityMemberCardOrder);
+        //支付零元
+        if(electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01))<0){
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setId(userInfo.getId());
+            Long memberCardExpireTime = System.currentTimeMillis() +
+                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+            userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+            userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoService.updateById(userInfoUpdate);
+            ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+            electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+            electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
+            electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            baseMapper.updateById(electricityMemberCardOrderUpdate);
+            return R.ok();
+        }
         Pair<Boolean, Object> getPayParamsPair =
                 electricityTradeOrderService.createTradeOrderAndGetPayParams(electricityMemberCardOrder, electricityPayParams, userOauthBind.getThirdId(), request);
         if (!getPayParamsPair.getLeft()) {

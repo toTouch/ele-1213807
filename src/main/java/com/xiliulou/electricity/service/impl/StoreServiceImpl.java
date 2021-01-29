@@ -26,6 +26,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
  * @since 2020-12-07 14:59:37
  */
 @Service("storeService")
+@Slf4j
 public class StoreServiceImpl implements StoreService {
     @Resource
     private StoreMapper storeMapper;
@@ -352,7 +354,7 @@ public class StoreServiceImpl implements StoreService {
                             boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
                             if (result) {
                                 onlineElectricityCabinetCount=onlineElectricityCabinetCount+1;
-                                Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(e.getId());
+                                Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId());
                                 fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
                             }
                         }

@@ -40,6 +40,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setCreateTime(System.currentTimeMillis());
         electricityMemberCard.setUpdateTime(System.currentTimeMillis());
         electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
+        if(Objects.equals(electricityMemberCard.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
+            electricityMemberCard.setMaxUseCount(ElectricityMemberCard.UN_LIMITED_COUNT);
+        }
         return R.ok(baseMapper.insert(electricityMemberCard));
     }
 
@@ -52,7 +55,14 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public R updateElectricityMemberCard(ElectricityMemberCard electricityMemberCard) {
         electricityMemberCard.setUpdateTime(System.currentTimeMillis());
-        return R.ok(baseMapper.updateById(electricityMemberCard));
+        if(Objects.nonNull(electricityMemberCard.getLimitCount())) {
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                electricityMemberCard.setMaxUseCount(ElectricityMemberCard.UN_LIMITED_COUNT);
+            }
+        }
+        baseMapper.updateById(electricityMemberCard);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
+        return R.ok();
     }
 
     /**
