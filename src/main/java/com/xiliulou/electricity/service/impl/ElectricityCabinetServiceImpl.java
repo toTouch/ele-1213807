@@ -927,19 +927,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
 
-        if(Objects.equals(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR,eleOuterCommandQuery.getCommand())){
-            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
-            if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
-                return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
-            }
-            HashMap<String, Object> dataMap = Maps.newHashMap();
-            List<String> cellList = new ArrayList<>();
-            for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
-                cellList.add(electricityCabinetBox.getCellNo());
-            }
-            dataMap.put("cell_list", cellList);
-            eleOuterCommandQuery.setData(dataMap);
-        }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(eleOuterCommandQuery.getSessionId())
