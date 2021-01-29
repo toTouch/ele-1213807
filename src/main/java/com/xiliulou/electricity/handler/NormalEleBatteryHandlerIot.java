@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.handler;
-
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -17,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
-
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
