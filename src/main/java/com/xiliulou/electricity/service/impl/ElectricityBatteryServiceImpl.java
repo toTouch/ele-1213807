@@ -122,7 +122,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public ElectricityBattery queryByBindSn(String initElectricityBatterySn) {
         return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, initElectricityBatterySn)
-                .ne(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS));
+               /* .ne(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS)*/);
     }
 
     @Override
