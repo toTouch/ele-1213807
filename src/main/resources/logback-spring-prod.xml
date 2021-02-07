@@ -78,6 +78,10 @@
 		<appender-ref ref="debug"/>
 	</logger>
 
+	<logger name="com.xiliulou.electricity.mapper" level="DEBUG">
+		<appender-ref ref="debug"/>
+	</logger>
+
 	<logger name="request" level="INFO">
 		<appender-ref ref="request"/>
 	</logger>
