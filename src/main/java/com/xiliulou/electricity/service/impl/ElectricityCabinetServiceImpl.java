@@ -457,7 +457,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public boolean deviceIsOnline(String productKey, String deviceName) {
         AliIotRsp aliIotRsp = pubHardwareService.queryDeviceInfoFromIot(productKey, deviceName);
-        log.info("aliIotRsp is --> {}", aliIotRsp);
         if (Objects.isNull(aliIotRsp)) {
             return false;
         }

@@ -19,3 +19,5 @@ spring:
     active: prod
 logging:
   config: classpath:logback-spring-prod.xml
+  level:
+    com.xiliulou.electricity.mapper: debug
