@@ -73,6 +73,8 @@ public class HardwareCommand {
 
 	public static final String ELE_COMMAND_OTHER_CONFIG = "other_config";
 
+	public static final String ELE_COMMAND_BATTERY_SYNC_INFO = "battery_sync_info";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
@@ -110,5 +112,6 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_REQUEST_LOG, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_SYNC_INFO, "OK");
 	}
 }
