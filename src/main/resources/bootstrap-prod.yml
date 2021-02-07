@@ -20,4 +20,4 @@ spring:
 logging:
   config: classpath:logback-spring-prod.xml
   level:
-    com.xiliulou.cupboard.mapper: debug
+    com.xiliulou.electricity.mapper: debug
