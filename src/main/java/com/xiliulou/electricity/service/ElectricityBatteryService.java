@@ -26,7 +26,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R deleteElectricityBattery(Long id);
 
-
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
     List<ElectricityBattery> homeTwo();
