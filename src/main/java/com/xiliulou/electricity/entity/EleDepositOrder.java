@@ -4,6 +4,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.math.BigDecimal;
+
 /**
  * 缴纳押金订单表(TEleDepositOrder)实体类
  *
@@ -21,7 +24,7 @@ public class EleDepositOrder {
     /**
     * 支付金额
     */
-    private Double payAmount;
+    private BigDecimal payAmount;
     /**
     * 创建时间
     */
@@ -41,7 +44,7 @@ public class EleDepositOrder {
     /**
     * 状态（0、未支付,1、支付成功,2、支付失败）
     */
-    private Object status;
+    private Integer status;
     /**
     * 用户名
     */
@@ -51,7 +54,5 @@ public class EleDepositOrder {
     */
     private String phone;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
 
 }

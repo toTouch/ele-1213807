@@ -69,4 +69,7 @@ public interface ElectricityCabinetConstant {
     //用户实名认证资料锁
    String ELE_CACHE_USER_AUTH_LOCK_KEY = "ele_cache_user_auth_lock_key:";
 
+    //用户缴纳押金
+    String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
+
 }

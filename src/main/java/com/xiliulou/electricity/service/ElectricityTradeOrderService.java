@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 
+import com.alibaba.excel.event.Order;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
@@ -15,6 +16,7 @@ public interface ElectricityTradeOrderService {
                                                           ElectricityPayParams electricityPayParams,
                                                           String openId,
                                                           HttpServletRequest request);
+
 
     Pair<Boolean, Object> notifyMemberOrder(WeiXinPayNotify weiXinPayNotify);
 }

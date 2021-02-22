@@ -59,7 +59,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     UserService userService;
     @Override
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        //TODO 判断用户存不存在
+        //判断用户存不存在
+        User user=userService.queryByIdFromDB(franchiseeAddAndUpdate.getUid());
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //判断cid是否已绑定其他加盟商
+        Franchisee oldFranchisee=this.queryByCid(franchiseeAddAndUpdate.getCid());
+        if (Objects.nonNull(oldFranchisee)) {
+            return R.fail("ELECTRICITY.0040", "城市已绑定其他加盟商");
+        }
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setCreateTime(System.currentTimeMillis());
@@ -74,7 +83,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        //TODO 判断用户存不存在
+        //判断用户存不存在
+        User user=userService.queryByIdFromDB(franchiseeAddAndUpdate.getUid());
+        if (Objects.isNull(user)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //判断cid是否已绑定其他加盟商
+        Franchisee oldFranchisee=this.queryByCid(franchiseeAddAndUpdate.getCid());
+        if (Objects.nonNull(oldFranchisee)&&!Objects.equals(oldFranchisee.getId(),franchiseeAddAndUpdate.getId())) {
+            return R.fail("ELECTRICITY.0040", "城市已绑定其他加盟商");
+        }
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setUpdateTime(System.currentTimeMillis());
@@ -179,6 +197,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public List<Franchisee> queryByUid(Long uid) {
-        return franchiseeMapper.selectList(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid));
+        return franchiseeMapper.selectList(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
+    }
+
+    @Override
+    public Franchisee queryByCid(Integer cid) {
+        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getCid,cid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
     }
 }

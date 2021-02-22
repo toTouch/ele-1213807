@@ -76,7 +76,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USER_INFO. UID:{}", uid);
             return R.failMsg("未找到用户信息!");
         }
-        if (!ObjectUtil.equal(UserInfo.IS_SERVICE_STATUS, userInfo.getServiceStatus())) {
+        if (!ObjectUtil.equal(UserInfo.STATUS_IS_BATTERY, userInfo.getStatus())) {
             log.error("CREATE MEMBER_ORDER ERROR ,THIS USER  NOT YET OPEN ELECTRICITY_SERVICE. UID:{}", uid);
             return R.failMsg("您还未开通换电服务!");
         }
@@ -109,7 +109,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
-        electricityMemberCardOrder.setUserName(userInfo.getName());
+        electricityMemberCardOrder.setUserName(userInfo.getUserName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
         baseMapper.insert(electricityMemberCardOrder);
         //支付零元

@@ -1,6 +1,5 @@
-package com.xiliulou.electricity.controller;
-
-import com.xiliulou.electricity.service.impl.ElectricityCabinetFileServiceImpl;
+package com.xiliulou.electricity.controller.user;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 
@@ -11,11 +10,12 @@ import javax.annotation.Resource;
  * @since 2021-02-22 10:17:06
  */
 @RestController
-public class TEleRefundOrderController {
+public class EleRefundOrderUserController {
     /**
      * 服务对象
      */
     @Resource
-    private ElectricityCabinetFileServiceImpl.EleRefundOrderService tEleRefundOrderService;
+    private EleRefundOrderService eleRefundOrderService;
+
 
 }

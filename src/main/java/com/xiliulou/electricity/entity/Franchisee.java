@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 
 /**
  * (Franchisee)实体类
@@ -33,7 +35,7 @@ public class Franchisee {
     /**
      * 租电池押金
      */
-    private Double batteryDeposit;
+    private BigDecimal batteryDeposit;
     /**
      * 城市Id
      */

@@ -119,6 +119,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if(ObjectUtil.isNotEmpty(userInfoList)){
             return R.fail("ELECTRICITY.0039", "电池已被绑定");
         }
+
+
         UserInfo userInfo = new UserInfo();
         BeanUtil.copyProperties(userInfoBatteryAddAndUpdate, userInfo);
         RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
@@ -126,6 +128,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setStatus(UserInfo.STATUS_IS_BATTERY);
         Integer update = userInfoMapper.update(userInfo);
+
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             rentBatteryOrder.setUid(oldUserInfo.getUid());
@@ -209,6 +213,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
+
+
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setInitElectricityBatterySn(null);
@@ -217,6 +223,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setStatus(UserInfo.STATUS_IS_DEPOSIT);
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.unBind(userInfo);
+
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
