@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleUserAuth;
+
+import java.util.List;
 
 /**
  * 实名认证信息(TEleUserAuth)表服务接口
@@ -43,4 +46,11 @@ public interface EleUserAuthService {
     Integer update(EleUserAuth eleUserAuth);
 
 
+    R insertEleUserAuthList(List<EleUserAuth> eleUserAuthList);
+
+    R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList);
+
+    Integer getEleUserAuthSpecificStatus(Long uid);
+
+    R selectCurrentEleAuthEntriesList();
 }

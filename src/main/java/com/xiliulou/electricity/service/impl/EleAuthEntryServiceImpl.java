@@ -1,12 +1,19 @@
 package com.xiliulou.electricity.service.impl;
-
+import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.mapper.EleAuthEntryMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 实名认证资料项(TEleAuthEntry)表服务实现类
@@ -14,10 +21,14 @@ import javax.annotation.Resource;
  * @author makejava
  * @since 2021-02-20 13:37:11
  */
-@Service("tEleAuthEntryService")
+@Service("eleAuthEntryService")
+@Slf4j
 public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     @Resource
-    private EleAuthEntryMapper eleAuthEntryMapper;
+    EleAuthEntryMapper eleAuthEntryMapper;
+
+    @Autowired
+    RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -65,5 +76,90 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     public Integer update(EleAuthEntry eleAuthEntry) {
        return this.eleAuthEntryMapper.update(eleAuthEntry);
          
+    }
+
+    @Override
+    public R batchInsertAuthEntry(List<EleAuthEntry> eleAuthEntryList) {
+        List<EleAuthEntry> eleAuthEntryListWillInsertList = new ArrayList<>(eleAuthEntryList.size());
+        for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
+            if (ObjectUtil.isEmpty(eleAuthEntry.getType()) || !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
+                return R.fail("资料项参数不合法!");
+            }
+            if (ObjectUtil.isEmpty(eleAuthEntry.getIdentity()) || !this.checkAuthEntryIdentityAllowable(eleAuthEntry.getIdentity())) {
+                return R.fail("资料项标识不合法!");
+            }
+            eleAuthEntryListWillInsertList.add(eleAuthEntry);
+        }
+        Long effectRows = eleAuthEntryListWillInsertList.parallelStream().map(e -> {
+            e.setCreateTime(System.currentTimeMillis());
+            e.setUpdateTime(System.currentTimeMillis());
+            e.setDelFlag(EleAuthEntry.DEL_NORMAL);
+
+            return eleAuthEntryMapper.insert(e);
+        }).collect(Collectors.counting());
+
+        if (effectRows < eleAuthEntryListWillInsertList.size()) {
+            log.error("insert size is  more than insert effectRows ");
+            return R.fail("系统错误!");
+        }
+        return R.ok();
+    }
+
+    @Override
+    public R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList) {
+        for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
+            if (ObjectUtil.isEmpty(eleAuthEntry.getId())) {
+               return R.fail("请求参数不合法!");
+            }
+            if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
+                return R.fail("资料项参数不合法!");
+            }
+            if (ObjectUtil.isNotEmpty(eleAuthEntry.getIdentity()) && !this.checkAuthEntryIdentityAllowable(eleAuthEntry.getIdentity())) {
+                return R.fail("资料项标识不合法!");
+            }
+            eleAuthEntry.setUpdateTime(System.currentTimeMillis());
+            eleAuthEntryMapper.updateById(eleAuthEntry);
+            redisService.deleteKeys(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
+        }
+        return R.ok();
+    }
+
+    @Override
+    public  List<EleAuthEntry> getEleAuthEntriesList() {
+        return eleAuthEntryMapper.queryAll(new EleAuthEntry());
+    }
+
+
+    /**
+     * 检查资料类型是否合法
+     *
+     */
+    public Boolean checkAuthEntryTypeAllowable(String authType) {
+        Boolean allowAble = Boolean.FALSE;
+        switch (authType) {
+            case "input":
+                allowAble = Boolean.TRUE;
+                break;
+            case "select":
+                allowAble = Boolean.TRUE;
+                break;
+            case "radio":
+                allowAble = Boolean.TRUE;
+                break;
+            case "file":
+                allowAble = Boolean.TRUE;
+                break;
+
+        }
+        return allowAble;
+    }
+    /**
+     * 检查资料标识是否合法
+     *
+     * @param identity
+     * @return
+     */
+    public Boolean checkAuthEntryIdentityAllowable(Integer identity) {
+        return identity >= 100 && identity <= 106;
     }
 }

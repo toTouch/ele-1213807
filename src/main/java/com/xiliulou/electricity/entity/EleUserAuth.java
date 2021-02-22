@@ -21,7 +21,7 @@ public class EleUserAuth {
     /**
     * 用户uid
     */
-    private Integer uid;
+    private Long uid;
     /**
     * 资料项id
     */
@@ -47,5 +47,12 @@ public class EleUserAuth {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    //等待审核中
+    public static Integer STATUS_PENDING_REVIEW = 0;
+    //审核被拒绝
+    public static Integer STATUS_REVIEW_REJECTED = 1;
+    //审核通过
+    public static Integer STATUS_REVIEW_PASSED = 2;
 
 }

@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
+
+import java.util.List;
 
 /**
  * 实名认证资料项(TEleAuthEntry)表服务接口
@@ -43,4 +46,9 @@ public interface EleAuthEntryService {
     Integer update(EleAuthEntry eleAuthEntry);
 
 
+    R batchInsertAuthEntry(List<EleAuthEntry> eleAuthEntryList);
+
+    R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList);
+
+    Object getEleAuthEntriesList();
 }

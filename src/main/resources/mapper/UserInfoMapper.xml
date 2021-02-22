@@ -2,40 +2,21 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.UserInfoMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.UserInfo" id="UserInfoMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="phone" column="phone" jdbcType="VARCHAR"/>
-        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
-        <result property="serviceStatus" column="service_status" jdbcType="OTHER"/>
-        <result property="memberCardExpireTime" column="member_canrd_expire_time" jdbcType="INTEGER"/>
-        <result property="remainingNumber" column="remaining_number" jdbcType="INTEGER"/>
-        <result property="cardType" column="card_type" jdbcType="INTEGER"/>
-        <result property="initElectricityBatterySn" column="init_electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="nowElectricityBatterySn" column="now_electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="batteryDeposit" column="battery_deposit" jdbcType="NUMERIC"/>
-        <result property="usableStatus" column="usable_status" jdbcType="OTHER"/>
-        <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-    </resultMap>
-
     <!--查询单个-->
-    <select id="queryById" resultMap="UserInfoMap">
+    <select id="queryById" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
-          id, uid, name, phone, id_number, service_status, member_card_expire_time,remaining_number,card_type,  init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time
+          id, uid, user_name,real_name, phone, id_number, status,auth_status, member_card_expire_time,remaining_number,card_type,
+          init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time,mailbox
         from electricity.t_user_info
         where id = #{id}
     </select>
 
     <!--查询指定行数据-->
     <select id="queryList"
-            resultType="com.xiliulou.electricity.vo.UserInfoVO">
+            resultType="com.baomidou.mybatisplus.core.metadata.IPage">
         select
-        id, uid, name, phone, id_number, service_status, member_card_expire_time,
-        remaining_number,card_type,
-        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit,  usable_status, del_flag, create_time, update_time
+        id, uid, user_name,real_name, phone, id_number, status,auth_status, member_card_expire_time,remaining_number,card_type,
+        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time,mailbox
         from electricity.t_user_info
         where del_flag=0
         <if test="query.name != null and query.name != ''">

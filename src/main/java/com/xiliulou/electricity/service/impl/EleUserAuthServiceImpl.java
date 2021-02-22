@@ -1,12 +1,23 @@
 package com.xiliulou.electricity.service.impl;
-
+import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
+import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 实名认证信息(TEleUserAuth)表服务实现类
@@ -14,10 +25,17 @@ import javax.annotation.Resource;
  * @author makejava
  * @since 2021-02-20 13:37:38
  */
-@Service("tEleUserAuthService")
+@Service("eleUserAuthService")
+@Slf4j
 public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Resource
-    private EleUserAuthMapper eleUserAuthMapper;
+    EleUserAuthMapper eleUserAuthMapper;
+
+    @Autowired
+    EleAuthEntryService eleAuthEntryService;
+
+    @Autowired
+    UserInfoService userInfoService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -65,5 +83,73 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     public Integer update(EleUserAuth eleUserAuth) {
        return this.eleUserAuthMapper.update(eleUserAuth);
          
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R insertEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
+        Long uid = SecurityUtils.getUid();
+        UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+
+        UserInfo userInfo=new UserInfo();
+        userInfo.setId(oldUserInfo.getId());
+
+        for (EleUserAuth eleUserAuth : eleUserAuthList) {
+            eleUserAuth.setUid(uid);
+            if (StringUtils.isEmpty(eleUserAuth.getValue())) {
+               return R.fail("审核资料项不能为空!");
+            }
+
+            EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromDB(eleUserAuth.getEntryId());
+            if (Objects.isNull(eleAuthEntryDb)) {
+                log.error("not found authEntry entryId:{}", eleUserAuth.getEntryId());
+                return R.fail("审核资料项不存在!");
+            }
+            Integer count = eleUserAuthMapper.selectCount(Wrappers.<EleUserAuth>lambdaQuery()
+                    .eq(EleUserAuth::getUid, uid)
+                    .eq(EleUserAuth::getEntryId, eleAuthEntryDb.getId()));
+            if (ObjectUtil.isNotEmpty(count) && count >= 1) {
+                log.error("duplicate Submission CourierAuthEntryId :{} ,uid:{} ", eleAuthEntryDb.getId(), uid);
+                return R.fail(eleAuthEntryDb.getName() + "资料审核项已提交!");
+            }
+
+
+            if (ObjectUtil.equal(EleAuthEntry.IDENTITY_NAME_ID, eleAuthEntryDb.getIdentity())) {
+                userInfo.setRealName(eleUserAuth.getValue());
+            }
+            if (ObjectUtil.equal(EleAuthEntry.IDENTITY_ID_CARD, eleAuthEntryDb.getIdentity())) {
+                userInfo.setIdNumber(eleUserAuth.getValue());
+            }
+            if (ObjectUtil.equal(EleAuthEntry.IDENTITY_MAILBOX, eleAuthEntryDb.getIdentity())) {
+                userInfo.setMailbox(eleUserAuth.getValue());
+            }
+
+            eleUserAuth.setStatus(EleUserAuth.STATUS_REVIEW_PASSED);
+            eleUserAuth.setCreateTime(System.currentTimeMillis());
+            eleUserAuth.setUpdateTime(System.currentTimeMillis());
+            eleUserAuthMapper.insert(eleUserAuth);
+        }
+
+        userInfo.setUid(uid);
+        userInfo.setAuthStatus(UserInfo.AUTH_STATUS_PENDING_REVIEW);
+        userInfoService.update(userInfo);
+
+        return R.ok();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
+        return null;
+    }
+
+    @Override
+    public Integer getEleUserAuthSpecificStatus(Long uid) {
+        return null;
+    }
+
+    @Override
+    public R selectCurrentEleAuthEntriesList() {
+        return null;
     }
 }

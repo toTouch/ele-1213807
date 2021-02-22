@@ -26,21 +26,31 @@ public class UserInfo {
 
     private Long uid;
     /**
-     * 用户姓名
-     */
-    private String name;
-    /**
      * 手机号
      */
     private String phone;
     /**
+     * 用户名
+     */
+    private String userName;
+    /**
+     * 用户姓名
+     */
+    private String realName;
+    /**
+     * 邮箱
+     */
+    private String mailbox;
+    /**
      * 身份证号
      */
     private String idNumber;
+    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过)
+    private Integer authStatus;
     /**
-     * 服务状态 未开通-1 已开通-0
+     * 状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
      */
-    private Integer serviceStatus;
+    private Integer status;
     /**
      * 月卡过期时间
      */
@@ -85,12 +95,25 @@ public class UserInfo {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
-    public static final Integer IS_SERVICE_STATUS = 0;
-    public static final Integer NO_SERVICE_STATUS = 1;
+    //用户状态--初始化
+    public static final Integer STATUS_INIT = 0;
+    //已实名认证
+    public static final Integer STATUS_IS_AUTH=1;
+    //已缴纳押金
+    public static final Integer STATUS_IS_DEPOSIT=2;
+    //已租电池
+    public static final Integer STATUS_IS_BATTERY=3;
 
     //可用
     public static final Integer USER_USABLE_STATUS = 0;
     //禁用
     public static final Integer USER_UN_USABLE_STATUS = 1;
+
+    //等待审核中
+    public static Integer AUTH_STATUS_PENDING_REVIEW = 0;
+    //审核被拒绝
+    public static Integer AUTH_STATUS_REVIEW_REJECTED = 1;
+    //审核通过
+    public static Integer AUTH_STATUS_REVIEW_PASSED = 2;
 
 }

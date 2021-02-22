@@ -39,15 +39,6 @@ public class UserInfoAdminController {
     }
 
 
-    //修改用户绑定电池
-    @PutMapping(value = "/admin/userInfo/updateBattery")
-    public R updateBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
-        R result = userInfoService.unBindBattery(userInfoBatteryAddAndUpdate.getId());
-        if (result.getCode() == 0) {
-            return userInfoService.bindBattery(userInfoBatteryAddAndUpdate);
-        }
-        return result;
-    }
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")

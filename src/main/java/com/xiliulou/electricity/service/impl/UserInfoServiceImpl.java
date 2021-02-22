@@ -110,6 +110,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
             return R.fail("ELECTRICITY.0030", "用户已绑定电池，请解绑后再绑定");
         }
+        //用户是否处于缴纳押金状态或绑定电池状态 TODO
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
@@ -123,18 +124,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfo.setServiceStatus(UserInfo.IS_SERVICE_STATUS);
+        userInfo.setStatus(UserInfo.STATUS_IS_BATTERY);
         Integer update = userInfoMapper.update(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             rentBatteryOrder.setUid(oldUserInfo.getUid());
-            rentBatteryOrder.setName(userInfo.getName());
+            rentBatteryOrder.setUserName(oldUserInfo.getUserName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-            rentBatteryOrder.setIdNumber(userInfo.getIdNumber());
             rentBatteryOrder.setElectricityBatterySn(userInfo.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(userInfo.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
-            rentBatteryOrder.setStatus(RentBatteryOrder.IS_USE_STATUS);
+            rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+            rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
@@ -213,20 +214,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryDeposit(null);
-        userInfo.setServiceStatus(UserInfo.NO_SERVICE_STATUS);
+        userInfo.setStatus(UserInfo.STATUS_IS_DEPOSIT);
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.unBind(userInfo);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
-            rentBatteryOrder.setName(oldUserInfo.getName());
+            rentBatteryOrder.setUserName(oldUserInfo.getUserName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-            rentBatteryOrder.setIdNumber(oldUserInfo.getIdNumber());
             rentBatteryOrder.setElectricityBatterySn(oldUserInfo.getInitElectricityBatterySn());
             rentBatteryOrder.setBatteryDeposit(oldUserInfo.getBatteryDeposit());
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
-            rentBatteryOrder.setStatus(RentBatteryOrder.NO_USE_STATUS);
+            rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+            rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
@@ -253,8 +254,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public Integer homeOneService(Long first, Long now) {
-        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime, first, now).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL)
-                .eq(UserInfo::getServiceStatus, UserInfo.IS_SERVICE_STATUS));
+        return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime, first, now).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
     @Override
@@ -341,7 +341,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //判断是否开通服务
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
+        if (Objects.equals(userInfo.getStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
