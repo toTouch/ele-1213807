@@ -31,6 +31,10 @@ public class Franchisee {
      */
     private String name;
     /**
+     * 租电池押金
+     */
+    private Double batteryDeposit;
+    /**
      * 城市Id
      */
     private Integer cid;

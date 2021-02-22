@@ -31,8 +31,8 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
-        <if test="query.serviceStatus != null">
-            and service_status = #{query.serviceStatus}
+        <if test="query.status != null">
+            and status = #{query.status}
         </if>
         order by create_time desc
 
@@ -46,7 +46,7 @@
     </select>
     <select id="homeThreeService" resultType="java.util.HashMap">
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as serviceCount
-        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and service_status=0
+        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
         group by from_unixtime(create_time / 1000, '%Y-%m-%d')
         order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
     </select>
@@ -68,17 +68,23 @@
             <if test="uid != null">
                 uid = #{uid},
             </if>
-            <if test="name != null and name != ''">
-                name = #{name},
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
             </if>
             <if test="phone != null and phone != ''">
                 phone = #{phone},
             </if>
+            <if test="realName != null and realName != ''">
+                real_name = #{realName},
+            </if>
             <if test="idNumber != null and idNumber != ''">
                 id_number = #{idNumber},
             </if>
-            <if test="serviceStatus != null">
-                service_status = #{serviceStatus},
+            <if test="authStatus != null">
+                auth_status = #{authStatus},
+            </if>
+            <if test="status != null">
+                status = #{status},
             </if>
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
@@ -104,9 +110,6 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
@@ -121,39 +124,12 @@
             <if test="uid != null">
                 uid = #{uid},
             </if>
-            <if test="name != null and name != ''">
-                name = #{name},
-            </if>
-            <if test="phone != null and phone != ''">
-                phone = #{phone},
-            </if>
-            <if test="idNumber != null and idNumber != ''">
-                id_number = #{idNumber},
-            </if>
-            <if test="serviceStatus != null">
-                service_status = #{serviceStatus},
-            </if>
-            <if test="memberCardExpireTime != null">
-                member_card_expire_time = #{memberCardExpireTime},
-            </if>
-            <if test="remainingNumber != null">
-                remaining_number = #{remainingNumber},
-            </if>
-            <if test="cardType != null">
-                card_type = #{cardType},
+            <if test="status != null">
+                status = #{status},
             </if>
             init_electricity_battery_sn = #{initElectricityBatterySn},
             now_electricity_battery_sn = #{nowElectricityBatterySn},
             battery_deposit = #{batteryDeposit},
-            <if test="usableStatus != null">
-                usable_status = #{usableStatus},
-            </if>
-            <if test="delFlag != null">
-                del_flag = #{delFlag},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
