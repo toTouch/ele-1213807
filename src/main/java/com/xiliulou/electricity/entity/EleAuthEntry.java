@@ -30,11 +30,8 @@ public class EleAuthEntry {
     */
     @NotBlank(message = "资料名称不能为空!")
     private String name;
-    /**
-    * 资料项标识Id
-    */
-    @NotNull(message = "资料标识id不能为空!")
-    private Integer identity;
+    //是否使用（0--使用,1--不使用）
+    private Integer isUse;
     /**
     * 资料项类型 select---下拉选择框 input--输入框 radio--单选 file--文件上传
     */

@@ -177,7 +177,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //判断是否开通服务
-        if (Objects.equals(userInfo.getStatus(), UserInfo.STATUS_IS_BATTERY)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }

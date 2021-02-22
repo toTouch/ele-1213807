@@ -48,7 +48,7 @@ public class UserInfoAdminController {
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "status", required = false) Integer status) {
+                       @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -64,7 +64,7 @@ public class UserInfoAdminController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .status(status).build();
+                .serviceStatus(serviceStatus).build();
 
         return userInfoService.queryList(userInfoQuery);
     }

@@ -126,7 +126,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfo.setStatus(UserInfo.STATUS_IS_BATTERY);
+        userInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
         Integer update = userInfoMapper.update(userInfo);
 
 
@@ -220,7 +220,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryDeposit(null);
-        userInfo.setStatus(UserInfo.STATUS_IS_DEPOSIT);
+        userInfo.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
         userInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = userInfoMapper.unBind(userInfo);
 
@@ -349,7 +349,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //判断是否开通服务
-        if (Objects.equals(userInfo.getStatus(), UserInfo.STATUS_IS_BATTERY)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }

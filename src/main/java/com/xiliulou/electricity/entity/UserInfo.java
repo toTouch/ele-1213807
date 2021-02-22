@@ -36,7 +36,7 @@ public class UserInfo {
     /**
      * 用户姓名
      */
-    private String realName;
+    private String name;
     /**
      * 邮箱
      */
@@ -48,9 +48,9 @@ public class UserInfo {
     //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过)
     private Integer authStatus;
     /**
-     * 状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
+     * 服务状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
      */
-    private Integer status;
+    private Integer serviceStatus;
     /**
      * 月卡过期时间
      */

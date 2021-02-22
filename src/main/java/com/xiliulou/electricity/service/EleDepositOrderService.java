@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务接口
  *
@@ -44,5 +46,7 @@ public interface EleDepositOrderService {
     Integer update(EleDepositOrder eleDepositOrder);
 
 
-    R payDeposit();
+    R payDeposit(HttpServletRequest request);
+
+    EleDepositOrder queryByOrderId(String orderNo);
 }

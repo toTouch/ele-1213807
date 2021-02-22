@@ -5,7 +5,7 @@
     <!--查询单个-->
     <select id="queryById" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
-          id, uid, user_name,real_name, phone, id_number, status,auth_status, member_card_expire_time,remaining_number,card_type,
+          id, uid, user_name,name, phone, id_number, service_status,auth_status, member_card_expire_time,remaining_number,card_type,
           init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time,mailbox
         from electricity.t_user_info
         where id = #{id}
@@ -15,7 +15,7 @@
     <select id="queryList"
             resultType="com.baomidou.mybatisplus.core.metadata.IPage">
         select
-        id, uid, user_name,real_name, phone, id_number, status,auth_status, member_card_expire_time,remaining_number,card_type,
+        id, uid, user_name,name, phone, id_number, service_status,auth_status, member_card_expire_time,remaining_number,card_type,
         init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time,mailbox
         from electricity.t_user_info
         where del_flag=0
@@ -74,8 +74,8 @@
             <if test="phone != null and phone != ''">
                 phone = #{phone},
             </if>
-            <if test="realName != null and realName != ''">
-                real_name = #{realName},
+            <if test="name != null and name != ''">
+                name = #{name},
             </if>
             <if test="idNumber != null and idNumber != ''">
                 id_number = #{idNumber},
@@ -83,8 +83,8 @@
             <if test="authStatus != null">
                 auth_status = #{authStatus},
             </if>
-            <if test="status != null">
-                status = #{status},
+            <if test="serviceStatus != null">
+                status = #{serviceStatus},
             </if>
             <if test="memberCardExpireTime != null">
                 member_card_expire_time = #{memberCardExpireTime},
@@ -124,8 +124,8 @@
             <if test="uid != null">
                 uid = #{uid},
             </if>
-            <if test="status != null">
-                status = #{status},
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
             </if>
             init_electricity_battery_sn = #{initElectricityBatterySn},
             now_electricity_battery_sn = #{nowElectricityBatterySn},

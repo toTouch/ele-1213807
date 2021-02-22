@@ -54,5 +54,9 @@ public class EleDepositOrder {
     */
     private String phone;
 
+    public static final Integer STATUS_INIT = 0;
+    public static final Integer STATUS_SUCCESS = 1;
+    public static final Integer STATUS_FAIL = 0;
+
 
 }

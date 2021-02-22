@@ -42,7 +42,13 @@ public class ElectricityTradeOrder {
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = -1;
 
+    //月卡支付
     public static final Integer ORDER_TYPE_MEMBER_CARD = 1;
+    //押金支付
+    public static final Integer ORDER_TYPE_DEPOSIT = 2;
+
+    //押金支付附加信息
+    public static final String ATTACH_DEPOSIT = "deposit";
 
 
 }

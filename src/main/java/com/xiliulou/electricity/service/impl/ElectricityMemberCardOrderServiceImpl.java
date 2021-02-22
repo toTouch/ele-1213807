@@ -76,7 +76,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USER_INFO. UID:{}", uid);
             return R.failMsg("未找到用户信息!");
         }
-        if (!ObjectUtil.equal(UserInfo.STATUS_IS_BATTERY, userInfo.getStatus())) {
+        if (!ObjectUtil.equal( userInfo.getServiceStatus(),UserInfo.STATUS_IS_BATTERY)) {
             log.error("CREATE MEMBER_ORDER ERROR ,THIS USER  NOT YET OPEN ELECTRICITY_SERVICE. UID:{}", uid);
             return R.failMsg("您还未开通换电服务!");
         }

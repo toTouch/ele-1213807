@@ -20,5 +20,5 @@ public class UserInfoQuery {
     private String phone;
     private Long beginTime;
     private Long endTime;
-    private Integer status;
+    private Integer serviceStatus;
 }
