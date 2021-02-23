@@ -72,4 +72,10 @@ public interface ElectricityCabinetConstant {
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
 
+    //用户租电池
+    String ELE_CACHE_USER_RENT_BATTERY_LOCK_KEY = "ele_cache_user_rent_battery_lock_key:";
+
+    //用户还电池
+    String ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY = "ele_cache_user_return_battery_lock_key:";
+
 }

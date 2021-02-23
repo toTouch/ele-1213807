@@ -126,7 +126,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //判断是否实名认证
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0041", "未实名认证");

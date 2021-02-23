@@ -123,7 +123,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         UserInfo userInfo = new UserInfo();
         BeanUtil.copyProperties(userInfoBatteryAddAndUpdate, userInfo);
-        RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
@@ -131,6 +130,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
         DbUtils.dbOperateSuccessThen(update, () -> {
+            RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             //添加租电池记录
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setUserName(oldUserInfo.getUserName());
