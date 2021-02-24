@@ -253,7 +253,6 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setId(eleDepositOrder.getId());
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleDepositOrderService.update(eleDepositOrderUpdate);
 
         return Pair.of(result, null);
     }
