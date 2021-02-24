@@ -175,6 +175,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrder.setTotalFee(commonOrder.getPayAmount());
         electricityTradeOrder.setUid(commonOrder.getUid());
         baseMapper.insert(electricityTradeOrder);
+
         //支付
         PayOrder payOrder = new PayOrder();
         payOrder.setAppId(electricityPayParams.getAppId());
@@ -208,6 +209,7 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
+
         //押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
         if (ObjectUtil.isEmpty(eleDepositOrder)) {
