@@ -738,7 +738,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.nonNull(userInfo)) {
 
             //我的电池
-            if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.IS_SERVICE_STATUS)) {
+            if (Objects.nonNull(userInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(userInfo.getNowElectricityBatterySn());
                 if (Objects.nonNull(electricityBattery)) {
                     battery = electricityBattery.getPower();
@@ -791,7 +791,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //判断是否开通服务
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0021", "未开通服务");
         }
