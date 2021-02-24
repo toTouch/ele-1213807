@@ -3,7 +3,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
@@ -25,6 +24,14 @@ public class EleDepositOrderUserController {
     public R payDeposit(HttpServletRequest request) {
 
         return eleDepositOrderService.payDeposit(request);
+
+    }
+
+    //退还押金
+    @PostMapping("/user/returnDeposit")
+    public R returnDeposit(HttpServletRequest request) {
+
+        return eleDepositOrderService.returnDeposit(request);
 
     }
 

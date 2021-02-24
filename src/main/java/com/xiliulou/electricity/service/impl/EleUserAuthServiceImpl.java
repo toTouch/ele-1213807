@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
@@ -89,8 +90,15 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Transactional(rollbackFor = Exception.class)
     public R insertEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
         Long uid = SecurityUtils.getUid();
-        UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
+        UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(oldUserInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         UserInfo userInfo=new UserInfo();
         userInfo.setId(oldUserInfo.getId());
 
@@ -113,18 +121,17 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                 return R.fail(eleAuthEntryDb.getName() + "资料审核项已提交!");
             }
 
-
-            if (ObjectUtil.equal(EleAuthEntry.IDENTITY_NAME_ID, eleAuthEntryDb.getIdentity())) {
-                userInfo.setRealName(eleUserAuth.getValue());
+            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleAuthEntryDb.getId())) {
+                userInfo.setName(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.IDENTITY_ID_CARD, eleAuthEntryDb.getIdentity())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleAuthEntryDb.getId())) {
                 userInfo.setIdNumber(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.IDENTITY_MAILBOX, eleAuthEntryDb.getIdentity())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleAuthEntryDb.getId())) {
                 userInfo.setMailbox(eleUserAuth.getValue());
             }
 
-            eleUserAuth.setStatus(EleUserAuth.STATUS_REVIEW_PASSED);
+            eleUserAuth.setStatus(EleUserAuth.STATUS_PENDING_REVIEW);
             eleUserAuth.setCreateTime(System.currentTimeMillis());
             eleUserAuth.setUpdateTime(System.currentTimeMillis());
             eleUserAuthMapper.insert(eleUserAuth);
@@ -140,7 +147,63 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
-        return null;
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(oldUserInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(Objects.equals(oldUserInfo.getAuthStatus(),UserInfo.AUTH_STATUS_REVIEW_PASSED)){
+            return R.fail("审核通过，无法修改!");
+        }
+        UserInfo userInfo=new UserInfo();
+        userInfo.setId(oldUserInfo.getId());
+
+        for (EleUserAuth eleUserAuth : eleUserAuthList) {
+            eleUserAuth.setUid(uid);
+            if (StringUtils.isEmpty(eleUserAuth.getValue())) {
+                return R.fail("审核资料项不能为空!");
+            }
+
+            EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromDB(eleUserAuth.getEntryId());
+            if (Objects.isNull(eleAuthEntryDb)) {
+                log.error("not found authEntry entryId:{}", eleUserAuth.getEntryId());
+                return R.fail("审核资料项不存在!");
+            }
+            Integer count = eleUserAuthMapper.selectCount(Wrappers.<EleUserAuth>lambdaQuery()
+                    .eq(EleUserAuth::getUid, uid)
+                    .eq(EleUserAuth::getEntryId, eleAuthEntryDb.getId()));
+            if (ObjectUtil.isNotEmpty(count) && count >= 1) {
+                log.error("duplicate Submission CourierAuthEntryId :{} ,uid:{} ", eleAuthEntryDb.getId(), uid);
+                return R.fail(eleAuthEntryDb.getName() + "资料审核项已提交!");
+            }
+
+            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleAuthEntryDb.getId())) {
+                userInfo.setName(eleUserAuth.getValue());
+            }
+            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleAuthEntryDb.getId())) {
+                userInfo.setIdNumber(eleUserAuth.getValue());
+            }
+            if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleAuthEntryDb.getId())) {
+                userInfo.setMailbox(eleUserAuth.getValue());
+            }
+
+            eleUserAuth.setStatus(EleUserAuth.STATUS_PENDING_REVIEW);
+            eleUserAuth.setCreateTime(System.currentTimeMillis());
+            eleUserAuth.setUpdateTime(System.currentTimeMillis());
+            eleUserAuthMapper.update(eleUserAuth);
+        }
+
+        userInfo.setUid(uid);
+        userInfo.setAuthStatus(UserInfo.AUTH_STATUS_PENDING_REVIEW);
+        userInfoService.update(userInfo);
+
+        return R.ok();
+
     }
 
     @Override

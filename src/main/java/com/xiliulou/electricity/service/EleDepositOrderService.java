@@ -49,4 +49,6 @@ public interface EleDepositOrderService {
     R payDeposit(HttpServletRequest request);
 
     EleDepositOrder queryByOrderId(String orderNo);
+
+    R returnDeposit(HttpServletRequest request);
 }

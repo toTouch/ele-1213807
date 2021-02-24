@@ -65,11 +65,11 @@ public class EleAuthEntry {
     public static final String TYPE_INPUT = "input";
     public static final String TYPE_FILE = "file";
     //姓名
-    public static final Integer IDENTITY_NAME_ID = 100;
+    public static final Integer ID_NAME_ID = 1;
     //身份证
-    public static final Integer IDENTITY_ID_CARD = 101;
+    public static final Integer ID_ID_CARD = 2;
     //邮箱
-    public static final Integer IDENTITY_MAILBOX = 103;
+    public static final Integer ID_MAILBOX = 3;
     //默认可修改
     public static final Integer DEFAULT_MODIFY = 0;
 

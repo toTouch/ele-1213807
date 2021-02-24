@@ -68,13 +68,12 @@ public class EleUserAuthUserController {
         }
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 5*1000L, false);
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
         if (!getLockSuccess) {
             return R.fail("操作频繁,请稍后再试!");
         }
 
         eleUserAuthService.updateEleUserAuthList(eleUserAuthList);
-        redisService.deleteKeys(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid);
         return R.ok();
     }
 
