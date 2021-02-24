@@ -171,27 +171,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //发送开门命令 TODO
 
-            //TODO 下面为检测成功后进行的操作 暂时留这
-            //电池绑定用户
-            UserInfo newUserInfo = new UserInfo();
-            newUserInfo.setId(userInfo.getId());
-            newUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-            if (Objects.isNull(userInfo.getInitElectricityBatterySn())) {
-                newUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-            }
-            newUserInfo.setUpdateTime(System.currentTimeMillis());
-            newUserInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
-            Integer update = userInfoService.update(newUserInfo);
-
-            DbUtils.dbOperateSuccessThen(update, () -> {
-                //修改电池状态
-                ElectricityBattery newElectricityBattery = new ElectricityBattery();
-                newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.update(newElectricityBattery);
-                return null;
-            });
             return R.ok();
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
@@ -276,18 +255,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 
             //发送开门命令 TODO
-
-            //TODO 下面为检测成功后进行的操作 暂时留这
-            //电池绑定用户
-            UserInfo newUserInfo = new UserInfo();
-            newUserInfo.setId(userInfo.getId());
-            newUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-            if (Objects.isNull(userInfo.getInitElectricityBatterySn())) {
-                newUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-            }
-            newUserInfo.setUpdateTime(System.currentTimeMillis());
-            newUserInfo.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
-            userInfoService.update(newUserInfo);
 
             return R.ok();
         } finally {
