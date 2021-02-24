@@ -160,11 +160,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Page page = PageUtil.getPage(userInfoQuery.getOffset(), userInfoQuery.getSize());
         page.setSize(userInfoQuery.getSize());
         userInfoMapper.queryList(page, userInfoQuery);
-        if (ObjectUtil.isEmpty(page)) {
-            return R.ok(new ArrayList<>());
-        }
-        List<UserInfo> UserInfoList = page.getRecords();
-        page.setRecords(UserInfoList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList()));
         return R.ok(page);
     }
 
