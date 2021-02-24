@@ -44,11 +44,11 @@ public interface EleDepositOrderService {
      * @return 实例对象
      */
     Integer update(EleDepositOrder eleDepositOrder);
-
-
-    R payDeposit(HttpServletRequest request);
+    
 
     EleDepositOrder queryByOrderId(String orderNo);
+    
+    R payDeposit(HttpServletRequest request);
 
     R returnDeposit(HttpServletRequest request);
 }

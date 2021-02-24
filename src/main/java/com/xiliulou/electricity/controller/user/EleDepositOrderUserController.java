@@ -22,17 +22,13 @@ public class EleDepositOrderUserController {
     //缴纳押金
     @PostMapping("/user/payDeposit")
     public R payDeposit(HttpServletRequest request) {
-
         return eleDepositOrderService.payDeposit(request);
-
     }
 
     //退还押金
     @PostMapping("/user/returnDeposit")
     public R returnDeposit(HttpServletRequest request) {
-
         return eleDepositOrderService.returnDeposit(request);
-
     }
 
 }
