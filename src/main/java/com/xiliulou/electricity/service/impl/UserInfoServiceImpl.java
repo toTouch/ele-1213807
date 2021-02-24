@@ -17,7 +17,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
-import com.xiliulou.electricity.vo.UserInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
