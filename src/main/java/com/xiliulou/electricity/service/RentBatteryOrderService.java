@@ -23,8 +23,8 @@ public interface RentBatteryOrderService {
     RentBatteryOrder insert(RentBatteryOrder rentBatteryOrder);
 
 
-
     R queryList(RentBatteryOrderQuery rentBatteryOrderQuery);
+
 
     R rentBattery(RentBatteryQuery rentBatteryQuery);
 

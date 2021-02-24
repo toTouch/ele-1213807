@@ -82,6 +82,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return R.ok(rentBatteryOrderMapper.queryList(page, rentBatteryOrderQuery));
     }
 
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R rentBattery(RentBatteryQuery rentBatteryQuery) {

@@ -106,14 +106,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
          
     }
 
-
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
         return eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId,orderNo));
     }
 
-
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R payDeposit(HttpServletRequest request) {
             //用户信息
             Long uid = SecurityUtils.getUid();
@@ -195,6 +194,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R returnDeposit(HttpServletRequest request) {
         //用户信息
         Long uid = SecurityUtils.getUid();
