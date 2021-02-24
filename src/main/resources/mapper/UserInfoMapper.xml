@@ -13,7 +13,7 @@
 
     <!--查询指定行数据-->
     <select id="queryList"
-            resultType="com.baomidou.mybatisplus.core.metadata.IPage">
+            resultType="com.xiliulou.electricity.entity.UserInfo">
         select
         id, uid, user_name,name, phone, id_number,mailbox, service_status,auth_status, member_card_expire_time,remaining_number,card_type,
         init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time
