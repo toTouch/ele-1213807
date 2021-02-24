@@ -123,7 +123,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //限频
             Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
             if (!getLockSuccess) {
-                return R.fail("操作频繁,请稍后再试!");
+                return R.fail("ELECTRICITY.0034", "操作频繁");
             }
             User user=userService.queryByUidFromCache(uid);
             if (Objects.isNull(user)) {

@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -78,7 +80,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
         Page page = PageUtil.getPage(rentBatteryOrderQuery.getOffset(), rentBatteryOrderQuery.getSize());
-
         return R.ok(rentBatteryOrderMapper.queryList(page, rentBatteryOrderQuery));
     }
 
@@ -92,10 +93,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_RENT_BATTERY_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_RENT_BATTERY_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         //换电柜
@@ -173,7 +175,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             UserInfo newUserInfo = new UserInfo();
             newUserInfo.setId(userInfo.getId());
             newUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-            if(Objects.isNull(userInfo.getInitElectricityBatterySn())){
+            if (Objects.isNull(userInfo.getInitElectricityBatterySn())) {
                 newUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
             }
             newUserInfo.setUpdateTime(System.currentTimeMillis());
@@ -190,7 +192,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return null;
             });
             return R.ok();
-        }finally {
+        } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
 
@@ -206,9 +208,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         //换电柜
@@ -272,8 +274,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //发送开门命令 TODO
 
+            //TODO 下面为检测成功后进行的操作 暂时留这
+            //电池绑定用户
+            UserInfo newUserInfo = new UserInfo();
+            newUserInfo.setId(userInfo.getId());
+            newUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
+            if (Objects.isNull(userInfo.getInitElectricityBatterySn())) {
+                newUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
+            }
+            newUserInfo.setUpdateTime(System.currentTimeMillis());
+            newUserInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
+            Integer update = userInfoService.update(newUserInfo);
+
+            DbUtils.dbOperateSuccessThen(update, () -> {
+                //修改电池状态
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(electricityBattery.getId());
+                newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBatteryService.update(newElectricityBattery);
+                return null;
             return R.ok();
-        }finally {
+        } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
     }
