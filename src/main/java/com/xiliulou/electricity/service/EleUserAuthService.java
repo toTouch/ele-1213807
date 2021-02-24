@@ -50,7 +50,7 @@ public interface EleUserAuthService {
 
     R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList);
 
-    Integer getEleUserAuthSpecificStatus(Long uid);
+    R getEleUserAuthSpecificStatus(Long uid);
 
-    R selectCurrentEleAuthEntriesList();
+    R selectCurrentEleAuthEntriesList(Long uid);
 }

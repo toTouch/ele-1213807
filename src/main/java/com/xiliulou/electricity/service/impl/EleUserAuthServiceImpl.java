@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
@@ -207,12 +208,18 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     }
 
     @Override
-    public Integer getEleUserAuthSpecificStatus(Long uid) {
-        return null;
+    public R getEleUserAuthSpecificStatus(Long uid) {
+
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(userInfo.getServiceStatus());
     }
 
     @Override
-    public R selectCurrentEleAuthEntriesList() {
-        return null;
+    public R selectCurrentEleAuthEntriesList(Long uid) {
+        return R.ok(eleUserAuthMapper.selectList(Wrappers.<EleUserAuth>lambdaQuery().eq(EleUserAuth::getUid,uid).eq(EleUserAuth::getDelFlag,EleUserAuth.DEL_NORMAL)));
     }
 }

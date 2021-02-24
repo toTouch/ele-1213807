@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -38,7 +39,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
      */
     @Override
     public EleAuthEntry queryByIdFromDB(Long id) {
-        return this.eleAuthEntryMapper.queryById(id);
+        return this.eleAuthEntryMapper.selectById(id);
     }
     
         /**
@@ -74,7 +75,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EleAuthEntry eleAuthEntry) {
-       return this.eleAuthEntryMapper.update(eleAuthEntry);
+       return this.eleAuthEntryMapper.updateById(eleAuthEntry);
          
     }
 
@@ -84,9 +85,6 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
             if (ObjectUtil.isEmpty(eleAuthEntry.getType()) || !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
                 return R.fail("资料项参数不合法!");
-            }
-            if (ObjectUtil.isEmpty(eleAuthEntry.getIdentity()) || !this.checkAuthEntryIdentityAllowable(eleAuthEntry.getIdentity())) {
-                return R.fail("资料项标识不合法!");
             }
             eleAuthEntryListWillInsertList.add(eleAuthEntry);
         }
@@ -114,9 +112,6 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
                 return R.fail("资料项参数不合法!");
             }
-            if (ObjectUtil.isNotEmpty(eleAuthEntry.getIdentity()) && !this.checkAuthEntryIdentityAllowable(eleAuthEntry.getIdentity())) {
-                return R.fail("资料项标识不合法!");
-            }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
             eleAuthEntryMapper.updateById(eleAuthEntry);
             redisService.deleteKeys(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
@@ -126,7 +121,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
 
     @Override
     public  List<EleAuthEntry> getEleAuthEntriesList() {
-        return eleAuthEntryMapper.queryAll(new EleAuthEntry());
+        return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL));
     }
 
 
@@ -152,14 +147,5 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
 
         }
         return allowAble;
-    }
-    /**
-     * 检查资料标识是否合法
-     *
-     * @param identity
-     * @return
-     */
-    public Boolean checkAuthEntryIdentityAllowable(Integer identity) {
-        return identity >= 100 && identity <= 106;
     }
 }
