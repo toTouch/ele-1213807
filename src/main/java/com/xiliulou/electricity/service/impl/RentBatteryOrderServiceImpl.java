@@ -283,17 +283,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 newUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
             }
             newUserInfo.setUpdateTime(System.currentTimeMillis());
-            newUserInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
+            newUserInfo.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
             Integer update = userInfoService.update(newUserInfo);
 
-            DbUtils.dbOperateSuccessThen(update, () -> {
-                //修改电池状态
-                ElectricityBattery newElectricityBattery = new ElectricityBattery();
-                newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.update(newElectricityBattery);
-                return null;
             return R.ok();
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
