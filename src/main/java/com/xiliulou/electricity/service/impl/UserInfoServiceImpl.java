@@ -17,7 +17,6 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
-import com.xiliulou.electricity.vo.UserInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -164,8 +163,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(page)) {
             return R.ok(new ArrayList<>());
         }
-        List<UserInfoVO> UserInfoVOList = page.getRecords();
-        page.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList()));
+        List<UserInfo> UserInfoVOList = page.getRecords();
+        page.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList()));
         return R.ok(page);
     }
 
