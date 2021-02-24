@@ -145,7 +145,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .createTime(System.currentTimeMillis())
                             .phone(existPhone.getRight().getPhone())
                             .userName(existPhone.getRight().getName())
-                            .status(UserInfo.STATUS_INIT)
+                            .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
                             .build();
@@ -194,7 +194,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .createTime(System.currentTimeMillis())
                             .phone(purePhoneNumber)
                             .userName(user.getName())
-                            .status(UserInfo.STATUS_INIT)
+                            .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
                             .build();
@@ -251,7 +251,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .createTime(System.currentTimeMillis())
                             .phone(existPhone.getRight().getPhone())
                             .userName(existPhone.getRight().getName())
-                            .status(UserInfo.STATUS_INIT)
+                            .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
                             .build();
@@ -319,7 +319,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .createTime(System.currentTimeMillis())
                 .phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
                 .userName("")
-                .status(UserInfo.STATUS_INIT)
+                .serviceStatus(UserInfo.STATUS_INIT)
                 .delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS)
                 .build();
