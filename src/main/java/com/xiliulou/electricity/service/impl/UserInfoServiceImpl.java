@@ -95,7 +95,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
-        return this.userInfoMapper.update(userInfo);
+        return this.userInfoMapper.updateById(userInfo);
 
     }
 
@@ -125,7 +125,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
-        Integer update = userInfoMapper.update(userInfo);
+        Integer update = userInfoMapper.updateById(userInfo);
 
 
         DbUtils.dbOperateSuccessThen(update, () -> {
@@ -179,7 +179,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(UserInfo.USER_UN_USABLE_STATUS);
-        userInfoMapper.update(userInfo);
+        userInfoMapper.updateById(userInfo);
         return R.ok();
     }
 
@@ -194,7 +194,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(UserInfo.USER_USABLE_STATUS);
-        userInfoMapper.update(userInfo);
+        userInfoMapper.updateById(userInfo);
         return R.ok();
     }
 
@@ -375,7 +375,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
-        userInfoMapper.update(userInfo);
+        userInfoMapper.updateById(userInfo);
         return R.ok();
     }
 

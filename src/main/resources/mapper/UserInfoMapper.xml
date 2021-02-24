@@ -61,61 +61,7 @@
         from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and member_card_expire_time is not null and remaining_number is not null
     </select>
 
-    <!--通过主键修改数据-->
-    <update id="update">
-        update electricity.t_user_info
-        <set>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="userName != null and userName != ''">
-                user_name = #{userName},
-            </if>
-            <if test="phone != null and phone != ''">
-                phone = #{phone},
-            </if>
-            <if test="name != null and name != ''">
-                name = #{name},
-            </if>
-            <if test="idNumber != null and idNumber != ''">
-                id_number = #{idNumber},
-            </if>
-            <if test="authStatus != null">
-                auth_status = #{authStatus},
-            </if>
-            <if test="serviceStatus != null">
-                status = #{serviceStatus},
-            </if>
-            <if test="memberCardExpireTime != null">
-                member_card_expire_time = #{memberCardExpireTime},
-            </if>
-            <if test="remainingNumber != null">
-                remaining_number = #{remainingNumber},
-            </if>
-            <if test="cardType != null">
-                card_type = #{cardType},
-            </if>
-            <if test="initElectricityBatterySn != null and initElectricityBatterySn != ''">
-                init_electricity_battery_sn = #{initElectricityBatterySn},
-            </if>
-            <if test="nowElectricityBatterySn != null and nowElectricityBatterySn != ''">
-                now_electricity_battery_sn = #{nowElectricityBatterySn},
-            </if>
-            <if test="batteryDeposit != null">
-                battery_deposit = #{batteryDeposit},
-            </if>
-            <if test="usableStatus != null">
-                usable_status = #{usableStatus},
-            </if>
-            <if test="delFlag != null">
-                del_flag = #{delFlag},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
+
 
     <!--通过主键修改数据-->
     <update id="unBind">
