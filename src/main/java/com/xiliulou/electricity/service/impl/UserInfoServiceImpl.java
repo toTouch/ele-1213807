@@ -366,5 +366,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userInfo);
     }
 
+    @Override
+    public R verifyAuth(Long id,Integer authStatus) {
+        UserInfo oldUserInfo = queryByIdFromDB(id);
+        if (Objects.isNull(oldUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        UserInfo userInfo = new UserInfo();
+        userInfo.setId(id);
+        userInfo.setUpdateTime(System.currentTimeMillis());
+        userInfo.setAuthStatus(authStatus);
+        userInfoMapper.update(userInfo);
+        return R.ok();
+    }
+
 
 }

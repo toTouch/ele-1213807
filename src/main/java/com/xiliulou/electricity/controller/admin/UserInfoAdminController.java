@@ -82,4 +82,10 @@ public class UserInfoAdminController {
         return userInfoService.reboot(id);
     }
 
+    //后台审核实名认证
+    @PostMapping(value = "/admin/userInfo/verifyAuth")
+    public R verifyAuth(@RequestParam("id") Long id,@RequestParam("authStatus") Integer authStatus) {
+        return userInfoService.verifyAuth(id,authStatus);
+    }
+
 }
