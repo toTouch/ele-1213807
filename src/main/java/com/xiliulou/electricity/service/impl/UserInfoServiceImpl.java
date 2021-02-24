@@ -163,8 +163,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(page)) {
             return R.ok(new ArrayList<>());
         }
-        List<UserInfo> UserInfoVOList = page.getRecords();
-        page.setRecords(UserInfoVOList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList()));
+        List<UserInfo> UserInfoList = page.getRecords();
+        page.setRecords(UserInfoList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList()));
         return R.ok(page);
     }
 
