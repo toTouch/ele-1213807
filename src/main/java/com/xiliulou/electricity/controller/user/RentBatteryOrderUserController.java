@@ -19,7 +19,7 @@ public class RentBatteryOrderUserController {
      * 服务对象
      */
     @Autowired
-    private RentBatteryOrderService rentBatteryOrderService;
+    RentBatteryOrderService rentBatteryOrderService;
 
     //租电池
     @PostMapping("/user/rentBattery")

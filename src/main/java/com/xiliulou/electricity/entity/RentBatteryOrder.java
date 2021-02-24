@@ -39,6 +39,14 @@ public class RentBatteryOrder {
     */
     private Double batteryDeposit;
     /**
+     * 换电柜id
+     */
+    private Integer electricityCabinetId;
+    /**
+     * 仓门号
+     */
+    private Integer cellNo;
+    /**
      * 订单类型(1--租电池,2--还电池,3--后台绑电池,4--后台解绑电池)
      */
     private Integer type;
@@ -66,5 +74,16 @@ public class RentBatteryOrder {
     public static final Integer TYPE_WEB_BIND = 3;
     //后台解绑电池
     public static final Integer TYPE_WEB_UNBIND = 4;
+
+    //初始化
+    public static final Integer STATUS_INIT = 1;
+    //租电池/还电池 开门
+    public static final Integer STATUS_RENT_BATTERY_OPEN_DOOR = 2;
+    //电池检测成功(订单完成)
+    public static final Integer STATUS_RENT_BATTERY_DEPOSITED = 3;
+    //订单异常结束
+    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 4;
+    //订单取消
+    public static final Integer STATUS_ORDER_CANCEL = 5;
 
 }

@@ -2,21 +2,10 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RentBatteryOrderMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.RentBatteryOrder" id="RentBatteryOrderMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="phone" column="phone" jdbcType="VARCHAR"/>
-        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
-        <result property="electricityBatterySn" column="electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="batteryDeposit" column="battery_deposit" jdbcType="NUMERIC"/>
-        <result property="status" column="status" jdbcType="OTHER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-    </resultMap>
 
 
     <!--查询指定行数据-->
-    <select id="queryList" resultMap="RentBatteryOrderMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
         select
         id, uid, name, phone, id_number,  electricity_battery_sn, battery_deposit,
         status, create_time

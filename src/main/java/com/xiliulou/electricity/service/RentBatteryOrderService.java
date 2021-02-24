@@ -29,4 +29,6 @@ public interface RentBatteryOrderService {
     R rentBattery(RentBatteryQuery rentBatteryQuery);
 
     R returnBattery(ReturnBatteryQuery returnBatteryQuery);
+
+    void update(RentBatteryOrder rentBatteryOrder);
 }

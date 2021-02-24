@@ -75,6 +75,14 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer TYPE_NEW_BATTERY_OPEN_DOOR = 3;
     //新电池检测
     public static final Integer TYPE_NEW_BATTERY_CHECK = 4;
+    //租电池开门
+    public static final Integer TYPE_RENT_BATTERY_OPEN_DOOR = 5;
+    //租电池检测
+    public static final Integer TYPE_RENT_BATTERY_CHECK = 6;
+    //还电池开门
+    public static final Integer TYPE_RETURN_BATTERY_OPEN_DOOR = 7;
+    //还电池检测
+    public static final Integer TYPE_RETURN_BATTERY_CHECK = 8;
 
 
 }

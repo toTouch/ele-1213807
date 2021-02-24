@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -163,7 +162,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .userName(userInfo.getUserName())
                     .batteryDeposit(userInfo.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RENT)
+                    //TODO 订单状态
                     .status(1)
+                    .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
@@ -267,7 +268,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .userName(userInfo.getUserName())
                     .batteryDeposit(userInfo.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RETURN)
+                    //TODO 订单状态
                     .status(1)
+                    .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
@@ -284,12 +287,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
             newUserInfo.setUpdateTime(System.currentTimeMillis());
             newUserInfo.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
-            Integer update = userInfoService.update(newUserInfo);
+            userInfoService.update(newUserInfo);
 
             return R.ok();
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
+    }
+
+    @Override
+    public void update(RentBatteryOrder rentBatteryOrder) {
+        rentBatteryOrderMapper.updateById(rentBatteryOrder);
     }
 
     //分配满仓
