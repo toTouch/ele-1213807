@@ -109,6 +109,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
             return R.fail("ELECTRICITY.0030", "用户已绑定电池，请解绑后再绑定");
         }
+
         //用户是否处于缴纳押金状态或绑定电池状态 TODO
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
@@ -130,6 +131,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+
             //添加租电池记录
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setUserName(oldUserInfo.getUserName());
@@ -140,6 +142,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
+
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
@@ -225,6 +228,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
         DbUtils.dbOperateSuccessThen(update, () -> {
+
             //添加租电池记录
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
@@ -236,6 +240,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
+
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());

@@ -34,14 +34,14 @@ public class EleAuthEntryAdminController {
     @PostMapping(value = "/admin/authEntry")
     public R batchInsertAuthEntry(@RequestBody List<EleAuthEntry> eleAuthEntryList) {
         if (ObjectUtil.isEmpty(eleAuthEntryList)) {
-            return R.fail("请求参数不合法!");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         //限频
         Boolean getLockSuccess = redisService.setNx(
                 ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY_LOCK_KEY
                 , IdUtil.fastSimpleUUID(), 5*1000L,false);
         if (!getLockSuccess) {
-            return R.fail("请勿频繁操作!");
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         return eleAuthEntryService.batchInsertAuthEntry(eleAuthEntryList);
     }

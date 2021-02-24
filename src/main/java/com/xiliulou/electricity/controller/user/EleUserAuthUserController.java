@@ -38,7 +38,7 @@ public class EleUserAuthUserController {
     @PostMapping("/user/auth")
     public R commitInfoAuth(@RequestBody List<EleUserAuth> EleUserAuthList) {
         if (!DataUtil.collectionIsUsable(EleUserAuthList)) {
-            return R.fail("不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
@@ -48,7 +48,7 @@ public class EleUserAuthUserController {
         //限频
         Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         eleUserAuthService.insertEleUserAuthList(EleUserAuthList);
@@ -60,7 +60,7 @@ public class EleUserAuthUserController {
     @PutMapping("/user/auth")
     public R updateInfoAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
         if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
-            return R.fail("不合法的参数");
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
@@ -70,7 +70,7 @@ public class EleUserAuthUserController {
         //限频
         Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         eleUserAuthService.updateEleUserAuthList(eleUserAuthList);

@@ -84,7 +84,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         List<EleAuthEntry> eleAuthEntryListWillInsertList = new ArrayList<>(eleAuthEntryList.size());
         for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
             if (ObjectUtil.isEmpty(eleAuthEntry.getType()) || !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
-                return R.fail("资料项参数不合法!");
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             eleAuthEntryListWillInsertList.add(eleAuthEntry);
         }
@@ -98,7 +98,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
 
         if (effectRows < eleAuthEntryListWillInsertList.size()) {
             log.error("insert size is  more than insert effectRows ");
-            return R.fail("系统错误!");
+            return R.fail("SYSTEM.0001","系统错误!");
         }
         return R.ok();
     }
@@ -107,10 +107,10 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     public R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList) {
         for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
             if (ObjectUtil.isEmpty(eleAuthEntry.getId())) {
-               return R.fail("请求参数不合法!");
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
-                return R.fail("资料项参数不合法!");
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
             eleAuthEntryMapper.updateById(eleAuthEntry);

@@ -125,6 +125,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
@@ -156,6 +157,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .status(1)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
+
         //支付零元
         if(payAmount.compareTo(BigDecimal.valueOf(0.01))<0){
             eleDepositOrder.setStatus(2);
@@ -168,6 +170,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
+
         //调起支付
         CommonOrder commonOrder=CommonOrder.builder()
                 .orderId(orderId)
@@ -207,23 +210,24 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         //判断是否退电池
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0044", "未退还电池");
         }
+
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)){
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0045", "未缴纳押金");
         }
-        //调起退款
+        //调起退款 TODO
         return null;
     }
 

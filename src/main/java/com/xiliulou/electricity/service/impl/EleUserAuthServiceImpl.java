@@ -94,19 +94,19 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
         UserInfo oldUserInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(oldUserInfo)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         UserInfo userInfo=new UserInfo();
         userInfo.setId(oldUserInfo.getId());
 
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
             eleUserAuth.setUid(uid);
             if (StringUtils.isEmpty(eleUserAuth.getValue())) {
-               return R.fail("审核资料项不能为空!");
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
 
             EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromDB(eleUserAuth.getEntryId());
@@ -152,12 +152,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         if (Objects.isNull(uid)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
         UserInfo oldUserInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(oldUserInfo)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         if(Objects.equals(oldUserInfo.getAuthStatus(),UserInfo.AUTH_STATUS_REVIEW_PASSED)){
             return R.fail("审核通过，无法修改!");
         }
@@ -167,7 +167,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         for (EleUserAuth eleUserAuth : eleUserAuthList) {
             eleUserAuth.setUid(uid);
             if (StringUtils.isEmpty(eleUserAuth.getValue())) {
-                return R.fail("审核资料项不能为空!");
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
 
             EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromDB(eleUserAuth.getEntryId());

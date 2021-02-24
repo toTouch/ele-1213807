@@ -96,13 +96,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (!getLockSuccess) {
             return R.fail("操作频繁,请稍后再试!");
         }
+
         //换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", rentBatteryQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
@@ -167,6 +167,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //发送开门命令 TODO
 
+            //TODO 下面为检测成功后进行的操作 暂时留这
             //电池绑定用户
             UserInfo newUserInfo = new UserInfo();
             newUserInfo.setId(userInfo.getId());
@@ -208,13 +209,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (!getLockSuccess) {
             return R.fail("操作频繁,请稍后再试!");
         }
+
         //换电柜
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(returnBatteryQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", returnBatteryQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
@@ -276,6 +277,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
     }
 
+    //分配满仓
     public String findUsableBatteryCellNo(Integer id, String cellNo) {
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id, cellNo);
         if (!DataUtil.collectionIsUsable(usableBoxes)) {
@@ -303,6 +305,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return null;
     }
 
+    //分配空仓
     public String findUsableCellNo(Integer id) {
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryNoElectricityBatteryBox(id);
         if (!DataUtil.collectionIsUsable(usableBoxes)) {
