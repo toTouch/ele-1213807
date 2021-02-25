@@ -96,7 +96,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
         UserInfo oldUserInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(oldUserInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -155,7 +155,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
         UserInfo oldUserInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(oldUserInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -213,7 +213,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(userInfo.getAuthStatus());
@@ -229,7 +229,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(userInfo.getServiceStatus());

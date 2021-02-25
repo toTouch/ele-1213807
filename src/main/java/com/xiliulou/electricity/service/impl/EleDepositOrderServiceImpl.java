@@ -117,7 +117,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //用户信息
             Long uid = SecurityUtils.getUid();
             if (Objects.isNull(uid)) {
-                log.error("ELECTRICITY  ERROR! not found user ");
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
             //限频
@@ -127,18 +126,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
             User user=userService.queryByUidFromCache(uid);
             if (Objects.isNull(user)) {
-                log.error("ELECTRICITY  ERROR! not found user ");
+                log.error("ELECTRICITY  ERROR! not found user! userId:{}",uid);
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
 
             //判断是否实名认证
             UserInfo userInfo = userInfoService.queryByUid(uid);
             if (Objects.isNull(userInfo)) {
-                log.error("ELECTRICITY  ERROR! not found user ");
+                log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
                 return R.fail("ELECTRICITY.0001", "未找到用户");
             }
             if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-                log.error("ELECTRICITY  ERROR! not found userInfo ");
                 return R.fail("ELECTRICITY.0041", "未实名认证");
             }
 
@@ -146,7 +144,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //根据用户cid找到对应的加盟商
             Franchisee franchisee=franchiseeService.queryByCid(user.getCid());
             if (Objects.isNull(franchisee)) {
-                log.error("ELECTRICITY  ERROR! not found user ");
+                log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ",user.getCid());
                 return R.fail("ELECTRICITY.0038", "未找到加盟商");
             }
             BigDecimal payAmount=franchisee.getBatteryDeposit();
@@ -208,29 +206,30 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         User user=userService.queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY  ERROR! not found user! userId:{}",uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //判断是否退电池
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0044", "未退还电池");
         }
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)){
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0045", "未缴纳押金");
         }
         //调起退款 TODO
         return R.ok();
     }
+
 
 
     public String generateOrderId(Long uid) {

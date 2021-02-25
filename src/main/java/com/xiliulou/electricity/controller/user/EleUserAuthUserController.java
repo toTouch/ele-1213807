@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -21,6 +22,7 @@ import java.util.Objects;
  * @since 2021-02-20 13:37:38
  */
 @RestController
+@Slf4j
 public class EleUserAuthUserController {
     /**
      * 服务对象
