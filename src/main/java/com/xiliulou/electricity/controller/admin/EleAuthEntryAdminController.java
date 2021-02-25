@@ -27,10 +27,10 @@ public class EleAuthEntryAdminController {
     @Autowired
     RedisService redisService;
 
-    /**
+   /* *//**
      * 新增资料项
      *
-     */
+     *//*
     @PostMapping(value = "/admin/authEntry")
     public R batchInsertAuthEntry(@RequestBody List<EleAuthEntry> eleAuthEntryList) {
         if (ObjectUtil.isEmpty(eleAuthEntryList)) {
@@ -44,7 +44,7 @@ public class EleAuthEntryAdminController {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
         return eleAuthEntryService.batchInsertAuthEntry(eleAuthEntryList);
-    }
+    }*/
 
     /**
      * 修改资料项
