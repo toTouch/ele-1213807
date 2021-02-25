@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务接口
@@ -41,6 +44,8 @@ public interface EleRefundOrderService {
      * @return 实例对象
      */
     Integer update(EleRefundOrder eleRefundOrder);
+
+    R returnDeposit(HttpServletRequest request);
 
 
 }

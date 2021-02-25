@@ -191,44 +191,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok(getPayParamsPair.getRight());
         }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public R returnDeposit(HttpServletRequest request) {
-        //用户信息
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3*1000L, false);
-        if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
-        }
-        User user=userService.queryByUidFromCache(uid);
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user! userId:{}",uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        //判断是否退电池
-        UserInfo userInfo = userInfoService.queryByUid(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0044", "未退还电池");
-        }
-
-        //判断是否缴纳押金
-        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)){
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0045", "未缴纳押金");
-        }
-        //调起退款 TODO
-        return R.ok();
-    }
 
 
 
