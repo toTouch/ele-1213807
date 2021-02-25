@@ -241,6 +241,7 @@ public class ElectricityTradeOrderServiceImpl extends
             userInfoUpdate.setId(userInfo.getId());
             userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
             userInfoService.updateById(userInfoUpdate);
         }
 

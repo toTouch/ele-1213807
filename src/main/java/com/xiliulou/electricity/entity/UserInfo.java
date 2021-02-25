@@ -8,6 +8,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * 用户绑定列表(TUserInfo)实体类
  *
@@ -74,7 +76,7 @@ public class UserInfo {
     /**
      * 租电池押金
      */
-    private Double batteryDeposit;
+    private BigDecimal batteryDeposit;
     /**
      * 0--正常 1--删除
      */

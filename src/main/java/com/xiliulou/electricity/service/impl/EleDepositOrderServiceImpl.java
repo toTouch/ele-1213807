@@ -171,6 +171,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 userInfoUpdate.setId(userInfo.getId());
                 userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
                 userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+                userInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
                 userInfoService.updateById(userInfoUpdate);
                 return R.ok();
             }
