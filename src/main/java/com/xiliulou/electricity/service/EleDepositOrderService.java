@@ -51,5 +51,5 @@ public interface EleDepositOrderService {
     R payDeposit(HttpServletRequest request);
 
 
-
+    Long queryByUid(Long uid);
 }

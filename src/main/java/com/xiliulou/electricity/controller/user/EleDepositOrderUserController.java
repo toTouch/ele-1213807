@@ -21,7 +21,7 @@ public class EleDepositOrderUserController {
      * 服务对象
      */
     @Autowired
-    private EleDepositOrderService eleDepositOrderService;
+    EleDepositOrderService eleDepositOrderService;
 
     //缴纳押金
     @PostMapping("/user/payDeposit")

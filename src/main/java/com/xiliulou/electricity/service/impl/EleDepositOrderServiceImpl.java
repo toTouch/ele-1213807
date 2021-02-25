@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -30,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -191,7 +193,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok(getPayParamsPair.getRight());
         }
 
-
+    @Override
+    public Long queryByUid(Long uid) {
+        List<EleDepositOrder> eleDepositOrderList =eleDepositOrderMapper.selectList(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getUid,uid).orderByDesc(EleDepositOrder::getUpdateTime));
+        if(ObjectUtil.isNotEmpty(eleDepositOrderList)){
+            return eleDepositOrderList.get(0).getUpdateTime();
+        }
+        return null;
+    }
 
 
     public String generateOrderId(Long uid) {
