@@ -53,4 +53,6 @@ public interface EleUserAuthService {
     R getEleUserAuthSpecificStatus(Long uid);
 
     R selectCurrentEleAuthEntriesList(Long uid);
+
+    R getEleUserServiceStatus(Long uid);
 }

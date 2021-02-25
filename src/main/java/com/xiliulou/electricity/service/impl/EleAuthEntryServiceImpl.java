@@ -15,7 +15,6 @@ import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 实名认证资料项(TEleAuthEntry)表服务实现类
@@ -130,6 +129,11 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     @Override
     public  List<EleAuthEntry> getEleAuthEntriesList() {
         return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL));
+    }
+
+    @Override
+    public Object getUseEleAuthEntriesList() {
+        return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getIsUse,EleAuthEntry.IS_USE).eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL));
     }
 
 

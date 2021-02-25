@@ -216,11 +216,22 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        return R.ok(userInfo.getServiceStatus());
+        return R.ok(userInfo.getAuthStatus());
     }
 
     @Override
     public R selectCurrentEleAuthEntriesList(Long uid) {
         return R.ok(eleUserAuthMapper.selectList(Wrappers.<EleUserAuth>lambdaQuery().eq(EleUserAuth::getUid,uid).eq(EleUserAuth::getDelFlag,EleUserAuth.DEL_NORMAL)));
+    }
+
+    @Override
+    public R getEleUserServiceStatus(Long uid) {
+
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(userInfo.getServiceStatus());
     }
 }

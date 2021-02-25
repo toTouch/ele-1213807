@@ -78,12 +78,12 @@ public class EleUserAuthUserController {
     }
 
     /**
-     * 获取资料项
+     * 获取需要实名认证资料项
      *
      */
     @GetMapping(value = "/user/authEntry/list")
     public R getEleAuthEntriesList() {
-        return R.ok(eleAuthEntryService.getEleAuthEntriesList());
+        return R.ok(eleAuthEntryService.getUseEleAuthEntriesList());
     }
 
     /**
@@ -116,6 +116,22 @@ public class EleUserAuthUserController {
         }
 
         return eleUserAuthService.selectCurrentEleAuthEntriesList(uid);
+    }
+
+    /**
+     * 获取当前用户的具体状态
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/user/serviceStatus")
+    public R getEleUserServiceStatus() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return eleUserAuthService.getEleUserServiceStatus(uid);
     }
 
 }
