@@ -221,11 +221,11 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "套餐订单已处理!");
         }
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        Integer depositOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
+        Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
         if (StringUtils.isNotEmpty(weiXinPayNotify.getReturnCode()) && ObjectUtil.equal("SUCCESS", weiXinPayNotify.getReturnCode())) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
-            depositOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
+            depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
         } else {
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + weiXinPayNotify.getOutTradeNo());
@@ -236,7 +236,7 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if(Objects.equals(depositOrderStatus,ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+        if(Objects.equals(depositOrderStatus,EleDepositOrder.STATUS_SUCCESS)) {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setId(userInfo.getId());
             userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);

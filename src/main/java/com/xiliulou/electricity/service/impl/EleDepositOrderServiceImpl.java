@@ -159,13 +159,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     .phone(userInfo.getPhone())
                     .userName(user.getName())
                     .payAmount(payAmount)
-                    .status(1)
+                    .status(EleDepositOrder.STATUS_INIT)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
 
             //支付零元
             if(payAmount.compareTo(BigDecimal.valueOf(0.01))<0){
-                eleDepositOrder.setStatus(2);
+                eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
                 eleDepositOrderMapper.insert(eleDepositOrder);
                 UserInfo userInfoUpdate = new UserInfo();
                 userInfoUpdate.setId(userInfo.getId());
