@@ -96,5 +96,10 @@
         </set>
         where id = #{id}
     </update>
+    <update id="updateByUid">
+     update electricity.t_ele_user_auth
+     set status = #{authStatus},update_time = #{updateTime}
+     where uid = #{uid} and del_flag=0
+    </update>
 
 </mapper>

@@ -27,7 +27,7 @@ public class EleUserAuthUserController {
     /**
      * 服务对象
      */
-    @Resource
+    @Autowired
     EleUserAuthService eleUserAuthService;
 
     @Autowired

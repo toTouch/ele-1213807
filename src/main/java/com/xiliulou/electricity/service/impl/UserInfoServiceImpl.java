@@ -49,6 +49,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
     @Autowired
     UserService userService;
+    @Autowired
+    EleUserAuthService eleUserAuthService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -381,6 +383,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
         userInfoMapper.updateById(userInfo);
+        //修改资料项
+        eleUserAuthService.updateByUid(oldUserInfo.getUid(),authStatus);
         return R.ok();
     }
 

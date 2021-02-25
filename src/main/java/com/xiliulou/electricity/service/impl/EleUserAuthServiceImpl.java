@@ -242,4 +242,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
         }
         return R.ok(userInfo.getServiceStatus());
     }
+
+    @Override
+    public void updateByUid(Long uid, Integer authStatus) {
+        eleUserAuthMapper.updateByUid(uid,authStatus,System.currentTimeMillis());
+    }
 }

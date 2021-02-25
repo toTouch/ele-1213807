@@ -55,4 +55,6 @@ public interface EleUserAuthService {
     R selectCurrentEleAuthEntriesList(Long uid);
 
     R getEleUserServiceStatus(Long uid);
+
+    void updateByUid(Long uid, Integer authStatus);
 }
