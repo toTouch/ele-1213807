@@ -4,8 +4,6 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
-import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
