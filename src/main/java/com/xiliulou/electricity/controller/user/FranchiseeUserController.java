@@ -61,7 +61,7 @@ public class FranchiseeUserController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)&&Objects.nonNull(userInfo.getBatteryDeposit())) {
             map.put("deposit",userInfo.getBatteryDeposit().toString());
             //最后一次缴纳押金时间
             map.put("time", eleDepositOrderService.queryByUid(uid).toString());
