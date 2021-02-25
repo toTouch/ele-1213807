@@ -88,13 +88,14 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             }
             eleAuthEntryListWillInsertList.add(eleAuthEntry);
         }
+
         Long effectRows = eleAuthEntryListWillInsertList.parallelStream().map(e -> {
             e.setCreateTime(System.currentTimeMillis());
             e.setUpdateTime(System.currentTimeMillis());
             e.setDelFlag(EleAuthEntry.DEL_NORMAL);
 
             return eleAuthEntryMapper.insert(e);
-        }).collect(Collectors.counting());
+        }).count();
 
         if (effectRows < eleAuthEntryListWillInsertList.size()) {
             log.error("insert size is  more than insert effectRows ");

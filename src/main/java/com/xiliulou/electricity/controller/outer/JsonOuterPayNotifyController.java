@@ -87,16 +87,4 @@ public class JsonOuterPayNotifyController {
 
     }
 
-    @Autowired
-    ElectricityBatteryService electricityBatteryService;
-
-
-    @GetMapping("outer/user/battery")
-    public R getSelfBattery() {
-        Long uid = 13L;
-
-        return electricityBatteryService.getSelfBattery(uid);
-    }
-
-
 }
