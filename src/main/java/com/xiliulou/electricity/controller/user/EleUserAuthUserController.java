@@ -36,8 +36,8 @@ public class EleUserAuthUserController {
 
     //实名认证
     @PostMapping("/user/auth")
-    public R commitInfoAuth(@RequestBody List<EleUserAuth> EleUserAuthList) {
-        if (!DataUtil.collectionIsUsable(EleUserAuthList)) {
+    public R commitInfoAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
+        if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
         Long uid = SecurityUtils.getUid();
@@ -51,7 +51,7 @@ public class EleUserAuthUserController {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
-        eleUserAuthService.insertEleUserAuthList(EleUserAuthList);
+        eleUserAuthService.insertEleUserAuthList(eleUserAuthList);
         return R.ok();
 
     }

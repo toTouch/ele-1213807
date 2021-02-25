@@ -113,22 +113,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //营业时间
-        if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
-            String businessTime = electricityCabinet.getBusinessTime();
-            if (!Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
-                Integer index = businessTime.indexOf("-");
-                if (!Objects.equals(index, -1) && index > 0) {
-                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-                    Long now = System.currentTimeMillis();
-                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                    Long beginTime = getTime(totalBeginTime);
-                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                    Long endTime = getTime(totalEndTime);
-                    if (firstToday + beginTime > now || firstToday + endTime < now) {
-                        return R.fail("ELECTRICITY.0017", "换电柜已打烊");
-                    }
-                }
-            }
+        Boolean result=this.isBusiness(electricityCabinet);
+        if(result){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
 
         //判断是否缴纳押金
@@ -207,22 +194,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //营业时间
-        if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
-            String businessTime = electricityCabinet.getBusinessTime();
-            if (!Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
-                Integer index = businessTime.indexOf("-");
-                if (!Objects.equals(index, -1) && index > 0) {
-                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-                    Long now = System.currentTimeMillis();
-                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                    Long beginTime = getTime(totalBeginTime);
-                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                    Long endTime = getTime(totalEndTime);
-                    if (firstToday + beginTime > now || firstToday + endTime < now) {
-                        return R.fail("ELECTRICITY.0017", "换电柜已打烊");
-                    }
-                }
-            }
+        Boolean result=this.isBusiness(electricityCabinet);
+        if(result){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
 
         //判断是否缴纳押金
@@ -351,6 +325,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         resultList.addAll(firstSegmentList);
 
         return resultList;
+    }
+
+    public boolean isBusiness(ElectricityCabinet electricityCabinet) {
+        //营业时间
+        if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
+            String businessTime = electricityCabinet.getBusinessTime();
+            if (!Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                int index = businessTime.indexOf("-");
+                if (!Objects.equals(index, -1) && index > 0) {
+                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                    long now = System.currentTimeMillis();
+                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                    Long beginTime = getTime(totalBeginTime);
+                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                    Long endTime = getTime(totalEndTime);
+                    if (firstToday + beginTime > now || firstToday + endTime < now) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public Long getTime(Long time) {

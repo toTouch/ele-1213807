@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -50,7 +51,14 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
      */
     @Override
     public EleAuthEntry queryByIdFromCache(Long id) {
-        return null;
+        EleAuthEntry eleAuthEntry =redisService.getWithHash(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY  + id, EleAuthEntry.class);
+        if (Objects.isNull(eleAuthEntry)) {
+            eleAuthEntry = this.eleAuthEntryMapper.selectById(id);
+            if (Objects.nonNull(eleAuthEntry)) {
+                redisService.saveWithHash(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY  + id, eleAuthEntry);
+            }
+        }
+        return eleAuthEntry;
     }
     
     /**
@@ -88,13 +96,13 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             }
             eleAuthEntryListWillInsertList.add(eleAuthEntry);
         }
-        Long effectRows = eleAuthEntryListWillInsertList.parallelStream().map(e -> {
+        long effectRows = eleAuthEntryListWillInsertList.parallelStream().map(e -> {
             e.setCreateTime(System.currentTimeMillis());
             e.setUpdateTime(System.currentTimeMillis());
             e.setDelFlag(EleAuthEntry.DEL_NORMAL);
 
             return eleAuthEntryMapper.insert(e);
-        }).collect(Collectors.counting());
+        }).count();
 
         if (effectRows < eleAuthEntryListWillInsertList.size()) {
             log.error("insert size is  more than insert effectRows ");
