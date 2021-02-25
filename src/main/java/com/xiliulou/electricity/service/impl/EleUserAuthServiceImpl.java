@@ -140,6 +140,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         userInfo.setUid(uid);
         userInfo.setAuthStatus(UserInfo.AUTH_STATUS_PENDING_REVIEW);
+        userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.update(userInfo);
 
         return R.ok();
@@ -194,13 +195,13 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             }
 
             eleUserAuth.setStatus(EleUserAuth.STATUS_PENDING_REVIEW);
-            eleUserAuth.setCreateTime(System.currentTimeMillis());
             eleUserAuth.setUpdateTime(System.currentTimeMillis());
             eleUserAuthMapper.update(eleUserAuth);
         }
 
         userInfo.setUid(uid);
         userInfo.setAuthStatus(UserInfo.AUTH_STATUS_PENDING_REVIEW);
+        userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.update(userInfo);
 
         return R.ok();
