@@ -199,7 +199,12 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
             eleUserAuth.setStatus(EleUserAuth.STATUS_PENDING_REVIEW);
             eleUserAuth.setUpdateTime(System.currentTimeMillis());
-            eleUserAuthMapper.update(eleUserAuth);
+            if(Objects.isNull(eleUserAuth.getId())){
+                eleUserAuth.setCreateTime(System.currentTimeMillis());
+                eleUserAuthMapper.insert(eleUserAuth);
+            }else {
+                eleUserAuthMapper.update(eleUserAuth);
+            }
         }
 
         userInfo.setUid(uid);
