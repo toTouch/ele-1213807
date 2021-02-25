@@ -21,7 +21,7 @@ import java.math.BigDecimal;
 @Builder
 @TableName("t_ele_deposit_order")
 public class EleDepositOrder {
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 支付金额

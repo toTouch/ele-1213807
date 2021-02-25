@@ -21,7 +21,7 @@ public class EleRefundOrder {
     /**
     * 退款Id
     */
-    @TableId(value = "id", type = IdType.AUTO)
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 退款单号
