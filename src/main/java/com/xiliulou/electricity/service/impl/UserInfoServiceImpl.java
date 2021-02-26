@@ -388,5 +388,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
 
+    @Override
+    public void updateRefund(UserInfo userInfo) {
+        userInfoMapper.updateRefund(userInfo);
+    }
+
 
 }

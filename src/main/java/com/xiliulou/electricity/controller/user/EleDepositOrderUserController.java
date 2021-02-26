@@ -29,6 +29,11 @@ public class EleDepositOrderUserController {
         return eleDepositOrderService.payDeposit(request);
     }
 
+    //退还押金
+    @PostMapping("/user/returnDeposit")
+    public R returnDeposit(HttpServletRequest request) {
+        return eleDepositOrderService.returnDeposit(request); }
+
 
     //查询缴纳押金状态
     @PostMapping("/user/eleDepositOrder/queryStatus")

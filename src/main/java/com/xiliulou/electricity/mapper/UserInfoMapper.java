@@ -54,4 +54,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     void updateByUid(UserInfo userInfo);
 
     void plusCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
+
+    void updateRefund(UserInfo userInfo);
 }

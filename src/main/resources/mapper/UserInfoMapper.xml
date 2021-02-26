@@ -94,5 +94,19 @@
     <update id="plusCount">
         update electricity.t_user_info set remaining_number=remaining_number+1,update_time = #{updateTime} where del_flag=0 and id = #{id}
     </update>
+    <update id="updateRefund">
+        update electricity.t_user_info
+        <set>
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            battery_deposit = #{batteryDeposit},
+            order_id=#{orderId},
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
 
 </mapper>

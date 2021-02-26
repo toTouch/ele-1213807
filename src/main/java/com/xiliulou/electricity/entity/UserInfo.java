@@ -74,6 +74,10 @@ public class UserInfo {
      */
     private String nowElectricityBatterySn;
     /**
+     * 缴纳押金订单编号
+     */
+    private String orderId;
+    /**
      * 租电池押金
      */
     private BigDecimal batteryDeposit;

@@ -64,7 +64,7 @@ public class FranchiseeUserController {
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)&&Objects.nonNull(userInfo.getBatteryDeposit())) {
             map.put("deposit",userInfo.getBatteryDeposit().toString());
             //最后一次缴纳押金时间
-            map.put("time", eleDepositOrderService.queryByUid(uid).toString());
+            map.put("time", eleDepositOrderService.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
             return R.ok(map);
         }
 
