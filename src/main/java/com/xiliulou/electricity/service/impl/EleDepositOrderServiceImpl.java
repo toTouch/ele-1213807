@@ -244,7 +244,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         BigDecimal deposit=userInfo.getBatteryDeposit();
         if(!Objects.equals(eleDepositOrder.getPayAmount(),deposit)){
-            return R.fail("退款金额不符");
+            return R.fail("ELECTRICITY.0044","退款金额不符");
         }
 
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
@@ -282,7 +282,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .payAmount(payAmount)
                 .refundAmount(payAmount).build();
         ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
-        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid);
         Pair<Boolean, Object> getPayParamsPair =
                 eleRefundOrderService.commonCreateRefundOrder(refundOrder, electricityPayParams, request);
         if (!getPayParamsPair.getLeft()) {
