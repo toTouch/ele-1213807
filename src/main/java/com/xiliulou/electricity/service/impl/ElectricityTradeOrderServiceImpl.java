@@ -2,7 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xiliulou.electricity.entity.CommonOrder;
+import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -17,6 +17,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixin.entity.PayOrder;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
 import com.xiliulou.pay.weixin.pay.PayAdapterHandler;
+import com.xiliulou.pay.weixin.refund.RefundAdapterHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -49,6 +50,8 @@ public class ElectricityTradeOrderServiceImpl extends
     @Autowired
     EleDepositOrderService eleDepositOrderService;
 
+
+
     /**
      * 创建并获取支付参数
      *
@@ -74,13 +77,13 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrder.setUid(electricityMemberCardOrder.getUid());
         baseMapper.insert(electricityTradeOrder);
         //支付
-        PayOrder payOrder = new PayOrder();
+        com.xiliulou.pay.weixin.entity.PayOrder payOrder = new com.xiliulou.pay.weixin.entity.PayOrder();
         payOrder.setAppId(electricityPayParams.getAppId());
         payOrder.setAppSecret(electricityPayParams.getAppSecret());
         payOrder.setMchId(electricityPayParams.getMchId());
         payOrder.setPaternerKey(electricityPayParams.getPaternerKey());
         payOrder.setBody("换电卡:" + electricityMemberCardOrder.getOrderId());
-        payOrder.setChannelId(PayOrder.CHANNEL_ID_WX_PRO);
+        payOrder.setChannelId(com.xiliulou.pay.weixin.entity.PayOrder.CHANNEL_ID_WX_PRO);
         payOrder.setOpenId(openId);
         payOrder.setOutTradeNo(electricityTradeOrder.getTradeOrderNo());
         payOrder.setSpbillCreateIp(ip);
@@ -162,7 +165,7 @@ public class ElectricityTradeOrderServiceImpl extends
     }
 
     @Override
-    public Pair<Boolean, Object> commonCreateTradeOrderAndGetPayParams(CommonOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) {
+    public Pair<Boolean, Object> commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) {
         String ip = request.getRemoteAddr();
         ElectricityTradeOrder electricityTradeOrder = new ElectricityTradeOrder();
         electricityTradeOrder.setOrderNo(commonOrder.getOrderId());
@@ -182,8 +185,8 @@ public class ElectricityTradeOrderServiceImpl extends
         payOrder.setAppSecret(electricityPayParams.getAppSecret());
         payOrder.setMchId(electricityPayParams.getMchId());
         payOrder.setPaternerKey(electricityPayParams.getPaternerKey());
-        payOrder.setBody("换电卡:" + commonOrder.getOrderId());
-        payOrder.setChannelId(PayOrder.CHANNEL_ID_WX_PRO);
+        payOrder.setBody("换电押金:" + commonOrder.getOrderId());
+        payOrder.setChannelId(com.xiliulou.pay.weixin.entity.PayOrder.CHANNEL_ID_WX_PRO);
         payOrder.setOpenId(openId);
         payOrder.setOutTradeNo(electricityTradeOrder.getTradeOrderNo());
         payOrder.setSpbillCreateIp(ip);
@@ -218,14 +221,14 @@ public class ElectricityTradeOrderServiceImpl extends
         }
         if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
             log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", electricityTradeOrder.getOrderNo());
-            return Pair.of(false, "套餐订单已处理!");
+            return Pair.of(false, "押金订单已处理!");
         }
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
-        Integer depositOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
+        Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
         if (StringUtils.isNotEmpty(weiXinPayNotify.getReturnCode()) && ObjectUtil.equal("SUCCESS", weiXinPayNotify.getReturnCode())) {
             tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
-            depositOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
+            depositOrderStatus = EleDepositOrder.STATUS_SUCCESS;
             result = true;
         } else {
             log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + weiXinPayNotify.getOutTradeNo());
@@ -236,11 +239,12 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if(Objects.equals(depositOrderStatus,ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+        if(Objects.equals(depositOrderStatus,EleDepositOrder.STATUS_SUCCESS)) {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setId(userInfo.getId());
             userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            userInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
             userInfoService.updateById(userInfoUpdate);
         }
 
@@ -255,5 +259,10 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
 
         return Pair.of(result, null);
+    }
+
+    @Override
+    public ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo) {
+        return baseMapper.selectTradeOrderByTradeOrderNo(outTradeNo);
     }
 }

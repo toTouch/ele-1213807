@@ -6,6 +6,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.math.BigDecimal;
+
 /**
  * 租电池记录(TRentBatteryOrder)实体类
  *
@@ -37,7 +40,7 @@ public class RentBatteryOrder {
     /**
     * 租电池押金
     */
-    private Double batteryDeposit;
+    private BigDecimal batteryDeposit;
     /**
      * 换电柜id
      */

@@ -1,9 +1,14 @@
 package com.xiliulou.electricity.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
+
+import java.math.BigDecimal;
+
 /**
  * 退款订单表(TEleRefundOrder)实体类
  *
@@ -19,6 +24,7 @@ public class EleRefundOrder {
     /**
     * 退款Id
     */
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 退款单号
@@ -31,13 +37,13 @@ public class EleRefundOrder {
     /**
     * 支付金额,单位元
     */
-    private Double payAmount;
+    private BigDecimal payAmount;
     /**
     * 退款金额,单位元
     */
-    private Double refundAmount;
+    private BigDecimal refundAmount;
     /**
-    * 退款状态:0-订单生成,1-退款中,2-退款成功,3-退款失败,4-业务处理完成
+    * 退款状态:1-初始化,2-退款成功,-1-退款失败
     */
     private Object status;
     /**
@@ -59,5 +65,9 @@ public class EleRefundOrder {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer STATUS_INIT = 1;
+    public static final Integer STATUS_SUCCESS = 2;
+    public static final Integer STATUS_FAIL = -1;
 
 }

@@ -86,4 +86,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R queryUserInfo();
 
     R verifyAuth(Long id,Integer authStatus);
+
+    void updateRefund(UserInfo userInfo);
 }

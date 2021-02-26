@@ -89,7 +89,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //用户信息
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -121,7 +120,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -171,7 +170,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //用户信息
         Long uid = SecurityUtils.getUid();
         if (Objects.isNull(uid)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //限频
@@ -202,7 +200,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0043", "未绑定电池");
         }
 

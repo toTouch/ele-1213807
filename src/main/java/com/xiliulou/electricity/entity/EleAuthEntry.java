@@ -70,5 +70,9 @@ public class EleAuthEntry {
     public static final Integer ID_MAILBOX = 3;
     //默认可修改
     public static final Integer DEFAULT_MODIFY = 0;
+    //使用
+    public static final Integer IS_USE = 0;
+    //默认不使用
+    public static final Integer NO_USE = 1;
 
 }

@@ -51,4 +51,6 @@ public interface EleAuthEntryService {
     R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList);
 
     Object getEleAuthEntriesList();
+
+    Object getUseEleAuthEntriesList();
 }

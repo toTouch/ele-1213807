@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -21,11 +22,12 @@ import java.util.Objects;
  * @since 2021-02-20 13:37:38
  */
 @RestController
+@Slf4j
 public class EleUserAuthUserController {
     /**
      * 服务对象
      */
-    @Resource
+    @Autowired
     EleUserAuthService eleUserAuthService;
 
     @Autowired
@@ -78,12 +80,12 @@ public class EleUserAuthUserController {
     }
 
     /**
-     * 获取资料项
+     * 获取需要实名认证资料项
      *
      */
     @GetMapping(value = "/user/authEntry/list")
     public R getEleAuthEntriesList() {
-        return R.ok(eleAuthEntryService.getEleAuthEntriesList());
+        return R.ok(eleAuthEntryService.getUseEleAuthEntriesList());
     }
 
     /**
@@ -116,6 +118,22 @@ public class EleUserAuthUserController {
         }
 
         return eleUserAuthService.selectCurrentEleAuthEntriesList(uid);
+    }
+
+    /**
+     * 获取当前用户的具体状态
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/user/serviceStatus")
+    public R getEleUserServiceStatus() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return eleUserAuthService.getEleUserServiceStatus(uid);
     }
 
 }

@@ -1,6 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
+import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.pay.weixin.entity.WeiXinRefundNotify;
+import org.apache.commons.lang3.tuple.Pair;
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务接口
@@ -43,4 +48,11 @@ public interface EleRefundOrderService {
     Integer update(EleRefundOrder eleRefundOrder);
 
 
+    //调起退款
+    Pair<Boolean, Object> commonCreateRefundOrder(RefundOrder refundOrder,
+                                                  ElectricityPayParams electricityPayParams,
+                                                  HttpServletRequest request);
+
+
+    Pair<Boolean, Object> notifyDepositRefundOrder(WeiXinRefundNotify weiXinRefundNotify);
 }

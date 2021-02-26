@@ -12,7 +12,7 @@ import java.math.BigDecimal;
  **/
 @Data
 @Builder
-public class CommonOrder {
+public class CommonPayOrder {
     //支付金额
     private BigDecimal payAmount;
    //

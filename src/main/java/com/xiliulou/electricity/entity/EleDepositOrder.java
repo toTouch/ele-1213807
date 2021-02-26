@@ -1,4 +1,6 @@
 package com.xiliulou.electricity.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,7 +21,7 @@ import java.math.BigDecimal;
 @Builder
 @TableName("t_ele_deposit_order")
 public class EleDepositOrder {
-    
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 支付金额
@@ -56,7 +58,7 @@ public class EleDepositOrder {
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
-    public static final Integer STATUS_FAIL = 0;
+    public static final Integer STATUS_FAIL = 2;
 
 
 }
