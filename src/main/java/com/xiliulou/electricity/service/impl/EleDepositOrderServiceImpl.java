@@ -243,7 +243,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         BigDecimal deposit=userInfo.getBatteryDeposit();
-        if(Objects.equals(eleDepositOrder.getPayAmount(),deposit)){
+        if(!Objects.equals(eleDepositOrder.getPayAmount(),deposit)){
             return R.fail("退款金额不符");
         }
 
