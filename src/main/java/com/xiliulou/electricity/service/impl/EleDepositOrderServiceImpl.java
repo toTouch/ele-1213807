@@ -9,14 +9,17 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -61,6 +64,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     ElectricityPayParamsService electricityPayParamsService;
     @Autowired
     UserOauthBindService userOauthBindService;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -241,8 +246,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if(Objects.equals(eleDepositOrder.getPayAmount(),deposit)){
             return R.fail("退款金额不符");
         }
+
+        BigDecimal payAmount = eleDepositOrder.getPayAmount();
         //退款零元
-        if (eleDepositOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
             eleDepositOrderMapper.insert(eleDepositOrder);
             UserInfo userInfoUpdate = new UserInfo();
@@ -255,7 +262,32 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
 
-        //调起退款 TODO
+        String orderId = generateOrderId(uid);
+
+        //生成退款订单
+        EleRefundOrder eleRefundOrder=EleRefundOrder.builder()
+                .orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(orderId)
+                .payAmount(payAmount)
+                .refundAmount(payAmount)
+                .status(EleRefundOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleRefundOrderService.insert(eleRefundOrder);
+
+        //调起退款
+        RefundOrder refundOrder = RefundOrder.builder()
+                .orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(orderId)
+                .payAmount(payAmount)
+                .refundAmount(payAmount).build();
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid);
+        Pair<Boolean, Object> getPayParamsPair =
+                eleRefundOrderService.commonCreateRefundOrder(refundOrder, electricityPayParams, request);
+        if (!getPayParamsPair.getLeft()) {
+            return R.failMsg(getPayParamsPair.getRight().toString());
+        }
         return R.ok();
     }
 
