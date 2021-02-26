@@ -69,6 +69,12 @@
             <artifactId>xiliulou-common-iot-storege</artifactId>
             <version>1.0.0</version>
         </dependency>
+        <dependency>
+            <artifactId>okhttp</artifactId>
+            <groupId>com.squareup.okhttp3</groupId>
+            <version>4.3.0</version>
+        </dependency>
+
 
     </dependencies>
     <build>
