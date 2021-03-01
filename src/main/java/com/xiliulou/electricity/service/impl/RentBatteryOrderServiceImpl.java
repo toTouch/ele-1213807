@@ -161,7 +161,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //发送开门命令 TODO
 
-            return R.ok();
+            return R.ok(orderId);
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
@@ -234,7 +234,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //发送开门命令 TODO
 
-            return R.ok();
+            return R.ok(orderId);
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
