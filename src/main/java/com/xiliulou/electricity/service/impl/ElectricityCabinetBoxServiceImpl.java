@@ -124,7 +124,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id, String cellNo) {
         List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-                .ne(ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus,ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+                .ne(Objects.nonNull(cellNo),ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus,ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
         List<ElectricityCabinetBox> electricityCabinetBoxes = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
             electricityCabinetBoxList.parallelStream().forEach(e -> {
