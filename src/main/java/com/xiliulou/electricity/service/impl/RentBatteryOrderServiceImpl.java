@@ -144,6 +144,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 
+        //是否存在未完成的租电池订单
+        Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).in(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT,RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+        if(count>0){
+            return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+        }
 
         //分配电池 --只分配满电电池
         String cellNo = findUsableBatteryCellNo(rentBatteryQuery.getElectricityCabinetId(), null);
