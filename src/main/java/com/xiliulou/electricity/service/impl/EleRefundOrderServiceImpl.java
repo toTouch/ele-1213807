@@ -127,7 +127,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
             return Pair.of(false, "未找到交易订单!");
         }
-        refundQuery.setOutTradeNo(electricityTradeOrder.getChannelOrderNo());
+        refundQuery.setOutTradeNo(electricityTradeOrder.getTradeOrderNo());
         refundQuery.setRefundOrderNo(refundOrder.getRefundOrderNo());
         refundQuery.setTotalFee(refundOrder.getPayAmount().multiply(new BigDecimal(100)).longValue());
         refundQuery.setRefundFee(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).longValue());
