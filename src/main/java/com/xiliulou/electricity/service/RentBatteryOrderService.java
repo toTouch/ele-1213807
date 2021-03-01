@@ -34,4 +34,6 @@ public interface RentBatteryOrderService {
     void update(RentBatteryOrder rentBatteryOrder);
 
     R openDoor(RentOpenDoorQuery rentOpenDoorQuery);
+
+    R queryStatus(String orderId);
 }

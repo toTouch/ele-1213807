@@ -48,7 +48,7 @@ import java.util.stream.Collectors;
  * @author makejava
  * @since 2020-12-08 15:08:47
  */
-@Service("tRentBatteryOrderService")
+@Service("rentBatteryOrderService")
 @Slf4j
 public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Resource
@@ -304,6 +304,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //TODO
         }
         return R.ok();
+    }
+
+    @Override
+    public R queryStatus(String orderId) {
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
+        if (Objects.isNull(rentBatteryOrder)) {
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", rentBatteryOrder.getOrderId());
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        return R.ok(rentBatteryOrder.getStatus());
     }
 
     //分配满仓

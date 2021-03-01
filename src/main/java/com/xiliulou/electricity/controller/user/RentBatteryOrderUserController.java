@@ -5,8 +5,10 @@ import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.query.ReturnBatteryQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 /**
  * 租车记录(TRentCarOrder)表控制层
@@ -38,6 +40,12 @@ public class RentBatteryOrderUserController {
     @PostMapping("/user/rentBatteryOrder/openDoor")
     public R openDoor(@RequestBody RentOpenDoorQuery rentOpenDoorQuery) {
         return rentBatteryOrderService.openDoor(rentOpenDoorQuery);
+    }
+
+    //查订单状态
+    @GetMapping("/user/rentBatteryOrder/queryStatus")
+    public R queryStatus(@RequestParam("orderId") String orderId) {
+        return rentBatteryOrderService.queryStatus(orderId);
     }
 
 }
