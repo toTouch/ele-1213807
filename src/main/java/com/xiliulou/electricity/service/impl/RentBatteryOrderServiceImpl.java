@@ -128,7 +128,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //未实名认证
-        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         //未缴纳押金
