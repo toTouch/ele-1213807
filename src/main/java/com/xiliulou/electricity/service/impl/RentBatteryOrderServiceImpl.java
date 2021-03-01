@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
@@ -39,7 +40,9 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 /**
@@ -323,12 +326,21 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Override
     public R queryStatus(String orderId) {
+        Map<String, String> map = new HashMap<>();
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
         if (Objects.isNull(rentBatteryOrder)) {
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", rentBatteryOrder.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-        return R.ok(rentBatteryOrder.getStatus());
+        Integer queryStatus = 0;
+        String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
+        if (StrUtil.isNotEmpty(s)) {
+            queryStatus = 1;
+            redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
+        }
+        map.put("status", rentBatteryOrder.getStatus().toString());
+        map.put("queryStatus", queryStatus.toString());
+        return R.ok(map);
     }
 
     //分配满仓
