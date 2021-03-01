@@ -338,7 +338,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         }
         map.put("status", rentBatteryOrder.getStatus().toString());
-        map.put("queryStatus", queryStatus.toString());
+        map.put("queryStatus", "1");
         return R.ok(map);
     }
 
