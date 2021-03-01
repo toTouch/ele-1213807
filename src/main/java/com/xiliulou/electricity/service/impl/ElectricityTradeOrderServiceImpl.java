@@ -205,11 +205,11 @@ public class ElectricityTradeOrderServiceImpl extends
 
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeOrderNo);
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
             return Pair.of(false, "未找到交易订单!");
         }
         if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeOrderNo);
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO:{}", tradeOrderNo);
             return Pair.of(false, "交易订单已处理");
         }
 
@@ -264,5 +264,10 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     public ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo) {
         return baseMapper.selectTradeOrderByTradeOrderNo(outTradeNo);
+    }
+
+    @Override
+    public ElectricityTradeOrder selectTradeOrderByOrderId(String orderId) {
+        return baseMapper.selectTradeOrderByOrderId(orderId);
     }
 }

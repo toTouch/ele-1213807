@@ -31,4 +31,6 @@ public interface ElectricityTradeOrderService {
     Pair<Boolean, Object> notifyDepositOrder(WeiXinPayNotify weiXinPayNotify);
 
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
+
+    ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
 }
