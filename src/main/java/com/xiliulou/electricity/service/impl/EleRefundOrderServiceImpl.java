@@ -144,7 +144,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,tradeRefundNo));
         if (Objects.isNull(eleRefundOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", eleRefundOrder);
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeRefundNo);
             return Pair.of(false, "未找到退款订单!");
         }
         if (ObjectUtil.notEqual(EleRefundOrder.STATUS_INIT, eleRefundOrder.getStatus())) {
