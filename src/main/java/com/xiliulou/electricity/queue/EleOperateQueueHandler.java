@@ -113,26 +113,44 @@ public class EleOperateQueueHandler {
         String type = finalOpenDTO.getType();
         String orderId = finalOpenDTO.getOrderId();
         String msg = finalOpenDTO.getMsg();
-        Integer orderStatus = finalOpenDTO.getOrderStatus();
+        if(type.contains("order")) {
+            Integer orderStatus = finalOpenDTO.getOrderStatus();
+            ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
+            if (Objects.isNull(electricityCabinetOrder)) {
+                return;
+            }
 
-        ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
-        if (Objects.isNull(electricityCabinetOrder)) {
-            return;
-        }
-
-        //若app订单状态大于云端订单状态则处理
-        if (Objects.isNull(orderStatus)||electricityCabinetOrder.getStatus() <= orderStatus) {
-            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
-                openOldBatteryDoor(electricityCabinetOrder, status, msg);
+            //若app订单状态大于云端订单状态则处理
+            if (Objects.isNull(orderStatus) || electricityCabinetOrder.getStatus() <= orderStatus) {
+                if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)) {
+                    openOldBatteryDoor(electricityCabinetOrder, status, msg);
+                }
+                if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CHECK)) {
+                    checkOldBattery(electricityCabinetOrder, status, msg);
+                }
+                if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)) {
+                    openNewBatteryDoor(electricityCabinetOrder, status, msg);
+                }
+                if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CHECK)) {
+                    checkNewBattery(electricityCabinetOrder, status, msg);
+                }
             }
-            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CHECK)) {
-                checkOldBattery(electricityCabinetOrder, status, msg);
+        }else {
+            RentBatteryOrder rentBatteryOrder=rentBatteryOrderService.queryByOrderId(orderId);
+            if (Objects.isNull(rentBatteryOrder)) {
+                return;
             }
-            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)) {
-                openNewBatteryDoor(electricityCabinetOrder, status, msg);
+            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR_RSP)) {
+                openRentAndReturnBatteryDoor(rentBatteryOrder, status, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR,msg);
             }
-            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CHECK)) {
-                checkNewBattery(electricityCabinetOrder, status, msg);
+            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_RENT_CHECK_BATTERY_RSP)) {
+                checkRentBatteryDoor(rentBatteryOrder, status, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK,msg);
+            }
+            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR_RSP)) {
+                openRentAndReturnBatteryDoor(rentBatteryOrder, status, ElectricityCabinetOrderOperHistory.TYPE_RETURN_BATTERY_OPEN_DOOR,msg);
+            }
+            if (Objects.equals(type, HardwareCommand.ELE_COMMAND_RETURN_CHECK_BATTERY_RSP)) {
+                checkReturnBatteryDoor(rentBatteryOrder, status, ElectricityCabinetOrderOperHistory.TYPE_RETURN_BATTERY_CHECK,msg);
             }
         }
     }

@@ -5,6 +5,7 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -12,8 +13,10 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
@@ -27,6 +30,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +68,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
 
 
     /**
@@ -181,9 +187,24 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .updateTime(System.currentTimeMillis()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 
-            //发送开门命令 TODO
+            //发送开门命令
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cellNo", cellNo);
+            dataMap.put("orderId",orderId);
+            dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
 
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderId);
+        } catch (Exception e) {
+            log.error("order is error" + e);
+            return R.fail("ELECTRICITY.0025", "下单失败");
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
@@ -346,6 +367,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //TODO
         map.put("queryStatus", "1");
         return R.ok(map);
+    }
+
+    @Override
+    public RentBatteryOrder queryByOrderId(String orderId) {
+        return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
     }
 
     //分配满仓

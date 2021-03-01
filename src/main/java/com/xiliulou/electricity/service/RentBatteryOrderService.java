@@ -36,4 +36,6 @@ public interface RentBatteryOrderService {
     R openDoor(RentOpenDoorQuery rentOpenDoorQuery);
 
     R queryStatus(String orderId);
+
+    RentBatteryOrder queryByOrderId(String orderId);
 }
