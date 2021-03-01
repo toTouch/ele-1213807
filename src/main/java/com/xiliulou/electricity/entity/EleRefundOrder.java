@@ -43,9 +43,9 @@ public class EleRefundOrder {
     */
     private BigDecimal refundAmount;
     /**
-    * 退款状态:1-初始化,2-退款成功,-1-退款失败
+    * 退款状态:0--订单生成,1-退款中,2-退款成功,-1-退款失败
     */
-    private Object status;
+    private Integer status;
     /**
     * 错误原因
     */
@@ -66,8 +66,13 @@ public class EleRefundOrder {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
-    public static final Integer STATUS_INIT = 1;
+    //订单生成
+    public static final Integer STATUS_INIT = 0;
+    //退款中
+    public static final Integer STATUS_REFUND = 1;
+    //退款成功
     public static final Integer STATUS_SUCCESS = 2;
+    //退款失败
     public static final Integer STATUS_FAIL = -1;
 
 }
