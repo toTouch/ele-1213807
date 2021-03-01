@@ -23,6 +23,10 @@ import java.math.BigDecimal;
 public class RentBatteryOrder {
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
+    /**
+     * 订单Id
+     */
+    private String orderId;
     
     private Long uid;
     /**

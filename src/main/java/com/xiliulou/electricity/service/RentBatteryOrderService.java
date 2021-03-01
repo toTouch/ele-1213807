@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
+import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.query.ReturnBatteryQuery;
 
 /**
@@ -31,4 +32,6 @@ public interface RentBatteryOrderService {
     R returnBattery(ReturnBatteryQuery returnBatteryQuery);
 
     void update(RentBatteryOrder rentBatteryOrder);
+
+    R openDoor(RentOpenDoorQuery rentOpenDoorQuery);
 }

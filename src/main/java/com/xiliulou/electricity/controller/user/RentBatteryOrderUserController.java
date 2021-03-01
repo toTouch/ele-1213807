@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.RentBatteryQuery;
+import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.query.ReturnBatteryQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,12 @@ public class RentBatteryOrderUserController {
     @PostMapping("/user/returnBattery")
     public R returnBattery(@RequestBody ReturnBatteryQuery returnBatteryQuery) {
         return rentBatteryOrderService.returnBattery(returnBatteryQuery);
+    }
+
+    //再次开门
+    @PostMapping("/user/rentBatteryOrder/openDoor")
+    public R openDoor(@RequestBody RentOpenDoorQuery rentOpenDoorQuery) {
+        return rentBatteryOrderService.openDoor(rentOpenDoorQuery);
     }
 
 }

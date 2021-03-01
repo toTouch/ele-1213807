@@ -1,7 +1,8 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -10,21 +11,24 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
+import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
+import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.query.ReturnBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -38,7 +42,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
  *
@@ -139,17 +142,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
             }
 
+            String orderId = generateOrderId(uid,cellNo);
 
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
+                    .orderId(orderId)
                     .electricityBatterySn(electricityBattery.getSn())
                     .uid(uid)
                     .phone(userInfo.getPhone())
                     .userName(userInfo.getUserName())
                     .batteryDeposit(userInfo.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RENT)
-                    //TODO 订单状态
-                    .status(1)
+                    .status(RentBatteryOrder.STATUS_INIT)
                     .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
@@ -211,16 +215,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
 
+            String orderId = generateOrderId(uid,cellNo);
+
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
+                    .orderId(orderId)
                     .electricityBatterySn(userInfo.getNowElectricityBatterySn())
                     .uid(uid)
                     .phone(userInfo.getPhone())
                     .userName(userInfo.getUserName())
                     .batteryDeposit(userInfo.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RETURN)
-                    //TODO 订单状态
-                    .status(1)
+                    .status(RentBatteryOrder.STATUS_INIT)
                     .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
@@ -237,6 +243,67 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public void update(RentBatteryOrder rentBatteryOrder) {
         rentBatteryOrderMapper.updateById(rentBatteryOrder);
+    }
+
+    @Override
+    public R openDoor(RentOpenDoorQuery rentOpenDoorQuery) {
+        if (Objects.isNull(rentOpenDoorQuery.getOrderId()) || Objects.isNull(rentOpenDoorQuery.getOpenType())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, rentOpenDoorQuery.getOrderId()).eq(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT));
+        if (Objects.isNull(rentBatteryOrder)) {
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", rentBatteryOrder.getOrderId());
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+
+        //旧电池开门
+        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
+            if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RENT)) {
+                return R.fail("ELECTRICITY.0015", "未找到订单");
+            }
+        }
+
+        //新电池开门
+        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
+            if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                return R.fail("ELECTRICITY.0015", "未找到订单");
+            }
+        }
+
+        //判断开门用户是否匹配
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if (!Objects.equals(rentBatteryOrder.getUid(), user.getUid())) {
+            return R.fail("ELECTRICITY.0016", "订单用户不匹配，非法开门");
+        }
+
+        //查找换电柜
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", rentBatteryOrder.getElectricityCabinetId());
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //旧电池开门
+        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
+           //TODO
+        }
+
+        //新电池开门
+        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
+            //TODO
+        }
+        return R.ok();
     }
 
     //分配满仓
@@ -359,5 +426,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         Long ts = date2.getTime();
         return time - ts;
+    }
+
+    public String generateOrderId(Long uid,String cellNo) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +cellNo+
+                RandomUtil.randomNumbers(4);
     }
 }
