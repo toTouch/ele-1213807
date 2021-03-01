@@ -153,6 +153,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
         electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
         electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrderUpdate.setChannelOrderNo(weiXinPayNotify.getTransactionId());
         baseMapper.updateById(electricityTradeOrderUpdate);
         ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
         electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
@@ -252,6 +253,7 @@ public class ElectricityTradeOrderServiceImpl extends
         electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
         electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
         electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrderUpdate.setChannelOrderNo(weiXinPayNotify.getTransactionId());
         baseMapper.updateById(electricityTradeOrderUpdate);
         EleDepositOrder eleDepositOrderUpdate = new EleDepositOrder();
         eleDepositOrderUpdate.setId(eleDepositOrder.getId());
