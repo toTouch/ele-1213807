@@ -42,11 +42,11 @@ public class EleRefundOrderOuterController {
     @PostMapping("outer/refund/notify/weixin")
     public String WeiXinPayNotify(HttpServletRequest request) {
         String xmlMsg = HttpKit.readData(request);
-        log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
+        log.info("WEI_XIN REFUND_NOTIFY MSG:{}", xmlMsg);
         //转换成map
         Map<String, String> params = PaymentKit.xmlToMap(xmlMsg);
+        log.info("WEI_XIN REFUND_NOTIFY MSG:{}", params);
         String orderNo = params.get("out_refund_no");
-        String attach = params.get("attach");
         //去重
         if (!redisService.setNx("out_refund_no" + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
             return "FAILED";
@@ -55,7 +55,7 @@ public class EleRefundOrderOuterController {
         ElectricityPayParams electricityPayParams
                 = electricityPayParamsService.getElectricityPayParams();
         if (ObjectUtil.isEmpty(electricityPayParams)) {
-            log.error("WEIXIN_PAY_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
+            log.error("WEIXIN_REFUND_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
             return "FAILED";
         }
         Pair<Boolean, Object> paramPair = weiXinRefundNotifyService.handlerNotify(params, electricityPayParams.getPaternerKey());
