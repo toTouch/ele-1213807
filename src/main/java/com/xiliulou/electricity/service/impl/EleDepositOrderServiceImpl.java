@@ -284,6 +284,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
         Pair<Boolean, Object> getPayParamsPair =
                 eleRefundOrderService.commonCreateRefundOrder(refundOrder, electricityPayParams, request);
+
         if (!getPayParamsPair.getLeft()) {
             //提交失败
             EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
@@ -293,6 +294,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
             return R.failMsg(getPayParamsPair.getRight().toString());
         }
+
         //提交成功
         EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
         eleRefundOrderUpdate.setId(eleRefundOrder.getId());
