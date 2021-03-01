@@ -120,11 +120,26 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
 
-        //判断是否缴纳押金
+        //判断用户
         UserInfo userInfo = userInfoService.queryByUid(uid);
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        //未实名认证
+        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        //未缴纳押金
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        //未缴纳押金
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 
 

@@ -82,4 +82,6 @@ public interface ElectricityCabinetService {
     R listByStoreId(ElectricityCabinetQuery electricityCabinetQuery);
 
     R showInfoByStoreId(Integer storeId);
+
+    R rentBattery(String productKey, String deviceName, String deviceSecret);
 }
