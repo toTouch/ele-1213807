@@ -180,13 +180,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                 log.error("not found authEntry entryId:{}", eleUserAuth.getEntryId());
                 return R.fail("审核资料项不存在!");
             }
-            Integer count = eleUserAuthMapper.selectCount(Wrappers.<EleUserAuth>lambdaQuery()
-                    .eq(EleUserAuth::getUid, uid)
-                    .eq(EleUserAuth::getEntryId, eleAuthEntryDb.getId()));
-            if (ObjectUtil.isNotEmpty(count) && count >= 1) {
-                log.error("duplicate Submission CourierAuthEntryId :{} ,uid:{} ", eleAuthEntryDb.getId(), uid);
-                return R.fail(eleAuthEntryDb.getName() + "资料审核项已提交!");
-            }
 
             if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleAuthEntryDb.getId())) {
                 userInfo.setName(eleUserAuth.getValue());
