@@ -29,7 +29,7 @@ public class EleReturnOrderAdminController {
     EleRefundOrderService eleRefundOrderService;
 
     //退款列表
-    @PostMapping("/admin/handleRefund")
+    @PostMapping("/admin/eleRefundOrder/queryList")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
