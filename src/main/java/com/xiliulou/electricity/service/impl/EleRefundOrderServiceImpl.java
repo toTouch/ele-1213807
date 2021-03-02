@@ -110,16 +110,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public Pair<Boolean, Object> commonCreateRefundOrder(RefundOrder refundOrder, ElectricityPayParams electricityPayParams, HttpServletRequest request) {
-        //退款订单
-        EleRefundOrder eleRefundOrder = new EleRefundOrder();
-        eleRefundOrder.setRefundOrderNo(refundOrder.getRefundOrderNo());
-        eleRefundOrder.setOrderId(refundOrder.getOrderId());
-        eleRefundOrder.setPayAmount(refundOrder.getPayAmount());
-        eleRefundOrder.setRefundAmount(refundOrder.getRefundAmount());
-        eleRefundOrder.setCreateTime(System.currentTimeMillis());
-        eleRefundOrder.setUpdateTime(System.currentTimeMillis());
-        eleRefundOrder.setStatus(ElectricityTradeOrder.STATUS_INIT);
-        eleRefundOrderMapper.insert(eleRefundOrder);
 
         //退款
         RefundQuery refundQuery = new RefundQuery();
