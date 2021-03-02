@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -10,12 +11,14 @@ import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
+import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.pay.weixin.entity.RefundQuery;
 import com.xiliulou.pay.weixin.refund.RefundAdapterHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -27,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Objects;
 
@@ -238,7 +242,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //拒绝退款
         if(Objects.equals(status,EleRefundOrder.STATUS_REFUSE_REFUND)){
-            log.info("status3 is -->{}",status);
             //修改订单状态
             EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
@@ -247,6 +250,17 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrderService.update(eleRefundOrderUpdate);
         }
         return R.ok();
+    }
+
+    @Override
+    public R queryList(EleRefundQuery eleRefundQuery) {
+        Page page = PageUtil.getPage(eleRefundQuery.getOffset(), eleRefundQuery.getSize());
+
+        eleRefundOrderMapper.queryList(page, eleRefundQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return R.ok(new ArrayList<>());
+        }
+        return R.ok(page.getRecords());
     }
 
 }

@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.query.EleRefundQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -58,4 +59,6 @@ public interface EleRefundOrderService {
     Pair<Boolean, Object> notifyDepositRefundOrder(Map<String, String> refundMap);
 
     R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request);
+
+    R queryList(EleRefundQuery eleRefundQuery);
 }

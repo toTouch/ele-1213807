@@ -24,11 +24,31 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="queryList" resultMap="EleRefundOrderMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.EleRefundOrderVO">
         select
-          id, refund_order_no, order_id, pay_amount, refund_amount, status, err_msg, del_flag, create_time, update_time
-        from electricity.t_ele_refund_order
-        limit #{offset}, #{limit}
+        tero.id as id, tero.refund_order_no as refundOrderNo, tero.order_id as orderId, tero.pay_amount as payAmount,
+        tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg, tero.del_flag as delFlag,
+        tero.create_time as createTime, tero.update_time as updateTime ,tedo.uid as uid,tedo.user_name as userName,tedo.phone as phone
+        from electricity.t_ele_refund_order as tero
+        left join electricity.t_ele_deposit_order as tedo
+        <where>
+            <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
+                and tero.refund_order_no = #{refundOrderNo}
+            </if>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tero.order_id = #{query.orderId}
+            </if>
+            <if test="query.status != null">
+                and tero.status = #{query.status}
+            </if>
+            <if test="query.beginTime != null">
+                and tero.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and tero.create_time &lt;=#{query.endTime}
+            </if>
+        </where>
+        order by teco.update_time desc
     </select>
 
     <!--通过实体作为筛选条件查询-->
