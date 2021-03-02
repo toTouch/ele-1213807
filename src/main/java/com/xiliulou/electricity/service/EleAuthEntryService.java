@@ -19,7 +19,7 @@ public interface EleAuthEntryService {
      * @param id 主键
      * @return 实例对象
      */
-    EleAuthEntry queryByIdFromDB(Long id);
+    EleAuthEntry queryByIdFromDB(Integer id);
     
       /**
      * 通过ID查询单条数据从缓存
@@ -27,7 +27,7 @@ public interface EleAuthEntryService {
      * @param id 主键
      * @return 实例对象
      */
-    EleAuthEntry queryByIdFromCache(Long id);
+    EleAuthEntry queryByIdFromCache(Integer id);
 
     /**
      * 新增数据

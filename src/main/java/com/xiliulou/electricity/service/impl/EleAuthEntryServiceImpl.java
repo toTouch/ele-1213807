@@ -38,7 +38,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
      * @return 实例对象
      */
     @Override
-    public EleAuthEntry queryByIdFromDB(Long id) {
+    public EleAuthEntry queryByIdFromDB(Integer id) {
         return this.eleAuthEntryMapper.selectById(id);
     }
     
@@ -49,7 +49,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
      * @return 实例对象
      */
     @Override
-    public EleAuthEntry queryByIdFromCache(Long id) {
+    public EleAuthEntry queryByIdFromCache(Integer id) {
         EleAuthEntry eleAuthEntry =redisService.getWithHash(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY  + id, EleAuthEntry.class);
         if (Objects.isNull(eleAuthEntry)) {
             eleAuthEntry = this.eleAuthEntryMapper.selectById(id);

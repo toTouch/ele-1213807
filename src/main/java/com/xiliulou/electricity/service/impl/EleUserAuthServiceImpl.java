@@ -167,20 +167,20 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
 
-            EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromDB(eleUserAuth.getEntryId());
+            EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromCache(eleUserAuth.getEntryId());
             if (Objects.isNull(eleAuthEntryDb)) {
                 log.error("not found authEntry entryId:{}", eleUserAuth.getEntryId());
                 return R.fail("审核资料项不存在!");
             }
 
-            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleAuthEntryDb.getId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleUserAuth.getEntryId())) {
                 log.info("进入啦、、、、、");
                 userInfo.setName(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleAuthEntryDb.getId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 userInfo.setIdNumber(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleAuthEntryDb.getId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleUserAuth.getEntryId())) {
                 userInfo.setMailbox(eleUserAuth.getValue());
             }
 

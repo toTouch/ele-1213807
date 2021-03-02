@@ -27,7 +27,7 @@ public class EleUserAuth {
     /**
     * 资料项id
     */
-    private Long entryId;
+    private Integer entryId;
     /**
     * 资料项内容
     */

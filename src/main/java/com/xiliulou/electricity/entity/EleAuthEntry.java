@@ -24,7 +24,7 @@ import javax.validation.constraints.NotNull;
 public class EleAuthEntry {
 
     @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+    private Integer id;
     /**
     * 资料项名称
     */
