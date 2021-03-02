@@ -9,17 +9,10 @@ import org.apache.commons.io.IOUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
-import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
 
-import javax.servlet.Filter;
-import javax.servlet.FilterChain;
-import javax.servlet.ServletException;
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
+import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -48,7 +41,7 @@ public class RequestFilter implements Filter {
             return;
         }
         Long uid = SecurityUtils.getUid();
-        log.info("uid={},method={},uri={},time={}秒", uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
+        log.info("uid={},method={},uri={},time={}秒", uid, request.getMethod(), request.getRequestURI(), (System.currentTimeMillis() - startTime) / 1000L);
 
     }
 
@@ -79,13 +72,13 @@ public class RequestFilter implements Filter {
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
             log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             filterChain.doFilter(httpServletRequest, servletResponse);
-        }  else {
+        } else {
             httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
 
             if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
                 log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
-            } else{
+            } else {
                 log.info("uid={},method={},uri={},params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             }
 
