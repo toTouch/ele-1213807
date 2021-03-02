@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.pay.weixin.entity.WeiXinRefundNotify;
 import org.apache.commons.lang3.tuple.Pair;
 import javax.servlet.http.HttpServletRequest;
+import java.util.Map;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务接口
@@ -55,7 +56,7 @@ public interface EleRefundOrderService {
                                                   HttpServletRequest request);
 
 
-    Pair<Boolean, Object> notifyDepositRefundOrder(WeiXinRefundNotify weiXinRefundNotify);
+    Pair<Boolean, Object> notifyDepositRefundOrder(Map<String, String> refundMap);
 
     R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request);
 }

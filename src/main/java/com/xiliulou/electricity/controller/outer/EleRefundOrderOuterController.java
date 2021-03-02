@@ -32,8 +32,6 @@ public class EleRefundOrderOuterController {
     @Resource
     EleRefundOrderService eleRefundOrderService;
     @Autowired
-    RedisService redisService;
-    @Autowired
     ElectricityPayParamsService electricityPayParamsService;
     @Autowired
     WeiXinRefundNotifyService weiXinRefundNotifyService;
@@ -44,32 +42,31 @@ public class EleRefundOrderOuterController {
         String xmlMsg = HttpKit.readData(request);
         log.info("WEI_XIN REFUND_NOTIFY MSG:{}", xmlMsg);
         //转换成map
-        Map<String, String> params = PaymentKit.xmlToMap(xmlMsg);
-        log.info("WEI_XIN REFUND_NOTIFY MSG:{}", params);
-        String orderNo = params.get("out_refund_no");
-        //去重
-        if (!redisService.setNx("out_refund_no" + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-            return "FAILED";
-        }
-
+        Map<String, String> refundMap = PaymentKit.xmlToMap(xmlMsg);
+        //验签
         ElectricityPayParams electricityPayParams
                 = electricityPayParamsService.getElectricityPayParams();
         if (ObjectUtil.isEmpty(electricityPayParams)) {
-            log.error("WEIXIN_REFUND_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
-            return "FAILED";
+            log.error("WEIXIN_PAY_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
+            return "fail";
         }
-        Pair<Boolean, Object> paramPair = weiXinRefundNotifyService.handlerNotify(params, electricityPayParams.getPaternerKey());
-        if (!paramPair.getLeft()) {
-            return "FAILED";
+        Pair<Boolean, Object> verifyNotifyPair = weiXinRefundNotifyService.handlerNotify(refundMap,electricityPayParams.getPaternerKey());
+        if (!verifyNotifyPair.getLeft()) {
+            return "fail";
         }
-        WeiXinRefundNotify weiXinRefundNotify = (WeiXinRefundNotify) paramPair.getRight();
-        Pair<Boolean, Object> notifyOrderPair=eleRefundOrderService.notifyDepositRefundOrder(weiXinRefundNotify);
-        redisService.deleteKeys("out_refund_no" + orderNo);
+        Map<String, String> afterDecryptRefundMap = (Map<String, String>) verifyNotifyPair.getRight();
+        log.info("afterDecryptRefundMap:{}",afterDecryptRefundMap);
+        //验重
+        if (!weiXinRefundNotifyService.Deduplication(afterDecryptRefundMap.get("transaction_id"))) {
+            return "fail";
+        }
+
+        Pair<Boolean, Object> notifyOrderPair=eleRefundOrderService.notifyDepositRefundOrder(afterDecryptRefundMap);
         if (notifyOrderPair.getLeft()) {
 
-            return "OK";
+            return "ok";
         } else {
-            return "FAILED";
+            return "fail";
 
         }
 

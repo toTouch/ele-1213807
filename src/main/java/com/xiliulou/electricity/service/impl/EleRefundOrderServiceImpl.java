@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -135,9 +136,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public Pair<Boolean, Object> notifyDepositRefundOrder(WeiXinRefundNotify weiXinRefundNotify) {
+    public Pair<Boolean, Object> notifyDepositRefundOrder(Map<String, String> refundMap) {
         //退款订单
-        String tradeRefundNo = weiXinRefundNotify.getOutRefundNo();
+        String tradeRefundNo =refundMap.get("out_refund_no");
+        String outTradeNo =refundMap.get("transaction_id");
+        String refundStatus =refundMap.get("refundStatus");
 
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,tradeRefundNo));
         if (Objects.isNull(eleRefundOrder)) {
@@ -149,9 +152,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Pair.of(false, "退款订单已处理");
         }
 
-        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByTradeOrderNo(weiXinRefundNotify.getOutTradeNo());
+        ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByTradeOrderNo(outTradeNo);
         if (Objects.isNull(electricityTradeOrder)) {
-            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", weiXinRefundNotify.getOutTradeNo());
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", outTradeNo);
             return Pair.of(false, "未找到交易订单!");
         }
 
@@ -163,16 +166,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         Integer refundOrderStatus = EleRefundOrder.STATUS_FAIL;
         boolean result = false;
-        if (StringUtils.isNotEmpty(weiXinRefundNotify.getRefundStatus()) && ObjectUtil.equal("SUCCESS", weiXinRefundNotify.getRefundStatus())) {
+        if (StringUtils.isNotEmpty(refundStatus) && ObjectUtil.equal(refundStatus, "SUCCESS")) {
             refundOrderStatus = EleRefundOrder.STATUS_SUCCESS;
             result = true;
         } else {
-            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + weiXinRefundNotify.getOutRefundNo());
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeRefundNo);
         }
 
         UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(),  weiXinRefundNotify.getOutRefundNo());
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(),  tradeRefundNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
