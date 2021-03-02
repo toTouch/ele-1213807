@@ -17,7 +17,6 @@ import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.pay.weixin.entity.RefundQuery;
-import com.xiliulou.pay.weixin.entity.WeiXinRefundNotify;
 import com.xiliulou.pay.weixin.refund.RefundAdapterHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
