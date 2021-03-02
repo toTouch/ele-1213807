@@ -138,15 +138,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public Pair<Boolean, Object> notifyDepositRefundOrder(Map<String, String> refundMap) {
         //退款订单
         String tradeRefundNo =refundMap.get("out_refund_no");
-        String outTradeNo =refundMap.get("transaction_id");
-        String refundStatus =refundMap.get("refundStatus");
+        String outTradeNo =refundMap.get("out_trade_no");
+        String refundStatus =refundMap.get("refund_status");
 
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,tradeRefundNo));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeRefundNo);
             return Pair.of(false, "未找到退款订单!");
         }
-        if (ObjectUtil.notEqual(EleRefundOrder.STATUS_INIT, eleRefundOrder.getStatus())) {
+        if (ObjectUtil.notEqual(EleRefundOrder.STATUS_REFUSE_REFUND, eleRefundOrder.getStatus())) {
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeRefundNo);
             return Pair.of(false, "退款订单已处理");
         }
