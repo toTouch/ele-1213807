@@ -369,6 +369,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
+        redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId());
         return R.ok();
     }
 
@@ -449,7 +450,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         if (StrUtil.isNotEmpty(s)) {
             queryStatus = 1;
-            redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         }
         Long now = (System.currentTimeMillis() - electricityCabinetOrder.getCreateTime()) / 1000;
         Long time = 300 - now;
