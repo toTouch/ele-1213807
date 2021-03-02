@@ -146,7 +146,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeRefundNo);
             return Pair.of(false, "未找到退款订单!");
         }
-        if (ObjectUtil.notEqual(EleRefundOrder.STATUS_REFUSE_REFUND, eleRefundOrder.getStatus())) {
+        if (ObjectUtil.notEqual(EleRefundOrder.STATUS_REFUND, eleRefundOrder.getStatus())) {
             log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeRefundNo);
             return Pair.of(false, "退款订单已处理");
         }
