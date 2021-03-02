@@ -41,7 +41,7 @@ public class RequestFilter implements Filter {
             return;
         }
         Long uid = SecurityUtils.getUid();
-        log.info("uid={},method={},uri={},time={}毫秒", uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
+        log.info("uid={},method={},uri={},time={} ms", uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
 
     }
 
