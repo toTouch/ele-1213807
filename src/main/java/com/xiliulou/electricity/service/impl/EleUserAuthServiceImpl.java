@@ -174,7 +174,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             }
 
             if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleUserAuth.getEntryId())) {
-                log.info("进入啦、、、、、");
                 userInfo.setName(eleUserAuth.getValue());
             }
             if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {

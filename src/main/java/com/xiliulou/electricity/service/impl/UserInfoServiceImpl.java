@@ -382,6 +382,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
+        if(Objects.equals(authStatus,UserInfo.AUTH_STATUS_REVIEW_PASSED)){
+            userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+        }
         userInfoMapper.updateById(userInfo);
         //修改资料项
         eleUserAuthService.updateByUid(oldUserInfo.getUid(),authStatus);
