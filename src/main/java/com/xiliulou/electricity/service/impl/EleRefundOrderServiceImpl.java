@@ -178,7 +178,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if(Objects.equals(refundOrderStatus,EleDepositOrder.STATUS_SUCCESS)) {
+        if(Objects.equals(refundOrderStatus,EleRefundOrder.STATUS_SUCCESS)) {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setId(userInfo.getId());
             userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_AUTH);
