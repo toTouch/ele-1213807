@@ -64,7 +64,7 @@ public class ElectricityPayParamsAdminController {
      * @param file
      * @return
      */
-    @PostMapping(value = "/wxUploadCert", consumes = "multipart/form-data")
+    @PostMapping(value = "/admin/wxUploadCert", consumes = "multipart/form-data")
     @Transactional
     public R singleFileUpload(@RequestParam("file") MultipartFile file) {
         //文件上传大小的限制
