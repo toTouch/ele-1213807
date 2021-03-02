@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
@@ -51,6 +53,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     ElectricityTradeOrderService electricityTradeOrderService;
     @Autowired
     EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -195,6 +202,58 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleRefundOrderMapper.updateById(eleRefundOrderUpdate);
         return Pair.of(result, null);
+    }
+
+    @Override
+    public R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request) {
+
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,refundOrderNo).eq(EleRefundOrder::getStatus,EleRefundOrder.STATUS_INIT));
+        if (Objects.isNull(eleRefundOrder)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrderNo);
+            return R.fail("未找到退款订单!");
+        }
+        //同意退款
+        if(Objects.equals(status,EleRefundOrder.STATUS_AGREE_REFUND)){
+            //修改订单状态
+            EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
+            eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+            //调起退款
+            RefundOrder refundOrder = RefundOrder.builder()
+                    .orderId(eleRefundOrder.getOrderId())
+                    .refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                    .payAmount(eleRefundOrder.getPayAmount())
+                    .refundAmount(eleRefundOrder.getRefundAmount()).build();
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
+            Pair<Boolean, Object> getPayParamsPair =
+                    eleRefundOrderService.commonCreateRefundOrder(refundOrder, electricityPayParams, request);
+
+            if (!getPayParamsPair.getLeft()) {
+                //提交失败
+                eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
+                eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+                eleRefundOrderService.update(eleRefundOrderUpdate);
+                return R.failMsg(getPayParamsPair.getRight().toString());
+            }
+
+            //提交成功
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+        }
+
+        //拒绝退款
+        if(Objects.equals(status,EleRefundOrder.STATUS_REFUSE_REFUND)){
+            //修改订单状态
+            EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
+            eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+        }
+        return R.ok();
     }
 
 }

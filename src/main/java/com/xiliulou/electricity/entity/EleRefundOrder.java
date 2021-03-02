@@ -68,10 +68,14 @@ public class EleRefundOrder {
 
     //订单生成
     public static final Integer STATUS_INIT = 0;
+    //后台同意退款
+    public static final Integer STATUS_AGREE_REFUND = 1;
+    //后台拒绝退款
+    public static final Integer STATUS_REFUSE_REFUND = 2;
     //退款中
-    public static final Integer STATUS_REFUND = 1;
+    public static final Integer STATUS_REFUND = 3;
     //退款成功
-    public static final Integer STATUS_SUCCESS = 2;
+    public static final Integer STATUS_SUCCESS = 4;
     //退款失败
     public static final Integer STATUS_FAIL = -1;
 

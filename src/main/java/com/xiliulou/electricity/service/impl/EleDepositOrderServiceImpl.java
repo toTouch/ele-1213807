@@ -275,32 +275,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis()).build();
         eleRefundOrderService.insert(eleRefundOrder);
 
-        //调起退款
-        RefundOrder refundOrder = RefundOrder.builder()
-                .orderId(eleDepositOrder.getOrderId())
-                .refundOrderNo(orderId)
-                .payAmount(payAmount)
-                .refundAmount(payAmount).build();
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
-        Pair<Boolean, Object> getPayParamsPair =
-                eleRefundOrderService.commonCreateRefundOrder(refundOrder, electricityPayParams, request);
-
-        if (!getPayParamsPair.getLeft()) {
-            //提交失败
-            EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
-            eleRefundOrderUpdate.setId(eleRefundOrder.getId());
-            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_FAIL);
-            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            eleRefundOrderService.update(eleRefundOrderUpdate);
-            return R.failMsg(getPayParamsPair.getRight().toString());
-        }
-
-        //提交成功
-        EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
-        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
-        eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
-        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        eleRefundOrderService.update(eleRefundOrderUpdate);
+        //等到后台同意退款
         return R.ok();
     }
 

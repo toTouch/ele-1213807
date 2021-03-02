@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.RefundOrder;
@@ -55,4 +56,6 @@ public interface EleRefundOrderService {
 
 
     Pair<Boolean, Object> notifyDepositRefundOrder(WeiXinRefundNotify weiXinRefundNotify);
+
+    R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request);
 }
