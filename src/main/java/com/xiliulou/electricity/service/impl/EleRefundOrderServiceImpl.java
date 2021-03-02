@@ -204,10 +204,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("未找到退款订单!");
         }
 
-        log.info("status1 is -->{}",status);
         //同意退款
         if(Objects.equals(status,EleRefundOrder.STATUS_AGREE_REFUND)){
-            log.info("status2 is -->{}",status);
             //修改订单状态
             EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
