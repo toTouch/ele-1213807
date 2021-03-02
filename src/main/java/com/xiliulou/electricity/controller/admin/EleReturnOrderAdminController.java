@@ -1,14 +1,13 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
@@ -29,7 +28,7 @@ public class EleReturnOrderAdminController {
     EleRefundOrderService eleRefundOrderService;
 
     //退款列表
-    @PostMapping("/admin/eleRefundOrder/queryList")
+    @GetMapping("/admin/eleRefundOrder/queryList")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
