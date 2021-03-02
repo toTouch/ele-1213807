@@ -52,5 +52,5 @@ public interface EleUserAuthMapper extends BaseMapper<EleUserAuth>{
      */
     int update(EleUserAuth eleUserAuth);
 
-    void updateByUid(Long uid, Integer authStatus,long updateTime);
+    void updateByUid(@Param("uid") Long uid, @Param("authStatus") Integer authStatus,@Param("updateTime") long updateTime);
 }
