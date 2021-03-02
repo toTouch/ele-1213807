@@ -30,7 +30,7 @@
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg, tero.del_flag as delFlag,
         tero.create_time as createTime, tero.update_time as updateTime ,tedo.uid as uid,tedo.user_name as userName,tedo.phone as phone
         from electricity.t_ele_refund_order as tero
-        left join electricity.t_ele_deposit_order as tedo
+        left join electricity.t_ele_deposit_order as tedo  on  tero.order_id= tedo.order_id
         <where>
             <if test="query.refundOrderNo != null and query.refundOrderNo != ''">
                 and tero.refund_order_no = #{refundOrderNo}
