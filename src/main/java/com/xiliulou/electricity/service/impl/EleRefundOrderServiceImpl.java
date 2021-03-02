@@ -206,14 +206,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request) {
-
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,refundOrderNo).eq(EleRefundOrder::getStatus,EleRefundOrder.STATUS_INIT));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("未找到退款订单!");
         }
+
+        log.info("status1 is -->{}",status);
         //同意退款
         if(Objects.equals(status,EleRefundOrder.STATUS_AGREE_REFUND)){
+            log.info("status2 is -->{}",status);
             //修改订单状态
             EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
@@ -246,6 +248,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //拒绝退款
         if(Objects.equals(status,EleRefundOrder.STATUS_REFUSE_REFUND)){
+            log.info("status3 is -->{}",status);
             //修改订单状态
             EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
