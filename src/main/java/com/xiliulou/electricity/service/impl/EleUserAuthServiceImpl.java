@@ -125,13 +125,14 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
                 return R.fail(eleAuthEntryDb.getName() + "资料审核项已提交!");
             }
 
-            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleAuthEntryDb.getId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleUserAuth.getEntryId())) {
+                log.info("进入啦、、、、、");
                 userInfo.setName(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleAuthEntryDb.getId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
                 userInfo.setIdNumber(eleUserAuth.getValue());
             }
-            if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleAuthEntryDb.getId())) {
+            if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleUserAuth.getEntryId())) {
                 userInfo.setMailbox(eleUserAuth.getValue());
             }
 
