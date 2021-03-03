@@ -141,9 +141,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //判断是否实名认证
         UserInfo userInfo = userInfoService.queryByUid(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
@@ -223,9 +224,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //判断是否退电池
         UserInfo userInfo = userInfoService.queryByUid(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ", userInfo);

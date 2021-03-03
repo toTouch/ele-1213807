@@ -176,10 +176,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        //判断是否开通服务
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return R.fail("ELECTRICITY.0021", "未开通服务");
+        //未实名认证
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        //未缴纳押金
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        //未租电池
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         //判断是否电池

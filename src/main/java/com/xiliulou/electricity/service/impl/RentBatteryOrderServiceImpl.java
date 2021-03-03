@@ -131,7 +131,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         UserInfo userInfo = userInfoService.queryByUid(uid);
         //用户是否可用
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //未实名认证
@@ -144,7 +144,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        //未缴纳押金
+        //已绑定电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0045", "已绑定电池");
@@ -246,9 +246,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(uid);
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0043", "未绑定电池");
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         //分配开门格挡
