@@ -483,6 +483,7 @@ public class EleOperateQueueHandler {
         userInfo.setUid(rentBatteryOrder.getUid());
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setUpdateTime(System.currentTimeMillis());
+        userInfo.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
         userInfoService.updateByUid(userInfo);
 
         //加入操作记录表
