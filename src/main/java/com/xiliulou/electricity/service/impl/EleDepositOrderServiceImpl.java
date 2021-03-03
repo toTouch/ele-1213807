@@ -231,7 +231,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ", userInfo);
-            return R.fail("ELECTRICITY.0044", "未退还电池");
+            return R.fail("ELECTRICITY.0046", "未退还电池");
         }
 
         //判断是否缴纳押金
