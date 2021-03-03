@@ -1275,11 +1275,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        //未缴纳押金
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
-        }
 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -1304,7 +1299,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
         }
         //已租电池则还电池
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             if (noElectricityBattery <= 0) {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
