@@ -394,23 +394,25 @@ public class EleOperateQueueHandler {
 
     public String findNewUsableCellNo(Integer id, String cellNo) {
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id, cellNo);
+        log.info("usableBoxes is -->{}",usableBoxes);
         if (!DataUtil.collectionIsUsable(usableBoxes)) {
             return null;
         }
 
         List<Integer> boxes = usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList());
-
+        log.info("boxes is -->{}",boxes);
         //查看有没有初始化过设备的上次操作过的格挡,这里不必关心线程安全，不需要保证原子性
         if (!redisService.hasKey(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id)) {
             redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, boxes.get(0).toString());
         }
 
         String lastCellNo = redisService.get(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id);
-
+        log.info("lastCellNo is -->{}",lastCellNo);
         boxes = rebuildByCellCircleForDevice(boxes, Integer.parseInt(lastCellNo));
-
+        log.info("boxes is -->{}",boxes);
         for (Integer box : boxes) {
             if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
+                log.info("box is -->{}",box);
                 redisService.set(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, box.toString());
                 return box.toString();
             }
