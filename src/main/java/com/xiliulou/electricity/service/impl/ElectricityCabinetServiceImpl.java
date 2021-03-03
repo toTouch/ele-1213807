@@ -777,12 +777,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-        /*//动态查询在线状态
+        //动态查询在线状态
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }*/
+        }
 
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
@@ -929,12 +929,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-     /*   //换电柜是否在线
+       //换电柜是否在线
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }*/
+        }
 
         //不合法的命令
         if (!HardwareCommand.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
@@ -1248,12 +1248,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-       /* //动态查询在线状态
+        //动态查询在线状态
         boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }*/
+        }
 
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);

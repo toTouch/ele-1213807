@@ -114,12 +114,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", rentBatteryQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-       /* //换电柜是否在线
+       //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }*/
+        }
 
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);
@@ -231,12 +231,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", returnBatteryQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-       /* //换电柜是否在线
+        //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }*/
+        }
 
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);
@@ -336,12 +336,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-      /*  //换电柜是否在线
+       //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
-        }*/
+        }
 
         //旧电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
@@ -371,7 +371,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         map.put("status", rentBatteryOrder.getStatus().toString());
         //TODO
-        map.put("queryStatus", "1");
+        map.put("queryStatus", queryStatus.toString());
         return R.ok(map);
     }
 
