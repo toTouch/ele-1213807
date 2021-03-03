@@ -132,7 +132,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 if (Objects.nonNull(electricityCabinet)) {
                     ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
                     if (Objects.nonNull(electricityBattery)) {
-                        if (electricityBattery.getCapacity() >= electricityCabinet.getFullyCharged()) {
+                        if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
                             electricityCabinetBoxes.add(e);
                         }
                     }
