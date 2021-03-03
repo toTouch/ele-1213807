@@ -145,7 +145,6 @@ public class EleOperateQueueHandler {
                 openRentAndReturnBatteryDoor(rentBatteryOrder, status, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR,msg);
             }
             if (Objects.equals(type, HardwareCommand.ELE_COMMAND_RENT_CHECK_BATTERY_RSP)) {
-                log.info("rentBatteryOrder is -->{}",rentBatteryOrder);
                 checkRentBatteryDoor(rentBatteryOrder, status, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK,msg);
             }
             if (Objects.equals(type, HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR_RSP)) {
@@ -399,12 +398,10 @@ public class EleOperateQueueHandler {
 
     //检测租电池
     public void checkRentBatteryDoor(RentBatteryOrder rentBatteryOrder, Integer status, Integer type, String msg) {
-        log.info("status1 is -->{}",status);
         //新电池检测失败
         if (rentAndReturnFailAndSaveFailRecord(rentBatteryOrder, status,type, msg)) {
             return;
         }
-        log.info("status2 is -->{}",status);
         //修改仓门为无电池
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         electricityCabinetBox.setCellNo(String.valueOf(rentBatteryOrder.getCellNo()));
