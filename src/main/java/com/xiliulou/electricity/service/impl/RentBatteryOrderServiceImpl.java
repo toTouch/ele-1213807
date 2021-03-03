@@ -281,9 +281,22 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .updateTime(System.currentTimeMillis()).build();
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 
-            //发送开门命令 TODO
+            //发送开门命令
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cellNo", cellNo);
+            dataMap.put("orderId",orderId);
+            dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
 
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderId);
+
         } finally {
             redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
@@ -345,12 +358,40 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //旧电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
-           //TODO
+            //发送开门命令
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cellNo", rentBatteryOrder.getCellNo());
+            dataMap.put("orderId",rentBatteryOrder.getOrderId());
+            dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
+
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok(rentBatteryOrder.getOrderId());
         }
 
         //新电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
-            //TODO
+            //发送开门命令
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cellNo", rentBatteryOrder.getCellNo());
+            dataMap.put("orderId",rentBatteryOrder.getOrderId());
+            dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
+
+            HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
+                    .data(dataMap)
+                    .productKey(electricityCabinet.getProductKey())
+                    .deviceName(electricityCabinet.getDeviceName())
+                    .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
+            eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+            return R.ok(rentBatteryOrder.getOrderId());
         }
         return R.ok();
     }
@@ -363,6 +404,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ",orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
+
         Integer queryStatus = 0;
         String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         if (StrUtil.isNotEmpty(s)) {
@@ -370,7 +412,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         }
         map.put("status", rentBatteryOrder.getStatus().toString());
-        //TODO
         map.put("queryStatus", queryStatus.toString());
         return R.ok(map);
     }

@@ -378,6 +378,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
+
         //判断用户是否开通月卡
         if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
             log.error("ELECTRICITY  ERROR! not found memberCard ");
@@ -397,6 +398,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
+
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
         userInfo.setUpdateTime(System.currentTimeMillis());
