@@ -34,7 +34,7 @@ public class FranchiseeAddAndUpdate {
     /**
      * 租电池押金
      */
-    @NotNull(message = "租电池押金不能为空!", groups = {CreateGroup.class})
+   /* @NotNull(message = "租电池押金不能为空!", groups = {CreateGroup.class})*/
     private BigDecimal batteryDeposit;
     /**
     * 0--正常 1--删除
