@@ -61,4 +61,6 @@ public interface EleRefundOrderService {
     R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request);
 
     R queryList(EleRefundQuery eleRefundQuery);
+
+    Integer queryCountByOrderId(String orderId);
 }

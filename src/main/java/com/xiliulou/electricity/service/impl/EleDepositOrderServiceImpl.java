@@ -265,6 +265,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.ok();
         }
 
+        //是否有正在进行中的退款
+        Integer count=eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+
         String orderId = generateOrderId(uid);
 
         //生成退款订单
