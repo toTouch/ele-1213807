@@ -265,7 +265,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public Integer queryCountByOrderId(String orderId) {
-        return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId,orderId).in(EleRefundOrder::getStatus,EleRefundOrder.STATUS_INIT,EleRefundOrder.STATUS_AGREE_REFUND,EleRefundOrder.STATUS_REFUND));
+        return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId,orderId).in(EleRefundOrder::getStatus,EleRefundOrder.STATUS_INIT,EleRefundOrder.STATUS_AGREE_REFUND,EleRefundOrder.STATUS_REFUND,EleRefundOrder.STATUS_SUCCESS));
     }
 
 }

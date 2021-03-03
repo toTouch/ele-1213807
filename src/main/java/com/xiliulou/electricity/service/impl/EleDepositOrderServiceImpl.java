@@ -267,6 +267,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //是否有正在进行中的退款
         Integer count=eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        if(count>0){
+            return R.fail("ELECTRICITY.0047","请勿重复退款");
+        }
 
         String orderId = generateOrderId(uid);
 
