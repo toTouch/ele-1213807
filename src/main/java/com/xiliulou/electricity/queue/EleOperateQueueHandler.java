@@ -422,6 +422,7 @@ public class EleOperateQueueHandler {
         userInfo.setUid(rentBatteryOrder.getUid());
         userInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
+        userInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
         userInfoService.updateByUid(userInfo);
 
         //电池改为在用
