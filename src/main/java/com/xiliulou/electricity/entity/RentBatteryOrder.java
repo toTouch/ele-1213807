@@ -58,7 +58,7 @@ public class RentBatteryOrder {
      */
     private Integer type;
     /**
-    * 订单状态(1--初始化,2--已开门,3--..)
+    * 订单状态(1--初始化,2--已开门,3--订单完成，4--订单异常结束，5--订单取消)
     */
     private Integer status;
     /**
