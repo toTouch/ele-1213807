@@ -98,9 +98,13 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(oldUserInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",oldUserInfo);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(oldUserInfo) || Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+        if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",oldUserInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
@@ -151,9 +155,13 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(oldUserInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",oldUserInfo);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(oldUserInfo) || Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+        if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",oldUserInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 

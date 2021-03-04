@@ -72,13 +72,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.failMsg("未找到用户的第三方授权信息!");
         }
         UserInfo userInfo = userInfoService.selectUserByUid(uid);
-        if (ObjectUtil.isNull(userInfo)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USER_INFO. UID:{}", uid);
-            return R.failMsg("未找到用户信息!");
+
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if (!ObjectUtil.equal( userInfo.getServiceStatus(),UserInfo.STATUS_IS_BATTERY)) {
-            log.error("CREATE MEMBER_ORDER ERROR ,THIS USER  NOT YET OPEN ELECTRICITY_SERVICE. UID:{}", uid);
-            return R.failMsg("您还未开通换电服务!");
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        //未实名认证
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        //未缴纳押金
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        //未绑定电池
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
 

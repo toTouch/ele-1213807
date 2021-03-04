@@ -129,14 +129,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //判断用户
         UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //未实名认证
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         //未缴纳押金
@@ -146,8 +150,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         //已绑定电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
+            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0048", "未绑定电池");
         }
 
         //是否存在未完成的租电池订单
@@ -247,9 +251,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 

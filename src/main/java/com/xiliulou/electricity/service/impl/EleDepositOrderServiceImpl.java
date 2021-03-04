@@ -177,11 +177,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //判断是否退电池
         UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
+
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0046", "未退还电池");

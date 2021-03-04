@@ -786,15 +786,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //未实名认证
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         //未缴纳押金
@@ -804,7 +808,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         //未租电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
@@ -1260,14 +1264,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,userInfo:{} ",user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //未实名认证
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         //未缴纳押金
