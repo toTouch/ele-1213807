@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -13,38 +14,6 @@ import javax.servlet.http.HttpServletRequest;
  */
 public interface EleDepositOrderService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleDepositOrder queryByIdFromDB(Long id);
-    
-      /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleDepositOrder queryByIdFromCache(Long id);
-
-    /**
-     * 新增数据
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 实例对象
-     */
-    EleDepositOrder insert(EleDepositOrder eleDepositOrder);
-
-    /**
-     * 修改数据
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 实例对象
-     */
-    Integer update(EleDepositOrder eleDepositOrder);
-    
 
     EleDepositOrder queryByOrderId(String orderNo);
     
@@ -52,4 +21,5 @@ public interface EleDepositOrderService {
 
     R returnDeposit(HttpServletRequest request);
 
+    R queryList(EleDepositOrderQuery eleDepositOrderQuery);
 }

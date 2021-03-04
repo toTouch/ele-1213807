@@ -1,7 +1,12 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import java.util.List;
+
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -14,42 +19,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder>{
 
     /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleDepositOrder queryById(Long id);
-
-    /**
      * 查询指定行数据
      *
      */
-    List<EleDepositOrder> queryList(@Param("offset") int offset, @Param("limit") int limit);
+    IPage queryList(Page page, @Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
-
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 对象列表
-     */
-    List<EleDepositOrder> queryAll(EleDepositOrder eleDepositOrder);
-
-    /**
-     * 新增数据
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 影响行数
-     */
-    int insertOne(EleDepositOrder eleDepositOrder);
-
-    /**
-     * 修改数据
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 影响行数
-     */
-    int update(EleDepositOrder eleDepositOrder);
 
 }

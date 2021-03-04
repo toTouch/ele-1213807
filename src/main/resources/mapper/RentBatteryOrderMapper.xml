@@ -11,8 +11,8 @@
         status, create_time,update_time
         from electricity.t_rent_battery_order
         <where>
-            <if test="query.name != null and query.name != ''">
-                and name = #{query.name}
+            <if test="query.userName != null and query.userName != ''">
+                and user_name = #{query.userName}
             </if>
             <if test="query.phone != null and query.phone != ''">
                 and phone = #{query.phone}
@@ -26,12 +26,8 @@
             <if test="query.endTime != null">
                 and create_time &lt;=#{query.endTime}
             </if>
-            <if test="query.status != null">
-                and status = #{query.status}
-            </if>
         </where>
         order by create_time desc
-
     </select>
 
 

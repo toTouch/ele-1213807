@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.IdUtil;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -13,11 +13,11 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -26,17 +26,16 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -67,53 +66,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Autowired
     EleRefundOrderService eleRefundOrderService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public EleDepositOrder queryByIdFromDB(Long id) {
-        return this.eleDepositOrderMapper.queryById(id);
-    }
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public EleDepositOrder queryByIdFromCache(Long id) {
-        return null;
-    }
-
-    /**
-     * 新增数据
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public EleDepositOrder insert(EleDepositOrder eleDepositOrder) {
-        this.eleDepositOrderMapper.insert(eleDepositOrder);
-        return eleDepositOrder;
-    }
-
-    /**
-     * 修改数据
-     *
-     * @param eleDepositOrder 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(EleDepositOrder eleDepositOrder) {
-        return this.eleDepositOrderMapper.update(eleDepositOrder);
-
-    }
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -288,6 +241,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok();
     }
 
+    @Override
+    public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
+        Page page = PageUtil.getPage(eleDepositOrderQuery.getOffset(), eleDepositOrderQuery.getSize());
+        return R.ok(eleDepositOrderMapper.queryList(page, eleDepositOrderQuery));
+    }
 
 
     public String generateOrderId(Long uid) {

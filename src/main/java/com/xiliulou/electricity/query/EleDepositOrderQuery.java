@@ -10,7 +10,7 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class RentBatteryOrderQuery {
+public class EleDepositOrderQuery {
     private Long size;
     private Long offset;
     /**
