@@ -203,6 +203,12 @@ public class EleOperateQueueHandler {
     public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Integer status, String msg) {
         //旧电池检测失败
         if (checkDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK, msg)) {
+            /*//结束订单
+            ElectricityCabinetOrder newElectricityCabinetOrder=new ElectricityCabinetOrder();
+            newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+            electricityCabinetOrderService.update(newElectricityCabinetOrder);*/
             return;
         }
 
@@ -400,6 +406,12 @@ public class EleOperateQueueHandler {
     public void checkRentBatteryDoor(RentBatteryOrder rentBatteryOrder, Integer status, Integer type, String msg) {
         //新电池检测失败
         if (rentAndReturnFailAndSaveFailRecord(rentBatteryOrder, status,type, msg)) {
+           /* //结束订单
+            RentBatteryOrder newRentBatteryOrder=new RentBatteryOrder();
+            newRentBatteryOrder.setId(rentBatteryOrder.getId());
+            newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+            newRentBatteryOrder.setStatus(RentBatteryOrder.STATUS_ORDER_CANCEL);
+            rentBatteryOrderService.update(newRentBatteryOrder);*/
             return;
         }
         //修改仓门为无电池
@@ -456,6 +468,12 @@ public class EleOperateQueueHandler {
     public void checkReturnBatteryDoor(RentBatteryOrder rentBatteryOrder, Integer status, Integer type, String msg) {
         //新电池检测失败
         if (rentAndReturnFailAndSaveFailRecord(rentBatteryOrder, status,type, msg)) {
+           /* //结束订单
+            RentBatteryOrder newRentBatteryOrder=new RentBatteryOrder();
+            newRentBatteryOrder.setId(rentBatteryOrder.getId());
+            newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+            newRentBatteryOrder.setStatus(RentBatteryOrder.STATUS_ORDER_CANCEL);
+            rentBatteryOrderService.update(newRentBatteryOrder);*/
             return;
         }
 
