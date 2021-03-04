@@ -105,14 +105,26 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional
     public R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
+
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if (Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
-            return R.fail("ELECTRICITY.0030", "用户已绑定电池，请解绑后再绑定");
+        //未实名认证
+        if (Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",oldUserInfo);
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        //未缴纳押金
+        if (Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",oldUserInfo);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        //已绑定电池
+        if (Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)||Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",oldUserInfo);
+            return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 
-        //用户是否处于缴纳押金状态或绑定电池状态 TODO
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
@@ -124,7 +136,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
         UserInfo userInfo = new UserInfo();
-        BeanUtil.copyProperties(userInfoBatteryAddAndUpdate, userInfo);
+        if(Objects.isNull(oldUserInfo.getInitElectricityBatterySn())){
+            userInfo.setInitElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+        }
         userInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
@@ -210,9 +224,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-        if (Objects.isNull(oldUserInfo.getNowElectricityBatterySn())) {
-            return R.fail("ELECTRICITY.0029", "用户未绑定电池，不能解绑");
+
+        if (!Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)||Objects.isNull(oldUserInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ",oldUserInfo);
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
+
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUnBindSn(oldUserInfo.getNowElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");

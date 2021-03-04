@@ -252,7 +252,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
+        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)||Objects.isNull(userInfo.getNowElectricityBatterySn())) {
             log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
