@@ -15,8 +15,10 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.entity.UserInfo">
         select
-        id, uid, user_name,name, phone, id_number,mailbox, service_status,auth_status, member_card_expire_time,remaining_number,card_type,
-        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time, update_time
+        id, uid, user_name,name, phone, id_number,mailbox, service_status,auth_status,
+        member_card_expire_time,remaining_number,card_type,
+        init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, usable_status, del_flag, create_time,
+        update_time
         from electricity.t_user_info
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -62,7 +64,6 @@
     </select>
 
 
-
     <!--通过主键修改数据-->
     <update id="unBind">
         update electricity.t_user_info
@@ -87,8 +88,11 @@
     </update>
     <update id="updateByUid">
         update electricity.t_user_info set
-            now_electricity_battery_sn = #{nowElectricityBatterySn},
-            update_time = #{updateTime}
+        <if test="serviceStatus != null">
+            service_status = #{serviceStatus},
+        </if>
+        now_electricity_battery_sn = #{nowElectricityBatterySn},
+        update_time = #{updateTime}
         where uid = #{uid}
     </update>
     <update id="plusCount">

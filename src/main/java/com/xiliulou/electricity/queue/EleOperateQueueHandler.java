@@ -430,12 +430,18 @@ public class EleOperateQueueHandler {
         rentBatteryOrderService.update(newRentBatteryOrder);
 
         //用户绑新电池
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUid(rentBatteryOrder.getUid());
-        userInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        userInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
-        userInfoService.updateByUid(userInfo);
+        UserInfo userInfo = userInfoService.queryByUid(rentBatteryOrder.getUid());
+        if(Objects.nonNull(userInfo)) {
+            UserInfo newUserInfo=new UserInfo();
+            newUserInfo.setId(userInfo.getId());
+            newUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
+            if(Objects.isNull(userInfo.getInitElectricityBatterySn())){
+                newUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
+            }
+            newUserInfo.setUpdateTime(System.currentTimeMillis());
+            newUserInfo.setServiceStatus(UserInfo.STATUS_IS_BATTERY);
+            userInfoService.update(newUserInfo);
+        }
 
         //电池改为在用
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
