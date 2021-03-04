@@ -76,7 +76,6 @@
             </if>
             init_electricity_battery_sn = #{initElectricityBatterySn},
             now_electricity_battery_sn = #{nowElectricityBatterySn},
-            battery_deposit = #{batteryDeposit},
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
