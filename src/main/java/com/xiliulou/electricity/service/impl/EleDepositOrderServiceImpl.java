@@ -247,6 +247,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.ok(eleDepositOrderMapper.queryList(page, eleDepositOrderQuery));
     }
 
+    @Override
+    public void update(EleDepositOrder eleDepositOrderUpdate) {
+        eleDepositOrderMapper.updateById(eleDepositOrderUpdate);
+    }
+
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
