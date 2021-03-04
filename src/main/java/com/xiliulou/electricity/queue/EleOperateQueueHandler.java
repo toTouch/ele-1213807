@@ -203,6 +203,12 @@ public class EleOperateQueueHandler {
     public void checkOldBattery(ElectricityCabinetOrder electricityCabinetOrder, Integer status, String msg) {
         //旧电池检测失败
         if (checkDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK, msg)) {
+            //结束订单
+            ElectricityCabinetOrder newElectricityCabinetOrder=new ElectricityCabinetOrder();
+            newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+            newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+            newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+            electricityCabinetOrderService.update(newElectricityCabinetOrder);
             return;
         }
 
