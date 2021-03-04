@@ -7,7 +7,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
         select
-        id, order_id,uid,user_name , phone, electricity_battery_sn, battery_deposit,electricity_cabinet_id,cell_no,type
+        id, order_id,uid,user_name , phone, electricity_battery_sn, battery_deposit,electricity_cabinet_id,cell_no,type,
         status, create_time,update_time
         from electricity.t_rent_battery_order
         <where>
