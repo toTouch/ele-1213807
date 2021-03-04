@@ -31,6 +31,7 @@ public class EleDepositOrderAdminController {
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
         if (Objects.isNull(size)) {
@@ -48,7 +49,8 @@ public class EleDepositOrderAdminController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .status(status).build();
+                .status(status)
+                .orderId(orderId).build();
 
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }

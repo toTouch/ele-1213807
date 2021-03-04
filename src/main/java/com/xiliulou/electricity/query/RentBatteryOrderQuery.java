@@ -22,4 +22,5 @@ public class RentBatteryOrderQuery {
     private Long beginTime;
     private Long endTime;
     private Integer status;
+    private String orderId;
 }

@@ -33,7 +33,8 @@ public class RentBatteryOrderAdminController {
                        @RequestParam(value = "userName", required = false) String userName,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "orderId", required = false) String orderId) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -49,7 +50,8 @@ public class RentBatteryOrderAdminController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .status(status).build();
+                .status(status)
+                .orderId(orderId).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
