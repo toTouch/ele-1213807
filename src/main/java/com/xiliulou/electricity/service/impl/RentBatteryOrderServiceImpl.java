@@ -182,6 +182,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .batteryDeposit(userInfo.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RENT)
                     .status(RentBatteryOrder.STATUS_INIT)
+                    .electricityCabinetId(electricityCabinet.getId())
                     .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
@@ -276,6 +277,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .batteryDeposit(userInfo.getBatteryDeposit())
                     .type(RentBatteryOrder.TYPE_USER_RETURN)
                     .status(RentBatteryOrder.STATUS_INIT)
+                    .electricityCabinetId(electricityCabinet.getId())
                     .cellNo(Integer.valueOf(cellNo))
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
