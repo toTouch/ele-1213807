@@ -451,7 +451,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
         rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED);
         rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
-        rentBatteryOrderMapper.updateById(rentBatteryOrder);
+        rentBatteryOrderMapper.updateById(rentBatteryOrderUpdate);
         return R.ok();
     }
 
