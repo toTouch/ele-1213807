@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -59,7 +60,7 @@ public class RentBatteryOrderAdminController {
 
 
     //结束异常订单
-    @PutMapping(value = "/admin/rentBatteryOrder/endOrder")
+    @PostMapping(value = "/admin/rentBatteryOrder/endOrder")
     public R endOrder(@RequestParam("orderId") String orderId) {
         return rentBatteryOrderService.endOrder(orderId);
     }
