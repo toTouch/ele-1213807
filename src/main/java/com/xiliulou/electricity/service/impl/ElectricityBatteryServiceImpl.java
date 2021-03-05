@@ -155,10 +155,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 /*.eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS)*/);
     }
 
-    @Override
-    public void updateStatus(ElectricityBattery electricityBattery) {
-        electricitybatterymapper.update(electricityBattery);
-    }
 
     @Override
     public R pageByFranchisee(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {

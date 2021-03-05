@@ -244,7 +244,6 @@ public class EleOperateQueueHandler {
             ElectricityBattery oldElectricityBattery = new ElectricityBattery();
             oldElectricityBattery.setId(electricityBattery.getId());
             oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-            oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.update(oldElectricityBattery);
 
             //用户解绑旧电池
@@ -358,8 +357,7 @@ public class EleOperateQueueHandler {
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        electricityBatteryService.updateStatus(newElectricityBattery);
+        electricityBatteryService.update(newElectricityBattery);
 
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
@@ -448,8 +446,7 @@ public class EleOperateQueueHandler {
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        electricityBatteryService.updateStatus(newElectricityBattery);
+        electricityBatteryService.update(newElectricityBattery);
 
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
@@ -499,7 +496,6 @@ public class EleOperateQueueHandler {
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.update(newElectricityBattery);
 
         //用户解绑电池
