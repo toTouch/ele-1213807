@@ -38,4 +38,6 @@ public interface RentBatteryOrderService {
     R queryStatus(String orderId);
 
     RentBatteryOrder queryByOrderId(String orderId);
+
+    R endOrder(String orderId);
 }

@@ -439,6 +439,22 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
     }
 
+    @Override
+    public R endOrder(String orderId) {
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId)
+                .in(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT,RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+        if (Objects.isNull(rentBatteryOrder)) {
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ",orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        RentBatteryOrder rentBatteryOrderUpdate=new RentBatteryOrder();
+        rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
+        rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED);
+        rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        rentBatteryOrderMapper.updateById(rentBatteryOrder);
+        return R.ok();
+    }
+
     //分配满仓
     public String findUsableBatteryCellNo(Integer id, String cellNo) {
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id, cellNo);
