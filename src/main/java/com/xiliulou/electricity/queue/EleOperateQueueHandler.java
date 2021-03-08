@@ -278,7 +278,7 @@ public class EleOperateQueueHandler {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cell_no", cellNo);
             dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-            dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
+            dataMap.put("serial_number", newElectricityCabinetOrder.getNewElectricityBatterySn());
             dataMap.put("status", electricityCabinetOrder.getStatus().toString());
             dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
 
