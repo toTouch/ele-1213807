@@ -374,6 +374,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("order_id", electricityCabinetOrder.getOrderId());
             dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
             dataMap.put("status", electricityCabinetOrder.getStatus().toString());
+            dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
