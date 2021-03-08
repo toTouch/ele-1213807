@@ -85,6 +85,7 @@ public class EleDepositOrderUserController {
 
         if ((Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY))
                 &&Objects.nonNull(userInfo.getBatteryDeposit())&&Objects.nonNull(userInfo.getOrderId())) {
+            //是否退款 TODO
             map.put("deposit",userInfo.getBatteryDeposit().toString());
             //最后一次缴纳押金时间
             map.put("time", eleDepositOrderService.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
