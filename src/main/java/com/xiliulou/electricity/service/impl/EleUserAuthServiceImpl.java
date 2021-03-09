@@ -165,6 +165,10 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
+        if(Objects.equals(oldUserInfo.getAuthStatus(),UserInfo.AUTH_STATUS_PENDING_REVIEW)){
+            return R.fail("审核中，无法修改!");
+        }
+
         if(Objects.equals(oldUserInfo.getAuthStatus(),UserInfo.AUTH_STATUS_REVIEW_PASSED)){
             return R.fail("审核通过，无法修改!");
         }
