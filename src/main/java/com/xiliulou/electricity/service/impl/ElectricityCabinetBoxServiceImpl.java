@@ -95,7 +95,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 }
             });
         }
-        page.setRecords(electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo)).collect(Collectors.toList()));
+        page.setRecords(electricityCabinetBoxVOList.stream().map(ElectricityCabinetBoxVO::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList()));
         return R.ok(page);
     }
 
