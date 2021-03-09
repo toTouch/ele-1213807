@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -281,11 +282,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if ((Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY))
                 &&Objects.nonNull(userInfo.getBatteryDeposit())&&Objects.nonNull(userInfo.getOrderId())) {
+            //是否退款 TODO
+            Integer refundStatus=eleRefundOrderService.queryStatusByOrderId(userInfo.getOrderId());
+            if(Objects.nonNull(refundStatus)){
+                map.put("refundStatus", this.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
+            }else {
+                map.put("refundStatus", null);
+            }
             map.put("deposit",userInfo.getBatteryDeposit().toString());
             //最后一次缴纳押金时间
             map.put("time", this.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
-            //是否退款
-            map.put("refundStatus", eleRefundOrderService.queryStatusByOrderId(userInfo.getOrderId()).toString());
             return R.ok(map);
         }
 
