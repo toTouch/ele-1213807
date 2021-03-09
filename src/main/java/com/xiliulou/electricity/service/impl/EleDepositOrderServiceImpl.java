@@ -281,7 +281,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if ((Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY))
                 &&Objects.nonNull(userInfo.getBatteryDeposit())&&Objects.nonNull(userInfo.getOrderId())) {
-            //是否退款 TODO
+            //是否退款
             Integer refundStatus=eleRefundOrderService.queryStatusByOrderId(userInfo.getOrderId());
             if(Objects.nonNull(refundStatus)){
                 map.put("refundStatus", this.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
