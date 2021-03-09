@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.service.impl;
-
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -36,6 +35,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -255,6 +256,47 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public void update(EleDepositOrder eleDepositOrderUpdate) {
         eleDepositOrderMapper.updateById(eleDepositOrderUpdate);
+    }
+
+    @Override
+    public R queryDeposit() {
+        Map<String,String> map=new HashMap<>();
+        //用户信息
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        User user=userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user! userId:{}",uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if ((Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY))
+                &&Objects.nonNull(userInfo.getBatteryDeposit())&&Objects.nonNull(userInfo.getOrderId())) {
+            map.put("deposit",userInfo.getBatteryDeposit().toString());
+            //最后一次缴纳押金时间
+            map.put("time", this.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
+            //是否退款
+            map.put("refundStatus", eleRefundOrderService.queryStatusByOrderId(userInfo.getOrderId()).toString());
+            return R.ok(map);
+        }
+
+        Franchisee franchisee=franchiseeService.queryByCid(user.getCid());
+        if (Objects.isNull(franchisee)) {
+            log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ",user.getCid());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+        map.put("deposit",franchisee.getBatteryDeposit().toString());
+        map.put("time",null);
+        return R.ok(map);
     }
 
 

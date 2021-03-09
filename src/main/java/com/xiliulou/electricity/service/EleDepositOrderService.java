@@ -24,4 +24,6 @@ public interface EleDepositOrderService {
     R queryList(EleDepositOrderQuery eleDepositOrderQuery);
 
     void update(EleDepositOrder eleDepositOrderUpdate);
+
+    R queryDeposit();
 }

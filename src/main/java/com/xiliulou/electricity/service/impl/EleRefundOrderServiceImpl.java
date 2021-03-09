@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -27,10 +28,12 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -73,18 +76,18 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public EleRefundOrder queryByIdFromDB(Long id) {
         return this.eleRefundOrderMapper.queryById(id);
     }
-    
-        /**
+
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
     @Override
-    public  EleRefundOrder queryByIdFromCache(Long id) {
+    public EleRefundOrder queryByIdFromCache(Long id) {
         return null;
     }
-    
+
     /**
      * 新增数据
      *
@@ -107,8 +110,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EleRefundOrder eleRefundOrder) {
-       return this.eleRefundOrderMapper.update(eleRefundOrder);
-         
+        return this.eleRefundOrderMapper.update(eleRefundOrder);
+
     }
 
 
@@ -141,11 +144,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Pair<Boolean, Object> notifyDepositRefundOrder(Map<String, String> refundMap) {
         //退款订单
-        String tradeRefundNo =refundMap.get("out_refund_no");
-        String outTradeNo =refundMap.get("out_trade_no");
-        String refundStatus =refundMap.get("refund_status");
+        String tradeRefundNo = refundMap.get("out_refund_no");
+        String outTradeNo = refundMap.get("out_trade_no");
+        String refundStatus = refundMap.get("refund_status");
 
-        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,tradeRefundNo));
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, tradeRefundNo));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeRefundNo);
             return Pair.of(false, "未找到退款订单!");
@@ -178,11 +181,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(),  tradeRefundNo);
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleDepositOrder.getUid(), tradeRefundNo);
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if(Objects.equals(refundOrderStatus,EleRefundOrder.STATUS_SUCCESS)) {
+        if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
             UserInfo userInfoUpdate = new UserInfo();
             userInfoUpdate.setId(userInfo.getId());
             userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_AUTH);
@@ -192,7 +195,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             userInfoService.updateById(userInfoUpdate);
         }
 
-        EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
         eleRefundOrderUpdate.setId(eleRefundOrder.getId());
         eleRefundOrderUpdate.setStatus(refundOrderStatus);
         eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -201,17 +204,17 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request) {
-        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo,refundOrderNo).eq(EleRefundOrder::getStatus,EleRefundOrder.STATUS_INIT));
+    public R handleRefund(String refundOrderNo, Integer status, HttpServletRequest request) {
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("未找到退款订单!");
         }
 
         //同意退款
-        if(Objects.equals(status,EleRefundOrder.STATUS_AGREE_REFUND)){
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND)) {
             //修改订单状态
-            EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
+            EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -241,9 +244,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         //拒绝退款
-        if(Objects.equals(status,EleRefundOrder.STATUS_REFUSE_REFUND)){
+        if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
             //修改订单状态
-            EleRefundOrder  eleRefundOrderUpdate = new EleRefundOrder();
+            EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
             eleRefundOrderUpdate.setId(eleRefundOrder.getId());
             eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
             eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -265,7 +268,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public Integer queryCountByOrderId(String orderId) {
-        return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId,orderId).in(EleRefundOrder::getStatus,EleRefundOrder.STATUS_INIT,EleRefundOrder.STATUS_AGREE_REFUND,EleRefundOrder.STATUS_REFUND,EleRefundOrder.STATUS_SUCCESS));
+        return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_AGREE_REFUND, EleRefundOrder.STATUS_REFUND, EleRefundOrder.STATUS_SUCCESS));
+    }
+
+    @Override
+    public Integer queryStatusByOrderId(String orderId) {
+        List<EleRefundOrder> eleRefundOrderList = eleRefundOrderMapper.selectList(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).orderByDesc(EleRefundOrder::getUpdateTime));
+        if (ObjectUtil.isEmpty(eleRefundOrderList)) {
+            return null;
+        }
+        return eleRefundOrderList.get(0).getStatus();
     }
 
 }

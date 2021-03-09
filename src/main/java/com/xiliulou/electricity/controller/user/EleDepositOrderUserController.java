@@ -64,42 +64,7 @@ public class EleDepositOrderUserController {
     //用户查询押金
     @GetMapping(value = "/user/queryDeposit")
     public R queryDeposit(){
-        Map<String,String> map=new HashMap<>();
-        //用户信息
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        User user=userService.queryByUidFromCache(uid);
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user! userId:{}",uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        //用户是否缴纳押金
-        UserInfo userInfo = userInfoService.queryByUid(uid);
-        if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}",uid);
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if ((Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY))
-                &&Objects.nonNull(userInfo.getBatteryDeposit())&&Objects.nonNull(userInfo.getOrderId())) {
-            //是否退款 TODO
-            map.put("deposit",userInfo.getBatteryDeposit().toString());
-            //最后一次缴纳押金时间
-            map.put("time", eleDepositOrderService.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
-            return R.ok(map);
-        }
-
-        Franchisee franchisee=franchiseeService.queryByCid(user.getCid());
-        if (Objects.isNull(franchisee)) {
-            log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ",user.getCid());
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
-        }
-        map.put("deposit",franchisee.getBatteryDeposit().toString());
-        map.put("time",null);
-        return R.ok(map);
+        return eleDepositOrderService.queryDeposit();
     }
 
 }

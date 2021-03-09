@@ -63,4 +63,6 @@ public interface EleRefundOrderService {
     R queryList(EleRefundQuery eleRefundQuery);
 
     Integer queryCountByOrderId(String orderId);
+
+    Integer queryStatusByOrderId(String orderId);
 }
