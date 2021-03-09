@@ -104,6 +104,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+            return R.fail("已缴纳押金");
+        }
+
         //计算押金
         //根据用户cid找到对应的加盟商
         Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
