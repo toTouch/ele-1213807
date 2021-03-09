@@ -96,7 +96,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 }
                 electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
             }
-
         }
         page.setRecords(electricityCabinetBoxVOs);
         return R.ok(page);
