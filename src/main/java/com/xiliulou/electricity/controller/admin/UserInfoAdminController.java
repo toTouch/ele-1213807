@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -84,6 +85,13 @@ public class UserInfoAdminController {
     @PostMapping(value = "/admin/userInfo/verifyAuth")
     public R verifyAuth(@RequestParam("id") Long id,@RequestParam("authStatus") Integer authStatus) {
         return userInfoService.verifyAuth(id,authStatus);
+    }
+
+    //编辑实名认证
+    @PutMapping(value = "/admin/userInfo")
+    public R update(@RequestBody UserInfo userInfo) {
+        userInfo.setUpdateTime(System.currentTimeMillis());
+        return R.ok(userInfoService.update(userInfo));
     }
 
 }
