@@ -28,7 +28,7 @@
         select
         tero.id as id, tero.refund_order_no as refundOrderNo, tero.order_id as orderId, tero.pay_amount as payAmount,
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg, tero.del_flag as delFlag,
-        tero.create_time as createTime, tero.update_time as updateTime ,tedo.uid as uid,tedo.user_name as userName,tedo.phone as phone
+        tero.create_time as createTime, tero.update_time as updateTime ,tedo.uid as uid,tedo.name as name,tedo.phone as phone
         from electricity.t_ele_refund_order as tero
         left join electricity.t_ele_deposit_order as tedo  on  tero.order_id= tedo.order_id
         <where>
