@@ -37,7 +37,7 @@
         <if test="query.electricityCabinetId != null">
             and electricity_cabinet_id = #{query.electricityCabinetId}
         </if>
-        order by --cell_no asc
+        order by -cell_no DESC
 
     </select>
 
