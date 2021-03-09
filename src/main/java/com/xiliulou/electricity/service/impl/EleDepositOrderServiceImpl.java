@@ -301,6 +301,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         map.put("deposit",franchisee.getBatteryDeposit().toString());
         map.put("time",null);
+        map.put("refundStatus", null);
         return R.ok(map);
     }
 
