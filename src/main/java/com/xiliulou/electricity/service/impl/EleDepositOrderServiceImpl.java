@@ -105,7 +105,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-            return R.fail("已缴纳押金");
+            return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
         //计算押金
