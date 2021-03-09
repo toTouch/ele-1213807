@@ -100,7 +100,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ",uid);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
-        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
