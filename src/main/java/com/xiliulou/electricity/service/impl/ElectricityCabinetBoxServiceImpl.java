@@ -85,17 +85,20 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             return R.ok();
         }
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = page.getRecords();
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs=new ArrayList<>();
 
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
-            electricityCabinetBoxVOList.parallelStream().forEach(e -> {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
+            for (ElectricityCabinetBoxVO electricityCabinetBoxVO:electricityCabinetBoxVOList) {
+                ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBoxVO.getElectricityBatteryId());
                 if (Objects.nonNull(electricityBattery)) {
-                    e.setSn(electricityBattery.getSn());
-                    e.setPower(electricityBattery.getPower());
+                    electricityCabinetBoxVO.setSn(electricityBattery.getSn());
+                    electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                 }
-            });
+                electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
+            }
+
         }
-        page.setRecords(electricityCabinetBoxVOList.stream().map(ElectricityCabinetBoxVO::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList()));
+        page.setRecords(electricityCabinetBoxVOs);
         return R.ok(page);
     }
 
