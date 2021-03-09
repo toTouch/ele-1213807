@@ -118,7 +118,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .orderId(orderId)
                 .uid(user.getUid())
                 .phone(userInfo.getPhone())
-                .userName(user.getName())
+                .name(userInfo.getName())
                 .payAmount(payAmount)
                 .status(EleDepositOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())

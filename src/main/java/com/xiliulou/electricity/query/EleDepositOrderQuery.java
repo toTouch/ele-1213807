@@ -16,7 +16,7 @@ public class EleDepositOrderQuery {
     /**
      * 用户名字
      */
-    private String userName;
+    private String name;
     private String phone;
 
     private Long beginTime;

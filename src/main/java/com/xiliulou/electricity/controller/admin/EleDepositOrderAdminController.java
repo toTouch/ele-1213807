@@ -29,7 +29,7 @@ public class EleDepositOrderAdminController {
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "status", required = false) Integer status,
-                       @RequestParam(value = "userName", required = false) String userName,
+                       @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -45,7 +45,7 @@ public class EleDepositOrderAdminController {
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .offset(offset)
                 .size(size)
-                .userName(userName)
+                .name(name)
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)

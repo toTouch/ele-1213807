@@ -32,7 +32,7 @@ public class RentBatteryOrder {
     /**
     * 用户名
     */
-    private String userName;
+    private String name;
     /**
     * 手机号
     */

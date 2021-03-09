@@ -32,7 +32,7 @@ public class RentBatteryOrderAdminController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "batteryStoreId", required = false) Integer batteryStoreId,
                        @RequestParam(value = "status", required = false) Integer status,
-                       @RequestParam(value = "userName", required = false) String userName,
+                       @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
@@ -48,7 +48,7 @@ public class RentBatteryOrderAdminController {
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .offset(offset)
                 .size(size)
-                .userName(userName)
+                .name(name)
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
