@@ -136,6 +136,7 @@ public class EleOperateQueueHandler {
                 }
             }
         }else {
+
             //租还电池订单
             RentBatteryOrder rentBatteryOrder=rentBatteryOrderService.queryByOrderId(orderId);
             if (Objects.isNull(rentBatteryOrder)) {
