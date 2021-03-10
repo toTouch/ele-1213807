@@ -125,18 +125,19 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         refundQuery.setMchId(electricityPayParams.getMchId());
         refundQuery.setPaternerKey(electricityPayParams.getPaternerKey());
         refundQuery.setBody("换电押金退款:" + refundOrder.getRefundOrderNo());
+
         //第三方订单号
         ElectricityTradeOrder electricityTradeOrder = electricityTradeOrderService.selectTradeOrderByOrderId(refundOrder.getOrderId());
         if (Objects.isNull(electricityTradeOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", refundOrder.getOrderId());
             return Pair.of(false, "未找到交易订单!");
         }
+
         refundQuery.setOutTradeNo(electricityTradeOrder.getTradeOrderNo());
         refundQuery.setRefundOrderNo(refundOrder.getRefundOrderNo());
         refundQuery.setTotalFee(refundOrder.getPayAmount().multiply(new BigDecimal(100)).longValue());
         refundQuery.setRefundFee(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).longValue());
         refundQuery.setApiName(electricityPayParams.getApiName());
-        //订单有效期为三分钟
         refundQuery.setAttach(refundOrder.getAttach());
         return refundAdapterHandler.refund(refundQuery);
     }
