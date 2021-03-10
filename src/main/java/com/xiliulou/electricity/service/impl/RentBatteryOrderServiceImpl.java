@@ -336,14 +336,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        //旧电池开门
+        //租电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
             if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RENT)) {
                 return R.fail("ELECTRICITY.0015", "未找到订单");
             }
         }
 
-        //新电池开门
+        //还电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
             if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RETURN)) {
                 return R.fail("ELECTRICITY.0015", "未找到订单");
@@ -374,10 +374,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
-        //旧电池开门
+        //租电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
             //发送开门命令
-            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", rentBatteryOrder.getCellNo());
             dataMap.put("orderId",rentBatteryOrder.getOrderId());
@@ -393,10 +392,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.ok(rentBatteryOrder.getOrderId());
         }
 
-        //新电池开门
+        //还电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
             //发送开门命令
-            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", rentBatteryOrder.getCellNo());
             dataMap.put("orderId",rentBatteryOrder.getOrderId());
