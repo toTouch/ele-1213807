@@ -452,7 +452,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public Integer queryFullyElectricityBattery(Integer id) {
-        return electricityCabinetMapper.queryFullyElectricityBattery(id);
+        List<String> sns=electricityCabinetMapper.queryFullyElectricityBattery(id);
+        Integer count=0;
+        //该电池是否绑定用户
+        for (String sn:sns) {
+            List<UserInfo> userInfoList=userInfoService.queryByBatterySn(sn);
+            if(ObjectUtil.isEmpty(userInfoList)){
+                count=count+1;
+            }
+        }
+        return count;
     }
 
     @Override

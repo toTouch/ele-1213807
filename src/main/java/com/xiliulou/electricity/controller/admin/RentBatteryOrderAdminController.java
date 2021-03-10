@@ -30,8 +30,8 @@ public class RentBatteryOrderAdminController {
     @GetMapping(value = "/admin/rentBatteryOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "batteryStoreId", required = false) Integer batteryStoreId,
                        @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -53,7 +53,8 @@ public class RentBatteryOrderAdminController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
-                .orderId(orderId).build();
+                .orderId(orderId)
+                .type(type).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
