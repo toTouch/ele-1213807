@@ -194,7 +194,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 
             //发送开门命令
-            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
             dataMap.put("orderId",orderId);
@@ -300,7 +299,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             rentBatteryOrderMapper.insert(rentBatteryOrder);
 
             //发送开门命令
-            //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
             dataMap.put("orderId",orderId);
