@@ -295,7 +295,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             map.put("deposit",userInfo.getBatteryDeposit().toString());
             //最后一次缴纳押金时间
             map.put("time", this.queryByOrderId(userInfo.getOrderId()).getUpdateTime().toString());
-            log.info("map is -->{}",map);
             return R.ok(map);
         }
 
@@ -307,7 +306,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         map.put("deposit",franchisee.getBatteryDeposit().toString());
         map.put("time",null);
         map.put("refundStatus", null);
-        log.info("map is -->{}",map);
         return R.ok(map);
     }
 
