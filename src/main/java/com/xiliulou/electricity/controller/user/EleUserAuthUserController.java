@@ -61,6 +61,7 @@ public class EleUserAuthUserController {
     //修改实名认证(实名认证审核中，实名认证未通过允许修改)
     @PutMapping("/user/auth")
     public R updateInfoAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
+        log.info("eleUserAuthList is -->{}",eleUserAuthList);
         if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
