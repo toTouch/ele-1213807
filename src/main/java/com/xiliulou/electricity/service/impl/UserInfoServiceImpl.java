@@ -319,7 +319,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     @DS("slave_1")
-
     public R getMemberCardInfo(Long uid) {
         UserInfo userInfo = selectUserByUid(uid);
         if (Objects.isNull(userInfo)) {
@@ -434,6 +433,61 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public void updateRefund(UserInfo userInfo) {
         userInfoMapper.updateRefund(userInfo);
+    }
+
+    @Override
+    @Transactional
+    public R updateAuth(UserInfo userInfo) {
+        userInfo.setUpdateTime(System.currentTimeMillis());
+        Integer update = update(userInfo);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //实名认证数据修改
+            UserInfo newUserInfo = this.queryByIdFromDB(userInfo.getId());
+            //身份证
+            if(Objects.nonNull(userInfo.getIdNumber())) {
+                EleUserAuth eleUserAuth1 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_ID_CARD);
+                eleUserAuth1.setUpdateTime(System.currentTimeMillis());
+                eleUserAuth1.setValue(userInfo.getIdNumber());
+                if (Objects.nonNull(eleUserAuth1)) {
+                    eleUserAuthService.update(eleUserAuth1);
+                } else {
+                    eleUserAuth1=new EleUserAuth();
+                    eleUserAuth1.setCreateTime(System.currentTimeMillis());
+                    eleUserAuthService.insert(eleUserAuth1);
+                }
+            }
+
+            //姓名
+            if(Objects.nonNull(userInfo.getName())) {
+                EleUserAuth eleUserAuth2 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_NAME_ID);
+                eleUserAuth2.setUpdateTime(System.currentTimeMillis());
+                eleUserAuth2.setValue(userInfo.getName());
+                if (Objects.nonNull(eleUserAuth2)) {
+                    eleUserAuthService.update(eleUserAuth2);
+                } else {
+                    eleUserAuth2=new EleUserAuth();
+                    eleUserAuth2.setCreateTime(System.currentTimeMillis());
+                    eleUserAuthService.insert(eleUserAuth2);
+                }
+            }
+
+            //邮箱
+            if(Objects.nonNull(userInfo.getMailbox())) {
+                EleUserAuth eleUserAuth3 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_MAILBOX);
+                eleUserAuth3.setUpdateTime(System.currentTimeMillis());
+                eleUserAuth3.setValue(userInfo.getMailbox());
+                if (Objects.nonNull(eleUserAuth3)) {
+                    eleUserAuthService.update(eleUserAuth3);
+                } else {
+                    eleUserAuth3 = new EleUserAuth();
+                    eleUserAuth3.setCreateTime(System.currentTimeMillis());
+                    eleUserAuthService.insert(eleUserAuth3);
+                }
+            }
+            return null;
+        });
+        return R.ok();
     }
 
 

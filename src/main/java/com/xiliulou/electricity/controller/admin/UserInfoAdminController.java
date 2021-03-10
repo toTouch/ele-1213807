@@ -1,5 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -89,9 +92,8 @@ public class UserInfoAdminController {
 
     //编辑实名认证
     @PutMapping(value = "/admin/userInfo")
-    public R update(@RequestBody UserInfo userInfo) {
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        return R.ok(userInfoService.update(userInfo));
+    public R updateAuth(@RequestBody UserInfo userInfo) {
+        return userInfoService.updateAuth(userInfo);
     }
 
 }

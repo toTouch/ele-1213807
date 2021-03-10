@@ -247,4 +247,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     public void updateByUid(Long uid, Integer authStatus) {
         eleUserAuthMapper.updateByUid(uid,authStatus,System.currentTimeMillis());
     }
+
+    @Override
+    public EleUserAuth queryByUidAndEntryId(Long uid, Integer idIdCard) {
+        return eleUserAuthMapper.selectOne(Wrappers.<EleUserAuth>lambdaQuery().eq(EleUserAuth::getUid,uid).eq(EleUserAuth::getEntryId,idIdCard).eq(EleUserAuth::getDelFlag,EleUserAuth.DEL_NORMAL));
+    }
 }
