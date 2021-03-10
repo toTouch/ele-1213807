@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
@@ -9,23 +10,22 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表服务实现类
@@ -43,6 +43,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    UserInfoService userInfoService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -131,11 +133,18 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
             electricityCabinetBoxList.parallelStream().forEach(e -> {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+
+                //是否满电
                 if (Objects.nonNull(electricityCabinet)) {
                     ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
                     if (Objects.nonNull(electricityBattery)) {
                         if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
-                            electricityCabinetBoxes.add(e);
+
+                            //该电池是否绑定用户
+                            List<UserInfo> userInfoList=userInfoService.queryByBatterySn(electricityBattery.getSn());
+                            if(ObjectUtil.isEmpty(userInfoList)){
+                                electricityCabinetBoxes.add(e);
+                            }
                         }
                     }
                 }

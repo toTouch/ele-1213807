@@ -38,7 +38,6 @@ public class EleUserAuthUserController {
     //实名认证
     @PostMapping("/user/auth")
     public R commitInfoAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
-        log.info("eleUserAuthList is -->{}",eleUserAuthList);
         if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }

@@ -288,7 +288,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //是否退款
             Integer refundStatus=eleRefundOrderService.queryStatusByOrderId(userInfo.getOrderId());
             if(Objects.nonNull(refundStatus)){
-                map.put("refundStatus", this.queryByOrderId(userInfo.getOrderId()).getStatus().toString());
+                map.put("refundStatus", refundStatus.toString());
             }else {
                 map.put("refundStatus", null);
             }

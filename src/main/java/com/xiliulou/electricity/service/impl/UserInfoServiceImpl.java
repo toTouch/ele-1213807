@@ -129,7 +129,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.isNull(oldElectricityBattery)) {
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
-        List<UserInfo> userInfoList=userInfoMapper.selectList(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getNowElectricityBatterySn, userInfoBatteryAddAndUpdate.getInitElectricityBatterySn()));
+        List<UserInfo> userInfoList=this.queryByBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if(ObjectUtil.isNotEmpty(userInfoList)){
             return R.fail("ELECTRICITY.0039", "电池已被绑定");
         }
@@ -488,6 +488,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
         return R.ok();
+    }
+
+    @Override
+    public List<UserInfo> queryByBatterySn(String sn) {
+        return userInfoMapper.selectList(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getNowElectricityBatterySn,sn ));
     }
 
 

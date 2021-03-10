@@ -90,4 +90,6 @@ public interface UserInfoService extends IService<UserInfo> {
     void updateRefund(UserInfo userInfo);
 
     R updateAuth(UserInfo userInfo);
+
+    List<UserInfo> queryByBatterySn(String sn);
 }
