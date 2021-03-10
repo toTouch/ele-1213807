@@ -205,7 +205,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public R handleRefund(String refundOrderNo, Integer status, HttpServletRequest request) {
-        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).eq(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT));
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("未找到退款订单!");
