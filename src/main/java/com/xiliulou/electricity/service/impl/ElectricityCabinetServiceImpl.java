@@ -341,7 +341,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer fullyElectricityBattery = this.queryFullyElectricityBattery(e.getId());
                 Integer electricityBatteryTotal = 0;
                 Integer noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -857,7 +857,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //查满仓空仓数
-        Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
+        Integer fullyElectricityBattery = this.queryFullyElectricityBattery(electricityCabinet.getId());
         if (fullyElectricityBattery <= 0) {
             return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
         }
@@ -990,7 +990,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
         //查满仓空仓数
-        Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
+        Integer fullyElectricityBattery = this.queryFullyElectricityBattery(electricityCabinet.getId());
         //查满仓空仓数
         Integer electricityBatteryTotal = 0;
         Integer noElectricityBattery = 0;
@@ -1054,7 +1054,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer fullyElectricityBattery = this.queryFullyElectricityBattery(e.getId());
                 Integer electricityBatteryTotal = 0;
                 Integer noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -1118,7 +1118,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(e.getId());
+                Integer fullyElectricityBattery = this.queryFullyElectricityBattery(e.getId());
                 Integer electricityBatteryTotal = 0;
                 Integer noElectricityBattery = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -1291,7 +1291,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
-        Integer fullyElectricityBattery = electricityCabinetMapper.queryFullyElectricityBattery(electricityCabinet.getId());
+        Integer fullyElectricityBattery = this.queryFullyElectricityBattery(electricityCabinet.getId());
         //已缴纳押金则租电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
             //查满仓空仓数

@@ -196,6 +196,7 @@
         select count(eb.id) from  t_electricity_cabinet as ec
         left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
         left join t_electricity_battery as eb on ecb.electricity_battery_id is not null and ecb.electricity_battery_id=eb.id
+        left join t_user_info as tui on tui.now_electricity_battery_sn!=eb.sn
         where eb.power&gt;=fully_charged  and ec.id = #{id} and ecb.usable_status =0
     </select>
 
