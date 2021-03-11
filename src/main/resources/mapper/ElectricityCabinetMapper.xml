@@ -183,46 +183,6 @@
         left join t_electricity_battery as eb on ecb.electricity_battery_id is not null and ecb.electricity_battery_id=eb.id
         WHERE eb.voltage is not null or eb.capacity is not null and ec.id = #{id}
     </select>
-    <select id="showInfoByDistanceAndStoreId" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select tec.id as id, tec.sn as sn, tec.name as name, tec.address as address, tec.longitude as longitude,
-        tec.latitude as latitude, tec.product_key as productKey, tec.device_name as deviceName, tec.device_secret as deviceSecret,
-        tec.usable_status as usableStatus, tec.power_status AS powerStatus, tec.online_status AS onlineStatus,
-        tec.model_id AS modelId, tec.version AS version,tec.fully_charged AS fullyCharged, tec.service_phone AS servicePhone,
-        tec.business_time AS businessTime, tec.create_time AS createTime, tec.update_time AS updateTime, ROUND(
-        6378.138 * 2 * ASIN(
-        SQRT(
-        POW(
-        SIN(
-        (
-        #{query.lat} * PI() / 180 - tec.latitude * PI() / 180
-        ) / 2
-        ),
-        2
-        ) + COS(#{query.lat} * PI() / 180) * COS(tec.latitude * PI() / 180) * POW(
-        SIN(
-        (
-        #{query.lon} * PI() / 180 - tec.longitude * PI() / 180
-        ) / 2
-        ),
-        2
-        )
-        )
-        ) * 1000
-        ) AS distance
-        from electricity.t_electricity_cabinet as tec
-        left join electricity.t_store_bind_electricity_cabinet as tsbec on tec.id=tsbec.electricity_cabinet_id
-        where del_flag = 0
-        <if test="query.distance != null">
-            having distance &lt; #{query.distance}
-        </if>
-        <if test="query.storeIdList!=null and query.storeIdList!=''">
-            and tsbec.store_id in
-            <foreach collection="query.storeIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-        order by distance asc
-    </select>
 
     <!--通过主键修改数据-->
     <update id="update">
