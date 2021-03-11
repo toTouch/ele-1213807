@@ -1168,11 +1168,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R showInfoByStoreId(Integer storeId) {
-        List<Integer> storeIdList=new ArrayList<>();
-        storeIdList.add(storeId);
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().storeIdList(storeIdList).build();
-        List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistanceAndStoreId(electricityCabinetQuery);
-        log.info("electricityCabinetList is -->{}",electricityCabinetList);
+        List<StoreBindElectricityCabinet> storeBindElectricityCabinetList=storeBindElectricityCabinetService.queryByStoreId(storeId);
+        if(ObjectUtil.isEmpty(storeBindElectricityCabinetList)){
+            return R.ok();
+        }
+        List<ElectricityCabinetVO> electricityCabinetList=new ArrayList<>();
+        for (StoreBindElectricityCabinet storeBindElectricityCabinet:storeBindElectricityCabinetList) {
+            ElectricityCabinet electricityCabinet=queryByIdFromCache(storeBindElectricityCabinet.getElectricityCabinetId());
+            if(Objects.nonNull(electricityCabinet)) {
+                ElectricityCabinetVO electricityCabinetVO=new ElectricityCabinetVO();
+                BeanUtil.copyProperties(electricityCabinet,electricityCabinetVO);
+                electricityCabinetList.add(electricityCabinetVO);
+            }
+        }
+        if(ObjectUtil.isEmpty(electricityCabinetList)){
+            return R.ok();
+        }
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
@@ -1246,8 +1257,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             });
         }
-        log.info("electricityCabinets is -->{}",electricityCabinets);
-        return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
+        return R.ok(electricityCabinets);
     }
 
     @Override
