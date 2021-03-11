@@ -21,4 +21,5 @@ public class UserInfoQuery {
     private Long beginTime;
     private Long endTime;
     private Integer serviceStatus;
+    private Integer authStatus;
 }

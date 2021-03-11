@@ -36,6 +36,9 @@
         <if test="query.serviceStatus != null">
             and service_status = #{query.serviceStatus}
         </if>
+        <if test="query.authStatus == -1">
+            and service_status is not null
+        </if>
         order by create_time desc
 
     </select>
