@@ -188,7 +188,7 @@
         tec.latitude as latitude, tec.product_key as productKey, tec.device_name as deviceName, tec.device_secret as deviceSecret,
         tec.usable_status as usableStatus, tec.power_status AS powerStatus, tec.online_status AS onlineStatus,
         tec.model_id AS modelId, tec.version AS version,tec.fully_charged AS fullyCharged, tec.service_phone AS servicePhone,
-        tec.business_time AS businessTime, tec.create_time AS createTime, tec.update_time AS updateTime,distance, ROUND(
+        tec.business_time AS businessTime, tec.create_time AS createTime, tec.update_time AS updateTime, ROUND(
         6378.138 * 2 * ASIN(
         SQRT(
         POW(
