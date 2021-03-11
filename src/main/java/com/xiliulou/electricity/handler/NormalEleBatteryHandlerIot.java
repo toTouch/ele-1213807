@@ -82,7 +82,14 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
             return false;
         }
+
+
         //修改电池
+        //若上报时间小于上次上报时间则忽略此条上报
+        Long reportTime = eleBatteryVo.getReportTime();
+        if (Objects.nonNull(reportTime)&&electricityBattery.getReportTime()>=reportTime) {
+            return false;
+        }
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -98,7 +105,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (StringUtils.isNotEmpty(chargeStatus)) {
             newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
         }
-        electricityBatteryService.update(newElectricityBattery);
+        if (Objects.nonNull(reportTime)) {
+            newElectricityBattery.setReportTime(reportTime);
+        }
+        electricityBatteryService.updateReport(newElectricityBattery);
+
+
         //修改仓门
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityBatteryId(newElectricityBattery.getId());
@@ -123,4 +135,6 @@ class EleBatteryVo {
     private String chargeStatus;
     //cellNo
     private String cellNo;
+    //reportTime
+    private Long reportTime;
 }

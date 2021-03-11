@@ -162,4 +162,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return R.ok(electricitybatterymapper.pageByFranchisee(page, electricityBatteryQuery, offset, size));
     }
 
+    @Override
+    public void updateReport(ElectricityBattery electricityBattery) {
+        ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectById(electricityBattery.getId());
+        if (Objects.isNull(electricityBatteryDb)) {
+            log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
+           return;
+        }
+        electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricitybatterymapper.updateById(electricityBattery);
+    }
+
 }

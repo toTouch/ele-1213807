@@ -108,7 +108,6 @@ public class EleOperateQueueHandler {
      * @param finalOpenDTO
      */
     private void handleOrderAfterOperated(EleOpenDTO finalOpenDTO) {
-        log.info("finalOpenDTO is -->{}", finalOpenDTO);
         Integer status = finalOpenDTO.getStatus();
         String type = finalOpenDTO.getType();
         String orderId = finalOpenDTO.getOrderId();

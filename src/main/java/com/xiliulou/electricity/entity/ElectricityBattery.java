@@ -69,6 +69,9 @@ public class ElectricityBattery {
      */
     private Integer chargeStatus;
 
+    //上报时间
+    private Long reportTime;
+
     //在仓
     public static final Integer WARE_HOUSE_STATUS = 0;
     //在库
