@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -22,6 +24,7 @@ import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
@@ -66,6 +69,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     UserOauthBindService userOauthBindService;
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    RentBatteryOrderService rentBatteryOrderService;
 
 
 
@@ -204,6 +209,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0045", "未缴纳押金");
         }
 
+        //是否存在未完成的租电池订单
+        Integer count = rentBatteryOrderService.queryByUidAndType(uid,RentBatteryOrder.TYPE_USER_RENT);
+        if (count > 0) {
+            return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+        }
+
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userInfo.getOrderId()));
         if(Objects.isNull(eleDepositOrder)){
             return R.fail("ELECTRICITY.0015", "未找到订单");
@@ -230,8 +241,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //是否有正在进行中的退款
-        Integer count=eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
-        if(count>0){
+        Integer refundCount=eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        if(refundCount>0){
             return R.fail("ELECTRICITY.0047","请勿重复退款");
         }
 

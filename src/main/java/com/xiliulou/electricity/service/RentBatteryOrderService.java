@@ -40,4 +40,6 @@ public interface RentBatteryOrderService {
     RentBatteryOrder queryByOrderId(String orderId);
 
     R endOrder(String orderId);
+
+    Integer queryByUidAndType(Long uid, Integer type);
 }

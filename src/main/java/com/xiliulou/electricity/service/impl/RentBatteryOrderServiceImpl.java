@@ -166,8 +166,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //是否存在未完成的租电池订单
-        Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RENT)
-                .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+        Integer count = queryByUidAndType(uid, RentBatteryOrder.TYPE_USER_RENT);
         if (count > 0) {
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
@@ -462,6 +461,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
         rentBatteryOrderMapper.updateById(rentBatteryOrderUpdate);
         return R.ok();
+    }
+
+    @Override
+    public Integer queryByUidAndType(Long uid, Integer type) {
+        return rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType,type)
+                .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
     }
 
     //分配满仓
