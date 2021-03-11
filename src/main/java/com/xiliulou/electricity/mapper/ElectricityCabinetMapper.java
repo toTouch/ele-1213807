@@ -52,5 +52,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     IPage listByStoreId(Page page,@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
-    List<ElectricityCabinetVO> showInfoByDistanceAndStoreId(ElectricityCabinetQuery electricityCabinetQuery);
+    List<ElectricityCabinetVO> showInfoByDistanceAndStoreId(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 }
