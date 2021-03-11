@@ -2,25 +2,9 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinetBox" id="ElectricityCabinetBoxMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
-        <result property="cellNo" column="cell_no" jdbcType="VARCHAR"/>
-        <result property="electricityBatteryId" column="electricity_battery_id" jdbcType="INTEGER"/>
-        <result property="usableStatus" column="usable_status" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="isLock" column="is_lock" jdbcType="INTEGER"/>
-        <result property="isFan" column="is_fan" jdbcType="INTEGER"/>
-        <result property="temperature" column="temperature" jdbcType="INTEGER"/>
-        <result property="isHeat" column="is_heat" jdbcType="INTEGER"/>
-        <result property="isLight" column="is_light" jdbcType="INTEGER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
-    </resultMap>
 
     <!--查询单个-->
-    <select id="queryById" resultMap="ElectricityCabinetBoxMap">
+    <select id="queryById" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
           id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, status,is_lock,is_fan,temperature,is_heat,is_light, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet_box
@@ -131,6 +115,9 @@
             </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
+            </if>
+            <if test="reportTime != null">
+                report_time = #{reportTime},
             </if>
         </set>
         where cell_no = #{cellNo} and electricity_cabinet_id = #{electricityCabinetId} and del_flag=0
