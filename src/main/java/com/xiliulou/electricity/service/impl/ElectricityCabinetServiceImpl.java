@@ -1172,6 +1172,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         storeIdList.add(storeId);
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().storeIdList(storeIdList).build();
         List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistanceAndStoreId(electricityCabinetQuery);
+        log.info("electricityCabinetList is -->{}",electricityCabinetList);
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
@@ -1245,6 +1246,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             });
         }
+        log.info("electricityCabinets is -->{}",electricityCabinets);
         return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
     }
 
