@@ -151,6 +151,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //已绑定电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
+            // TODO
             return R.fail("ELECTRICITY.0048", "未绑定电池");
         }
 
@@ -334,7 +335,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        //租电池开门
+        //租电池开门 TODO
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
             if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RENT)) {
                 return R.fail("ELECTRICITY.0015", "未找到订单");

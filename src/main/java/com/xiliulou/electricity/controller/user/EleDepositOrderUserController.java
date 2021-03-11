@@ -55,7 +55,9 @@ public class EleDepositOrderUserController {
     public R queryStatus(@RequestParam("orderId") String orderId) {
         EleDepositOrder eleDepositOrder=eleDepositOrderService.queryByOrderId(orderId);
         if(Objects.isNull(eleDepositOrder)){
-            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+            log.error("ELECTRICITY  ERROR! not " +
+                    "" +
+                    " order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
         return R.ok(eleDepositOrder.getStatus());
