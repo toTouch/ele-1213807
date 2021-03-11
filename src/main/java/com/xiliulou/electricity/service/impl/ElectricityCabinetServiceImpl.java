@@ -1184,6 +1184,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if(ObjectUtil.isEmpty(electricityCabinetList)){
             return R.ok();
         }
+        log.info("electricityCabinetList is -->{}",electricityCabinetList);
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
@@ -1257,7 +1258,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             });
         }
-        log.info("electricityCabinets is -->{}",electricityCabinets);
         return R.ok(electricityCabinets.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getDistance)).collect(Collectors.toList()));
     }
 
