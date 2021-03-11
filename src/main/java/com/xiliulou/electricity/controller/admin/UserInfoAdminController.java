@@ -1,8 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
-import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
