@@ -136,6 +136,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
         UserInfo userInfo = new UserInfo();
+        userInfo.setId(oldUserInfo.getId());
         if(Objects.isNull(oldUserInfo.getInitElectricityBatterySn())){
             userInfo.setInitElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         }
@@ -237,7 +238,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
-        userInfo.setInitElectricityBatterySn(null);
         userInfo.setNowElectricityBatterySn(null);
         userInfo.setBatteryDeposit(null);
         userInfo.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);

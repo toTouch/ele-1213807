@@ -77,7 +77,6 @@
             <if test="serviceStatus != null">
                 service_status = #{serviceStatus},
             </if>
-            init_electricity_battery_sn = #{initElectricityBatterySn},
             now_electricity_battery_sn = #{nowElectricityBatterySn},
             <if test="updateTime != null">
                 update_time = #{updateTime},
