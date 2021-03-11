@@ -51,4 +51,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<BatteryFormat> queryElectricityBatteryFormat(Integer id);
 
     IPage listByStoreId(Page page,@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+
+    List<ElectricityCabinetVO> showInfoByDistanceAndStoreId(ElectricityCabinetQuery electricityCabinetQuery);
 }

@@ -1168,23 +1168,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R showInfoByStoreId(Integer storeId) {
-        List<StoreBindElectricityCabinet> storeBindElectricityCabinetList=storeBindElectricityCabinetService.queryByStoreId(storeId);
-       if(ObjectUtil.isEmpty(storeBindElectricityCabinetList)){
-           return R.ok();
-       }
-       List<ElectricityCabinetVO> electricityCabinetList=new ArrayList<>();
-        for (StoreBindElectricityCabinet storeBindElectricityCabinet:storeBindElectricityCabinetList) {
-            ElectricityCabinet electricityCabinet=queryByIdFromCache(storeBindElectricityCabinet.getElectricityCabinetId());
-            if(Objects.nonNull(electricityCabinet)) {
-                ElectricityCabinetVO electricityCabinetVO=new ElectricityCabinetVO();
-                BeanUtil.copyProperties(electricityCabinet,electricityCabinetVO);
-                electricityCabinetList.add(electricityCabinetVO);
-            }
-        }
-        if(ObjectUtil.isEmpty(electricityCabinetList)){
-            return R.ok();
-        }
-        log.info("electricityCabinetList is -->{}",electricityCabinetList);
+        List<Integer> storeIdList=new ArrayList<>();
+        storeIdList.add(storeId);
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().storeIdList(storeIdList).build();
+        List<ElectricityCabinetVO> electricityCabinetList = electricityCabinetMapper.showInfoByDistanceAndStoreId(electricityCabinetQuery);
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
