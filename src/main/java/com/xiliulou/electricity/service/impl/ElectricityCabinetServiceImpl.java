@@ -787,6 +787,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
+            log.error("ELECTRICITY  ERROR! not found electricityCabinet ！productKey{},deviceName{}",productKey,deviceName);
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
