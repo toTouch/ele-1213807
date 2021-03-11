@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
@@ -11,6 +12,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -23,6 +25,8 @@ import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.query.ReturnBatteryQuery;
+import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -73,6 +77,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    EleDepositOrderService eleDepositOrderService;
 
 
     /**
@@ -162,6 +170,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
         if (count > 0) {
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+        }
+
+        //是否有正在退款中的退款
+        Integer refundCount=eleRefundOrderService.queryCountByOrderId(userInfo.getOrderId());
+        if(refundCount>0){
+            return R.fail("ELECTRICITY.0051","押金正在退款中，请勿租电池");
         }
 
         //分配电池 --只分配满电电池
