@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -36,6 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -47,6 +49,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
+
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
  *
@@ -114,7 +117,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", rentBatteryQuery.getElectricityCabinetId());
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-       //换电柜是否在线
+        //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
@@ -122,43 +125,42 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //营业时间
-        Boolean result=this.isBusiness(electricityCabinet);
-        if(result){
+        Boolean result = this.isBusiness(electricityCabinet);
+        if (result) {
             return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
 
         //判断用户
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",uid);
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
         //未实名认证
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         //未缴纳押金
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         //已绑定电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
-            // TODO
-            return R.fail("ELECTRICITY.0048", "未绑定电池");
+            log.error("ELECTRICITY  ERROR!  rent battery! userInfo:{} ", userInfo);
+            return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 
         //是否存在未完成的租电池订单
-        Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType,RentBatteryOrder.TYPE_USER_RENT)
-                .in(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT,RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
-        if(count>0){
+        Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RENT)
+                .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+        if (count > 0) {
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
 
@@ -176,7 +178,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
             }
 
-            String orderId = generateOrderId(uid,cellNo);
+            String orderId = generateOrderId(uid, cellNo);
 
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
@@ -197,7 +199,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //发送开门命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
-            dataMap.put("orderId",orderId);
+            dataMap.put("orderId", orderId);
             dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -245,32 +247,32 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //营业时间
-        Boolean result=this.isBusiness(electricityCabinet);
-        if(result){
+        Boolean result = this.isBusiness(electricityCabinet);
+        if (result) {
             return R.fail("ELECTRICITY.0017", "换电柜已打烊");
         }
 
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",uid);
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)||Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ",userInfo);
+        if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY) || Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         //是否存在未完成的租电池订单
-        Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType,RentBatteryOrder.TYPE_USER_RETURN)
-                .in(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT,RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
-        if(count>0){
+        Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RETURN)
+                .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+        if (count > 0) {
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
 
@@ -281,7 +283,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
 
-            String orderId = generateOrderId(uid,cellNo);
+            String orderId = generateOrderId(uid, cellNo);
 
             //生成订单
             RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
@@ -302,7 +304,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //发送开门命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
-            dataMap.put("orderId",orderId);
+            dataMap.put("orderId", orderId);
             dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -329,24 +331,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.isNull(rentOpenDoorQuery.getOrderId()) || Objects.isNull(rentOpenDoorQuery.getOpenType())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, rentOpenDoorQuery.getOrderId()).eq(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT));
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, rentOpenDoorQuery.getOrderId()).eq(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT));
         if (Objects.isNull(rentBatteryOrder)) {
             log.error("ELECTRICITY  ERROR! not found order,orderId{} ", rentOpenDoorQuery.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
-        //租电池开门 TODO
-        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
-            if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RENT)) {
-                return R.fail("ELECTRICITY.0015", "未找到订单");
-            }
+        //租电池开门
+        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE) && !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RENT)) {
+            return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
         //还电池开门
-        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
-            if (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RETURN)) {
-                return R.fail("ELECTRICITY.0015", "未找到订单");
-            }
+        if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE) && !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.TYPE_USER_RETURN)) {
+            return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
         //判断开门用户是否匹配
@@ -366,7 +364,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-       //换电柜是否在线
+        //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
@@ -378,7 +376,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //发送开门命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", rentBatteryOrder.getCellNo());
-            dataMap.put("orderId",rentBatteryOrder.getOrderId());
+            dataMap.put("orderId", rentBatteryOrder.getOrderId());
             dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -396,7 +394,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //发送开门命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", rentBatteryOrder.getCellNo());
-            dataMap.put("orderId",rentBatteryOrder.getOrderId());
+            dataMap.put("orderId", rentBatteryOrder.getOrderId());
             dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -416,7 +414,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         Map<String, String> map = new HashMap<>();
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
         if (Objects.isNull(rentBatteryOrder)) {
-            log.error("ELECTRICITY  ERROR! not found order,orderId{} ",orderId);
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
@@ -439,12 +437,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public R endOrder(String orderId) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId)
-                .in(RentBatteryOrder::getStatus,RentBatteryOrder.STATUS_INIT,RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+                .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
         if (Objects.isNull(rentBatteryOrder)) {
-            log.error("ELECTRICITY  ERROR! not found order,orderId{} ",orderId);
+            log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
-        RentBatteryOrder rentBatteryOrderUpdate=new RentBatteryOrder();
+        RentBatteryOrder rentBatteryOrderUpdate = new RentBatteryOrder();
         rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
         rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL);
         rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -574,8 +572,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return time - ts;
     }
 
-    public String generateOrderId(Long uid,String cellNo) {
-        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +cellNo+
+    public String generateOrderId(Long uid, String cellNo) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + uid + cellNo +
                 RandomUtil.randomNumbers(4);
     }
 }
