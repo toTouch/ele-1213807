@@ -553,9 +553,6 @@ public class EleOperateQueueHandler {
             } else {
                 cellNo = electricityCabinetOrder.getOldCellNo();
             }
-            if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK) || Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)) {
-                status = ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_ERROR;
-            }
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                     .cellNo(cellNo)
                     .createTime(System.currentTimeMillis())
@@ -576,7 +573,7 @@ public class EleOperateQueueHandler {
 
     private boolean checkDoorFailAndSaveOpenDoorFailRecord(ElectricityCabinetOrder electricityCabinetOrder, Integer
             status, Integer type, String msg) {
-        if (!status.equals(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)) {
+        if (!status.equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)) {
             Integer cellNo = null;
             if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR) || Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)) {
                 cellNo = electricityCabinetOrder.getNewCellNo();
@@ -590,7 +587,7 @@ public class EleOperateQueueHandler {
                     .oId(electricityCabinetOrder.getId())
                     .orderId(electricityCabinetOrder.getOrderId())
                     .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
-                    .status(status)
+                    .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_ERROR)
                     .type(type)
                     .uid(electricityCabinetOrder.getUid())
                     .msg(msg)
@@ -616,9 +613,16 @@ public class EleOperateQueueHandler {
                     .uid(rentBatteryOrder.getUid())
                     .msg(msg)
                     .build();
+            //若是租电池则是租电池
             if(Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR)
                     ||Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK)){
                 history.setOrderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT);
+            }
+
+            //若是检查电池，则是检查电池失败
+            if(Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RETURN_BATTERY_CHECK)
+                    ||Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK)){
+                history.setStatus(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_ERROR);
             }
             electricityCabinetOrderOperHistoryService.insert(history);
             return true;
