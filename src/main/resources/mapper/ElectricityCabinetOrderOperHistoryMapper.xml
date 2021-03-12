@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper">
 
 
-    <select id="queryList" resultType="map">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderOperHistoryVO">
         select
         tecooh.id as id,tecooh.o_id as oId ,tecooh.order_id as orderId, tecooh.order_type as orderType,
         tecooh.electricity_cabinet_id as electricityCabinetId, tecooh.cell_no as cellNo, tecooh.status
