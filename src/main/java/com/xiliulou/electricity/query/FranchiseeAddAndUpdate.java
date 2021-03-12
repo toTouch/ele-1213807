@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 /**
  * 门店表(TStore)实体类
@@ -30,6 +31,11 @@ public class FranchiseeAddAndUpdate {
     */
     @NotNull(message = "城市编号不能为空!", groups = {CreateGroup.class})
     private Integer cid;
+    /**
+     * 租电池押金
+     */
+    @NotNull(message = "租电池押金不能为空!", groups = {CreateGroup.class})
+    private BigDecimal batteryDeposit;
     /**
     * 0--正常 1--删除
     */

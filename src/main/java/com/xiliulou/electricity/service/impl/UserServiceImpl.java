@@ -26,6 +26,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetBindService;
 import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -90,6 +91,9 @@ public class UserServiceImpl implements UserService {
 
 	@Value("${security.encode.key:xiliu&lo@u%12345}")
 	private String encodeKey;
+
+	@Autowired
+	UserOauthBindService userOauthBindService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -350,15 +354,13 @@ public class UserServiceImpl implements UserService {
 		if (Objects.isNull(user)) {
 			return Pair.of(false, "uid:" + uid + "用户不存在!");
 		}
+		if(Objects.equals(user.getUserType(),User.TYPE_USER_NORMAL_WX_PRO)){
+			return Pair.of(false, "非法操作");
+		}
 
 		if (deleteById(uid)) {
 			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + uid);
 			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
-		}
-		//删除userInfo
-		UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
-		if (Objects.nonNull(oldUserInfo)) {
-			userInfoService.deleteUserInfo(oldUserInfo);
 		}
 		return Pair.of(true, null);
 	}

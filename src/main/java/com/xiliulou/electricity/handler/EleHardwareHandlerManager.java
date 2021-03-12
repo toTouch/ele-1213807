@@ -50,6 +50,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
 				||hardwareCommandQuery.getCommand().contains("cupboard")
+				||hardwareCommandQuery.getCommand().contains("rent")
+				||hardwareCommandQuery.getCommand().contains("return")
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.EXCHANGE_CABINET)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OPERATE)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CELL_CONFIG)
@@ -95,7 +97,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
 			return false;
 		}
-		if (receiverMessage.getType().contains("order")) {
+		if (receiverMessage.getType().contains("order")||receiverMessage.getType().contains("rent")||receiverMessage.getType().contains("return")) {
 			return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
 		} else if (receiverMessage.getType().contains("operate")) {
 			return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);

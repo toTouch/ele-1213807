@@ -3,6 +3,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.query.RentBatteryQuery;
+import com.xiliulou.electricity.query.RentOpenDoorQuery;
+import com.xiliulou.electricity.query.ReturnBatteryQuery;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务接口
@@ -21,6 +24,22 @@ public interface RentBatteryOrderService {
     RentBatteryOrder insert(RentBatteryOrder rentBatteryOrder);
 
 
-
     R queryList(RentBatteryOrderQuery rentBatteryOrderQuery);
+
+
+    R rentBattery(RentBatteryQuery rentBatteryQuery);
+
+    R returnBattery(ReturnBatteryQuery returnBatteryQuery);
+
+    void update(RentBatteryOrder rentBatteryOrder);
+
+    R openDoor(RentOpenDoorQuery rentOpenDoorQuery);
+
+    R queryStatus(String orderId);
+
+    RentBatteryOrder queryByOrderId(String orderId);
+
+    R endOrder(String orderId);
+
+    Integer queryByUidAndType(Long uid, Integer type);
 }

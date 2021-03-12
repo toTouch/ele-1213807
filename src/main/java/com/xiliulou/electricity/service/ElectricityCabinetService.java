@@ -6,6 +6,8 @@ import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 
+import java.util.List;
+
 
 /**
  * 换电柜表(TElectricityCabinet)表服务接口
@@ -49,7 +51,7 @@ public interface ElectricityCabinetService {
 
     R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery);
 
-    Integer queryFullyElectricityBattery(Integer id);
+    List<Integer> queryFullyElectricityBattery(Integer id);
 
     boolean deviceIsOnline(String productKey, String deviceName);
 
@@ -82,4 +84,6 @@ public interface ElectricityCabinetService {
     R listByStoreId(ElectricityCabinetQuery electricityCabinetQuery);
 
     R showInfoByStoreId(Integer storeId);
+
+    R rentBattery(String productKey, String deviceName, String deviceSecret);
 }

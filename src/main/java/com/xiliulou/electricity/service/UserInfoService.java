@@ -84,4 +84,12 @@ public interface UserInfoService extends IService<UserInfo> {
     void plusCount(Long id);
 
     R queryUserInfo();
+
+    R verifyAuth(Long id,Integer authStatus);
+
+    void updateRefund(UserInfo userInfo);
+
+    R updateAuth(UserInfo userInfo);
+
+    List<UserInfo> queryByBatterySn(String sn);
 }

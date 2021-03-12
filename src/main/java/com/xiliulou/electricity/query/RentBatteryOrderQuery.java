@@ -18,11 +18,10 @@ public class RentBatteryOrderQuery {
      */
     private String name;
     private String phone;
-    /**
-     * 门店Id
-     */
-    private Integer batteryStoreId;
+
     private Long beginTime;
     private Long endTime;
     private Integer status;
+    private String orderId;
+    private Integer type;
 }

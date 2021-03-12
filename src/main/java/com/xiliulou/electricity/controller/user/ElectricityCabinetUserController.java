@@ -122,5 +122,16 @@ public class ElectricityCabinetUserController extends BaseController {
 		return returnPairResult(userService.getUserDetail());
 	}
 
+	/**
+	 * 查询换电柜 按三元组
+	 *
+	 * @return
+	 */
+	@GetMapping(value = "/user/electricityCabinet/rentBattery")
+	public R rentBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
+			, @RequestParam("deviceSecret") String deviceSecret) {
+		return electricityCabinetService.rentBattery(productKey, deviceName, deviceSecret);
+	}
+
 
 }

@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service;
-
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
-import java.util.List;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 
 /**
  * 订单的操作历史记录(TElectricityCabinetOrderOperHistory)表服务接口
@@ -21,4 +21,5 @@ public interface ElectricityCabinetOrderOperHistoryService {
     ElectricityCabinetOrderOperHistory insert(ElectricityCabinetOrderOperHistory electricityCabinetOrderOperHistory);
 
 
+    R queryList(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 }

@@ -9,4 +9,7 @@ public interface ElectricityTradeOrderMapper extends BaseMapper<ElectricityTrade
 
     @Select("SELECT *  FROM t_electricity_trade_order WHERE trade_order_no =#{outTradeNo} ")
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(@Param("outTradeNo") String outTradeNo);
+
+    @Select("SELECT *  FROM t_electricity_trade_order WHERE order_no =#{orderId} ")
+    ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
 }

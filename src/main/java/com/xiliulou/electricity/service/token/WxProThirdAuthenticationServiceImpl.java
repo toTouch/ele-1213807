@@ -144,8 +144,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .updateTime(System.currentTimeMillis())
                             .createTime(System.currentTimeMillis())
                             .phone(existPhone.getRight().getPhone())
-                            .name("")
-                            .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                            .userName(existPhone.getRight().getName())
+                            .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
                             .build();
@@ -193,8 +193,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .updateTime(System.currentTimeMillis())
                             .createTime(System.currentTimeMillis())
                             .phone(purePhoneNumber)
-                            .name("")
-                            .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                            .userName(user.getName())
+                            .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
                             .build();
@@ -250,8 +250,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .updateTime(System.currentTimeMillis())
                             .createTime(System.currentTimeMillis())
                             .phone(existPhone.getRight().getPhone())
-                            .name("")
-                            .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                            .userName(existPhone.getRight().getName())
+                            .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
                             .build();
@@ -318,8 +318,8 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .updateTime(System.currentTimeMillis())
                 .createTime(System.currentTimeMillis())
                 .phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
-                .name("")
-                .serviceStatus(UserInfo.NO_SERVICE_STATUS)
+                .userName("")
+                .serviceStatus(UserInfo.STATUS_INIT)
                 .delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS)
                 .build();

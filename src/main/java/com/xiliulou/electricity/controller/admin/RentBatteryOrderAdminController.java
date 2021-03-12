@@ -5,6 +5,8 @@ import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -28,12 +30,13 @@ public class RentBatteryOrderAdminController {
     @GetMapping(value = "/admin/rentBatteryOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "batteryStoreId", required = false) Integer batteryStoreId,
                        @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "orderId", required = false) String orderId) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -47,12 +50,20 @@ public class RentBatteryOrderAdminController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .batteryStoreId(batteryStoreId)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .status(status).build();
+                .status(status)
+                .orderId(orderId)
+                .type(type).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
+    }
+
+
+    //结束异常订单
+    @PostMapping(value = "/admin/rentBatteryOrder/endOrder")
+    public R endOrder(@RequestParam("orderId") String orderId) {
+        return rentBatteryOrderService.endOrder(orderId);
     }
 
 }

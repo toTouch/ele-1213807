@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleUserAuthMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EleUserAuth" id="EleUserAuthMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="entryId" column="entry_id" jdbcType="INTEGER"/>
+        <result property="value" column="value" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="OTHER"/>
+        <result property="delFlag" column="del_flag" jdbcType="OTHER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="EleUserAuthMap">
+        select
+          id, uid, entry_id, value, create_time, status, del_flag, update_time
+        from electricity.t_ele_user_auth
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultMap="EleUserAuthMap">
+        select
+          id, uid, entry_id, value, create_time, status, del_flag, update_time
+        from electricity.t_ele_user_auth
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EleUserAuthMap">
+        select
+          id, uid, entry_id, value, create_time, status, del_flag, update_time
+        from electricity.t_ele_user_auth
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="entryId != null">
+                and entry_id = #{entryId}
+            </if>
+            <if test="value != null and value != ''">
+                and value = #{value}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_ele_user_auth(uid, entry_id, value, create_time, status, del_flag, update_time)
+        values (#{uid}, #{entryId}, #{value}, #{createTime}, #{status}, #{delFlag}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_ele_user_auth
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="entryId != null">
+                entry_id = #{entryId},
+            </if>
+            <if test="value != null and value != ''">
+                value = #{value},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    <update id="updateByUid">
+     update electricity.t_ele_user_auth
+     set status = #{authStatus},update_time = #{updateTime}
+     where uid = #{uid} and del_flag=0
+    </update>
+
+</mapper>

@@ -2,26 +2,18 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RentBatteryOrderMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.RentBatteryOrder" id="RentBatteryOrderMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="name" column="name" jdbcType="VARCHAR"/>
-        <result property="phone" column="phone" jdbcType="VARCHAR"/>
-        <result property="idNumber" column="id_number" jdbcType="VARCHAR"/>
-        <result property="electricityBatterySn" column="electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="batteryDeposit" column="battery_deposit" jdbcType="NUMERIC"/>
-        <result property="status" column="status" jdbcType="OTHER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-    </resultMap>
 
 
     <!--查询指定行数据-->
-    <select id="queryList" resultMap="RentBatteryOrderMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.RentBatteryOrder">
         select
-        id, uid, name, phone, id_number,  electricity_battery_sn, battery_deposit,
-        status, create_time
+        id, order_id,uid,name , phone, electricity_battery_sn, battery_deposit,electricity_cabinet_id,cell_no,type,
+        status, create_time,update_time
         from electricity.t_rent_battery_order
         <where>
+            <if test="query.orderId != null and query.orderId != ''">
+                and order_id = #{query.orderId}
+            </if>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
             </if>
@@ -31,18 +23,17 @@
             <if test="query.status != null">
                 and status = #{query.status}
             </if>
+            <if test="query.type != null">
+                and type = #{query.type}
+            </if>
             <if test="query.beginTime != null">
                 and create_time &gt;=#{query.beginTime}
             </if>
             <if test="query.endTime != null">
                 and create_time &lt;=#{query.endTime}
             </if>
-            <if test="query.status != null">
-                and status = #{query.status}
-            </if>
         </where>
         order by create_time desc
-
     </select>
 
 

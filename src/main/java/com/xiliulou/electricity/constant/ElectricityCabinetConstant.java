@@ -7,8 +7,7 @@ public interface ElectricityCabinetConstant {
     String CACHE_ELECTRICITY_CABINET_DEVICE = "electricity_cabinet_device:";
     //换电柜型号缓存
     String CACHE_ELECTRICITY_CABINET_MODEL = "electricity_cabinet_model:";
-    //电池型号
-    String CACHE_ELECTRICITY_BATTERY_MODEL = "ELECTRICITY_BATTERY_MODEL:";
+
     String ADMIN_OPERATE_LOCK_KEY = "admin_operate_lock_key:";
     String CACHE_PAY_PARAMS = "cache_pay_params";
     //用户缓存
@@ -60,5 +59,23 @@ public interface ElectricityCabinetConstant {
 
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
+
+    //实名认证审核资料锁
+    String ELE_CACHE_AUTH_ENTRY_LOCK_KEY = "ele_cache_auth_entry_lock_key:";
+
+    //实名认证资料项缓存key
+    String ELE_CACHE_AUTH_ENTRY = "ele_cache_auth_entry:";
+
+    //用户实名认证资料锁
+   String ELE_CACHE_USER_AUTH_LOCK_KEY = "ele_cache_user_auth_lock_key:";
+
+    //用户缴纳押金
+    String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
+
+    //用户租电池
+    String ELE_CACHE_USER_RENT_BATTERY_LOCK_KEY = "ele_cache_user_rent_battery_lock_key:";
+
+    //用户还电池
+    String ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY = "ele_cache_user_return_battery_lock_key:";
 
 }

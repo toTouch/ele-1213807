@@ -11,12 +11,16 @@ import java.util.Map;
  */
 public class HardwareCommand {
 
-	//开门命令：
+
 	//业务操作
 	//订单开旧门
 	public static final String ELE_COMMAND_ORDER_OPEN_OLD_DOOR = "order_open_old_door";
 	//订单开新门
 	public static final String ELE_COMMAND_ORDER_OPEN_NEW_DOOR = "order_open_new_door";
+	//租电池开门
+	public static final String ELE_COMMAND_RENT_OPEN_DOOR = "rent_open_door";
+	//还电池开门
+	public static final String ELE_COMMAND_RETURN_OPEN_DOOR = "return_open_door";
 	//物理操作
 	public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
 	public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
@@ -75,6 +79,15 @@ public class HardwareCommand {
 
 	//重新上报电池
 	public static final String ELE_COMMAND_BATTERY_SYNC_INFO = "battery_sync_info";
+
+	//租电池开门通知
+	public static final String ELE_COMMAND_RENT_OPEN_DOOR_RSP = "rent_open_door_rsp";
+	//租电池检测
+	public static final String ELE_COMMAND_RENT_CHECK_BATTERY_RSP = "rent_check_battery_rsp";
+	//还电池开门通知
+	public static final String ELE_COMMAND_RETURN_OPEN_DOOR_RSP = "return_open_door_rsp";
+	//还电池检测
+	public static final String ELE_COMMAND_RETURN_CHECK_BATTERY_RSP = "return_check_battery_rsp";
 
 	//重启app
 	public static final String ELE_COMMAND_CUPBOARD_RESTART = "cupboard_restart";

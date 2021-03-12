@@ -155,15 +155,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 /*.eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS)*/);
     }
 
-    @Override
-    public void updateStatus(ElectricityBattery electricityBattery) {
-        electricitybatterymapper.update(electricityBattery);
-    }
 
     @Override
     public R pageByFranchisee(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
         Page page = PageUtil.getPage(offset, size);
         return R.ok(electricitybatterymapper.pageByFranchisee(page, electricityBatteryQuery, offset, size));
+    }
+
+    @Override
+    public void updateReport(ElectricityBattery electricityBattery) {
+        ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectById(electricityBattery.getId());
+        if (Objects.isNull(electricityBatteryDb)) {
+            log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
+           return;
+        }
+        electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricitybatterymapper.updateById(electricityBattery);
     }
 
 }
