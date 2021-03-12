@@ -28,7 +28,7 @@ public class ElectricityCabinetOrderOperHistoryVO {
     /**
     * 创建时间
     */
-    private String createTime;
+    private Long createTime;
     /**
     * 换电柜id
     */
