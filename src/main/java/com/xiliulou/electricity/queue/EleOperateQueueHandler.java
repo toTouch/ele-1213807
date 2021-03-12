@@ -191,6 +191,8 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
+                .orderId(electricityCabinetOrder.getOrderId())
+                .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
                 .status(status)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_OPEN_DOOR)
                 .uid(electricityCabinetOrder.getUid())
@@ -260,6 +262,8 @@ public class EleOperateQueueHandler {
                     .createTime(System.currentTimeMillis())
                     .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .oId(electricityCabinetOrder.getId())
+                    .orderId(electricityCabinetOrder.getOrderId())
+                    .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
                     .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
                     .type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)
                     .uid(electricityCabinetOrder.getUid())
@@ -317,6 +321,8 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
+                .orderId(electricityCabinetOrder.getOrderId())
+                .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
                 .status(status)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR)
                 .uid(electricityCabinetOrder.getUid())
@@ -367,6 +373,8 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
+                .orderId(electricityCabinetOrder.getOrderId())
+                .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
                 .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)
                 .uid(electricityCabinetOrder.getUid())
@@ -394,10 +402,16 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(rentBatteryOrder.getElectricityCabinetId())
                 .oId(rentBatteryOrder.getId())
+                .orderId(rentBatteryOrder.getOrderId())
+                .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RETURN)
                 .status(status)
                 .type(type)
                 .uid(rentBatteryOrder.getUid())
                 .build();
+        if(Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR)
+                ||Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK)){
+            history.setOrderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT);
+        }
         electricityCabinetOrderOperHistoryService.insert(history);
     }
 
@@ -456,6 +470,8 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(rentBatteryOrder.getElectricityCabinetId())
                 .oId(rentBatteryOrder.getId())
+                .orderId(rentBatteryOrder.getOrderId())
+                .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT)
                 .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
                 .type(type)
                 .uid(rentBatteryOrder.getUid())
@@ -514,6 +530,8 @@ public class EleOperateQueueHandler {
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(rentBatteryOrder.getElectricityCabinetId())
                 .oId(rentBatteryOrder.getId())
+                .orderId(rentBatteryOrder.getOrderId())
+                .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RETURN)
                 .status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
                 .type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)
                 .uid(rentBatteryOrder.getUid())
@@ -540,6 +558,8 @@ public class EleOperateQueueHandler {
                     .createTime(System.currentTimeMillis())
                     .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .oId(electricityCabinetOrder.getId())
+                    .orderId(electricityCabinetOrder.getOrderId())
+                    .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
                     .status(status)
                     .type(type)
                     .uid(electricityCabinetOrder.getUid())
@@ -565,6 +585,8 @@ public class EleOperateQueueHandler {
                     .createTime(System.currentTimeMillis())
                     .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                     .oId(electricityCabinetOrder.getId())
+                    .orderId(electricityCabinetOrder.getOrderId())
+                    .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_ELE)
                     .status(status)
                     .type(type)
                     .uid(electricityCabinetOrder.getUid())
@@ -585,10 +607,16 @@ public class EleOperateQueueHandler {
                     .electricityCabinetId(rentBatteryOrder.getElectricityCabinetId())
                     .oId(rentBatteryOrder.getId())
                     .status(status)
+                    .orderId(rentBatteryOrder.getOrderId())
+                    .orderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RETURN)
                     .type(type)
                     .uid(rentBatteryOrder.getUid())
                     .msg(msg)
                     .build();
+            if(Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR)
+                    ||Objects.equals(type,ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK)){
+                history.setOrderType(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT);
+            }
             electricityCabinetOrderOperHistoryService.insert(history);
             return true;
         }
