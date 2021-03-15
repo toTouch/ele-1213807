@@ -779,7 +779,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R queryByDevice(String productKey, String deviceName, String deviceSecret) {
+    public R queryByDevice(String productKey, String deviceName) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
