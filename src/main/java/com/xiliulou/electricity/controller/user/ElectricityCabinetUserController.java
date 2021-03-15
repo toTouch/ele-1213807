@@ -74,7 +74,7 @@ public class ElectricityCabinetUserController extends BaseController {
 	 */
 	@GetMapping(value = "/user/electricityCabinet")
 	public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
-			, @RequestParam("deviceSecret") String deviceSecret) {
+			, @RequestParam(value = "deviceSecret", required = false) String deviceSecret) {
 		return electricityCabinetService.queryByDevice(productKey, deviceName, deviceSecret);
 	}
 
