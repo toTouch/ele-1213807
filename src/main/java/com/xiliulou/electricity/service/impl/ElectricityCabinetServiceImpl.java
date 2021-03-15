@@ -997,7 +997,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R queryByDeviceOuter(String productKey, String deviceName, String deviceSecret) {
+    public R queryByDeviceOuter(String productKey, String deviceName) {
         ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -1262,7 +1262,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R rentBattery(String productKey, String deviceName, String deviceSecret) {
+    public R rentBattery(String productKey, String deviceName) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
