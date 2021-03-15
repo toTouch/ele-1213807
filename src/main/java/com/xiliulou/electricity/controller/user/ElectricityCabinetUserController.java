@@ -73,9 +73,8 @@ public class ElectricityCabinetUserController extends BaseController {
 	 * @return
 	 */
 	@GetMapping(value = "/user/electricityCabinet")
-	public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
-			, @RequestParam("deviceSecret") String deviceSecret) {
-		return electricityCabinetService.queryByDevice(productKey, deviceName, deviceSecret);
+	public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return electricityCabinetService.queryByDevice(productKey, deviceName);
 	}
 
 	/**
@@ -128,9 +127,8 @@ public class ElectricityCabinetUserController extends BaseController {
 	 * @return
 	 */
 	@GetMapping(value = "/user/electricityCabinet/rentBattery")
-	public R rentBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
-			, @RequestParam("deviceSecret") String deviceSecret) {
-		return electricityCabinetService.rentBattery(productKey, deviceName, deviceSecret);
+	public R rentBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return electricityCabinetService.rentBattery(productKey, deviceName);
 	}
 
 
