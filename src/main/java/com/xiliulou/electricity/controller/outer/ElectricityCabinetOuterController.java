@@ -117,9 +117,8 @@ public class ElectricityCabinetOuterController {
      * @return
      */
     @GetMapping(value = "/outer/electricityCabinet")
-    public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName
-            , @RequestParam("deviceSecret") String deviceSecret) {
-        return electricityCabinetService.queryByDeviceOuter(productKey, deviceName, deviceSecret);
+    public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+        return electricityCabinetService.queryByDeviceOuter(productKey, deviceName);
     }
 
 

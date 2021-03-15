@@ -69,7 +69,7 @@ public interface ElectricityCabinetService {
 
     R home();
 
-    R queryByDevice(String productKey, String deviceName,String deviceSecret);
+    R queryByDevice(String productKey, String deviceName);
 
     ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName);
 
@@ -77,7 +77,7 @@ public interface ElectricityCabinetService {
 
     R sendCommandToEleForOuter(EleOuterCommandQuery eleOuterCommandQuery);
 
-    R queryByDeviceOuter(String productKey, String deviceName, String deviceSecret);
+    R queryByDeviceOuter(String productKey, String deviceName);
 
     R listByUid(ElectricityCabinetQuery electricityCabinetQuery);
 
@@ -85,5 +85,5 @@ public interface ElectricityCabinetService {
 
     R showInfoByStoreId(Integer storeId);
 
-    R rentBattery(String productKey, String deviceName, String deviceSecret);
+    R rentBattery(String productKey, String deviceName);
 }
