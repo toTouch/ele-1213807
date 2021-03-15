@@ -27,6 +27,10 @@ public class ElectricityPayParams extends Model<ElectricityPayParams> {
     private String mchId;
     @NotEmpty(message = "paternerKey不能为空!")
     private String paternerKey;
+    /**
+     * api证书名称
+     */
+    private String apiName;
 
     private Long createTime;
     private Long updateTime;

@@ -2,16 +2,41 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory" id="ElectricityCabinetOrderOperHistoryMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="oId" column="o_id" jdbcType="INTEGER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
-        <result property="cellNo" column="cell_no" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="type" column="type" jdbcType="INTEGER"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="msg" column="msg" jdbcType="VARCHAR"/>
-    </resultMap>
 
+    <select id="queryList" resultType="map">
+        select
+        tecooh.id as id,tecooh.o_id as oId ,tecooh.order_id as orderId, tecooh.order_type as orderType,
+        tecooh.electricity_cabinet_id as electricityCabinetId, tecooh.cell_no as cellNo, tecooh.status
+        as status, tecooh.uid as uid, tecooh.type as type, tecooh.msg as msg, tecooh.create_time as createTime,
+        tec.name as electricityCabinetName
+        from electricity.t_electricity_cabinet_order_oper_history as tecooh
+        left join electricity.t_electricity_cabinet as tec on tec.id=tecooh.electricity_cabinet_id
+        <where>
+            <if test="query.orderId != null and query.orderId != ''">
+                and tecooh.order_id = #{query.orderId}
+            </if>
+            <if test="query.status != null">
+                and tecooh.status = #{query.status}
+            </if>
+            <if test="query.beginTime != null">
+                and tecooh.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and tecooh.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.type != null">
+                and tecooh.type = #{query.type}
+            </if>
+            <if test="query.orderType != null">
+                and tecooh.order_type = #{query.orderType}
+            </if>
+            <if test="query.cellNo != null">
+                and tecooh.cell_no = #{query.cellNo}
+            </if>
+            <if test="query.electricityCabinetId != null">
+                and tecooh.electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+        </where>
+        order by tecooh.create_time desc
+    </select>
 </mapper>

@@ -26,6 +26,14 @@ public class ElectricityCabinetOrderOperHistory {
     */
     private Long oId;
     /**
+     * 订单编号--时间戳+柜子id+仓门号+用户id+5位随机数,20190203 21 155 1232)
+     */
+    private String orderId;
+    /**
+     *订单的类型 1--换电 2--租电 3--还电
+     */
+    private Integer orderType;
+    /**
     * 创建时间
     */
     private Long createTime;
@@ -62,9 +70,9 @@ public class ElectricityCabinetOrderOperHistory {
     //开门订单不匹配
     public static final Integer STATUS_EXISTS_ORDER_ILLEGAL = 4;
     //电池检测失败
-    public static final Integer STATUS_BATTERY_CHECK_ERROR = 1;
+    public static final Integer STATUS_BATTERY_CHECK_ERROR = 5;
     //电池检测成功
-    public static final Integer STATUS_BATTERY_CHECK_SUCCESS = 2;
+    public static final Integer STATUS_BATTERY_CHECK_SUCCESS = 6;
 
 
     //旧电池开门
@@ -75,6 +83,22 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer TYPE_NEW_BATTERY_OPEN_DOOR = 3;
     //新电池检测
     public static final Integer TYPE_NEW_BATTERY_CHECK = 4;
+    //租电池开门
+    public static final Integer TYPE_RENT_BATTERY_OPEN_DOOR = 5;
+    //租电池检测
+    public static final Integer TYPE_RENT_BATTERY_CHECK = 6;
+    //还电池开门
+    public static final Integer TYPE_RETURN_BATTERY_OPEN_DOOR = 7;
+    //还电池检测
+    public static final Integer TYPE_RETURN_BATTERY_CHECK = 8;
+
+
+    //换电
+    public static final Integer ORDER_TYPE_ELE = 1;
+    //租电
+    public static final Integer  ORDER_TYPE_RENT = 2;
+    //还电
+    public static final Integer  ORDER_TYPE_RETURN = 3;
 
 
 }

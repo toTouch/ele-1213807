@@ -32,13 +32,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     IPage queryList(Page page, @Param("query") UserInfoQuery userInfoQuery);
 
 
-    /**
-     * 修改数据
-     *
-     * @param userInfo 实例对象
-     * @return 影响行数
-     */
-    int update(UserInfo userInfo);
 
     /**
      * 解除绑定
@@ -61,4 +54,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     void updateByUid(UserInfo userInfo);
 
     void plusCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
+
+    void updateRefund(UserInfo userInfo);
 }

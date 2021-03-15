@@ -37,4 +37,6 @@ public interface FranchiseeService {
     R getStoreList(Integer id);
 
     List<Franchisee> queryByUid(Long uid);
+
+    Franchisee queryByCid(Integer cid);
 }

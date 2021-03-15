@@ -34,14 +34,14 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
-        teco.id as id, teco.order_id as order_id, teco.phone as phone, teco.uid as uid, teco.pay_amount as pay_amount,
-        teco.electricity_cabinet_id as electricity_cabinet_id, teco.old_electricity_battery_sn as
-        old_electricity_battery_sn,
-        teco.new_electricity_battery_sn as new_electricity_battery_sn, teco.old_cell_no as old_cell_no, teco.new_cell_no
-        as new_cell_no, teco.status as status, teco.payment_method as payment_method, teco.source as source, teco.remark
+        teco.id as id, teco.order_id as orderId, teco.phone as phone, teco.uid as uid, teco.pay_amount as payAmount,
+        teco.electricity_cabinet_id as electricityCabinetId, teco.old_electricity_battery_sn as
+        oldElectricityBatterySn,
+        teco.new_electricity_battery_sn as newElectricityBatterySn, teco.old_cell_no as oldCellNo, teco.new_cell_no
+        as newCellNo, teco.status as status, teco.payment_method as paymentMethod, teco.source as source, teco.remark
         as remark,
-        teco.switch_begin_time as switch_begin_time, teco.switch_end_time as switch_end_time, teco.create_time
-        as create_time, teco.update_time as update_time
+        teco.switch_begin_time as switchBeginTime, teco.switch_end_time as switchEndTime, teco.create_time
+        as createTime, teco.update_time as updateTime
         from electricity.t_electricity_cabinet_order as teco
         <where>
             <if test="query.orderId != null and query.orderId != ''">

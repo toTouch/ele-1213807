@@ -26,7 +26,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBatteryVo selectBatteryInfo(@Param("uid") Long uid);
 
-    void update(ElectricityBattery electricityBattery);
 
     IPage pageByFranchisee(Page page, @Param("query") ElectricityBatteryQuery electricityBatteryQuery,
                            @Param("offset") Long offset, @Param("size") Long size);

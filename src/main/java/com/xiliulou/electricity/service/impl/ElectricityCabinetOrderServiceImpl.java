@@ -170,16 +170,30 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
         //用户是否可用
-        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
-        //判断是否开通服务
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.NO_SERVICE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return R.fail("ELECTRICITY.0021", "未开通服务");
+        //未实名认证
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+        //未缴纳押金
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+        //未租电池
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         //判断是否电池
@@ -327,7 +341,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
-        //TODO 换电柜是否在线
+        //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
@@ -360,6 +374,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("order_id", electricityCabinetOrder.getOrderId());
             dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
             dataMap.put("status", electricityCabinetOrder.getStatus().toString());
+            dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
@@ -369,6 +384,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
+        redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId());
         return R.ok();
     }
 
@@ -449,7 +465,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         if (StrUtil.isNotEmpty(s)) {
             queryStatus = 1;
-            redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         }
         Long now = (System.currentTimeMillis() - electricityCabinetOrder.getCreateTime()) / 1000;
         Long time = 300 - now;

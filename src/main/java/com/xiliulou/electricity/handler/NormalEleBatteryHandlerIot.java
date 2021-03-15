@@ -67,9 +67,20 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
             return false;
         }
+        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(),cellNo);
+        ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+        //若上报时间小于上次上报时间则忽略此条上报
+        Long reportTime = eleBatteryVo.getReportTime();
+        if (Objects.nonNull(reportTime)&&Objects.nonNull(oldElectricityCabinetBox.getReportTime())
+                &&oldElectricityCabinetBox.getReportTime()>=reportTime) {
+            return false;
+        }
+        if (Objects.nonNull(reportTime)) {
+           electricityCabinetBox.setReportTime(reportTime);
+        }
+
         String batteryName = eleBatteryVo.getBatteryName();
         if (StringUtils.isEmpty(batteryName)) {
-            ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
             electricityCabinetBox.setElectricityBatteryId(-1L);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetBox.setCellNo(cellNo);
@@ -82,11 +93,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
             return false;
         }
+
         //修改电池
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         Double power = eleBatteryVo.getPower();
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power * 100);
@@ -99,9 +110,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (StringUtils.isNotEmpty(chargeStatus)) {
             newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
         }
-        electricityBatteryService.update(newElectricityBattery);
+        electricityBatteryService.updateReport(newElectricityBattery);
+
+
         //修改仓门
-        ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityBatteryId(newElectricityBattery.getId());
         electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetBox.setCellNo(cellNo);
@@ -124,4 +136,6 @@ class EleBatteryVo {
     private String chargeStatus;
     //cellNo
     private String cellNo;
+    //reportTime
+    private Long reportTime;
 }

@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
-
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -8,7 +8,6 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.Objects;
 
 /**
@@ -39,15 +38,6 @@ public class UserInfoAdminController {
     }
 
 
-    //修改用户绑定电池
-    @PutMapping(value = "/admin/userInfo/updateBattery")
-    public R updateBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
-        R result = userInfoService.unBindBattery(userInfoBatteryAddAndUpdate.getId());
-        if (result.getCode() == 0) {
-            return userInfoService.bindBattery(userInfoBatteryAddAndUpdate);
-        }
-        return result;
-    }
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -57,7 +47,8 @@ public class UserInfoAdminController {
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
+                       @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
+                       @RequestParam(value = "authStatus", required = false) Integer authStatus) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -73,7 +64,8 @@ public class UserInfoAdminController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .serviceStatus(serviceStatus).build();
+                .serviceStatus(serviceStatus)
+                .authStatus(authStatus).build();
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -89,6 +81,18 @@ public class UserInfoAdminController {
     @PostMapping(value = "/admin/userInfo/reboot/{id}")
     public R reboot(@PathVariable("id") Long id) {
         return userInfoService.reboot(id);
+    }
+
+    //后台审核实名认证
+    @PostMapping(value = "/admin/userInfo/verifyAuth")
+    public R verifyAuth(@RequestParam("id") Long id,@RequestParam("authStatus") Integer authStatus) {
+        return userInfoService.verifyAuth(id,authStatus);
+    }
+
+    //编辑实名认证
+    @PutMapping(value = "/admin/userInfo")
+    public R updateAuth(@RequestBody UserInfo userInfo) {
+        return userInfoService.updateAuth(userInfo);
     }
 
 }
