@@ -399,7 +399,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            return R.ok(rentBatteryOrder.getOrderId());
         }
 
         //还电池开门
@@ -417,9 +416,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            return R.ok(rentBatteryOrder.getOrderId());
+
         }
-        return R.ok();
+        redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId());
+        return R.ok(rentBatteryOrder.getOrderId());
     }
 
     @Override
@@ -435,7 +435,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         if (StrUtil.isNotEmpty(s)) {
             queryStatus = 1;
-            redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
         }
         map.put("status", rentBatteryOrder.getStatus().toString());
         map.put("queryStatus", queryStatus.toString());
