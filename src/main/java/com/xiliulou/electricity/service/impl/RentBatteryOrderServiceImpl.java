@@ -397,7 +397,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
+                    .command(HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
 
