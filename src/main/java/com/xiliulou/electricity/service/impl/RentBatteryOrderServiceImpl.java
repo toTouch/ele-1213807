@@ -439,6 +439,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
         map.put("status", rentBatteryOrder.getStatus().toString());
         map.put("queryStatus", queryStatus.toString());
+        log.info("map is -->{}",map);
         return R.ok(map);
     }
 
