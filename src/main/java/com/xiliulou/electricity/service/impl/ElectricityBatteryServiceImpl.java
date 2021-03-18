@@ -43,6 +43,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R saveElectricityBattery(ElectricityBattery electricityBattery) {
+        Integer count=electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn,electricityBattery.getSn())
+                .eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
+        if(count>0){
+            return R.fail("电池编号已绑定其他电池!");
+        }
         electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -61,6 +66,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (Objects.isNull(electricityBatteryDb)) {
             log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
             return R.fail("电池不存在!");
+        }
+        Integer count=electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn,electricityBattery.getSn())
+                .eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL).ne(ElectricityBattery::getId,electricityBattery.getId()));
+        if(count>0){
+            return R.fail("电池编号已绑定其他电池!");
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         Integer rows = electricitybatterymapper.updateById(electricityBattery);
