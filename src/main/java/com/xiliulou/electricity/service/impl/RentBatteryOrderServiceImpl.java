@@ -157,6 +157,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
+
+        //判断用户是否开通月卡
+        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        Long now = System.currentTimeMillis();
+        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
+        }
+
         //已绑定电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR!  rent battery! userInfo:{} ", userInfo);
