@@ -834,17 +834,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
+        //用户状态异常
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+        }
+
         //判断是否电池
         if (Objects.isNull(userInfo.getNowElectricityBatterySn())) {
             log.error("ELECTRICITY  ERROR! not found userInfo ");
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        //用户状态异常
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-        }
 
         //判断用户是否开通月卡
         if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
