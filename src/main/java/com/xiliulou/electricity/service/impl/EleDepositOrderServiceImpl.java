@@ -21,6 +21,7 @@ import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -214,6 +215,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (count > 0) {
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
+
 
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userInfo.getOrderId()));
         if(Objects.isNull(eleDepositOrder)){
