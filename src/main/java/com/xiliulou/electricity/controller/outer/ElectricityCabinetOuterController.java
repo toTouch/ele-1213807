@@ -50,6 +50,11 @@ public class ElectricityCabinetOuterController {
     @Value("${ele.apk.url:https://ele.xiliulou.com/apk}")
     String apkUrl;
 
+    @Value("${ele.qijiapk.version:1.1.1}")
+    String qijiApkVersion;
+    @Value("${ele.qijiapk.url:https://ele.xiliulou.com/apk}")
+    String qijiUrl;
+
     /**
      * app检查版本
      *
@@ -60,6 +65,19 @@ public class ElectricityCabinetOuterController {
         Map<String, Object> result = Maps.newHashMap();
         result.put("version", apkVersion);
         result.put("dir", apkUrl);
+        return R.ok(result);
+    }
+
+    /**
+     * app检查版本
+     *
+     * @return
+     */
+    @GetMapping(value = "/outer/defaultVersion/qiji")
+    public R getLastedAppVersionForqiji() {
+        Map<String, Object> result = Maps.newHashMap();
+        result.put("version", qijiApkVersion);
+        result.put("dir", qijiUrl);
         return R.ok(result);
     }
 
