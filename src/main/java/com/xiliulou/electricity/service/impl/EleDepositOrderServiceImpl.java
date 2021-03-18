@@ -198,11 +198,18 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
+        //用户状态异常
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+        }
+
         //判断是否退电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
+
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.isNull(userInfo.getBatteryDeposit())||Objects.isNull(userInfo.getOrderId())) {
