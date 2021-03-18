@@ -120,7 +120,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
         //已绑定电池
-        if (Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)||Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
+        if (Objects.nonNull(oldUserInfo.getNowElectricityBatterySn())) {
             log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",oldUserInfo);
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
