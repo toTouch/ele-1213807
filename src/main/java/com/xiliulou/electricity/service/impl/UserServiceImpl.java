@@ -335,7 +335,7 @@ public class UserServiceImpl implements UserService {
 				.lockFlag(adminUserQuery.getLock())
 				.build();
 
-		if(Objects.nonNull(adminUserQuery.getCityId())&&Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_NORMAL_WX_PRO)) {
+		if(Objects.nonNull(adminUserQuery.getCityId())) {
 			//城市
 			City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
 			if (Objects.nonNull(city)) {
