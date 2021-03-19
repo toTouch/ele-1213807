@@ -828,6 +828,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
 
+        //判断用户是否开通月卡
+        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        Long now = System.currentTimeMillis();
+        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
+        }
+
+
         //未租电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
             log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
@@ -846,17 +858,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-
-        //判断用户是否开通月卡
-        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
-            log.error("ELECTRICITY  ERROR! not found memberCard ");
-            return R.fail("ELECTRICITY.0022", "未开通月卡");
-        }
-        Long now = System.currentTimeMillis();
-        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
-            log.error("ELECTRICITY  ERROR! not found memberCard ");
-            return R.fail("ELECTRICITY.0023", "月卡已过期");
-        }
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
