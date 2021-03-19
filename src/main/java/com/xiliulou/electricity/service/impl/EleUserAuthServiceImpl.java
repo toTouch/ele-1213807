@@ -241,7 +241,8 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         Integer serviceStatus=userInfo.getServiceStatus();
-        if(ObjectUtil.equal(userInfo.getServiceStatus(),UserInfo.STATUS_IS_BATTERY)){
+
+        if(ObjectUtil.equal(userInfo.getServiceStatus(),UserInfo.STATUS_IS_DEPOSIT)){
             //判断用户是否开通月卡
             if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
                 log.error("ELECTRICITY  ERROR! not found memberCard ");
