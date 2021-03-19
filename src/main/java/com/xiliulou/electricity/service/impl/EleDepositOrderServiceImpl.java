@@ -119,7 +119,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
         if (Objects.isNull(franchisee)) {
             log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ", user.getCid());
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            //麒迹 未找到加盟商默认郑州，郑州也找不到再提示找不到 其余客服需要换  TODO
+           franchisee=franchiseeService.queryByCid(147);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
         }
         BigDecimal payAmount = franchisee.getBatteryDeposit();
         String orderId = generateOrderId(uid);
@@ -323,7 +327,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Franchisee franchisee=franchiseeService.queryByCid(user.getCid());
         if (Objects.isNull(franchisee)) {
             log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ",user.getCid());
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            //麒迹 未找到加盟商默认郑州，郑州也找不到再提示找不到 其余客服需要换  TODO
+            franchisee=franchiseeService.queryByCid(147);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
         }
         map.put("deposit",franchisee.getBatteryDeposit().toString());
         map.put("time",null);
