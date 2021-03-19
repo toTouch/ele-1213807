@@ -68,7 +68,7 @@ public class ElectricityBattery {
      */
     private Integer healthStatus;
     /**
-     * 0--空闲 1--正在开机 2--充电中 3--充满电 4--限额充电 -1 不在仓
+     * 0--空闲 1--正在开机 2--充电中 3--充满电 4--限额充电 -1 未充电
      */
     private Integer chargeStatus;
 
