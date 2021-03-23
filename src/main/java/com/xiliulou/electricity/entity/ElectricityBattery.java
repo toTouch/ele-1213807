@@ -78,5 +78,7 @@ public class ElectricityBattery {
     public static final Integer STOCK_STATUS = 1;
     //租借
     public static final Integer LEASE_STATUS = 2;
+    //异常取走
+    public static final Integer EXCEPTION_STATUS = 3;
 
 }
