@@ -88,7 +88,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
             //原来仓门是否有电池
             if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)
-                    && Objects.isNull(oldElectricityCabinetBox.getElectricityBatteryId())) {
+                    && Objects.nonNull(oldElectricityCabinetBox.getElectricityBatteryId())) {
                 //修改电池
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityCabinetBox.getElectricityBatteryId());
