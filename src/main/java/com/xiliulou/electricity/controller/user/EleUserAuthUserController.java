@@ -8,7 +8,6 @@ import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.utils.TencentCloudAPITC3Utils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -136,17 +135,6 @@ public class EleUserAuthUserController {
         }
 
         return eleUserAuthService.getEleUserServiceStatus(uid);
-    }
-
-    //测试活体检测
-    @PostMapping("/user/test")
-    public R test(@RequestParam("name") String name,@RequestParam("idCard") String idCard,@RequestParam("file") MultipartFile file) {
-        try {
-            return R.ok(TencentCloudAPITC3Utils.liveDetection(name,idCard,file));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return R.fail(null);
     }
 
 }
