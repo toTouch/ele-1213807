@@ -320,7 +320,7 @@ public class EleOperateQueueHandler {
 
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                .cellNo(electricityCabinetOrder.getOldCellNo())
+                .cellNo(electricityCabinetOrder.getNewCellNo())
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
@@ -372,7 +372,7 @@ public class EleOperateQueueHandler {
 
         //加入操作记录表
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                .cellNo(electricityCabinetOrder.getOldCellNo())
+                .cellNo(electricityCabinetOrder.getNewCellNo())
                 .createTime(System.currentTimeMillis())
                 .electricityCabinetId(electricityCabinetOrder.getElectricityCabinetId())
                 .oId(electricityCabinetOrder.getId())
