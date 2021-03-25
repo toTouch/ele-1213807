@@ -30,7 +30,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
 @EnablePay
-@EnableXllXxlJob
+//@EnableXllXxlJob
 @EnableSms
 public class ElectricityCabinetApplication {
     public static void main(String[] args) {
