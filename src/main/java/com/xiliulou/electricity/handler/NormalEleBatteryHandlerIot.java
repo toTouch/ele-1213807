@@ -67,16 +67,16 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
             return false;
         }
-        ElectricityCabinetBox oldElectricityCabinetBox=electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(),cellNo);
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         //若上报时间小于上次上报时间则忽略此条上报
         Long reportTime = eleBatteryVo.getReportTime();
-        if (Objects.nonNull(reportTime)&&Objects.nonNull(oldElectricityCabinetBox.getReportTime())
-                &&oldElectricityCabinetBox.getReportTime()>=reportTime) {
+        if (Objects.nonNull(reportTime) && Objects.nonNull(oldElectricityCabinetBox.getReportTime())
+                && oldElectricityCabinetBox.getReportTime() >= reportTime) {
             return false;
         }
         if (Objects.nonNull(reportTime)) {
-           electricityCabinetBox.setReportTime(reportTime);
+            electricityCabinetBox.setReportTime(reportTime);
         }
 
         String batteryName = eleBatteryVo.getBatteryName();
@@ -86,6 +86,15 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             electricityCabinetBox.setCellNo(cellNo);
             electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+            //原来仓门是否有电池
+            if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)
+                    && Objects.nonNull(oldElectricityCabinetBox.getElectricityBatteryId())) {
+                //修改电池
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(oldElectricityCabinetBox.getElectricityBatteryId());
+                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+                electricityBatteryService.updateReport(newElectricityBattery);
+            }
             return false;
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);

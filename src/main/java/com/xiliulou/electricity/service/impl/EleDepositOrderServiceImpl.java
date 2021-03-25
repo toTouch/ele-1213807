@@ -119,7 +119,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
         if (Objects.isNull(franchisee)) {
             log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ", user.getCid());
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            //麒迹 未找到加盟商默认郑州，郑州也找不到再提示找不到 其余客服需要换  TODO
+           franchisee=franchiseeService.queryByCid(147);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
         }
         BigDecimal payAmount = franchisee.getBatteryDeposit();
         String orderId = generateOrderId(uid);
@@ -203,6 +207,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0046", "未退还电池");
         }
+
+
+        //用户状态异常
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+        }
+
 
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.isNull(userInfo.getBatteryDeposit())||Objects.isNull(userInfo.getOrderId())) {
@@ -315,7 +327,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Franchisee franchisee=franchiseeService.queryByCid(user.getCid());
         if (Objects.isNull(franchisee)) {
             log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ",user.getCid());
-            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            //麒迹 未找到加盟商默认郑州，郑州也找不到再提示找不到 其余客服需要换  TODO
+            franchisee=franchiseeService.queryByCid(147);
+            if (Objects.isNull(franchisee)) {
+                return R.fail("ELECTRICITY.0038", "未找到加盟商");
+            }
         }
         map.put("deposit",franchisee.getBatteryDeposit().toString());
         map.put("time",null);

@@ -67,7 +67,7 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer STATUS_OPEN_DOOR_SUCCESS = 2;
     //开门失败
     public static final Integer STATUS_OPEN_DOOR_FAIL = 3;
-    //开门订单不匹配
+    //取走电池被打断
     public static final Integer STATUS_EXISTS_ORDER_ILLEGAL = 4;
     //电池检测失败
     public static final Integer STATUS_BATTERY_CHECK_ERROR = 5;
