@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -19,12 +20,16 @@ import java.math.BigDecimal;
 public class ElectricityMemberCard {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+    /**
+     * 套餐名称
+     */
+    @NotEmpty(message = "套餐名称不能为空!")
+    private String name;
     //类型
     @NotNull(message = "套餐类型不能为空!")
     private Integer type;
     //原价
     @NotNull(message = "套餐原价不能为空!")
-
     private BigDecimal price;
     //优惠价
     @NotNull(message = "套餐活动价格不能为空!")
