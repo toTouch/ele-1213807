@@ -22,5 +22,6 @@ public class OwnMemberCardInfoVo {
 
     private Long days;
     private Integer type;
+    private String name;
 
 }

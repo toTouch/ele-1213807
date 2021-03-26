@@ -114,6 +114,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUid(uid);
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
+        electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getUserName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
@@ -126,6 +127,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
             userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+            userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
             userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateById(userInfoUpdate);

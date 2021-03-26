@@ -334,6 +334,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setMemberCardExpireTime(userInfo.getMemberCardExpireTime());
         ownMemberCardInfoVo.setRemainingNumber(userInfo.getRemainingNumber());
         ownMemberCardInfoVo.setType(userInfo.getCardType());
+        ownMemberCardInfoVo.setName(userInfo.getCardName());
         ownMemberCardInfoVo.setDays((long) Math.round((userInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         return R.ok(ownMemberCardInfoVo);
     }

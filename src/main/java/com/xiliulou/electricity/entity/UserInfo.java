@@ -66,6 +66,10 @@ public class UserInfo {
      */
     private Integer cardType;
     /**
+     * 套餐名称
+     */
+    private String cardName;
+    /**
      * 初始电池编号
      */
     private String initElectricityBatterySn;

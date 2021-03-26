@@ -146,6 +146,7 @@ public class ElectricityTradeOrderServiceImpl extends
         userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
         userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+        userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
         userInfoUpdate.setUpdateTime(System.currentTimeMillis());
         log.info("NOTIFY info USERINFO:{}", userInfoUpdate);
         userInfoService.updateById(userInfoUpdate);
