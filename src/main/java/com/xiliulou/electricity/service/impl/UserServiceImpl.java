@@ -512,7 +512,7 @@ public class UserServiceImpl implements UserService {
 	public R endLimitUser(Long uid) {
 		String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID+uid);
 		if (Objects.isNull(orderLimit)) {
-			return R.fail("ELECTRICITY.0054", "用户未被限制");
+			return R.fail("ELECTRICITY.0062", "用户未被限制");
 		}
 		redisService.deleteKeys(ElectricityCabinetConstant.ORDER_TIME_UID +uid);
 		return R.ok();

@@ -27,7 +27,6 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -134,7 +133,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
         if (Objects.nonNull(isLock)) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
-            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
 
         //营业时间
@@ -281,7 +280,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
         if (Objects.nonNull(isLock)) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
-            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
 
         //营业时间

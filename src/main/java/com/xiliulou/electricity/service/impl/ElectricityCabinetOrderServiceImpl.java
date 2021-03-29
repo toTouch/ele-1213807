@@ -137,7 +137,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //用户成功换电后才会添加缓存，用户换电周期限制
         String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + user.getUid());
         if (Objects.nonNull(orderLimit)) {
-            return R.fail("ELECTRICITY.0053", "下单过于频繁");
+            return R.fail("ELECTRICITY.0061", "下单过于频繁");
         }
 
         //判断用户是否有未完成订单
@@ -163,7 +163,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
         if (Objects.nonNull(isLock)) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
-            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
 
         //营业时间
