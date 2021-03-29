@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import java.util.List;
@@ -29,7 +30,7 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg>{
      * 查询指定行数据
      *
      */
-    List<EleWarnMsg> queryList(Page page, @Param("query") EleWarnMsgQuery eleWarnMsgQuery);
+    IPage queryList(Page page, @Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
 
     /**

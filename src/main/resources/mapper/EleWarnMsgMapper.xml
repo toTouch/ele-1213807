@@ -16,6 +16,17 @@
         select
           id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time
         from electricity.t_ele_warn_msg
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+            <if test="query.type != null">
+                and type = #{query.type}
+            </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+        </where>
     </select>
 
     <!--通过实体作为筛选条件查询-->

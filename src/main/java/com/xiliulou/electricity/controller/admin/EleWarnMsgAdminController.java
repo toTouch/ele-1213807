@@ -20,7 +20,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class EleWarnMsgController {
+public class EleWarnMsgAdminController {
     /**
      * 服务对象
      */

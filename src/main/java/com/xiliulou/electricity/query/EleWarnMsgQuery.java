@@ -3,8 +3,8 @@ import lombok.Builder;
 import lombok.Data;
 
 /**
- * @author: eclair
- * @Date: 2020/6/15 10:02
+ * @author: lxc
+ * @Date: 2021/3/29 10:02
  * @Description:
  */
 @Data
@@ -16,4 +16,5 @@ public class EleWarnMsgQuery {
     private Integer electricityCabinetId;
 
     private Integer type;
+    private Integer status;
 }
