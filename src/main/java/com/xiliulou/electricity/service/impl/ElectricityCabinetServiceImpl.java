@@ -792,6 +792,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
 
+        //用户成功换电后才会添加缓存，用户换电周期限制
+        String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + user.getUid());
+        if (StringUtils.isNotEmpty(orderLimit)) {
+            return R.fail("ELECTRICITY.0061", "下单过于频繁");
+        }
+
         ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！productKey{},deviceName{}",productKey,deviceName);
