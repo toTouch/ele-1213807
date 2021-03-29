@@ -95,6 +95,9 @@ public class HardwareCommand {
 	//上报异常
 	public static final String ELE_COMMAND_WARN_MSG_RSP = "warn_msg_rsp";
 
+	//解锁换电柜
+	public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {

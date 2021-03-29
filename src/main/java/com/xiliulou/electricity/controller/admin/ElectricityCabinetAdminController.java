@@ -2,12 +2,17 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeBind;
+import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.StoreBind;
+import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -19,6 +24,7 @@ import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 
 
 /**
@@ -56,6 +63,10 @@ public class ElectricityCabinetAdminController {
     FranchiseeService franchiseeService;
     @Autowired
     FranchiseeBindService franchiseeBindService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    RedisService redisService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -336,6 +347,37 @@ public class ElectricityCabinetAdminController {
         params.put("address", "i love you");
         smsService.sendSmsCode("15371639767","SMS_183160573", JsonUtil.toJson(params), "西六楼");
 
+    }
+
+    //解锁电柜
+    @PostMapping(value = "/admin/electricityCabinet/unlockCabinet")
+    public R unlockCabinet(@RequestParam("id") Integer id) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_UNLOCK_CABINET)
+                .build();
+
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //删除缓存
+        redisService.deleteKeys(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+electricityCabinet.getId());
+        return R.ok();
     }
 
 
