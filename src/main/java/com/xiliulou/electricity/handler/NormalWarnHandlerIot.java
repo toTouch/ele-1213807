@@ -44,11 +44,6 @@ public class NormalWarnHandlerIot extends AbstractIotMessageHandler {
     @Autowired
     EleWarnFactory eleWarnFactory;
 
-    public static final Map<Integer, String> ELE_WARN_TYPE = new HashMap<>();
-    public static final String BATTERY_TAKE_EXCEPTION = "batteryTakeException";
-    static {
-        ELE_WARN_TYPE.put(EleWarnMsg.TYPE_BATTERY_TAKE_EXCEPTION,BATTERY_TAKE_EXCEPTION);
-    }
 
 
     @Override
@@ -88,7 +83,7 @@ public class NormalWarnHandlerIot extends AbstractIotMessageHandler {
         eleWarnMsgService.insert(eleWarnMsg);
         //后续处理
         EleWarnRequest eleWarnRequest=new EleWarnRequest();
-        EleWarnService eleWarnService = eleWarnFactory.getInstance(ELE_WARN_TYPE.get(eleWarnVO.getMsgType()));
+        EleWarnService eleWarnService = eleWarnFactory.getInstance(eleWarnVO.getMsgType());
         if (Objects.isNull(eleWarnService)) {
             log.error("ELE WARN ERROR! not found operate service! eleWarnType:{}", eleWarnVO.getMsgType());
             return false;
