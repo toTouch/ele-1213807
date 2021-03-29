@@ -33,6 +33,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -806,7 +807,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //换电柜是否出现异常被锁住
         String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
-        if (Objects.nonNull(isLock)) {
+        if (StringUtils.isNotEmpty(isLock)) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
@@ -1306,7 +1307,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //换电柜是否出现异常被锁住
         String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
-        if (Objects.nonNull(isLock)) {
+        if (StringUtils.isNotEmpty(isLock)) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
