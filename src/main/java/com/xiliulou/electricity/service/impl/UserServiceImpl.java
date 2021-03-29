@@ -508,4 +508,10 @@ public class UserServiceImpl implements UserService {
 		return Pair.of(true, this.userMapper.listByFranchisee(page, uid, size, offset, name, phone, type, startTime, endTime,cidList));
 	}
 
+	@Override
+	public R endLimitUser(Long uid) {
+		redisService.deleteKeys(ElectricityCabinetConstant.ORDER_TIME_UID +uid);
+		return R.ok();
+	}
+
 }

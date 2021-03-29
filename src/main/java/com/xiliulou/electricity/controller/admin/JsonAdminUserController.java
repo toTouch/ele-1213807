@@ -163,6 +163,12 @@ public class JsonAdminUserController extends BaseController {
         return userService.queryElectricityCabinetList(uid);
     }
 
+    //结束限制订单
+    @PutMapping(value = "/user/endLimitUser")
+    public R endLimitUser(@RequestParam("uid") Long uid) {
+        return userService.endLimitUser(uid);
+    }
+
 
 
 }
