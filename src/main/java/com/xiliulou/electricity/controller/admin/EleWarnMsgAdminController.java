@@ -33,7 +33,8 @@ public class EleWarnMsgAdminController {
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                       @RequestParam(value = "type", required = false) Integer type) {
+                       @RequestParam(value = "type", required = false) Integer type,
+                       @RequestParam(value = "status", required = false) Integer status) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -47,6 +48,7 @@ public class EleWarnMsgAdminController {
                 .size(size)
                 .electricityCabinetId(electricityCabinetId)
                 .type(type)
+                .status(status)
                 .build();
 
         return eleWarnMsgService.queryList(eleWarnMsgQuery);
