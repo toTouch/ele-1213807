@@ -804,6 +804,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (Objects.nonNull(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
+        }
+
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.isNull(userInfo)) {
@@ -1295,6 +1302,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (Objects.nonNull(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
         }
 
         //营业时间

@@ -130,6 +130,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (Objects.nonNull(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
+        }
+
         //营业时间
         Boolean result = this.isBusiness(electricityCabinet);
         if (result) {
@@ -268,6 +275,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (Objects.nonNull(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0055", "换电柜出现异常，暂时不能下单");
         }
 
         //营业时间

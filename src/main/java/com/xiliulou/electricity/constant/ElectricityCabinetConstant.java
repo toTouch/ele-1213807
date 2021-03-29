@@ -81,4 +81,7 @@ public interface ElectricityCabinetConstant {
     //下单周期限制
     String ORDER_TIME_UID = "order_time_uid:";
 
+    //电池异常锁住换电柜
+    String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";
+
 }

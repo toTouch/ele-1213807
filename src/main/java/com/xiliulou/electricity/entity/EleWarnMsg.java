@@ -23,17 +23,17 @@ public class EleWarnMsg {
     
     private String electricityCabinetName;
     
-    private String cellNo;
+    private Integer cellNo;
     
     private String msg;
     /**
     * (1--电柜硬件，2--业务警告，3--)
     */
-    private Object type;
+    private Integer type;
     /**
     * (1--未读消息，1--已读消息)
     */
-    private Object status;
+    private Integer status;
     
     private Long operateUid;
     /**
@@ -47,5 +47,14 @@ public class EleWarnMsg {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    //未读通知
+    public static final Integer STATUS_UNREAD = 1;
+    //已读通知
+    public static final Integer STATUS_HAVE_READ = 0;
+
+    // 电池被异常取走
+    public static final Integer  TYPE_BATTERY_TAKE_EXCEPTION = 1;
+
 
 }

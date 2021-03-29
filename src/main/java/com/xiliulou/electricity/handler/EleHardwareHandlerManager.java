@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.HardwareCommand;
@@ -14,11 +15,8 @@ import shaded.org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import shaded.org.apache.commons.lang3.tuple.Pair;
-
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * @author: lxc
@@ -41,11 +39,13 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 	@Autowired
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
-	NormalPowerConsumptionHandler normalPowerConsumptionHandler;
+	NormalPowerConsumptionHandlerIot normalPowerConsumptionHandlerIot;
 	@Autowired
 	RedisService redisService;
+	@Autowired
+	NormalWarnHandlerIot normalWarnHandlerIot;
 
-	ExecutorService executorService = Executors.newFixedThreadPool(2);
+	ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
@@ -108,8 +108,10 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 		} else if (Objects.equals(receiverMessage.getType(), HardwareCommand.EXCHANGE_CABINET)) {
 			return normalEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
 		} else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION_RSP)) {
-			return normalPowerConsumptionHandler.receiveMessageProcess(receiverMessage);
-		} else {
+			return normalPowerConsumptionHandlerIot.receiveMessageProcess(receiverMessage);
+		} else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_WARN_MSG_RSP)) {
+			return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
+		}else {
 			log.error("command not support handle,command:{}", receiverMessage.getType());
 			return false;
 		}

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.queue;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -50,8 +51,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EleOperateQueueHandler {
 
-    ExecutorService executorService = Executors.newFixedThreadPool(20);
-    ExecutorService startService = Executors.newFixedThreadPool(1);
+    ExecutorService executorService = XllExecutors.newFixedThreadPool(20);
+    ExecutorService startService = XllExecutors.newFixedThreadPool(1);
     private volatile boolean shutdown = false;
     private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
 
@@ -386,7 +387,7 @@ public class EleOperateQueueHandler {
         //换电成功加缓存
         ElectricityConfig electricityConfig=electricityConfigService.queryOne();
         if(Objects.nonNull(electricityConfig)&&Objects.nonNull(electricityConfig.getOrderTime())) {
-            redisService.saveWithString(ElectricityCabinetConstant.ORDER_TIME_UID + electricityCabinetOrder.getUid(),electricityConfig.getOrderTime()*60000L );
+            redisService.saveWithString(ElectricityCabinetConstant.ORDER_TIME_UID + electricityCabinetOrder.getUid(),electricityCabinetOrder.getUid(),electricityConfig.getOrderTime()*60000L ,false);
         }
     }
 

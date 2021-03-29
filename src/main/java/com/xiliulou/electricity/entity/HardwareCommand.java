@@ -92,6 +92,9 @@ public class HardwareCommand {
 	//重启app
 	public static final String ELE_COMMAND_CUPBOARD_RESTART = "cupboard_restart";
 
+	//上报异常
+	public static final String ELE_COMMAND_WARN_MSG_RSP = "warn_msg_rsp";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
