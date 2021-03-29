@@ -98,6 +98,12 @@ public class HardwareCommand {
 	//解锁换电柜
 	public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
 
+	//读其他配置，下发命令
+	public static final String ELE_COMMAND_OTHER_CONFIG_READ = "other_config_read";
+
+	//上报其他配置
+	public static final String ELE_COMMAND_OTHER_CONFIG_RSP = "other_config_rsp";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
@@ -137,5 +143,9 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_SYNC_INFO, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_RESTART, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_WARN_MSG_RSP, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_UNLOCK_CABINET, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_RSP, "OK");
 	}
 }
