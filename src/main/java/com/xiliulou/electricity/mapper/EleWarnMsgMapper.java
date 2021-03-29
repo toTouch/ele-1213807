@@ -1,7 +1,11 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import java.util.List;
+
+import com.xiliulou.electricity.query.EleWarnMsgQuery;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -25,7 +29,7 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg>{
      * 查询指定行数据
      *
      */
-    List<EleWarnMsg> queryList(@Param("offset") int offset, @Param("limit") int limit);
+    List<EleWarnMsg> queryList(Page page, @Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
 
     /**

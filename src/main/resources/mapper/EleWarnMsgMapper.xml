@@ -16,7 +16,6 @@
         select
           id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time
         from electricity.t_ele_warn_msg
-        limit #{offset}, #{limit}
     </select>
 
     <!--通过实体作为筛选条件查询-->

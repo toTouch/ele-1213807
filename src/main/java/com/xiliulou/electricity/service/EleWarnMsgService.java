@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
+import com.xiliulou.electricity.query.EleWarnMsgQuery;
 
 /**
  * 换电柜异常上报信息(TEleWarnMsg)表服务接口
@@ -43,4 +45,5 @@ public interface EleWarnMsgService {
     Integer update(EleWarnMsg eleWarnMsg);
 
 
+    R queryList(EleWarnMsgQuery eleWarnMsgQuery);
 }

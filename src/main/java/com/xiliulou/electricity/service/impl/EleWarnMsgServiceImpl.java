@@ -1,8 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.mapper.EleWarnMsgMapper;
+import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.utils.PageUtil;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -65,5 +69,11 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     public Integer update(EleWarnMsg eleWarnMsg) {
        return this.eleWarnMsgMapper.update(eleWarnMsg);
          
+    }
+
+    @Override
+    public R queryList(EleWarnMsgQuery eleWarnMsgQuery) {
+        Page page = PageUtil.getPage(eleWarnMsgQuery.getOffset(), eleWarnMsgQuery.getSize());
+        return R.ok(eleWarnMsgMapper.queryList(page,eleWarnMsgQuery));
     }
 }
