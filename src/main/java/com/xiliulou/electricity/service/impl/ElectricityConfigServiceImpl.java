@@ -32,7 +32,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
 
     @Override
-    public R edit(String name) {
+    public R edit(String name,Integer orderTime) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -47,12 +47,14 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         if(Objects.isNull(electricityConfig)){
             electricityConfig=new ElectricityConfig();
             electricityConfig.setName(name);
+            electricityConfig.setOrderTime(orderTime);
             electricityConfig.setCreateTime(System.currentTimeMillis());
             electricityConfig.setUpdateTime(System.currentTimeMillis());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
         electricityConfig.setName(name);
+        electricityConfig.setOrderTime(orderTime);
         electricityConfig.setUpdateTime(System.currentTimeMillis());
         electricityConfigMapper.updateById(electricityConfig);
         return R.ok();

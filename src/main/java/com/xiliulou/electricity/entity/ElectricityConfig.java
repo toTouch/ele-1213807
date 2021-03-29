@@ -28,6 +28,10 @@ public class ElectricityConfig {
      */
     private String name;
     /**
+     * 订单间隔时间
+     */
+    private Integer orderTime;
+    /**
      * 创建时间
      */
     private Long createTime;
@@ -35,4 +39,5 @@ public class ElectricityConfig {
      * 更新时间
      */
     private Long updateTime;
+
 }

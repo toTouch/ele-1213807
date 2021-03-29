@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -73,6 +75,8 @@ public class EleOperateQueueHandler {
     PubHardwareService pubHardwareService;
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -378,6 +382,12 @@ public class EleOperateQueueHandler {
                 .uid(electricityCabinetOrder.getUid())
                 .build();
         electricityCabinetOrderOperHistoryService.insert(history);
+
+        //换电成功加缓存
+        ElectricityConfig electricityConfig=electricityConfigService.queryOne();
+        if(Objects.nonNull(electricityConfig)&&Objects.nonNull(electricityConfig.getOrderTime())) {
+            redisService.saveWithString(ElectricityCabinetConstant.ORDER_TIME_UID + electricityCabinetOrder.getUid(),electricityConfig.getOrderTime()*60000L );
+        }
     }
 
     //开租/还 电池门

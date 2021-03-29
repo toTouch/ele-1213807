@@ -134,6 +134,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
+        //用户成功换电后才会添加缓存，用户换电周期限制
+        String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID+user.getUid());
+        if (Objects.nonNull(orderLimit)) {
+            return R.fail("ELECTRICITY.0053", "下单过于频繁");
+        }
+
         //判断用户是否有未完成订单
         Integer count = queryByUid(user.getUid());
         if (count > 0) {
