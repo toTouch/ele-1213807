@@ -1,11 +1,12 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import java.util.Objects;
@@ -49,6 +50,21 @@ public class EleWarnMsgAdminController {
                 .build();
 
         return eleWarnMsgService.queryList(eleWarnMsgQuery);
+    }
+
+    //解锁电柜
+    @PostMapping(value = "/admin/eleWarnMsg/haveRead")
+    public R haveRead(@RequestParam("id") Long id) {
+        EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
+        if (Objects.isNull(eleWarnMsg)||Objects.equals(eleWarnMsg.getStatus(),EleWarnMsg.STATUS_HAVE_READ)) {
+            return R.fail("ELECTRICITY.0064", "未找到未读消息");
+        }
+        EleWarnMsg updateEleWarnMsg=new EleWarnMsg();
+        updateEleWarnMsg.setId(eleWarnMsg.getId());
+        updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
+        updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
+        eleWarnMsgService.update(updateEleWarnMsg);
+        return R.ok();
     }
 
 }
