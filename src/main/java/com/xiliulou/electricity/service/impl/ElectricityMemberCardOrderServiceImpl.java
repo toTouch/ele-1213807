@@ -87,17 +87,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
-        //未缴纳押金
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
-        //未绑定电池
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
-        }
-
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.getElectricityMemberCard(memberId);
         if (Objects.isNull(electricityMemberCard)) {
@@ -125,6 +114,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setUid(uid);
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
         electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
+        electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
         electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
         electricityMemberCardOrder.setUserName(userInfo.getUserName());
         electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
@@ -137,6 +127,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
             userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+            userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
             userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
             userInfoUpdate.setUpdateTime(System.currentTimeMillis());
             userInfoService.updateById(userInfoUpdate);

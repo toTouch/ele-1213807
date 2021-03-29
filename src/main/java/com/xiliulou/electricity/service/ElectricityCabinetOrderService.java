@@ -64,4 +64,6 @@ public interface ElectricityCabinetOrderService {
     void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response);
 
     void insert(ElectricityCabinetOrder electricityCabinetOrder);
+
+    Integer queryByUid(Long uid);
 }

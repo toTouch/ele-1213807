@@ -309,6 +309,7 @@ public class UserServiceImpl implements UserService {
 				return Pair.of(false, "用户名已经存在！无法修改！");
 			}
 		}
+
 		String decryptPassword = null;
 		if (StrUtil.isNotEmpty(adminUserQuery.getPassword())) {
 			//解密密码
@@ -333,6 +334,20 @@ public class UserServiceImpl implements UserService {
 				.userType(adminUserQuery.getUserType())
 				.lockFlag(adminUserQuery.getLock())
 				.build();
+
+		if(Objects.nonNull(adminUserQuery.getCityId())) {
+			//城市
+			City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
+			if (Objects.nonNull(city)) {
+				Province province = provinceService.queryByIdFromDB(city.getPid());
+				if (Objects.nonNull(province)) {
+					updateUser.setCid(adminUserQuery.getCityId());
+					updateUser.setCity(city.getName());
+					updateUser.setProvince(province.getName());
+				}
+			}
+		}
+
 		int i = updateUser(updateUser, user);
 		//更新userInfo
 		if (i > 0) {

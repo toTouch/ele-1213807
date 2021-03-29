@@ -47,7 +47,7 @@ public class UserInfo {
      * 身份证号
      */
     private String idNumber;
-    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过)
+    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过,3--活体检测失败,4--活体检测成功)
     private Integer authStatus;
     /**
      * 服务状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
@@ -65,6 +65,10 @@ public class UserInfo {
      * 类型(0:月卡,1:季卡,2:年卡)
      */
     private Integer cardType;
+    /**
+     * 套餐名称
+     */
+    private String cardName;
     /**
      * 初始电池编号
      */

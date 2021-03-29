@@ -4,7 +4,6 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
@@ -12,7 +11,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -29,6 +27,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -41,7 +40,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -159,6 +157,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
+
+        //判断用户是否开通月卡
+        if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+        Long now = System.currentTimeMillis();
+        if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ");
+            return R.fail("ELECTRICITY.0023", "月卡已过期");
+        }
+
         //已绑定电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
             log.error("ELECTRICITY  ERROR!  rent battery! userInfo:{} ", userInfo);
@@ -176,6 +186,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if(refundCount>0){
             return R.fail("ELECTRICITY.0051","押金正在退款中，请勿租电池");
         }
+
 
         //分配电池 --只分配满电电池
         String cellNo = findUsableBatteryCellNo(rentBatteryQuery.getElectricityCabinetId(), null);
@@ -275,6 +286,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
             log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //用户状态异常
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
         }
 
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY) || Objects.isNull(userInfo.getNowElectricityBatterySn())) {

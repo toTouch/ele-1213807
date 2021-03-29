@@ -36,6 +36,10 @@ public class ElectricityMemberCardOrder {
     private String userName;
     //月卡类型
     private Integer memberCardType;
+    /**
+     * 套餐名称
+     */
+    private String cardName;
     //创建时间
     private Long createTime;
     //修改时间

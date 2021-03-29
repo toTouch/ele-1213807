@@ -133,6 +133,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
+
+        //判断用户是否有未完成订单
+        Integer count = queryByUid(user.getUid());
+        if (count > 0) {
+            return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+        }
+
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！electricityCabinetId{}", orderQuery.getElectricityCabinetId());
@@ -190,17 +197,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
-        //未租电池
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
-            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
-        }
-
-        //判断是否电池
-        if (Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
-            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
-        }
 
         //判断用户是否开通月卡
         if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
@@ -213,12 +209,24 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
 
-        //判断用户是否有未完成订单
-        Integer count = this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, user.getUid())
-                .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
-        if (count > 0) {
-            return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+        //未租电池
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
+
+        //用户状态异常
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+        }
+
+        //判断是否电池
+        if (Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
+
         //分配开门格挡
         String cellNo = findOldUsableCellNo(electricityCabinet.getId());
         try {
@@ -584,6 +592,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public void insert(ElectricityCabinetOrder electricityCabinetOrder) {
         electricityCabinetOrderMapper.insert(electricityCabinetOrder);
+    }
+
+    @Override
+    public Integer queryByUid(Long uid) {
+        return this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,uid)
+                .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
     }
 
     public String findOldUsableCellNo(Integer id) {
