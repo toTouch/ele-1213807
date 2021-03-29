@@ -26,95 +26,96 @@ import java.util.concurrent.ExecutorService;
 @Service
 @Slf4j
 public class EleHardwareHandlerManager extends HardwareHandlerManager {
-	@Autowired
-	NormalEleOrderHandlerIot normalEleOrderHandlerIot;
-	@Autowired
-	NormalEleBatteryHandlerIot normalEleBatteryHandlerIot;
-	@Autowired
-	NormalEleCellHandlerIot normalEleCellHandlerIot;
-	@Autowired
-	NormalEleExchangeHandlerIot normalEleExchangeHandlerIot;
-	@Autowired
-	NormalEleOperateHandlerIot normalEleOperateHandlerIot;
-	@Autowired
-	ElectricityCabinetService electricityCabinetService;
-	@Autowired
-	NormalPowerConsumptionHandlerIot normalPowerConsumptionHandlerIot;
-	@Autowired
-	RedisService redisService;
-	@Autowired
-	NormalWarnHandlerIot normalWarnHandlerIot;
+    @Autowired
+    NormalEleOrderHandlerIot normalEleOrderHandlerIot;
+    @Autowired
+    NormalEleBatteryHandlerIot normalEleBatteryHandlerIot;
+    @Autowired
+    NormalEleCellHandlerIot normalEleCellHandlerIot;
+    @Autowired
+    NormalEleExchangeHandlerIot normalEleExchangeHandlerIot;
+    @Autowired
+    NormalEleOperateHandlerIot normalEleOperateHandlerIot;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    NormalPowerConsumptionHandlerIot normalPowerConsumptionHandlerIot;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    NormalWarnHandlerIot normalWarnHandlerIot;
 
-	ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
+    ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
-				||hardwareCommandQuery.getCommand().contains("cupboard")
-				||hardwareCommandQuery.getCommand().contains("rent")
-				||hardwareCommandQuery.getCommand().contains("return")
+                || hardwareCommandQuery.getCommand().contains("cupboard")
+                || hardwareCommandQuery.getCommand().contains("rent")
+                || hardwareCommandQuery.getCommand().contains("return")
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.EXCHANGE_CABINET)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OPERATE)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CELL_CONFIG)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION)
-				|| hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG)
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_BATTERY_SYNC_INFO)
-				|| hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CUPBOARD_RESTART)){
+                || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CUPBOARD_RESTART)
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_UNLOCK_CABINET)) ){
             return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
-        } else {
+        } else{
             log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
             return Pair.of(false, "");
         }
     }
 
-	@Override
-	public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
-		//电柜在线状态
-		if (Objects.isNull(receiverMessage.getType())) {
-			executorService.execute(() -> {
-				if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
-					return;
-				}
-				ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-				if (Objects.isNull(electricityCabinet)) {
-					log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-					return;
-				}
-				//在线状态修改
-				ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
-				newElectricityCabinet.setId(electricityCabinet.getId());
-				Integer status = 1;
-				if (Objects.equals(receiverMessage.getStatus(), "online")) {
-					status = 0;
-				}
-				newElectricityCabinet.setOnlineStatus(status);
-				newElectricityCabinet.setPowerStatus(status);
-				if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-					redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-					redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
-				}
-				log.error("type is null,{}", receiverMessage.getOriginContent());
-			});
+    @Override
+    public boolean chooseCommandHandlerProcessReceiveMessage(ReceiverMessage receiverMessage) {
+        //电柜在线状态
+        if (Objects.isNull(receiverMessage.getType())) {
+            executorService.execute(() -> {
+                if (!StrUtil.isNotEmpty(receiverMessage.getStatus())) {
+                    return;
+                }
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                if (Objects.isNull(electricityCabinet)) {
+                    log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+                    return;
+                }
+                //在线状态修改
+                ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
+                newElectricityCabinet.setId(electricityCabinet.getId());
+                Integer status = 1;
+                if (Objects.equals(receiverMessage.getStatus(), "online")) {
+                    status = 0;
+                }
+                newElectricityCabinet.setOnlineStatus(status);
+                newElectricityCabinet.setPowerStatus(status);
+                if (electricityCabinetService.update(newElectricityCabinet) > 0) {
+                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                }
+                log.error("type is null,{}", receiverMessage.getOriginContent());
+            });
 
-			return false;
-		}
-		if (receiverMessage.getType().contains("order")||receiverMessage.getType().contains("rent")||receiverMessage.getType().contains("return")) {
-			return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (receiverMessage.getType().contains("operate")) {
-			return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (receiverMessage.getType().contains("cell")) {
-			return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (receiverMessage.getType().contains("battery")) {
-			return normalEleBatteryHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (Objects.equals(receiverMessage.getType(), HardwareCommand.EXCHANGE_CABINET)) {
-			return normalEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION_RSP)) {
-			return normalPowerConsumptionHandlerIot.receiveMessageProcess(receiverMessage);
-		} else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_WARN_MSG_RSP)) {
-			return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
-		}else {
-			log.error("command not support handle,command:{}", receiverMessage.getType());
-			return false;
-		}
-	}
+            return false;
+        }
+        if (receiverMessage.getType().contains("order") || receiverMessage.getType().contains("rent") || receiverMessage.getType().contains("return")) {
+            return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("operate")) {
+            return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("cell")) {
+            return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("battery")) {
+            return normalEleBatteryHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.EXCHANGE_CABINET)) {
+            return normalEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_POWER_CONSUMPTION_RSP)) {
+            return normalPowerConsumptionHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_WARN_MSG_RSP)) {
+            return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
+        } else {
+            log.error("command not support handle,command:{}", receiverMessage.getType());
+            return false;
+        }
+    }
 
 }
