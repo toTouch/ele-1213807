@@ -62,7 +62,7 @@ public class EleWarnMsgAdminController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //如果是查全部则直接跳过
-        List<Integer> eleIdList = new ArrayList<>();
+        List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 &&!Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
