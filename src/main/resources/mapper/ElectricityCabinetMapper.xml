@@ -202,7 +202,7 @@
                 #{id}
             </foreach>
         </if>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 
     <!--通过主键修改数据-->
