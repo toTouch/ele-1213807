@@ -1036,6 +1036,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);
+        if(result){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -1320,7 +1323,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);
-
+        if(result){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.isNull(userInfo)) {
@@ -1391,6 +1396,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetVO);
     }
 
+    @Override
+    public Map<String, Object> queryNameList(Long size, Long offset, List<Integer> eleIdList) {
+        return electricityCabinetMapper.queryNameList(size,offset,eleIdList);
+    }
 
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {

@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeBind;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.StoreBind;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -21,6 +22,8 @@ import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -67,6 +70,8 @@ public class ElectricityCabinetAdminController {
     EleHardwareHandlerManager eleHardwareHandlerManager;
     @Autowired
     RedisService redisService;
+    @Autowired
+    UserTypeFactory userTypeFactory;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -378,6 +383,41 @@ public class ElectricityCabinetAdminController {
         //删除缓存
         redisService.deleteKeys(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+electricityCabinet.getId());
         return R.ok();
+    }
+
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinet/queryNameList")
+    public R queryNameList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset) {
+        if (Objects.isNull(size)) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //如果是查全部则直接跳过
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                &&!Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList=userTypeService.getEleIdListByUserType(user);
+            if(ObjectUtil.isEmpty(eleIdList)){
+                return R.ok();
+            }
+        }
+        return R.ok(electricityCabinetService.queryNameList(size,offset,eleIdList));
     }
 
 
