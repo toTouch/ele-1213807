@@ -113,6 +113,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return normalPowerConsumptionHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_WARN_MSG_RSP)) {
             return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_OTHER_CONFIG_RSP)) {
+            return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
         } else {
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;
