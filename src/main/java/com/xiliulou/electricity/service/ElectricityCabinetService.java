@@ -88,5 +88,5 @@ public interface ElectricityCabinetService {
 
     R rentBattery(String productKey, String deviceName);
 
-    Map<String,Object> queryNameList(Long size, Long offset, List<Integer> eleIdList);
+    List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
 }

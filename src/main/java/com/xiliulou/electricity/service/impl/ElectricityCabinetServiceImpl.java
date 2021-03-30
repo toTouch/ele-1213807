@@ -1397,7 +1397,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public Map<String, Object> queryNameList(Long size, Long offset, List<Integer> eleIdList) {
+    public  List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList) {
         return electricityCabinetMapper.queryNameList(size,offset,eleIdList);
     }
 

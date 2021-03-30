@@ -191,7 +191,7 @@
         left join t_electricity_battery as eb on ecb.electricity_battery_id is not null and ecb.electricity_battery_id=eb.id
         WHERE eb.voltage is not null or eb.capacity is not null and ec.id = #{id}
     </select>
-    <select id="queryNameList" resultType="java.util.Map">
+    <select id="queryNameList" resultType="java.util.List">
         select
         id, name
         from electricity.t_electricity_cabinet
