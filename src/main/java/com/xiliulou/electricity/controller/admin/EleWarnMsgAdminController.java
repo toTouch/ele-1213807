@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.EleWarnService;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -60,9 +62,9 @@ public class EleWarnMsgAdminController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //如果是查全部则直接跳过
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), UserTypeFactory.TYPE_USER_SUPER)
-                &&!Objects.equals(user.getType(), UserTypeFactory.TYPE_USER_OPERATE)) {
+        List<Integer> eleIdList = new ArrayList<>();
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                &&!Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
