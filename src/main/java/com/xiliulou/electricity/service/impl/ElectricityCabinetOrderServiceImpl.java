@@ -218,7 +218,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //用户状态异常
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY) && Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
         }
 

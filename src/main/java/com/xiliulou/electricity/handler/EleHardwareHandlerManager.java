@@ -44,6 +44,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     RedisService redisService;
     @Autowired
     NormalWarnHandlerIot normalWarnHandlerIot;
+    @Autowired
+    NormalOtherConfigHandlerIot normalOtherConfigHandlerIot;
 
     ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
@@ -114,7 +116,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_WARN_MSG_RSP)) {
             return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_OTHER_CONFIG_RSP)) {
-            return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
+            return normalOtherConfigHandlerIot.receiveMessageProcess(receiverMessage);
         } else {
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;

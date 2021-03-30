@@ -84,4 +84,7 @@ public interface ElectricityCabinetConstant {
     //电池异常锁住换电柜
     String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";
 
+    //电柜上报数据
+    String OTHER_CONFIG_CACHE = "other_config_cache:";
+
 }
