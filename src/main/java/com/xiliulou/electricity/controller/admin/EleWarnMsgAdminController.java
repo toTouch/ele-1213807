@@ -1,16 +1,24 @@
 package com.xiliulou.electricity.controller.admin;
+
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.service.EleWarnService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import java.util.Objects;
 
+import java.util.List;
+import java.util.Objects;
 
 
 /**
@@ -27,6 +35,8 @@ public class EleWarnMsgAdminController {
      */
     @Autowired
     EleWarnMsgService eleWarnMsgService;
+    @Autowired
+    UserTypeFactory userTypeFactory;
 
     //列表查询
     @GetMapping(value = "/admin/eleWarnMsg/list")
@@ -44,6 +54,25 @@ public class EleWarnMsgAdminController {
         }
 
         //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //如果是查全部则直接跳过
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), UserTypeFactory.TYPE_USER_SUPER)
+                &&!Objects.equals(user.getType(), UserTypeFactory.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList=userTypeService.getEleIdListByUserType(user);
+            if(ObjectUtil.isEmpty(eleIdList)){
+                return R.ok();
+            }
+        }
 
         EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
                 .offset(offset)
@@ -51,6 +80,7 @@ public class EleWarnMsgAdminController {
                 .electricityCabinetId(electricityCabinetId)
                 .type(type)
                 .status(status)
+                .eleIdList(eleIdList)
                 .build();
 
         return eleWarnMsgService.queryList(eleWarnMsgQuery);
@@ -60,10 +90,10 @@ public class EleWarnMsgAdminController {
     @PostMapping(value = "/admin/eleWarnMsg/haveRead")
     public R haveRead(@RequestParam("id") Long id) {
         EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
-        if (Objects.isNull(eleWarnMsg)||Objects.equals(eleWarnMsg.getStatus(),EleWarnMsg.STATUS_HAVE_READ)) {
+        if (Objects.isNull(eleWarnMsg) || Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_HAVE_READ)) {
             return R.fail("ELECTRICITY.0064", "未找到未读消息");
         }
-        EleWarnMsg updateEleWarnMsg=new EleWarnMsg();
+        EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
         updateEleWarnMsg.setId(eleWarnMsg.getId());
         updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
         updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());

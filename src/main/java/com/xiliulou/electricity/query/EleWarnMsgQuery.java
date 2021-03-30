@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: lxc
  * @Date: 2021/3/29 10:02
@@ -17,4 +19,6 @@ public class EleWarnMsgQuery {
 
     private Integer type;
     private Integer status;
+
+    List<Integer> eleIdList;
 }

@@ -26,6 +26,12 @@
             <if test="query.status != null">
                 and status = #{query.status}
             </if>
+            <if test="query.eleIdList!=null and query.eleIdList!=''">
+                and electricity_cabinet_id in
+                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by id desc
     </select>
