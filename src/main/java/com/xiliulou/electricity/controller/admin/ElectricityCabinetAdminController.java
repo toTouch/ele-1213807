@@ -37,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -418,6 +419,17 @@ public class ElectricityCabinetAdminController {
             }
         }
         return R.ok(electricityCabinetService.queryNameList(size,offset,eleIdList));
+    }
+
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinet/queryConfig")
+    public R queryConfig(@RequestParam("id") Integer id) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        Map<String, Object> map=redisService.getWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), Map.class);
+        return R.ok(map);
     }
 
 
