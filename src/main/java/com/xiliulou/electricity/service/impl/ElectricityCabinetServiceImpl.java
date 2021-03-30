@@ -29,6 +29,7 @@ import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -365,7 +366,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setFullyElectricityBattery(fullyElectricityBattery);
 
                 //是否锁住
-
+                Integer isLock=0;
+                String LockResult=redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+e.getId());
+                if(StringUtil.isNotEmpty(LockResult)){
+                    isLock=1;
+                }
+                e.setIsLock(isLock);
             });
         }
         page.setRecords(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));

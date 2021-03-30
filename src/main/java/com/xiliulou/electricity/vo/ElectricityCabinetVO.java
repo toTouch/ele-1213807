@@ -130,6 +130,10 @@ public class ElectricityCabinetVO {
      * 是否营业 0--营业 1--打烊
      */
     private Integer isBusiness;
+    /**
+     * 是否锁住 0--未锁住 1--锁住
+     */
+    private Integer isLock;
 
     //全天
     public static final String ALL_DAY = "-1";

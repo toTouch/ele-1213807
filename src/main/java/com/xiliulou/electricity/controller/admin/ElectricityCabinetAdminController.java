@@ -358,6 +358,19 @@ public class ElectricityCabinetAdminController {
     //解锁电柜
     @PostMapping(value = "/admin/electricityCabinet/unlockCabinet")
     public R unlockCabinet(@RequestParam("id") Integer id) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //限制解锁权限
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                &&!Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            log.info("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
@@ -369,6 +382,7 @@ public class ElectricityCabinetAdminController {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
+
 
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
