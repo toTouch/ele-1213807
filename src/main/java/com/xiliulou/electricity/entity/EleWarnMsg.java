@@ -27,11 +27,11 @@ public class EleWarnMsg {
     
     private String msg;
     /**
-    * (1--电柜硬件，2--业务警告，3--)
+    *
     */
     private Integer type;
     /**
-    * (1--未读消息，1--已读消息)
+    * (1--未读消息，0--已读消息)
     */
     private Integer status;
     
@@ -53,8 +53,12 @@ public class EleWarnMsg {
     //已读通知
     public static final Integer STATUS_HAVE_READ = 0;
 
-    // 电池被异常取走
+    //电池被异常取走
     public static final Integer  TYPE_BATTERY_TAKE_EXCEPTION = 1;
+    //解析消息失败
+    public static final Integer MESSAGE_PARSE_ERROR = 101;
+    //串口异常
+    public static final Integer SERIAL_PORT_NO_DATA = 102;
 
 
 }

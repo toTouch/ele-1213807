@@ -43,6 +43,8 @@ public class EleWarnMsgAdminController {
             offset = 0L;
         }
 
+        //用户区分
+
         EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
                 .offset(offset)
                 .size(size)
