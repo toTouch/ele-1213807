@@ -87,7 +87,7 @@ public class EleWarnMsgAdminController {
 
     //解锁电柜
     @PostMapping(value = "/admin/eleWarnMsg/haveRead")
-    public R haveRead(@RequestParam("ids") List<Long> ids) {
+    public R haveRead(@RequestParam("ids") Long[] ids) {
         for (Long id:ids) {
             EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
             if (!Objects.isNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_HAVE_READ)) {
