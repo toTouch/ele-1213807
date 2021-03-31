@@ -87,16 +87,17 @@ public class EleWarnMsgAdminController {
 
     //解锁电柜
     @PostMapping(value = "/admin/eleWarnMsg/haveRead")
-    public R haveRead(@RequestParam("id") Long id) {
-        EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
-        if (Objects.isNull(eleWarnMsg) || Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_HAVE_READ)) {
-            return R.fail("ELECTRICITY.0064", "未找到未读消息");
+    public R haveRead(@RequestParam("ids") List<Long> ids) {
+        for (Long id:ids) {
+            EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
+            if (!Objects.isNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_HAVE_READ)) {
+                EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
+                updateEleWarnMsg.setId(eleWarnMsg.getId());
+                updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
+                updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
+                eleWarnMsgService.update(updateEleWarnMsg);
+            }
         }
-        EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
-        updateEleWarnMsg.setId(eleWarnMsg.getId());
-        updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
-        updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
-        eleWarnMsgService.update(updateEleWarnMsg);
         return R.ok();
     }
 
