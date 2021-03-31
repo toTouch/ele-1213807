@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
@@ -87,8 +89,9 @@ public class EleWarnMsgAdminController {
 
     //解锁电柜
     @PostMapping(value = "/admin/eleWarnMsg/haveRead")
-    public R haveRead(@RequestParam("ids") Long[] ids) {
-        for (Long id:ids) {
+    public R haveRead(@RequestParam("ids") String ids) {
+        List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
+        for (Long id:idList) {
             EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
             if (!Objects.isNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_HAVE_READ)) {
                 EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
