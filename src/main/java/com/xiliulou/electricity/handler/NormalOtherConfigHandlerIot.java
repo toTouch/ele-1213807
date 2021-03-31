@@ -32,8 +32,6 @@ public class NormalOtherConfigHandlerIot extends AbstractIotMessageHandler {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
-    ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
-
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
         String sessionId = generateSessionId(hardwareCommandQuery);
