@@ -93,7 +93,7 @@ public class EleWarnMsgAdminController {
         List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
         for (Long id:idList) {
             EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromCache(id);
-            if (!Objects.isNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_HAVE_READ)) {
+            if (Objects.nonNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_UNREAD)) {
                 EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
                 updateEleWarnMsg.setId(eleWarnMsg.getId());
                 updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
