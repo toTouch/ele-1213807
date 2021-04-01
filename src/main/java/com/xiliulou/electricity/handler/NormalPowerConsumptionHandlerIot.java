@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
  */
 @Service
 @Slf4j
-public class NormalPowerConsumptionHandler extends AbstractIotMessageHandler {
+public class NormalPowerConsumptionHandlerIot extends AbstractIotMessageHandler {
 	@Autowired
 	RedisService redisService;
 	@Autowired

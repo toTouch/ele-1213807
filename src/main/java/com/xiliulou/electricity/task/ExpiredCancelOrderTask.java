@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.task;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xxl.job.core.biz.model.ReturnT;
@@ -27,7 +28,7 @@ public class ExpiredCancelOrderTask extends IJobHandler {
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
 
-    ExecutorService executorService = Executors.newFixedThreadPool(4);
+    ExecutorService executorService = XllExecutors.newFixedThreadPool(4);
 
     //处理未支付寄存订单 (每分钟执行一次)
     @Override

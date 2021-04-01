@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleWarnMsgMapper">
+
+
+    <!--查询单个-->
+    <select id="queryById" resultType="com.xiliulou.electricity.entity.EleWarnMsg">
+        select
+          id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time
+        from electricity.t_ele_warn_msg
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.EleWarnMsg">
+        select
+          id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time
+        from electricity.t_ele_warn_msg
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+            <if test="query.type != null">
+                and type = #{query.type}
+            </if>
+            <if test="query.status != null">
+                and status = #{query.status}
+            </if>
+            <if test="query.eleIdList!=null and query.eleIdList!=''">
+                and electricity_cabinet_id in
+                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by id desc
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultType="com.xiliulou.electricity.entity.EleWarnMsg">
+        select
+          id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time
+        from electricity.t_ele_warn_msg
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="electricityCabinetId != null">
+                and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="electricityCabinetName != null and electricityCabinetName != ''">
+                and electricity_cabinet_name = #{electricityCabinetName}
+            </if>
+            <if test="cellNo != null and cellNo != ''">
+                and cell_no = #{cellNo}
+            </if>
+            <if test="msg != null and msg != ''">
+                and msg = #{msg}
+            </if>
+            <if test="type != null">
+                and type = #{type}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="operateUid != null">
+                and operate_uid = #{operateUid}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_ele_warn_msg(electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time)
+        values (#{electricityCabinetId}, #{electricityCabinetName}, #{cellNo}, #{msg}, #{type}, #{status}, #{operateUid}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_ele_warn_msg
+        <set>
+            <if test="electricityCabinetId != null">
+                electricity_cabinet_id = #{electricityCabinetId},
+            </if>
+            <if test="electricityCabinetName != null and electricityCabinetName != ''">
+                electricity_cabinet_name = #{electricityCabinetName},
+            </if>
+            <if test="cellNo != null and cellNo != ''">
+                cell_no = #{cellNo},
+            </if>
+            <if test="msg != null and msg != ''">
+                msg = #{msg},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="operateUid != null">
+                operate_uid = #{operateUid},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>

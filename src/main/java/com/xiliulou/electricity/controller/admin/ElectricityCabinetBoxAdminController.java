@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.*;
@@ -20,6 +21,7 @@ import java.util.*;
  * @since 2020-11-25 11:00:37
  */
 @RestController
+@Slf4j
 public class ElectricityCabinetBoxAdminController {
     /**
      * 服务对象
@@ -66,6 +68,14 @@ public class ElectricityCabinetBoxAdminController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         List<String> cellList = new ArrayList<>();

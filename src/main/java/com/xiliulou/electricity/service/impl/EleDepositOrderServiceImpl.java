@@ -211,7 +211,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //用户状态异常
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
         }
 
@@ -219,7 +219,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //判断是否缴纳押金
         if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)||Objects.isNull(userInfo.getBatteryDeposit())||Objects.isNull(userInfo.getOrderId())) {
             log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
-            return R.fail("ELECTRICITY.0045", "未缴纳押金");
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         //是否存在未完成的租电池订单

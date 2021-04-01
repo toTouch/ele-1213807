@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 
 import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -86,4 +87,6 @@ public interface ElectricityCabinetService {
     R showInfoByStoreId(Integer storeId);
 
     R rentBattery(String productKey, String deviceName);
+
+    List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
 }

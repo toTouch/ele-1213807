@@ -2,6 +2,7 @@ package com.xiliulou.electricity.queue;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -10,6 +11,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -48,8 +51,8 @@ import java.util.stream.Collectors;
 @Slf4j
 public class EleOperateQueueHandler {
 
-    ExecutorService executorService = Executors.newFixedThreadPool(20);
-    ExecutorService startService = Executors.newFixedThreadPool(1);
+    ExecutorService executorService = XllExecutors.newFixedThreadPool(20);
+    ExecutorService startService = XllExecutors.newFixedThreadPool(1);
     private volatile boolean shutdown = false;
     private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
 
@@ -73,6 +76,8 @@ public class EleOperateQueueHandler {
     PubHardwareService pubHardwareService;
     @Autowired
     RentBatteryOrderService rentBatteryOrderService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -381,6 +386,12 @@ public class EleOperateQueueHandler {
                 .uid(electricityCabinetOrder.getUid())
                 .build();
         electricityCabinetOrderOperHistoryService.insert(history);
+
+        //换电成功加缓存
+        ElectricityConfig electricityConfig=electricityConfigService.queryOne();
+        if(Objects.nonNull(electricityConfig)&&Objects.nonNull(electricityConfig.getOrderTime())) {
+            redisService.saveWithString(ElectricityCabinetConstant.ORDER_TIME_UID + electricityCabinetOrder.getUid(),electricityCabinetOrder.getUid(),electricityConfig.getOrderTime()*60000L ,false);
+        }
     }
 
     //开租/还 电池门

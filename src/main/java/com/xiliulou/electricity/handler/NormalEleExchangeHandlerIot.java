@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -32,7 +33,7 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
-    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {

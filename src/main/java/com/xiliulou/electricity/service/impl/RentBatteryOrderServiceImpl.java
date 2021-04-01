@@ -27,7 +27,6 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -40,6 +39,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
+
 import javax.annotation.Resource;
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -128,6 +129,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (StringUtils.isNotEmpty(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
 
         //营业时间
@@ -270,6 +278,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (StringUtils.isNotEmpty(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
+        }
+
         //营业时间
         Boolean result = this.isBusiness(electricityCabinet);
         if (result) {
@@ -290,7 +305,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //用户状态异常
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
         }
 

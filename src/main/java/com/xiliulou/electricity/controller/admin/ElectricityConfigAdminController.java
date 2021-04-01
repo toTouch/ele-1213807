@@ -23,8 +23,8 @@ public class ElectricityConfigAdminController {
 
     //编辑平台名称
     @PutMapping(value = "/admin/electricityConfig")
-    public R edit(@RequestParam("name") String name) {
-        return electricityConfigService.edit(name);
+    public R edit(@RequestParam("name") String name,@RequestParam("orderTime") Integer orderTime) {
+        return electricityConfigService.edit(name,orderTime);
     }
 
     //查询平台名称

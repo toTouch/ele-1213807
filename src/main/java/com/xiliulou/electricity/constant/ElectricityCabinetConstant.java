@@ -78,4 +78,13 @@ public interface ElectricityCabinetConstant {
     //用户还电池
     String ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY = "ele_cache_user_return_battery_lock_key:";
 
+    //下单周期限制
+    String ORDER_TIME_UID = "order_time_uid:";
+
+    //电池异常锁住换电柜
+    String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";
+
+    //电柜上报数据
+    String OTHER_CONFIG_CACHE = "other_config_cache:";
+
 }

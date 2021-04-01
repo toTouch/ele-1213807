@@ -29,10 +29,12 @@ import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 import shaded.org.apache.commons.lang3.tuple.Pair;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -362,6 +364,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
+
+                //是否锁住
+                Integer isLock=0;
+                String LockResult=redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+e.getId());
+                if(StringUtil.isNotEmpty(LockResult)){
+                    isLock=1;
+                }
+                e.setIsLock(isLock);
             });
         }
         page.setRecords(electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList()));
@@ -791,6 +801,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
         }
 
+        //用户成功换电后才会添加缓存，用户换电周期限制
+        String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + user.getUid());
+        if (StringUtils.isNotEmpty(orderLimit)) {
+            return R.fail("ELECTRICITY.0061", "下单过于频繁");
+        }
+
         ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELECTRICITY  ERROR! not found electricityCabinet ！productKey{},deviceName{}",productKey,deviceName);
@@ -802,6 +818,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!eleResult) {
             log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (StringUtils.isNotEmpty(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
 
         //2.判断用户是否有电池是否有月卡
@@ -848,7 +871,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //用户状态异常
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+            log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
         }
 
@@ -1022,6 +1045,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);
+        if(result){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -1297,9 +1323,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (StringUtils.isNotEmpty(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
+        }
+
         //营业时间
         Boolean result=this.isBusiness(electricityCabinet);
-
+        if(result){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
         //判断是否缴纳押金
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.isNull(userInfo)) {
@@ -1370,6 +1405,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(electricityCabinetVO);
     }
 
+    @Override
+    public  List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList) {
+        return electricityCabinetMapper.queryNameList(size,offset,eleIdList);
+    }
 
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {

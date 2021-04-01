@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.handler;
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -20,7 +20,6 @@ import shaded.org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 /**
@@ -38,7 +37,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
 
-    ExecutorService executorService = Executors.newFixedThreadPool(2);
+    ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -57,7 +56,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return false;
         }
-        EleCellVo eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVo.class);
+        EleCellVO eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVO.class);
         if (Objects.isNull(eleCellVo)) {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
             return false;
@@ -100,7 +99,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
 }
 
 @Data
-class EleCellVo {
+class EleCellVO {
     //仓门号
     private String cell_no;
     //门锁状态

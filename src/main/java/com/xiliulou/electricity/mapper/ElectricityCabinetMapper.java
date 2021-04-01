@@ -10,6 +10,7 @@ import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * 换电柜表(TElectricityCabinet)表数据库访问层
@@ -52,4 +53,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     IPage listByStoreId(Page page,@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
+    List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList);
 }

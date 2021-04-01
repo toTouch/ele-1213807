@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
@@ -23,6 +25,8 @@ public class UserInfoAdminController {
      */
     @Autowired
     UserInfoService userInfoService;
+    @Autowired
+    RedisService redisService;
 
 
     //绑定电池
@@ -93,6 +97,13 @@ public class UserInfoAdminController {
     @PutMapping(value = "/admin/userInfo")
     public R updateAuth(@RequestBody UserInfo userInfo) {
         return userInfoService.updateAuth(userInfo);
+    }
+
+    //订单周期删缓存
+    @PostMapping (value = "/admin/userInfo/deleteOrderCache")
+    public R deleteOrderCache(@RequestParam("uid") Long uid) {
+        redisService.deleteKeys(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
+        return R.ok();
     }
 
 }

@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -134,6 +135,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
+        //用户成功换电后才会添加缓存，用户换电周期限制
+        String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + user.getUid());
+        if (StringUtils.isNotEmpty(orderLimit)) {
+            return R.fail("ELECTRICITY.0061", "下单过于频繁");
+        }
+
         //判断用户是否有未完成订单
         Integer count = queryByUid(user.getUid());
         if (count > 0) {
@@ -153,24 +160,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
-        //营业时间
-        if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
-            String businessTime = electricityCabinet.getBusinessTime();
-            if (!Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
-                Integer index = businessTime.indexOf("-");
-                if (!Objects.equals(index, -1) && index > 0) {
-                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-                    Long now = System.currentTimeMillis();
-                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-                    Long beginTime = getTime(totalBeginTime);
-                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-                    Long endTime = getTime(totalEndTime);
-                    if (firstToday + beginTime > now || firstToday + endTime < now) {
-                        return R.fail("ELECTRICITY.0017", "换电柜已打烊");
-                    }
-                }
-            }
+        //换电柜是否出现异常被锁住
+        String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        if (StringUtils.isNotEmpty(isLock)) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
         }
+
+        Boolean isBusiness=this.isBusiness(electricityCabinet);
+        if(isBusiness){
+            return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+        }
+
         if (Objects.isNull(orderQuery.getSource())) {
             orderQuery.setSource(OrderQuery.SOURCE_WX_MP);
         }
@@ -178,23 +179,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //2.判断用户是否有电池是否有月卡
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY  ERROR! not found user,uid:{} ",user.getUid());
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         //用户是否可用
         if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0024", "用户已被禁用");
         }
 
         //未实名认证
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
         //未缴纳押金
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -211,13 +212,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         //未租电池
         if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ",userInfo);
+            log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
         //用户状态异常
-        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)&&Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-            log.error("ELECTRICITY  ERROR! not found userInfo ");
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY) && Objects.isNull(userInfo.getNowElectricityBatterySn())) {
+            log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
             return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
         }
 
@@ -294,8 +295,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
         if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
             electricityCabinetOrderVOList.parallelStream().forEach(e -> {
-                ElectricityCabinet  electricityCabinet=electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
-                if(Objects.nonNull(electricityCabinet)){
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+                if (Objects.nonNull(electricityCabinet)) {
                     e.setElectricityCabinetName(electricityCabinet.getName());
                     e.setElectricityCabinetSn(electricityCabinet.getSn());
                 }
@@ -596,7 +597,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public Integer queryByUid(Long uid) {
-        return this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid,uid)
+        return this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
                 .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
     }
 
@@ -675,6 +676,28 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
         Long ts = date2.getTime();
         return time - ts;
+    }
+
+    public boolean isBusiness(ElectricityCabinet electricityCabinet) {
+        //营业时间
+        if (Objects.nonNull(electricityCabinet.getBusinessTime())) {
+            String businessTime = electricityCabinet.getBusinessTime();
+            if (!Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+                int index = businessTime.indexOf("-");
+                if (!Objects.equals(index, -1) && index > 0) {
+                    Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
+                    long now = System.currentTimeMillis();
+                    Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                    Long beginTime = getTime(totalBeginTime);
+                    Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                    Long endTime = getTime(totalEndTime);
+                    if (firstToday + beginTime > now || firstToday + endTime < now) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
 }
