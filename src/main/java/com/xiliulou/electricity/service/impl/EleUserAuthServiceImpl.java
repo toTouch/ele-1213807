@@ -246,7 +246,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 		List<EleUserAuth> collect = eleUserAuths.stream().map(e -> {
 			if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO)) {
-				e.setValue("https://" + storageConfig.getUrlPrefix() + e.getValue());
+				e.setValue("https://" + storageConfig.getUrlPrefix() + "/" + e.getValue());
 
 			}
 			return e;
