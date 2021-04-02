@@ -106,4 +106,35 @@ public class UserInfoAdminController {
         return R.ok();
     }
 
+
+
+    //列表查询
+    @GetMapping(value = "/admin/userInfo/list/v2")
+    public R queryListV2(@RequestParam(value = "size") Long size,
+            @RequestParam(value = "offset") Long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "authStatus", required = false) Integer authStatus) {
+        if (size < 0 || size > 50) {
+            size = 50L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .phone(phone)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .authStatus(authStatus).build();
+
+        return userInfoService.queryUserAuthInfo(userInfoQuery);
+    }
+
 }

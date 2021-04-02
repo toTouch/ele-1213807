@@ -92,4 +92,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R updateAuth(UserInfo userInfo);
 
     List<UserInfo> queryByBatterySn(String sn);
+
+    R queryUserAuthInfo(UserInfoQuery userInfoQuery);
 }

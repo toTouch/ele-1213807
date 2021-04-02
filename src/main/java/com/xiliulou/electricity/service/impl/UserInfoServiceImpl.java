@@ -490,5 +490,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.selectList(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getNowElectricityBatterySn,sn ));
     }
 
+    @Override
+    public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
+
+        return null;
+    }
 
 }
