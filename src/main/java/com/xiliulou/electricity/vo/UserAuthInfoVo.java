@@ -1,0 +1,51 @@
+package com.xiliulou.electricity.vo;
+
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.Data;
+
+/**
+ * @author: eclair
+ * @Date: 2021/4/2 09:04
+ * @Description:
+ */
+@Data
+public class UserAuthInfoVo {
+	private Long id;
+
+	private Long uid;
+	/**
+	 * 手机号
+	 */
+	private String phone;
+	/**
+	 * 用户名
+	 */
+	private String userName;
+	/**
+	 * 用户姓名
+	 */
+	private String name;
+	/**
+	 * 邮箱
+	 */
+	private String mailbox;
+	/**
+	 * 身份证号
+	 */
+	private String idNumber;
+	//审核状态(0--等待审核中,1--审核被拒绝,2--审核通过,3--活体检测失败,4--活体检测成功)
+	private Integer authStatus;
+	/**
+	 * 身份证认证正面
+	 */
+	private String idCardFrontUrl;
+
+	/**
+	 * 身份证认证反面
+	 */
+	private String idCardBackUrl;
+
+
+
+}
