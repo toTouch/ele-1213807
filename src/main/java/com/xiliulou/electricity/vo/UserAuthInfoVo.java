@@ -45,7 +45,9 @@ public class UserAuthInfoVo {
 	 * 身份证认证反面
 	 */
 	private String idCardBackUrl;
-
-
+	/**
+	 * 认证时间
+	 */
+	private Long createTime;
 
 }
