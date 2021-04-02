@@ -114,7 +114,7 @@
         where id = #{id}
     </update>
 
-    <select id="queryUserInfoList">
+    <select id="queryUserInfoList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
         id, uid, user_name,name, phone, id_number,mailbox, service_status,auth_status,
         member_card_expire_time,remaining_number,card_type,
