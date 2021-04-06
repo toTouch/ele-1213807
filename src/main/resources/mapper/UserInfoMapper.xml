@@ -141,6 +141,7 @@
             and auth_status is not null
         </if>
         order by create_time desc
+        limit #{query.offset}, #{query.limit}
     </select>
 
 </mapper>
