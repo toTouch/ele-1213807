@@ -600,8 +600,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public Integer queryByUid(Long uid) {
-        return this.electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
+        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
                 .notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+    }
+
+    @Override
+    public ElectricityCabinetOrder queryByCellNo(Integer cellNo) {
+       return electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>()
+                .eq(ElectricityCabinetOrder::getOldCellNo,cellNo).or().eq(ElectricityCabinetOrder::getNewCellNo,cellNo)
+        .orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
     }
 
     public String findOldUsableCellNo(Integer id) {
