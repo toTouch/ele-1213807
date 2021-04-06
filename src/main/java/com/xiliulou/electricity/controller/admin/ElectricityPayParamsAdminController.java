@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.io.FileUtil;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;

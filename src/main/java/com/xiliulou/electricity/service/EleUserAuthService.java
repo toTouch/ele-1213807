@@ -59,4 +59,7 @@ public interface EleUserAuthService {
     void updateByUid(Long uid, Integer authStatus);
 
     EleUserAuth queryByUidAndEntryId(Long uid, Integer idIdCard);
+
+    R acquireIdcardFileSign();
+
 }

@@ -68,6 +68,10 @@ public class EleAuthEntry {
     public static final Integer ID_ID_CARD = 2;
     //邮箱
     public static final Integer ID_MAILBOX = 3;
+    //身份证正面
+    public static final  Integer ID_CARD_FRONT_PHOTO = 5;
+    //身份证反面
+    public static final  Integer ID_CARD_BACK_PHOTO = 6;
     //默认可修改
     public static final Integer DEFAULT_MODIFY = 0;
     //使用
