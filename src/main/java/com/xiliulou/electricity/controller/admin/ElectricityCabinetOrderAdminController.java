@@ -87,11 +87,6 @@ public class ElectricityCabinetOrderAdminController {
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }
 
-    //结束异常订单
-    @PutMapping(value = "/admin/electricityCabinetOrder/test")
-    public R test(@RequestParam("cellNo") Integer cellNo) {
-        return R.ok(electricityCabinetOrderService.queryByCellNo(cellNo));
-    }
 
 
 }
