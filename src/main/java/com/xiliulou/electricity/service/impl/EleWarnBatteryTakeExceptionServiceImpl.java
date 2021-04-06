@@ -12,7 +12,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -38,7 +37,7 @@ public class EleWarnBatteryTakeExceptionServiceImpl implements EleWarnService {
 		redisService.saveWithString(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+electricityCabinet.getId(),electricityCabinet.getId());
 		//禁用用户导致锁定柜机的用户
 		if(Objects.nonNull(eleWarnRequest)&&Objects.nonNull(eleWarnRequest.getCellNo())) {
-			ElectricityCabinetOrder electricityCabinetOrder=electricityCabinetOrderService.queryByCellNo(eleWarnRequest.getCellNo());
+			ElectricityCabinetOrder electricityCabinetOrder=electricityCabinetOrderService.queryByCellNoAndEleId(electricityCabinet.getId(),eleWarnRequest.getCellNo());
 			if(Objects.nonNull(electricityCabinetOrder)){
 				UserInfo userInfo=new UserInfo();
 				userInfo.setUid(electricityCabinetOrder.getUid());

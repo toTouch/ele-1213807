@@ -87,6 +87,11 @@ public class ElectricityCabinetOrderAdminController {
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }
 
+    //测试订单查询
+    @PutMapping(value = "/admin/electricityCabinetOrder/test")
+    public R test(@RequestParam("eleId") Integer eleId,@RequestParam("cellNo") Integer cellNo) {
+        return R.ok(electricityCabinetOrderService.queryByCellNoAndEleId(eleId,cellNo));
+    }
 
 
 }

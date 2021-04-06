@@ -605,8 +605,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
-    public ElectricityCabinetOrder queryByCellNo(Integer cellNo) {
+    public ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId,Integer cellNo) {
        return electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>()
+               .eq(ElectricityCabinetOrder::getElectricityCabinetId,eleId)
                 .eq(ElectricityCabinetOrder::getOldCellNo,cellNo).or().eq(ElectricityCabinetOrder::getNewCellNo,cellNo)
         .orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
     }
