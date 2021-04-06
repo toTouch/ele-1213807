@@ -176,7 +176,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@DS("slave_1")
 	public R queryList(UserInfoQuery userInfoQuery) {
 		Page page = PageUtil.getPage(userInfoQuery.getOffset(), userInfoQuery.getSize());
-		page.setSize(userInfoQuery.getSize());
 		userInfoMapper.queryList(page, userInfoQuery);
 		if (ObjectUtil.isEmpty(page)) {
 			return R.ok(new ArrayList<>());
