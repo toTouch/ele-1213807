@@ -57,5 +57,5 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     void updateRefund(UserInfo userInfo);
 
-    List<UserInfo> queryUserInfoList(@Param("query") UserInfoQuery userInfoQuery);
+    IPage queryUserInfoList(Page page,@Param("query") UserInfoQuery userInfoQuery);
 }

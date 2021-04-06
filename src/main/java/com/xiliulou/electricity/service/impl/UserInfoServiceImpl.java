@@ -487,7 +487,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 	@Override
 	public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
-		List<UserInfo> userInfos = userInfoMapper.queryUserInfoList(userInfoQuery);
+		Page page = PageUtil.getPage(userInfoQuery.getOffset(), userInfoQuery.getSize());
+		userInfoMapper.queryUserInfoList(page,userInfoQuery);
+		List<UserInfo> userInfos = page.getRecords();
 		if (!DataUtil.collectionIsUsable(userInfos)) {
 			return R.ok(Collections.emptyList());
 		}
@@ -514,7 +516,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return userAuthInfoVo;
 		}).collect(Collectors.toList());
 
-		return R.ok(result);
+		return R.ok(page.setRecords(result));
 	}
 
 }
