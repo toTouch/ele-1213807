@@ -66,6 +66,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     UserInfoService userInfoService;
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
 
     /**
@@ -136,9 +138,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //用户成功换电后才会添加缓存，用户换电周期限制
+        ElectricityConfig electricityConfig=electricityConfigService.queryOne();
         String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + user.getUid());
         if (StringUtils.isNotEmpty(orderLimit)) {
-            return R.fail("ELECTRICITY.0061", "下单过于频繁");
+            return R.fail("ELECTRICITY.0061", "下单过于频繁 请"+electricityConfig.getOrderTime()+"分钟后重试");
         }
 
         //判断用户是否有未完成订单
