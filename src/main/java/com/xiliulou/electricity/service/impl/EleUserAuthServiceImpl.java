@@ -6,10 +6,12 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.storage.config.StorageConfig;
@@ -51,6 +53,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 	@Autowired
 	StorageConfig storageConfig;
+
+	@Autowired
+	ElectricityConfigService electricityConfigService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -103,63 +108,16 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R insertEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		UserInfo oldUserInfo = userInfoService.queryByUid(uid);
-		if (Objects.isNull(oldUserInfo)) {
-			log.error("ELECTRICITY  ERROR! not found user,uid:{} ", oldUserInfo);
-			return R.fail("ELECTRICITY.0019", "未找到用户");
-		}
-		//用户是否可用
-		if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", oldUserInfo);
-			return R.fail("ELECTRICITY.0024", "用户已被禁用");
-		}
-
-		UserInfo userInfo = new UserInfo();
-		userInfo.setId(oldUserInfo.getId());
-
-		for (EleUserAuth eleUserAuth : eleUserAuthList) {
-			eleUserAuth.setUid(uid);
-			if (StringUtils.isEmpty(eleUserAuth.getValue())) {
-				return R.fail("ELECTRICITY.0007", "不合法的参数");
-			}
-
-			EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromDB(eleUserAuth.getEntryId());
-			if (Objects.isNull(eleAuthEntryDb)) {
-				log.error("not found authEntry entryId:{}", eleUserAuth.getEntryId());
-				return R.fail("审核资料项不存在!");
-			}
-
-			if (ObjectUtil.equal(EleAuthEntry.ID_NAME_ID, eleUserAuth.getEntryId())) {
-				userInfo.setName(eleUserAuth.getValue());
-			}
-			if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
-				userInfo.setIdNumber(eleUserAuth.getValue());
-			}
-			if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleUserAuth.getEntryId())) {
-				userInfo.setMailbox(eleUserAuth.getValue());
-			}
-
-			eleUserAuth.setStatus(EleUserAuth.STATUS_PENDING_REVIEW);
-			eleUserAuth.setCreateTime(System.currentTimeMillis());
-			eleUserAuth.setUpdateTime(System.currentTimeMillis());
-			eleUserAuthMapper.insert(eleUserAuth);
-		}
-
-		userInfo.setUid(uid);
-		userInfo.setAuthStatus(UserInfo.AUTH_STATUS_PENDING_REVIEW);
-		userInfo.setUpdateTime(System.currentTimeMillis());
-		userInfoService.update(userInfo);
-
-		return R.ok();
+		return webAuth(eleUserAuthList);
 	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
+		return webAuth(eleUserAuthList);
+	}
+
+	public R webAuth(List<EleUserAuth> eleUserAuthList){
 		Long uid = SecurityUtils.getUid();
 		if (Objects.isNull(uid)) {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -185,6 +143,15 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		UserInfo userInfo = new UserInfo();
 		userInfo.setId(oldUserInfo.getId());
 
+		//是否需要人工审核
+		Integer status=EleUserAuth.STATUS_PENDING_REVIEW;
+		ElectricityConfig electricityConfig=electricityConfigService.queryOne();
+		if(Objects.nonNull(electricityConfig)){
+			if (Objects.equals(electricityConfig.getIsManualReview(),ElectricityConfig.AUTO_REVIEW)){
+				status=EleUserAuth.STATUS_REVIEW_PASSED;
+			}
+		}
+
 		for (EleUserAuth eleUserAuth : eleUserAuthList) {
 			eleUserAuth.setUid(uid);
 			if (StringUtils.isEmpty(eleUserAuth.getValue())) {
@@ -207,7 +174,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 				userInfo.setMailbox(eleUserAuth.getValue());
 			}
 
-			eleUserAuth.setStatus(EleUserAuth.STATUS_PENDING_REVIEW);
+			eleUserAuth.setStatus(status);
 			eleUserAuth.setUpdateTime(System.currentTimeMillis());
 			if (Objects.isNull(eleUserAuth.getId())) {
 				eleUserAuth.setCreateTime(System.currentTimeMillis());
@@ -218,12 +185,11 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		}
 
 		userInfo.setUid(uid);
-		userInfo.setAuthStatus(UserInfo.AUTH_STATUS_PENDING_REVIEW);
+		userInfo.setAuthStatus(status);
 		userInfo.setUpdateTime(System.currentTimeMillis());
 		userInfoService.update(userInfo);
 
 		return R.ok();
-
 	}
 
 	@Override

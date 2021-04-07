@@ -32,6 +32,10 @@ public class ElectricityConfig {
      */
     private Integer orderTime;
     /**
+     * 是否人工审核（0--是，1--否）
+     */
+    private Integer isManualReview;
+    /**
      * 创建时间
      */
     private Long createTime;
@@ -39,5 +43,10 @@ public class ElectricityConfig {
      * 更新时间
      */
     private Long updateTime;
+
+    //人工审核
+    public static Integer MANUAL_REVIEW = 0;
+    //自动审核
+    public static Integer AUTO_REVIEW = 1;
 
 }
