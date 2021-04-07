@@ -50,4 +50,17 @@ public class UserAuthInfoVo {
 	 */
 	private Long createTime;
 
+	/**
+	 * 初始电池编号
+	 */
+	private String initElectricityBatterySn;
+	/**
+	 * 当前电池编号
+	 */
+	private String nowElectricityBatterySn;
+	/**
+	 * 服务状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
+	 */
+	private Integer serviceStatus;
+
 }
