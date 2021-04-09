@@ -1431,7 +1431,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         newElectricityBattery.setId(electricityBattery.getId());
         Double power = batteryReportQuery.getPower();
         if (Objects.nonNull(power)) {
-            newElectricityBattery.setPower(power * 100);
+            newElectricityBattery.setPower(power);
         }
         electricityBatteryService.updateReport(newElectricityBattery);
         return R.ok();
