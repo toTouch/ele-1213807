@@ -149,7 +149,7 @@ public class ElectricityCabinetOuterController {
      *
      * @return
      */
-    @GetMapping(value = "/outer/batteryReport")
+    @PostMapping(value = "/outer/batteryReport")
     public R batteryReport(@RequestBody BatteryReportQuery batteryReportQuery) {
         return electricityCabinetService.batteryReport(batteryReportQuery);
     }
