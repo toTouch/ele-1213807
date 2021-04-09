@@ -1417,6 +1417,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         String batteryName = batteryReportQuery.getBatteryName();
         if (StringUtils.isEmpty(batteryName)) {
+            log.error("batteryName is null");
             return R.ok();
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
@@ -1428,7 +1429,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //修改电池
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
-        newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         Double power = batteryReportQuery.getPower();
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power * 100);
