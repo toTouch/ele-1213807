@@ -16,6 +16,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
+import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -1409,6 +1410,31 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public  List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList) {
         return electricityCabinetMapper.queryNameList(size,offset,eleIdList);
+    }
+
+    @Override
+    public R batteryReport(BatteryReportQuery batteryReportQuery) {
+
+        String batteryName = batteryReportQuery.getBatteryName();
+        if (StringUtils.isEmpty(batteryName)) {
+            return R.ok();
+        }
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
+        if (Objects.isNull(electricityBattery)) {
+            log.error("ele battery error! no electricityBattery,sn,{}",batteryName);
+            return R.ok();
+        }
+
+        //修改电池
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(electricityBattery.getId());
+        newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        Double power = batteryReportQuery.getPower();
+        if (Objects.nonNull(power)) {
+            newElectricityBattery.setPower(power * 100);
+        }
+        electricityBatteryService.updateReport(newElectricityBattery);
+        return R.ok();
     }
 
 

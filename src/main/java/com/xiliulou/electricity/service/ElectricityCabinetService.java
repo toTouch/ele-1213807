@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -89,4 +90,6 @@ public interface ElectricityCabinetService {
     R rentBattery(String productKey, String deviceName);
 
     List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
+
+    R batteryReport(BatteryReportQuery batteryReportQuery);
 }

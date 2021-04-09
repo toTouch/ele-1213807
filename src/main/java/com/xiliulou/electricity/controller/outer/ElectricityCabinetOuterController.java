@@ -2,7 +2,10 @@ package com.xiliulou.electricity.controller.outer;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -10,8 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -137,6 +142,16 @@ public class ElectricityCabinetOuterController {
     @GetMapping(value = "/outer/electricityCabinet")
     public R queryByDevice(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
         return electricityCabinetService.queryByDeviceOuter(productKey, deviceName);
+    }
+
+    /**
+     * 电池电量上报
+     *
+     * @return
+     */
+    @GetMapping(value = "/outer/batteryReport")
+    public R batteryReport(@RequestBody BatteryReportQuery batteryReportQuery) {
+        return electricityCabinetService.batteryReport(batteryReportQuery);
     }
 
 
