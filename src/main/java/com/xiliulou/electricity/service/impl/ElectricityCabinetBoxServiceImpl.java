@@ -121,8 +121,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-                .eq(ElectricityCabinetBox::getUsableStatus,ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE)
-                .lt(ElectricityCabinetBox::getChangeStatusTime,System.currentTimeMillis()-30*1000L));
+                .eq(ElectricityCabinetBox::getUsableStatus,ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
     }
 
     @Override

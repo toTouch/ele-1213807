@@ -79,10 +79,18 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (Objects.nonNull(reportTime)) {
             electricityCabinetBox.setReportTime(reportTime);
         }
-
-        Boolean flag=false;
-
         String batteryName = eleBatteryVo.getBatteryName();
+        Boolean existsBattery=eleBatteryVo.getExistsBattery();
+
+        //存在电池但是电池名字没有上报
+        if(Objects.nonNull(existsBattery)&&Objects.isNull(batteryName)&&existsBattery){
+            return false;
+        }
+
+        //不存在电池
+        if(Objects.nonNull(existsBattery)&&!existsBattery){
+            batteryName=null;
+        }
         if (StringUtils.isEmpty(batteryName)) {
             electricityCabinetBox.setElectricityBatteryId(-1L);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
@@ -97,7 +105,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 newElectricityBattery.setId(oldElectricityCabinetBox.getElectricityBatteryId());
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
                 electricityBatteryService.updateReport(newElectricityBattery);
-                flag=true;
             }
             return false;
         }
@@ -123,11 +130,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (StringUtils.isNotEmpty(chargeStatus)) {
             newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
         }
-        //无电池改成有电池
-        if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY)
-                && Objects.isNull(oldElectricityCabinetBox.getElectricityBatteryId())){
-            flag=true;
-        }
         electricityBatteryService.updateReport(newElectricityBattery);
 
 
@@ -136,9 +138,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetBox.setCellNo(cellNo);
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-        if(flag){
-            electricityCabinetBox.setChangeStatusTime(System.currentTimeMillis());
-        }
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
         return true;
     }
@@ -159,4 +158,7 @@ class EleBatteryVo {
     private String cellNo;
     //reportTime
     private Long reportTime;
+
+    private Boolean existsBattery;
+
 }

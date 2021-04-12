@@ -119,9 +119,6 @@
             <if test="reportTime != null">
                 report_time = #{reportTime},
             </if>
-            <if test="changeStatusTime != null">
-                change_status_time = #{changeStatusTime},
-            </if>
         </set>
         where cell_no = #{cellNo} and electricity_cabinet_id = #{electricityCabinetId} and del_flag=0
     </update>
