@@ -80,6 +80,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             electricityCabinetBox.setReportTime(reportTime);
         }
 
+        Boolean flag=false;
+
         String batteryName = eleBatteryVo.getBatteryName();
         if (StringUtils.isEmpty(batteryName)) {
             electricityCabinetBox.setElectricityBatteryId(-1L);
@@ -95,6 +97,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 newElectricityBattery.setId(oldElectricityCabinetBox.getElectricityBatteryId());
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
                 electricityBatteryService.updateReport(newElectricityBattery);
+                flag=true;
             }
             return false;
         }
@@ -120,6 +123,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (StringUtils.isNotEmpty(chargeStatus)) {
             newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
         }
+        //无电池改成有电池
+        if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY)
+                && Objects.isNull(oldElectricityCabinetBox.getElectricityBatteryId())){
+            flag=true;
+        }
         electricityBatteryService.updateReport(newElectricityBattery);
 
 
@@ -128,6 +136,9 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetBox.setCellNo(cellNo);
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        if(flag){
+            electricityCabinetBox.setChangeStatusTime(System.currentTimeMillis());
+        }
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
         return true;
     }
