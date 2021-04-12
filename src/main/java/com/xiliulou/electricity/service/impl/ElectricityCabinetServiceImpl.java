@@ -1433,6 +1433,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power);
         }
+        Double latitude = batteryReportQuery.getLatitude();
+        if (Objects.nonNull(latitude)) {
+            newElectricityBattery.setLatitude(latitude);
+        }
+        Double longitude = batteryReportQuery.getLongitude();
+        if (Objects.nonNull(longitude)) {
+            newElectricityBattery.setLongitude(longitude);
+        }
         electricityBatteryService.updateReport(newElectricityBattery);
         return R.ok();
     }

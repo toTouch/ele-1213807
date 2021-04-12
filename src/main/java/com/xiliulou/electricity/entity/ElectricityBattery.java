@@ -72,6 +72,15 @@ public class ElectricityBattery {
      */
     private Integer chargeStatus;
 
+    /**
+     * 地址经度
+     */
+    private Double longitude;
+    /**
+     * 地址纬度
+     */
+    private Double latitude;
+
     //在仓
     public static final Integer WARE_HOUSE_STATUS = 0;
     //在库
