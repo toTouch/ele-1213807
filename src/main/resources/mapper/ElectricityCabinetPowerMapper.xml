@@ -75,6 +75,7 @@
             </if>
         </where>
         order by tecp.create_time DESC
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--新增所有列-->
