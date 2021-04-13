@@ -76,5 +76,5 @@ public interface ElectricityCabinetPowerMapper  extends BaseMapper<ElectricityCa
     @SelectKey(keyProperty = "id", statement = "select LAST_INSERT_ID()", before = false, resultType = Long.class)
     int insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
 
-    List<Map> queryList(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+    List<Map<String,Object>> queryList(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
 }
