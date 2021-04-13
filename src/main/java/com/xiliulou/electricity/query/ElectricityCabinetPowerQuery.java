@@ -19,4 +19,6 @@ public class ElectricityCabinetPowerQuery {
      * 日期
      */
     private LocalDate date;
+
+    private String electricityCabinetName;
 }

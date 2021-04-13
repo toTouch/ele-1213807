@@ -106,9 +106,7 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
 
     @Override
     public R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery) {
-        Page page = PageUtil.getPage(electricityCabinetPowerQuery.getOffset(), electricityCabinetPowerQuery.getSize());
-        electricityCabinetPowerMapper.queryList(page,electricityCabinetPowerQuery);
-        return R.ok(page);
+        return R.ok(electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery));
     }
 
 }

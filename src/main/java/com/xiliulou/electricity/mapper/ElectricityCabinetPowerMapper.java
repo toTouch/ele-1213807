@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import java.util.List;
+import java.util.Map;
 
 import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
 import org.apache.ibatis.annotations.Insert;
@@ -75,5 +76,5 @@ public interface ElectricityCabinetPowerMapper  extends BaseMapper<ElectricityCa
     @SelectKey(keyProperty = "id", statement = "select LAST_INSERT_ID()", before = false, resultType = Long.class)
     int insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
 
-    IPage queryList(Page page, @Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+    List<Map> queryList(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
 }

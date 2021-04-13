@@ -35,6 +35,7 @@ public class ElectricityCabinetPowerAdminController {
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                       @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                        @RequestParam(value = "date", required = false) LocalDate date) {
         if (Objects.isNull(size)) {
             size = 10L;
@@ -48,6 +49,7 @@ public class ElectricityCabinetPowerAdminController {
                 .offset(offset)
                 .size(size)
                 .electricityCabinetId(electricityCabinetId)
+                .electricityCabinetName(electricityCabinetName)
                 .date(date)
                 .build();
 

@@ -57,19 +57,24 @@
             </if>
         </where>
     </select>
-    <select id="queryList"  resultMap="ElectricityCabinetPowerMap">
+    <select id="queryList"  resultType="java.util.Map">
         select
-        id, eid, same_day_power, sum_power, `date`, create_time, update_time
-        from electricity.t_electricity_cabinet_power
+        tecp.id as id, tecp.eid as electricityCabinetId, tecp.same_day_power as sameDayPower, tecp.sum_power as sumPower,
+         tecp.`date` as `date`, tecp.create_time as createTime, tecp.update_time as updateTime,tec.name as electricityCabinetName
+        from electricity.t_electricity_cabinet_power as tecp
+        left join electricity.t_electricity_cabinet as tec on tecp.eid=tec.id
         <where>
             <if test="query.electricityCabinetId != null">
-                and eid = #{query.electricityCabinetId}
+                and tec.eid = #{query.electricityCabinetId}
             </if>
             <if test="query.date != null">
-                and `date` = #{query.date}
+                and tec.`date` = #{query.date}
+            </if>
+            <if test="query.electricityCabinetName != null">
+                and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')
             </if>
         </where>
-        order by update_time
+        order by tecp.create_time DESC
     </select>
 
     <!--新增所有列-->
