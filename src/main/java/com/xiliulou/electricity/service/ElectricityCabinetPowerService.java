@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
+import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
+
 import java.util.List;
 
 /**
@@ -63,4 +66,5 @@ public interface ElectricityCabinetPowerService {
 
     Integer insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
 
+    R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
 }

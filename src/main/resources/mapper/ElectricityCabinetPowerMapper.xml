@@ -57,6 +57,20 @@
             </if>
         </where>
     </select>
+    <select id="queryList"  resultMap="ElectricityCabinetPowerMap">
+        select
+        id, eid, same_day_power, sum_power, `date`, create_time, update_time
+        from electricity.t_electricity_cabinet_power
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and eid = #{query.electricityCabinetId}
+            </if>
+            <if test="query.date != null">
+                and `date` = #{query.date}
+            </if>
+        </where>
+        order by update_time
+    </select>
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
