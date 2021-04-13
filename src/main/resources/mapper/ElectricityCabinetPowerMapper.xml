@@ -65,10 +65,10 @@
         left join electricity.t_electricity_cabinet as tec on tecp.eid=tec.id
         <where>
             <if test="query.electricityCabinetId != null">
-                and tec.eid = #{query.electricityCabinetId}
+                and tecp.eid = #{query.electricityCabinetId}
             </if>
             <if test="query.date != null">
-                and tec.`date` = #{query.date}
+                and tecp.`date` = #{query.date}
             </if>
             <if test="query.electricityCabinetName != null">
                 and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')
