@@ -34,8 +34,8 @@ public class ElectricityCabinetPowerAdminController {
     @GetMapping(value = "/admin/electricityCabinetPower/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "sn", required = false) Integer electricityCabinetId,
-                       @RequestParam(value = "name", required = false) LocalDate date) {
+                       @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                       @RequestParam(value = "date", required = false) LocalDate date) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
