@@ -72,6 +72,18 @@ public class ElectricityBattery {
      */
     private Integer chargeStatus;
 
+    /**
+     * 地址经度
+     */
+    private Double longitude;
+    /**
+     * 地址纬度
+     */
+    private Double latitude;
+
+
+
+
     //在仓
     public static final Integer WARE_HOUSE_STATUS = 0;
     //在库
@@ -80,5 +92,6 @@ public class ElectricityBattery {
     public static final Integer LEASE_STATUS = 2;
     //异常取走
     public static final Integer EXCEPTION_STATUS = 3;
+
 
 }

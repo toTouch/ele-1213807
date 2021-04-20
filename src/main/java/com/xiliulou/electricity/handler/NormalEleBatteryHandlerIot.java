@@ -79,8 +79,18 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (Objects.nonNull(reportTime)) {
             electricityCabinetBox.setReportTime(reportTime);
         }
-
         String batteryName = eleBatteryVo.getBatteryName();
+        Boolean existsBattery=eleBatteryVo.getExistsBattery();
+
+        //存在电池但是电池名字没有上报
+        if(Objects.nonNull(existsBattery)&&StringUtils.isEmpty(batteryName)&&existsBattery){
+            return false;
+        }
+
+        //不存在电池
+        if(Objects.nonNull(existsBattery)&&!existsBattery){
+            batteryName=null;
+        }
         if (StringUtils.isEmpty(batteryName)) {
             electricityCabinetBox.setElectricityBatteryId(-1L);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
@@ -96,7 +106,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
                 electricityBatteryService.updateReport(newElectricityBattery);
             }
-            return false;
+            return true;
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
@@ -148,4 +158,7 @@ class EleBatteryVo {
     private String cellNo;
     //reportTime
     private Long reportTime;
+
+    private Boolean existsBattery;
+
 }

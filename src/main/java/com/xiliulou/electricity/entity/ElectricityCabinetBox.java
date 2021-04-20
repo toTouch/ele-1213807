@@ -79,6 +79,7 @@ public class ElectricityCabinetBox {
     //上报时间
     private Long reportTime;
 
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
     //可用
