@@ -83,7 +83,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         Boolean existsBattery=eleBatteryVo.getExistsBattery();
 
         //存在电池但是电池名字没有上报
-        if(Objects.nonNull(existsBattery)&&Objects.isNull(batteryName)&&existsBattery){
+        if(Objects.nonNull(existsBattery)&&StringUtils.isEmpty(batteryName)&&existsBattery){
             return false;
         }
 
@@ -106,7 +106,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
                 electricityBatteryService.updateReport(newElectricityBattery);
             }
-            return false;
+            return true;
         }
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
