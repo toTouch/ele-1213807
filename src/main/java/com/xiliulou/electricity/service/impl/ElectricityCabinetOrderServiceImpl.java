@@ -241,7 +241,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 //扣除月卡
                 int row = userInfoService.minCount(userInfo.getId());
                 if (row < 1) {
-                    log.error("ELECTRICITY  ERROR! not found memberCard ");
+                    log.error("ELECTRICITY  ERROR! not found memberCard uid={}",user.getUid());
                     return R.fail("ELECTRICITY.0023", "月卡已过期");
                 }
             }
