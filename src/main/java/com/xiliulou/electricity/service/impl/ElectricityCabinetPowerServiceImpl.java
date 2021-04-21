@@ -1,8 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPowerMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
+import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
@@ -98,6 +102,11 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
     @Override
     public Integer insertOrUpdate(ElectricityCabinetPower electricityCabinetPower) {
         return this.electricityCabinetPowerMapper.insertOrUpdate(electricityCabinetPower);
+    }
+
+    @Override
+    public R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery) {
+        return R.ok(electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery));
     }
 
 }

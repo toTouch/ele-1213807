@@ -57,6 +57,26 @@
             </if>
         </where>
     </select>
+    <select id="queryList"  resultType="java.util.Map">
+        select
+        tecp.id as id, tecp.eid as electricityCabinetId, tecp.same_day_power as sameDayPower, tecp.sum_power as sumPower,
+         tecp.`date` as `date`, tecp.create_time as createTime, tecp.update_time as updateTime,tec.name as electricityCabinetName
+        from electricity.t_electricity_cabinet_power as tecp
+        left join electricity.t_electricity_cabinet as tec on tecp.eid=tec.id
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and tecp.eid = #{query.electricityCabinetId}
+            </if>
+            <if test="query.date != null">
+                and tecp.`date` = #{query.date}
+            </if>
+            <if test="query.electricityCabinetName != null">
+                and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')
+            </if>
+        </where>
+        order by tecp.create_time DESC
+        limit #{query.offset}, #{query.size}
+    </select>
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
