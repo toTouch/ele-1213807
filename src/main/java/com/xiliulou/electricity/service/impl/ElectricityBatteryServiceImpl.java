@@ -13,7 +13,9 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.utils.PageUtil;
+import com.xiliulou.electricity.vo.ElectricityBatteryVo;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -97,8 +99,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public ElectricityBattery queryById(Long electricityBatteryId) {
-        return electricitybatterymapper.selectById(electricityBatteryId);
+    public ElectricityBatteryVo queryById(Long electricityBatteryId) {
+        return electricitybatterymapper.queryById(electricityBatteryId);
     }
 
     /**

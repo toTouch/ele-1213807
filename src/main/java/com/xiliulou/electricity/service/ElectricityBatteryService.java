@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.vo.ElectricityBatteryVo;
 
 import java.util.List;
 
@@ -22,7 +23,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
-    ElectricityBattery queryById(Long electricityBatteryId);
+    ElectricityBatteryVo queryById(Long electricityBatteryId);
 
     R deleteElectricityBattery(Long id);
 

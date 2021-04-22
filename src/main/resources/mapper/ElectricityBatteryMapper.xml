@@ -55,5 +55,11 @@
 				LEFT JOIN t_user_info   tui  on  tui.now_electricity_battery_sn = eb.sn
         WHERE tui.uid = #{uid};
     </select>
+    <select id="queryById" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
+        select tel.* ,  tui.name as user_name from
+        t_electricity_battery tel
+        LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.sn
+        where tel.del_flag = 0 and tel.id=#{id}
+    </select>
 
 </mapper>
