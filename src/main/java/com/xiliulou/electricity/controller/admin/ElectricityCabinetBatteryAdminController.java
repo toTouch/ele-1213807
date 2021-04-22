@@ -133,4 +133,16 @@ public class ElectricityCabinetBatteryAdminController {
         electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         return electricityBatteryService.pageByFranchisee(electricityBatteryQuery, offset, size);
     }
+
+
+    /**
+     * 获取单个电池
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/admin/battery/{id}")
+    public R queryById(@PathVariable("id") Long id) {
+        return R.ok(electricityBatteryService.queryById(id));
+    }
 }
