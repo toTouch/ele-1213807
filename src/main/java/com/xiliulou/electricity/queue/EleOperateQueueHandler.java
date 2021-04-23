@@ -222,6 +222,7 @@ public class EleOperateQueueHandler {
         //分配新仓门 新仓门分配失败则弹开旧门
         String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
         if(Objects.isNull(cellNo)){
+            log.error("check Old Battery not find fully battery!orderId:{}",electricityCabinetOrder.getOrderId());
             return;
         }
         try {
