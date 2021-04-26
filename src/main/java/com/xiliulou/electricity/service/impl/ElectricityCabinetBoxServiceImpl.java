@@ -133,7 +133,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 .ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
 
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
-        if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+        if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
             return electricityCabinetBoxList;
         }
 
