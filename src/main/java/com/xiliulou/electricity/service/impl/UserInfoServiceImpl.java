@@ -436,12 +436,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			//身份证
 			if (Objects.nonNull(userInfo.getIdNumber())) {
 				EleUserAuth eleUserAuth1 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_ID_CARD);
-				eleUserAuth1.setUpdateTime(System.currentTimeMillis());
-				eleUserAuth1.setValue(userInfo.getIdNumber());
 				if (Objects.nonNull(eleUserAuth1)) {
+					eleUserAuth1.setUpdateTime(System.currentTimeMillis());
+					eleUserAuth1.setValue(userInfo.getIdNumber());
 					eleUserAuthService.update(eleUserAuth1);
 				} else {
 					eleUserAuth1 = new EleUserAuth();
+					eleUserAuth1.setUpdateTime(System.currentTimeMillis());
+					eleUserAuth1.setValue(userInfo.getIdNumber());
 					eleUserAuth1.setCreateTime(System.currentTimeMillis());
 					eleUserAuthService.insert(eleUserAuth1);
 				}
@@ -450,12 +452,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			//姓名
 			if (Objects.nonNull(userInfo.getName())) {
 				EleUserAuth eleUserAuth2 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_NAME_ID);
-				eleUserAuth2.setUpdateTime(System.currentTimeMillis());
-				eleUserAuth2.setValue(userInfo.getName());
 				if (Objects.nonNull(eleUserAuth2)) {
+					eleUserAuth2.setUpdateTime(System.currentTimeMillis());
+					eleUserAuth2.setValue(userInfo.getName());
 					eleUserAuthService.update(eleUserAuth2);
 				} else {
 					eleUserAuth2 = new EleUserAuth();
+					eleUserAuth2.setUpdateTime(System.currentTimeMillis());
+					eleUserAuth2.setValue(userInfo.getName());
 					eleUserAuth2.setCreateTime(System.currentTimeMillis());
 					eleUserAuthService.insert(eleUserAuth2);
 				}
@@ -464,12 +468,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			//邮箱
 			if (Objects.nonNull(userInfo.getMailbox())) {
 				EleUserAuth eleUserAuth3 = eleUserAuthService.queryByUidAndEntryId(newUserInfo.getUid(), EleAuthEntry.ID_MAILBOX);
-				eleUserAuth3.setUpdateTime(System.currentTimeMillis());
-				eleUserAuth3.setValue(userInfo.getMailbox());
 				if (Objects.nonNull(eleUserAuth3)) {
+					eleUserAuth3.setUpdateTime(System.currentTimeMillis());
+					eleUserAuth3.setValue(userInfo.getMailbox());
 					eleUserAuthService.update(eleUserAuth3);
 				} else {
 					eleUserAuth3 = new EleUserAuth();
+					eleUserAuth3.setUpdateTime(System.currentTimeMillis());
+					eleUserAuth3.setValue(userInfo.getMailbox());
 					eleUserAuth3.setCreateTime(System.currentTimeMillis());
 					eleUserAuthService.insert(eleUserAuth3);
 				}
