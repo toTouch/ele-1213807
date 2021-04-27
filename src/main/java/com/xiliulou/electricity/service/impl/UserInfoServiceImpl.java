@@ -443,6 +443,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 				} else {
 					eleUserAuth1 = new EleUserAuth();
 					eleUserAuth1.setUid(userInfo.getUid());
+					eleUserAuth1.setEntryId(EleAuthEntry.ID_ID_CARD);
 					eleUserAuth1.setUpdateTime(System.currentTimeMillis());
 					eleUserAuth1.setValue(userInfo.getIdNumber());
 					eleUserAuth1.setCreateTime(System.currentTimeMillis());
@@ -460,6 +461,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 				} else {
 					eleUserAuth2 = new EleUserAuth();
 					eleUserAuth2.setUid(userInfo.getUid());
+					eleUserAuth2.setEntryId(EleAuthEntry.ID_NAME_ID);
 					eleUserAuth2.setUpdateTime(System.currentTimeMillis());
 					eleUserAuth2.setValue(userInfo.getName());
 					eleUserAuth2.setCreateTime(System.currentTimeMillis());
@@ -477,6 +479,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 				} else {
 					eleUserAuth3 = new EleUserAuth();
 					eleUserAuth3.setUid(userInfo.getUid());
+					eleUserAuth3.setEntryId(EleAuthEntry.ID_MAILBOX);
 					eleUserAuth3.setUpdateTime(System.currentTimeMillis());
 					eleUserAuth3.setValue(userInfo.getMailbox());
 					eleUserAuth3.setCreateTime(System.currentTimeMillis());
