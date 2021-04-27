@@ -83,7 +83,7 @@
     <update id="modifyByCellNo">
         update electricity.t_electricity_cabinet_box
         <set>
-            <if test="electricityBatteryId != null">
+            <if test="electricityBatteryId != null and  electricityBatteryId !=-1">
                 electricity_battery_id = #{electricityBatteryId},
             </if>
             <if test="electricityBatteryId ==-1">
