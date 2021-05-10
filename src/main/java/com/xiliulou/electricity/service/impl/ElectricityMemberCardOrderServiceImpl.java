@@ -147,8 +147,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public BigDecimal homeOne(Long first, Long now) {
-        return baseMapper.homeOne(first, now);
+    public BigDecimal homeOne(Long first, Long now,List<Integer> eleIdList) {
+        return baseMapper.homeOne(first, now,eleIdList);
     }
 
     @Override

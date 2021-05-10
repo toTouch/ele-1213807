@@ -43,7 +43,7 @@ public interface ElectricityCabinetOrderService {
 
     R openDoor(OpenDoorQuery openDoorQuery);
 
-    Integer homeOneCount(Long first, Long now);
+    Integer homeOneCount(Long first, Long now,List<Integer> eleIdList);
 
     BigDecimal homeOneSuccess(Long first, Long now);
 

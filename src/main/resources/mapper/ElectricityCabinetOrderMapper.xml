@@ -76,6 +76,9 @@
         group by from_unixtime(create_time / 1000, '%Y-%m-%d')
         order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
     </select>
+    <select id="homeOneCount" resultType="java.lang.Integer">
+
+    </select>
 
     <!--通过主键修改数据-->
     <update id="update">

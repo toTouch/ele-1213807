@@ -401,8 +401,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
-    public Integer homeOneCount(Long first, Long now) {
-        return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now));
+    public Integer homeOneCount(Long first, Long now,List<Integer> eleIdList) {
+        return electricityCabinetOrderMapper.homeOneCount(first,now,eleIdList);
     }
 
     @Override
