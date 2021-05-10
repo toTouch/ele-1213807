@@ -276,8 +276,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public Integer homeOneService(Long first, Long now,List<Integer> cidList) {
-		return userInfoMapper.homeOneService(first,now,cidList);
+	public Integer homeOneAuth(Long first, Long now, List<Integer> cidList) {
+		return userInfoMapper.homeOneAuth(first,now,cidList);
 	}
 
 	@Override

@@ -63,7 +63,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer homeOneTotal(Long first, Long now,List<Integer> cidList);
 
-    Integer homeOneService(Long first, Long now,List<Integer> cidList);
+    Integer homeOneAuth(Long first, Long now, List<Integer> cidList);
 
     Integer homeOneMemberCard(Long first, Long now,List<Integer> cidList);
 

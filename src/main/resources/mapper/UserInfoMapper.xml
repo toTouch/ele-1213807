@@ -157,11 +157,11 @@
             </foreach>
         </if>
     </select>
-    <select id="homeOneService" resultType="java.lang.Integer">
+    <select id="homeOneAuth" resultType="java.lang.Integer">
         select count(1)
         from electricity.t_user_info as tui
         left join electricity.t_user as tu
-        where tui.del_flag=0
+        where tui.del_flag=0 and service_status=1
         and tui.create_time &gt;=#{first}
         and tui.create_time &lt;=#{now}
         <if test="cidList!=null and cidList!=''">

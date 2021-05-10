@@ -61,5 +61,5 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now, @Param("cidList") List<Integer> cidList);
 
-    Integer homeOneService(@Param("first") Long first,@Param("now") Long now, @Param("cidList") List<Integer> cidList);
+    Integer homeOneAuth(@Param("first") Long first, @Param("now") Long now, @Param("cidList") List<Integer> cidList);
 }

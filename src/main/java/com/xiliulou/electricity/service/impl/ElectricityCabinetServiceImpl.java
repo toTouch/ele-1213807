@@ -623,24 +623,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
         HashMap<String, String> userInfo = new HashMap<>();
         userInfo.put("totalCount", "0");
-        userInfo.put("serviceCount", "0");
-        userInfo.put("MemberCardCount", "0");
+        userInfo.put("authCount", "0");
         userInfo.put("allTotalCount", "0");
         homeOne.put("userInfo", userInfo);
 
 
         HashMap<String, String> moneyInfo = new HashMap<>();
         moneyInfo.put("nowMoney", "0");
-        moneyInfo.put("beforMoney", "0");
+        moneyInfo.put("beforeMoney", "0");
         moneyInfo.put("totalMoney", "0");
         homeOne.put("moneyInfo", moneyInfo);
 
         HashMap<String, String> orderInfo = new HashMap<>();
         orderInfo.put("nowCount", "0");
-        orderInfo.put("beforCount", "0");
+        orderInfo.put("beforeCount", "0");
         orderInfo.put("successOrder", "0");
         orderInfo.put("totalCount", "0");
-        homeOne.put("orderInfo", orderInfo);
         homeOne.put("orderInfo", orderInfo);
 
         //如果是查全部则直接跳过
@@ -673,12 +671,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
             Integer totalCount = userInfoService.homeOneTotal(first, now,cidList);
-            Integer serviceCount = userInfoService.homeOneService(first, now,cidList);
-            Integer memberCardCount = userInfoService.homeOneMemberCard(first, now,cidList);
+            Integer authCount = userInfoService.homeOneAuth(first, now,cidList);
             Integer allTotalCount = userInfoService.homeOneTotal(0L, now,cidList);
             userInfo.put("totalCount", totalCount.toString());
-            userInfo.put("serviceCount", serviceCount.toString());
-            userInfo.put("MemberCardCount", memberCardCount.toString());
+            userInfo.put("authCount", authCount.toString());
             userInfo.put("allTotalCount", allTotalCount.toString());
 
         }
@@ -700,7 +696,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 totalMoney = BigDecimal.valueOf(0);
             }
             moneyInfo.put("nowMoney", nowMoney.toString());
-            moneyInfo.put("beforMoney", beforeMoney.toString());
+            moneyInfo.put("beforeMoney", beforeMoney.toString());
             moneyInfo.put("totalMoney", totalMoney.toString());
         }
         homeOne.put("moneyInfo", moneyInfo);
@@ -713,7 +709,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //成功率
         BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now, eleIdList);
         orderInfo.put("nowCount", nowCount.toString());
-        orderInfo.put("beforCount", beforeCount.toString());
+        orderInfo.put("beforeCount", beforeCount.toString());
         orderInfo.put("successOrder", successOrder.toString());
         orderInfo.put("totalCount", count.toString());
         homeOne.put("orderInfo", orderInfo);
