@@ -61,11 +61,11 @@ public interface UserInfoService extends IService<UserInfo> {
 
     UserInfo queryByUid(Long uid);
 
-    Integer homeOneTotal(Long first, Long now);
+    Integer homeOneTotal(Long first, Long now,List<Integer> cidList);
 
-    Integer homeOneService(Long first, Long now);
+    Integer homeOneService(Long first, Long now,List<Integer> cidList);
 
-    Integer homeOneMemberCard(Long first, Long now);
+    Integer homeOneMemberCard(Long first, Long now,List<Integer> cidList);
 
     int minCount(Long id);
 

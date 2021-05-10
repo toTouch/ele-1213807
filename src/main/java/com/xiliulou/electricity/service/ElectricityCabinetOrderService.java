@@ -45,7 +45,7 @@ public interface ElectricityCabinetOrderService {
 
     Integer homeOneCount(Long first, Long now,List<Integer> eleIdList);
 
-    BigDecimal homeOneSuccess(Long first, Long now);
+    BigDecimal homeOneSuccess(Long first, Long now,List<Integer> eleIdList);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay);
 

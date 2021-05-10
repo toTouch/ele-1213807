@@ -271,18 +271,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public Integer homeOneTotal(Long first, Long now) {
-		return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime, first, now).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+	public Integer homeOneTotal(Long first, Long now,List<Integer> cidList) {
+		return userInfoMapper.homeOneTotal(first,now,cidList);
 	}
 
 	@Override
-	public Integer homeOneService(Long first, Long now) {
-		return userInfoMapper.selectCount(new LambdaQueryWrapper<UserInfo>().between(UserInfo::getCreateTime, first, now).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+	public Integer homeOneService(Long first, Long now,List<Integer> cidList) {
+		return userInfoMapper.homeOneService(first,now,cidList);
 	}
 
 	@Override
-	public Integer homeOneMemberCard(Long first, Long now) {
-		return userInfoMapper.homeOneMemberCard(first, now);
+	public Integer homeOneMemberCard(Long first, Long now,List<Integer> cidList) {
+		return userInfoMapper.homeOneMemberCard(first, now,cidList);
 	}
 
 	@Override

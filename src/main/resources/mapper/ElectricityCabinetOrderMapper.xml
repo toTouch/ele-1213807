@@ -77,7 +77,39 @@
         order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
     </select>
     <select id="homeOneCount" resultType="java.lang.Integer">
-
+        select count(1)
+        from electricity.t_electricity_cabinet_order
+        <where>
+            <if test="first != null">
+                and create_time &gt;=#{first}
+            </if>
+            <if test="now != null">
+                and create_time &lt;=#{now}
+            </if>
+            <if test="eleIdList!=null and eleIdList!=''">
+                and electricity_cabinet_id in
+                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+    <select id="homeOneSuccess" resultType="java.lang.Integer">
+        select count(1)
+        from electricity.t_electricity_cabinet_order
+        where status=6
+            <if test="first != null">
+                and create_time &gt;=#{first}
+            </if>
+            <if test="now != null">
+                and create_time &lt;=#{now}
+            </if>
+            <if test="eleIdList!=null and eleIdList!=''">
+                and electricity_cabinet_id in
+                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
     </select>
 
     <!--通过主键修改数据-->

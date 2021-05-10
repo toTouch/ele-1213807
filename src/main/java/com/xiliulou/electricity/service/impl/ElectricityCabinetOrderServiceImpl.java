@@ -406,9 +406,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
-    public BigDecimal homeOneSuccess(Long first, Long now) {
-        Integer countTotal = homeOneCount(first, now);
-        Integer successTotal = electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE));
+    public BigDecimal homeOneSuccess(Long first, Long now,List<Integer> eleIdList) {
+        Integer countTotal = homeOneCount(first, now,eleIdList);
+        Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first,now,eleIdList);
         if (successTotal == 0 || countTotal == 0) {
             return BigDecimal.valueOf(0);
         }

@@ -49,7 +49,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-    Integer homeOneMemberCard(@Param("startTimeMilliDay") Long first, @Param("endTimeMilliDay") Long now);
+    Integer homeOneMemberCard(@Param("startTimeMilliDay") Long first, @Param("endTimeMilliDay") Long now, @Param("cidList") List<Integer> cidList);
 
     void updateByUid(UserInfo userInfo);
 
@@ -58,4 +58,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     void updateRefund(UserInfo userInfo);
 
     IPage queryUserInfoList(Page page,@Param("query") UserInfoQuery userInfoQuery);
+
+    Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now, @Param("cidList") List<Integer> cidList);
+
+    Integer homeOneService(@Param("first") Long first,@Param("now") Long now, @Param("cidList") List<Integer> cidList);
 }
