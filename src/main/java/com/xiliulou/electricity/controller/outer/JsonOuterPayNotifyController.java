@@ -76,7 +76,7 @@ public class JsonOuterPayNotifyController {
             notifyOrderPair=electricityTradeOrderService.notifyMemberOrder(weiXinPayNotify);
         }
 
-        redisService.deleteKeys("notify_order_no" + orderNo);
+        redisService.delete("notify_order_no" + orderNo);
         if (notifyOrderPair.getLeft()) {
 
             return "OK";

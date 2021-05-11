@@ -262,7 +262,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             }
 
         } finally {
-            redisService.deleteKeys(ElectricityCabinetConstant.CAHCE_THIRD_OAHTH_KEY + code);
+            redisService.delete(ElectricityCabinetConstant.CAHCE_THIRD_OAHTH_KEY + code);
         }
         log.error("TOKEN ERROR! SYSTEM ERROR! params={}", authMap);
         throw new AuthenticationServiceException("系统异常！");

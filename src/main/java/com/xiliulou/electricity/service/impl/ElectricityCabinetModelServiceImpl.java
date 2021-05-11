@@ -130,7 +130,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         int update = electricityCabinetModelMapper.update(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
             return null;
         });
         return R.ok();

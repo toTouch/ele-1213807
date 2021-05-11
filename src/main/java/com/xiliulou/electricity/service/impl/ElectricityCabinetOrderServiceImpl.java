@@ -282,7 +282,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "下单失败");
         } finally {
-            redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderQuery.getElectricityCabinetId() + "_" + cellNo);
+            redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderQuery.getElectricityCabinetId() + "_" + cellNo);
         }
     }
 
@@ -396,7 +396,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
-        redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId());
+        redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId());
         return R.ok();
     }
 

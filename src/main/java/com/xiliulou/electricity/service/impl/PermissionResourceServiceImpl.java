@@ -127,7 +127,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	public Integer update(PermissionResource permissionResource) {
 		int update = this.permissionResourceMapper.update(permissionResource);
 		if (update > 0) {
-			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId());
+			redisService.delete(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId());
 		}
 		return update;
 
@@ -144,7 +144,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	public Boolean deleteById(Long id) {
 		int i = this.permissionResourceMapper.deleteById(id);
 		if (i > 0) {
-			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_PERMISSION + id);
+			redisService.delete(ElectricityCabinetConstant.CACHE_PERMISSION + id);
 			return true;
 		}
 		return false;

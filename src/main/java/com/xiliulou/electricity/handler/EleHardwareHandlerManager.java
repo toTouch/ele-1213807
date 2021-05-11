@@ -93,8 +93,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 newElectricityCabinet.setOnlineStatus(status);
                 newElectricityCabinet.setPowerStatus(status);
                 if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                    redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                    redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                    redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
                 }
                 log.error("type is null,{}", receiverMessage.getOriginContent());
             });

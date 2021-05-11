@@ -396,7 +396,7 @@ public class ElectricityCabinetAdminController {
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //删除缓存
-        redisService.deleteKeys(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+electricityCabinet.getId());
+        redisService.delete(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+electricityCabinet.getId());
         return R.ok();
     }
 

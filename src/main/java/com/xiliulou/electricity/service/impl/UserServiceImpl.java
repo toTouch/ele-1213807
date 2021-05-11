@@ -374,8 +374,8 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (deleteById(uid)) {
-			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + uid);
-			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+			redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
+			redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
 		}
 		return Pair.of(true, null);
 	}
@@ -412,8 +412,8 @@ public class UserServiceImpl implements UserService {
 	public Integer updateUser(User updateUser, User oldUser) {
 		Integer update = update(updateUser);
 		if (update > 0) {
-			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());
-			redisService.deleteKeys(ElectricityCabinetConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
+			redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());
+			redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
 		}
 		return update;
 	}
@@ -514,7 +514,7 @@ public class UserServiceImpl implements UserService {
 		if (Objects.isNull(orderLimit)) {
 			return R.fail("ELECTRICITY.0062", "用户未被限制");
 		}
-		redisService.deleteKeys(ElectricityCabinetConstant.ORDER_TIME_UID +uid);
+		redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID +uid);
 		return R.ok();
 	}
 

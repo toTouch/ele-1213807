@@ -102,7 +102,7 @@ public class UserInfoAdminController {
     //订单周期删缓存
     @PostMapping (value = "/admin/userInfo/deleteOrderCache")
     public R deleteOrderCache(@RequestParam("uid") Long uid) {
-        redisService.deleteKeys(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
+        redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
         return R.ok();
     }
 

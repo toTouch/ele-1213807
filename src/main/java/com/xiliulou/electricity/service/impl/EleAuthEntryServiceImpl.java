@@ -121,7 +121,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
             eleAuthEntryMapper.updateById(eleAuthEntry);
-            redisService.deleteKeys(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
+            redisService.delete(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
         }
         return R.ok();
     }

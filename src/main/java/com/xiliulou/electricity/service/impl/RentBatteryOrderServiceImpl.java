@@ -246,7 +246,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "下单失败");
         } finally {
-            redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
+            redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
 
     }
@@ -362,7 +362,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.ok(orderId);
 
         } finally {
-            redisService.deleteKeys(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
+            redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + returnBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
         }
     }
 
@@ -452,7 +452,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 
         }
-        redisService.deleteKeys(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId());
+        redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId());
         return R.ok(rentBatteryOrder.getOrderId());
     }
 

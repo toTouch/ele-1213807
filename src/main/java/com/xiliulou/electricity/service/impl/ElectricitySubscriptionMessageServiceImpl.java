@@ -49,7 +49,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
         electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
         Integer raws = baseMapper.insert(electricitySubscriptionMessage);
 
-        redisService.deleteKeys(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+        redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
         if (raws > 0) {
             return R.ok();
         } else {
@@ -96,7 +96,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
         electricitySubscriptionMessage.setCreateTime(null);
         electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
         Integer raws = baseMapper.updateById(electricitySubscriptionMessage);
-        redisService.deleteKeys(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+        redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
         if (raws > 0) {
             return R.ok();
         } else {
@@ -112,7 +112,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
      */
     @Override
     public void delSubscriptionMessageCacheByType(Integer type) {
-        redisService.deleteKeys(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + type);
+        redisService.delete(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + type);
     }
 
     @Override

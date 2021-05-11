@@ -48,17 +48,17 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         if (Objects.isNull(electricityPayParamsDb)) {
             electricityPayParams.setCreateTime(System.currentTimeMillis());
             baseMapper.insert(electricityPayParams);
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
-            redisService.deleteKeys(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+            redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+            redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
 
             return R.ok();
         } else {
             if (ObjectUtil.notEqual(electricityPayParamsDb.getId(), electricityPayParams.getId())) {
                 return R.fail("请求参数id,不合法!");
             }
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+            redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
             baseMapper.updateById(electricityPayParams);
-            redisService.deleteKeys(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+            redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
             return R.ok();
         }
     }

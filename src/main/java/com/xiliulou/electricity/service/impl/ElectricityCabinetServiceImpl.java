@@ -302,8 +302,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         int update = electricityCabinetMapper.update(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id);
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
             electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(id);
             return null;
         });

@@ -186,7 +186,7 @@ public class StoreServiceImpl implements StoreService {
         int update = storeMapper.update(store);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.deleteKeys(ElectricityCabinetConstant.CACHE_STORE + id);
+            redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
             //删除绑定
             storeBindService.deleteByStoreId(store.getId());
             return null;

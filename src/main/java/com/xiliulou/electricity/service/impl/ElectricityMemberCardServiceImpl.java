@@ -84,7 +84,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     public void deleteElectricityMemberCardCache(Integer id) {
-        redisService.deleteKeys(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id);
+        redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id);
     }
 
     /**
