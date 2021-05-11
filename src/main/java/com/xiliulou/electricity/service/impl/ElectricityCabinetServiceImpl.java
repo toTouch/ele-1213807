@@ -262,6 +262,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
         }
+
+
         //快递柜老型号
         Integer oldModelId = oldElectricityCabinet.getModelId();
         //查找快递柜型号
@@ -275,8 +277,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         int update = electricityCabinetMapper.update(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
+
+
             //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+
+
+            //，key变化 先删除老的，以免老的删不掉
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
+            //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
             //添加快递柜格挡
             if (!oldModelId.equals(electricityCabinet.getModelId())) {
@@ -530,6 +539,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+
+        //，key变化 先删除老的，以免老的删不掉
+        redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
+        //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
         return R.ok();
     }
@@ -551,6 +564,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinetMapper.update(electricityCabinet);
         //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+
+
+        //，key变化 先删除老的，以免老的删不掉
+        redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName());
+        //更新缓存
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName(), electricityCabinet);
         return R.ok();
     }
