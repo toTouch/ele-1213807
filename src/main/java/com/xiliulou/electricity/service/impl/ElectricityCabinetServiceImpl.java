@@ -736,35 +736,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R homeTwo() {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         HashMap<String, HashMap<String, String>> homeTwo = new HashMap<>();
+        //门店
+        HashMap<String, String> storeInfo = new HashMap<>();
+        storeInfo.put("totalCount", "0");
+        storeInfo.put("businessCount", "0");
+        homeTwo.put("storeInfo", storeInfo);
+
+        //换电柜
+        HashMap<String, String> electricityCabinetInfo = new HashMap<>();
+        electricityCabinetInfo.put("totalCount", "0");
+        electricityCabinetInfo.put("onlineCount", "0");
+        electricityCabinetInfo.put("offlineCount", "0");
+        homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
+
+        //电池
+        HashMap<String, String> electricityBatteryInfo = new HashMap<>();
+        electricityBatteryInfo.put("batteryTotal", "0");
+        electricityBatteryInfo.put("cabinetCount", "0");
+        electricityBatteryInfo.put("userCount", "0");
+        homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
+
+
         //门店
         Integer totalCount = storeService.homeTwoTotal();
         Integer businessCount = storeService.homeTwoBusiness();
-        HashMap<String, String> storeInfo = new HashMap<>();
         storeInfo.put("totalCount", totalCount.toString());
         storeInfo.put("businessCount", businessCount.toString());
         homeTwo.put("storeInfo", storeInfo);
 
-        //换电柜
-        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
-        Integer total = electricityCabinetList.size();
-        Integer onlineCount = 0;
-        Integer offlineCount = 0;
-        if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
-            for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
-                boolean result = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-                if (result) {
-                    onlineCount++;
-                } else {
-                    offlineCount++;
-                }
-            }
-        }
-        HashMap<String, String> electricityCabinetInfo = new HashMap<>();
-        electricityCabinetInfo.put("totalCount", total.toString());
-        electricityCabinetInfo.put("onlineCount", onlineCount.toString());
-        electricityCabinetInfo.put("offlineCount", offlineCount.toString());
-        homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
 
         //电池
         List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo();
@@ -783,11 +790,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
         }
-        HashMap<String, String> electricityBatteryInfo = new HashMap<>();
         electricityBatteryInfo.put("batteryTotal", batteryTotal.toString());
         electricityBatteryInfo.put("cabinetCount", cabinetCount.toString());
         electricityBatteryInfo.put("userCount", userCount.toString());
         homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
+
+        //换电柜
+        //如果是查全部则直接跳过
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if (ObjectUtil.isEmpty(eleIdList)) {
+                return R.ok(homeTwo);
+            }
+        }
+        List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.queryAll(eleIdList);
+        Integer total = electricityCabinetList.size();
+        Integer onlineCount = 0;
+        Integer offlineCount = 0;
+        if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+            for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
+                boolean result = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                if (result) {
+                    onlineCount++;
+                } else {
+                    offlineCount++;
+                }
+            }
+        }
+        electricityCabinetInfo.put("totalCount", total.toString());
+        electricityCabinetInfo.put("onlineCount", onlineCount.toString());
+        electricityCabinetInfo.put("offlineCount", offlineCount.toString());
+        homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
+
         return R.ok(homeTwo);
     }
 

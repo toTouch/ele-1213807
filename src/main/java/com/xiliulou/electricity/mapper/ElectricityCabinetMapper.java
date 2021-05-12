@@ -54,4 +54,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     IPage listByStoreId(Page page,@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
     List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList);
+
+    List<ElectricityCabinet> queryAll(@Param("eleIdList") List<Integer> eleIdList);
 }

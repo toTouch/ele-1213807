@@ -205,6 +205,19 @@
         limit #{offset}, #{size}
     </select>
 
+    <select id="queryAll" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+        select
+        id, sn, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+        from electricity.t_electricity_cabinet
+        where del_flag=0
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
     <!--通过主键修改数据-->
     <update id="update">
         update electricity.t_electricity_cabinet
