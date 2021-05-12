@@ -5,6 +5,8 @@ import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 
+import java.util.List;
+
 /**
  * 门店表(TStore)表服务接口
  *
@@ -41,7 +43,7 @@ public interface StoreService {
 
     R reboot(Integer id);
 
-    Integer homeTwoTotal();
+    Integer homeTwoTotal(List<Integer> storeIdList);
 
     Integer homeTwoBusiness();
 

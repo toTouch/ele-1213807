@@ -274,8 +274,8 @@ public class StoreServiceImpl implements StoreService {
 
 
     @Override
-    public Integer homeTwoTotal() {
-        return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL));
+    public Integer homeTwoTotal(List<Integer> storeIdList) {
+        return storeMapper.homeTwoTotal(storeIdList);
     }
 
     @Override
