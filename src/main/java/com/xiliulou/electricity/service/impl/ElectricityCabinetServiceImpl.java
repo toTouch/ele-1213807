@@ -662,6 +662,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("orderInfo", orderInfo);
 
         //如果是查全部则直接跳过
+        Boolean flag = true;
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
@@ -672,7 +673,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             eleIdList = userTypeService.getEleIdListByUserType(user);
             if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(homeOne);
+                flag = false;
             }
         }
 
@@ -701,7 +702,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("userInfo", userInfo);
 
 
-        if (ObjectUtil.isEmpty(eleIdList)) {
+        if (ObjectUtil.isEmpty(eleIdList) && flag) {
             //查收益 TODO 暂时加盟商没和用户绑定 加盟商及其他暂时没收益  后期加盟商绑定需要改
             BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now);
             BigDecimal beforeMoney = electricityMemberCardOrderService.homeOne(firstBefore, end);
@@ -722,17 +723,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeOne.put("moneyInfo", moneyInfo);
 
 
-        //换电
-        Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now, eleIdList);
-        Integer beforeCount = electricityCabinetOrderService.homeOneCount(firstBefore, end, eleIdList);
-        Integer count = electricityCabinetOrderService.homeOneCount(0L, now, eleIdList);
-        //成功率
-        BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now, eleIdList);
-        orderInfo.put("nowCount", nowCount.toString());
-        orderInfo.put("beforeCount", beforeCount.toString());
-        orderInfo.put("successOrder", successOrder.toString());
-        orderInfo.put("totalCount", count.toString());
-        homeOne.put("orderInfo", orderInfo);
+        if (flag) {
+            //换电
+            Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now, eleIdList);
+            Integer beforeCount = electricityCabinetOrderService.homeOneCount(firstBefore, end, eleIdList);
+            Integer count = electricityCabinetOrderService.homeOneCount(0L, now, eleIdList);
+            //成功率
+            BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now, eleIdList);
+            orderInfo.put("nowCount", nowCount.toString());
+            orderInfo.put("beforeCount", beforeCount.toString());
+            orderInfo.put("successOrder", successOrder.toString());
+            orderInfo.put("totalCount", count.toString());
+            homeOne.put("orderInfo", orderInfo);
+        }
         return R.ok(homeOne);
     }
 
@@ -761,7 +764,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //电池
         HashMap<String, String> electricityBatteryInfo = new HashMap<>();
-        electricityBatteryInfo.put("batteryTotal",null);
+        electricityBatteryInfo.put("batteryTotal", null);
         electricityBatteryInfo.put("cabinetCount", null);
         electricityBatteryInfo.put("userCount", null);
         homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
@@ -780,8 +783,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
                 if (ObjectUtil.isNotEmpty(franchiseeList)) {
                     List<FranchiseeBind> franchiseeBinds = new ArrayList<>();
-                    for (Franchisee franchisee:franchiseeList) {
-                        List<FranchiseeBind> franchiseeBindList= franchiseeBindService.queryByFranchiseeId(franchisee.getId());
+                    for (Franchisee franchisee : franchiseeList) {
+                        List<FranchiseeBind> franchiseeBindList = franchiseeBindService.queryByFranchiseeId(franchisee.getId());
                         franchiseeBinds.addAll(franchiseeBindList);
                     }
 
@@ -900,8 +903,47 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R homeThree(Integer day) {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+
         HashMap<String, HashMap<String, Object>> homeThree = new HashMap<>();
         //用户人数
+        HashMap<String, Object> userInfo = new HashMap<>();
+        userInfo.put("totalCountList", null);
+        userInfo.put("serviceCountList", null);
+        homeThree.put("userInfo", userInfo);
+
+        //查收益
+        HashMap<String, Object> moneyInfo = new HashMap<>();
+        moneyInfo.put("moneyList", null);
+        homeThree.put("moneyInfo", moneyInfo);
+
+        //换电
+        HashMap<String, Object> orderInfo = new HashMap<>();
+        orderInfo.put("orderList", null);
+        homeThree.put("orderInfo", orderInfo);
+
+        //如果是查全部则直接跳过
+        Boolean flag = true;
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if (ObjectUtil.isEmpty(eleIdList)) {
+                flag = false;
+            }
+        }
+
         Long endTimeMilliDay = DateUtil.endOfDay(new Date()).getTime();
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -909,26 +951,41 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Date date = calendar.getTime();
         DateTime startTime = DateUtil.beginOfDay(date);
         long startTimeMilliDay = startTime.getTime();
-        List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay);
-        List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeService(startTimeMilliDay, endTimeMilliDay);
-        List<HashMap<String, String>> memberCardCountList = userInfoService.homeThreeMemberCard(startTimeMilliDay, endTimeMilliDay);
-        HashMap<String, Object> userInfo = new HashMap<>();
-        userInfo.put("totalCountList", totalCountList);
-        userInfo.put("serviceCountList", serviceCountList);
-        userInfo.put("MemberCardCountList", memberCardCountList);
-        homeThree.put("userInfo", userInfo);
+
+        //用户人数
+        if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            //查用户
+            List<Integer> cidList = null;
+            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
+                if (ObjectUtil.isNotEmpty(franchiseeList)) {
+                    for (Franchisee franchisee : franchiseeList) {
+                        cidList.add(franchisee.getCid());
+                    }
+                }
+            }
+            List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay, cidList);
+            List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeAuth(startTimeMilliDay, endTimeMilliDay, cidList);
+            userInfo.put("totalCountList", totalCountList);
+            userInfo.put("authCountList", serviceCountList);
+            homeThree.put("userInfo", userInfo);
+        }
 
         //查收益
-        List<HashMap<String, String>> moneyList = electricityMemberCardOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
-        HashMap<String, Object> moneyInfo = new HashMap<>();
-        moneyInfo.put("moneyList", moneyList);
-        homeThree.put("moneyInfo", moneyInfo);
+        if (ObjectUtil.isEmpty(eleIdList) && flag) {
+            List<HashMap<String, String>> moneyList = electricityMemberCardOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
+            moneyInfo.put("moneyList", moneyList);
+            homeThree.put("moneyInfo", moneyInfo);
+        }
 
         //换电
-        List<HashMap<String, String>> orderList = electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay);
-        HashMap<String, Object> orderInfo = new HashMap<>();
-        orderInfo.put("orderList", orderList);
-        homeThree.put("orderInfo", orderInfo);
+        if (flag) {
+            List<HashMap<String, String>> orderList = electricityCabinetOrderService.homeThree(startTimeMilliDay, endTimeMilliDay,eleIdList);
+            orderInfo.put("orderList", orderList);
+            homeThree.put("orderInfo", orderInfo);
+        }
         return R.ok(homeThree);
     }
 

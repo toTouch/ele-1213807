@@ -69,9 +69,9 @@ public interface UserInfoService extends IService<UserInfo> {
 
     int minCount(Long id);
 
-    List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cidList);
 
-    List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cidList);
 
     List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay);
 

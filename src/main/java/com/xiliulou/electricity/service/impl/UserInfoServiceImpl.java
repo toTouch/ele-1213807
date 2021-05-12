@@ -291,13 +291,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay) {
-		return userInfoMapper.homeThreeTotal(startTimeMilliDay, endTimeMilliDay);
+	public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cidList) {
+		return userInfoMapper.homeThreeTotal(startTimeMilliDay, endTimeMilliDay,cidList);
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThreeService(long startTimeMilliDay, Long endTimeMilliDay) {
-		return userInfoMapper.homeThreeService(startTimeMilliDay, endTimeMilliDay);
+	public List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cidList) {
+		return userInfoMapper.homeThreeAuth(startTimeMilliDay, endTimeMilliDay,cidList);
 	}
 
 	@Override

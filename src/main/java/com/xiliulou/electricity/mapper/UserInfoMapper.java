@@ -43,9 +43,9 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     int minCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
 
-    List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cidList") List<Integer> cidList);
 
-    List<HashMap<String, String>> homeThreeService(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("cidList") List<Integer> cidList);
 
     List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
