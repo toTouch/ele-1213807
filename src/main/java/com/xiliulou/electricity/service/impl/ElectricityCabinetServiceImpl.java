@@ -642,23 +642,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
         HashMap<String, String> userInfo = new HashMap<>();
-        userInfo.put("totalCount", "0");
-        userInfo.put("authCount", "0");
-        userInfo.put("allTotalCount", "0");
+        userInfo.put("totalCount", null);
+        userInfo.put("authCount", null);
+        userInfo.put("allTotalCount", null);
         homeOne.put("userInfo", userInfo);
 
 
         HashMap<String, String> moneyInfo = new HashMap<>();
-        moneyInfo.put("nowMoney", "0");
-        moneyInfo.put("beforeMoney", "0");
-        moneyInfo.put("totalMoney", "0");
+        moneyInfo.put("nowMoney", null);
+        moneyInfo.put("beforeMoney", null);
+        moneyInfo.put("totalMoney", null);
         homeOne.put("moneyInfo", moneyInfo);
 
         HashMap<String, String> orderInfo = new HashMap<>();
-        orderInfo.put("nowCount", "0");
-        orderInfo.put("beforeCount", "0");
-        orderInfo.put("successOrder", "0");
-        orderInfo.put("totalCount", "0");
+        orderInfo.put("nowCount", null);
+        orderInfo.put("beforeCount", null);
+        orderInfo.put("successOrder", null);
+        orderInfo.put("totalCount", null);
         homeOne.put("orderInfo", orderInfo);
 
         //如果是查全部则直接跳过
@@ -748,22 +748,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         HashMap<String, HashMap<String, String>> homeTwo = new HashMap<>();
         //门店
         HashMap<String, String> storeInfo = new HashMap<>();
-        storeInfo.put("totalCount", "0");
-        storeInfo.put("businessCount", "0");
+        storeInfo.put("totalCount", null);
+        storeInfo.put("businessCount", null);
         homeTwo.put("storeInfo", storeInfo);
 
         //换电柜
         HashMap<String, String> electricityCabinetInfo = new HashMap<>();
-        electricityCabinetInfo.put("totalCount", "0");
-        electricityCabinetInfo.put("onlineCount", "0");
-        electricityCabinetInfo.put("offlineCount", "0");
+        electricityCabinetInfo.put("totalCount", null);
+        electricityCabinetInfo.put("onlineCount", null);
+        electricityCabinetInfo.put("offlineCount", null);
         homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
 
         //电池
         HashMap<String, String> electricityBatteryInfo = new HashMap<>();
-        electricityBatteryInfo.put("batteryTotal", "0");
-        electricityBatteryInfo.put("cabinetCount", "0");
-        electricityBatteryInfo.put("userCount", "0");
+        electricityBatteryInfo.put("batteryTotal",null);
+        electricityBatteryInfo.put("cabinetCount", null);
+        electricityBatteryInfo.put("userCount", null);
         homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
 
 
@@ -773,17 +773,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
                 || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+
+
             //查用户
             if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
                 List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
                 if (ObjectUtil.isNotEmpty(franchiseeList)) {
                     List<FranchiseeBind> franchiseeBinds = new ArrayList<>();
-                    for (Franchisee franchisee : franchiseeList) {
-                        List<FranchiseeBind> franchiseeBindList = franchiseeBindService.queryByFranchiseeId(franchisee.getId());
+                    for (Franchisee franchisee:franchiseeList) {
+                        List<FranchiseeBind> franchiseeBindList= franchiseeBindService.queryByFranchiseeId(franchisee.getId());
                         franchiseeBinds.addAll(franchiseeBindList);
                     }
+
                     if (ObjectUtil.isNotEmpty(franchiseeBinds)) {
-                        //2、再找加盟商绑定的门店
+
                         for (FranchiseeBind franchiseeBind : franchiseeBinds) {
                             storeIdList.add(franchiseeBind.getStoreId());
                         }
@@ -801,6 +804,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             storeInfo.put("businessCount", businessCount.toString());
             homeTwo.put("storeInfo", storeInfo);
         }
+
 
         //换电柜
         //如果是查全部则直接跳过
@@ -839,13 +843,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
         }
 
+
         //电池
         Boolean flag3 = true;
         List<Long> batteryIdList = null;
         if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
                 || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            //查用户
+
+
             if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
                 List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
                 if (ObjectUtil.isNotEmpty(franchiseeList)) {
