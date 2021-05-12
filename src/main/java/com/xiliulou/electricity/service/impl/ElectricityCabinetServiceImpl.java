@@ -88,6 +88,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     FranchiseeService franchiseeService;
     @Autowired
     FranchiseeBindService franchiseeBindService;
+    @Autowired
+    ElectricityBatteryBindService electricityBatteryBindService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -786,7 +788,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             storeIdList.add(franchiseeBind.getStoreId());
                         }
                         if (ObjectUtil.isNotEmpty(storeIdList)) {
-                            flag1=false;
+                            flag1 = false;
                         }
                     }
                 }
@@ -799,30 +801,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             storeInfo.put("businessCount", businessCount.toString());
             homeTwo.put("storeInfo", storeInfo);
         }
-
-
-        //电池
-
-        List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo();
-        Integer batteryTotal = electricityBatteryList.size();
-        Integer cabinetCount = 0;
-        Integer userCount = 0;
-        if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
-            if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
-                for (ElectricityBattery electricityBattery : electricityBatteryList) {
-                    if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
-                        cabinetCount = cabinetCount + 1;
-                    }
-                    if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
-                        userCount = userCount + 1;
-                    }
-                }
-            }
-        }
-        electricityBatteryInfo.put("batteryTotal", batteryTotal.toString());
-        electricityBatteryInfo.put("cabinetCount", cabinetCount.toString());
-        electricityBatteryInfo.put("userCount", userCount.toString());
-        homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
 
         //换电柜
         //如果是查全部则直接跳过
@@ -859,6 +837,56 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetInfo.put("onlineCount", onlineCount.toString());
             electricityCabinetInfo.put("offlineCount", offlineCount.toString());
             homeTwo.put("electricityCabinetInfo", electricityCabinetInfo);
+        }
+
+        //电池
+        Boolean flag3 = true;
+        List<Long> batteryIdList = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            //查用户
+            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
+                if (ObjectUtil.isNotEmpty(franchiseeList)) {
+                    List<ElectricityBatteryBind> electricityBatteryBinds = new ArrayList<>();
+                    for (Franchisee franchisee : franchiseeList) {
+                        List<ElectricityBatteryBind> electricityBatteryBind = electricityBatteryBindService.queryByFranchiseeId(franchisee.getId());
+                        electricityBatteryBinds.addAll(electricityBatteryBind);
+                    }
+                    if (ObjectUtil.isNotEmpty(electricityBatteryBinds)) {
+                        //2、再找加盟商绑定的电池
+                        for (ElectricityBatteryBind electricityBatteryBind : electricityBatteryBinds) {
+                            batteryIdList.add(electricityBatteryBind.getElectricityBatteryId());
+                        }
+                        if (ObjectUtil.isNotEmpty(batteryIdList)) {
+                            flag3 = false;
+                        }
+                    }
+                }
+            }
+        }
+        if (flag3) {
+            List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(batteryIdList);
+            Integer batteryTotal = electricityBatteryList.size();
+            Integer cabinetCount = 0;
+            Integer userCount = 0;
+            if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+                if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+                    for (ElectricityBattery electricityBattery : electricityBatteryList) {
+                        if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
+                            cabinetCount = cabinetCount + 1;
+                        }
+                        if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+                            userCount = userCount + 1;
+                        }
+                    }
+                }
+            }
+            electricityBatteryInfo.put("batteryTotal", batteryTotal.toString());
+            electricityBatteryInfo.put("cabinetCount", cabinetCount.toString());
+            electricityBatteryInfo.put("userCount", userCount.toString());
+            homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
         }
 
         return R.ok(homeTwo);

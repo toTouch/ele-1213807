@@ -22,7 +22,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     IPage getElectricityBatteryPage(Page page, @Param("query") ElectricityBatteryQuery electricityBatteryQuery,
                                     @Param("offset") Long offset, @Param("size") Long size);
 
-    List<ElectricityBattery> homeTwo();
+    List<ElectricityBattery> homeTwo(@Param("batteryIdList") List<Long> batteryIdList);
 
     ElectricityBatteryVo selectBatteryInfo(@Param("uid") Long uid);
 

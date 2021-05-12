@@ -45,7 +45,7 @@ public interface StoreService {
 
     Integer homeTwoTotal(List<Integer> storeIdList);
 
-    Integer homeTwoBusiness();
+    Integer homeTwoBusiness(List<Integer> storeIdList);
 
     R showInfoByDistance(StoreQuery storeQuery);
 

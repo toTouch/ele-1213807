@@ -29,7 +29,7 @@
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.StoreVO">
         select
-        id, sn, name,  address, longitude, latitude, del_flag,
+        id, sn, name, address, longitude, latitude, del_flag,
         create_time, update_time,usable_status,service_phone, business_time
         from electricity.t_store
         where del_flag=0
@@ -59,27 +59,29 @@
     <select id="listByFranchisee"
             resultType="com.xiliulou.electricity.vo.StoreVO">
         select
-        ts.id as id, ts.sn as sn,  ts.name as name,   ts.address as address,  ts.longitude as longitude,  ts.latitude as latitude,  ts.del_flag as delFlag,
-        ts.create_time as createTime,  ts.update_time as updatetime, ts.usable_status as usableStatus, ts.service_phone as servicePhone,  ts.business_time as businessTime
+        ts.id as id, ts.sn as sn, ts.name as name, ts.address as address, ts.longitude as longitude, ts.latitude as
+        latitude, ts.del_flag as delFlag,
+        ts.create_time as createTime, ts.update_time as updatetime, ts.usable_status as usableStatus, ts.service_phone
+        as servicePhone, ts.business_time as businessTime
         from electricity.t_store as ts
         where ts.del_flag=0
         <if test="query.name != null and query.name != ''">
-            and  ts.name = #{query.name}
+            and ts.name = #{query.name}
         </if>
         <if test="query.beginTime != null">
-            and  ts.create_time &gt;=#{query.beginTime}
+            and ts.create_time &gt;=#{query.beginTime}
         </if>
         <if test="query.endTime != null">
-            and  ts.create_time &lt;=#{query.endTime}
+            and ts.create_time &lt;=#{query.endTime}
         </if>
         <if test="query.address != null and query.address != ''">
-            and  ts.address = #{query.address}
+            and ts.address = #{query.address}
         </if>
         <if test="query.sn != null and query.sn != ''">
-            and  ts.sn = #{query.sn}
+            and ts.sn = #{query.sn}
         </if>
         <if test="query.usableStatus != null">
-            and  ts.usable_status = #{query.usableStatus}
+            and ts.usable_status = #{query.usableStatus}
         </if>
         <if test="query.storeIdList!=null and query.storeIdList!=''">
             and ts.id in
@@ -92,8 +94,8 @@
     </select>
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.StoreVO">
-        select  id, sn, name,  address, longitude, latitude, del_flag,
-        create_time, update_time,usable_status,  service_phone, business_time,  ROUND(
+        select id, sn, name, address, longitude, latitude, del_flag,
+        create_time, update_time,usable_status, service_phone, business_time, ROUND(
         6378.138 * 2 * ASIN(
         SQRT(
         POW(
@@ -120,6 +122,29 @@
             having distance &lt; #{query.distance}
         </if>
         order by distance asc
+    </select>
+    <select id="homeTwoTotal" resultType="java.lang.Integer">
+        select count(1)
+        from electricity.t_store
+        where del_flag=0
+        <if test="storeIdList!=null and storeIdList!=''">
+            and id in
+            <foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+    <select id="homeTwoBusiness" resultType="com.xiliulou.electricity.entity.Store">
+        select id, sn, name, address, longitude, latitude, del_flag,
+        create_time, update_time,usable_status,service_phone, business_time
+        from electricity.t_store
+        where del_flag=0
+        <if test="storeIdList!=null and storeIdList!=''">
+            and id in
+            <foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
 
 

@@ -48,6 +48,12 @@
         teb.del_flag as del_flag
         from t_electricity_battery as teb
         where teb.del_flag=0
+        <if test="batteryIdList!=null and batteryIdList!=''">
+            and id in
+            <foreach collection="batteryIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
     </select>
     <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
          SELECT eb.*

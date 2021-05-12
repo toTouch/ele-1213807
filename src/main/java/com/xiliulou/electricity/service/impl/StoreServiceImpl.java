@@ -279,8 +279,8 @@ public class StoreServiceImpl implements StoreService {
     }
 
     @Override
-    public Integer homeTwoBusiness() {
-        List<Store> storeList = storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getDelFlag, Store.DEL_NORMAL));
+    public Integer homeTwoBusiness(List<Integer> storeIdList) {
+        List<Store> storeList = storeMapper.homeTwoBusiness(storeIdList);
         Integer countBusiness = 0;
         if (ObjectUtil.isNotEmpty(storeList)) {
             for (Store store : storeList) {
