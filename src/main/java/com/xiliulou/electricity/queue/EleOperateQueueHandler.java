@@ -382,19 +382,20 @@ public class EleOperateQueueHandler {
 
 
                     //发送命令--开重新分配的门
+                    //发送命令
                     HashMap<String, Object> dataMap = Maps.newHashMap();
                     dataMap.put("cell_no", cellNo);
                     dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-                    dataMap.put("serial_number", electricityCabinetOrder.getNewElectricityBatterySn());
+                    dataMap.put("serial_number", newElectricityCabinetOrder.getNewElectricityBatterySn());
                     dataMap.put("status", electricityCabinetOrder.getStatus().toString());
                     dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
 
                     HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                            .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
+                            .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getUid() + "_" + electricityCabinetOrder.getOrderId())
                             .data(dataMap)
                             .productKey(electricityCabinet.getProductKey())
                             .deviceName(electricityCabinet.getDeviceName())
-                            .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
+                            .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
                     eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
                 }finally {
                     redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
