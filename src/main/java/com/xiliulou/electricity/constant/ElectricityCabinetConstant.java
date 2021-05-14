@@ -55,7 +55,7 @@ public interface ElectricityCabinetConstant {
 
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
 
-    String ELE_ORDER_OPERATOR_CACHE_KEY = "ele_order_oper:";
+    String ELE_ORDER_OPERATOR_CACHE_KEY = "ele_order_operator:";
 
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
@@ -86,5 +86,7 @@ public interface ElectricityCabinetConstant {
 
     //电柜上报数据
     String OTHER_CONFIG_CACHE = "other_config_cache:";
+
+    String ELE_ORDER_WARN_MSG_CACHE_KEY = "ele_order_warn_msg:";
 
 }

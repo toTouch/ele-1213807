@@ -69,10 +69,15 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
                 ||Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR_RSP)
                 ||Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR_RSP)) {
             if (Objects.nonNull(eleOrderVo.getStatus()) && eleOrderVo.getStatus().equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)) {
+                //开门成功
                 redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
             } else {
+                //开门失败
                 redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
+                //查询开门失败
                 redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY+eleOrderVo.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+                //开门失败报错
+                redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY+eleOrderVo.getOrderId(), eleOrderVo.getStatus().toString(), 30L, TimeUnit.SECONDS);
             }
         }
 

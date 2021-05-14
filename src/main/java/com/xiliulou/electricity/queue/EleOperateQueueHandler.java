@@ -203,6 +203,8 @@ public class EleOperateQueueHandler {
                 .uid(electricityCabinetOrder.getUid())
                 .build();
         electricityCabinetOrderOperHistoryService.insert(history);
+
+        //旧门因特殊原因无法开门，重新分配旧门 TODO
     }
 
 
