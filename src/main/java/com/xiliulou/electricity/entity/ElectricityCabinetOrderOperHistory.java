@@ -74,6 +74,22 @@ public class ElectricityCabinetOrderOperHistory {
     //电池检测成功
     public static final Integer STATUS_BATTERY_CHECK_SUCCESS = 6;
 
+    //开门异常
+    //柜机锁定---提示柜机被锁定，联系解锁并重试
+    public static final Integer STATUS_LOCKER_LOCK=-1;
+    //任务在进行中---提示有人换电中，请稍后重试
+    public static final Integer STATUS_BUSINESS_PROCESS=-2;
+    //下单门是打开的---提示有门未关闭，请先关闭仓门，然后重试
+    public static final Integer STATUS_DOOR_IS_OPEN_EXCEPTION=-3;
+    //空仓有电池---提示下单错误，空仓有电池，联系客服，结束订单
+    public static final Integer EMPTY_CELL_HAS_BATTERY_EXCEPTION=-4;
+    //有电池仓门没有电池---提示下单错误，分配的格挡没有电池，联系客服，结束订单
+    public static final Integer BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION=-5;
+    //云端电池和舱内电池不匹配---提示放入电池不对，应该放入什么电池
+    public static final Integer BATTERY_NOT_MATCH_CLOUD=-6;
+    //取走电池被打断---提示柜机点击了结束异常订单或则云端下发结束异常订单
+    public static final Integer STATUS_PROCESS_INTERRUPTED=-10;
+
 
     //旧电池开门
     public static final Integer TYPE_OLD_BATTERY_OPEN_DOOR = 1;

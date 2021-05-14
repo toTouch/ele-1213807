@@ -68,4 +68,6 @@ public interface ElectricityCabinetOrderService {
     Integer queryByUid(Long uid);
 
     ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId,Integer cellNo);
+
+    String findUsableCellNo(Integer id);
 }

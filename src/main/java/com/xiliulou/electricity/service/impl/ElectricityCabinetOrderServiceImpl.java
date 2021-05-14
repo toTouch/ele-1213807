@@ -232,7 +232,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //分配开门格挡
-        String cellNo = findOldUsableCellNo(electricityCabinet.getId());
+        String cellNo = findUsableCellNo(electricityCabinet.getId());
         try {
             if (Objects.isNull(cellNo)) {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
@@ -612,7 +612,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         .orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
     }
 
-    public String findOldUsableCellNo(Integer id) {
+    @Override
+    public String findUsableCellNo(Integer id) {
         List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryNoElectricityBatteryBox(id);
         if (!DataUtil.collectionIsUsable(usableBoxes)) {
             return null;

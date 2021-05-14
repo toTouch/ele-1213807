@@ -27,6 +27,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -80,6 +81,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     EleRefundOrderService eleRefundOrderService;
     @Autowired
     EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
 
 
     /**
@@ -322,7 +325,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //分配开门格挡
-        String cellNo = findUsableCellNo(electricityCabinet.getId());
+        String cellNo = electricityCabinetOrderService.findUsableCellNo(electricityCabinet.getId());
         try {
             if (Objects.isNull(cellNo)) {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
@@ -530,33 +533,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         return null;
     }
 
-    //分配空仓
-    public String findUsableCellNo(Integer id) {
-        List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryNoElectricityBatteryBox(id);
-        if (!DataUtil.collectionIsUsable(usableBoxes)) {
-            return null;
-        }
-
-        List<Integer> boxes = usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList());
-
-        //查看有没有初始化过设备的上次操作过的格挡,这里不必关心线程安全，不需要保证原子性
-        if (!redisService.hasKey(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id)) {
-            redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, boxes.get(0).toString());
-        }
-
-        String lastCellNo = redisService.get(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id);
-
-        boxes = rebuildByCellCircleForDevice(boxes, Integer.parseInt(lastCellNo));
-
-        for (Integer box : boxes) {
-            if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
-                redisService.set(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, box.toString());
-                return box.toString();
-            }
-        }
-
-        return null;
-    }
 
     public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {
 
