@@ -70,4 +70,6 @@ public interface ElectricityCabinetOrderService {
     ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId,Integer cellNo);
 
     String findUsableCellNo(Integer id);
+
+	R queryErrorMsg(String orderId);
 }
