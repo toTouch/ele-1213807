@@ -131,5 +131,56 @@ public class ElectricityCabinetUserController extends BaseController {
 		return electricityCabinetService.rentBattery(productKey, deviceName);
 	}
 
+	/*public static void main(String[] args) {
+		String s = "1";
+		String t = "99";
+		int i = s.length() - 1;
+		System.out.println("i="+i);
+		int j = t.length() - 1;
+		System.out.println("j="+j);
+
+		int m1 = 0, m2 = 0, carray = 0;//进位
+		StringBuilder sb = new StringBuilder();
+
+		while (i >= 0 || j >= 0) {
+			if (i >= 0) {
+				m1 = s.charAt(i) - '0';
+			} else {
+				m1 = 0;
+			}
+
+			System.out.println("m1="+m1);
+
+			if (j >= 0) {
+				m2 = t.charAt(j) - '0';
+			} else {
+				m2 = 0;
+			}
+
+			System.out.println("m2="+m2);
+
+			int sum = m1 + m2 + carray;
+			System.out.println("sum="+sum);
+
+
+			carray = sum / 10;
+			System.out.println("carray="+carray);
+
+
+			System.out.println("sum="+(char)(sum % 10) + '0');
+			sb.append((char) ((sum % 10) + '0'));
+			System.out.println("sb="+sb);
+			i--;
+			j--;
+		}
+
+		System.out.println("carray="+carray);
+		if (carray != 0) {
+			sb.append('1');
+		}
+		System.out.println("sb="+sb);
+		sb.reverse();
+		System.out.println(sb.toString());
+	}*/
 
 }

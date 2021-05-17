@@ -514,8 +514,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
-        // TODO: 2021/1/13 0013  李雪纯让改的
-        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = new ArrayList<>();
+        Page page = PageUtil.getPage(electricityCabinetOrderQuery.getOffset(), electricityCabinetOrderQuery.getSize());
+
+
+        electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return ;
+        }
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
         if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
             return;
         }
