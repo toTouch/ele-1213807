@@ -639,6 +639,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        log.info("user is -->{}",user);
+
 
         HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
         HashMap<String, String> userInfo = new HashMap<>();
@@ -674,6 +676,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             eleIdList = userTypeService.getEleIdListByUserType(user);
             if (ObjectUtil.isEmpty(eleIdList)) {
                 flag = false;
+                userInfo.put("totalCount", "0");
+                userInfo.put("authCount", "0");
+                userInfo.put("allTotalCount", "0");
+                homeOne.put("userInfo", userInfo);
             }
         }
 
@@ -682,6 +688,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
                 || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
             //查用户
+            Boolean flag1 = true;
             List<Integer> cidList = null;
             if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
                 List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
@@ -690,13 +697,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         cidList.add(franchisee.getCid());
                     }
                 }
+                if(Objects.isNull(cidList)){
+                    flag1=false;
+                }
             }
-            Integer totalCount = userInfoService.homeOneTotal(first, now, cidList);
-            Integer authCount = userInfoService.homeOneAuth(first, now, cidList);
-            Integer allTotalCount = userInfoService.homeOneTotal(0L, now, cidList);
-            userInfo.put("totalCount", totalCount.toString());
-            userInfo.put("authCount", authCount.toString());
-            userInfo.put("allTotalCount", allTotalCount.toString());
+            if(flag1) {
+                Integer totalCount = userInfoService.homeOneTotal(first, now, cidList);
+                Integer authCount = userInfoService.homeOneAuth(first, now, cidList);
+                Integer allTotalCount = userInfoService.homeOneTotal(0L, now, cidList);
+                userInfo.put("totalCount", totalCount.toString());
+                userInfo.put("authCount", authCount.toString());
+                userInfo.put("allTotalCount", allTotalCount.toString());
+            }
 
         }
         homeOne.put("userInfo", userInfo);
@@ -957,6 +969,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
                 || Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
             //查用户
+            Boolean flag1 = true;
             List<Integer> cidList = null;
             if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
                 List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
@@ -965,12 +978,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         cidList.add(franchisee.getCid());
                     }
                 }
+                if(Objects.isNull(cidList)){
+                    flag1=false;
+                }
             }
-            List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay, cidList);
-            List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeAuth(startTimeMilliDay, endTimeMilliDay, cidList);
-            userInfo.put("totalCountList", totalCountList);
-            userInfo.put("authCountList", serviceCountList);
-            homeThree.put("userInfo", userInfo);
+            if(flag1) {
+                List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay, cidList);
+                List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeAuth(startTimeMilliDay, endTimeMilliDay, cidList);
+                userInfo.put("totalCountList", totalCountList);
+                userInfo.put("authCountList", serviceCountList);
+                homeThree.put("userInfo", userInfo);
+            }
         }
 
         //查收益
