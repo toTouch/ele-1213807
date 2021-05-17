@@ -15,4 +15,6 @@ public interface ElectricityMemberCardService {
     ElectricityMemberCard getElectricityMemberCard(Integer id);
 
     R getElectricityMemberCardPage(Long offset, Long size, Integer status, Integer type);
+
+	R queryElectricityMemberCard(Long offset, Long size);
 }

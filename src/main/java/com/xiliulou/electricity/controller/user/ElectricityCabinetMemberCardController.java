@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.Objects;
+
 /**
  * @program: XILIULOU
  * @description:
@@ -19,19 +21,26 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class ElectricityCabinetMemberCardController {
 
-    @Autowired
-    ElectricityMemberCardService electricityMemberCardService;
+	@Autowired
+	ElectricityMemberCardService electricityMemberCardService;
 
-    /**
-     * 月卡分页
-     *
-     * @param
-     * @return
-     */
-    @GetMapping(value = "/user/memberCard/page")
-    public R getElectricityBatteryPage(@RequestParam(value = "offset", required = true) Long offset,
-                                       @RequestParam(value = "size", required = true) Long size
-    ) {
-        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, ElectricityMemberCard.STATUS_USEABLE,null);
-    }
+	/**
+	 * 月卡分页
+	 *
+	 * @param
+	 * @return
+	 */
+	@GetMapping(value = "/user/memberCard/page")
+	public R getElectricityBatteryPage(@RequestParam(value = "offset", required = false) Long offset,
+			@RequestParam(value = "size", required = false) Long size
+	) {
+		if (Objects.isNull(size)) {
+			size = 10L;
+		}
+
+		if (Objects.isNull(offset) || offset < 0) {
+			offset = 0L;
+		}
+		return electricityMemberCardService.queryElectricityMemberCard(offset, size);
+	}
 }
