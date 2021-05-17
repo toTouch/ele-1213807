@@ -128,4 +128,10 @@ public class FranchiseeBindCardServiceImpl implements FranchiseeBindCardService 
         }
         return R.ok(electricityMemberCardList);
     }
+
+    @Override
+    public List<FranchiseeBindCard> queryByFranchisee(Integer id) {
+        return franchiseeBindCardMapper.selectList(new LambdaQueryWrapper<FranchiseeBindCard>()
+                .eq(FranchiseeBindCard::getFranchiseeId, id));
+    }
 }

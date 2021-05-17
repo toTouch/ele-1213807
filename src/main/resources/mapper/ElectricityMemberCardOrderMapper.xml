@@ -1,56 +1,89 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
-    <select id="memberCardOrderPage" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVo">
-        select tel.* , tui.phone as phone from
-        t_electricity_member_card_order tel
+	<select id="memberCardOrderPage" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVo">
+		select tel.* , tui.phone as phone from
+		t_electricity_member_card_order tel
 
-        LEFT JOIN t_user_info tui on tui.uid = tel.uid
+		LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
-        WHERE 0= 0
-        <if test="query.phone != null">
-            and tui.phone =#{query.phone}
-        </if>
-        <if test="query.orderId != null">
-            and tel.order_id =#{query.orderId}
-        </if>
-        <if test="query.cardType != null">
-            and tel.member_card_type =#{query.cardType}
-        </if>
-        <if test="query.queryStartTime != null">
-            and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
-        </if>
-        order by tel.create_time desc
-
-
-
-    </select>
+		WHERE 0= 0
+		<if test="query.phone != null">
+			and tui.phone =#{query.phone}
+		</if>
+		<if test="query.orderId != null">
+			and tel.order_id =#{query.orderId}
+		</if>
+		<if test="query.cardType != null">
+			and tel.member_card_type =#{query.cardType}
+		</if>
+		<if test="query.queryStartTime != null">
+			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+		</if>
+		order by tel.create_time desc
 
 
-    <select id="getMemberCardOrderPage" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-        SELECT * FROM
-        t_electricity_member_card_order
-        WHERE uid =#{uid}
-        and status =1
-        <if test="startTime != null">
-            and create_time BETWEEN #{startTime} and #{endTime}
-        </if>
-        order by create_time desc
-        limit #{offset},#{size}
-
-    </select>
-
-    <select id="getMemberCardOrderCount" resultType="java.lang.Long">
-
-        SELECT count(1)
-        FROM t_electricity_member_card_order
-        WHERE uid =#{uid}
-        and status =1
-        <if test="startTime != null">
-            and create_time BETWEEN #{startTime} and #{endTime}
-        </if>
+	</select>
 
 
-    </select>
+	<select id="getMemberCardOrderPage" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+		SELECT * FROM
+		t_electricity_member_card_order
+		WHERE uid =#{uid}
+		and status =1
+		<if test="startTime != null">
+			and create_time BETWEEN #{startTime} and #{endTime}
+		</if>
+		order by create_time desc
+		limit #{offset},#{size}
+
+	</select>
+
+	<select id="getMemberCardOrderCount" resultType="java.lang.Long">
+
+		SELECT count(1)
+		FROM t_electricity_member_card_order
+		WHERE uid =#{uid}
+		and status =1
+		<if test="startTime != null">
+			and create_time BETWEEN #{startTime} and #{endTime}
+		</if>
+
+
+	</select>
+
+
+	<select id="homeOne" resultType="java.math.BigDecimal">
+
+		SELECT sum(pay_amount) FROM t_electricity_member_card_order
+		WHERE status = 1 and create_time >= #{first} and create_time &lt;=#{now}
+
+		<if test="cardIdList!=null and cardIdList!=''">
+			and member_card_id in
+			<foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+
+
+	</select>
+
+
+	<select id="homeThree" resultType="java.util.HashMap">
+
+		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money
+		from t_electricity_member_card_order
+		where create_time >= #{startTimeMilliDay} and create_time &lt;= #{endTimeMilliDay} and status = 1
+
+		<if test="cardIdList!=null and cardIdList!=''">
+			and member_card_id in
+			<foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+		group by from_unixtime(create_time / 1000, '%Y-%m-%d')
+		order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+
+	</select>
 
 </mapper>

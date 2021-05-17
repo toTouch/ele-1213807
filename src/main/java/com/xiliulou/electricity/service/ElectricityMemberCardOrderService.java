@@ -16,9 +16,9 @@ public interface ElectricityMemberCardOrderService {
 
     R getMemberCardOrderPage(Long uid, Long offset, Long size, Long startTime, Long endTime);
 
-    BigDecimal homeOne(Long first, Long now);
+    BigDecimal homeOne(Long first, Long now,List<Integer> cardIdList);
 
-    List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay);
+    List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cardIdList);
 
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 

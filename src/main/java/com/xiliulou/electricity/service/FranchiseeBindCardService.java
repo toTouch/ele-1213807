@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeBindCard;
 import com.xiliulou.electricity.query.FranchiseeBindCardBindQuery;
 
+import java.util.List;
+
 /**
  * 加盟商套餐绑定表(TFranchiseeBindCard)表服务接口
  *
@@ -19,7 +21,7 @@ public interface FranchiseeBindCardService {
      * @return 实例对象
      */
     FranchiseeBindCard queryByIdFromDB(Long id);
-    
+
 
 
     /**
@@ -42,4 +44,6 @@ public interface FranchiseeBindCardService {
     R bindCard(FranchiseeBindCardBindQuery franchiseeBindCardBindQuery);
 
     R queryBindCard(Integer id);
+
+	List<FranchiseeBindCard> queryByFranchisee(Integer id);
 }

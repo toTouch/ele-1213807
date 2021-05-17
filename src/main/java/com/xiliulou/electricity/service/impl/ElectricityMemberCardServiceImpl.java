@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -21,7 +22,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Vector;
 
 /**
  * @program: XILIULOU
@@ -166,6 +172,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return R.ok(baseMapper.queryElectricityMemberCard(page,offset,size,franchisee.getId()));
     }
 
+
     /**
      * 获取套餐
      *
@@ -184,4 +191,5 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
         return electricityMemberCard;
     }
+
 }

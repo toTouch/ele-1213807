@@ -20,16 +20,12 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     List<ElectricityMemberCardOrder> getMemberCardOrderPage(@Param("uid") Long uid,
                                                             @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
-    @Select("SELECT sum(pay_amount)  FROM t_electricity_member_card_order  WHERE status = 1 and create_time >= #{first} and create_time <= #{now}")
-    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now);
+
+    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now,@Param("cardIdList") List<Integer> cardIdList);
 
 
-    @Select(" select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money\n" +
-            "from t_electricity_member_card_order\n" +
-            "where create_time >= #{startTimeMilliDay} and create_time <=#{endTimeMilliDay} and status = 1\n" +
-            "group by from_unixtime(create_time / 1000, '%Y-%m-%d')\n" +
-            "order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc")
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+
+    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cardIdList") List<Integer> cardIdList);
 
     @Select("SELECT * FROM  t_electricity_member_card_order  WHERE uid = #{uid} AND status =1  ORDER BY create_time desc LIMIT 0,1")
     ElectricityMemberCardOrder getRecentOrder(@Param("uid") Long uid);
