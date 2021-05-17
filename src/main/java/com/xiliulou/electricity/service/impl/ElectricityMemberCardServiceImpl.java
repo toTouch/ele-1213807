@@ -12,6 +12,9 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -32,6 +35,15 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    UserInfoService userInfoService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
+
+    @Autowired
+    UserService userService;
 
     /**
      * 新增卡包
