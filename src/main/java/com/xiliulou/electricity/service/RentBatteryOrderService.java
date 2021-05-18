@@ -7,6 +7,8 @@ import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.query.ReturnBatteryQuery;
 
+import javax.servlet.http.HttpServletResponse;
+
 /**
  * 租电池记录(TRentBatteryOrder)表服务接口
  *
@@ -42,4 +44,6 @@ public interface RentBatteryOrderService {
     R endOrder(String orderId);
 
     Integer queryByUidAndType(Long uid, Integer type);
+
+	void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response);
 }

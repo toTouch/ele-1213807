@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.IdUtil;
+import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
@@ -14,6 +16,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -33,7 +36,10 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +49,10 @@ import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.net.URLEncoder;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -503,6 +513,94 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     public Integer queryByUidAndType(Long uid, Integer type) {
         return rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType,type)
                 .in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+    }
+
+    @Override
+    public void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response) {
+        Page page = PageUtil.getPage(0L,2000L);
+        rentBatteryOrderMapper.queryList(page, rentBatteryOrderQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return ;
+        }
+
+
+        List<RentBatteryOrder> rentBatteryOrderList = page.getRecords();
+        if (!DataUtil.collectionIsUsable(rentBatteryOrderList)) {
+            return;
+        }
+
+
+        List<RentBatteryOrderExcelVO> rentBatteryOrderExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        int index = 0;
+        for (RentBatteryOrder rentBatteryOrder : rentBatteryOrderList) {
+            index++;
+            RentBatteryOrderExcelVO excelVo = new RentBatteryOrderExcelVO();
+            excelVo.setId(index);
+            excelVo.setOrderId(rentBatteryOrder.getOrderId());
+            excelVo.setPhone(rentBatteryOrder.getPhone());
+            excelVo.setName(rentBatteryOrder.getName());
+            excelVo.setCellNo(rentBatteryOrder.getCellNo());
+            excelVo.setElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
+            excelVo.setBatteryDeposit(rentBatteryOrder.getBatteryDeposit());
+
+
+            if (Objects.nonNull(rentBatteryOrder.getCreateTime())) {
+                excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrder.getCreateTime())));
+            }
+            if (Objects.isNull(rentBatteryOrder.getType())) {
+                excelVo.setType("");
+            }
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+                excelVo.setType("租电池");
+            }
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                excelVo.setType("还电池");
+            }
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_WEB_BIND)) {
+                excelVo.setType("后台绑电池");
+            }
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_WEB_UNBIND)) {
+                excelVo.setType("后台解绑电池");
+            }
+
+
+
+            if (Objects.isNull(rentBatteryOrder.getStatus())) {
+                excelVo.setStatus("");
+            }
+            if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_INIT)) {
+                excelVo.setStatus("初始化");
+            }
+            if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR)) {
+                excelVo.setStatus("开门");
+            }
+            if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED)) {
+                excelVo.setStatus("订单完成");
+            }
+            if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+                excelVo.setStatus("订单异常结束");
+            }
+            if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_CANCEL)) {
+                excelVo.setStatus("订单取消");
+            }
+
+            rentBatteryOrderExcelVOS.add(excelVo);
+
+
+            String fileName = "换电订单报表.xlsx";
+            try {
+                ServletOutputStream outputStream = response.getOutputStream();
+                // 告诉浏览器用什么软件可以打开此文件
+                response.setHeader("content-Type", "application/vnd.ms-excel");
+                // 下载文件的默认名称
+                response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+                EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
+                return;
+            } catch (IOException e) {
+                log.error("导出报表失败！", e);
+            }
+        }
     }
 
     //分配满仓

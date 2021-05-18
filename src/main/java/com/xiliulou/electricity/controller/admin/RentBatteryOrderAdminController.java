@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -57,6 +59,32 @@ public class RentBatteryOrderAdminController {
                 .type(type).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
+    }
+
+    //租电池订单导出报表
+    @GetMapping("/admin/rentBatteryOrder/exportExcel")
+    public void exportExcel(@RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "orderId", required = false) String orderId ,HttpServletResponse response) {
+
+        Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
+        if (days > 31) {
+            return;
+        }
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+                .name(name)
+                .phone(phone)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(status)
+                .orderId(orderId)
+                .type(type).build();
+
+        rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
     }
 
 

@@ -514,18 +514,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
-
         Page page = PageUtil.getPage(0L, 2000L);
-
-
         electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
         if (ObjectUtil.isEmpty(page.getRecords())) {
             return ;
         }
+
+
         List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
         if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
             return;
         }
+
 
         List<ElectricityCabinetOrderExcelVO> electricityCabinetOrderExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -538,12 +538,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             excelVo.setPhone(electricityCabinetOrderVO.getPhone());
             excelVo.setOldElectricityBatterySn(electricityCabinetOrderVO.getOldElectricityBatterySn());
             excelVo.setNewElectricityBatterySn(electricityCabinetOrderVO.getNewElectricityBatterySn());
+
+
             if (Objects.nonNull(electricityCabinetOrderVO.getSwitchBeginningTime())) {
                 excelVo.setSwitchBeginningTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchBeginningTime())));
             }
             if (Objects.nonNull(electricityCabinetOrderVO.getSwitchEndTime())) {
                 excelVo.setSwitchEndTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchEndTime())));
             }
+
+
             if (Objects.isNull(electricityCabinetOrderVO.getPaymentMethod())) {
                 excelVo.setPaymentMethod("");
             }
@@ -556,6 +560,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (Objects.equals(electricityCabinetOrderVO.getPaymentMethod(), ElectricityCabinetOrder.PAYMENT_METHOD_YEAR_CARD)) {
                 excelVo.setPaymentMethod("年卡");
             }
+
+
             if (Objects.isNull(electricityCabinetOrderVO.getStatus())) {
                 excelVo.setStatus("");
             }
@@ -584,6 +590,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 excelVo.setStatus("订单取消");
             }
             electricityCabinetOrderExcelVOS.add(excelVo);
+
+
 
             String fileName = "换电订单报表.xlsx";
             try {
