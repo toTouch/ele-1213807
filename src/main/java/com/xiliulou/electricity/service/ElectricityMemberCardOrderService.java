@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
@@ -25,4 +26,6 @@ public interface ElectricityMemberCardOrderService {
     ElectricityMemberCardOrder getRecentOrder(Long uid);
 
     R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery);
+
+	void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
 }

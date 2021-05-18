@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.*;
@@ -10,14 +12,25 @@ import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.PageUtil;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
+import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -189,6 +202,76 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
         Page page = PageUtil.getPage(offset, size);
 
-        return R.ok(baseMapper.memberCardOrderPage(page, offset, size, memberCardOrderQuery));
+        return R.ok(baseMapper.memberCardOrderPage(page, memberCardOrderQuery));
+    }
+
+    @Override
+    public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
+        Page page = PageUtil.getPage(0L,2000L);
+        baseMapper.memberCardOrderPage(page,  memberCardOrderQuery);
+        if (ObjectUtil.isEmpty(page.getRecords())) {
+            return ;
+        }
+        List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = page.getRecords();
+        if (!DataUtil.collectionIsUsable(electricityMemberCardOrderVOList)) {
+            return;
+        }
+
+        List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        int index = 0;
+        for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
+            index++;
+            ElectricityMemberCardOrderExcelVO excelVo = new ElectricityMemberCardOrderExcelVO();
+            excelVo.setId(index);
+            excelVo.setOrderId(electricityMemberCardOrderVO.getOrderId());
+            excelVo.setPhone(electricityMemberCardOrderVO.getPhone());
+            if (Objects.nonNull(electricityMemberCardOrderVO.getUpdateTime())) {
+                excelVo.setBeginningTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime())));
+                if (Objects.nonNull(electricityMemberCardOrderVO.getValidDays())) {
+                    excelVo.setEndTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime()+electricityMemberCardOrderVO.getValidDays()*24*60*60*1000)));
+                }
+            }
+
+            if (Objects.isNull(electricityMemberCardOrderVO.getMemberCardType())) {
+                excelVo.setMemberCardType("");
+            }
+            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_MONTH_CARD)) {
+                excelVo.setMemberCardType("月卡");
+            }
+            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_SEASON_CARD)) {
+                excelVo.setMemberCardType("季卡");
+            }
+            if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_YEAR_CARD)) {
+                excelVo.setMemberCardType("年卡");
+            }
+            if (Objects.isNull(electricityMemberCardOrderVO.getStatus())) {
+                excelVo.setStatus("");
+            }
+            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_INIT)) {
+                excelVo.setStatus("未支付");
+            }
+            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+                excelVo.setStatus("支付成功");
+            }
+            if (Objects.equals(electricityMemberCardOrderVO.getStatus(), ElectricityMemberCardOrder.STATUS_FAIL)) {
+                excelVo.setStatus("支付失败");
+            }
+
+            electricityMemberCardOrderExcelVOS.add(excelVo);
+
+            String fileName = "购卡订单报表.xlsx";
+            try {
+                ServletOutputStream outputStream = response.getOutputStream();
+                // 告诉浏览器用什么软件可以打开此文件
+                response.setHeader("content-Type", "application/vnd.ms-excel");
+                // 下载文件的默认名称
+                response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+                EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
+                return;
+            } catch (IOException e) {
+                log.error("导出报表失败！", e);
+            }
+        }
     }
 }

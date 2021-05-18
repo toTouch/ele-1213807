@@ -10,6 +10,6 @@ import lombok.Data;
  * @create: 2020-12-11 18:26
  **/
 @Data
-public class ElectricityMemberCardOrderVo extends ElectricityMemberCardOrder {
+public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     private String phone;
 }

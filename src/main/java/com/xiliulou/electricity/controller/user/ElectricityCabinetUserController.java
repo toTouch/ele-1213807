@@ -167,7 +167,6 @@ public class ElectricityCabinetUserController extends BaseController {
 			System.out.println("carray="+carray);
 
 
-			System.out.println("sum="+(char)(sum % 10) + '0');
 			sb.append((char) ((sum % 10) + '0'));
 			System.out.println("sb="+sb);
 			i--;
@@ -181,6 +180,13 @@ public class ElectricityCabinetUserController extends BaseController {
 		System.out.println("sb="+sb);
 		sb.reverse();
 		System.out.println(sb.toString());
+		System.out.println("result1="+0);
+		System.out.println("result2="+(char)0);
+		System.out.println("result3="+(char)0 + '0');
+		System.out.println("result4="+0 + '0');
+		System.out.println("result5="+(char)(0 + '0'));
+		System.out.println("result6="+(char)(9 + '0'));
+		System.out.println("result7="+(char)(8 + '0'));
 	}*/
 
 }

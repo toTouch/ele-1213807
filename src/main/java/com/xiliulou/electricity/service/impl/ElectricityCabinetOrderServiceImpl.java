@@ -514,7 +514,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     @Override
     public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
-        Page page = PageUtil.getPage(electricityCabinetOrderQuery.getOffset(), electricityCabinetOrderQuery.getSize());
+
+        Page page = PageUtil.getPage(0L, 2000L);
 
 
         electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
@@ -526,7 +527,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return;
         }
 
-        List<ElectricityCabinetOrderExcelVO> ElectricityCabinetOrderExcelVOS = new ArrayList();
+        List<ElectricityCabinetOrderExcelVO> electricityCabinetOrderExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int index = 0;
         for (ElectricityCabinetOrderVO electricityCabinetOrderVO : electricityCabinetOrderVOList) {
@@ -582,7 +583,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_CANCEL)) {
                 excelVo.setStatus("订单取消");
             }
-            ElectricityCabinetOrderExcelVOS.add(excelVo);
+            electricityCabinetOrderExcelVOS.add(excelVo);
 
             String fileName = "换电订单报表.xlsx";
             try {
@@ -591,7 +592,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 response.setHeader("content-Type", "application/vnd.ms-excel");
                 // 下载文件的默认名称
                 response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-                EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(ElectricityCabinetOrderExcelVOS);
+                EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(electricityCabinetOrderExcelVOS);
                 return;
             } catch (IOException e) {
                 log.error("导出报表失败！", e);

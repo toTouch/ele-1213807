@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.query;
 
+import lombok.Builder;
 import lombok.Data;
 
 /**
@@ -9,6 +10,7 @@ import lombok.Data;
  * @create: 2020-12-11 18:23
  **/
 @Data
+@Builder
 public class MemberCardOrderQuery {
 
     private String phone;
