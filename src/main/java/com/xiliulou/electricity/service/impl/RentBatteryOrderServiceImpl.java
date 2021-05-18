@@ -548,6 +548,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.nonNull(rentBatteryOrder.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrder.getCreateTime())));
             }
+
+
             if (Objects.isNull(rentBatteryOrder.getType())) {
                 excelVo.setType("");
             }

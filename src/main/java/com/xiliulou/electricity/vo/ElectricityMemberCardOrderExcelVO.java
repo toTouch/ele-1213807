@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 
 /**
  *
- * @author Eclair
- * @since 2020-06-17 11:13:45
+ * @author lxc
+ * @since 2021-05-18 11:13:45
  */
 @Data
 public class ElectricityMemberCardOrderExcelVO {
