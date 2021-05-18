@@ -212,10 +212,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (ObjectUtil.isEmpty(page.getRecords())) {
             return ;
         }
+
+
         List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = page.getRecords();
         if (!DataUtil.collectionIsUsable(electricityMemberCardOrderVOList)) {
             return;
         }
+
 
         List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
@@ -226,12 +229,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             excelVo.setId(index);
             excelVo.setOrderId(electricityMemberCardOrderVO.getOrderId());
             excelVo.setPhone(electricityMemberCardOrderVO.getPhone());
+
+
             if (Objects.nonNull(electricityMemberCardOrderVO.getUpdateTime())) {
                 excelVo.setBeginningTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime())));
                 if (Objects.nonNull(electricityMemberCardOrderVO.getValidDays())) {
                     excelVo.setEndTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime()+electricityMemberCardOrderVO.getValidDays()*24*60*60*1000)));
                 }
             }
+
 
             if (Objects.isNull(electricityMemberCardOrderVO.getMemberCardType())) {
                 excelVo.setMemberCardType("");
@@ -245,6 +251,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             if (Objects.equals(electricityMemberCardOrderVO.getMemberCardType(), ElectricityCabinetOrder.PAYMENT_METHOD_YEAR_CARD)) {
                 excelVo.setMemberCardType("年卡");
             }
+
+
             if (Objects.isNull(electricityMemberCardOrderVO.getStatus())) {
                 excelVo.setStatus("");
             }
@@ -259,6 +267,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             electricityMemberCardOrderExcelVOS.add(excelVo);
+
 
             String fileName = "购卡订单报表.xlsx";
             try {
