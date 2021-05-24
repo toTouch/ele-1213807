@@ -62,6 +62,10 @@ public class UserInfo {
      */
     private Long remainingNumber;
     /**
+     * 套餐id
+     */
+    private Integer cardId;
+    /**
      * 类型(0:月卡,1:季卡,2:年卡)
      */
     private Integer cardType;
