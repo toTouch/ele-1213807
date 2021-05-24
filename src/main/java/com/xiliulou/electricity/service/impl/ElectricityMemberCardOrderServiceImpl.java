@@ -122,6 +122,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				return R.fail("ELECTRICITY.0093", "您的月卡离过期时间大于三天,无法续费!");
 			}
 			now=userInfo.getMemberCardExpireTime();
+			//TODO 使用次数暂时叠加
 			if(userInfo.getRemainingNumber()>0){
 				remainingNumber=remainingNumber+userInfo.getRemainingNumber();
 			}
