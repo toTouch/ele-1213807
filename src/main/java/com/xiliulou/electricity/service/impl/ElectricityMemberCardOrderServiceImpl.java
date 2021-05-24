@@ -111,17 +111,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
 
+		Long now =System.currentTimeMillis();
+		Long remainingNumber=electricityMemberCard.getMaxUseCount();
 		//同一个套餐可以提前三天续费
 		if (Objects.equals(userInfo.getCardId(), memberId)) {
 			if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
-					userInfo.getMemberCardExpireTime() > System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L &&
+					userInfo.getMemberCardExpireTime() > now + 3 * 24 * 60 * 60 * 1000L &&
 					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
 				return R.fail("ELECTRICITY.0093", "您的月卡离过期时间大于三天,无法续费!");
 			}
+			now=userInfo.getMemberCardExpireTime();
+			if(userInfo.getRemainingNumber()>0){
+				remainingNumber=remainingNumber+userInfo.getRemainingNumber();
+			}
+
 		} else {
 			if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
-					userInfo.getMemberCardExpireTime() > System.currentTimeMillis() &&
+					userInfo.getMemberCardExpireTime() > now &&
 					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
 				return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
@@ -146,10 +153,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
 			UserInfo userInfoUpdate = new UserInfo();
 			userInfoUpdate.setId(userInfo.getId());
-			Long memberCardExpireTime = System.currentTimeMillis() +
+			Long memberCardExpireTime = now +
 					electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
 			userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
-			userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+			userInfoUpdate.setRemainingNumber(remainingNumber);
 			userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
 			userInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
 			userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
