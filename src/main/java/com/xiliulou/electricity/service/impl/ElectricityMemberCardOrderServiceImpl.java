@@ -104,11 +104,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.getElectricityMemberCard(memberId);
 		if (Objects.isNull(electricityMemberCard)) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", memberId);
-			return R.failMsg("未找到月卡套餐!");
+			return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
 		}
 		if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
 			log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", memberId);
-			return R.failMsg("月卡已禁用!");
+			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
 
 		//同一个套餐可以提前三天续费
@@ -117,14 +117,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					userInfo.getMemberCardExpireTime() > System.currentTimeMillis() + 3 * 24 * 60 * 60 * 1000L &&
 					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
-				return R.failMsg("您的月卡离过期时间大于三天,无法续费!");
+				return R.fail("ELECTRICITY.0093", "您的月卡离过期时间大于三天,无法续费!");
 			}
 		} else {
 			if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
 					userInfo.getMemberCardExpireTime() > System.currentTimeMillis() &&
 					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
-				return R.failMsg("您的月卡还未过期,无需再次购买!");
+				return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
 			}
 		}
 
