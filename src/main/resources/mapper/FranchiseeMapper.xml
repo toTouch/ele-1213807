@@ -20,6 +20,12 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
+        <if test="query.idList!=null and query.idList!=''">
+            and id in
+            <foreach collection="query.idList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by create_time desc
 
     </select>

@@ -2,6 +2,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -18,5 +20,6 @@ public class FranchiseeQuery {
 	private String name;
 	private Long beginTime;
 	private Long endTime;
+	private List<Integer> idList;
 
 }
