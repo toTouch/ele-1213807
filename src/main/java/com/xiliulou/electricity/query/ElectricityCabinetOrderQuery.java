@@ -4,6 +4,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * (TElectricityCabinetOrder)实体类
  *
@@ -38,6 +40,8 @@ public class ElectricityCabinetOrderQuery {
 
 
     private Integer paymentMethod;
+
+    private List<Integer> eleIdList;
 
 
 }

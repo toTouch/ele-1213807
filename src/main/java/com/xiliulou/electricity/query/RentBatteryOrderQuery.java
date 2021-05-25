@@ -3,6 +3,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -24,4 +26,5 @@ public class RentBatteryOrderQuery {
     private Integer status;
     private String orderId;
     private Integer type;
+    private List<Integer> eleIdList;
 }

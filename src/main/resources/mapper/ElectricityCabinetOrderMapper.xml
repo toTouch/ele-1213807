@@ -34,36 +34,35 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
-        teco.id as id, teco.order_id as orderId, teco.phone as phone, teco.uid as uid, teco.pay_amount as payAmount,
-        teco.electricity_cabinet_id as electricityCabinetId, teco.old_electricity_battery_sn as
-        oldElectricityBatterySn,
-        teco.new_electricity_battery_sn as newElectricityBatterySn, teco.old_cell_no as oldCellNo, teco.new_cell_no
-        as newCellNo, teco.status as status, teco.payment_method as paymentMethod, teco.source as source, teco.remark
-        as remark,
-        teco.switch_begin_time as switchBeginTime, teco.switch_end_time as switchEndTime, teco.create_time
-        as createTime, teco.update_time as updateTime
-        from electricity.t_electricity_cabinet_order as teco
+        id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time
+        from electricity.t_electricity_cabinet_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and teco.order_id = #{query.orderId}
+                and order_id = #{query.orderId}
             </if>
             <if test="query.phone != null and query.phone != ''">
-                and teco.phone = #{query.phone}
+                and phone = #{query.phone}
             </if>
             <if test="query.status != null">
-                and teco.status = #{query.status}
+                and status = #{query.status}
             </if>
             <if test="query.beginTime != null">
-                and teco.create_time &gt;=#{query.beginTime}
+                and create_time &gt;=#{query.beginTime}
             </if>
             <if test="query.endTime != null">
-                and teco.create_time &lt;=#{query.endTime}
+                and create_time &lt;=#{query.endTime}
             </if>
             <if test="query.paymentMethod != null">
-                and teco.payment_method = #{query.paymentMethod}
+                and payment_method = #{query.paymentMethod}
             </if>
             <if test="query.uid != null">
-                and teco.uid = #{query.uid}
+                and uid = #{query.uid}
+            </if>
+            <if test="query.eleIdList!=null and query.eleIdList!=''">
+                and electricity_cabinet_id in
+                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by teco.update_time desc

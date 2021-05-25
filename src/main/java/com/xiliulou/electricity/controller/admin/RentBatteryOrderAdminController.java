@@ -1,9 +1,15 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -12,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -21,12 +28,15 @@ import java.util.Objects;
  * @since 2020-12-08 15:09:08
  */
 @RestController
+@Slf4j
 public class RentBatteryOrderAdminController {
     /**
      * 服务对象
      */
     @Autowired
     private RentBatteryOrderService rentBatteryOrderService;
+    @Autowired
+    UserTypeFactory userTypeFactory;
 
     //列表查询
     @GetMapping(value = "/admin/rentBatteryOrder/list")
@@ -47,6 +57,27 @@ public class RentBatteryOrderAdminController {
             offset = 0L;
         }
 
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if(Objects.isNull(eleIdList)){
+                return R.ok();
+            }
+        }
+
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -56,7 +87,8 @@ public class RentBatteryOrderAdminController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
-                .type(type).build();
+                .type(type)
+                .eleIdList(eleIdList).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }

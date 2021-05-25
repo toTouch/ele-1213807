@@ -32,6 +32,12 @@
             <if test="query.endTime != null">
                 and create_time &lt;=#{query.endTime}
             </if>
+            <if test="query.eleIdList!=null and query.eleIdList!=''">
+                and electricity_cabinet_id in
+                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
         </where>
         order by create_time desc
     </select>
