@@ -47,9 +47,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("cidList") List<Integer> cidList);
 
-    List<HashMap<String, String>> homeThreeMemberCard(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
-
-    Integer homeOneMemberCard(@Param("startTimeMilliDay") Long first, @Param("endTimeMilliDay") Long now, @Param("cidList") List<Integer> cidList);
 
     void updateByUid(UserInfo userInfo);
 

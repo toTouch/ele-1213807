@@ -55,8 +55,8 @@
                 #{id}
             </foreach>
         </if>
-        group by from_unixtime(tui.create_time / 1000, '%Y-%m-%d')
-        order by from_unixtime(tui.create_time / 1000, '%Y-%m-%d') desc
+        group by date
+        order by date desc
     </select>
     <select id="homeThreeAuth" resultType="java.util.HashMap">
         select from_unixtime(tui.create_time / 1000, '%Y-%m-%d') date, count(*) as authCount
@@ -70,21 +70,9 @@
                 #{id}
             </foreach>
         </if>
-        group by from_unixtime(tui.create_time / 1000, '%Y-%m-%d')
-        order by from_unixtime(tui.create_time / 1000, '%Y-%m-%d') desc
+        group by date
+        order by date desc
     </select>
-    <select id="homeThreeMemberCard" resultType="java.util.HashMap">
-        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as memberCardCount
-        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay} and member_card_expire_time is not null and remaining_number is not null
-        group by from_unixtime(create_time / 1000, '%Y-%m-%d')
-        order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
-    </select>
-    <select id="homeOneMemberCard" resultType="java.lang.Integer">
-        select count(1)
-        from electricity.t_user_info where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
-        and member_card_expire_time is not null and remaining_number is not null
-    </select>
-
 
     <!--通过主键修改数据-->
     <update id="unBind">

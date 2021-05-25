@@ -81,8 +81,8 @@
 				#{id}
 			</foreach>
 		</if>
-		group by from_unixtime(create_time / 1000, '%Y-%m-%d')
-		order by from_unixtime(create_time / 1000, '%Y-%m-%d') desc
+		group by date
+		order by date desc
 
 	</select>
 

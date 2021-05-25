@@ -281,11 +281,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public Integer homeOneMemberCard(Long first, Long now,List<Integer> cidList) {
-		return userInfoMapper.homeOneMemberCard(first, now,cidList);
-	}
-
-	@Override
 	public int minCount(Long id) {
 		return userInfoMapper.minCount(id, System.currentTimeMillis());
 	}
@@ -298,11 +293,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Override
 	public List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cidList) {
 		return userInfoMapper.homeThreeAuth(startTimeMilliDay, endTimeMilliDay,cidList);
-	}
-
-	@Override
-	public List<HashMap<String, String>> homeThreeMemberCard(long startTimeMilliDay, Long endTimeMilliDay) {
-		return userInfoMapper.homeThreeMemberCard(startTimeMilliDay, endTimeMilliDay);
 	}
 
 	/**
