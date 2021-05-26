@@ -96,7 +96,7 @@ public class FranchiseeAdminController {
                 for (Franchisee franchisee:franchiseeList) {
                     idList.add(franchisee.getId());
                 }
-                if(Objects.isNull(idList)){
+                if(ObjectUtil.isEmpty(idList)){
                     return R.ok();
                 }
 
