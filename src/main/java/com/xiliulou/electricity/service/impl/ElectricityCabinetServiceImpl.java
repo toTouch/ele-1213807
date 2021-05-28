@@ -930,7 +930,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//用户人数
 		HashMap<String, Object> userInfo = new HashMap<>();
 		userInfo.put("totalCountList", null);
-		userInfo.put("serviceCountList", null);
+		userInfo.put("authCountList", null);
 		homeThree.put("userInfo", userInfo);
 
 		//查收益
@@ -1004,9 +1004,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 			if (flag1) {
 				List<HashMap<String, String>> totalCountList = userInfoService.homeThreeTotal(startTimeMilliDay, endTimeMilliDay, cidList);
-				List<HashMap<String, String>> serviceCountList = userInfoService.homeThreeAuth(startTimeMilliDay, endTimeMilliDay, cidList);
+				List<HashMap<String, String>> authCountList = userInfoService.homeThreeAuth(startTimeMilliDay, endTimeMilliDay, cidList);
 				userInfo.put("totalCountList", totalCountList);
-				userInfo.put("authCountList", serviceCountList);
+				userInfo.put("authCountList", authCountList);
 				homeThree.put("userInfo", userInfo);
 			}
 
