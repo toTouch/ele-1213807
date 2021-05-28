@@ -65,7 +65,7 @@
                 </foreach>
             </if>
         </where>
-        order by teco.update_time desc
+        order by update_time desc
 
     </select>
 
