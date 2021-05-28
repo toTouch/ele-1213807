@@ -35,8 +35,6 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
-import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -411,7 +409,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 response.setHeader("content-Type", "application/vnd.ms-excel");
                 // 下载文件的默认名称
                 response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-                EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(EleDepositOrderExcelVOS);
+                EasyExcel.write(outputStream, EleDepositOrderExcelVO.class).sheet("sheet").doWrite(EleDepositOrderExcelVOS);
                 return;
             } catch (IOException e) {
                 log.error("导出报表失败！", e);

@@ -12,8 +12,6 @@ import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.PageUtil;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import lombok.extern.slf4j.Slf4j;
@@ -288,7 +286,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				response.setHeader("content-Type", "application/vnd.ms-excel");
 				// 下载文件的默认名称
 				response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-				EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
+				EasyExcel.write(outputStream, ElectricityMemberCardOrderExcelVO.class).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
 				return;
 			} catch (IOException e) {
 				log.error("导出报表失败！", e);

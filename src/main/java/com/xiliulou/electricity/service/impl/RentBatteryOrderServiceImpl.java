@@ -36,8 +36,6 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -597,7 +595,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 response.setHeader("content-Type", "application/vnd.ms-excel");
                 // 下载文件的默认名称
                 response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-                EasyExcel.write(outputStream, ElectricityCabinetOrderExcelVO.class).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
+                EasyExcel.write(outputStream, RentBatteryOrderExcelVO.class).sheet("sheet").doWrite(rentBatteryOrderExcelVOS);
                 return;
             } catch (IOException e) {
                 log.error("导出报表失败！", e);
