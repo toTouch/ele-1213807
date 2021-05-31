@@ -30,6 +30,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
@@ -442,7 +443,11 @@ public class ElectricityCabinetAdminController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        Map<String, Object> map = JsonUtil.fromJson(redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId()), Map.class);
+        String result=redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+        if(StringUtils.isEmpty(result)){
+            return R.ok();
+        }
+        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
         return R.ok(map);
     }
 
