@@ -47,13 +47,13 @@ public class NormalOtherConfigHandlerIot extends AbstractIotMessageHandler {
             log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return false;
         }
-       /* Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
+        /*Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
         if (Objects.isNull(map)) {
             log.error("other config error! no map,{}", receiverMessage.getOriginContent());
             return false;
         }*/
         //上报的数据放入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), receiverMessage.getOriginContent());
+        redisService.saveWithString(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), receiverMessage.getOriginContent());
         return true;
     }
 
