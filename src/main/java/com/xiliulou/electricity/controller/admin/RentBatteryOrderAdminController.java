@@ -107,6 +107,28 @@ public class RentBatteryOrderAdminController {
         if (days > 31) {
             return;
         }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return ;
+        }
+
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return;
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if(Objects.isNull(eleIdList)){
+                return;
+            }
+        }
+
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
                 .name(name)
                 .phone(phone)
@@ -114,7 +136,8 @@ public class RentBatteryOrderAdminController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
-                .type(type).build();
+                .type(type)
+                .eleIdList(eleIdList).build();
 
         rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
     }

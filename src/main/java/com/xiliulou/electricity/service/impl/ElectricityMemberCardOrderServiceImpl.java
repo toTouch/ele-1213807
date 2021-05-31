@@ -109,8 +109,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
 
-		Long now =System.currentTimeMillis();
-		Long remainingNumber=electricityMemberCard.getMaxUseCount();
+		Long now = System.currentTimeMillis();
+		Long remainingNumber = electricityMemberCard.getMaxUseCount();
 		//同一个套餐可以提前三天续费
 		if (Objects.equals(userInfo.getCardId(), memberId)) {
 			if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
@@ -119,10 +119,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
 				return R.fail("ELECTRICITY.0093", "您的月卡离过期时间大于三天,无法续费!");
 			}
-			now=userInfo.getMemberCardExpireTime();
+			now = userInfo.getMemberCardExpireTime();
 			//TODO 使用次数暂时叠加
-			if(userInfo.getRemainingNumber()>0){
-				remainingNumber=remainingNumber+userInfo.getRemainingNumber();
+			if (userInfo.getRemainingNumber() > 0) {
+				remainingNumber = remainingNumber + userInfo.getRemainingNumber();
 			}
 
 		} else {
@@ -278,19 +278,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			}
 
 			electricityMemberCardOrderExcelVOS.add(excelVo);
+		}
 
-			String fileName = "购卡订单报表.xlsx";
-			try {
-				ServletOutputStream outputStream = response.getOutputStream();
-				// 告诉浏览器用什么软件可以打开此文件
-				response.setHeader("content-Type", "application/vnd.ms-excel");
-				// 下载文件的默认名称
-				response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-				EasyExcel.write(outputStream, ElectricityMemberCardOrderExcelVO.class).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
-				return;
-			} catch (IOException e) {
-				log.error("导出报表失败！", e);
-			}
+		String fileName = "购卡订单报表.xlsx";
+		try {
+			ServletOutputStream outputStream = response.getOutputStream();
+			// 告诉浏览器用什么软件可以打开此文件
+			response.setHeader("content-Type", "application/vnd.ms-excel");
+			// 下载文件的默认名称
+			response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+			EasyExcel.write(outputStream, ElectricityMemberCardOrderExcelVO.class).sheet("sheet").doWrite(electricityMemberCardOrderExcelVOS);
+			return;
+		} catch (IOException e) {
+			log.error("导出报表失败！", e);
 		}
 	}
 }

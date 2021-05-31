@@ -112,12 +112,36 @@ public class ElectricityCabinetOrderAdminController {
         if (days > 31) {
             return;
         }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return;
+        }
+
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return;
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if(Objects.isNull(eleIdList)){
+                return;
+            }
+        }
+
+
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .orderId(orderId)
                 .phone(phone)
                 .status(status)
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .eleIdList(eleIdList).build();
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }
 
