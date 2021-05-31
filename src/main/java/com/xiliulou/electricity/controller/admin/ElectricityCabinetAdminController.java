@@ -442,8 +442,8 @@ public class ElectricityCabinetAdminController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        Map<String, Object> map = JsonUtil.fromJson(redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId()), Map.class);
-        return R.ok(map);
+        log.info("config is -->{}",ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+        return R.ok(redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId()));
     }
 
 
