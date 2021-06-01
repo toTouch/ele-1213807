@@ -647,8 +647,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	public R queryErrorMsg(String orderId) {
 		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
-		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
-		return R.ok(s);
+		if(StringUtils.isNotEmpty(s)) {
+			redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+			return R.ok(s);
+		}
+		return R.ok();
 	}
 
 	public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {
