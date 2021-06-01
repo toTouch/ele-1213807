@@ -661,19 +661,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		if(StringUtils.isNotEmpty(s)) {
 			redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+
+
+			//提示放入电池不对，应该放入什么电池
+			if(Objects.equals(s,ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())){
+				if(Objects.nonNull(electricityCabinetOrder)) {
+					return R.ok("放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池");
+				}
+				if(Objects.nonNull(rentBatteryOrder)){
+					return R.ok("放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池");
+				}
+			}
 			return R.ok(s);
 		}
 
-
-		//提示放入电池不对，应该放入什么电池
-		if(Objects.equals(s,ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())){
-			if(Objects.nonNull(electricityCabinetOrder)) {
-				return R.ok("放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池");
-			}
-			if(Objects.nonNull(rentBatteryOrder)){
-				return R.ok("放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池");
-			}
-		}
 		return R.ok();
 	}
 
