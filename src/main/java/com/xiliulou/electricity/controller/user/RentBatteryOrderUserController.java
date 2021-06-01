@@ -48,4 +48,10 @@ public class RentBatteryOrderUserController {
         return rentBatteryOrderService.queryStatus(orderId);
     }
 
+    //查订单状态（新）
+    @GetMapping("/user/rentBatteryOrder/queryNewStatus")
+    public R queryNewStatus(@RequestParam("orderId") String orderId) {
+        return rentBatteryOrderService.queryNewStatus(orderId);
+    }
+
 }

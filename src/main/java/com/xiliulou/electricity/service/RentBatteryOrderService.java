@@ -46,4 +46,6 @@ public interface RentBatteryOrderService {
     Integer queryByUidAndType(Long uid, Integer type);
 
 	void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response);
+
+	R queryNewStatus(String orderId);
 }

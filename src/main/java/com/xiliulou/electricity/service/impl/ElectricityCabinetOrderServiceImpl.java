@@ -646,35 +646,30 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
-	public R queryErrorMsg(String orderId) {
-		ElectricityCabinetOrder electricityCabinetOrder=electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>()
-				.eq(ElectricityCabinetOrder::getOrderId, orderId));
+	public R queryNewStatus(String orderId) {
 
-		RentBatteryOrder rentBatteryOrder=rentBatteryOrderService.queryByOrderId(orderId);
-		if(Objects.isNull(electricityCabinetOrder)&&Objects.isNull(rentBatteryOrder)){
+		Map<String, String> map = new HashMap<>();
+		ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId));
+		if (Objects.isNull(electricityCabinetOrder)) {
 			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
+		Integer type = 0;
+		map.put("status", electricityCabinetOrder.getStatus().toString());
 
 		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
-		if(StringUtils.isNotEmpty(s)) {
-			redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
-
-
+		if (StringUtils.isNotEmpty(s)) {
 			//提示放入电池不对，应该放入什么电池
-			if(Objects.equals(s,ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())){
-				if(Objects.nonNull(electricityCabinetOrder)) {
-					return R.ok("放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池");
-				}
-				if(Objects.nonNull(rentBatteryOrder)){
-					return R.ok("放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池");
-				}
+			if (Objects.equals(s, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
+				s = "放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池";
 			}
-			return R.ok(s);
+			map.put("queryStatus", s);
+			type = 1;
 		}
 
-		return R.ok();
+		map.put("type", type.toString());
+		return R.ok(map);
 	}
 
 	public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {
