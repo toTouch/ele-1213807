@@ -395,6 +395,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 		}
 		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId());
+		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId());
 		return R.ok();
 	}
 
@@ -534,6 +535,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			excelVo.setOldElectricityBatterySn(electricityCabinetOrderVO.getOldElectricityBatterySn());
 			excelVo.setNewElectricityBatterySn(electricityCabinetOrderVO.getNewElectricityBatterySn());
 
+			log.info("SwitchBeginningTime is -->{}", electricityCabinetOrderVO.getSwitchBeginningTime());
 			if (Objects.nonNull(electricityCabinetOrderVO.getSwitchBeginningTime())) {
 				excelVo.setSwitchBeginningTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchBeginningTime())));
 			}
