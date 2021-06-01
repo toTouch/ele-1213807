@@ -71,5 +71,6 @@ public interface ElectricityCabinetOrderService {
 
     String findUsableCellNo(Integer id);
 
-	R queryErrorMsg(String orderId);
+	R queryNewStatus(String orderId);
+
 }

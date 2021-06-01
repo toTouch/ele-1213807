@@ -96,10 +96,10 @@ public class ElectricityCabinetOrderUserController {
     }
 
 
-    //查错误信息--开门失败才查询
-    @GetMapping("/user/electricityCabinetOrder/queryErrorMsg")
-    public R queryErrorMsg(@RequestParam("orderId") String orderId) {
-        return electricityCabinetOrderService.queryErrorMsg(orderId);
+    //查订单状态（新）
+    @GetMapping("/user/electricityCabinetOrder/queryNewStatus")
+    public R queryNewStatus(@RequestParam("orderId") String orderId) {
+        return electricityCabinetOrderService.queryNewStatus(orderId);
     }
 
 

@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -460,6 +461,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		}
 		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId());
+		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId());
 		return R.ok(rentBatteryOrder.getOrderId());
 	}
 
@@ -590,6 +592,32 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		} catch (IOException e) {
 			log.error("导出报表失败！", e);
 		}
+	}
+
+	@Override
+	public R queryNewStatus(String orderId) {
+		Map<String, String> map = new HashMap<>();
+		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
+		if (Objects.isNull(rentBatteryOrder)) {
+			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+			return R.fail("ELECTRICITY.0015", "未找到订单");
+		}
+
+		Integer type = 0;
+		map.put("status", rentBatteryOrder.getStatus().toString());
+
+		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+		if (StringUtils.isNotEmpty(s)) {
+			//提示放入电池不对，应该放入什么电池
+			if (Objects.equals(s, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
+				s = "放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池";
+			}
+			map.put("queryStatus", s);
+			type = 1;
+		}
+
+		map.put("type", type.toString());
+		return R.ok(map);
 	}
 
 	//分配满仓
