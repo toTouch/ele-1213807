@@ -68,6 +68,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	EleHardwareHandlerManager eleHardwareHandlerManager;
 	@Autowired
 	ElectricityConfigService electricityConfigService;
+	@Autowired
+	RentBatteryOrderService rentBatteryOrderService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -96,7 +98,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	/**
 	 * 通过ID查询单条数据从DB
 	 *
-	 * @param id 主键
+	 * @param orderId 主键
 	 * @return 实例对象
 	 */
 	@Override
@@ -646,10 +648,31 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 	@Override
 	public R queryErrorMsg(String orderId) {
+		ElectricityCabinetOrder electricityCabinetOrder=electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>()
+				.eq(ElectricityCabinetOrder::getOrderId, orderId));
+
+		RentBatteryOrder rentBatteryOrder=rentBatteryOrderService.queryByOrderId(orderId);
+		if(Objects.isNull(electricityCabinetOrder)&&Objects.isNull(rentBatteryOrder)){
+			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+			return R.fail("ELECTRICITY.0015", "未找到订单");
+		}
+
+
 		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		if(StringUtils.isNotEmpty(s)) {
 			redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 			return R.ok(s);
+		}
+
+
+		//提示放入电池不对，应该放入什么电池
+		if(Objects.equals(s,ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())){
+			if(Objects.nonNull(electricityCabinetOrder)) {
+				return R.ok("放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池");
+			}
+			if(Objects.nonNull(rentBatteryOrder)){
+				return R.ok("放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池");
+			}
 		}
 		return R.ok();
 	}
