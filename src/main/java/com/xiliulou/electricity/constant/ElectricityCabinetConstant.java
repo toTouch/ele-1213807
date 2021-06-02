@@ -89,4 +89,6 @@ public interface ElectricityCabinetConstant {
 
     String ELE_ORDER_WARN_MSG_CACHE_KEY = "ele_order_warn_msg:";
 
+    String ELE_BIG_POWER_CELL_NO_CACHE_KEY = "big_power_cell_no:";
+
 }

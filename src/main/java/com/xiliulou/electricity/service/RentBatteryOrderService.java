@@ -48,4 +48,6 @@ public interface RentBatteryOrderService {
 	void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response);
 
 	R queryNewStatus(String orderId);
+
+    String findUsableBatteryCellNo(Integer id, String cellNo);
 }

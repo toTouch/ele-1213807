@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
@@ -25,6 +25,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -37,136 +38,136 @@ import java.util.stream.Collectors;
  */
 @Service("electricityCabinetBoxService")
 public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxService {
-    @Resource
-    private ElectricityCabinetBoxMapper electricityCabinetBoxMapper;
-    @Autowired
-    ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    ElectricityCabinetService electricityCabinetService;
-    @Autowired
-    EleHardwareHandlerManager eleHardwareHandlerManager;
-    @Autowired
-    UserInfoService userInfoService;
+	@Resource
+	private ElectricityCabinetBoxMapper electricityCabinetBoxMapper;
+	@Autowired
+	ElectricityBatteryService electricityBatteryService;
+	@Autowired
+	ElectricityCabinetService electricityCabinetService;
+	@Autowired
+	EleHardwareHandlerManager eleHardwareHandlerManager;
+	@Autowired
+	UserInfoService userInfoService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public ElectricityCabinetBox queryByIdFromDB(Long id) {
-        return this.electricityCabinetBoxMapper.queryById(id);
-    }
+	/**
+	 * 通过ID查询单条数据从DB
+	 *
+	 * @param id 主键
+	 * @return 实例对象
+	 */
+	@Override
+	public ElectricityCabinetBox queryByIdFromDB(Long id) {
+		return this.electricityCabinetBoxMapper.queryById(id);
+	}
 
-    @Override
-    public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
-        if (Objects.nonNull(id)) {
-            for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
-                ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
-                electricityCabinetBox.setElectricityCabinetId(id);
-                electricityCabinetBox.setCellNo(String.valueOf(i));
-                electricityCabinetBox.setCreateTime(System.currentTimeMillis());
-                electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-                electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
-                electricityCabinetBoxMapper.insert(electricityCabinetBox);
-            }
-        }
-    }
+	@Override
+	public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
+		if (Objects.nonNull(id)) {
+			for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
+				ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+				electricityCabinetBox.setElectricityCabinetId(id);
+				electricityCabinetBox.setCellNo(String.valueOf(i));
+				electricityCabinetBox.setCreateTime(System.currentTimeMillis());
+				electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+				electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
+				electricityCabinetBoxMapper.insert(electricityCabinetBox);
+			}
+		}
+	}
 
-    @Override
-    public void batchDeleteBoxByElectricityCabinetId(Integer id) {
-        electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id, System.currentTimeMillis());
-    }
+	@Override
+	public void batchDeleteBoxByElectricityCabinetId(Integer id) {
+		electricityCabinetBoxMapper.batchDeleteBoxByElectricityCabinetId(id, System.currentTimeMillis());
+	}
 
-    @Override
-    @DS("slave_1")
-    public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
-        Page page = PageUtil.getPage(electricityCabinetBoxQuery.getOffset(), electricityCabinetBoxQuery.getSize());
+	@Override
+	@DS("slave_1")
+	public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
+		Page page = PageUtil.getPage(electricityCabinetBoxQuery.getOffset(), electricityCabinetBoxQuery.getSize());
 
-        electricityCabinetBoxMapper.queryList(page, electricityCabinetBoxQuery);
-        if (ObjectUtil.isEmpty(page.getRecords())) {
-            return R.ok();
-        }
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = page.getRecords();
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>();
+		electricityCabinetBoxMapper.queryList(page, electricityCabinetBoxQuery);
+		if (ObjectUtil.isEmpty(page.getRecords())) {
+			return R.ok();
+		}
+		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = page.getRecords();
+		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>();
 
-        if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
-            for (ElectricityCabinetBoxVO electricityCabinetBoxVO : electricityCabinetBoxVOList) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBoxVO.getElectricityBatteryId());
-                if (Objects.nonNull(electricityBattery)) {
-                    electricityCabinetBoxVO.setSn(electricityBattery.getSn());
-                    electricityCabinetBoxVO.setPower(electricityBattery.getPower());
-                }
-                electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
-            }
-        }
-        page.setRecords(electricityCabinetBoxVOs);
-        return R.ok(page);
-    }
+		if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
+			for (ElectricityCabinetBoxVO electricityCabinetBoxVO : electricityCabinetBoxVOList) {
+				ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBoxVO.getElectricityBatteryId());
+				if (Objects.nonNull(electricityBattery)) {
+					electricityCabinetBoxVO.setSn(electricityBattery.getSn());
+					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+				}
+				electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
+			}
+		}
+		page.setRecords(electricityCabinetBoxVOs);
+		return R.ok(page);
+	}
 
-    @Override
-    public R modify(ElectricityCabinetBox electricityCabinetBox) {
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetBoxMapper.update(electricityCabinetBox);
-        return R.ok();
-    }
+	@Override
+	public R modify(ElectricityCabinetBox electricityCabinetBox) {
+		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+		electricityCabinetBoxMapper.update(electricityCabinetBox);
+		return R.ok();
+	}
 
-    @Override
-    public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
-        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
-    }
+	@Override
+	public List<ElectricityCabinetBox> queryBoxByElectricityCabinetId(Integer id) {
+		return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+				.eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+	}
 
-    @Override
-    public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
-        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-                .eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
-    }
+	@Override
+	public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
+		return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+				.eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
+				.eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+	}
 
-    @Override
-    public List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id, String cellNo) {
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
-                .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-                .ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+	@Override
+	public List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo) {
+		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinet.getId())
+				.eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
+				.ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
 
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
-        if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
-            return electricityCabinetBoxList;
-        }
+		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = new ArrayList<>();
+		if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
+			return electricityCabinetBoxVOList;
+		}
 
-        List<ElectricityCabinetBox> collect = electricityCabinetBoxList.parallelStream().filter(e -> {
-            //是否满电
-            if (Objects.nonNull(electricityCabinet)) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryById(e.getElectricityBatteryId());
-                if (Objects.nonNull(electricityBattery)) {
-                    if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
+		for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
+			//是否满电
+			ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+			if (Objects.nonNull(electricityBattery)) {
+				if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
 
-                        //该电池是否绑定用户
-                        List<UserInfo> userInfoList = userInfoService.queryByBatterySn(electricityBattery.getSn());
-                        if (ObjectUtil.isEmpty(userInfoList)) {
-                            return true;
-                        }
-                    }
-                }
-            }
-            return false;
-        }).collect(Collectors.toList());
+					//该电池是否绑定用户
+					List<UserInfo> userInfoList = userInfoService.queryByBatterySn(electricityBattery.getSn());
+					if (ObjectUtil.isEmpty(userInfoList)) {
+						ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
+						BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
+						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+						electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+					}
+				}
+			}
+		}
 
-        return collect;
-    }
+		return electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
+	}
 
-    @Override
-    public void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox) {
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetBox);
-    }
+	@Override
+	public void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox) {
+		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+		electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetBox);
+	}
 
-    @Override
-    public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId, String cellNo) {
-        return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetId)
-                .eq(ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
-    }
+	@Override
+	public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId, String cellNo) {
+		return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetId)
+				.eq(ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
+	}
 
 }

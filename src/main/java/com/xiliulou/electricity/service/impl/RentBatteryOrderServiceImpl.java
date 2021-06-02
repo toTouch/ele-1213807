@@ -37,6 +37,8 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -621,62 +623,56 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	}
 
 	//分配满仓
+	@Override
 	public String findUsableBatteryCellNo(Integer id, String cellNo) {
-		List<ElectricityCabinetBox> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(id, cellNo);
-		if (!DataUtil.collectionIsUsable(usableBoxes)) {
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+		if (Objects.isNull(electricityCabinet)) {
+			log.error("findNewUsableCellNo is error!not found electricityCabinet! electricityCabinetId:{}", id);
 			return null;
 		}
 
-		List<Integer> boxes = usableBoxes.stream().map(ElectricityCabinetBox::getCellNo).map(Integer::parseInt).sorted(Integer::compareTo).collect(Collectors.toList());
+		Integer box = null;
+		//先查询缓存
+		BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + id, BigEleBatteryVo.class);
 
-		//查看有没有初始化过设备的上次操作过的格挡,这里不必关心线程安全，不需要保证原子性
-		if (!redisService.hasKey(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id)) {
-			redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, boxes.get(0).toString());
+		if (Objects.nonNull(bigEleBatteryVo)) {
+			String newCellNo = bigEleBatteryVo.getCellNo();
+			Double power = bigEleBatteryVo.getPower();
+			if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
+					&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
+				ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(id, newCellNo);
+				if (Objects.nonNull(electricityCabinetBox)) {
+
+
+					//该电池是否绑定用户
+					ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+					if (Objects.nonNull(electricityBattery)) {
+						List<UserInfo> userInfoList = userInfoService.queryByBatterySn(electricityBattery.getSn());
+						if (ObjectUtil.isEmpty(userInfoList)) {
+							box=Integer.valueOf(newCellNo);
+						}
+					}
+				}
+			}
 		}
 
-		String lastCellNo = redisService.get(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id);
-
-		boxes = rebuildByCellCircleForDevice(boxes, Integer.parseInt(lastCellNo));
-
-		for (Integer box : boxes) {
-			if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
-				redisService.set(ElectricityCabinetConstant.ELECTRICITY_CABINET_DEVICE_LAST_CELL + id, box.toString());
-				return box.toString();
+		if (Objects.isNull(box)) {
+			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo);
+			if (!DataUtil.collectionIsUsable(usableBoxes)) {
+				return null;
 			}
+
+			box = Integer.valueOf(usableBoxes.get(0).getCellNo());
+		}
+
+		if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
+			return box.toString();
 		}
 
 		return null;
 	}
 
-	public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {
 
-		if (cellNos.get(0) > lastCellNo) {
-			return cellNos;
-		}
-
-		int index = 0;
-
-		for (int i = 0; i < cellNos.size(); i++) {
-			if (cellNos.get(i) > lastCellNo) {
-				index = i;
-				break;
-			}
-
-			if (cellNos.get(i).equals(lastCellNo)) {
-				index = i + 1;
-				break;
-			}
-		}
-
-		List<Integer> firstSegmentList = cellNos.subList(0, index);
-		List<Integer> twoSegmentList = cellNos.subList(index, cellNos.size());
-
-		ArrayList<Integer> resultList = com.google.common.collect.Lists.newArrayList();
-		resultList.addAll(twoSegmentList);
-		resultList.addAll(firstSegmentList);
-
-		return resultList;
-	}
 
 	public boolean isBusiness(ElectricityCabinet electricityCabinet) {
 		//营业时间

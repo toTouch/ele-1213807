@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 
 import java.util.List;
 
@@ -36,7 +38,7 @@ public interface ElectricityCabinetBoxService {
 
     List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id);
 
-    List<ElectricityCabinetBox> queryElectricityBatteryBox(Integer id,String cellNo);
+    List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet,String cellNo);
 
     void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);
 
