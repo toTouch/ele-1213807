@@ -593,7 +593,7 @@ public class EleOperateQueueHandler {
                         HashMap<String, Object> dataMap = Maps.newHashMap();
                         dataMap.put("cellNo", cellNo);
                         dataMap.put("orderId", rentBatteryOrder.getOrderId());
-                        dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
+                        dataMap.put("serialNumber", newRentBatteryOrder.getElectricityBatterySn());
 
                         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                                 .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
