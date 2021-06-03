@@ -192,7 +192,7 @@ public class EleOperateQueueHandler {
                         //查询开门失败
                         redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
                         //开门失败报错
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 30L, TimeUnit.SECONDS);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -368,7 +368,7 @@ public class EleOperateQueueHandler {
                         //查询开门失败
                         redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
                         //开门失败报错
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 30L, TimeUnit.SECONDS);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -500,7 +500,7 @@ public class EleOperateQueueHandler {
                             //查询开门失败
                             redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
                             //开门失败报错
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 30L, TimeUnit.SECONDS);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
                             return;
                         }
 
@@ -541,7 +541,7 @@ public class EleOperateQueueHandler {
                             //查询开门失败
                             redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
                             //开门失败报错
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 30L, TimeUnit.SECONDS);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
                             return;
                         }
 

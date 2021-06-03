@@ -79,7 +79,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 					//查询开门失败
 					redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + eleOrderVo.getOrderId(), "false", 30L, TimeUnit.SECONDS);
 					//开门失败报错
-					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), eleOrderVo.getStatus().toString(), 30L, TimeUnit.SECONDS);
+					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), eleOrderVo.getStatus().toString(), 1L, TimeUnit.HOURS);
 				}
 			}
 
