@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.PubHardwareService;
 import lombok.extern.slf4j.Slf4j;
@@ -191,8 +192,12 @@ public class EleOperateQueueHandler {
                     if (Objects.isNull(cellNo)||Objects.isNull(electricityCabinet)) {
                         //查询开门失败
                         redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                         //开门失败报错
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                        WarnMsgVo warnMsgVo=new WarnMsgVo();
+                        warnMsgVo.setCode(status);
+                        warnMsgVo.setMsg(msg);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -374,8 +379,12 @@ public class EleOperateQueueHandler {
                     if (Objects.isNull(cellNo)||Objects.isNull(electricityCabinet)) {
                         //查询开门失败
                         redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                         //开门失败报错
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                        WarnMsgVo warnMsgVo=new WarnMsgVo();
+                        warnMsgVo.setCode(status);
+                        warnMsgVo.setMsg(msg);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -384,8 +393,12 @@ public class EleOperateQueueHandler {
                         log.error("open New Battery Door not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}",electricityCabinet.getId(),cellNo);
                         //查询开门失败
                         redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                         //开门失败报错
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                        WarnMsgVo warnMsgVo=new WarnMsgVo();
+                        warnMsgVo.setCode(status);
+                        warnMsgVo.setMsg(msg);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                         return;
                     }
                     ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
@@ -393,8 +406,12 @@ public class EleOperateQueueHandler {
                         log.error("open New Battery Door not find electricityBattery! electricityBatteryId:{}",electricityCabinetBox.getElectricityBatteryId());
                         //查询开门失败
                         redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                         //开门失败报错
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                        WarnMsgVo warnMsgVo=new WarnMsgVo();
+                        warnMsgVo.setCode(status);
+                        warnMsgVo.setMsg(msg);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -526,8 +543,12 @@ public class EleOperateQueueHandler {
                         if (Objects.isNull(cellNo)||Objects.isNull(electricityCabinet)) {
                             //查询开门失败
                             redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                             //开门失败报错
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                            WarnMsgVo warnMsgVo=new WarnMsgVo();
+                            warnMsgVo.setCode(status);
+                            warnMsgVo.setMsg(msg);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                             return;
                         }
 
@@ -536,8 +557,12 @@ public class EleOperateQueueHandler {
                             log.error("open Rent And Return Battery Door not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}",electricityCabinet.getId(),cellNo);
                             //查询开门失败
                             redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                             //开门失败报错
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                            WarnMsgVo warnMsgVo=new WarnMsgVo();
+                            warnMsgVo.setCode(status);
+                            warnMsgVo.setMsg(msg);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                             return;
                         }
                         ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
@@ -545,8 +570,12 @@ public class EleOperateQueueHandler {
                             log.error("open Rent And Return Battery Door not find electricityBattery! electricityBatteryId:{}",electricityCabinetBox.getElectricityBatteryId());
                             //查询开门失败
                             redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                             //开门失败报错
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                            WarnMsgVo warnMsgVo=new WarnMsgVo();
+                            warnMsgVo.setCode(status);
+                            warnMsgVo.setMsg(msg);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                             return;
                         }
 
@@ -586,8 +615,12 @@ public class EleOperateQueueHandler {
                         if (Objects.isNull(cellNo)||Objects.isNull(electricityCabinet)) {
                             //查询开门失败
                             redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
                             //开门失败报错
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                            WarnMsgVo warnMsgVo=new WarnMsgVo();
+                            warnMsgVo.setCode(status);
+                            warnMsgVo.setMsg(msg);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
                             return;
                         }
 

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.dto.EleOpenDTO.EleOpenDTOBuilder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.queue.EleOperateQueueHandler;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -78,8 +79,12 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 						&& !Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION)) {
 					//查询开门失败
 					redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + eleOrderVo.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+
 					//开门失败报错
-					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), eleOrderVo.getStatus().toString(), 1L, TimeUnit.HOURS);
+					WarnMsgVo warnMsgVo=new WarnMsgVo();
+					warnMsgVo.setCode(eleOrderVo.getStatus());
+					warnMsgVo.setMsg(eleOrderVo.getMsg());
+					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
 				}
 			}
 
