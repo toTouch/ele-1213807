@@ -273,12 +273,19 @@ public class EleOperateQueueHandler {
         try {
             //根据换电柜id和仓门查出电池
             ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), cellNo);
+            if (Objects.isNull(electricityCabinetBox)) {
+                log.error("check Old Battery not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}",electricityCabinetOrder.getElectricityCabinetId(),cellNo);
+                return;
+            }
             ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+            if (Objects.isNull(newElectricityBattery)) {
+                log.error("check Old Battery not find electricityBattery! electricityBatteryId:{}",electricityCabinetBox.getElectricityBatteryId());
+                return;
+            }
+
             //订单状态
             ElectricityCabinetOrder newElectricityCabinetOrder=new ElectricityCabinetOrder();
-            if (Objects.nonNull(newElectricityBattery)) {
-                newElectricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSn());
-            }
+            newElectricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSn());
             newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
             newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
             newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED);
@@ -372,12 +379,32 @@ public class EleOperateQueueHandler {
                         return;
                     }
 
+                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
+                    if (Objects.isNull(electricityCabinetBox)) {
+                        log.error("open New Battery Door not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}",electricityCabinet.getId(),cellNo);
+                        //查询开门失败
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+                        //开门失败报错
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                        return;
+                    }
+                    ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                    if (Objects.isNull(newElectricityBattery)) {
+                        log.error("open New Battery Door not find electricityBattery! electricityBatteryId:{}",electricityCabinetBox.getElectricityBatteryId());
+                        //查询开门失败
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + electricityCabinetOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+                        //开门失败报错
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                        return;
+                    }
+
 
                     //修改订单格挡
                     ElectricityCabinetOrder newElectricityCabinetOrder=new ElectricityCabinetOrder();
                     newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
                     newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
                     newElectricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
+                    newElectricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSn());
                     electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
 
@@ -504,12 +531,31 @@ public class EleOperateQueueHandler {
                             return;
                         }
 
+                        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
+                        if (Objects.isNull(electricityCabinetBox)) {
+                            log.error("open Rent And Return Battery Door not find electricityCabinetBox! electricityCabinetId:{},cellNo:{}",electricityCabinet.getId(),cellNo);
+                            //查询开门失败
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+                            //开门失败报错
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                            return;
+                        }
+                        ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+                        if (Objects.isNull(newElectricityBattery)) {
+                            log.error("open Rent And Return Battery Door not find electricityBattery! electricityBatteryId:{}",electricityCabinetBox.getElectricityBatteryId());
+                            //查询开门失败
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId(), "false", 30L, TimeUnit.SECONDS);
+                            //开门失败报错
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), status.toString(), 1L, TimeUnit.HOURS);
+                            return;
+                        }
 
                         //修改订单格挡
                         RentBatteryOrder newRentBatteryOrder=new RentBatteryOrder();
                         newRentBatteryOrder.setId(rentBatteryOrder.getId());
                         newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
                         newRentBatteryOrder.setCellNo(Integer.valueOf(cellNo));
+                        newRentBatteryOrder.setElectricityBatterySn(newElectricityBattery.getSn());
                         rentBatteryOrderService.update(newRentBatteryOrder);
 
 
