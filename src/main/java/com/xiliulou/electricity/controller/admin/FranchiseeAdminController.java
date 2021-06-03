@@ -94,8 +94,8 @@ public class FranchiseeAdminController {
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
             if (ObjectUtil.isNotEmpty(franchiseeList)) {
+                idList=new ArrayList<>();
                 for (Franchisee franchisee:franchiseeList) {
-                    idList=new ArrayList<>();
                     idList.add(franchisee.getId());
                 }
             }
