@@ -89,6 +89,8 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer BATTERY_NOT_MATCH_CLOUD=-6;
     //取走电池被打断---提示柜机点击了结束异常订单或则云端下发结束异常订单
     public static final Integer STATUS_PROCESS_INTERRUPTED=-10;
+    //云端电池和舱内电池不匹配
+    public static final Integer CLOUD_BATTERY_BATTERY_NOT_MATCH_CLOUD=-7;
 
 
     //旧电池开门

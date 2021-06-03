@@ -629,9 +629,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			//提示放入电池不对，应该放入什么电池
 			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
 				queryStatus = "放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池";
-			}
-
-			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())) {
+			}else {
 				queryStatus = warnMsgVo.getMsg();
 			}
 
