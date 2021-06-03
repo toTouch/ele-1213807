@@ -664,28 +664,36 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		Integer type = 0;
+		Integer isTry = 1;
 		map.put("status", electricityCabinetOrder.getStatus().toString());
 
 		String result = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		if (StringUtils.isNotEmpty(result)) {
 			WarnMsgVo warnMsgVo = JsonUtil.fromJson(result, WarnMsgVo.class);
-			String queryStatus=warnMsgVo.getCode().toString();
-
+			String queryStatus = warnMsgVo.getCode().toString();
 
 			//提示放入电池不对，应该放入什么电池
 			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
 				queryStatus = "放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池";
 			}
 
-			if(Objects.equals(queryStatus,ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())){
-				queryStatus=warnMsgVo.getMsg();
+			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())) {
+				queryStatus = warnMsgVo.getMsg();
 			}
 
 			map.put("queryStatus", queryStatus);
 			type = 1;
+
+			//是否重试
+			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_LOCKER_LOCK.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_BUSINESS_PROCESS.toString())) {
+				isTry = 0;
+			}
 		}
 
 		map.put("type", type.toString());
+		map.put("isTry", isTry.toString());
 		return R.ok(map);
 	}
 
