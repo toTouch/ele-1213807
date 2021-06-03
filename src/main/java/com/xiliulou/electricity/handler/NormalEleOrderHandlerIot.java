@@ -81,40 +81,39 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 					redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + eleOrderVo.getOrderId(), "false", 30L, TimeUnit.SECONDS);
 
 					//开门失败报错
-					WarnMsgVo warnMsgVo=new WarnMsgVo();
+					WarnMsgVo warnMsgVo = new WarnMsgVo();
 					warnMsgVo.setCode(eleOrderVo.getStatus());
 					warnMsgVo.setMsg(eleOrderVo.getMsg());
 					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
 				}
 			}
-
-			EleOpenDTO eleOpenDTO = builder
-					.sessionId(sessionId)
-					.type(receiverMessage.getType())
-					.orderStatus(eleOrderVo.getOrderStatus())
-					.status(eleOrderVo.getStatus())
-					.orderId(eleOrderVo.getOrderId())
-					.msg(eleOrderVo.getMsg())
-					.productKey(receiverMessage.getProductKey())
-					.deviceName(receiverMessage.getDeviceName()).build();
-			eleOperateQueueHandler.putQueue(eleOpenDTO);
 		}
+		EleOpenDTO eleOpenDTO = builder
+				.sessionId(sessionId)
+				.type(receiverMessage.getType())
+				.orderStatus(eleOrderVo.getOrderStatus())
+				.status(eleOrderVo.getStatus())
+				.orderId(eleOrderVo.getOrderId())
+				.msg(eleOrderVo.getMsg())
+				.productKey(receiverMessage.getProductKey())
+				.deviceName(receiverMessage.getDeviceName()).build();
+		eleOperateQueueHandler.putQueue(eleOpenDTO);
 		return true;
 	}
 }
 
-	@Data
-	class EleOrderVo {
-		//sessionId
-		private String sessionId;
-		//productKey
-		private String productKey;
-		//orderId
-		private String orderId;
-		//msg
-		private String msg;
-		//orderStatus
-		private Integer orderStatus;
-		//status
-		private Integer status;
-	}
+@Data
+class EleOrderVo {
+	//sessionId
+	private String sessionId;
+	//productKey
+	private String productKey;
+	//orderId
+	private String orderId;
+	//msg
+	private String msg;
+	//orderStatus
+	private Integer orderStatus;
+	//status
+	private Integer status;
+}
