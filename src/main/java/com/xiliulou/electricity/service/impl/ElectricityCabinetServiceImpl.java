@@ -691,13 +691,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				if (ObjectUtil.isNotEmpty(franchiseeList)) {
 					for (Franchisee franchisee : franchiseeList) {
 						//地区id
-						cidList.add(franchisee.getCid());
+						if(Objects.nonNull(franchisee)) {
+							cidList.add(franchisee.getCid());
+						}
 
 						//卡id
 						List<FranchiseeBindCard> franchiseeBindCardList= franchiseeBindCardService.queryByFranchisee(franchisee.getId());
 						if(ObjectUtil.isNotEmpty(franchiseeBindCardList)){
 							for (FranchiseeBindCard franchiseeBindCard:franchiseeBindCardList) {
-								cardIdList.add(franchiseeBindCard.getCardId());
+								if(Objects.nonNull(franchiseeBindCard)) {
+									cardIdList.add(franchiseeBindCard.getCardId());
+								}
 							}
 						}
 					}
@@ -810,7 +814,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					if (ObjectUtil.isNotEmpty(franchiseeBinds)) {
 
 						for (FranchiseeBind franchiseeBind : franchiseeBinds) {
-							storeIdList.add(franchiseeBind.getStoreId());
+							if(Objects.nonNull(franchiseeBind)) {
+								storeIdList.add(franchiseeBind.getStoreId());
+							}
 						}
 						if (ObjectUtil.isNotEmpty(storeIdList)) {
 							flag1 = false;
@@ -981,13 +987,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				if (ObjectUtil.isNotEmpty(franchiseeList)) {
 					for (Franchisee franchisee : franchiseeList) {
 						//地区id
-						cidList.add(franchisee.getCid());
+						if(Objects.nonNull(franchisee)) {
+							cidList.add(franchisee.getCid());
+						}
 
 						//卡id
 						List<FranchiseeBindCard> franchiseeBindCardList= franchiseeBindCardService.queryByFranchisee(franchisee.getId());
 						if(ObjectUtil.isNotEmpty(franchiseeBindCardList)){
 							for (FranchiseeBindCard franchiseeBindCard:franchiseeBindCardList) {
-								cardIdList.add(franchiseeBindCard.getCardId());
+								if(Objects.nonNull(franchiseeBindCard)) {
+									cardIdList.add(franchiseeBindCard.getCardId());
+								}
 							}
 						}
 					}
