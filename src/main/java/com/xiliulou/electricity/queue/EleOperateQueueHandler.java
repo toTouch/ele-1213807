@@ -362,7 +362,7 @@ public class EleOperateQueueHandler {
 	public void openNewBatteryDoor(ElectricityCabinetOrder electricityCabinetOrder, Integer status, String msg) {
 		//开门失败
 		if (openDoorFailAndSaveOpenDoorFailRecord(electricityCabinetOrder, status, ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR, msg)) {
-			//满电仓无电池无法开门，重新分配新门
+			/*//满电仓无电池无法开门，重新分配新门
 			if (Objects.equals(status, ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION)) {
 				//无满仓分配则返回前端门未开
 				String cellNo = findNewUsableCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
@@ -436,7 +436,7 @@ public class EleOperateQueueHandler {
 				}
 			}
 
-			return;
+			return;*/
 		}
 
 		//修改订单

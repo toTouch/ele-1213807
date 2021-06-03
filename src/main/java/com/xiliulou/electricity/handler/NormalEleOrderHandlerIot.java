@@ -75,8 +75,10 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 				redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
 
 				//空仓有电池，满电仓无电池的情况，不通知前端开门失败，重新分配电池开门
+				/*if (!Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.EMPTY_CELL_HAS_BATTERY_EXCEPTION)
+						&& !Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION)) */
 				if (!Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.EMPTY_CELL_HAS_BATTERY_EXCEPTION)
-						&& !Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION)) {
+						&& (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)||!Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION))) {
 					//查询开门失败
 					redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + eleOrderVo.getOrderId(), "false", 30L, TimeUnit.SECONDS);
 
