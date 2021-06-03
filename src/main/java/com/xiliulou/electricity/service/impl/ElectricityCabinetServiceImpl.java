@@ -788,12 +788,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
 
 		//门店
-		Boolean flag1 = true;
-		List<Integer> storeIdList = null;
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 
+			Boolean flag1 = true;
+			List<Integer> storeIdList = null;
 			//查用户
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
@@ -816,13 +816,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					}
 				}
 			}
-		}
-		if (flag1) {
-			Integer totalCount = storeService.homeTwoTotal(storeIdList);
-			Integer businessCount = storeService.homeTwoBusiness(storeIdList);
-			storeInfo.put("totalCount", totalCount.toString());
-			storeInfo.put("businessCount", businessCount.toString());
-			homeTwo.put("storeInfo", storeInfo);
+			if (flag1) {
+				Integer totalCount = storeService.homeTwoTotal(storeIdList);
+				Integer businessCount = storeService.homeTwoBusiness(storeIdList);
+				storeInfo.put("totalCount", totalCount.toString());
+				storeInfo.put("businessCount", businessCount.toString());
+				homeTwo.put("storeInfo", storeInfo);
+			}
 		}
 
 		//换电柜
@@ -863,12 +863,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//电池
-		Boolean flag3 = true;
-		List<Long> batteryIdList = null;
+
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 
+			Boolean flag3 = true;
+			List<Long> batteryIdList = null;
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
 				if (ObjectUtil.isNotEmpty(franchiseeList)) {
@@ -889,28 +890,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					}
 				}
 			}
-		}
-		if (flag3) {
-			List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(batteryIdList);
-			Integer batteryTotal = electricityBatteryList.size();
-			Integer cabinetCount = 0;
-			Integer userCount = 0;
-			if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+			if (flag3) {
+				List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(batteryIdList);
+				Integer batteryTotal = electricityBatteryList.size();
+				Integer cabinetCount = 0;
+				Integer userCount = 0;
 				if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
-					for (ElectricityBattery electricityBattery : electricityBatteryList) {
-						if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
-							cabinetCount = cabinetCount + 1;
-						}
-						if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
-							userCount = userCount + 1;
+					if (ObjectUtil.isNotEmpty(electricityBatteryList)) {
+						for (ElectricityBattery electricityBattery : electricityBatteryList) {
+							if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
+								cabinetCount = cabinetCount + 1;
+							}
+							if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+								userCount = userCount + 1;
+							}
 						}
 					}
 				}
+				electricityBatteryInfo.put("batteryTotal", batteryTotal.toString());
+				electricityBatteryInfo.put("cabinetCount", cabinetCount.toString());
+				electricityBatteryInfo.put("userCount", userCount.toString());
+				homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
 			}
-			electricityBatteryInfo.put("batteryTotal", batteryTotal.toString());
-			electricityBatteryInfo.put("cabinetCount", cabinetCount.toString());
-			electricityBatteryInfo.put("userCount", userCount.toString());
-			homeTwo.put("electricityBatteryInfo", electricityBatteryInfo);
 		}
 
 		return R.ok(homeTwo);
