@@ -658,7 +658,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//如果是查全部则直接跳过
 		Boolean flag = true;
-		List<Integer> eleIdList = null;
+		List<Integer> eleIdList = new ArrayList<>();
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
@@ -684,24 +684,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			//查用户
 			Boolean flag1 = true;
 			Boolean flag2 = true;
-			List<Integer> cidList = null;
-			List<Integer> cardIdList = null;
+			List<Integer> cidList = new ArrayList<>();
+			List<Integer> cardIdList = new ArrayList<>();
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
 				if (ObjectUtil.isNotEmpty(franchiseeList)) {
 					for (Franchisee franchisee : franchiseeList) {
 						//地区id
-						if(Objects.nonNull(franchisee)) {
-							cidList.add(franchisee.getCid());
-						}
+						cidList.add(franchisee.getCid());
 
 						//卡id
 						List<FranchiseeBindCard> franchiseeBindCardList= franchiseeBindCardService.queryByFranchisee(franchisee.getId());
 						if(ObjectUtil.isNotEmpty(franchiseeBindCardList)){
 							for (FranchiseeBindCard franchiseeBindCard:franchiseeBindCardList) {
-								if(Objects.nonNull(franchiseeBindCard)) {
-									cardIdList.add(franchiseeBindCard.getCardId());
-								}
+								cardIdList.add(franchiseeBindCard.getCardId());
 							}
 						}
 					}
@@ -796,7 +792,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//门店
 		Boolean flag1 = true;
-		List<Integer> storeIdList = null;
+		List<Integer> storeIdList = new ArrayList<>();
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
@@ -814,9 +810,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					if (ObjectUtil.isNotEmpty(franchiseeBinds)) {
 
 						for (FranchiseeBind franchiseeBind : franchiseeBinds) {
-							if(Objects.nonNull(franchiseeBind)) {
-								storeIdList.add(franchiseeBind.getStoreId());
-							}
+							storeIdList.add(franchiseeBind.getStoreId());
 						}
 						if (ObjectUtil.isNotEmpty(storeIdList)) {
 							flag1 = false;
@@ -836,7 +830,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//换电柜
 		//如果是查全部则直接跳过
 		Boolean flag2 = true;
-		List<Integer> eleIdList = null;
+		List<Integer> eleIdList = new ArrayList<>();
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
@@ -872,7 +866,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//电池
 		Boolean flag3 = true;
-		List<Long> batteryIdList = null;
+		List<Long> batteryIdList = new ArrayList<>();
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
@@ -951,7 +945,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//如果是查全部则直接跳过
 		Boolean flag = true;
-		List<Integer> eleIdList = null;
+		List<Integer> eleIdList = new ArrayList<>();
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
@@ -980,24 +974,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			//查用户
 			Boolean flag1 = true;
 			Boolean flag2 = true;
-			List<Integer> cidList = null;
-			List<Integer> cardIdList = null;
+			List<Integer> cidList = new ArrayList<>();
+			List<Integer> cardIdList = new ArrayList<>();
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
 				if (ObjectUtil.isNotEmpty(franchiseeList)) {
 					for (Franchisee franchisee : franchiseeList) {
 						//地区id
-						if(Objects.nonNull(franchisee)) {
-							cidList.add(franchisee.getCid());
-						}
+						cidList.add(franchisee.getCid());
 
 						//卡id
 						List<FranchiseeBindCard> franchiseeBindCardList= franchiseeBindCardService.queryByFranchisee(franchisee.getId());
 						if(ObjectUtil.isNotEmpty(franchiseeBindCardList)){
 							for (FranchiseeBindCard franchiseeBindCard:franchiseeBindCardList) {
-								if(Objects.nonNull(franchiseeBindCard)) {
-									cardIdList.add(franchiseeBindCard.getCardId());
-								}
+								cardIdList.add(franchiseeBindCard.getCardId());
 							}
 						}
 					}
