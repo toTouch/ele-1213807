@@ -672,6 +672,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			WarnMsgVo warnMsgVo = JsonUtil.fromJson(result, WarnMsgVo.class);
 			String queryStatus = warnMsgVo.getCode().toString();
 
+			//是否重试
+			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_LOCKER_LOCK.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_BUSINESS_PROCESS.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL.toString())) {
+				isTry = 0;
+			}
+
 			//提示放入电池不对，应该放入什么电池
 			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
 				queryStatus = "放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池";
@@ -684,13 +692,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			map.put("queryStatus", queryStatus);
 			type = 1;
 
-			//是否重试
-			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_LOCKER_LOCK.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_BUSINESS_PROCESS.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL.toString())) {
-				isTry = 0;
-			}
 		}
 
 		map.put("type", type.toString());
