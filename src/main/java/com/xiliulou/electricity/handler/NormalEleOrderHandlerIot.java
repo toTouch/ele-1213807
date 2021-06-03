@@ -88,6 +88,21 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 				}
 			}
 		}
+
+
+		if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RENT_CHECK_BATTERY_RSP)
+				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RETURN_CHECK_BATTERY_RSP)
+				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CHECK)
+				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CHECK)) {
+
+			if (Objects.nonNull(eleOrderVo.getStatus()) && !eleOrderVo.getStatus().equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)) {
+				//检测失败报错
+				WarnMsgVo warnMsgVo = new WarnMsgVo();
+				warnMsgVo.setCode(eleOrderVo.getStatus());
+				warnMsgVo.setMsg(eleOrderVo.getMsg());
+				redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
+			}
+		}
 		EleOpenDTO eleOpenDTO = builder
 				.sessionId(sessionId)
 				.type(receiverMessage.getType())
