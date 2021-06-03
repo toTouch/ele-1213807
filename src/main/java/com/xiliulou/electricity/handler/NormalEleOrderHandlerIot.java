@@ -84,7 +84,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 					WarnMsgVo warnMsgVo=new WarnMsgVo();
 					warnMsgVo.setCode(eleOrderVo.getStatus());
 					warnMsgVo.setMsg(eleOrderVo.getMsg());
-					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
 				}
 			}
 

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.queue;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -197,7 +198,7 @@ public class EleOperateQueueHandler {
                         WarnMsgVo warnMsgVo=new WarnMsgVo();
                         warnMsgVo.setCode(status);
                         warnMsgVo.setMsg(msg);
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -384,7 +385,7 @@ public class EleOperateQueueHandler {
                         WarnMsgVo warnMsgVo=new WarnMsgVo();
                         warnMsgVo.setCode(status);
                         warnMsgVo.setMsg(msg);
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -398,7 +399,7 @@ public class EleOperateQueueHandler {
                         WarnMsgVo warnMsgVo=new WarnMsgVo();
                         warnMsgVo.setCode(status);
                         warnMsgVo.setMsg(msg);
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                         return;
                     }
                     ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
@@ -411,7 +412,7 @@ public class EleOperateQueueHandler {
                         WarnMsgVo warnMsgVo=new WarnMsgVo();
                         warnMsgVo.setCode(status);
                         warnMsgVo.setMsg(msg);
-                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                        redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                         return;
                     }
 
@@ -548,7 +549,7 @@ public class EleOperateQueueHandler {
                             WarnMsgVo warnMsgVo=new WarnMsgVo();
                             warnMsgVo.setCode(status);
                             warnMsgVo.setMsg(msg);
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                             return;
                         }
 
@@ -562,7 +563,7 @@ public class EleOperateQueueHandler {
                             WarnMsgVo warnMsgVo=new WarnMsgVo();
                             warnMsgVo.setCode(status);
                             warnMsgVo.setMsg(msg);
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                             return;
                         }
                         ElectricityBattery newElectricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
@@ -575,7 +576,7 @@ public class EleOperateQueueHandler {
                             WarnMsgVo warnMsgVo=new WarnMsgVo();
                             warnMsgVo.setCode(status);
                             warnMsgVo.setMsg(msg);
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                             return;
                         }
 
@@ -620,7 +621,7 @@ public class EleOperateQueueHandler {
                             WarnMsgVo warnMsgVo=new WarnMsgVo();
                             warnMsgVo.setCode(status);
                             warnMsgVo.setMsg(msg);
-                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(), warnMsgVo.toString(), 1L, TimeUnit.HOURS);
+                            redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId(),  JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
                             return;
                         }
 
