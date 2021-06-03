@@ -89,12 +89,13 @@ public class FranchiseeAdminController {
         }
 
 
-        List<Integer> idList = new ArrayList<>();
+        List<Integer> idList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
             if (ObjectUtil.isNotEmpty(franchiseeList)) {
                 for (Franchisee franchisee:franchiseeList) {
+                    idList=new ArrayList<>();
                     idList.add(franchisee.getId());
                 }
             }
