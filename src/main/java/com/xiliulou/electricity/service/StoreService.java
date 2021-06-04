@@ -22,7 +22,7 @@ public interface StoreService {
      * @return 实例对象
      */
     Store queryByIdFromDB(Integer id);
-    
+
       /**
      * 通过ID查询单条数据从缓存
      *
@@ -51,7 +51,6 @@ public interface StoreService {
 
     R bindElectricityCabinet(StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery);
 
-    R listByFranchisee(StoreQuery storeQuery);
 
     R getElectricityCabinetList(Integer id);
 }

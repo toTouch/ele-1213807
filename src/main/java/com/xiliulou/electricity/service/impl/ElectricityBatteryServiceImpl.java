@@ -169,11 +169,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
 
-    @Override
-    public R pageByFranchisee(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-        Page page = PageUtil.getPage(offset, size);
-        return R.ok(electricitybatterymapper.pageByFranchisee(page, electricityBatteryQuery, offset, size));
-    }
 
     @Override
     public void updateReport(ElectricityBattery electricityBattery) {

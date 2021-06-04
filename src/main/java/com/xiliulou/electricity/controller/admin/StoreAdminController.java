@@ -3,6 +3,8 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeBind;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
@@ -161,7 +163,7 @@ public class StoreAdminController {
         }
         storeQuery.setStoreIdList(storeIdList);
 
-        return storeService.listByFranchisee(storeQuery);
+        return storeService.queryList(storeQuery);
     }
 
     //列表查询
@@ -195,6 +197,27 @@ public class StoreAdminController {
                 .batteryService(batteryService)
                 .carService(carService)
                 .usableStatus(usableStatus).build();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<StoreBind> storeBindList=storeBindService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(storeBindList)){
+            return R.ok();
+        }
+
+        List<Integer> storeIdList=new ArrayList<>();
+        for (StoreBind storeBind:storeBindList) {
+            storeIdList.add(storeBind.getStoreId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return R.ok();
+        }
+        storeQuery.setStoreIdList(storeIdList);
+
 
         return storeService.queryList(storeQuery);
     }
