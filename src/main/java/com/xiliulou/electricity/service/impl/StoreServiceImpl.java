@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.StoreBindElectricityCabinet;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -58,6 +60,8 @@ public class StoreServiceImpl implements StoreService {
     StoreBindService storeBindService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    UserService userService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -222,9 +226,15 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
+
+                //添加绑定用户
                 StoreBind storeBind=storeBindService.queryByStoreId(e.getId());
                 if(Objects.nonNull(storeBind)){
                     e.setUid(storeBind.getUid());
+                    User user=userService.queryByUidFromCache(storeBind.getUid());
+                    if(Objects.nonNull(user)){
+                        e.setUserName(user.getName());
+                    }
                 }
             });
         }
