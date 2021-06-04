@@ -434,9 +434,9 @@ public class EleOperateQueueHandler {
 				} finally {
 					redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
 				}
-			}
+			}*/
 
-			return;*/
+			return;
 		}
 
 		//修改订单
