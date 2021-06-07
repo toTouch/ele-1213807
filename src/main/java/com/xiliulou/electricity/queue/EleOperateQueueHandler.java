@@ -528,7 +528,7 @@ public class EleOperateQueueHandler {
 				//满电仓无电池无法开门，重新分配新门
 				if (Objects.equals(status, ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION)) {
 					//无满仓分配则返回前端门未开
-					String cellNo = findNewUsableCellNo(rentBatteryOrder.getElectricityCabinetId(), rentBatteryOrder.getCellNo().toString());
+					String cellNo = rentBatteryOrderService.findUsableBatteryCellNo(rentBatteryOrder.getElectricityCabinetId(), rentBatteryOrder.getCellNo().toString());
 					try {
 						ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
 						if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinet)) {
