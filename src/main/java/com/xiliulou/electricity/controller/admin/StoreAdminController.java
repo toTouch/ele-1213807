@@ -3,6 +3,8 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeBind;
+import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
@@ -161,7 +163,63 @@ public class StoreAdminController {
         }
         storeQuery.setStoreIdList(storeIdList);
 
-        return storeService.listByFranchisee(storeQuery);
+        return storeService.queryList(storeQuery);
+    }
+
+    //列表查询
+    @GetMapping(value = "/admin/store/listByStore")
+    public R listByStore(@RequestParam(value = "size", required = false) Long size,
+            @RequestParam(value = "offset", required = false) Long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "batteryService", required = false) Integer batteryService,
+            @RequestParam(value = "carService", required = false) Integer carService,
+            @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
+        if (Objects.isNull(size)) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+
+        StoreQuery storeQuery = StoreQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .sn(sn)
+                .address(address)
+                .batteryService(batteryService)
+                .carService(carService)
+                .usableStatus(usableStatus).build();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<StoreBind> storeBindList=storeBindService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(storeBindList)){
+            return R.ok();
+        }
+
+        List<Integer> storeIdList=new ArrayList<>();
+        for (StoreBind storeBind:storeBindList) {
+            storeIdList.add(storeBind.getStoreId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return R.ok();
+        }
+        storeQuery.setStoreIdList(storeIdList);
+
+
+        return storeService.queryList(storeQuery);
     }
 
     //禁用门店

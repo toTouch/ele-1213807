@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -41,6 +42,7 @@ import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -504,6 +506,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL);
 		rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
 		rentBatteryOrderMapper.updateById(rentBatteryOrderUpdate);
+
+		//删除开门失败缓存
+		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
+		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		return R.ok();
 	}
 
@@ -606,19 +612,36 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		Integer type = 0;
+		Integer isTry = 1;
 		map.put("status", rentBatteryOrder.getStatus().toString());
 
-		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
-		if (StringUtils.isNotEmpty(s)) {
-			//提示放入电池不对，应该放入什么电池
-			if (Objects.equals(s, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
-				s = "放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池";
+		String result = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+		if (StringUtils.isNotEmpty(result)) {
+			WarnMsgVo warnMsgVo = JsonUtil.fromJson(result, WarnMsgVo.class);
+			String queryStatus = warnMsgVo.getCode().toString();
+
+			//是否重试
+			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_LOCKER_LOCK.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_BUSINESS_PROCESS.toString())
+					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL.toString())) {
+				isTry = 0;
 			}
-			map.put("queryStatus", s);
+
+			//提示放入电池不对，应该放入什么电池
+			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
+				queryStatus = "放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池";
+			}else {
+				queryStatus = warnMsgVo.getMsg();
+			}
+
+			map.put("queryStatus", queryStatus);
 			type = 1;
+
 		}
 
 		map.put("type", type.toString());
+		map.put("isTry", isTry.toString());
 		return R.ok(map);
 	}
 

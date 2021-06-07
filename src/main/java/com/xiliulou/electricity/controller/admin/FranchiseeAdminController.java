@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -93,6 +94,7 @@ public class FranchiseeAdminController {
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
             if (ObjectUtil.isNotEmpty(franchiseeList)) {
+                idList=new ArrayList<>();
                 for (Franchisee franchisee:franchiseeList) {
                     idList.add(franchisee.getId());
                 }

@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.StoreBindElectricityCabinet;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -58,6 +60,8 @@ public class StoreServiceImpl implements StoreService {
     StoreBindService storeBindService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    UserService userService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -222,9 +226,15 @@ public class StoreServiceImpl implements StoreService {
                         }
                     }
                 }
+
+                //添加绑定用户
                 StoreBind storeBind=storeBindService.queryByStoreId(e.getId());
                 if(Objects.nonNull(storeBind)){
                     e.setUid(storeBind.getUid());
+                    User user=userService.queryByUidFromCache(storeBind.getUid());
+                    if(Objects.nonNull(user)){
+                        e.setUserName(user.getName());
+                    }
                 }
             });
         }
@@ -385,39 +395,6 @@ public class StoreServiceImpl implements StoreService {
         return R.ok();
     }
 
-
-    @Override
-    public R listByFranchisee(StoreQuery storeQuery) {
-        Page page = PageUtil.getPage(storeQuery.getOffset(), storeQuery.getSize());
-        storeMapper.listByFranchisee(page, storeQuery);
-        if (ObjectUtil.isEmpty(page.getRecords())) {
-            return R.ok(new ArrayList<>());
-        }
-        List<StoreVO> storeVOList = page.getRecords();
-        if (ObjectUtil.isNotEmpty(storeVOList)) {
-            storeVOList.parallelStream().forEach(e -> {
-                //营业时间
-                if (Objects.nonNull(e.getBusinessTime())) {
-                    String businessTime = e.getBusinessTime();
-                    if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
-                        e.setBusinessTimeType(StoreVO.ALL_DAY);
-                    } else {
-                        e.setBusinessTimeType(StoreVO.ILLEGAL_DATA);
-                        Integer index = businessTime.indexOf("-");
-                        if (!Objects.equals(index, -1) && index > 0) {
-                            e.setBusinessTimeType(StoreVO.CUSTOMIZE_TIME);
-                            Long beginTime = Long.valueOf(businessTime.substring(0, index));
-                            Long endTime = Long.valueOf(businessTime.substring(index + 1));
-                            e.setBeginTime(beginTime);
-                            e.setEndTime(endTime);
-                        }
-                    }
-                }
-            });
-        }
-        page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
-        return R.ok(page);
-    }
 
     @Override
     public R getElectricityCabinetList(Integer id) {

@@ -131,7 +131,7 @@ public class ElectricityCabinetBatteryAdminController {
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
-        return electricityBatteryService.pageByFranchisee(electricityBatteryQuery, offset, size);
+        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
     }
 
 

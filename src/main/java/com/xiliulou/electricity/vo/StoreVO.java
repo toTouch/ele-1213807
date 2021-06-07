@@ -93,6 +93,11 @@ public class StoreVO {
     //满电电池
     private Integer fullyElectricityBattery;
 
+    /**
+     * 绑定用户名称
+     */
+    private String userName;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
