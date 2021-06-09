@@ -309,7 +309,7 @@ public class StoreServiceImpl implements StoreService {
 							Long beginTime = getTime(totalBeginTime);
 							Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
 							Long endTime = getTime(totalEndTime);
-							if (firstToday + beginTime > now || firstToday + endTime < now) {
+							if (firstToday + beginTime < now || firstToday + endTime > now) {
 								countBusiness = countBusiness + 1;
 							}
 						}
