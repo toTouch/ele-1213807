@@ -541,12 +541,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			excelVo.setOldElectricityBatterySn(electricityCabinetOrderVO.getOldElectricityBatterySn());
 			excelVo.setNewElectricityBatterySn(electricityCabinetOrderVO.getNewElectricityBatterySn());
 
-			log.info("SwitchBeginningTime is -->{}", electricityCabinetOrderVO.getSwitchBeginningTime());
-			if (Objects.nonNull(electricityCabinetOrderVO.getSwitchBeginningTime())) {
-				excelVo.setSwitchBeginningTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchBeginningTime())));
+			if (Objects.nonNull(electricityCabinetOrderVO.getCreateTime())) {
+				excelVo.setCreateTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getCreateTime())));
 			}
-			if (Objects.nonNull(electricityCabinetOrderVO.getSwitchEndTime())) {
-				excelVo.setSwitchEndTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchEndTime())));
+			if (Objects.nonNull(electricityCabinetOrderVO.getUpdateTime())) {
+				excelVo.setUpdateTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getUpdateTime())));
 			}
 
 			if (Objects.isNull(electricityCabinetOrderVO.getPaymentMethod())) {
