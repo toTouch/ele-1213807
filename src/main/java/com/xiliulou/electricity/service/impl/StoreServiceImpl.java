@@ -302,9 +302,11 @@ public class StoreServiceImpl implements StoreService {
                     } else {
                         Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
                         Long now = System.currentTimeMillis();
-                        Long beginTime = Long.valueOf(businessTime.substring(0, businessTime.indexOf("-") - 1));
-                        Long endTime = Long.valueOf(businessTime.substring(businessTime.indexOf("-"), businessTime.length() - 1));
-                        if (firstToday + beginTime < now && firstToday + endTime > now) {
+                        Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
+                        Long beginTime = getTime(totalBeginTime);
+                        Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
+                        Long endTime = getTime(totalEndTime);
+                        if (firstToday + beginTime > now || firstToday + endTime < now) {
                             countBusiness = countBusiness + 1;
                         }
                     }
