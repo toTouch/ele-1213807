@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -521,12 +522,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		Page page = PageUtil.getPage(0L, 2000L);
 		electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
 		if (ObjectUtil.isEmpty(page.getRecords())) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
 		if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<ElectricityCabinetOrderExcelVO> electricityCabinetOrderExcelVOS = new ArrayList();
@@ -541,12 +542,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			excelVo.setOldElectricityBatterySn(electricityCabinetOrderVO.getOldElectricityBatterySn());
 			excelVo.setNewElectricityBatterySn(electricityCabinetOrderVO.getNewElectricityBatterySn());
 
-			log.info("SwitchBeginningTime is -->{}", electricityCabinetOrderVO.getSwitchBeginningTime());
-			if (Objects.nonNull(electricityCabinetOrderVO.getSwitchBeginningTime())) {
-				excelVo.setSwitchBeginningTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchBeginningTime())));
+			if (Objects.nonNull(electricityCabinetOrderVO.getCreateTime())) {
+				excelVo.setCreateTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getCreateTime())));
 			}
-			if (Objects.nonNull(electricityCabinetOrderVO.getSwitchEndTime())) {
-				excelVo.setSwitchEndTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getSwitchEndTime())));
+			if (Objects.nonNull(electricityCabinetOrderVO.getUpdateTime())) {
+				excelVo.setUpdateTime(simpleDateFormat.format(new Date(electricityCabinetOrderVO.getUpdateTime())));
 			}
 
 			if (Objects.isNull(electricityCabinetOrderVO.getPaymentMethod())) {

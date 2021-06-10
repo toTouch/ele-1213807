@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
@@ -110,14 +111,14 @@ public class ElectricityCabinetOrderAdminController {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 31) {
-            return;
+            throw new CustomBusinessException("搜索日期不能大于31天");
         }
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
-            return;
+            throw new CustomBusinessException("查不到订单");
         }
 
         List<Integer> eleIdList = null;
@@ -126,11 +127,11 @@ public class ElectricityCabinetOrderAdminController {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                return;
+                throw new CustomBusinessException("查不到订单");
             }
             eleIdList = userTypeService.getEleIdListByUserType(user);
             if(Objects.isNull(eleIdList)){
-                return;
+                throw new CustomBusinessException("查不到订单");
             }
         }
 

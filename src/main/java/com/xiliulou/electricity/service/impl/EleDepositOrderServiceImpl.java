@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -352,12 +353,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		Page page = PageUtil.getPage(0L, 2000L);
 		eleDepositOrderMapper.queryList(page, eleDepositOrderQuery);
 		if (ObjectUtil.isEmpty(page.getRecords())) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<EleDepositOrder> eleDepositOrderList = page.getRecords();
 		if (!DataUtil.collectionIsUsable(eleDepositOrderList)) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<EleDepositOrderExcelVO> EleDepositOrderExcelVOS = new ArrayList();

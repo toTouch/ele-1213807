@@ -26,8 +26,8 @@ public class ElectricityCabinetOrderExcelVO {
 	@ExcelProperty("状态")
 	private String status;
 	@ExcelProperty("开始时间")
-	private String switchBeginningTime;
+	private String createTime;
 	@ExcelProperty("结束时间")
-	private String switchEndTime;
+	private String updateTime;
 
 }

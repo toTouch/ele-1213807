@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -226,12 +227,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		Page page = PageUtil.getPage(0L, 2000L);
 		baseMapper.memberCardOrderPage(page, memberCardOrderQuery);
 		if (ObjectUtil.isEmpty(page.getRecords())) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = page.getRecords();
 		if (!DataUtil.collectionIsUsable(electricityMemberCardOrderVOList)) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<ElectricityMemberCardOrderExcelVO> electricityMemberCardOrderExcelVOS = new ArrayList();

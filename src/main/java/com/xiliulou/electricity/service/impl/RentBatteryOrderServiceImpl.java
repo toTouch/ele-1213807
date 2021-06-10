@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -524,12 +525,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		Page page = PageUtil.getPage(0L, 2000L);
 		rentBatteryOrderMapper.queryList(page, rentBatteryOrderQuery);
 		if (ObjectUtil.isEmpty(page.getRecords())) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<RentBatteryOrder> rentBatteryOrderList = page.getRecords();
 		if (!DataUtil.collectionIsUsable(rentBatteryOrderList)) {
-			return;
+			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<RentBatteryOrderExcelVO> rentBatteryOrderExcelVOS = new ArrayList();
