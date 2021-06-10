@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
@@ -69,7 +70,7 @@ public class EleDepositOrderAdminController {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 31) {
-            return;
+            throw new CustomBusinessException("搜索日期不能大于31天");
         }
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)

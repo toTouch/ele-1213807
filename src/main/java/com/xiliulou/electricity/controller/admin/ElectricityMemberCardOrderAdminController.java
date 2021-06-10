@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
@@ -59,7 +60,7 @@ public class ElectricityMemberCardOrderAdminController {
 
 		Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
 		if (days > 31) {
-			return;
+			throw new CustomBusinessException("搜索日期不能大于31天");
 		}
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
