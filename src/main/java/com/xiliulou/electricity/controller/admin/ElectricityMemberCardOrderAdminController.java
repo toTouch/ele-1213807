@@ -59,8 +59,8 @@ public class ElectricityMemberCardOrderAdminController {
 			HttpServletResponse response) {
 
 		Double days = (Double.valueOf(queryEndTime - queryStartTime)) / 1000 / 3600 / 24;
-		if (days > 31) {
-			throw new CustomBusinessException("搜索日期不能大于31天");
+		if (days > 33) {
+			throw new CustomBusinessException("搜索日期不能大于33天");
 		}
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
