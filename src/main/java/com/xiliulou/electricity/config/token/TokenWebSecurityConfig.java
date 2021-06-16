@@ -16,7 +16,7 @@ import com.xiliulou.security.authentication.JwtTokenManager;
 import com.xiliulou.security.authentication.TokenLogoutHandler;
 import com.xiliulou.security.authentication.thirdauth.CustomThirdAuthAuthenticationFilter;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationServiceFactory;
-import com.xiliulou.security.authentication.thirdauth.ThirdWxProAuthenticationProvider;
+import com.xiliulou.security.authentication.thirdauth.wxpro.ThirdWxProAuthenticationProvider;
 import com.xiliulou.security.config.TokenConfig;
 import com.xiliulou.security.constant.TokenConstant;
 import org.springframework.beans.factory.annotation.Autowired;
