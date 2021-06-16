@@ -77,6 +77,10 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
         String iv = (String) authMap.get("iv");
         String data = (String) authMap.get("data");
 
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        log.info("tenantId is -->{}",tenantId);
+
         if (!redisService.setNx(ElectricityCabinetConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
             throw new AuthenticationServiceException("操作频繁！请稍后再试！");
         }
@@ -128,7 +132,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
             }
 
-            Integer tenantId = TenantContextHolder.getTenantId();
 
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
@@ -376,6 +379,5 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             cipher.init(Cipher.DECRYPT_MODE, keySpec, params);
             return new String(cipher.doFinal(encData), "UTF-8");
         }
-        //解析解密后的字符串  
     }
 }
