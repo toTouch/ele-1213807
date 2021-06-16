@@ -139,12 +139,21 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
         log.info("NOTIFY ELECTRICITYMEMBERCARDORDER:{}", electricityMemberCardOrder);
+
+
+        Long now =System.currentTimeMillis();
+        Long memberCardExpireTime;
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setId(userInfo.getId());
-        Long memberCardExpireTime = System.currentTimeMillis() +
-                electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        if(Objects.isNull(userInfo.getMemberCardExpireTime())||userInfo.getMemberCardExpireTime()<now) {
+            memberCardExpireTime = System.currentTimeMillis() +
+                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        }else {
+            memberCardExpireTime=userInfo.getMemberCardExpireTime()+
+                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        }
         userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
-        userInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+        userInfoUpdate.setRemainingNumber(userInfo.getRemainingNumber()+electricityMemberCardOrder.getMaxUseCount());
         userInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
         userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
         userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
