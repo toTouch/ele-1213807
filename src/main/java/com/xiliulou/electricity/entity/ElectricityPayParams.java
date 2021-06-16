@@ -35,5 +35,7 @@ public class ElectricityPayParams extends Model<ElectricityPayParams> {
     private Long createTime;
     private Long updateTime;
 
+    private Integer tenantId;
+
 
 }

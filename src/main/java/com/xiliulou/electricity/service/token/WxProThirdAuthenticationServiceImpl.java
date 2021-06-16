@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
@@ -127,6 +128,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 return createUserAndOauthBind(result, wxMinProPhoneResultDTO);
             }
 
+            Integer tenantId = TenantContextHolder.getTenantId();
 
             //两个都存在，
             if (existPhone.getLeft() && existsOpenId.getLeft()) {
@@ -135,6 +137,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                     log.error("TOKEN ERROR! two exists! third account uid not equals user account uid! thirdUid={},userId={}", existsOpenId.getRight().getUid(), existPhone.getRight().getUid());
                     throw new AuthenticationServiceException("用户信息异常，请联系客户处理!");
                 }
+
                 //添加到user_info表中
                 Long uid=existPhone.getRight().getUid();
                 Pair<Boolean, UserInfo> existUserInfo=checkUserInfoExists(uid);
@@ -148,6 +151,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .tenantId(tenantId)
                             .build();
                     userInfoService.insert(insertUserInfo);
                 }
@@ -197,6 +201,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .tenantId(tenantId)
                             .build();
                     userInfoService.insert(insertUserInfo);
                 } else {
@@ -235,6 +240,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .thirdId(result.getOpenid())
                             .source(UserOauthBind.SOURCE_WX_PRO)
                             .status(UserOauthBind.STATUS_BIND)
+                            .tenantId(tenantId)
                             .accessToken("")
                             .refreshToken("")
                             .thirdNick("")
@@ -254,6 +260,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                             .serviceStatus(UserInfo.STATUS_INIT)
                             .delFlag(User.DEL_NORMAL)
                             .usableStatus(UserInfo.USER_USABLE_STATUS)
+                            .tenantId(tenantId)
                             .build();
                     userInfoService.insert(insertUserInfo);
                 }
@@ -283,6 +290,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
     }
 
     private SecurityUser createUserAndOauthBind(WXMinProAuth2SessionResult result, WXMinProPhoneResultDTO wxMinProPhoneResultDTO) {
+        Integer tenantId = TenantContextHolder.getTenantId();
         //不存在，创建新用户
         User insertUser = User.builder()
                 .updateTime(System.currentTimeMillis())
@@ -295,6 +303,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .name("")
                 .salt("")
                 .avatar("")
+                .tenantId(tenantId)
                 .loginPwd(customPasswordEncoder.encode("1234#56!^1mjh"))
                 .delFlag(User.DEL_NORMAL)
                 .build();
@@ -307,6 +316,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .accessToken("")
                 .refreshToken("")
                 .thirdNick("")
+                .tenantId(tenantId)
                 .thirdId(result.getOpenid())
                 .source(UserOauthBind.SOURCE_WX_PRO)
                 .status(UserOauthBind.STATUS_BIND)
@@ -319,6 +329,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
                 .createTime(System.currentTimeMillis())
                 .phone(wxMinProPhoneResultDTO.getPurePhoneNumber())
                 .userName("")
+                .tenantId(tenantId)
                 .serviceStatus(UserInfo.STATUS_INIT)
                 .delFlag(User.DEL_NORMAL)
                 .usableStatus(UserInfo.USER_USABLE_STATUS)

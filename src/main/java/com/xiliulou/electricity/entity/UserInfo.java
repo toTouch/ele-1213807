@@ -106,6 +106,8 @@ public class UserInfo {
      */
     private Integer usableStatus;
 
+    private Integer tenantId;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

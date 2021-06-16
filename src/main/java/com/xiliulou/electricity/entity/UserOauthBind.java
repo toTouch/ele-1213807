@@ -56,6 +56,8 @@ public class UserOauthBind {
 	 * 用户手机号
 	 */
 	private String phone;
+
+	private Integer tenantId;
 	//绑定
 	public static final Integer STATUS_BIND = 1;
 	//解绑

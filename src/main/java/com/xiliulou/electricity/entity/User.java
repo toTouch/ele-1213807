@@ -91,6 +91,8 @@ public class User {
 	 */
 	private Long refId;
 
+	private Integer tenantId;
+
 	public boolean isLock() {
 		return this.lockFlag.equals(USER_LOCK);
 	}
