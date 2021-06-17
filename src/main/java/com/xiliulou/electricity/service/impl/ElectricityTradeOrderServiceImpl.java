@@ -143,6 +143,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
         Long now =System.currentTimeMillis();
         Long memberCardExpireTime;
+        Long remainingNumber= electricityMemberCardOrder.getMaxUseCount();
         UserInfo userInfoUpdate = new UserInfo();
         userInfoUpdate.setId(userInfo.getId());
         if(Objects.isNull(userInfo.getMemberCardExpireTime())||userInfo.getMemberCardExpireTime()<now) {
@@ -151,9 +152,13 @@ public class ElectricityTradeOrderServiceImpl extends
         }else {
             memberCardExpireTime=userInfo.getMemberCardExpireTime()+
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            if(userInfo.getRemainingNumber()>0) {
+                remainingNumber=remainingNumber+userInfo.getRemainingNumber();
+            }
         }
         userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
-        userInfoUpdate.setRemainingNumber(userInfo.getRemainingNumber()+electricityMemberCardOrder.getMaxUseCount());
+
+        userInfoUpdate.setRemainingNumber(remainingNumber);
         userInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
         userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
         userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());

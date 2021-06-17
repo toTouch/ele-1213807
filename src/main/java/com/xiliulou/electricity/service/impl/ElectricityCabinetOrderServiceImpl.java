@@ -239,7 +239,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			if (Objects.isNull(cellNo)) {
 				return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
 			}
-			if (userInfo.getRemainingNumber() != -1) {
+			if (userInfo.getRemainingNumber()!=-1) {
 				//扣除月卡
 				int row = userInfoService.minCount(userInfo.getId());
 				if (row < 1) {
