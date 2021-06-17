@@ -71,10 +71,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         franchisee.setTenantId(tenantId);
         int insert =franchiseeMapper.insert(franchisee);
-        if(insert>0){
+
+        if (insert > 0) {
             return R.ok();
         }
-return
+        return R.fail("ELECTRICITY.0086", "操作失败");
 
     }
 
@@ -89,8 +90,12 @@ return
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setUpdateTime(System.currentTimeMillis());
-        franchiseeMapper.updateById(franchisee);
+        int update=franchiseeMapper.updateById(franchisee);
 
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
         return R.ok();
     }
 
