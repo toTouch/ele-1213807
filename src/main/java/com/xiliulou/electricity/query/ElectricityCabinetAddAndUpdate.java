@@ -116,6 +116,10 @@ public class ElectricityCabinetAddAndUpdate {
      */
     private Long endTime;
 
+    //门店id
+    @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
+    private Integer storeId;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

@@ -63,11 +63,7 @@ public class JsonAdminElectricityCabinetController {
     @Autowired
     StoreService storeService;
     @Autowired
-    StoreBindService storeBindService;
-    @Autowired
     FranchiseeService franchiseeService;
-    @Autowired
-    FranchiseeBindService franchiseeBindService;
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
     @Autowired
