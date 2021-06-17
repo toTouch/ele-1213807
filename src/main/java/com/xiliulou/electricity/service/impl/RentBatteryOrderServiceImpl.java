@@ -152,6 +152,29 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
 		}
 
+		//判断用户是否有未完成订单
+		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(uid);
+		if (Objects.nonNull(oldElectricityCabinetOrder)) {
+			log.error("ELECTRICITY  ERROR! find ele order! uid:{} ", uid);
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
+
+		//是否存在未完成的还电池订单
+		RentBatteryOrder oldRentBatteryOrder1 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
+		if (Objects.nonNull(oldRentBatteryOrder1)) {
+			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", uid);
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
+
+		//是否存在未完成的租电池订单
+		RentBatteryOrder oldRentBatteryOrder2 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
+		if (Objects.nonNull(oldRentBatteryOrder2)) {
+			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
 		//营业时间
 		Boolean result = this.isBusiness(electricityCabinet);
 		if (result) {
@@ -197,12 +220,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0045", "已绑定电池");
 		}
 
-		//是否存在未完成的租电池订单
-		RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
-		if (Objects.nonNull(oldRentBatteryOrder)) {
-			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
-			return R.fail(oldRentBatteryOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
-		}
 
 		//是否有正在退款中的退款
 		Integer refundCount = eleRefundOrderService.queryCountByOrderId(userInfo.getOrderId());
@@ -299,6 +316,29 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
 		}
 
+		//判断用户是否有未完成订单
+		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(uid);
+		if (Objects.nonNull(oldElectricityCabinetOrder)) {
+			log.error("ELECTRICITY  ERROR! find ele order! uid:{} ", uid);
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
+
+		//是否存在未完成的还电池订单
+		RentBatteryOrder oldRentBatteryOrder1 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
+		if (Objects.nonNull(oldRentBatteryOrder1)) {
+			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", uid);
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
+
+		//是否存在未完成的租电池订单
+		RentBatteryOrder oldRentBatteryOrder2 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
+		if (Objects.nonNull(oldRentBatteryOrder2)) {
+			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
 		//营业时间
 		Boolean result = this.isBusiness(electricityCabinet);
 		if (result) {
@@ -328,12 +368,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
 
-		//是否存在未完成的租电池订单
-		RentBatteryOrder oldRentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RETURN)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR).orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
-		if (Objects.nonNull(oldRentBatteryOrder)) {
-			return R.fail(oldRentBatteryOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
-		}
 
 		//分配开门格挡
 		String cellNo = electricityCabinetOrderService.findUsableCellNo(electricityCabinet.getId());

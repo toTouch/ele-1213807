@@ -15,6 +15,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -87,6 +88,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	EleRefundOrderService eleRefundOrderService;
 	@Autowired
 	RentBatteryOrderService rentBatteryOrderService;
+	@Autowired
+	ElectricityCabinetOrderService electricityCabinetOrderService;
 
 	@Override
 	public EleDepositOrder queryByOrderId(String orderNo) {
@@ -214,8 +217,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
-		//是否存在未完成的还电池订单
+		//判断用户是否有未完成订单
+		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(uid);
+		if (Objects.nonNull(oldElectricityCabinetOrder)) {
+			log.error("ELECTRICITY  ERROR! find ele order! uid:{} ", uid);
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
 
+
+		//是否存在未完成的还电池订单
 		RentBatteryOrder oldRentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
 		if (Objects.nonNull(oldRentBatteryOrder1)) {
 			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", uid);
