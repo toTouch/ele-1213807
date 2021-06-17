@@ -49,10 +49,6 @@ public class FranchiseeAddAndUpdate {
     */
     private Long updateTime;
 
-    /**
-     * uid
-     */
-    private Long uid;
 
 
 }
