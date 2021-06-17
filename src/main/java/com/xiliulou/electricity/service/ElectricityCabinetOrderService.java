@@ -65,7 +65,7 @@ public interface ElectricityCabinetOrderService {
 
     void insert(ElectricityCabinetOrder electricityCabinetOrder);
 
-    Integer queryByUid(Long uid);
+    ElectricityCabinetOrder queryByUid(Long uid);
 
     ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId,Integer cellNo);
 

@@ -198,10 +198,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//是否存在未完成的租电池订单
-		Integer count = queryByUidAndType(uid, RentBatteryOrder.TYPE_USER_RENT);
-		if (count > 0) {
+		RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
+		if (Objects.nonNull(oldRentBatteryOrder)) {
 			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
 		//是否有正在退款中的退款
@@ -329,10 +329,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//是否存在未完成的租电池订单
-		Integer count = rentBatteryOrderMapper.selectList(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RETURN)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR).orderByDesc(RentBatteryOrder::getCreateTime).);
-		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+		RentBatteryOrder oldRentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RETURN)
+				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR).orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
+		if (Objects.nonNull(oldRentBatteryOrder)) {
+			return R.fail(oldRentBatteryOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
 		//分配开门格挡
@@ -516,9 +516,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	}
 
 	@Override
-	public Integer queryByUidAndType(Long uid, Integer type) {
-		return rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, type)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+	public RentBatteryOrder queryByUidAndType(Long uid, Integer type) {
+		return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, type)
+				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR)
+				.orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
 	}
 
 	@Override

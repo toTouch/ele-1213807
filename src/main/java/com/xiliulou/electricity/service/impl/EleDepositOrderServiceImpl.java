@@ -215,18 +215,22 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		//是否存在未完成的还电池订单
-		Integer count1 = rentBatteryOrderService.queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
-		if (count1 > 0) {
+
+		RentBatteryOrder oldRentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
+		if (Objects.nonNull(oldRentBatteryOrder1)) {
 			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", uid);
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
+
 		//是否存在未完成的租电池订单
-		Integer count2 = rentBatteryOrderService.queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
-		if (count2 > 0) {
+		RentBatteryOrder oldRentBatteryOrder2 = rentBatteryOrderService.queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
+		if (Objects.nonNull(oldRentBatteryOrder2)) {
 			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
+
+
 
 		//判断是否退电池
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {

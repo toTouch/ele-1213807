@@ -147,9 +147,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		//判断用户是否有未完成订单
-		Integer count = queryByUid(user.getUid());
-		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+		ElectricityCabinetOrder oldElectricityCabinetOrder = queryByUid(user.getUid());
+		if (Objects.nonNull(oldElectricityCabinetOrder)) {
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(orderQuery.getElectricityCabinetId());
@@ -612,9 +612,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
-	public Integer queryByUid(Long uid) {
-		return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
-				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+	public ElectricityCabinetOrder queryByUid(Long uid) {
+		return electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
+				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL)
+				.orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
 	}
 
 	@Override

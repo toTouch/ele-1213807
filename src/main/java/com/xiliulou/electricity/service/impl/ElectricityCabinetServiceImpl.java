@@ -1080,9 +1080,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//判断用户是否有未完成订单
-		Integer count = this.electricityCabinetOrderService.queryByUid(user.getUid());
-		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(user.getUid());
+		if (Objects.nonNull(oldElectricityCabinetOrder)) {
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
 		//用户成功换电后才会添加缓存，用户换电周期限制
