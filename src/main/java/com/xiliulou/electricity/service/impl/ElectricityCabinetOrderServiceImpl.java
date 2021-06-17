@@ -189,41 +189,41 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 		//用户是否可用
 		if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! user is unusable! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! not auth! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 		//未缴纳押金
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! not pay deposit! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
 		//判断用户是否开通月卡
 		if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
-			log.error("ELECTRICITY  ERROR! not found memberCard ");
+			log.error("ELECTRICITY  ERROR! not found memberCard uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
 		Long now = System.currentTimeMillis();
 		if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
-			log.error("ELECTRICITY  ERROR! not found memberCard ");
+			log.error("ELECTRICITY  ERROR! memberCard is  Expire uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0023", "月卡已过期");
 		}
 
 		//未租电池
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! not rent battery! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
 
 		//用户状态异常
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY) && Objects.isNull(userInfo.getNowElectricityBatterySn())) {
-			log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! userInfo is error!uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
@@ -243,7 +243,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 				//扣除月卡
 				int row = userInfoService.minCount(userInfo.getId());
 				if (row < 1) {
-					log.error("ELECTRICITY  ERROR! not found memberCard uid={}", user.getUid());
+					log.error("ELECTRICITY  ERROR! memberCard is  Expire uid:{} ", user.getUid());
 					return R.fail("ELECTRICITY.0023", "月卡已过期");
 				}
 			}

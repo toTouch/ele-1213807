@@ -166,40 +166,41 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 		//用户是否可用
 		if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! user is unusable! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! not auth! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 		//未缴纳押金
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! not pay deposit! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
 		//判断用户是否开通月卡
 		if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
-			log.error("ELECTRICITY  ERROR! not found memberCard ");
+			log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
 		Long now = System.currentTimeMillis();
 		if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
-			log.error("ELECTRICITY  ERROR! not found memberCard ");
+			log.error("ELECTRICITY  ERROR!  memberCard is  Expire ! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0023", "月卡已过期");
 		}
 
 		//已绑定电池
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
-			log.error("ELECTRICITY  ERROR!  rent battery! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! is rent battery! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0045", "已绑定电池");
 		}
 
 		//是否存在未完成的租电池订单
 		Integer count = queryByUidAndType(uid, RentBatteryOrder.TYPE_USER_RENT);
 		if (count > 0) {
+			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
 			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
