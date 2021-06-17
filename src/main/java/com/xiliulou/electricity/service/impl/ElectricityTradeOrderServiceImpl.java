@@ -152,7 +152,7 @@ public class ElectricityTradeOrderServiceImpl extends
         }else {
             memberCardExpireTime=userInfo.getMemberCardExpireTime()+
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            if(userInfo.getRemainingNumber()>0) {
+            if(userInfo.getRemainingNumber()>0&&!Objects.equals(electricityMemberCardOrder.getMaxUseCount(),-1)) {
                 remainingNumber=remainingNumber+userInfo.getRemainingNumber();
             }
         }

@@ -122,7 +122,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			}
 			now = userInfo.getMemberCardExpireTime();
 			//TODO 使用次数暂时叠加
-			if (userInfo.getRemainingNumber() > 0) {
+			if (userInfo.getRemainingNumber() > 0&&!Objects.equals(electricityMemberCard.getMaxUseCount(),-1)) {
 				remainingNumber = remainingNumber + userInfo.getRemainingNumber();
 			}
 
