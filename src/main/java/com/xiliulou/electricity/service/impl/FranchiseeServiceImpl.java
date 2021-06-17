@@ -110,12 +110,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R queryList(FranchiseeQuery franchiseeQuery) {
-        Page page = PageUtil.getPage(franchiseeQuery.getOffset(), franchiseeQuery.getSize());
-        franchiseeMapper.queryList(page, franchiseeQuery);
-        if (ObjectUtil.isEmpty(page.getRecords())) {
+        List<FranchiseeVO> franchiseeVOList =franchiseeMapper.queryList(franchiseeQuery);
+        if (ObjectUtil.isEmpty(franchiseeVOList)) {
             return R.ok(new ArrayList<>());
         }
-        List<FranchiseeVO> franchiseeVOList = page.getRecords();
         if (ObjectUtil.isNotEmpty(franchiseeVOList)) {
             franchiseeVOList.parallelStream().forEach(e -> {
               //获取城市名称
@@ -132,8 +130,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 }
             });
         }
-        page.setRecords(franchiseeVOList.stream().sorted(Comparator.comparing(FranchiseeVO::getCreateTime).reversed()).collect(Collectors.toList()));
-        return R.ok(page);
+        franchiseeVOList.stream().sorted(Comparator.comparing(FranchiseeVO::getCreateTime).reversed()).collect(Collectors.toList());
+        return R.ok(franchiseeVOList);
     }
 
     @Override

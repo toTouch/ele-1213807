@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
@@ -31,7 +32,7 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
      *
      * @return 对象列表
      */
-    IPage queryList(Page page, @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+    List<ElectricityCabinetOrderVO> queryList( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
 
     /**

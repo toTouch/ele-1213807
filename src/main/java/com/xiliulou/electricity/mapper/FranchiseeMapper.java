@@ -4,7 +4,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.vo.FranchiseeVO;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * (ElectricityBatteryBind)表数据库访问层
@@ -14,5 +17,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface FranchiseeMapper extends BaseMapper<Franchisee> {
 
-    IPage queryList(Page page, @Param("query") FranchiseeQuery franchiseeQuery);
+    List<FranchiseeVO> queryList( @Param("query") FranchiseeQuery franchiseeQuery);
 }

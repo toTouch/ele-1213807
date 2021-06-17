@@ -94,6 +94,7 @@ public class JsonAdminFranchiseeController {
                 .tenantId(tenantId).build();
 
         return franchiseeService.queryList(franchiseeQuery);
+
     }
 
     //分配电池

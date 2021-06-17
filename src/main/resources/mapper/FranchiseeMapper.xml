@@ -24,7 +24,7 @@
             and tenant_id = #{query.tenantId}
         </if>
         order by create_time desc
-
+        limit #{query.offset}, #{query.size}
     </select>
 
 </mapper>

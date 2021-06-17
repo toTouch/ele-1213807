@@ -22,6 +22,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
@@ -290,25 +291,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 	@Override
 	public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-		Page page = PageUtil.getPage(electricityCabinetOrderQuery.getOffset(), electricityCabinetOrderQuery.getSize());
 
-		electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
-		if (ObjectUtil.isEmpty(page.getRecords())) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList=electricityCabinetOrderMapper.queryList( electricityCabinetOrderQuery);
+		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
 			return R.ok(new ArrayList<>());
 		}
-		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
 		if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
 			electricityCabinetOrderVOList.parallelStream().forEach(e -> {
-				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId(),tenantId);
 				if (Objects.nonNull(electricityCabinet)) {
 					e.setElectricityCabinetName(electricityCabinet.getName());
-					e.setElectricityCabinetSn(electricityCabinet.getSn());
 				}
 			});
 		}
 
-		page.setRecords(electricityCabinetOrderVOList);
-		return R.ok(page);
+		return R.ok(electricityCabinetOrderVOList);
 	}
 
 	@Override
@@ -519,14 +518,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 	@Override
 	public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
-		Page page = PageUtil.getPage(0L, 2000L);
-		electricityCabinetOrderMapper.queryList(page, electricityCabinetOrderQuery);
-		if (ObjectUtil.isEmpty(page.getRecords())) {
-			throw new CustomBusinessException("查不到订单");
-		}
-
-		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = page.getRecords();
-		if (!DataUtil.collectionIsUsable(electricityCabinetOrderVOList)) {
+		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList =electricityCabinetOrderMapper.queryList( electricityCabinetOrderQuery);
+		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
 			throw new CustomBusinessException("查不到订单");
 		}
 
