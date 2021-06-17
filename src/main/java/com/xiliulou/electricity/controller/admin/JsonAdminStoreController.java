@@ -39,11 +39,7 @@ public class JsonAdminStoreController {
     @Autowired
     StoreService storeService;
     @Autowired
-    StoreBindService storeBindService;
-    @Autowired
     FranchiseeService franchiseeService;
-    @Autowired
-    FranchiseeBindService franchiseeBindService;
 
     //新增门店
     @PostMapping(value = "/admin/store")

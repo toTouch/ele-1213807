@@ -102,24 +102,12 @@ public class JsonAdminFranchiseeController {
         return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
     }
 
-
-    //分配门店
-    @PostMapping(value = "/admin/store/bindStore")
-    public R bindStore(@RequestBody @Validated(value = CreateGroup.class) BindFranchiseeQuery bindFranchiseeQuery){
-        return franchiseeService.bindStore(bindFranchiseeQuery);
-    }
-
     //查询电池
     @GetMapping(value = "/admin/store/getElectricityBatteryList/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Integer id){
         return franchiseeService.getElectricityBatteryList(id);
     }
 
-    //查询门店
-    @GetMapping(value = "/admin/store/getStoreList/{id}")
-    public R getStoreList(@PathVariable("id") Integer id){
-        return franchiseeService.getStoreList(id);
-    }
 
 
 

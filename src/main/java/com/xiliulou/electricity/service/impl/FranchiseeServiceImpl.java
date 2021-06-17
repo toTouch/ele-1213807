@@ -8,20 +8,16 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeBind;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
-import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import lombok.extern.slf4j.Slf4j;
@@ -81,11 +77,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        //判断用户存不存在
-        User user=userService.queryByIdFromDB(franchiseeAddAndUpdate.getUid());
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+        //修改加盟商修改用户 TODO
 
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
@@ -96,11 +88,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return R.ok();
         }
         return R.fail("ELECTRICITY.0086", "操作失败");
-        return R.ok();
     }
 
     @Override
     public R delete(Integer id) {
+        //删除加盟商，删除用户
+
         Franchisee franchisee = queryByIdFromDB(id);
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
@@ -162,32 +155,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return R.ok();
     }
 
-    @Override
-    public R bindStore(BindFranchiseeQuery bindFranchiseeQuery) {
-        //先删除
-        franchiseeBindService.deleteByFranchiseeId(bindFranchiseeQuery.getFranchiseeId());
-        if(ObjectUtil.isEmpty(bindFranchiseeQuery.getStoreIdList())){
-            return R.ok();
-        }
-        //再新增
-        for (Integer storeId : bindFranchiseeQuery.getStoreIdList()) {
-            FranchiseeBind franchiseeBind=new FranchiseeBind();
-            franchiseeBind.setFranchiseeId(bindFranchiseeQuery.getFranchiseeId());
-            franchiseeBind.setStoreId(storeId);
-            franchiseeBindService.insert(franchiseeBind);
-        }
-        return R.ok();
-    }
 
     @Override
     public R getElectricityBatteryList(Integer id) {
         return R.ok(franchiseeBindElectricityBatteryService.queryByFranchiseeId(id));
     }
 
-    @Override
-    public R getStoreList(Integer id) {
-        return R.ok(franchiseeBindService.queryByFranchiseeId(id));
-    }
 
     @Override
     public Franchisee queryByUid(Long uid) {
