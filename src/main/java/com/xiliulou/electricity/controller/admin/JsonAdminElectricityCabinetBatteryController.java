@@ -2,10 +2,10 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityBatteryBind;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.service.ElectricityBatteryBindService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -30,7 +30,7 @@ public class JsonAdminElectricityCabinetBatteryController {
     @Autowired
     ElectricityBatteryService electricityBatteryService;
     @Autowired
-    ElectricityBatteryBindService electricityBatteryBindService;
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
     @Autowired
     FranchiseeService franchiseeService;
 
@@ -111,17 +111,17 @@ public class JsonAdminElectricityCabinetBatteryController {
         if(ObjectUtil.isEmpty(franchiseeList)){
             return R.ok();
         }
-        List<ElectricityBatteryBind> electricityBatteryBindBinds=new ArrayList<>();
+        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteries =new ArrayList<>();
         for (Franchisee franchisee:franchiseeList) {
-            List<ElectricityBatteryBind> electricityBatteryBindBindList=electricityBatteryBindService.queryByFranchiseeId(franchisee.getId());
-            electricityBatteryBindBinds.addAll(electricityBatteryBindBindList);
+            List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
+            franchiseeBindBindElectricityBatteries.addAll(franchiseeBindBindElectricityBatteryList);
         }
-        if(ObjectUtil.isEmpty(electricityBatteryBindBinds)){
+        if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteries)){
             return R.ok();
         }
         List<Long> electricityBatteryIdList=new ArrayList<>();
-        for (ElectricityBatteryBind electricityBatteryBind:electricityBatteryBindBinds) {
-            electricityBatteryIdList.add(electricityBatteryBind.getElectricityBatteryId());
+        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteries) {
+            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
         }
         if(ObjectUtil.isEmpty(electricityBatteryIdList)){
             return R.ok();

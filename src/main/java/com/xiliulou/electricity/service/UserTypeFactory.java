@@ -21,13 +21,11 @@ public class UserTypeFactory {
 	public static final String TYPE_USER_OPERATE = "typeUserOperateService";
 	public static final String TYPE_USER_FRANCHISEE = "typeUserFranchiseeService";
 	public static final String TYPE_USER_STORE = "typeUserStoreService";
-	public static final String TYPE_USER_CABINET = "typeUserCabinetService";
 	static {
 		USER_TYPE.put(User.TYPE_USER_SUPER,TYPE_USER_SUPER);
 		USER_TYPE.put(User.TYPE_USER_OPERATE,TYPE_USER_OPERATE);
 		USER_TYPE.put(User.TYPE_USER_FRANCHISEE,TYPE_USER_FRANCHISEE);
 		USER_TYPE.put(User.TYPE_USER_STORE,TYPE_USER_STORE);
-		USER_TYPE.put(User.TYPE_USER_CABINET,TYPE_USER_CABINET);
 	}
 
 	public UserTypeService getInstance(Integer type) {

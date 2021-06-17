@@ -21,7 +21,7 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
 import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryBindService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBindService;
 import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.StoreBindService;
@@ -84,7 +84,7 @@ public class UserServiceImpl implements UserService {
 	ElectricityCabinetBindService electricityCabinetBindService;
 
 	@Autowired
-	ElectricityBatteryBindService electricityBatteryBindService;
+	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 
 	@Autowired
 	StoreBindService storeBindService;

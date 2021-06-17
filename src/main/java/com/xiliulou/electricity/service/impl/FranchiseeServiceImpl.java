@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityBatteryBind;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeBind;
@@ -16,7 +16,7 @@ import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.service.CityService;
-import com.xiliulou.electricity.service.ElectricityBatteryBindService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
@@ -46,13 +46,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     FranchiseeMapper franchiseeMapper;
 
     @Autowired
-    ElectricityBatteryBindService electricityBatteryBindService;
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 
     @Autowired
     FranchiseeService franchiseeService;
 
-    @Autowired
-    FranchiseeBindService franchiseeBindService;
+
     @Autowired
     CityService cityService;
     @Autowired
@@ -154,16 +153,16 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Override
     public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
         //先删除
-        electricityBatteryBindService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
+        franchiseeBindElectricityBatteryService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
         if(ObjectUtil.isEmpty(bindElectricityBatteryQuery.getElectricityBatteryIdList())){
             return R.ok();
         }
         //再新增
         for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
-            ElectricityBatteryBind electricityBatteryBind=new ElectricityBatteryBind();
-            electricityBatteryBind.setFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
-            electricityBatteryBind.setElectricityBatteryId(electricityBatteryId);
-            electricityBatteryBindService.insert(electricityBatteryBind);
+            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery =new FranchiseeBindElectricityBattery();
+            franchiseeBindElectricityBattery.setFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
+            franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBatteryId);
+            franchiseeBindElectricityBatteryService.insert(franchiseeBindElectricityBattery);
         }
         return R.ok();
     }
@@ -187,7 +186,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R getElectricityBatteryList(Integer id) {
-        return R.ok(electricityBatteryBindService.queryByFranchiseeId(id));
+        return R.ok(franchiseeBindElectricityBatteryService.queryByFranchiseeId(id));
     }
 
     @Override

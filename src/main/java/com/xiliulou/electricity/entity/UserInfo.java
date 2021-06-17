@@ -50,49 +50,9 @@ public class UserInfo {
     //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过,3--活体检测失败,4--活体检测成功)
     private Integer authStatus;
     /**
-     * 服务状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
+     * 服务状态 (0--初始化,1--已实名认证)
      */
     private Integer serviceStatus;
-    /**
-     * 月卡过期时间
-     */
-    private Long memberCardExpireTime;
-    /**
-     * 剩余使用次数
-     */
-    private Long remainingNumber;
-    /**
-     * 套餐id
-     */
-    private Integer cardId;
-    /**
-     * 类型(0:月卡,1:季卡,2:年卡)
-     */
-    private Integer cardType;
-    /**
-     * 套餐名称
-     */
-    private String cardName;
-    /**
-     * 初始电池编号
-     */
-    private String initElectricityBatterySn;
-    /**
-     * 当前电池编号
-     */
-    private String nowElectricityBatterySn;
-    /**
-     * 缴纳押金订单编号
-     */
-    private String orderId;
-    /**
-     * 租电池押金
-     */
-    private BigDecimal batteryDeposit;
-    /**
-     * 0--正常 1--删除
-     */
-    private Integer delFlag;
     /**
      * 创建时间
      */

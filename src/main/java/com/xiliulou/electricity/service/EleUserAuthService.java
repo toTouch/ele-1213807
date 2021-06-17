@@ -20,7 +20,7 @@ public interface EleUserAuthService {
      * @return 实例对象
      */
     EleUserAuth queryByIdFromDB(Long id);
-    
+
       /**
      * 通过ID查询单条数据从缓存
      *
@@ -46,9 +46,8 @@ public interface EleUserAuthService {
     Integer update(EleUserAuth eleUserAuth);
 
 
-    R insertEleUserAuthList(List<EleUserAuth> eleUserAuthList);
+    R webAuth(List<EleUserAuth> eleUserAuthList);
 
-    R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList);
 
     R getEleUserAuthSpecificStatus(Long uid);
 

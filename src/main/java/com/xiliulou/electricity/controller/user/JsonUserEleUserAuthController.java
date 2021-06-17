@@ -39,7 +39,7 @@ public class JsonUserEleUserAuthController {
 
 	//实名认证
 	@PostMapping("/user/auth")
-	public R commitInfoAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
+	public R webAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
 		if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
@@ -54,31 +54,11 @@ public class JsonUserEleUserAuthController {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
 
-		eleUserAuthService.insertEleUserAuthList(eleUserAuthList);
+		eleUserAuthService.webAuth(eleUserAuthList);
 		return R.ok();
 
 	}
 
-	//修改实名认证(实名认证审核中，实名认证未通过允许修改)
-	@PutMapping("/user/auth")
-	public R updateInfoAuth(@RequestBody List<EleUserAuth> eleUserAuthList) {
-		if (!DataUtil.collectionIsUsable(eleUserAuthList)) {
-			return R.fail("ELECTRICITY.0007", "不合法的参数");
-		}
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		//限频
-		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
-		if (!getLockSuccess) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
-
-		eleUserAuthService.updateEleUserAuthList(eleUserAuthList);
-		return R.ok();
-	}
 
 	/**
 	 * 获取需要实名认证资料项

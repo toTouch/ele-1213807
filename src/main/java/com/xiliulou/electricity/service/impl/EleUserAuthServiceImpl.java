@@ -105,18 +105,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 	}
 
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public R insertEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
-		return webAuth(eleUserAuthList);
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R updateEleUserAuthList(List<EleUserAuth> eleUserAuthList) {
-		return webAuth(eleUserAuthList);
-	}
-
 	public R webAuth(List<EleUserAuth> eleUserAuthList){
 		Long uid = SecurityUtils.getUid();
 		if (Objects.isNull(uid)) {
@@ -170,9 +161,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 			if (ObjectUtil.equal(EleAuthEntry.ID_ID_CARD, eleUserAuth.getEntryId())) {
 				userInfo.setIdNumber(eleUserAuth.getValue());
-			}
-			if (ObjectUtil.equal(EleAuthEntry.ID_MAILBOX, eleUserAuth.getEntryId())) {
-				userInfo.setMailbox(eleUserAuth.getValue());
 			}
 
 			eleUserAuth.setStatus(status);

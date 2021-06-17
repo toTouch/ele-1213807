@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 
 /**
- * (ElectricityCabinetBind)实体类
+ * (ElectricityBatteryBind)实体类
  *
  * @author lxc
  * @since 2020-11-25 11:00:14
@@ -19,8 +19,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_electricity_cabinet_bind")
-public class ElectricityCabinetBind {
+@TableName("t_franchisee_bind_electricity_battery")
+public class FranchiseeBindElectricityBattery {
     /**
      * 换电柜Id
      */
@@ -29,10 +29,10 @@ public class ElectricityCabinetBind {
     /**
      * uid
      */
-    private Long uid;
+    private Long franchiseeId;
     /**
-     * 换电柜ID
+     * 电池ID
      */
-    private Integer electricityCabinetId;
+    private Long electricityBatteryId;
 
 }

@@ -55,7 +55,7 @@ public class User {
 	 */
 	private Integer lockFlag;
 	/**
-	 * 0--超级管理员 1--运营商 2--用户
+	 * 0--超级管理员 1--运营商 2--加盟商 3--门店 11--微信小程序用户
 	 */
 	private Integer userType;
 	/**
@@ -116,8 +116,6 @@ public class User {
 	public static final Integer TYPE_USER_FRANCHISEE =2;
 	//门店
 	public static final Integer TYPE_USER_STORE=3;
-	//柜子负责人
-	public static final Integer TYPE_USER_CABINET = 4;
 	//普通微信小程序用户
 	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
 
