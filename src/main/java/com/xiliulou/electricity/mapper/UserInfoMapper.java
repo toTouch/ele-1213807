@@ -43,9 +43,9 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     int minCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
 
-    List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cidList") List<Integer> cidList);
+    List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-    List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("cidList") List<Integer> cidList);
+    List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
 
     void updateByUid(UserInfo userInfo);
@@ -56,7 +56,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     IPage queryUserInfoList(Page page,@Param("query") UserInfoQuery userInfoQuery);
 
-    Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now, @Param("cidList") List<Integer> cidList);
+    Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now);
 
-    Integer homeOneAuth(@Param("first") Long first, @Param("now") Long now, @Param("cidList") List<Integer> cidList);
+    Integer homeOneAuth(@Param("first") Long first, @Param("now") Long now);
 }

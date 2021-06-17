@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,7 +24,8 @@ public class JsonOuterElectricityConfigController {
     //查询平台名称
     @GetMapping(value = "/outer/electricityConfig")
     public R queryOne() {
-        return R.ok(electricityConfigService.queryOne());
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(electricityConfigService.queryOne(tenantId));
     }
 
 }

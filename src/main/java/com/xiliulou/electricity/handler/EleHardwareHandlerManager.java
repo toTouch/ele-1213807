@@ -91,7 +91,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                     status = 0;
                 }
                 newElectricityCabinet.setOnlineStatus(status);
-                newElectricityCabinet.setPowerStatus(status);
                 if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                     redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
                     redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());

@@ -8,22 +8,18 @@ import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeBind;
 import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.entity.StoreBind;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -35,7 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -97,11 +92,9 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping(value = "/admin/electricityCabinet/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
-                       @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -113,196 +106,53 @@ public class JsonAdminElectricityCabinetController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        //如果是查全部则直接跳过
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                &&!Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList=userTypeService.getEleIdListByUserType(user);
+            if(ObjectUtil.isEmpty(eleIdList)){
+                return R.ok();
+            }
+        }
+
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
                 .offset(offset)
                 .size(size)
-                .sn(sn)
                 .name(name)
                 .address(address)
                 .usableStatus(usableStatus)
-                .powerStatus(powerStatus)
                 .onlineStatus(onlineStatus)
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
 
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }
 
-    //加盟商列表查询
-    @GetMapping(value = "/admin/electricityCabinet/listByFranchisee")
-    public R listByFranchisee(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "sn", required = false) String sn,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "address", required = false) String address,
-                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
-                       @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
-                       @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
 
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
-                .offset(offset)
-                .size(size)
-                .sn(sn)
-                .name(name)
-                .address(address)
-                .usableStatus(usableStatus)
-                .powerStatus(powerStatus)
-                .onlineStatus(onlineStatus)
-                .beginTime(beginTime)
-                .endTime(endTime).build();
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
-        if(ObjectUtil.isEmpty(franchiseeList)){
-            return R.ok();
-        }
-        List<FranchiseeBind> franchiseeBinds=new ArrayList<>();
-        for (Franchisee franchisee:franchiseeList) {
-            List<FranchiseeBind> franchiseeBindList= franchiseeBindService.queryByFranchiseeId(franchisee.getId());
-            franchiseeBinds.addAll(franchiseeBindList);
-        }
-        if(ObjectUtil.isEmpty(franchiseeBinds)){
-            return R.ok();
-        }
-        List<Integer> storeIdList=new ArrayList<>();
-        for (FranchiseeBind franchiseeBind:franchiseeBinds) {
-            storeIdList.add(franchiseeBind.getStoreId());
-        }
-        if(ObjectUtil.isEmpty(storeIdList)){
-            return R.ok();
-        }
-        electricityCabinetQuery.setStoreIdList(storeIdList);
-
-        return electricityCabinetService.listByStoreId(electricityCabinetQuery);
+    //禁启用换电柜
+    @PostMapping(value = "/admin/electricityCabinet/updateStatus")
+    public R updateStatus(@RequestParam("id") Integer id,@RequestParam("usableStatus") Integer usableStatus) {
+        return electricityCabinetService.updateStatus(id,usableStatus);
     }
 
-    //网点列表查询
-    @GetMapping(value = "/admin/electricityCabinet/listByStoreId")
-    public R listByStoreId(@RequestParam(value = "size", required = false) Long size,
-                              @RequestParam(value = "offset", required = false) Long offset,
-                              @RequestParam(value = "sn", required = false) String sn,
-                              @RequestParam(value = "name", required = false) String name,
-                              @RequestParam(value = "address", required = false) String address,
-                              @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
-                              @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
-                              @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
-                              @RequestParam(value = "beginTime", required = false) Long beginTime,
-                              @RequestParam(value = "endTime", required = false) Long endTime) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
-
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
-
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
-                .offset(offset)
-                .size(size)
-                .sn(sn)
-                .name(name)
-                .address(address)
-                .usableStatus(usableStatus)
-                .powerStatus(powerStatus)
-                .onlineStatus(onlineStatus)
-                .beginTime(beginTime)
-                .endTime(endTime).build();
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<StoreBind> storeBindList=storeBindService.queryByUid(user.getUid());
-
-        if(ObjectUtil.isEmpty(storeBindList)){
-            return R.ok();
-        }
-        List<Integer> storeIdList=new ArrayList<>();
-        for (StoreBind storeBind:storeBindList) {
-            storeIdList.add(storeBind.getStoreId());
-        }
-        if(ObjectUtil.isEmpty(storeIdList)){
-            return R.ok();
-        }
-
-        electricityCabinetQuery.setStoreIdList(storeIdList);
-        return electricityCabinetService.listByStoreId(electricityCabinetQuery);
-    }
-
-    //柜子负责人列表查询
-    @GetMapping(value = "/admin/electricityCabinet/listByUid")
-    public R listByUid(@RequestParam(value = "size", required = false) Long size,
-                              @RequestParam(value = "offset", required = false) Long offset,
-                              @RequestParam(value = "sn", required = false) String sn,
-                              @RequestParam(value = "name", required = false) String name,
-                              @RequestParam(value = "address", required = false) String address,
-                              @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
-                              @RequestParam(value = "powerStatus", required = false) Integer powerStatus,
-                              @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
-                              @RequestParam(value = "beginTime", required = false) Long beginTime,
-                              @RequestParam(value = "endTime", required = false) Long endTime) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
-
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
-
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
-                .offset(offset)
-                .size(size)
-                .sn(sn)
-                .name(name)
-                .address(address)
-                .usableStatus(usableStatus)
-                .powerStatus(powerStatus)
-                .onlineStatus(onlineStatus)
-                .beginTime(beginTime)
-                .endTime(endTime).build();
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        List<Long> uidList = new ArrayList<>();
-        uidList.add(user.getUid());
-        electricityCabinetQuery.setUidList(uidList);
-
-
-        return electricityCabinetService.listByUid(electricityCabinetQuery);
-    }
-
-    //禁用换电柜
-    @PostMapping(value = "/admin/electricityCabinet/disable/{id}")
-    public R disable(@PathVariable("id") Integer id) {
-        return electricityCabinetService.disable(id);
-    }
-
-
-    //重启换电柜
-    @PostMapping(value = "/admin/electricityCabinet/reboot/{id}")
-    public R reboot(@PathVariable("id") Integer id) {
-        return electricityCabinetService.reboot(id);
-    }
 
 
     //首页一
@@ -368,7 +218,10 @@ public class JsonAdminElectricityCabinetController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id,tenantId);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
@@ -435,7 +288,10 @@ public class JsonAdminElectricityCabinetController {
     //列表查询
     @GetMapping(value = "/admin/electricityCabinet/queryConfig")
     public R queryConfig(@RequestParam("id") Integer id) {
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id,tenantId);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }

@@ -21,11 +21,6 @@ public class StoreAddAndUpdate {
     @NotNull(message = "门店Id不能为空!", groups = {UpdateGroup.class})
     private Integer id;
     /**
-    * 门店账号
-    */
-    @NotEmpty(message = "门店账号不能为空!", groups = {CreateGroup.class})
-    private String sn;
-    /**
     * 门店名称
     */
     @NotEmpty(message = "门店名称不能为空!", groups = {CreateGroup.class})

@@ -20,6 +20,7 @@ import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeBindService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.FranchiseeVO;
@@ -58,26 +59,23 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     UserService userService;
     @Override
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        //判断用户存不存在
-        User user=userService.queryByIdFromDB(franchiseeAddAndUpdate.getUid());
-        if (Objects.isNull(user)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-        //判断cid是否已绑定其他加盟商
-        Franchisee oldFranchisee=this.queryByCid(franchiseeAddAndUpdate.getCid());
-        if (Objects.nonNull(oldFranchisee)) {
-            return R.fail("ELECTRICITY.0040", "城市已绑定其他加盟商");
-        }
+        //新增加盟商新增用户 TODO
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setCreateTime(System.currentTimeMillis());
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_NORMAL);
-        int insert = franchiseeMapper.insert(franchisee);
-        DbUtils.dbOperateSuccessThen(insert, () -> {
-            return null;
-        });
-        return R.ok();
+        franchisee.setTenantId(tenantId);
+        int insert =franchiseeMapper.insert(franchisee);
+        if(insert>0){
+            return R.ok();
+        }
+return
+
     }
 
     @Override
@@ -87,18 +85,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(user)) {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //判断cid是否已绑定其他加盟商
-        Franchisee oldFranchisee=this.queryByCid(franchiseeAddAndUpdate.getCid());
-        if (Objects.nonNull(oldFranchisee)&&!Objects.equals(oldFranchisee.getId(),franchiseeAddAndUpdate.getId())) {
-            return R.fail("ELECTRICITY.0040", "城市已绑定其他加盟商");
-        }
+
         Franchisee franchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
         franchisee.setUpdateTime(System.currentTimeMillis());
-        int update = franchiseeMapper.updateById(franchisee);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            return null;
-        });
+        franchiseeMapper.updateById(franchisee);
+
         return R.ok();
     }
 
@@ -110,10 +102,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
-        int update = franchiseeMapper.updateById(franchisee);
-        DbUtils.dbOperateSuccessThen(update, () -> {
-            return null;
-        });
+        franchiseeMapper.updateById(franchisee);
+
         return R.ok();
     }
 
@@ -195,8 +185,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
-    public List<Franchisee> queryByUid(Long uid) {
-        return franchiseeMapper.selectList(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
+    public Franchisee queryByUid(Long uid) {
+        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
     }
 
     @Override

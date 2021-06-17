@@ -44,6 +44,9 @@ public class ElectricityConfig {
      */
     private Long updateTime;
 
+    //租户id
+    private Integer tenantId;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核

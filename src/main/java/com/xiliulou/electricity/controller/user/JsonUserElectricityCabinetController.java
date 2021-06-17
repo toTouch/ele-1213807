@@ -128,67 +128,10 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	 *
 	 * @return
 	 */
-	@GetMapping(value = "/user/electricityCabinet/rentBattery")
-	public R rentBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-		return electricityCabinetService.rentBattery(productKey, deviceName);
+	@GetMapping(value = "/user/electricityCabinet/rentBatteryQuery")
+	public R rentBatteryQuery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return electricityCabinetService.rentBatteryQuery(productKey, deviceName);
 	}
 
-	/*public static void main(String[] args) {
-		String s = "1";
-		String t = "99";
-		int i = s.length() - 1;
-		System.out.println("i="+i);
-		int j = t.length() - 1;
-		System.out.println("j="+j);
-
-		int m1 = 0, m2 = 0, carray = 0;//进位
-		StringBuilder sb = new StringBuilder();
-
-		while (i >= 0 || j >= 0) {
-			if (i >= 0) {
-				m1 = s.charAt(i) - '0';
-			} else {
-				m1 = 0;
-			}
-
-			System.out.println("m1="+m1);
-
-			if (j >= 0) {
-				m2 = t.charAt(j) - '0';
-			} else {
-				m2 = 0;
-			}
-
-			System.out.println("m2="+m2);
-
-			int sum = m1 + m2 + carray;
-			System.out.println("sum="+sum);
-
-
-			carray = sum / 10;
-			System.out.println("carray="+carray);
-
-
-			sb.append((char) ((sum % 10) + '0'));
-			System.out.println("sb="+sb);
-			i--;
-			j--;
-		}
-
-		System.out.println("carray="+carray);
-		if (carray != 0) {
-			sb.append('1');
-		}
-		System.out.println("sb="+sb);
-		sb.reverse();
-		System.out.println(sb.toString());
-		System.out.println("result1="+0);
-		System.out.println("result2="+(char)0);
-		System.out.println("result3="+(char)0 + '0');
-		System.out.println("result4="+0 + '0');
-		System.out.println("result5="+(char)(0 + '0'));
-		System.out.println("result6="+(char)(9 + '0'));
-		System.out.println("result7="+(char)(8 + '0'));
-	}*/
 
 }

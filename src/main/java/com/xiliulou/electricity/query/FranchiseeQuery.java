@@ -20,6 +20,6 @@ public class FranchiseeQuery {
 	private String name;
 	private Long beginTime;
 	private Long endTime;
-	private List<Integer> idList;
+	private Integer tenantId;
 
 }

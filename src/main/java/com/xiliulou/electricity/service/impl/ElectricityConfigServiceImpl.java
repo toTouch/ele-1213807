@@ -63,7 +63,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
     }
 
     @Override
-    public ElectricityConfig queryOne() {
-        return electricityConfigMapper.selectOne(new LambdaQueryWrapper<>());
+    public ElectricityConfig queryOne(Integer tenantId) {
+        return electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>()
+                .eq(ElectricityConfig::getTenantId,tenantId));
     }
 }

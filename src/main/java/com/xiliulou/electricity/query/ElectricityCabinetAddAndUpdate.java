@@ -23,10 +23,6 @@ public class ElectricityCabinetAddAndUpdate {
     @NotNull(message = "换电柜Id不能为空!", groups = {UpdateGroup.class})
     private Integer id;
     /**
-     * 电池编号
-     */
-    private String sn;
-    /**
      * 换电柜名称
      */
     @NotEmpty(message = "换电柜名称不能为空!", groups = {CreateGroup.class})
@@ -63,10 +59,6 @@ public class ElectricityCabinetAddAndUpdate {
      */
     @NotNull(message = "可用状态不能为空!", groups = {CreateGroup.class})
     private Integer usableStatus;
-    /**
-     * 电源状态(0--通电，1--断电)
-     */
-    private Integer powerStatus;
     /**
      * 物联网连接状态（0--连网，1--断网）
      */

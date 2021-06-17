@@ -15,21 +15,14 @@ import java.util.List;
  */
 public interface ElectricityCabinetModelService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinetModel queryByIdFromDB(Integer id);
-    
+
       /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetModel queryByIdFromCache(Integer id);
+    ElectricityCabinetModel queryByIdFromCache(Integer id,Integer tenantId);
 
     R save(ElectricityCabinetModel electricityCabinetModel);
 

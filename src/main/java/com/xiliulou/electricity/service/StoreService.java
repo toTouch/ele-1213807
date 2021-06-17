@@ -53,4 +53,8 @@ public interface StoreService {
 
 
     R getElectricityCabinetList(Integer id);
+
+	List<Store> queryByFranchiseeId(Integer id);
+
+	Store queryByUid(Long uid);
 }

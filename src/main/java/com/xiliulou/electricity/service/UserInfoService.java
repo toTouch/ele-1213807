@@ -61,15 +61,15 @@ public interface UserInfoService extends IService<UserInfo> {
 
     UserInfo queryByUid(Long uid);
 
-    Integer homeOneTotal(Long first, Long now,List<Integer> cidList);
+    Integer homeOneTotal(Long first, Long now);
 
-    Integer homeOneAuth(Long first, Long now, List<Integer> cidList);
+    Integer homeOneAuth(Long first, Long now);
 
     int minCount(Long id);
 
-    List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cidList);
+    List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay);
 
-    List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cidList);
+    List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay);
 
     R getMemberCardInfo(Long uid);
 

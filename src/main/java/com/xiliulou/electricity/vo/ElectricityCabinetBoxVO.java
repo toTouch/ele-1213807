@@ -23,10 +23,6 @@ public class ElectricityCabinetBoxVO {
     */
     private String cellNo;
     /**
-    * 电池Id
-    */
-    private Long electricityBatteryId;
-    /**
     * 可用状态（0-禁用，1-可用）
     */
     private Integer usableStatus;

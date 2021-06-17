@@ -11,6 +11,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -37,16 +38,6 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Autowired
     ElectricityCabinetService electricityCabinetService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public ElectricityCabinetModel queryByIdFromDB(Integer id) {
-        return this.electricityCabinetModelMapper.queryById(id);
-    }
 
     /**
      * 通过ID查询单条数据从缓存
@@ -55,14 +46,14 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
      * @return 实例对象
      */
     @Override
-    public ElectricityCabinetModel queryByIdFromCache(Integer id) {
+    public ElectricityCabinetModel queryByIdFromCache(Integer id,Integer tenantId) {
         //先查缓存
         ElectricityCabinetModel cacheElectricityCabinetModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, ElectricityCabinetModel.class);
         if (Objects.nonNull(cacheElectricityCabinetModel)) {
             return cacheElectricityCabinetModel;
         }
         //缓存没有再查数据库
-        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelMapper.queryById(id);
+        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelMapper.queryById(id,tenantId);
         if (Objects.isNull(electricityCabinetModel)) {
             return null;
         }
@@ -75,10 +66,13 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @Transactional
     public R save(ElectricityCabinetModel electricityCabinetModel) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
         //插入数据库
         electricityCabinetModel.setCreateTime(System.currentTimeMillis());
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
+        electricityCabinetModel.setTenantId(tenantId);
         int insert = electricityCabinetModelMapper.insert(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
@@ -127,7 +121,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
-        int update = electricityCabinetModelMapper.update(electricityCabinetModel);
+        int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);

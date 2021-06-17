@@ -19,21 +19,13 @@ import java.util.Map;
  */
 public interface ElectricityCabinetService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinet queryByIdFromDB(Integer id);
-    
       /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinet queryByIdFromCache(Integer id);
+    ElectricityCabinet queryByIdFromCache(Integer id,Integer tenantId);
 
     /**
      * 修改数据
@@ -59,9 +51,7 @@ public interface ElectricityCabinetService {
 
     Integer queryByModelId(Integer id);
 
-    R disable(Integer id);
-
-    R reboot(Integer id);
+    R updateStatus(Integer id,Integer usableStatus);
 
     R homeOne(Integer type);
 
@@ -81,15 +71,13 @@ public interface ElectricityCabinetService {
 
     R queryByDeviceOuter(String productKey, String deviceName);
 
-    R listByUid(ElectricityCabinetQuery electricityCabinetQuery);
-
-    R listByStoreId(ElectricityCabinetQuery electricityCabinetQuery);
-
     R showInfoByStoreId(Integer storeId);
 
-    R rentBattery(String productKey, String deviceName);
+    R rentBatteryQuery(String productKey, String deviceName);
 
     List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
 
     R batteryReport(BatteryReportQuery batteryReportQuery);
+
+    List<ElectricityCabinet> queryByStoreId(Integer storeId);
 }

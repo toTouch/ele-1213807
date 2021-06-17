@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -81,30 +82,8 @@ public class JsonAdminFranchiseeController {
             offset = 0L;
         }
 
-        //用户区分
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-
-        List<Integer> idList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
-            if (ObjectUtil.isNotEmpty(franchiseeList)) {
-                idList=new ArrayList<>();
-                for (Franchisee franchisee:franchiseeList) {
-                    idList.add(franchisee.getId());
-                }
-            }
-            if(ObjectUtil.isEmpty(idList)){
-                return R.ok();
-            }
-        }
-
-
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
                 .offset(offset)
@@ -112,7 +91,7 @@ public class JsonAdminFranchiseeController {
                 .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .idList(idList).build();
+                .tenantId(tenantId).build();
 
         return franchiseeService.queryList(franchiseeQuery);
     }

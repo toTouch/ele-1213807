@@ -404,6 +404,16 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok(storeBindElectricityCabinetService.queryByStoreId(id));
 	}
 
+	@Override
+	public List<Store> queryByFranchiseeId(Integer id) {
+		return null;
+	}
+
+	@Override
+	public Store queryByUid(Long uid) {
+		return null;
+	}
+
 	public Long getTime(Long time) {
 		Date date1 = new Date(time);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

@@ -27,10 +27,6 @@ public class ElectricityCabinet {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
-     * 电池编号
-     */
-    private String sn;
-    /**
      * 换电柜名称
      */
     private String name;
@@ -62,10 +58,6 @@ public class ElectricityCabinet {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
-    /**
-     * 电源状态(0--通电，1--断电)
-     */
-    private Integer powerStatus;
     /**
      * 物联网连接状态（0--连网，1--断网）
      */
@@ -116,10 +108,6 @@ public class ElectricityCabinet {
     public static final Integer ELECTRICITY_CABINET_USABLE_STATUS = 0;
     //禁用
     public static final Integer ELECTRICITY_CABINET_UN_USABLE_STATUS = 1;
-    //通电
-    public static final Integer ELECTRICITY_CABINET_POWER_STATUS = 0;
-    //断电
-    public static final Integer ELECTRICITY_CABINET_NO_POWER_STATUS = 1;
     //连网
     public static final Integer ELECTRICITY_CABINET_ONLINE_STATUS = 0;
     //断网

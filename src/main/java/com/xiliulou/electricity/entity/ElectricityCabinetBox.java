@@ -32,9 +32,9 @@ public class ElectricityCabinetBox {
     */
     private String cellNo;
     /**
-    * 电池Id
-    */
-    private Long electricityBatteryId;
+     * 电池编号
+     */
+    private String sn;
     /**
     * 可用状态（0-可用，1-禁用）
     */

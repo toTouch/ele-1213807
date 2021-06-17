@@ -16,10 +16,6 @@ public class ElectricityCabinetQuery {
     private Long size;
     private Long offset;
     /**
-     * 电池编号
-     */
-    private String sn;
-    /**
      * 换电柜名称
      */
     private String name;
@@ -32,10 +28,6 @@ public class ElectricityCabinetQuery {
      */
     private Integer usableStatus;
     /**
-     * 电源状态(0--通电，1--断电)
-     */
-    private Integer powerStatus;
-    /**
      * 物联网连接状态（0--连网，1--断网）
      */
     private Integer onlineStatus;
@@ -46,7 +38,8 @@ public class ElectricityCabinetQuery {
     private Long beginTime;
     private Long endTime;
 
-    private List<Integer> storeIdList;
+    private Integer tenantId;
 
-    private List<Long> uidList;
+    private List<Integer> eleIdList;
+
 }

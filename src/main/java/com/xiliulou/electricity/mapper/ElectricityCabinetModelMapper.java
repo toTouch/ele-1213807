@@ -21,7 +21,7 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetModel queryById(Integer id);
+    ElectricityCabinetModel queryById(Integer id,Integer tenantId);
 
     /**
      * @return 对象列表
@@ -29,13 +29,6 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
     IPage queryList(Page page, @Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetModel 实例对象
-     * @return 影响行数
-     */
-    int update(ElectricityCabinetModel electricityCabinetModel);
 
 
 }

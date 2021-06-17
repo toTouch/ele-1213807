@@ -24,10 +24,6 @@ public class Store {
     */
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
-    /**
-    * 门店账号
-    */
-    private String sn;
 
     /**
     * 门店名称

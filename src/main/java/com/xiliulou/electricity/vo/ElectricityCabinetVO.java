@@ -16,10 +16,6 @@ public class ElectricityCabinetVO {
     */
     private Integer id;
     /**
-    * 电池编号
-    */
-    private String sn;
-    /**
     * 换电柜名称
     */
     private String name;
@@ -51,10 +47,6 @@ public class ElectricityCabinetVO {
     * 可用状态(0--启用，1--禁用)
     */
     private Integer usableStatus;
-    /**
-    * 电源状态(0--通电，1--断电)
-    */
-    private Integer powerStatus;
     /**
     * 物联网连接状态（0--连网，1--断网）
     */
@@ -111,10 +103,7 @@ public class ElectricityCabinetVO {
      * 空仓
      */
     private Integer noElectricityBattery;
-    /**
-     * 电池规格
-     */
-    private Set<String> electricityBatteryFormat;
+
 
     private Double distance;
 

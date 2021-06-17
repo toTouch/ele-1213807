@@ -172,6 +172,10 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return R.ok(baseMapper.queryElectricityMemberCard(page,offset,size,franchisee.getId()));
     }
 
+    @Override
+    public List<ElectricityMemberCard> queryByFranchisee(Integer id) {
+        return null;
+    }
 
     /**
      * 获取套餐

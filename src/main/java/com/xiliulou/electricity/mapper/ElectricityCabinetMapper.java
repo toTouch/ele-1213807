@@ -26,7 +26,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinet queryById(Integer id);
+    ElectricityCabinet queryById(Integer id,Integer tenantId);
 
     /**
      * @param electricityCabinetQuery
@@ -34,24 +34,12 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      */
     IPage queryList(Page page, @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
-    IPage listByUid(Page page, @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinet 实例对象
-     * @return 影响行数
-     */
-    int update(ElectricityCabinet electricityCabinet);
 
 
     List<ElectricityCabinetVO> showInfoByDistance(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
     List<String> queryFullyElectricityBattery(Integer id);
 
-    List<BatteryFormat> queryElectricityBatteryFormat(Integer id);
-
-    IPage listByStoreId(Page page,@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
     List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList);
 

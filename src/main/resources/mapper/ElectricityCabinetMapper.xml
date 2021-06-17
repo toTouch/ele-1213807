@@ -6,22 +6,20 @@
     <!--查询单个-->
     <select id="queryById" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select
-          id, sn, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+          id, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status,  online_status, model_id, version, fully_charged, service_phone, business_time,
+          create_time, update_time, del_flag,tenant_id
         from electricity.t_electricity_cabinet
-        where del_flag=0 and id = #{id}
+        where del_flag=0 and id = #{id} and  tenant_id = #{tenantId}
     </select>
 
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
-        id, sn, name, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
-        power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
-        update_time, del_flag
+        id,  name, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
+         online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
+        update_time, del_flag,tenant_id
         from electricity.t_electricity_cabinet
-        where del_flag=0
-        <if test="query.sn != null and query.sn != ''">
-            and sn = #{query.sn}
-        </if>
+        where del_flag=0 and  tenant_id = #{query.tenantId}
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
         </if>
@@ -31,11 +29,11 @@
         <if test="query.usableStatus != null">
             and usable_status = #{query.usableStatus}
         </if>
-        <if test="query.powerStatus != null">
-            and power_status = #{query.powerStatus}
-        </if>
         <if test="query.onlineStatus != null">
             and online_status = #{query.onlineStatus}
+        </if>
+        <if test="query.tenantId != null and query.tenantId != ''">
+            and tenant_id = #{query.tenantId}
         </if>
         <if test="query.beginTime != null">
             and create_time &gt;=#{query.beginTime}
@@ -43,112 +41,22 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
+        <if test="query.eleIdList!=null and query.eleIdList!=''">
+            and id in
+            <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by create_time desc
 
     </select>
 
 
-    <!--查询指定行数据-->
-    <select id="listByUid" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select
-        tec.id as id, tec.sn as sn, tec.name as name, tec.address as address, tec.longitude as longitude, tec.latitude
-        as latitude,
-        tec.product_key as productKey, tec.device_name as deviceName, tec.device_secret as deviceSecret,
-        tec.usable_status as usableStatus,
-        tec.power_status as powerStatus, tec.online_status as onlineStatus, tec.model_id as modelId, tec.version as
-        version,
-        tec.fully_charged as fullyCharged, tec.service_phone as servicePhone, tec.business_time as businessTime,
-        tec.create_time as createTime,
-        tec.update_time as updateTime, tec.del_flag as delFlag
-        from electricity.t_electricity_cabinet tec
-        left join electricity.t_electricity_cabinet_bind as tecb on tec.id=tecb.electricity_cabinet_id
-        where tec.del_flag=0
-        <if test="query.sn != null and query.sn != ''">
-            and tec.sn = #{query.sn}
-        </if>
-        <if test="query.name != null and query.name != ''">
-            and tec.name = #{query.name}
-        </if>
-        <if test="query.address != null and query.address != ''">
-            and tec.address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="query.usableStatus != null">
-            and tec.usable_status = #{query.usableStatus}
-        </if>
-        <if test="query.powerStatus != null">
-            and tec.power_status = #{query.powerStatus}
-        </if>
-        <if test="query.onlineStatus != null">
-            and tec.online_status = #{query.onlineStatus}
-        </if>
-        <if test="query.beginTime != null">
-            and tec.create_time &gt;=#{query.beginTime}
-        </if>
-        <if test="query.endTime != null">
-            and tec.create_time &lt;=#{query.endTime}
-        </if>
-        <if test="query.uidList!=null and query.uidList!=''">
-            and tecb.uid in
-            <foreach collection="query.uidList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-        order by tec.create_time desc
 
-    </select>
-
-    <!--查询指定行数据-->
-    <select id="listByStoreId" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select
-        tec.id as id, tec.sn as sn, tec.name as name, tec.address as address, tec.longitude as longitude, tec.latitude
-        as latitude,
-        tec.product_key as productKey, tec.device_name as deviceName, tec.device_secret as deviceSecret,
-        tec.usable_status as usableStatus,
-        tec.power_status as powerStatus, tec.online_status as onlineStatus, tec.model_id as modelId, tec.version as
-        version,
-        tec.fully_charged as fullyCharged, tec.service_phone as servicePhone, tec.business_time as businessTime,
-        tec.create_time as createTime,
-        tec.update_time as updateTime, tec.del_flag as delFlag
-        from electricity.t_electricity_cabinet tec
-        left join electricity.t_store_bind_electricity_cabinet as tsbec on tec.id=tsbec.electricity_cabinet_id
-        where tec.del_flag=0
-        <if test="query.sn != null and query.sn != ''">
-            and tec.sn = #{query.sn}
-        </if>
-        <if test="query.name != null and query.name != ''">
-            and tec.name = #{query.name}
-        </if>
-        <if test="query.address != null and query.address != ''">
-            and tec.address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="query.usableStatus != null">
-            and tec.usable_status = #{query.usableStatus}
-        </if>
-        <if test="query.powerStatus != null">
-            and tec.power_status = #{query.powerStatus}
-        </if>
-        <if test="query.onlineStatus != null">
-            and tec.online_status = #{query.onlineStatus}
-        </if>
-        <if test="query.beginTime != null">
-            and tec.create_time &gt;=#{query.beginTime}
-        </if>
-        <if test="query.endTime != null">
-            and tec.create_time &lt;=#{query.endTime}
-        </if>
-        <if test="query.storeIdList!=null and query.storeIdList!=''">
-            and tsbec.store_id in
-            <foreach collection="query.storeIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-        order by tec.create_time desc
-
-    </select>
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select id, sn, name, address, longitude, latitude, product_key, device_name, device_secret,
-        usable_status, power_status, online_status, model_id, version,
+        select id,  name, address, longitude, latitude, product_key, device_name, device_secret,
+        usable_status, online_status, model_id, version,
         fully_charged, service_phone, business_time, create_time, update_time, ROUND(
         6378.138 * 2 * ASIN(
         SQRT(
@@ -185,12 +93,7 @@
         where eb.power&gt;=fully_charged  and ec.id = #{id} and ecb.usable_status =0
     </select>
 
-    <select id="queryElectricityBatteryFormat" resultType="com.xiliulou.electricity.entity.BatteryFormat">
-        select eb.voltage as voltage,eb.capacity as capacity from  t_electricity_cabinet as ec
-        left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
-        left join t_electricity_battery as eb on ecb.electricity_battery_id is not null and ecb.electricity_battery_id=eb.id
-        WHERE eb.voltage is not null or eb.capacity is not null and ec.id = #{id}
-    </select>
+
     <select id="queryNameList" resultType="java.util.Map">
         select
         id, name
@@ -207,7 +110,7 @@
 
     <select id="queryAll" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select
-        id, sn, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, power_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+        id,  name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
         from electricity.t_electricity_cabinet
         where del_flag=0
         <if test="eleIdList!=null and eleIdList!=''">
@@ -218,69 +121,5 @@
         </if>
     </select>
 
-    <!--通过主键修改数据-->
-    <update id="update">
-        update electricity.t_electricity_cabinet
-        <set>
-            <if test="sn != null and sn != ''">
-                sn = #{sn},
-            </if>
-            <if test="name != null and name != ''">
-                name = #{name},
-            </if>
-            <if test="address != null and address != ''">
-                address = #{address},
-            </if>
-            <if test="longitude != null">
-                longitude = #{longitude},
-            </if>
-            <if test="latitude != null">
-                latitude = #{latitude},
-            </if>
-            <if test="productKey != null and productKey != ''">
-                product_key = #{productKey},
-            </if>
-            <if test="deviceName != null and deviceName != ''">
-                device_name = #{deviceName},
-            </if>
-            <if test="deviceSecret != null and deviceSecret != ''">
-                device_secret = #{deviceSecret},
-            </if>
-            <if test="usableStatus != null">
-                usable_status = #{usableStatus},
-            </if>
-            <if test="powerStatus != null">
-                power_status = #{powerStatus},
-            </if>
-            <if test="onlineStatus != null">
-                online_status = #{onlineStatus},
-            </if>
-            <if test="modelId != null">
-                model_id = #{modelId},
-            </if>
-            <if test="version != null and version != ''">
-                version = #{version},
-            </if>
-            <if test="fullyCharged != null">
-                fully_charged = #{fullyCharged},
-            </if>
-            <if test="servicePhone != null and servicePhone != ''">
-                service_phone = #{servicePhone},
-            </if>
-            <if test="businessTime != null and businessTime != ''">
-                business_time = #{businessTime},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-            <if test="delFlag != null">
-                del_flag = #{delFlag},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
 
 </mapper>

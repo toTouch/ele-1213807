@@ -23,7 +23,7 @@ public interface FranchiseeService {
     R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate);
 
     R delete(Integer id);
-    
+
     Franchisee queryByIdFromDB(Integer id);
 
     R queryList(FranchiseeQuery franchiseeQuery);
@@ -36,7 +36,7 @@ public interface FranchiseeService {
 
     R getStoreList(Integer id);
 
-    List<Franchisee> queryByUid(Long uid);
+    Franchisee queryByUid(Long uid);
 
     Franchisee queryByCid(Integer cid);
 }
