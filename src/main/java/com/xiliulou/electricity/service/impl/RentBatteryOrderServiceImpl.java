@@ -329,8 +329,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//是否存在未完成的租电池订单
-		Integer count = rentBatteryOrderMapper.selectCount(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RETURN)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+		Integer count = rentBatteryOrderMapper.selectList(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, RentBatteryOrder.TYPE_USER_RETURN)
+				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR).orderByDesc(RentBatteryOrder::getCreateTime).);
 		if (count > 0) {
 			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
