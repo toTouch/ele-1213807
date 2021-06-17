@@ -20,9 +20,10 @@
     <!--查询单个-->
     <select id="queryById" resultMap="StoreMap">
         select
-          id, sn, name, address, longitude, latitude, del_flag, create_time, update_time,usable_status,service_phone, business_time
+          id, sn, name, address, longitude, latitude, del_flag, create_time, update_time,
+          usable_status,service_phone, business_time,tenant_id
         from electricity.t_store
-        where id = #{id}
+        where id = #{id} and  tenant_id = #{tenantId}
     </select>
 
     <!--查询指定行数据-->

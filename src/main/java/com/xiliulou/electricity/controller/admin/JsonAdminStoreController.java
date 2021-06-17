@@ -69,11 +69,8 @@ public class JsonAdminStoreController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "address", required = false) String address,
-                       @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "batteryService", required = false) Integer batteryService,
-                       @RequestParam(value = "carService", required = false) Integer carService,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
         if (Objects.isNull(size)) {
             size = 10L;
@@ -89,10 +86,7 @@ public class JsonAdminStoreController {
                 .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .sn(sn)
                 .address(address)
-                .batteryService(batteryService)
-                .carService(carService)
                 .usableStatus(usableStatus).build();
 
         return storeService.queryList(storeQuery);

@@ -3,7 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -11,8 +10,6 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.StoreBind;
-import com.xiliulou.electricity.entity.StoreBindElectricityCabinet;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -21,10 +18,9 @@ import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.StoreBindElectricityCabinetService;
-import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -57,24 +53,10 @@ public class StoreServiceImpl implements StoreService {
 	@Autowired
 	ElectricityBatteryService electricityBatteryService;
 	@Autowired
-	StoreBindElectricityCabinetService storeBindElectricityCabinetService;
-	@Autowired
-	StoreBindService storeBindService;
-	@Autowired
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
 	UserService userService;
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public Store queryByIdFromDB(Integer id) {
-		return this.storeMapper.queryById(id);
-	}
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -83,12 +65,12 @@ public class StoreServiceImpl implements StoreService {
 	 * @return 实例对象
 	 */
 	@Override
-	public Store queryByIdFromCache(Integer id) {
+	public Store queryByIdFromCache(Integer id,Integer tenantId) {
 		Store cacheStore = redisService.getWithHash(ElectricityCabinetConstant.CACHE_STORE + id, Store.class);
 		if (Objects.nonNull(cacheStore)) {
 			return cacheStore;
 		}
-		Store store = storeMapper.queryById(id);
+		Store store = storeMapper.queryById(id,tenantId);
 		if (Objects.isNull(store)) {
 			return null;
 		}
@@ -99,69 +81,72 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
+		//新增用户 TODO
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
-		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
-			store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
-		}
-		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
-			if (Objects.isNull(storeAddAndUpdate.getBeginTime()) || Objects.isNull(storeAddAndUpdate.getEndTime())
-					|| storeAddAndUpdate.getBeginTime() > storeAddAndUpdate.getEndTime()) {
-				return R.fail("ELECTRICITY.0007", "不合法的参数");
-			}
-			store.setBusinessTime(storeAddAndUpdate.getBeginTime() + "-" + storeAddAndUpdate.getEndTime());
-		}
-		if (Objects.isNull(store.getBusinessTime())) {
-			return R.fail("ELECTRICITY.0007", "不合法的参数");
-		}
-		//TODO 判断用户存不存在
+
+		//校验参数
+		if (checkParam(storeAddAndUpdate, store)) return R.fail("ELECTRICITY.0007", "不合法的参数");
+
+		//填充参数
 		if (Objects.isNull(store.getUsableStatus())) {
 			store.setUsableStatus(Store.STORE_UN_USABLE_STATUS);
 		}
 		store.setCreateTime(System.currentTimeMillis());
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
+		store.setTenantId(tenantId);
+
+
 		int insert = storeMapper.insert(store);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//新增缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
-			//新增门店绑定
-			if (Objects.nonNull(storeAddAndUpdate.getUid())) {
-				StoreBind storeBind = new StoreBind();
-				storeBind.setStoreId(store.getId());
-				storeBind.setUid(storeAddAndUpdate.getUid());
-				storeBindService.insert(storeBind);
-			}
 			return null;
 		});
 		return R.ok();
 	}
 
+	private boolean checkParam(StoreAddAndUpdate storeAddAndUpdate, Store store) {
+		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
+			store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+		}
+		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
+			if (Objects.isNull(storeAddAndUpdate.getBeginTime()) || Objects.isNull(storeAddAndUpdate.getEndTime())
+					|| storeAddAndUpdate.getBeginTime() > storeAddAndUpdate.getEndTime()) {
+				return true;
+			}
+			store.setBusinessTime(storeAddAndUpdate.getBeginTime() + "-" + storeAddAndUpdate.getEndTime());
+		}
+		if (Objects.isNull(store.getBusinessTime())) {
+			return true;
+		}
+		return false;
+	}
+
 	@Override
 	@Transactional
 	public R edit(StoreAddAndUpdate storeAddAndUpdate) {
+		//新增用户 TODO
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
-		Store oldStore = queryByIdFromCache(store.getId());
+		Store oldStore = queryByIdFromCache(store.getId(),tenantId);
 		if (Objects.isNull(oldStore)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 		if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
-			if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
-				store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
-			}
-			if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
-				if (Objects.isNull(storeAddAndUpdate.getBeginTime()) || Objects.isNull(storeAddAndUpdate.getEndTime())
-						|| storeAddAndUpdate.getBeginTime() > storeAddAndUpdate.getEndTime()) {
-					return R.fail("ELECTRICITY.0007", "不合法的参数");
-				}
-				store.setBusinessTime(storeAddAndUpdate.getBeginTime() + "-" + storeAddAndUpdate.getEndTime());
-			}
-			if (Objects.isNull(store.getBusinessTime())) {
-				return R.fail("ELECTRICITY.0007", "不合法的参数");
-			}
+			if (checkParam(storeAddAndUpdate, store)) return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
-		//TODO 判断用户存不存在
+
 		store.setUpdateTime(System.currentTimeMillis());
 		int update = storeMapper.update(store);
 		DbUtils.dbOperateSuccessThen(update, () -> {

@@ -24,7 +24,7 @@ public interface StoreMapper extends BaseMapper<Store> {
      * @param id 主键
      * @return 实例对象
      */
-    Store queryById(Integer id);
+    Store queryById(Integer id,Integer tenantId);
 
     /**
      * 查询指定行数据

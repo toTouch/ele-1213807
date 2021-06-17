@@ -15,21 +15,13 @@ import java.util.List;
  */
 public interface StoreService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    Store queryByIdFromDB(Integer id);
-
       /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
      * @return 实例对象
      */
-    Store queryByIdFromCache(Integer id);
+    Store queryByIdFromCache(Integer id,Integer tenantId);
 
     R save(StoreAddAndUpdate storeAddAndUpdate);
 
