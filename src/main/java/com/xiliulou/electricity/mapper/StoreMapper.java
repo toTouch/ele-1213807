@@ -33,13 +33,6 @@ public interface StoreMapper extends BaseMapper<Store> {
 
 
 
-    /**
-     * 修改数据
-     *
-     * @param store 实例对象
-     * @return 影响行数
-     */
-    int update(Store store);
 
     List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);
 

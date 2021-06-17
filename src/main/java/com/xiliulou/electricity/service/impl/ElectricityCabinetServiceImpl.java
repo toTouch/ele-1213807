@@ -550,13 +550,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-
-		if(Objects.equals(usableStatus,ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)) {
-			if (Objects.equals(oldElectricityCabinet.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_UN_USABLE_STATUS)) {
-				return R.fail("ELECTRICITY.0012", "快递柜已禁用，不能重复操作");
-			}
-		}
-
 		ElectricityCabinet electricityCabinet = new ElectricityCabinet();
 		electricityCabinet.setId(id);
 		electricityCabinet.setUsableStatus(usableStatus);

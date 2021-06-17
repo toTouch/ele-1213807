@@ -31,20 +31,14 @@ public interface StoreService {
 
     R queryList(StoreQuery storeQuery);
 
-    R disable(Integer id);
+    R updateStatus(Integer id,Integer usableStatus);
 
-    R reboot(Integer id);
 
     Integer homeTwoTotal(List<Integer> storeIdList);
 
     Integer homeTwoBusiness(List<Integer> storeIdList);
 
     R showInfoByDistance(StoreQuery storeQuery);
-
-    R bindElectricityCabinet(StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery);
-
-
-    R getElectricityCabinetList(Integer id);
 
 	List<Store> queryByFranchiseeId(Integer id);
 

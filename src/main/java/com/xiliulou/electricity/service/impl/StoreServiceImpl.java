@@ -91,7 +91,9 @@ public class StoreServiceImpl implements StoreService {
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
 
 		//校验参数
-		if (checkParam(storeAddAndUpdate, store)) return R.fail("ELECTRICITY.0007", "不合法的参数");
+		if (checkParam(storeAddAndUpdate, store)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
 
 		//填充参数
 		if (Objects.isNull(store.getUsableStatus())) {
@@ -112,27 +114,11 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok();
 	}
 
-	private boolean checkParam(StoreAddAndUpdate storeAddAndUpdate, Store store) {
-		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
-			store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
-		}
-		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
-			if (Objects.isNull(storeAddAndUpdate.getBeginTime()) || Objects.isNull(storeAddAndUpdate.getEndTime())
-					|| storeAddAndUpdate.getBeginTime() > storeAddAndUpdate.getEndTime()) {
-				return true;
-			}
-			store.setBusinessTime(storeAddAndUpdate.getBeginTime() + "-" + storeAddAndUpdate.getEndTime());
-		}
-		if (Objects.isNull(store.getBusinessTime())) {
-			return true;
-		}
-		return false;
-	}
 
 	@Override
 	@Transactional
 	public R edit(StoreAddAndUpdate storeAddAndUpdate) {
-		//新增用户 TODO
+		//修改用户 TODO
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -144,22 +130,16 @@ public class StoreServiceImpl implements StoreService {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 		if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
-			if (checkParam(storeAddAndUpdate, store)) return R.fail("ELECTRICITY.0007", "不合法的参数");
+			if (checkParam(storeAddAndUpdate, store)) {
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
 		}
 
 		store.setUpdateTime(System.currentTimeMillis());
-		int update = storeMapper.update(store);
+		int update = storeMapper.updateById(store);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
-			//先删除再新增
-			storeBindService.deleteByStoreId(store.getId());
-			if (Objects.nonNull(storeAddAndUpdate.getUid())) {
-				StoreBind storeBind = new StoreBind();
-				storeBind.setStoreId(store.getId());
-				storeBind.setUid(storeAddAndUpdate.getUid());
-				storeBindService.insert(storeBind);
-			}
 			return null;
 		});
 		return R.ok();
@@ -168,18 +148,23 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional
 	public R delete(Integer id) {
-		Store store = queryByIdFromCache(id);
+		//删除用户 TODO
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		Store store = queryByIdFromCache(id,tenantId);
 		if (Objects.isNull(store)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_DEL);
-		int update = storeMapper.update(store);
+
+
+		int update = storeMapper.updateById(store);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//删除缓存
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
-			//删除绑定
-			storeBindService.deleteByStoreId(store.getId());
 			return null;
 		});
 		return R.ok();
@@ -213,16 +198,12 @@ public class StoreServiceImpl implements StoreService {
 						}
 					}
 				}
-
-				//添加绑定用户
-				StoreBind storeBind = storeBindService.queryByStoreId(e.getId());
-				if (Objects.nonNull(storeBind)) {
-					e.setUid(storeBind.getUid());
-					User user = userService.queryByUidFromCache(storeBind.getUid());
-					if (Objects.nonNull(user)) {
-						e.setUserName(user.getName());
-					}
-				}
+				    if(Objects.nonNull(e.getUid())) {
+					    User user = userService.queryByUidFromCache(e.getUid());
+					    if (Objects.nonNull(user)) {
+						    e.setUserName(user.getName());
+					    }
+				    }
 			});
 		}
 		page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
@@ -231,8 +212,13 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	@Transactional
-	public R disable(Integer id) {
-		Store oldStore = queryByIdFromCache(id);
+	public R updateStatus(Integer id,Integer usableStatus) {
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
+		Store oldStore = queryByIdFromCache(id,tenantId);
 		if (Objects.isNull(oldStore)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
@@ -240,7 +226,7 @@ public class StoreServiceImpl implements StoreService {
 		store.setId(id);
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setUsableStatus(Store.STORE_UN_USABLE_STATUS);
-		int update = storeMapper.update(store);
+		int update = storeMapper.updateById(store);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
@@ -249,25 +235,6 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok();
 	}
 
-	@Override
-	@Transactional
-	public R reboot(Integer id) {
-		Store oldStore = queryByIdFromCache(id);
-		if (Objects.isNull(oldStore)) {
-			return R.fail("ELECTRICITY.0018", "未找到门店");
-		}
-		Store store = new Store();
-		store.setId(id);
-		store.setUpdateTime(System.currentTimeMillis());
-		store.setUsableStatus(Store.STORE_USABLE_STATUS);
-		int update = storeMapper.update(store);
-		DbUtils.dbOperateSuccessThen(update, () -> {
-			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
-			return null;
-		});
-		return R.ok();
-	}
 
 	@Override
 	public Integer homeTwoTotal(List<Integer> storeIdList) {
@@ -344,11 +311,9 @@ public class StoreServiceImpl implements StoreService {
 				Integer onlineElectricityCabinetCount = 0;
 				//满电电池数
 				Integer fullyElectricityBatteryCount = 0;
-				List<StoreBindElectricityCabinet> storeBindElectricityCabinetList = storeBindElectricityCabinetService.queryByStoreId(e.getId());
-				if (ObjectUtil.isNotEmpty(storeBindElectricityCabinetList)) {
-					for (StoreBindElectricityCabinet storeBindElectricityCabinet : storeBindElectricityCabinetList) {
-						ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(storeBindElectricityCabinet.getElectricityCabinetId());
-						if (Objects.nonNull(electricityCabinet)) {
+				List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.queryByStoreId(e.getId());
+				if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+					for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
 							//动态查询在线状态
 							boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 							if (result) {
@@ -356,7 +321,6 @@ public class StoreServiceImpl implements StoreService {
 								Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
 								fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
 							}
-						}
 					}
 				}
 				e.setOnlineElectricityCabinet(onlineElectricityCabinetCount);
@@ -367,27 +331,6 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
 	}
 
-	@Override
-	public R bindElectricityCabinet(StoreBindElectricityCabinetQuery storeBindElectricityCabinetQuery) {
-		//先删除
-		storeBindElectricityCabinetService.deleteByStoreId(storeBindElectricityCabinetQuery.getStoreId());
-		if (ObjectUtil.isEmpty(storeBindElectricityCabinetQuery.getElectricityCabinetIdList())) {
-			return R.ok();
-		}
-		//再新增
-		for (Integer electricityCabinetId : storeBindElectricityCabinetQuery.getElectricityCabinetIdList()) {
-			StoreBindElectricityCabinet storeBindElectricityCabinet = new StoreBindElectricityCabinet();
-			storeBindElectricityCabinet.setStoreId(storeBindElectricityCabinetQuery.getStoreId());
-			storeBindElectricityCabinet.setElectricityCabinetId(electricityCabinetId);
-			storeBindElectricityCabinetService.insert(storeBindElectricityCabinet);
-		}
-		return R.ok();
-	}
-
-	@Override
-	public R getElectricityCabinetList(Integer id) {
-		return R.ok(storeBindElectricityCabinetService.queryByStoreId(id));
-	}
 
 	@Override
 	public List<Store> queryByFranchiseeId(Integer id) {
@@ -412,4 +355,22 @@ public class StoreServiceImpl implements StoreService {
 		Long ts = date2.getTime();
 		return time - ts;
 	}
+
+	private boolean checkParam(StoreAddAndUpdate storeAddAndUpdate, Store store) {
+		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {
+			store.setBusinessTime(ElectricityCabinetAddAndUpdate.ALL_DAY);
+		}
+		if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.CUSTOMIZE_TIME)) {
+			if (Objects.isNull(storeAddAndUpdate.getBeginTime()) || Objects.isNull(storeAddAndUpdate.getEndTime())
+					|| storeAddAndUpdate.getBeginTime() > storeAddAndUpdate.getEndTime()) {
+				return true;
+			}
+			store.setBusinessTime(storeAddAndUpdate.getBeginTime() + "-" + storeAddAndUpdate.getEndTime());
+		}
+		if (Objects.isNull(store.getBusinessTime())) {
+			return true;
+		}
+		return false;
+	}
+
 }
