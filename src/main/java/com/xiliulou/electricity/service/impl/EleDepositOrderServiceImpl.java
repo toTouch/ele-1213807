@@ -214,6 +214,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
+		//是否存在未完成的租电池订单
+		Integer count = rentBatteryOrderService.queryByUidAndType(uid, RentBatteryOrder.TYPE_USER_RENT);
+		if (count > 0) {
+			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+		}
+
 		//判断是否退电池
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
 			log.error("ELECTRICITY  ERROR! not return battery! userInfo:{} ", userInfo);
@@ -232,11 +238,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
-		//是否存在未完成的租电池订单
-		Integer count = rentBatteryOrderService.queryByUidAndType(uid, RentBatteryOrder.TYPE_USER_RENT);
-		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
-		}
 
 		EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, userInfo.getOrderId()));
 		if (Objects.isNull(eleDepositOrder)) {
