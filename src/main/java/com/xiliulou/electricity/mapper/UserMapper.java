@@ -68,5 +68,4 @@ public interface UserMapper extends BaseMapper<User> {
 
     IPage queryListUserByCriteria(Page page, @Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
-    IPage listByFranchisee(Page page, @Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("cidList") List<Integer> cidList);
 }

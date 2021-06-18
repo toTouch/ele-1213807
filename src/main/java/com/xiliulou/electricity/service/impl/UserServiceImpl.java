@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.service.impl;
+
 import cn.hutool.core.codec.Base64;
-import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
@@ -13,22 +13,19 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.ElectricityCabinetBind;
 import com.xiliulou.electricity.entity.Province;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
-import com.xiliulou.electricity.query.BindElectricityCabinetQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBindService;
 import com.xiliulou.electricity.service.ProvinceService;
-import com.xiliulou.electricity.service.StoreBindService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -45,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -81,13 +79,7 @@ public class UserServiceImpl implements UserService {
 	ProvinceService provinceService;
 
 	@Autowired
-	ElectricityCabinetBindService electricityCabinetBindService;
-
-	@Autowired
 	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-
-	@Autowired
-	StoreBindService storeBindService;
 
 	@Value("${security.encode.key:xiliu&lo@u%12345}")
 	private String encodeKey;
@@ -199,6 +191,9 @@ public class UserServiceImpl implements UserService {
 			return Triple.of(false, "USER.0001", "查询不到用户！");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		if (!Objects.equals(tokenUser.getType(), User.TYPE_USER_SUPER) && Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_SUPER)) {
 			return Triple.of(false, null, "无权限操作！");
 		}
@@ -242,6 +237,7 @@ public class UserServiceImpl implements UserService {
 				.city(Objects.nonNull(city) ? city.getName() : null)
 				.province(Objects.nonNull(province) ? province.getName() : null)
 				.cid(Objects.nonNull(city) ? city.getId() : null)
+				.tenantId(tenantId)
 				.build();
 		User insert = insert(user);
 
@@ -250,7 +246,6 @@ public class UserServiceImpl implements UserService {
 		userRole.setRoleId(adminUserQuery.getUserType().longValue() + 1);
 		userRole.setUid(insert.getUid());
 		userRoleService.insert(userRole);
-
 
 		return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
 	}
@@ -335,7 +330,7 @@ public class UserServiceImpl implements UserService {
 				.lockFlag(adminUserQuery.getLock())
 				.build();
 
-		if(Objects.nonNull(adminUserQuery.getCityId())) {
+		if (Objects.nonNull(adminUserQuery.getCityId())) {
 			//城市
 			City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
 			if (Objects.nonNull(city)) {
@@ -369,7 +364,7 @@ public class UserServiceImpl implements UserService {
 		if (Objects.isNull(user)) {
 			return Pair.of(false, "uid:" + uid + "用户不存在!");
 		}
-		if(Objects.equals(user.getUserType(),User.TYPE_USER_NORMAL_WX_PRO)){
+		if (Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL_WX_PRO)) {
 			return Pair.of(false, "非法操作");
 		}
 
@@ -480,42 +475,76 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery) {
-		//先删除
-		electricityCabinetBindService.deleteByUid(bindElectricityCabinetQuery.getUid());
-		if(ObjectUtil.isEmpty(bindElectricityCabinetQuery.getElectricityCabinetIdList())){
-			return R.ok();
-		}
-		//再新增
-		for (Integer electricityCabinetId : bindElectricityCabinetQuery.getElectricityCabinetIdList()) {
-			ElectricityCabinetBind electricityCabinetBind=new ElectricityCabinetBind();
-			electricityCabinetBind.setUid(bindElectricityCabinetQuery.getUid());
-			electricityCabinetBind.setElectricityCabinetId(electricityCabinetId);
-			electricityCabinetBindService.insert(electricityCabinetBind);
-		}
-		return R.ok();
-	}
-
-	@Override
-	public R queryElectricityCabinetList(Long uid) {
-		return R.ok(electricityCabinetBindService.queryElectricityCabinetList(uid));
-	}
-
-	@Override
-	public Pair<Boolean, Object> listByFranchisee(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, List<Integer> cidList) {
-		Page page = PageUtil.getPage(offset, size);
-
-		return Pair.of(true, this.userMapper.listByFranchisee(page, uid, size, offset, name, phone, type, startTime, endTime,cidList));
-	}
-
-	@Override
 	public R endLimitUser(Long uid) {
-		String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID+uid);
+		String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
 		if (Objects.isNull(orderLimit)) {
 			return R.fail("ELECTRICITY.0062", "用户未被限制");
 		}
-		redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID +uid);
+		redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
 		return R.ok();
+	}
+
+	@Override
+	public Long addInnerUser(AdminUserQuery adminUserQuery) {
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
+		if (Objects.nonNull(phoneUserExists)) {
+			return -1L;
+		}
+
+		User userNameExists = queryByUserName(adminUserQuery.getName());
+		if (Objects.nonNull(userNameExists)) {
+			return -1L;
+		}
+
+		//解密密码
+		String encryptPassword = adminUserQuery.getPassword();
+		String decryptPassword = decryptPassword(encryptPassword);
+		if (StrUtil.isEmpty(decryptPassword)) {
+			log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
+			return -1L;
+		}
+
+		//处理城市和省份
+		City city = cityService.queryByIdFromDB(adminUserQuery.getCityId());
+		Province province = provinceService.queryByIdFromDB(adminUserQuery.getProvinceId());
+
+		User user = User.builder()
+				.avatar("")
+				.salt("")
+				.createTime(System.currentTimeMillis())
+				.delFlag(User.DEL_NORMAL)
+				.lockFlag(User.USER_UN_LOCK)
+				.gender(adminUserQuery.getGender())
+				.lang(adminUserQuery.getLang())
+				.loginPwd(customPasswordEncoder.encode(decryptPassword))
+				.name(adminUserQuery.getName())
+				.phone(adminUserQuery.getPhone())
+				.updateTime(System.currentTimeMillis())
+				.userType(adminUserQuery.getUserType())
+				.salt("")
+				.city(Objects.nonNull(city) ? city.getName() : null)
+				.province(Objects.nonNull(province) ? province.getName() : null)
+				.cid(Objects.nonNull(city) ? city.getId() : null)
+				.tenantId(tenantId)
+				.build();
+		User insert = insert(user);
+
+		//设置角色
+		UserRole userRole = new UserRole();
+		userRole.setRoleId(adminUserQuery.getUserType().longValue() + 1);
+		userRole.setUid(insert.getUid());
+		userRoleService.insert(userRole);
+
+		if (Objects.nonNull(insert.getUid())) {
+			return insert.getUid();
+		}
+
+		return -1L;
 	}
 
 }

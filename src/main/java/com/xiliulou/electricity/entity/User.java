@@ -119,4 +119,7 @@ public class User {
 	//普通微信小程序用户
 	public static final Integer TYPE_USER_NORMAL_WX_PRO = 11;
 
+	//默认语言
+	public static final String DEFAULT_LANG = "zh-CN";
+
 }

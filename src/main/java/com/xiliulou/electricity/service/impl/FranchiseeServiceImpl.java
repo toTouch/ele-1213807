@@ -2,8 +2,9 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -18,8 +19,9 @@ import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.PageUtil;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -48,6 +50,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     FranchiseeService franchiseeService;
 
+    @Autowired
+    RedisService redisService;
+
 
     @Autowired
     CityService cityService;
@@ -55,8 +60,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     UserService userService;
     @Override
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        //新增加盟商新增用户 TODO
+        //新增加盟商新增用户
+        AdminUserQuery adminUserQuery = new AdminUserQuery();
+        BeanUtil.copyProperties(franchiseeAddAndUpdate,adminUserQuery);
+        adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+        adminUserQuery.setLang(User.DEFAULT_LANG);
+        adminUserQuery.setGender(User.GENDER_FEMALE);
 
+        Long result= userService.addInnerUser(adminUserQuery);
+        if(result==-1L){
+            return R.fail("ELECTRICITY.0086", "操作失败");
+        }
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -66,7 +80,14 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         franchisee.setTenantId(tenantId);
+        franchisee.setUid(result);
         int insert =franchiseeMapper.insert(franchisee);
+
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            //新增缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + franchisee.getId(), franchisee);
+            return null;
+        });
 
         if (insert > 0) {
             return R.ok();
@@ -77,10 +98,24 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        Franchisee franchisee = new Franchisee();
-        BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
-        franchisee.setUpdateTime(System.currentTimeMillis());
-        int update=franchiseeMapper.updateById(franchisee);
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        Franchisee oldFranchisee = queryByIdFromCache(franchiseeAddAndUpdate.getId(),tenantId);
+        if (Objects.isNull(oldFranchisee)) {
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        BeanUtil.copyProperties(franchiseeAddAndUpdate, oldFranchisee);
+        oldFranchisee.setUpdateTime(System.currentTimeMillis());
+        int update=franchiseeMapper.updateById(oldFranchisee);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //修改缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + oldFranchisee.getId(), oldFranchisee);
+            return null;
+        });
+
 
         if (update > 0) {
             return R.ok();
@@ -90,22 +125,51 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R delete(Integer id) {
-        //删除加盟商，删除用户
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-        Franchisee franchisee = queryByIdFromDB(id);
+        Franchisee franchisee = queryByIdFromCache(id,tenantId);
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
+
+        //先删除用户
+        Boolean result=userService.deleteById(franchisee.getUid());
+
+        if(!result){
+            return R.fail("ELECTRICITY.0086", "操作失败");
+        }
+
+        //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
-        franchiseeMapper.updateById(franchisee);
+        int update=franchiseeMapper.updateById(franchisee);
 
-        return R.ok();
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //修改缓存
+            redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + id);
+            return null;
+        });
+
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
     @Override
-    public Franchisee queryByIdFromDB(Integer id) {
-        return franchiseeMapper.selectById(id);
+    public Franchisee queryByIdFromCache(Integer id,Integer tenantId) {
+        Franchisee cacheFranchisee = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + id, Franchisee.class);
+        if (Objects.nonNull(cacheFranchisee)) {
+            return cacheFranchisee;
+        }
+        Franchisee franchisee = franchiseeMapper.queryById(id,tenantId);
+        if (Objects.isNull(franchisee)) {
+            return null;
+        }
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + id, franchisee);
+        return franchisee;
+
     }
 
     @Override

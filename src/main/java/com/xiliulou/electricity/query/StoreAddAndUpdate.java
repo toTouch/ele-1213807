@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
+
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 
@@ -76,10 +78,23 @@ public class StoreAddAndUpdate {
      */
     private Long endTime;
 
+    @NotBlank(message = "密码不能为空", groups = {CreateGroup.class})
+    private String password;
+    @NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
+    private String phone;
+
     /**
-     * uid
+     * 城市编号
      */
-    private Long uid;
+    @NotNull(message = "城市编号不能为空!", groups = {CreateGroup.class})
+    private Integer cityId;
+
+    /**
+     * 省编号
+     */
+    @NotNull(message = "省编号不能为空!", groups = {CreateGroup.class})
+    private Integer provinceId;
+
 
 
 }

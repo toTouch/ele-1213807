@@ -25,6 +25,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
+import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -81,7 +82,17 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
-		//新增用户 TODO
+		//新增加盟商新增用户
+		AdminUserQuery adminUserQuery = new AdminUserQuery();
+		BeanUtil.copyProperties(storeAddAndUpdate,adminUserQuery);
+		adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+		adminUserQuery.setLang(User.DEFAULT_LANG);
+		adminUserQuery.setGender(User.GENDER_FEMALE);
+
+		Long result= userService.addInnerUser(adminUserQuery);
+		if(result==-1L){
+			return R.fail("ELECTRICITY.0086", "操作失败");
+		}
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -111,15 +122,17 @@ public class StoreServiceImpl implements StoreService {
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
 			return null;
 		});
-		return R.ok();
+
+		if (insert > 0) {
+			return R.ok();
+		}
+		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
 
 
 	@Override
 	@Transactional
 	public R edit(StoreAddAndUpdate storeAddAndUpdate) {
-		//修改用户 TODO
-
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -142,13 +155,16 @@ public class StoreServiceImpl implements StoreService {
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
 			return null;
 		});
-		return R.ok();
+
+		if (update > 0) {
+			return R.ok();
+		}
+		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
 
 	@Override
 	@Transactional
 	public R delete(Integer id) {
-		//删除用户 TODO
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -157,6 +173,15 @@ public class StoreServiceImpl implements StoreService {
 		if (Objects.isNull(store)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
+
+		//先删除用户
+		Boolean result=userService.deleteById(store.getUid());
+
+		if(!result){
+			return R.fail("ELECTRICITY.0086", "操作失败");
+		}
+
+
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_DEL);
 
@@ -167,7 +192,12 @@ public class StoreServiceImpl implements StoreService {
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
 			return null;
 		});
-		return R.ok();
+
+
+		if (update > 0) {
+			return R.ok();
+		}
+		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
 
 	@Override

@@ -87,12 +87,7 @@ public interface UserService {
 
     Pair<Boolean, Object> getUserDetail();
 
-
-    R bindElectricityCabinet(BindElectricityCabinetQuery bindElectricityCabinetQuery);
-
-    R queryElectricityCabinetList(Long uid);
-
-    Pair<Boolean, Object> listByFranchisee(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, List<Integer> cidList);
-
     R endLimitUser(Long uid);
+
+    Long addInnerUser(AdminUserQuery adminUserQuery);
 }

@@ -81,7 +81,7 @@ public class FranchiseeBindCardServiceImpl implements FranchiseeBindCardService 
     @Override
     public R bindCard(FranchiseeBindCardBindQuery franchiseeBindCardBindQuery) {
 
-        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeBindCardBindQuery.getFranchiseeId());
+        Franchisee franchisee = franchiseeService.queryByIdFromCache(franchiseeBindCardBindQuery.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
             log.error("bind Card  ERROR! not found Franchisee ! FranchiseeId:{} ",franchiseeBindCardBindQuery.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");

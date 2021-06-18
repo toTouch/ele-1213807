@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.vo.FranchiseeVO;
@@ -18,4 +16,11 @@ import java.util.List;
 public interface FranchiseeMapper extends BaseMapper<Franchisee> {
 
     List<FranchiseeVO> queryList( @Param("query") FranchiseeQuery franchiseeQuery);
+    /**
+     * 通过ID查询单条数据
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    Franchisee queryById(Integer id,Integer tenantId);
 }

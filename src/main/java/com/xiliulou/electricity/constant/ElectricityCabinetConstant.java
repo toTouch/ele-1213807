@@ -91,4 +91,7 @@ public interface ElectricityCabinetConstant {
 
     String ELE_BIG_POWER_CELL_NO_CACHE_KEY = "big_power_cell_no:";
 
+    //加盟商缓存
+    String CACHE_FRANCHISEE = "franchisee:";
+
 }

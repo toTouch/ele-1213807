@@ -177,40 +177,4 @@
 
 	</select>
 
-	<select id="listByFranchisee" resultMap="UserMap">
-		select uid, phone, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,
-		city,province,address,cid,ref_id
-		lang
-		from t_user
-		<where>
-			del_flag = 0
-			<if test="uid != null">
-				and uid = #{uid}
-			</if>
-			<if test="name != null and name != '' ">
-				and name like concat('%',#{name},'%')
-			</if>
-			<if test="type != null">
-				and user_type = #{type}
-			</if>
-			<if test="phone != null and phone != ''">
-				and phone=#{phone}
-			</if>
-			<if test="startTime != null">
-				and create_time &gt;=#{startTime}
-			</if>
-			<if test="endTime != null">
-				and create_time &lt;=#{endTime}
-			</if>
-			<if test="cidList!=null and cidList!=''">
-			and cid in
-			<foreach collection="cidList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		</where>
-		order by create_time desc
-
-	</select>
-
 </mapper>

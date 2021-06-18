@@ -4,6 +4,7 @@ import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -27,15 +28,14 @@ public class FranchiseeAddAndUpdate {
     @NotEmpty(message = "加盟商名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
-    * 城市编号
-    */
-    @NotNull(message = "城市编号不能为空!", groups = {CreateGroup.class})
-    private Integer cid;
-    /**
      * 租电池押金
      */
     @NotNull(message = "租电池押金不能为空!", groups = {CreateGroup.class})
     private BigDecimal batteryDeposit;
+    @NotBlank(message = "密码不能为空", groups = {CreateGroup.class})
+    private String password;
+    @NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
+    private String phone;
     /**
     * 0--正常 1--删除
     */
@@ -48,6 +48,18 @@ public class FranchiseeAddAndUpdate {
     * 更新时间
     */
     private Long updateTime;
+
+    /**
+     * 城市编号
+     */
+    @NotNull(message = "城市编号不能为空!", groups = {CreateGroup.class})
+    private Integer cityId;
+
+    /**
+     * 省编号
+     */
+    @NotNull(message = "省编号不能为空!", groups = {CreateGroup.class})
+    private Integer provinceId;
 
 
 
