@@ -22,7 +22,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     /**
      * 查询指定行数据
      */
-    IPage queryList(Page page, @Param("query") UserInfoQuery userInfoQuery);
+    List<UserInfo> queryList( @Param("query") UserInfoQuery userInfoQuery);
 
 
 
@@ -31,10 +31,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-
-    void updateRefund(UserInfo userInfo);
-
-    IPage queryUserInfoList(Page page,@Param("query") UserInfoQuery userInfoQuery);
 
     Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now);
 

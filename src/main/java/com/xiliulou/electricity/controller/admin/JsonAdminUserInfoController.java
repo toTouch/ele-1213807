@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -61,6 +62,9 @@ public class JsonAdminUserInfoController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -69,23 +73,19 @@ public class JsonAdminUserInfoController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .serviceStatus(serviceStatus)
-                .authStatus(authStatus).build();
+                .authStatus(authStatus)
+                .tenantId(tenantId).build();
 
         return userInfoService.queryList(userInfoQuery);
     }
 
-    //禁用
-    @PostMapping(value = "/admin/userInfo/disable/{id}")
-    public R disable(@PathVariable("id") Long id) {
-        return userInfoService.disable(id);
+    //禁/启用
+    @PostMapping(value = "/admin/userInfo/updateStatus")
+    public R updateStatus(@RequestParam("id") Long id,@RequestParam("usableStatus") Integer usableStatus) {
+        return userInfoService.updateStatus(id,usableStatus);
     }
 
 
-    //启用
-    @PostMapping(value = "/admin/userInfo/reboot/{id}")
-    public R reboot(@PathVariable("id") Long id) {
-        return userInfoService.reboot(id);
-    }
 
     //后台审核实名认证
     @PostMapping(value = "/admin/userInfo/verifyAuth")
@@ -116,6 +116,7 @@ public class JsonAdminUserInfoController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
             @RequestParam(value = "authStatus", required = false) Integer authStatus) {
         if (size < 0 || size > 50) {
             size = 50L;
@@ -125,6 +126,9 @@ public class JsonAdminUserInfoController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -132,7 +136,9 @@ public class JsonAdminUserInfoController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .authStatus(authStatus).build();
+                .serviceStatus(serviceStatus)
+                .authStatus(authStatus)
+                .tenantId(tenantId).build();
 
         return userInfoService.queryUserAuthInfo(userInfoQuery);
     }

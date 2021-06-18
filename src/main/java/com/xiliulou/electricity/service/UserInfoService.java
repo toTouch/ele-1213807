@@ -53,9 +53,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R queryList(UserInfoQuery userInfoQuery);
 
-    R disable(Long id);
-
-    R reboot(Long id);
+    R updateStatus(Long id,Integer usableStatus);
 
     R unBindBattery(Long id);
 

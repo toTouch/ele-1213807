@@ -175,19 +175,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Override
 	@DS("slave_1")
 	public R queryList(UserInfoQuery userInfoQuery) {
-		Page page = PageUtil.getPage(userInfoQuery.getOffset(), userInfoQuery.getSize());
-		userInfoMapper.queryList(page, userInfoQuery);
-		if (ObjectUtil.isEmpty(page)) {
+		List<UserInfo> UserInfoList = userInfoMapper.queryList(userInfoQuery);
+		if (ObjectUtil.isEmpty(UserInfoList)) {
 			return R.ok(new ArrayList<>());
 		}
-		List<UserInfo> UserInfoList = page.getRecords();
-		page.setRecords(UserInfoList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList()));
-		return R.ok(page);
+		UserInfoList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList());
+		return R.ok(UserInfoList);
 	}
 
 	@Override
 	@Transactional
-	public R disable(Long id) {
+	public R updateStatus(Long id,Integer usableStatus) {
 		UserInfo oldUserInfo = queryByIdFromDB(id);
 		if (Objects.isNull(oldUserInfo)) {
 			return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -195,25 +193,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		UserInfo userInfo = new UserInfo();
 		userInfo.setId(id);
 		userInfo.setUpdateTime(System.currentTimeMillis());
-		userInfo.setUsableStatus(UserInfo.USER_UN_USABLE_STATUS);
+		userInfo.setUsableStatus(usableStatus);
 		userInfoMapper.updateById(userInfo);
 		return R.ok();
 	}
 
-	@Override
-	@Transactional
-	public R reboot(Long id) {
-		UserInfo oldUserInfo = queryByIdFromDB(id);
-		if (Objects.isNull(oldUserInfo)) {
-			return R.fail("ELECTRICITY.0019", "未找到用户");
-		}
-		UserInfo userInfo = new UserInfo();
-		userInfo.setId(id);
-		userInfo.setUpdateTime(System.currentTimeMillis());
-		userInfo.setUsableStatus(UserInfo.USER_USABLE_STATUS);
-		userInfoMapper.updateById(userInfo);
-		return R.ok();
-	}
 
 	@Override
 	@Transactional
@@ -488,9 +472,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 	@Override
 	public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
-		Page page = PageUtil.getPage(userInfoQuery.getOffset(), userInfoQuery.getSize());
-		userInfoMapper.queryUserInfoList(page,userInfoQuery);
-		List<UserInfo> userInfos = page.getRecords();
+		List<UserInfo> userInfos =userInfoMapper.queryList(userInfoQuery);
 		if (!DataUtil.collectionIsUsable(userInfos)) {
 			return R.ok(Collections.emptyList());
 		}
@@ -517,7 +499,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return userAuthInfoVo;
 		}).collect(Collectors.toList());
 
-		return R.ok(page.setRecords(result));
+		return R.ok(result);
 	}
 
 }

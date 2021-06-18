@@ -22,4 +22,5 @@ public class UserInfoQuery {
     private Long endTime;
     private Integer serviceStatus;
     private Integer authStatus;
+    private Integer tenantId;
 }
