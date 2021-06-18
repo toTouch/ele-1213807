@@ -46,14 +46,14 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
      * @return 实例对象
      */
     @Override
-    public ElectricityCabinetModel queryByIdFromCache(Integer id,Integer tenantId) {
+    public ElectricityCabinetModel queryByIdFromCache(Integer id) {
         //先查缓存
         ElectricityCabinetModel cacheElectricityCabinetModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, ElectricityCabinetModel.class);
         if (Objects.nonNull(cacheElectricityCabinetModel)) {
             return cacheElectricityCabinetModel;
         }
         //缓存没有再查数据库
-        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelMapper.queryById(id,tenantId);
+        ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelMapper.selectById(id);
         if (Objects.isNull(electricityCabinetModel)) {
             return null;
         }

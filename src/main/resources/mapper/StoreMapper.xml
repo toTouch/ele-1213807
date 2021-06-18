@@ -3,14 +3,6 @@
 <mapper namespace="com.xiliulou.electricity.mapper.StoreMapper">
 
 
-    <!--查询单个-->
-    <select id="queryById" resultType="com.xiliulou.electricity.entity.Store">
-        select
-          id, uid, name, address, longitude, latitude, del_flag, create_time, update_time,
-          usable_status,service_phone, business_time,tenant_id
-        from electricity.t_store
-        where id = #{id} and  tenant_id = #{tenantId}
-    </select>
 
     <!--查询指定行数据-->
     <select id="queryList"
@@ -42,7 +34,7 @@
             </foreach>
         </if>
         order by create_time desc
-
+        limit #{query.offset}, #{query.size}
     </select>
 
 

@@ -2,23 +2,18 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.utils.PageUtil;
-import com.xiliulou.electricity.vo.ElectricityBatteryVo;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
@@ -45,6 +40,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R saveElectricityBattery(ElectricityBattery electricityBattery) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         Integer count=electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn,electricityBattery.getSn())
                 .eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
         if(count>0){
@@ -53,6 +51,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setTenantId(tenantId);
         return R.ok(electricitybatterymapper.insert(electricityBattery));
     }
 
@@ -93,14 +92,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     @DS("slave_1")
-    public R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-        Page page = PageUtil.getPage(offset, size);
-        return R.ok(electricitybatterymapper.getElectricityBatteryPage(page, electricityBatteryQuery, offset, size));
+    public R getElectricityBatteryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        electricityBatteryQuery.setTenantId(tenantId);
+
+        return R.ok(electricitybatterymapper.getElectricityBatteryList(electricityBatteryQuery, offset, size));
     }
 
     @Override
-    public ElectricityBatteryVo queryById(Long electricityBatteryId) {
-        return electricitybatterymapper.queryById(electricityBatteryId);
+    public ElectricityBattery queryById(Long electricityBatteryId) {
+        return electricitybatterymapper.selectById(electricityBatteryId);
     }
 
     /**
@@ -133,8 +135,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBattery queryByBindSn(String initElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, initElectricityBatterySn)
-               /* .ne(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS)*/);
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>()
+                .eq(ElectricityBattery::getSn, initElectricityBatterySn));
     }
 
     @Override
@@ -164,8 +166,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, nowElectricityBatterySn)
-                /*.eq(ElectricityBattery::getStatus, ElectricityBattery.LEASE_STATUS)*/);
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>()
+                .eq(ElectricityBattery::getSn, nowElectricityBatterySn));
     }
 
 

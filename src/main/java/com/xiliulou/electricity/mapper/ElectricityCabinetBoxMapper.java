@@ -5,7 +5,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表数据库访问层
@@ -26,7 +29,7 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     /**
      * @return 对象列表
      */
-    IPage  queryList(Page page, @Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
+    List<ElectricityCabinetBoxVO> queryList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
 
     /**

@@ -22,7 +22,7 @@ public interface ElectricityCabinetModelService {
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetModel queryByIdFromCache(Integer id,Integer tenantId);
+    ElectricityCabinetModel queryByIdFromCache(Integer id);
 
     R save(ElectricityCabinetModel electricityCabinetModel);
 

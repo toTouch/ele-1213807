@@ -3,55 +3,52 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityBatteryMapper">
 
 
+	<!--电池分页-->
+	<select id="getElectricityBatteryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,electricity_cabinet_id,
+		electricity_cabinet_name,uid,user_name
+		from t_electricity_battery
+		where del_flag = 0 and tenant_id = #{query.tenantId}
+		<if test="query.sn != null and query.sn !=''">
+			and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.status != null">
+			and status =#{query.status}
+		</if>
+		<if test="query.tenantId != null">
+			and tenant_id = #{query.tenantId}
+		</if>
+		<if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
+			and id in
+			<foreach collection="query.electricityBatteryIdList" item="id" index="index" open="(" close=")"
+					 separator=",">
+				#{id}
+			</foreach>
+		</if>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
 
-    <!--电池分页-->
-    <select id="getElectricityBatteryPage" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-        select tel.* ,  tui.name as user_name from
-        t_electricity_battery tel
-        LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.sn
-        where tel.del_flag = 0
-        <if test="query.sn != null">
-            and tel.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="query.status != null">
-            and tel.status =#{query.status}
-        </if>
-        <if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
-            and tel.id in
-            <foreach collection="query.electricityBatteryIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-        order by tel.create_time desc
 
+	<select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,electricity_cabinet_id,
+		electricity_cabinet_name,uid,user_name
+		from t_electricity_battery
+		where del_flag=0 and tenant_id = #{tenantId}
+		<if test="batteryIdList!=null and batteryIdList!=''">
+			and id in
+			<foreach collection="batteryIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+	</select>
+
+	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,electricity_cabinet_id,
+        electricity_cabinet_name,uid,user_name
+        FROM t_electricity_battery
+        WHERE uid = #{uid} and del_flag = 0
     </select>
 
-
-    <select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select teb.id as id,teb.sn as sn,
-        teb.power as power,teb.voltage as voltage,teb.capacity as capacity,
-        teb.status as status,teb.create_time as create_time,teb.update_time as update_time,
-        teb.del_flag as del_flag
-        from t_electricity_battery as teb
-        where teb.del_flag=0
-        <if test="batteryIdList!=null and batteryIdList!=''">
-            and id in
-            <foreach collection="batteryIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-    </select>
-    <select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-         SELECT eb.*
-        FROM t_electricity_battery  eb
-				LEFT JOIN t_user_info   tui  on  tui.now_electricity_battery_sn = eb.sn
-        WHERE tui.uid = #{uid};
-    </select>
-    <select id="queryById" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVo">
-        select tel.* ,  tui.name as user_name from
-        t_electricity_battery tel
-        LEFT JOIN t_user_info tui on tui.now_electricity_battery_sn = tel.sn
-        where tel.del_flag = 0 and tel.id=#{id}
-    </select>
 
 </mapper>

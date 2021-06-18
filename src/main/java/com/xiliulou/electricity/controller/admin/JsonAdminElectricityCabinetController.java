@@ -218,10 +218,7 @@ public class JsonAdminElectricityCabinetController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id,tenantId);
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
@@ -288,10 +285,8 @@ public class JsonAdminElectricityCabinetController {
     //列表查询
     @GetMapping(value = "/admin/electricityCabinet/queryConfig")
     public R queryConfig(@RequestParam("id") Integer id) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id,tenantId);
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }

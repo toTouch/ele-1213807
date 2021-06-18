@@ -8,6 +8,7 @@ import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,10 +47,14 @@ public class JsonAdminElectricityCabinetBoxController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
                 .offset(offset)
                 .size(size)
-                .electricityCabinetId(electricityCabinetId).build();
+                .electricityCabinetId(electricityCabinetId)
+                .tenantId(tenantId).build();
 
         return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
     }
@@ -60,10 +65,15 @@ public class JsonAdminElectricityCabinetBoxController {
         if (Objects.isNull(electricityCabinetBox.getId()) && Objects.isNull(electricityCabinetBox.getUsableStatus())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
+
+
+
         ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
+
+
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");

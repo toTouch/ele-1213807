@@ -292,15 +292,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList=electricityCabinetOrderMapper.queryList( electricityCabinetOrderQuery);
 		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
 			return R.ok(new ArrayList<>());
 		}
 		if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
 			electricityCabinetOrderVOList.parallelStream().forEach(e -> {
-				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId(),tenantId);
+				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
 				if (Objects.nonNull(electricityCabinet)) {
 					e.setElectricityCabinetName(electricityCabinet.getName());
 				}

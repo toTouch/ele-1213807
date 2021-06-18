@@ -66,12 +66,12 @@ public class StoreServiceImpl implements StoreService {
 	 * @return 实例对象
 	 */
 	@Override
-	public Store queryByIdFromCache(Integer id,Integer tenantId) {
+	public Store queryByIdFromCache(Integer id) {
 		Store cacheStore = redisService.getWithHash(ElectricityCabinetConstant.CACHE_STORE + id, Store.class);
 		if (Objects.nonNull(cacheStore)) {
 			return cacheStore;
 		}
-		Store store = storeMapper.queryById(id,tenantId);
+		Store store = storeMapper.selectById(id);
 		if (Objects.isNull(store)) {
 			return null;
 		}
@@ -133,12 +133,10 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional
 	public R edit(StoreAddAndUpdate storeAddAndUpdate) {
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
-		Store oldStore = queryByIdFromCache(store.getId(),tenantId);
+		Store oldStore = queryByIdFromCache(store.getId());
 		if (Objects.isNull(oldStore)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
@@ -166,10 +164,8 @@ public class StoreServiceImpl implements StoreService {
 	@Transactional
 	public R delete(Integer id) {
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
-		Store store = queryByIdFromCache(id,tenantId);
+		Store store = queryByIdFromCache(id);
 		if (Objects.isNull(store)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
@@ -203,12 +199,10 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@DS("slave_1")
 	public R queryList(StoreQuery storeQuery) {
-		Page page = PageUtil.getPage(storeQuery.getOffset(), storeQuery.getSize());
-		storeMapper.queryList(page, storeQuery);
-		if (ObjectUtil.isEmpty(page.getRecords())) {
+		List<StoreVO> storeVOList =storeMapper.queryList(storeQuery);
+		if (ObjectUtil.isEmpty(storeVOList)) {
 			return R.ok(new ArrayList<>());
 		}
-		List<StoreVO> storeVOList = page.getRecords();
 		if (ObjectUtil.isNotEmpty(storeVOList)) {
 			storeVOList.parallelStream().forEach(e -> {
 				//营业时间
@@ -236,19 +230,16 @@ public class StoreServiceImpl implements StoreService {
 				    }
 			});
 		}
-		page.setRecords(storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList()));
-		return R.ok(page);
+		storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList());
+		return R.ok(storeVOList);
 	}
 
 	@Override
 	@Transactional
 	public R updateStatus(Integer id,Integer usableStatus) {
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
-
-		Store oldStore = queryByIdFromCache(id,tenantId);
+		Store oldStore = queryByIdFromCache(id);
 		if (Objects.isNull(oldStore)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}

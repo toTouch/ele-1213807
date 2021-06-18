@@ -27,9 +27,9 @@ public class FranchiseeBindElectricityBattery {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
-     * uid
+     * franchiseeId
      */
-    private Long franchiseeId;
+    private Integer franchiseeId;
     /**
      * 电池ID
      */

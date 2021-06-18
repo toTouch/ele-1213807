@@ -59,9 +59,6 @@ public class ElectricityBattery {
 
     private Integer delFlag;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
 
     /**
      * 0：正常 1：故障
@@ -81,8 +78,28 @@ public class ElectricityBattery {
      */
     private Double latitude;
 
+    //租户id
+    private Integer tenantId;
+
+    /**
+     * 所属换电柜柜Id
+     */
+    private Integer electricityCabinetId;
+
+    /**
+     * 所属换电柜柜
+     */
+    private String electricityCabinetName;
+
+    //所属用户id
+    private Long uid;
+
+    //所属用户
+    private String userName;
 
 
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 
     //在仓
     public static final Integer WARE_HOUSE_STATUS = 0;

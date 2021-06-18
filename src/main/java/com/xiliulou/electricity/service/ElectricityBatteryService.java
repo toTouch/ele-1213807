@@ -21,9 +21,9 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R update(ElectricityBattery electricityBattery);
 
-    R getElectricityBatteryPage(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
+    R getElectricityBatteryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
-    ElectricityBatteryVo queryById(Long electricityBatteryId);
+    ElectricityBattery queryById(Long electricityBatteryId);
 
     R deleteElectricityBattery(Long id);
 

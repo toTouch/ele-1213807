@@ -15,13 +15,6 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCabinetModel> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinetModel queryById(Integer id,Integer tenantId);
 
     /**
      * @return 对象列表

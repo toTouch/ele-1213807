@@ -22,5 +22,7 @@ public class ElectricityBatteryQuery {
 
     private List<Long> electricityBatteryIdList;
 
+    private Integer tenantId;
+
 
 }

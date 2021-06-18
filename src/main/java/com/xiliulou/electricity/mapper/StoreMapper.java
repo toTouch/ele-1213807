@@ -18,20 +18,11 @@ import java.util.List;
  */
 public interface StoreMapper extends BaseMapper<Store> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    Store queryById(Integer id,Integer tenantId);
 
     /**
      * 查询指定行数据
      */
-    IPage queryList(Page page, @Param("query") StoreQuery storeQuery);
-
-
+    List<StoreVO> queryList(@Param("query") StoreQuery storeQuery);
 
 
     List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);

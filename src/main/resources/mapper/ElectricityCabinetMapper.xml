@@ -3,14 +3,6 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetMapper">
 
 
-    <!--查询单个-->
-    <select id="queryById" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
-        select
-          id, name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status,  online_status, model_id, version, fully_charged, service_phone, business_time,
-          create_time, update_time, del_flag,tenant_id
-        from electricity.t_electricity_cabinet
-        where del_flag=0 and id = #{id} and  tenant_id = #{tenantId}
-    </select>
 
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">

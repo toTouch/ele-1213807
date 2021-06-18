@@ -16,11 +16,5 @@ import java.util.List;
 public interface FranchiseeMapper extends BaseMapper<Franchisee> {
 
     List<FranchiseeVO> queryList( @Param("query") FranchiseeQuery franchiseeQuery);
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    Franchisee queryById(Integer id,Integer tenantId);
+
 }

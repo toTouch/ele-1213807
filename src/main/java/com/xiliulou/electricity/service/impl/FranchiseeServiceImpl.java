@@ -98,10 +98,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        Franchisee oldFranchisee = queryByIdFromCache(franchiseeAddAndUpdate.getId(),tenantId);
+        Franchisee oldFranchisee = queryByIdFromCache(franchiseeAddAndUpdate.getId());
         if (Objects.isNull(oldFranchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
@@ -125,10 +123,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Override
     public R delete(Integer id) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        Franchisee franchisee = queryByIdFromCache(id,tenantId);
+        Franchisee franchisee = queryByIdFromCache(id);
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
@@ -158,12 +154,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
-    public Franchisee queryByIdFromCache(Integer id,Integer tenantId) {
+    public Franchisee queryByIdFromCache(Integer id) {
         Franchisee cacheFranchisee = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + id, Franchisee.class);
         if (Objects.nonNull(cacheFranchisee)) {
             return cacheFranchisee;
         }
-        Franchisee franchisee = franchiseeMapper.queryById(id,tenantId);
+        Franchisee franchisee = franchiseeMapper.selectById(id);
         if (Objects.isNull(franchisee)) {
             return null;
         }

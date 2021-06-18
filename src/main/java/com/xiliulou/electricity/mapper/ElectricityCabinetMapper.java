@@ -20,13 +20,6 @@ import java.util.Map;
  */
 public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinet queryById(Integer id,Integer tenantId);
 
     /**
      * @param electricityCabinetQuery

@@ -26,12 +26,6 @@
         order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
-	<select id="queryById" resultType="com.xiliulou.electricity.entity.Franchisee">
-         select
-        id, cid, name, uid, del_flag,
-        create_time, update_time, battery_deposit,tenant_id
-        from electricity.t_franchisee
-        where del_flag=0 and  tenant_id = #{tenantId}
-    </select>
+
 
 </mapper>

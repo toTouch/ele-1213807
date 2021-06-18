@@ -18,7 +18,7 @@ public class BindElectricityBatteryQuery {
     * 加盟商Id
     */
     @NotNull(message = "加盟商Id不能为空!", groups = {CreateGroup.class})
-    private Long franchiseeId;
+    private Integer franchiseeId;
     /**
      * 换电柜Id
      */

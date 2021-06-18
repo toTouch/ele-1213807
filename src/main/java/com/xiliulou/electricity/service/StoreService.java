@@ -21,7 +21,7 @@ public interface StoreService {
      * @param id 主键
      * @return 实例对象
      */
-    Store queryByIdFromCache(Integer id,Integer tenantId);
+    Store queryByIdFromCache(Integer id);
 
     R save(StoreAddAndUpdate storeAddAndUpdate);
 

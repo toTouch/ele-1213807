@@ -11,7 +11,7 @@ import java.util.List;
  */
 public interface FranchiseeBindElectricityBatteryService {
 
-    void deleteByFranchiseeId(Long franchiseeId);
+    void deleteByFranchiseeId(Integer franchiseeId);
 
     void insert(FranchiseeBindElectricityBattery franchiseeBindElectricityBattery);
 

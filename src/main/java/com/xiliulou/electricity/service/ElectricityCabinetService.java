@@ -25,7 +25,7 @@ public interface ElectricityCabinetService {
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinet queryByIdFromCache(Integer id,Integer tenantId);
+    ElectricityCabinet queryByIdFromCache(Integer id);
 
     /**
      * 修改数据

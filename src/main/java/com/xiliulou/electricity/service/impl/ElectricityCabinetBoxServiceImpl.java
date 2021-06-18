@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -62,6 +63,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
 	@Override
 	public void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 		if (Objects.nonNull(id)) {
 			for (int i = 1; i <= electricityCabinetModel.getNum(); i++) {
 				ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
@@ -70,6 +73,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 				electricityCabinetBox.setCreateTime(System.currentTimeMillis());
 				electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 				electricityCabinetBox.setDelFlag(ElectricityCabinetBox.DEL_NORMAL);
+				electricityCabinetBox.setTenantId(tenantId);
 				electricityCabinetBoxMapper.insert(electricityCabinetBox);
 			}
 		}
@@ -83,18 +87,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	@Override
 	@DS("slave_1")
 	public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
-		Page page = PageUtil.getPage(electricityCabinetBoxQuery.getOffset(), electricityCabinetBoxQuery.getSize());
 
-		electricityCabinetBoxMapper.queryList(page, electricityCabinetBoxQuery);
-		if (ObjectUtil.isEmpty(page.getRecords())) {
+		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
+		if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
 			return R.ok();
 		}
-		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = page.getRecords();
 		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>();
 
 		if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
 			for (ElectricityCabinetBoxVO electricityCabinetBoxVO : electricityCabinetBoxVOList) {
-				ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBoxVO.getElectricityBatteryId());
+				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxVO.getSn());
 				if (Objects.nonNull(electricityBattery)) {
 					electricityCabinetBoxVO.setSn(electricityBattery.getSn());
 					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
@@ -102,8 +104,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 				electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
 			}
 		}
-		page.setRecords(electricityCabinetBoxVOs);
-		return R.ok(page);
+		return R.ok(electricityCabinetBoxVOs);
 	}
 
 	@Override
@@ -139,7 +140,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
 		for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
 			//是否满电
-			ElectricityBattery electricityBattery = electricityBatteryService.queryById(electricityCabinetBox.getElectricityBatteryId());
+			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
 			if (Objects.nonNull(electricityBattery)) {
 				if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
 

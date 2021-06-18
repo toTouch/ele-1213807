@@ -73,6 +73,8 @@ public class Store {
      */
     private Long uid;
 
+    private Integer franchiseeId;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

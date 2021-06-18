@@ -18,4 +18,5 @@ public class ElectricityCabinetBoxQuery {
     private Long size;
     private Long offset;
     private Integer electricityCabinetId;
+    private Integer tenantId;
 }

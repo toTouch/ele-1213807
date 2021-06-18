@@ -24,7 +24,7 @@ public interface FranchiseeService {
 
     R delete(Integer id);
 
-    Franchisee queryByIdFromCache(Integer id,Integer tenantId);
+    Franchisee queryByIdFromCache(Integer id);
 
     R queryList(FranchiseeQuery franchiseeQuery);
 

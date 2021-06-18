@@ -86,7 +86,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
-        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
+        return electricityBatteryService.getElectricityBatteryList(electricityBatteryQuery, offset, size);
     }
 
     /**
@@ -107,20 +107,17 @@ public class JsonAdminElectricityCabinetBatteryController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        List<Franchisee> franchiseeList=franchiseeService.queryByUid(user.getUid());
-        if(ObjectUtil.isEmpty(franchiseeList)){
+        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+        if(Objects.isNull(franchisee)){
             return R.ok();
         }
-        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteries =new ArrayList<>();
-        for (Franchisee franchisee:franchiseeList) {
-            List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
-            franchiseeBindBindElectricityBatteries.addAll(franchiseeBindBindElectricityBatteryList);
-        }
-        if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteries)){
+        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
+
+        if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)){
             return R.ok();
         }
         List<Long> electricityBatteryIdList=new ArrayList<>();
-        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteries) {
+        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
             electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
         }
         if(ObjectUtil.isEmpty(electricityBatteryIdList)){
@@ -131,7 +128,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
-        return electricityBatteryService.getElectricityBatteryPage(electricityBatteryQuery, offset, size);
+        return electricityBatteryService.getElectricityBatteryList(electricityBatteryQuery, offset, size);
     }
 
 

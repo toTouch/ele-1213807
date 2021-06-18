@@ -98,14 +98,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	 * @return 实例对象
 	 */
 	@Override
-	public ElectricityCabinet queryByIdFromCache(Integer id,Integer tenantId) {
+	public ElectricityCabinet queryByIdFromCache(Integer id) {
 		//先查缓存
 		ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id, ElectricityCabinet.class);
 		if (Objects.nonNull(cacheElectricityCabinet)) {
 			return cacheElectricityCabinet;
 		}
 		//缓存没有再查数据库
-		ElectricityCabinet electricityCabinet = electricityCabinetMapper.queryById(id,tenantId);
+		ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectById(id);
 		if (Objects.isNull(electricityCabinet)) {
 			return null;
 		}
@@ -186,7 +186,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
 		//查找快递柜型号
-		ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId(),tenantId);
+		ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId());
 		if (Objects.isNull(electricityCabinetModel)) {
 			return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
 		}
@@ -220,14 +220,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (!result) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
 
 		//换电柜
 		ElectricityCabinet electricityCabinet = new ElectricityCabinet();
 		BeanUtil.copyProperties(electricityCabinetAddAndUpdate, electricityCabinet);
-		ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId(),tenantId);
+		ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(electricityCabinet.getId());
 		if (Objects.isNull(oldElectricityCabinet)) {
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
@@ -269,7 +267,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//快递柜老型号
 		Integer oldModelId = oldElectricityCabinet.getModelId();
 		//查找快递柜型号
-		ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId(),tenantId);
+		ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getModelId());
 		if (Objects.isNull(electricityCabinetModel)) {
 			return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
 		}
@@ -305,10 +303,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	@Override
 	@Transactional
 	public R delete(Integer id) {
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
-		ElectricityCabinet electricityCabinet = queryByIdFromCache(id,tenantId);
+		ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
 		if (Objects.isNull(electricityCabinet)) {
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
@@ -371,7 +367,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
 				//查找型号名称
-				ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId(),tenantId);
+				ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(e.getModelId());
 				if (Objects.nonNull(electricityCabinetModel)) {
 					e.setModelName(electricityCabinetModel.getName());
 				}
@@ -541,11 +537,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//换电柜
-		ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(id,tenantId);
+		ElectricityCabinet oldElectricityCabinet = queryByIdFromCache(id);
 		if (Objects.isNull(oldElectricityCabinet)) {
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}

@@ -21,7 +21,7 @@ public class FranchiseeBindElectricityBatteryServiceImpl implements FranchiseeBi
     @Resource
     FranchiseeBindElectricityBatteryMapper franchiseeBindElectricityBatteryMapper;
     @Override
-    public void deleteByFranchiseeId(Long franchiseeId) {
+    public void deleteByFranchiseeId(Integer franchiseeId) {
         franchiseeBindElectricityBatteryMapper.deleteByFranchiseeId(franchiseeId);
     }
 
