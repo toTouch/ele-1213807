@@ -1092,7 +1092,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		RentBatteryOrder oldRentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(),  RentBatteryOrder.TYPE_USER_RETURN);
 		if (Objects.nonNull(oldRentBatteryOrder1)) {
 			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", user.getUid());
-			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0095", "存在未完成还电订单，不能下单");
 		}
 
 
@@ -1100,7 +1100,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		RentBatteryOrder oldRentBatteryOrder2 = rentBatteryOrderService.queryByUidAndType(user.getUid(),  RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(oldRentBatteryOrder2)) {
 			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", user.getUid());
-			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
 
 
@@ -1644,7 +1644,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		RentBatteryOrder oldRentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(),  RentBatteryOrder.TYPE_USER_RETURN);
 		if (Objects.nonNull(oldRentBatteryOrder1)) {
 			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", user.getUid());
-			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0095", "存在未完成还电订单，不能下单");
 		}
 
 
@@ -1652,7 +1652,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		RentBatteryOrder oldRentBatteryOrder2 = rentBatteryOrderService.queryByUidAndType(user.getUid(),  RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(oldRentBatteryOrder2)) {
 			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", user.getUid());
-			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
 
 		//营业时间

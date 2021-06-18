@@ -164,7 +164,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		RentBatteryOrder oldRentBatteryOrder1 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
 		if (Objects.nonNull(oldRentBatteryOrder1)) {
 			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", uid);
-			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0095", "存在未完成还电订单，不能下单");
 		}
 
 
@@ -172,7 +172,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		RentBatteryOrder oldRentBatteryOrder2 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(oldRentBatteryOrder2)) {
 			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
-			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
 
 		//营业时间
@@ -328,7 +328,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		RentBatteryOrder oldRentBatteryOrder1 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RETURN);
 		if (Objects.nonNull(oldRentBatteryOrder1)) {
 			log.error("ELECTRICITY  ERROR! find return order! uid:{} ", uid);
-			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder1.getOrderId(),"ELECTRICITY.0095", "存在未完成还电订单，不能下单");
 		}
 
 
@@ -336,7 +336,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		RentBatteryOrder oldRentBatteryOrder2 = queryByUidAndType(uid,  RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(oldRentBatteryOrder2)) {
 			log.error("ELECTRICITY  ERROR! find rent order! uid:{} ", uid);
-			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldRentBatteryOrder2.getOrderId(),"ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
 
 		//营业时间
