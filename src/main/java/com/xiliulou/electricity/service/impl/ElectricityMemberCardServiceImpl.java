@@ -16,18 +16,16 @@ import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Vector;
 
 /**
  * @program: XILIULOU
@@ -59,13 +57,32 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     public R saveElectricityMemberCard(ElectricityMemberCard electricityMemberCard) {
-        electricityMemberCard.setCreateTime(System.currentTimeMillis());
-        electricityMemberCard.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //校验参数
         if(Objects.equals(electricityMemberCard.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
             electricityMemberCard.setMaxUseCount(ElectricityMemberCard.UN_LIMITED_COUNT);
         }
-        return R.ok(baseMapper.insert(electricityMemberCard));
+
+        //填充参数
+        electricityMemberCard.setCreateTime(System.currentTimeMillis());
+        electricityMemberCard.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
+        electricityMemberCard.setTenantId(tenantId);
+        electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
+
+        Integer insert=baseMapper.insert(electricityMemberCard);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            //新增缓存
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
+            return null;
+        });
+
+        if (insert > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
     /**
@@ -82,9 +99,20 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                 electricityMemberCard.setMaxUseCount(ElectricityMemberCard.UN_LIMITED_COUNT);
             }
         }
-        baseMapper.updateById(electricityMemberCard);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
-        return R.ok();
+
+        Integer update=baseMapper.updateById(electricityMemberCard);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //先删再改
+            redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
+            return null;
+        });
+
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
     /**
@@ -93,21 +121,23 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     public R deleteElectricityMemberCard(Integer id) {
-        baseMapper.deleteById(id);
-        deleteElectricityMemberCardCache(id);
+        ElectricityMemberCard electricityMemberCard=new ElectricityMemberCard();
+        electricityMemberCard.setId(id);
+        electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
+        Integer update=baseMapper.updateById(electricityMemberCard);
 
-        return R.ok();
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //删除缓存
+            redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            return null;
+        });
+
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
     }
 
-    /**
-     * 删除套餐缓存
-     *
-     * @param id
-     */
-    @Override
-    public void deleteElectricityMemberCardCache(Integer id) {
-        redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id);
-    }
 
     /**
      * 分页
@@ -120,8 +150,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @DS("slave_1")
     public R getElectricityMemberCardPage(Long offset, Long size, Integer status, Integer type) {
 
-        Page page = PageUtil.getPage(offset, size);
-        return R.ok(baseMapper.getElectricityMemberCardPage(page, offset, size, status, type));
+        return R.ok(baseMapper.electricityMemberCardList(offset, size, status, type));
     }
 
     @Override
@@ -156,25 +185,27 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
+
+
         //3、查出套餐
-        //根据用户cid找到对应的加盟商
-        Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
+        //扫码查找换电柜 TODO
+        Franchisee franchisee = null;
         if (Objects.isNull(franchisee)) {
-            log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ", user.getCid());
-            //麒迹 未找到加盟商默认郑州，郑州也找不到再提示找不到 其余客服需要换  TODO
-            franchisee = franchiseeService.queryByCid(147);
-            if (Objects.isNull(franchisee)) {
-                return R.fail("ELECTRICITY.0038", "未找到加盟商");
-            }
+            log.error("ELECTRICITY  ERROR! not found franchisee ! ");
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+
         }
+
+        //该加盟商是否缴纳押金 TODO
+
+
         //查找加盟商下的可用套餐
-        Page page = PageUtil.getPage(offset, size);
-        return R.ok(baseMapper.queryElectricityMemberCard(page,offset,size,franchisee.getId()));
+        return R.ok(baseMapper.queryElectricityMemberCard(offset,size,franchisee.getId()));
     }
 
     @Override
     public List<ElectricityMemberCard> queryByFranchisee(Integer id) {
-        return null;
+        return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId,id));
     }
 
     /**

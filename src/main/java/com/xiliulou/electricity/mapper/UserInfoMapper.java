@@ -18,13 +18,6 @@ import java.util.List;
  */
 public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserInfo queryById(Long id);
 
     /**
      * 查询指定行数据
@@ -33,24 +26,11 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
 
 
-    /**
-     * 解除绑定
-     *
-     * @param userInfo 实例对象
-     * @return 影响行数
-     */
-    int unBind(UserInfo userInfo);
-
-    int minCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
 
     List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
     List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
-
-    void updateByUid(UserInfo userInfo);
-
-    void plusCount(@Param("id") Long id, @Param("updateTime") Long updateTime);
 
     void updateRefund(UserInfo userInfo);
 

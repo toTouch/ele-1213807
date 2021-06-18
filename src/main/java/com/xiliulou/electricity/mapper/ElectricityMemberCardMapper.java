@@ -6,9 +6,11 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMemberCard> {
 
-    IPage getElectricityMemberCardPage(Page page, @Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type);
+    List<ElectricityMemberCard> electricityMemberCardList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type);
 
-	IPage queryElectricityMemberCard(Page page,@Param("offset") Long offset, @Param("size") Long size, @Param("id") Integer id);
+	List<ElectricityMemberCard>  queryElectricityMemberCard(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Integer id);
 }

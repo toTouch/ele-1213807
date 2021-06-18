@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardMapper">
 
 
-    <select id="getElectricityMemberCardPage" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+    <select id="electricityMemberCardList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
             SELECT *
             FROM t_electricity_member_card
         <where>

@@ -64,7 +64,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	 */
 	@Override
 	public UserInfo queryByIdFromDB(Long id) {
-		return this.userInfoMapper.queryById(id);
+		return this.userInfoMapper.selectById(id);
 	}
 
 	/**

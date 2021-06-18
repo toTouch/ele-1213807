@@ -56,6 +56,14 @@ public class ElectricityMemberCard {
      */
     private Integer franchiseeId;
 
+    /**
+     * 是否删除（0-正常，1-删除）
+     */
+    private Integer delFlag;
+
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
+
     //禁用状态
     public static final Integer STATUS_UN_USEABLE = 1;
     //可用状态
