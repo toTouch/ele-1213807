@@ -221,7 +221,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(uid);
 		if (Objects.nonNull(oldElectricityCabinetOrder)) {
 			log.error("ELECTRICITY  ERROR! find ele order! uid:{} ", uid);
-			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0094", "存在未完成换电订单，不能下单");
 		}
 
 

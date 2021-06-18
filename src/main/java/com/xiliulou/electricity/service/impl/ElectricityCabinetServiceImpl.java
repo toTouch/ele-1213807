@@ -1085,7 +1085,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(user.getUid());
 		if (Objects.nonNull(oldElectricityCabinetOrder)) {
 			log.error("ELECTRICITY  ERROR! find ele order! uid:{} ", user.getUid());
-			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0094", "存在未完成换电订单，不能下单");
 		}
 
 		//是否存在未完成的还电池订单
@@ -1636,7 +1636,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(user.getUid());
 		if (Objects.nonNull(oldElectricityCabinetOrder)) {
 			log.error("ELECTRICITY  ERROR! find ele order! uid:{} ", user.getUid());
-			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail(oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0094", "存在未完成换电订单，不能下单");
 		}
 
 
