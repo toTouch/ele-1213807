@@ -48,6 +48,14 @@ public class ElectricityMemberCard {
     private Long createTime;
     private Long updateTime;
 
+    //租户id
+    private Integer tenantId;
+
+    /**
+     * franchiseeId
+     */
+    private Integer franchiseeId;
+
     //禁用状态
     public static final Integer STATUS_UN_USEABLE = 1;
     //可用状态
