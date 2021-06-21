@@ -42,4 +42,10 @@ public interface FranchiseeUserInfoService {
     Integer queryCountByBatterySn(String electricityBatterySn);
 
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);
+
+    Integer minCount(Long id);
+
+    void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+
+    void plusCount(Long id);
 }

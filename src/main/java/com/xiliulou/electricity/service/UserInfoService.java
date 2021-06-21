@@ -63,25 +63,15 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer homeOneAuth(Long first, Long now);
 
-    int minCount(Long id);
-
     List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay);
 
     List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay);
 
     R getMemberCardInfo(Long uid);
 
-    void deleteUserInfo(UserInfo oldUserInfo);
-
-    void updateByUid(UserInfo userInfo);
-
-    void plusCount(Long id);
-
     R queryUserInfo();
 
     R verifyAuth(Long id,Integer authStatus);
-
-    void updateRefund(UserInfo userInfo);
 
     R updateAuth(UserInfo userInfo);
 

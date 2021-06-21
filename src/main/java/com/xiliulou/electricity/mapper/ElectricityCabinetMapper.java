@@ -25,7 +25,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @param electricityCabinetQuery
      * @return 对象列表
      */
-    IPage queryList(Page page, @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+    List<ElectricityCabinetVO> queryList( @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 
 

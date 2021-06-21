@@ -7,7 +7,6 @@ import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -22,8 +21,6 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -76,6 +73,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	RentBatteryOrderService rentBatteryOrderService;
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -208,30 +206,31 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
-		//未缴纳押金
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("order  ERROR! not pay deposit! userInfo:{} ", userInfo);
-			return R.fail("ELECTRICITY.0042", "未缴纳押金");
-		}
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		//未缴纳押金
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("payDeposit  ERROR! not found user! uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
 		//出现多个用户绑定或没有用户绑定
-		if(franchiseeUserInfoList.size()!=1){
-			log.error("order  ERROR! user status is error! uid:{} ", userInfo.getUid());
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("payDeposit  ERROR! user status is error! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		FranchiseeUserInfo franchiseeUserInfo =franchiseeUserInfoList.get(0);
-
 		//判断该换电柜用户是否租电池等 TODO
 
-
 		//未缴纳押金
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("order  ERROR! user not pay deposit! uid:{} ", userInfo.getUid());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+			log.error("order  ERROR! not pay deposit! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
+
 
 		//用户是否开通月卡
 		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
@@ -267,7 +266,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			}
 			if (franchiseeUserInfo.getRemainingNumber() != -1) {
 				//扣除月卡
-				int row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
+				Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
 				if (row < 1) {
 					log.error("ELECTRICITY  ERROR! not found memberCard uid={}", user.getUid());
 					return R.fail("ELECTRICITY.0023", "月卡已过期");
@@ -469,20 +468,32 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		Integer row = electricityCabinetOrderMapper.updateExpiredCancelOrder(orderId, System.currentTimeMillis());
 
 		if (row > 0) {
+
 			//修改仓门为无电池
 			ElectricityCabinetBox electricityCabinetNewBox = new ElectricityCabinetBox();
 			electricityCabinetNewBox.setCellNo(String.valueOf(electricityCabinetOrder.getOldCellNo()));
 			electricityCabinetNewBox.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
 			electricityCabinetNewBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-			electricityCabinetNewBox.setElectricityBatteryId(-1L);
+			electricityCabinetNewBox.setSn(null);
+			electricityCabinetNewBox.setUpdateTime(System.currentTimeMillis());
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetNewBox);
+
+
 			//回退月卡
 			UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
-			Long now = System.currentTimeMillis();
-			if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber())
-					&& userInfo.getMemberCardExpireTime() > now && userInfo.getRemainingNumber() != -1) {
-				//回退月卡次数
-				userInfoService.plusCount(userInfo.getId());
+			if (Objects.nonNull(userInfo)) {
+				//
+				List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+				Long now = System.currentTimeMillis();
+				if (franchiseeUserInfoList.size()==1) {
+					FranchiseeUserInfo franchiseeUserInfo =franchiseeUserInfoList.get(0);
+
+					if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber())
+							&& franchiseeUserInfo.getMemberCardExpireTime() > now && franchiseeUserInfo.getRemainingNumber() != -1) {
+						//回退月卡次数
+						franchiseeUserInfoService.plusCount(userInfo.getId());
+					}
+				}
 			}
 		}
 		log.info("handel  cancel order end ,orderId:{}  <-------", orderId);
@@ -524,13 +535,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
 		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
 		electricityCabinetOrderMapper.update(newElectricityCabinetOrder);
+
+
 		//回退月卡
 		UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
-		Long now = System.currentTimeMillis();
-		if (Objects.nonNull(userInfo) && Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber())
-				&& userInfo.getMemberCardExpireTime() > now && userInfo.getRemainingNumber() != -1) {
-			//回退月卡次数
-			userInfoService.plusCount(userInfo.getId());
+		if (Objects.nonNull(userInfo)) {
+			//
+			List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+			Long now = System.currentTimeMillis();
+			if (franchiseeUserInfoList.size()==1) {
+				FranchiseeUserInfo franchiseeUserInfo =franchiseeUserInfoList.get(0);
+
+				if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber())
+						&& franchiseeUserInfo.getMemberCardExpireTime() > now && franchiseeUserInfo.getRemainingNumber() != -1) {
+					//回退月卡次数
+					franchiseeUserInfoService.plusCount(userInfo.getId());
+				}
+			}
 		}
 
 		//删除开门失败缓存

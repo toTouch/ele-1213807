@@ -14,6 +14,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
+import io.netty.util.internal.StringUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -70,6 +71,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 		ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
 		ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		//若上报时间小于上次上报时间则忽略此条上报
 		Long reportTime = eleBatteryVo.getReportTime();
 		if (Objects.nonNull(reportTime) && Objects.nonNull(oldElectricityCabinetBox.getReportTime())
@@ -95,19 +97,24 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			batteryName = null;
 		}
 		if (StringUtils.isEmpty(batteryName)) {
-			electricityCabinetBox.setElectricityBatteryId(-1L);
+			electricityCabinetBox.setSn(null);
 			electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
 			electricityCabinetBox.setCellNo(cellNo);
 			electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+			electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+
 			//原来仓门是否有电池
 			if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)
-					&& Objects.nonNull(oldElectricityCabinetBox.getElectricityBatteryId())) {
+					&& StringUtils.isNotEmpty(oldElectricityCabinetBox.getSn())) {
+
 				//修改电池
-				ElectricityBattery newElectricityBattery = new ElectricityBattery();
-				newElectricityBattery.setId(oldElectricityCabinetBox.getElectricityBatteryId());
-				newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
-				electricityBatteryService.updateReport(newElectricityBattery);
+				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldElectricityCabinetBox.getSn());
+				if(Objects.nonNull(oldElectricityBattery)) {
+					newElectricityBattery.setId(oldElectricityBattery.getId());
+					newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+					electricityBatteryService.updateReport(newElectricityBattery);
+				}
 			}
 
 			//若最大电池的仓门现在为空，则删除最大电量的缓存
@@ -118,6 +125,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			}
 			return true;
 		}
+
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 		if (Objects.isNull(electricityBattery)) {
 			log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
@@ -125,7 +133,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 
 		//修改电池
-		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 		Double power = eleBatteryVo.getPower();
@@ -158,10 +165,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 
 		//修改仓门
-		electricityCabinetBox.setElectricityBatteryId(newElectricityBattery.getId());
+		electricityCabinetBox.setSn(newElectricityBattery.getSn());
 		electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
 		electricityCabinetBox.setCellNo(cellNo);
 		electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 		electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 		return true;
 	}

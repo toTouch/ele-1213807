@@ -17,7 +17,7 @@ public class OwnMemberCardInfoVo {
     /**
      * 剩余使用次数
      */
-    private Long remainingNumber;
+    private Integer remainingNumber;
 
 
     private Long days;

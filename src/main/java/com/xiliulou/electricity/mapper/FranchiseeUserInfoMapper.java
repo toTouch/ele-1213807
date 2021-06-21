@@ -14,4 +14,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo>{
 
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);
+
+	Integer minCount(Long id);
 }

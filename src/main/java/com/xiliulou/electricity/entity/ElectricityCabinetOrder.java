@@ -92,6 +92,8 @@ public class ElectricityCabinetOrder {
     * 更新时间
     */
     private Long updateTime;
+    //租户id
+    private Integer tenantId;
 
     //已支付未开门
     public static final Integer STATUS_ORDER_PAY = 1;

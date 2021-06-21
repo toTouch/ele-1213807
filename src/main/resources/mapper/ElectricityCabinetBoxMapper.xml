@@ -83,47 +83,15 @@
         where electricity_cabinet_id = #{id}
     </update>
 
+
 	<update id="modifyByCellNo">
 		update electricity.t_electricity_cabinet_box
-		<set>
-			<if test="electricityBatteryId != null and  electricityBatteryId !=-1">
-				electricity_battery_id = #{electricityBatteryId},
-			</if>
-			<if test="electricityBatteryId ==-1">
-				electricity_battery_id = null,
-			</if>
-			<if test="usableStatus != null">
-				usable_status = #{usableStatus},
-			</if>
-			<if test="status != null">
-				status = #{status},
-			</if>
-			<if test="isLock != null">
-				is_lock = #{isLock},
-			</if>
-			<if test="isFan != null">
-				is_fan = #{isFan},
-			</if>
-			<if test="temperature != null">
-				temperature = #{temperature},
-			</if>
-			<if test="isHeat != null">
-				is_heat = #{isHeat},
-			</if>
-			<if test="isLight != null">
-				is_light = #{isLight},
-			</if>
-			<if test="createTime != null">
-				create_time = #{createTime},
-			</if>
-			<if test="updateTime != null">
-				update_time = #{updateTime},
-			</if>
-			<if test="reportTime != null">
-				report_time = #{reportTime},
-			</if>
-		</set>
-		where cell_no = #{cellNo} and electricity_cabinet_id = #{electricityCabinetId} and del_flag=0
+		set sn = #{sn},
+		status = #{status},
+		update_time = #{updateTime}
+		where cell_no = #{cellNo}
+		and electricity_cabinet_id = #{electricityCabinetId}
+		and del_flag=0
 	</update>
 
 </mapper>

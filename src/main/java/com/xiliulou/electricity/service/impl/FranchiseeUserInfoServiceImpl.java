@@ -77,4 +77,19 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         return franchiseeUserInfoMapper.unBind(franchiseeUserInfo);
     }
 
+    @Override
+    public Integer minCount(Long id) {
+        return franchiseeUserInfoMapper.minCount(id);
+    }
+
+    @Override
+    public void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
+
+    }
+
+    @Override
+    public void plusCount(Long id) {
+
+    }
+
 }

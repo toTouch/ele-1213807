@@ -125,21 +125,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
+		//未缴纳押金
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("payDeposit  ERROR! not found user! uid:{} ", oldUserInfo.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
 		//出现多个用户绑定或没有用户绑定
-		if(franchiseeUserInfoList.size()!=1){
-			log.error("webBindBattery  ERROR! user status is error! uid:{} ", oldUserInfo.getUid());
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("payDeposit  ERROR! user status is error! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		FranchiseeUserInfo oldFranchiseeUserInfo =franchiseeUserInfoList.get(0);
-
+		//判断该换电柜用户是否租电池等 TODO
 
 		//未缴纳押金
-		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("webBindBattery  ERROR! user not pay deposit! uid:{} ", oldUserInfo.getUid());
+		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoList.get(0);
+		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+			log.error("order  ERROR! not pay deposit! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
+
+
 
 		//已绑定电池
 		if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
@@ -239,21 +248,30 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
+		//未缴纳押金
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("payDeposit  ERROR! not found user! uid:{} ", oldUserInfo.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
 		//出现多个用户绑定或没有用户绑定
-		if(franchiseeUserInfoList.size()!=1){
-			log.error("webBindBattery  ERROR! user status is error! uid:{} ", oldUserInfo.getUid());
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("payDeposit  ERROR! user status is error! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		FranchiseeUserInfo oldFranchiseeUserInfo =franchiseeUserInfoList.get(0);
-
+		//判断该换电柜用户是否租电池等 TODO
 
 		//未缴纳押金
-		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("webBindBattery  ERROR! user not pay deposit! uid:{} ", oldUserInfo.getUid());
+		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoList.get(0);
+		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+			log.error("order  ERROR! not pay deposit! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
+
+
 
 
 
@@ -316,10 +334,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return userInfoMapper.homeOneAuth(first,now);
 	}
 
-	@Override
-	public int minCount(Long id) {
-		return userInfoMapper.minCount(id, System.currentTimeMillis());
-	}
 
 	@Override
 	public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay) {
@@ -345,34 +359,45 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
 			return R.failMsg("未找到用户信息!");
 		}
-		if (Objects.isNull(userInfo.getRemainingNumber()) || Objects.isNull(userInfo.getMemberCardExpireTime()) || System.currentTimeMillis() >=
-				userInfo.getMemberCardExpireTime() || userInfo.getRemainingNumber() == 0) {
+
+		//是否缴纳押金，是否绑定电池
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		//未缴纳押金
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("payDeposit  ERROR! not found user! uid:{} ", userInfo.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
+		//出现多个用户绑定或没有用户绑定
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("payDeposit  ERROR! user status is error! uid:{} ", userInfo.getUid());
+			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+		}
+
+
+		//未缴纳押金
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+			log.error("order  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
+			return R.fail("ELECTRICITY.0042", "未缴纳押金");
+		}
+
+
+		if (Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || System.currentTimeMillis() >=
+				franchiseeUserInfo.getMemberCardExpireTime() || franchiseeUserInfo.getRemainingNumber() == 0) {
 			return R.ok();
 		}
 
 		OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
-		ownMemberCardInfoVo.setMemberCardExpireTime(userInfo.getMemberCardExpireTime());
-		ownMemberCardInfoVo.setRemainingNumber(userInfo.getRemainingNumber());
-		ownMemberCardInfoVo.setType(userInfo.getCardType());
-		ownMemberCardInfoVo.setName(userInfo.getCardName());
-		ownMemberCardInfoVo.setDays((long) Math.round((userInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
+		ownMemberCardInfoVo.setMemberCardExpireTime(franchiseeUserInfo.getMemberCardExpireTime());
+		ownMemberCardInfoVo.setRemainingNumber(franchiseeUserInfo.getRemainingNumber());
+		ownMemberCardInfoVo.setType(franchiseeUserInfo.getCardType());
+		ownMemberCardInfoVo.setName(franchiseeUserInfo.getCardName());
+		ownMemberCardInfoVo.setDays((long) Math.round((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
 		return R.ok(ownMemberCardInfoVo);
 	}
 
-	@Override
-	public void deleteUserInfo(UserInfo oldUserInfo) {
-		userInfoMapper.deleteById(oldUserInfo.getId());
-	}
-
-	@Override
-	public void updateByUid(UserInfo userInfo) {
-		userInfoMapper.updateByUid(userInfo);
-	}
-
-	@Override
-	public void plusCount(Long id) {
-		userInfoMapper.plusCount(id, System.currentTimeMillis());
-	}
 
 	@Override
 	public R queryUserInfo() {
@@ -399,25 +424,45 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
+		//是否缴纳押金，是否绑定电池
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 		//未缴纳押金
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("payDeposit  ERROR! not found user! uid:{} ", userInfo.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
+		//出现多个用户绑定或没有用户绑定
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("payDeposit  ERROR! user status is error! uid:{} ", userInfo.getUid());
+			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+		}
+
+
+		//未缴纳押金
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+			log.error("order  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
+
 		//判断用户是否开通月卡
-		if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
-			log.error("ELECTRICITY  ERROR! not found memberCard ");
+		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+				|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+			log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
 		Long now = System.currentTimeMillis();
-		if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
-			log.error("ELECTRICITY  ERROR! not found memberCard ");
+		if (franchiseeUserInfo.getMemberCardExpireTime() < now
+				|| franchiseeUserInfo.getRemainingNumber() == 0) {
+			log.error("ELECTRICITY  ERROR! memberCard is  Expire ! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0023", "月卡已过期");
 		}
 
 		//未租电池
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
 			log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
@@ -445,10 +490,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return R.ok();
 	}
 
-	@Override
-	public void updateRefund(UserInfo userInfo) {
-		userInfoMapper.updateRefund(userInfo);
-	}
 
 	@Override
 	@Transactional

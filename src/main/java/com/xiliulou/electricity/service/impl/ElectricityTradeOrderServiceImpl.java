@@ -7,12 +7,14 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixin.entity.PayOrder;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
@@ -49,6 +51,8 @@ public class ElectricityTradeOrderServiceImpl extends
     UserInfoService userInfoService;
     @Autowired
     EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
 
 
@@ -206,6 +210,7 @@ public class ElectricityTradeOrderServiceImpl extends
         //支付订单
         String tradeOrderNo = weiXinPayNotify.getOutTradeNo();
 
+        //系统订单
         ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
         if (Objects.isNull(electricityTradeOrder)) {
             log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
@@ -222,10 +227,12 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("NOTIFY_DEPOSIT_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "未找到订单!");
         }
+
         if (!ObjectUtil.equal(EleDepositOrder.STATUS_INIT, eleDepositOrder.getStatus())) {
             log.error("NOTIFY_DEPOSIT_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "押金订单已处理!");
         }
+
         Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
         Integer depositOrderStatus = EleDepositOrder.STATUS_FAIL;
         boolean result = false;
@@ -243,13 +250,14 @@ public class ElectricityTradeOrderServiceImpl extends
         }
 
         if(Objects.equals(depositOrderStatus,EleDepositOrder.STATUS_SUCCESS)) {
-            UserInfo userInfoUpdate = new UserInfo();
-            userInfoUpdate.setId(userInfo.getId());
-            userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_DEPOSIT);
-            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            userInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
-            userInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
-            userInfoService.updateById(userInfoUpdate);
+            //用户缴纳押金
+            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+            franchiseeUserInfoUpdate.setId(userInfo.getId());
+            franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
+            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
+            franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
+            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         }
 
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();

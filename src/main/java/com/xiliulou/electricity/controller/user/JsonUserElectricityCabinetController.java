@@ -128,9 +128,9 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	 *
 	 * @return
 	 */
-	@GetMapping(value = "/user/electricityCabinet/rentBatteryQuery")
-	public R rentBatteryQuery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-		return electricityCabinetService.rentBatteryQuery(productKey, deviceName);
+	@GetMapping(value = "/user/electricityCabinet/queryByRentBattery")
+	public R queryByRentBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return electricityCabinetService.queryByRentBattery(productKey, deviceName);
 	}
 
 

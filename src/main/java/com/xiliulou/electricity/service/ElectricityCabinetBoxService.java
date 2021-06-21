@@ -40,9 +40,7 @@ public interface ElectricityCabinetBoxService {
 
     List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet,String cellNo);
 
-    void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox);
-
     ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo);
 
-
+	void modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
 }

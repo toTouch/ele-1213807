@@ -3,13 +3,13 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
@@ -17,9 +17,9 @@ import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -49,6 +49,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	EleHardwareHandlerManager eleHardwareHandlerManager;
 	@Autowired
 	UserInfoService userInfoService;
+	@Autowired
+	FranchiseeUserInfoService franchiseeUserInfoService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -145,8 +147,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 				if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
 
 					//该电池是否绑定用户
-					List<UserInfo> userInfoList = userInfoService.queryByBatterySn(electricityBattery.getSn());
-					if (ObjectUtil.isEmpty(userInfoList)) {
+					Integer count = franchiseeUserInfoService.queryCountByBatterySn(electricityBattery.getSn());
+					if (count<1) {
 						ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
 						BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
 						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
@@ -159,16 +161,16 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 		return electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
 	}
 
-	@Override
-	public void modifyByCellNo(ElectricityCabinetBox electricityCabinetBox) {
-		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-		electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetBox);
-	}
 
 	@Override
 	public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId, String cellNo) {
 		return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinetId)
 				.eq(ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
+	}
+
+	@Override
+	public void modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox) {
+		electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetNewBox);
 	}
 
 }

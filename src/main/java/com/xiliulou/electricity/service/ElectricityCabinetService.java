@@ -73,7 +73,7 @@ public interface ElectricityCabinetService {
 
     R showInfoByStoreId(Integer storeId);
 
-    R rentBatteryQuery(String productKey, String deviceName);
+    R queryByRentBattery(String productKey, String deviceName);
 
     List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
 
