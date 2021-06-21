@@ -496,6 +496,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 				}
 
 			});
+
 			return userAuthInfoVo;
 		}).collect(Collectors.toList());
 
