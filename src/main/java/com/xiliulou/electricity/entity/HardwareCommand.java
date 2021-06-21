@@ -104,6 +104,9 @@ public class HardwareCommand {
 	//上报其他配置
 	public static final String ELE_COMMAND_OTHER_CONFIG_RSP = "other_config_rsp";
 
+	//开启循环检测电池和格挡
+	public static final String ELE_COMMAND_START_OPEN_CHECK_CELL = "start_open_check_cell";
+
 	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
 	static {
@@ -147,5 +150,6 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_UNLOCK_CABINET, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_RSP, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_START_OPEN_CHECK_CELL, "OK");
 	}
 }
