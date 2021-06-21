@@ -160,15 +160,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBattery queryBySn(String oldElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, oldElectricityBatterySn));
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().
+                eq(ElectricityBattery::getSn, oldElectricityBatterySn));
     }
 
-
-    @Override
-    public ElectricityBattery queryByUnBindSn(String nowElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>()
-                .eq(ElectricityBattery::getSn, nowElectricityBatterySn));
-    }
 
 
 

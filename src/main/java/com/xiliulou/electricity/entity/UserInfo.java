@@ -67,6 +67,10 @@ public class UserInfo {
     private Integer usableStatus;
 
     private Integer tenantId;
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
@@ -75,10 +79,7 @@ public class UserInfo {
     public static final Integer STATUS_INIT = 0;
     //已实名认证
     public static final Integer STATUS_IS_AUTH=1;
-    //已缴纳押金
-    public static final Integer STATUS_IS_DEPOSIT=2;
-    //已租电池
-    public static final Integer STATUS_IS_BATTERY=3;
+
 
     //可用
     public static final Integer USER_USABLE_STATUS = 0;

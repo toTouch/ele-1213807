@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * 用户绑定列表(FranchiseeUserInfo)实体类
  *
@@ -60,7 +62,7 @@ public class FranchiseeUserInfo {
     /**
     * 租电池押金
     */
-    private Double batteryDeposit;
+    private BigDecimal batteryDeposit;
     /**
     * 租电池订单编号
     */
@@ -77,6 +79,10 @@ public class FranchiseeUserInfo {
     * 更新时间
     */
     private Long updateTime;
+    //已缴纳押金
+    public static final Integer STATUS_IS_DEPOSIT=2;
+    //已租电池
+    public static final Integer STATUS_IS_BATTERY=3;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

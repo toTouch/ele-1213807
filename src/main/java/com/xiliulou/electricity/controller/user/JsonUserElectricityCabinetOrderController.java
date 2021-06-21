@@ -4,11 +4,15 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
@@ -31,7 +35,7 @@ public class JsonUserElectricityCabinetOrderController {
 
     //换电柜下单
     @PostMapping("/user/electricityCabinetOrder/order")
-    public R order(@RequestBody OrderQuery orderQuery) {
+    public R order(@RequestBody @Validated(value = CreateGroup.class)  OrderQuery orderQuery) {
         return electricityCabinetOrderService.order(orderQuery);
     }
 

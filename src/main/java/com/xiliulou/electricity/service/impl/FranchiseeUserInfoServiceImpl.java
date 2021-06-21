@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
@@ -29,32 +30,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
      */
     @Override
     public FranchiseeUserInfo queryByIdFromDB(Long id) {
-        return this.franchiseeUserInfoMapper.queryById(id);
-    }
-    
-        /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public  FranchiseeUserInfo queryByIdFromCache(Long id) {
-        return null;
+        return this.franchiseeUserInfoMapper.selectById(id);
     }
 
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<FranchiseeUserInfo> queryAllByLimit(int offset, int limit) {
-        return this.franchiseeUserInfoMapper.queryAllByLimit(offset, limit);
-    }
 
     /**
      * 新增数据
@@ -65,7 +43,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public FranchiseeUserInfo insert(FranchiseeUserInfo franchiseeUserInfo) {
-        this.franchiseeUserInfoMapper.insertOne(franchiseeUserInfo);
+        this.franchiseeUserInfoMapper.insert(franchiseeUserInfo);
         return franchiseeUserInfo;
     }
 
@@ -78,19 +56,25 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(FranchiseeUserInfo franchiseeUserInfo) {
-       return this.franchiseeUserInfoMapper.update(franchiseeUserInfo);
-         
+       return this.franchiseeUserInfoMapper.updateById(franchiseeUserInfo);
+
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.franchiseeUserInfoMapper.deleteById(id) > 0;
+    public List<FranchiseeUserInfo> queryByUserInfoId(Long id) {
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>()
+        .eq(FranchiseeUserInfo::getUserInfoId,id).eq(FranchiseeUserInfo::getDelFlag,FranchiseeUserInfo.DEL_NORMAL));
     }
+
+    @Override
+    public Integer queryCountByBatterySn(String electricityBatterySn) {
+        return franchiseeUserInfoMapper.selectCount(new LambdaQueryWrapper<FranchiseeUserInfo>()
+                .eq(FranchiseeUserInfo::getNowElectricityBatterySn,electricityBatterySn).eq(FranchiseeUserInfo::getDelFlag,FranchiseeUserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public Integer unBind(FranchiseeUserInfo franchiseeUserInfo) {
+        return franchiseeUserInfoMapper.unBind(franchiseeUserInfo);
+    }
+
 }

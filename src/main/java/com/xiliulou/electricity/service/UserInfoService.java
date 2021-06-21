@@ -49,13 +49,13 @@ public interface UserInfoService extends IService<UserInfo> {
      */
     Integer update(UserInfo userInfo);
 
-    R bindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
+    R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
     R queryList(UserInfoQuery userInfoQuery);
 
     R updateStatus(Long id,Integer usableStatus);
 
-    R unBindBattery(Long id);
+    R webUnBindBattery(Long id);
 
     UserInfo queryByUid(Long uid);
 
@@ -84,8 +84,6 @@ public interface UserInfoService extends IService<UserInfo> {
     void updateRefund(UserInfo userInfo);
 
     R updateAuth(UserInfo userInfo);
-
-    List<UserInfo> queryByBatterySn(String sn);
 
     R queryUserAuthInfo(UserInfoQuery userInfoQuery);
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.query;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
+import javax.validation.constraints.NotNull;
 
 /**
  * 订单表(TElectricityCabinetOrder)实体类
@@ -14,6 +16,7 @@ public class OrderQuery {
     /**
     * 换电柜id
     */
+    @NotNull(message = "换电柜id不能为空!", groups = {UpdateGroup.class})
     private Integer electricityCabinetId;
     /**
     * 下单来源 1--微信公众号 2--小程序
