@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import java.util.List;
 
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -30,7 +31,7 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder>{
      * 查询指定行数据
      *
      */
-    IPage queryList(Page page, @Param("query") EleRefundQuery eleRefundQuery);
+    List<EleRefundOrderVO> queryList(@Param("query") EleRefundQuery eleRefundQuery);
 
 
     /**

@@ -5,6 +5,7 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,9 +41,9 @@ public class JsonAdminElectricityPayParamsController {
      * @return
      */
     @PostMapping(value = "/admin/electricityPayParams")
-    public R save(@RequestBody @Validated ElectricityPayParams electricityPayParams) {
+    public R save(@RequestBody @Validated ElectricityPayParams electricityPayParams,@RequestParam("file") MultipartFile file) {
 
-        return electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams, System.currentTimeMillis());
+        return electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams, file);
     }
 
     /**
@@ -53,12 +54,12 @@ public class JsonAdminElectricityPayParamsController {
      */
     @GetMapping(value = "/admin/electricityPayParams")
     public R get() {
-
-        return R.ok(electricityPayParamsService.getElectricityPayParams());
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(electricityPayParamsService.queryFromCache(tenantId));
     }
 
     /**
-     * 退款证书文件上传
+     * 证书文件上传
      *
      * @param file
      * @return
@@ -74,7 +75,7 @@ public class JsonAdminElectricityPayParamsController {
         if (!Objects.equals(fileType, API_FILE_TYPE)) {
             return R.fail("api文件不正确");
         }
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache();
         if (Objects.isNull(electricityPayParams)) {
             return R.fail("请先配置支付信息");
         }
@@ -90,7 +91,7 @@ public class JsonAdminElectricityPayParamsController {
             log.error("上传失败", e);
             return R.fail(e.getLocalizedMessage());
         }
-        electricityPayParams.setApiName(fileName);
+        electricityPayParams.setWechatMerchantPrivateKeyPath(fileName);
         electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams,System.currentTimeMillis());
         return R.ok();
     }

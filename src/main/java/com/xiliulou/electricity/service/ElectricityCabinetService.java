@@ -61,8 +61,6 @@ public interface ElectricityCabinetService {
 
     R home();
 
-    R queryByDevice(String productKey, String deviceName);
-
     ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName);
 
     R checkOpenSessionId(String sessionId);
@@ -73,6 +71,8 @@ public interface ElectricityCabinetService {
 
     R showInfoByStoreId(Integer storeId);
 
+    R queryByOrder(String productKey, String deviceName);
+
     R queryByRentBattery(String productKey, String deviceName);
 
     List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
@@ -80,4 +80,8 @@ public interface ElectricityCabinetService {
     R batteryReport(BatteryReportQuery batteryReportQuery);
 
     List<ElectricityCabinet> queryByStoreId(Integer storeId);
+
+    R queryByDevice(String productKey, String deviceName);
+
+    boolean isBusiness(ElectricityCabinet electricityCabinet);
 }

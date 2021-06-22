@@ -42,12 +42,12 @@ public class JsonOuterEleRefundOrderController {
         Map<String, String> refundMap = PaymentKit.xmlToMap(xmlMsg);
         //验签
         ElectricityPayParams electricityPayParams
-                = electricityPayParamsService.getElectricityPayParams();
+                = electricityPayParamsService.queryFromCache();
         if (ObjectUtil.isEmpty(electricityPayParams)) {
             log.error("WEIXIN_PAY_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
             return "fail";
         }
-        Pair<Boolean, Object> verifyNotifyPair = weiXinRefundNotifyService.handlerNotify(refundMap,electricityPayParams.getPaternerKey());
+        Pair<Boolean, Object> verifyNotifyPair = weiXinRefundNotifyService.handlerNotify(refundMap, electricityPayParams.getPaternerKey());
         if (!verifyNotifyPair.getLeft()) {
             return "fail";
         }

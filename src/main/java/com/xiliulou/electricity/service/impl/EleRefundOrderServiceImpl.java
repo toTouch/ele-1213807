@@ -2,13 +2,13 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
@@ -17,9 +17,9 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
-import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.pay.weixin.entity.RefundQuery;
 import com.xiliulou.pay.weixin.refund.RefundAdapterHandler;
 import lombok.extern.slf4j.Slf4j;
@@ -32,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -64,6 +63,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     ElectricityPayParamsService electricityPayParamsService;
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
 
     /**
@@ -186,15 +187,34 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return Pair.of(false, "未找到用户信息!");
         }
 
-        if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
-            UserInfo userInfoUpdate = new UserInfo();
-            userInfoUpdate.setId(userInfo.getId());
-            userInfoUpdate.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            userInfoUpdate.setBatteryDeposit(null);
-            userInfoUpdate.setOrderId(null);
-            userInfoService.updateById(userInfoUpdate);
+        //是否缴纳押金，是否绑定电池
+        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+
+        //未找到用户
+        if (franchiseeUserInfoList.size() < 1) {
+            log.error("NOTIFY  ERROR! not found user! uid:{} ", userInfo.getUid());
+            return Pair.of(false, "未找到用户信息!");
+
         }
+
+
+        //出现多个用户绑定或没有用户绑定
+        if (franchiseeUserInfoList.size() > 1) {
+            log.error("NOTIFY  ERROR! user status is error! uid:{} ", userInfo.getUid());
+            return Pair.of(false, "用户状态异常!");
+        }
+
+        if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
+            FranchiseeUserInfo franchiseeUserInfo=new FranchiseeUserInfo();
+            franchiseeUserInfo.setId(userInfo.getId());
+            franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfo.setBatteryDeposit(null);
+            franchiseeUserInfo.setOrderId(null);
+            franchiseeUserInfoService.update(franchiseeUserInfo);
+        }
+
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
         eleRefundOrderUpdate.setId(eleRefundOrder.getId());
@@ -226,7 +246,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .refundOrderNo(eleRefundOrder.getRefundOrderNo())
                     .payAmount(eleRefundOrder.getPayAmount())
                     .refundAmount(eleRefundOrder.getRefundAmount()).build();
-            ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
+            ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache();
             Pair<Boolean, Object> getPayParamsPair =
                     eleRefundOrderService.commonCreateRefundOrder(refundOrder, electricityPayParams, request);
 
@@ -258,13 +278,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
     @Override
     public R queryList(EleRefundQuery eleRefundQuery) {
-        Page page = PageUtil.getPage(eleRefundQuery.getOffset(), eleRefundQuery.getSize());
-
-        eleRefundOrderMapper.queryList(page, eleRefundQuery);
-        if (ObjectUtil.isEmpty(page.getRecords())) {
-            return R.ok(new ArrayList<>());
-        }
-        return R.ok(page.getRecords());
+        return R.ok(eleRefundOrderMapper.queryList(eleRefundQuery));
     }
 
     @Override

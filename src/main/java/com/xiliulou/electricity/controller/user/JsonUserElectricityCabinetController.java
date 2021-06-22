@@ -133,5 +133,15 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		return electricityCabinetService.queryByRentBattery(productKey, deviceName);
 	}
 
+	/**
+	 * 查询换电柜 按三元组
+	 *
+	 * @return
+	 */
+	@GetMapping(value = "/user/electricityCabinet/queryByOrder")
+	public R queryByOrder(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return electricityCabinetService.queryByOrder(productKey, deviceName);
+	}
+
 
 }

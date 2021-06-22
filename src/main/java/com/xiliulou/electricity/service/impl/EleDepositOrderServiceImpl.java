@@ -12,11 +12,14 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
@@ -24,21 +27,26 @@ import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -86,6 +94,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	RentBatteryOrderService rentBatteryOrderService;
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+	@Autowired
+	ElectricityCabinetOrderService electricityCabinetOrderService;
+	@Autowired
+	ElectricityCabinetService electricityCabinetService;
+	@Autowired
+	StoreService storeService;
 
 	@Override
 	public EleDepositOrder queryByOrderId(String orderNo) {
@@ -94,41 +108,69 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R payDeposit(HttpServletRequest request) {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		//限频
-		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
-		if (!getLockSuccess) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
-		User user = userService.queryByUidFromCache(uid);
+	public R payDeposit(Integer electricityCabinetId,HttpServletRequest request) {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("payDeposit  ERROR! not found user! userId:{}", uid);
+			log.error("queryByRentBattery  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		//限频
+		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+		if (!getLockSuccess) {
+			return R.fail("ELECTRICITY.0034", "操作频繁");
+		}
+
+		//换电柜
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		if (Objects.isNull(electricityCabinet)) {
+			log.error("returnBattery  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			return R.fail("ELECTRICITY.0005", "未找到换电柜");
+		}
+
+		//换电柜是否在线
+		boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+		if (!eleResult) {
+			log.error("returnBattery  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+			return R.fail("ELECTRICITY.0035", "换电柜不在线");
+		}
+
+		//换电柜是否出现异常被锁住
+		String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+		if (StringUtils.isNotEmpty(isLock)) {
+			log.error("returnBattery  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
+			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
+		}
+
+		//换电柜营业时间
+		Boolean result = electricityCabinetService.isBusiness(electricityCabinet);
+		if (result) {
+			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+		}
+
+
 		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(uid);
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+
 		//用户是否可用
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("payDeposit  ERROR! not found userInfo,uid:{} ", uid);
+			log.error("payDeposit  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("payDeposit  ERROR! user not auth! ,uid:{} ", uid);
+			log.error("payDeposit  ERROR! user not auth! ,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
+
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
 		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
-			log.error("payDeposit  ERROR! not found user! userId:{}", uid);
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
@@ -139,26 +181,41 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		//未缴纳押金
+		//已缴纳押金
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("payDeposit  ERROR! user is rent deposit! ,uid:{} ", uid);
+			log.error("payDeposit  ERROR! user is rent deposit! ,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0049", "已缴纳押金");
 		}
 
+
 		//计算押金
-		//根据用户cid找到对应的加盟商
-		Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
-		if (Objects.isNull(franchisee)) {
-			log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ", user.getCid());
-			//麒迹 未找到加盟商默认郑州，郑州也找不到再提示找不到 其余客服需要换  TODO
-			franchisee = franchiseeService.queryByCid(147);
-			if (Objects.isNull(franchisee)) {
-				return R.fail("ELECTRICITY.0038", "未找到加盟商");
-			}
+		//查找换电柜门店
+		if(Objects.isNull(electricityCabinet.getStoreId())){
+			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
 		}
+		Store store=storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+		if(Objects.isNull(store)){
+			log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+			return R.fail("ELECTRICITY.0018", "未找到门店");
+		}
+
+
+		//查找门店加盟商
+		if(Objects.isNull(store.getFranchiseeId())){
+			log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+		}
+
+		Franchisee franchisee=franchiseeService.queryByIdFromCache(store.getFranchiseeId());
+		if(Objects.isNull(franchisee)){
+			log.error("queryByDevice  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
+			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+		}
+
 		BigDecimal payAmount = franchisee.getBatteryDeposit();
-		String orderId = generateOrderId(uid);
+		String orderId = generateOrderId(user.getUid());
 
 		//生成订单
 		EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
@@ -195,8 +252,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				.payAmount(payAmount)
 				.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
 				.attach(ElectricityTradeOrder.ATTACH_DEPOSIT).build();
-		ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
-		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid);
+		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache();
+		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid());
 		Pair<Boolean, Object> getPayParamsPair =
 				electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
 		if (!getPayParamsPair.getLeft()) {
@@ -208,33 +265,30 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R returnDeposit(HttpServletRequest request) {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
+		//登录用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("returnDeposit  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
+
 		//限频
-		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
 		if (!getLockSuccess) {
 			return R.fail("操作频繁,请稍后再试!");
 		}
 
-		//校验用户
-		User user = userService.queryByUidFromCache(uid);
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
 
-		UserInfo userInfo = userInfoService.queryByUid(uid);
+		//用户
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo)) {
-			log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+			log.error("returnDeposit  ERROR! not found user,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
 		//用户是否可用
 		if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
+			log.error("returnDeposit  ERROR! user is unUsable! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
@@ -242,31 +296,31 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
-			log.error("payDeposit  ERROR! not found user! uid:{} ", userInfo.getUid());
+			log.error("returnDeposit  ERROR! not found user! uid:{} ",user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
 
 		//出现多个用户绑定或没有用户绑定
 		if (franchiseeUserInfoList.size() > 1) {
-			log.error("payDeposit  ERROR! user status is error! uid:{} ", userInfo.getUid());
+			log.error("returnDeposit  ERROR! user status is error! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		//
+		//用户
 		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 
 		//判断是否退电池
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-			log.error("ELECTRICITY  ERROR! not return battery! uid:{} ", userInfo.getUid());
+			log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0046", "未退还电池");
 		}
 
 		//用户状态异常
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
 				&& Objects.isNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
-			log.error("ELECTRICITY  ERROR! userInfo is error!userInfo:{} ", userInfo);
+			log.error("returnDeposit  ERROR! userInfo is error!uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
@@ -274,21 +328,31 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		//判断是否缴纳押金
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
 				|| Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
-			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
+			log.error("returnDeposit  ERROR! not pay deposit! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
 
 		//是否存在未完成的租电池订单
-		Integer count = rentBatteryOrderService.queryByUidAndType(uid, RentBatteryOrder.TYPE_USER_RENT);
-		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+		RentBatteryOrder rentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
+		if (Objects.nonNull(rentBatteryOrder1)) {
+			return R.fail((Object) rentBatteryOrder1.getOrderId(),"ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
 
-		//是否存在未完成的还电池订单 TODO
+		//是否存在未完成的还电池订单
+		RentBatteryOrder rentBatteryOrder2 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
+		if (Objects.nonNull(rentBatteryOrder2)) {
+			return R.fail((Object) rentBatteryOrder1.getOrderId(),"ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+		}
 
-		//是否存在未完成的换电订单 TODO
+		//是否存在未完成的换电订单
+		ElectricityCabinetOrder oldElectricityCabinetOrder = electricityCabinetOrderService.queryByUid(user.getUid());
+		if (Objects.nonNull(oldElectricityCabinetOrder)) {
+			return R.fail((Object) oldElectricityCabinetOrder.getOrderId(),"ELECTRICITY.0094", "存在未完成换电订单，不能下单");
+		}
 
+
+		//查找缴纳押金订单
 		EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getOrderId()));
 		if (Objects.isNull(eleDepositOrder)) {
 			return R.fail("ELECTRICITY.0015", "未找到订单");
@@ -300,6 +364,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		BigDecimal payAmount = eleDepositOrder.getPayAmount();
+
 		//退款零元
 		if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
 			eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
@@ -322,7 +387,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0047", "请勿重复退款");
 		}
 
-		String orderId = generateOrderId(uid);
+		String orderId = generateOrderId(user.getUid());
 
 		//生成退款订单
 		EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
@@ -418,7 +483,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		if (ObjectUtil.isEmpty(eleDepositOrderList)) {
 			throw new CustomBusinessException("查不到订单");
 		}
-
 
 		List<EleDepositOrderExcelVO> EleDepositOrderExcelVOS = new ArrayList();
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

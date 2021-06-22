@@ -34,8 +34,8 @@ public class JsonUserEleDepositOrderController {
 
     //缴纳押金
     @PostMapping("/user/payDeposit")
-    public R payDeposit(HttpServletRequest request) {
-        return eleDepositOrderService.payDeposit(request);
+    public R payDeposit(@RequestParam("orderId") Integer electricityCabinetId,HttpServletRequest request) {
+        return eleDepositOrderService.payDeposit(electricityCabinetId,request);
     }
 
     //退还押金
@@ -64,3 +64,4 @@ public class JsonUserEleDepositOrderController {
     }
 
 }
+

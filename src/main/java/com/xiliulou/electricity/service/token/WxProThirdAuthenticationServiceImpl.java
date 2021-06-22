@@ -85,7 +85,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
             throw new AuthenticationServiceException("操作频繁！请稍后再试！");
         }
 
-        ElectricityPayParams electricityPayParams = electricityPayParamsService.getElectricityPayParams();
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache();
         if (Objects.isNull(electricityPayParams) || StrUtil.isEmpty(electricityPayParams.getAppId()) || StrUtil.isEmpty(electricityPayParams.getAppSecret())) {
             log.warn("TOKEN ERROR! not found appId,appSecret! authMap={}", authMap);
             throw new AuthenticationServiceException("未能查找到appId和appSecret！");

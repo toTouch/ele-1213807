@@ -1,12 +1,9 @@
 package com.xiliulou.electricity.entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import com.baomidou.mybatisplus.extension.activerecord.Model;
 import lombok.Data;
 
-import javax.validation.constraints.NotEmpty;
 
 /**
  * @program: XILIULOU
@@ -16,26 +13,52 @@ import javax.validation.constraints.NotEmpty;
  **/
 @Data
 @TableName("t_electricity_pay_params")
-public class ElectricityPayParams extends Model<ElectricityPayParams> {
-    @TableId(value = "id", type = IdType.AUTO)
+public class ElectricityPayParams {
+    @TableId()
     private Integer id;
-    @NotEmpty(message = "appId不能为空!")
-    private String appId;
-    @NotEmpty(message = "appSecret不能为空!")
-    private String appSecret;
-    @NotEmpty(message = "mchId不能为空!")
-    private String mchId;
-    @NotEmpty(message = "paternerKey不能为空!")
-    private String paternerKey;
     /**
-     * api证书名称
+     * 微信公众号id
      */
-    private String apiName;
-
-    private Long createTime;
-    private Long updateTime;
-
+    private String officeAccountAppId;
+    /**
+     * 微信公众号密钥
+     */
+    private String officeAccountAppSecret;
+    /**
+     * 商家小程序appid
+     */
+    private String merchantMinProAppId;
+    /**
+     * 商家小程序appSecert
+     */
+    private String merchantMinProAppSecert;
+    /**
+     * 微信商户号
+     */
+    private String wechatMerchantId;
+    /**
+     * 微信商户证书号
+     */
+    private String wechatMerchantCertificateSno;
+    /**
+     * 微信商户私钥证书地址
+     */
+    private String wechatMerchantPrivateKeyPath;
+    /**
+     * 微信支付v3的api密钥
+     */
+    private String wechatV3ApiKey;
+    /**
+     * 租户id
+     */
     private Integer tenantId;
-
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
 
 }

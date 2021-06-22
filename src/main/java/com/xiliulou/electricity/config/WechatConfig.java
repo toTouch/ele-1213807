@@ -1,0 +1,61 @@
+package com.xiliulou.electricity.config;
+
+import lombok.Data;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.cloud.context.config.annotation.RefreshScope;
+import org.springframework.context.annotation.Configuration;
+
+/**
+ * @author: eclair
+ * @Date: 2021/3/18 08:34
+ * @Description:
+ */
+@Configuration
+@ConfigurationProperties("wechat")
+@Data
+@RefreshScope
+public class WechatConfig {
+    /**
+     * 小程序appId
+     */
+    private String minProAppId;
+    /**
+     * 小程序秘钥
+     */
+    private String minProAppSecret;
+    /**
+     * 公众号appId
+     */
+    private String officeAccountAppId;
+    /**
+     * 公众号秘钥
+     */
+    private String officeAccountAppSecret;
+    /**
+     * 商户秘钥
+     */
+    private String mchid;
+    /**
+     * api秘钥
+     */
+    private String apiV3Key;
+    /**
+     * 商户证书序列号
+     */
+    private String mchCertificateSerialNo;
+    /**
+     * 商户证书私钥文件地址
+     */
+    private String mchCertificatePrivateKeyPath;
+
+    /**
+     * 支付回调,后缀必须有"/"
+     */
+    private String payCallBackUrl;
+    /**
+     * 商户证书私钥文件目录
+     */
+    private String mchCertificateDirectory;
+
+
+}

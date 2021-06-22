@@ -49,6 +49,7 @@
             </if>
         </where>
         order by tero.update_time desc
+        limit #{query.offset}, #{query.size}
     </select>
 
     <!--通过实体作为筛选条件查询-->
