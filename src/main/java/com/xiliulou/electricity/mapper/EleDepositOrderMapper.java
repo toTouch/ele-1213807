@@ -22,7 +22,7 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder>{
      * 查询指定行数据
      *
      */
-    IPage queryList(Page page, @Param("query") EleDepositOrderQuery eleDepositOrderQuery);
+    List<EleDepositOrder> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
 
 }

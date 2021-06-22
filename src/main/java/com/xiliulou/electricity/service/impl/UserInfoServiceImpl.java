@@ -126,7 +126,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
-		//未缴纳押金
+		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
 			log.error("payDeposit  ERROR! not found user! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -249,7 +249,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
-		//未缴纳押金
+		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
 			log.error("payDeposit  ERROR! not found user! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -362,7 +362,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-		//未缴纳押金
+		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
 			log.error("payDeposit  ERROR! not found user! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -426,7 +426,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-		//未缴纳押金
+		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
 			log.error("payDeposit  ERROR! not found user! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");

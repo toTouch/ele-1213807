@@ -48,4 +48,6 @@ public interface FranchiseeUserInfoService {
     void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
     void plusCount(Long id);
+
+	void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
 }

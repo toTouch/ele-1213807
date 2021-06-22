@@ -79,6 +79,8 @@ public class FranchiseeUserInfo {
     * 更新时间
     */
     private Long updateTime;
+    //初始化
+    public static final Integer STATUS_IS_INIT=1;
     //已缴纳押金
     public static final Integer STATUS_IS_DEPOSIT=2;
     //已租电池

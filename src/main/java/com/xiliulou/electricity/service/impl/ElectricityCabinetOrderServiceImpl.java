@@ -145,11 +145,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0061", "下单过于频繁");
 		}
 
-		//判断用户是否有未完成换电订单，租电订单，还电订单  TODO
+		//判断用户是否有未完成换电订单
 		Integer count = queryByUid(user.getUid());
 		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
+			return R.fail("ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
+
+		//判断是否有未完成的租电池订单 TODO
+
+		//判断是否有未完成的还电池订单 TODO
 
 
 		//换电柜
@@ -209,7 +213,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-		//未缴纳押金
+		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
 			log.error("payDeposit  ERROR! not found user! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");

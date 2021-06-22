@@ -92,4 +92,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     }
 
+    @Override
+    public void updateRefund(FranchiseeUserInfo franchiseeUserInfo) {
+
+    }
+
 }
