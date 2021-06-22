@@ -1003,43 +1003,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 	@Override
 	public R queryByDevice(String productKey, String deviceName) {
-
-		//用户
+		//登录用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
+			log.error("queryByDevice  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-
-		//判断用户是否有未完成订单
+		//判断用户是否有未完成换电订单
 		Integer count = this.electricityCabinetOrderService.queryByUid(user.getUid());
 		if (count > 0) {
 			return R.fail("ELECTRICITY.0013", "存在未完成订单，不能下单");
 		}
 
 
-		//用户成功换电后才会添加缓存，用户换电周期限制
-		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		//判断用户是否有未完成租电池订单 TODO
+
+		//判断用户是否有未完成换电池订单 TODO
+
+
+
+		//用户换电周期限制
 		String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + user.getUid());
 		if (StringUtils.isNotEmpty(orderLimit)) {
-			return R.fail("ELECTRICITY.0061", "下单过于频繁 请" + electricityConfig.getOrderTime() + "分钟后重试");
+			return R.fail("ELECTRICITY.0061", "下单过于频繁");
 		}
 
 
 		//换电柜
 		ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("ELECTRICITY  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+			log.error("queryByDevice  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-
-		//动态查询在线状态
+		//换电柜是否在线
 		boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 		if (!eleResult) {
 			log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
@@ -1054,49 +1053,82 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
 		}
 
+		//换电柜是否营业
+		Boolean result = this.isBusiness(electricityCabinet);
+		if (result) {
+			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+		}
+
+
+		//查找换电柜门店
+		if(Objects.isNull(electricityCabinet.getStoreId())){
+			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+		}
+		Store store=storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+		if(Objects.isNull(store)){
+			log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+			return R.fail("ELECTRICITY.0018", "未找到门店");
+		}
+
+
+		//查找门店加盟商
+		if(Objects.isNull(store.getFranchiseeId())){
+			log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+		}
+
 
 		//校验用户
 		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo)) {
-			log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+			log.error("queryByDevice  ERROR! not found user,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
+
 		//用户是否可用
 		if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
+			log.error("queryByDevice  ERROR! user is unusable! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ", userInfo);
+			log.error("queryByDevice  ERROR! not auth! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
 		//未找到用户
 		if (franchiseeUserInfoList.size() < 1) {
-			log.error("payDeposit  ERROR! not found user! uid:{} ", user.getUid());
+			log.error("queryByDevice  ERROR! not found user! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
 
-		//出现多个用户绑定或没有用户绑定
+		//出现多个用户绑定，则用户异常
 		if (franchiseeUserInfoList.size() > 1) {
-			log.error("payDeposit  ERROR! user status is error! uid:{} ", user.getUid());
+			log.error("queryByDevice  ERROR! user status is error! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		//判断该换电柜用户是否租电池等 TODO
-
-		//未缴纳押金
+		//用户
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
+
+
+		//判断该换电柜加盟商和用户加盟商是否一致
+		if(!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
+			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(),store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId());
+			return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+		}
+
 
 		//判断是否缴纳押金
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
 				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
+			log.error("queryByDevice  ERROR! user not pay deposit! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
@@ -1104,25 +1136,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//判断用户是否开通月卡
 		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
 				|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
-			log.error("ELECTRICITY  ERROR! not found memberCard! uid:{} ", userInfo.getUid());
+			log.error("queryByDevice  ERROR!  not found memberCard! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
 		Long now = System.currentTimeMillis();
 		if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-			log.error("ELECTRICITY  ERROR!  memberCard is  Expire !  uid:{} ", userInfo.getUid());
+			log.error("queryByDevice  ERROR!  memberCard is  Expire !  uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0023", "月卡已过期");
 		}
 
+
 		//未租电池
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("ELECTRICITY  ERROR! USER not rent battery!  uid:{} ", userInfo.getUid());
+			log.error("queryByDevice  ERROR! USER not rent battery!  uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
+
 
 		//用户状态异常
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
 				&& Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn())) {
-			log.error("ELECTRICITY  ERROR! user STATUS IS ERROR! uid:{} ", userInfo.getUid());
+			log.error("queryByDevice  ERROR! user STATUS IS ERROR! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
@@ -1130,31 +1164,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
-		//营业时间
-		if (Objects.nonNull(electricityCabinetVO.getBusinessTime())) {
-			String businessTime = electricityCabinetVO.getBusinessTime();
-			if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
-				electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
-			} else {
-				electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-				Integer index = businessTime.indexOf("-");
-				if (!Objects.equals(index, -1) && index > 1) {
-					electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
-					Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-					Long beginTime = getTime(totalBeginTime);
-					Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-					Long endTime = getTime(totalEndTime);
-					electricityCabinetVO.setBeginTime(totalBeginTime);
-					electricityCabinetVO.setEndTime(totalEndTime);
-					Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-					if (firstToday + beginTime > now || firstToday + endTime < now) {
-						return R.fail("ELECTRICITY.0017", "换电柜已打烊");
-					} else {
-						electricityCabinetVO.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
-					}
-				}
-			}
-		}
 
 		//查满仓空仓数
 		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(0);
