@@ -146,9 +146,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		//判断用户是否有未完成换电订单
-		Integer count = queryByUid(user.getUid());
-		if (count > 0) {
-			return R.fail("ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+		ElectricityCabinetOrder electricityCabinetOrder = queryByUid(user.getUid());
+		if (Objects.nonNull(electricityCabinetOrder)) {
+			return R.fail(electricityCabinetOrder.getOrderId(),"ELECTRICITY.0013", "存在未完成租电订单，不能下单");
 		}
 
 		//判断是否有未完成的租电池订单 TODO
@@ -660,7 +660,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	public ElectricityCabinetOrder queryByUid(Long uid) {
 		return electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid)
-				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL));
+				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.STATUS_ORDER_COMPLETE, ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL, ElectricityCabinetOrder.STATUS_ORDER_CANCEL)
+				.orderByDesc(ElectricityCabinetOrder::getCreateTime).last("limit 0,1"));
 	}
 
 	@Override
