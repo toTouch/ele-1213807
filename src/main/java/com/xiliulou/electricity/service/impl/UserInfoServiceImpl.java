@@ -143,11 +143,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		//未缴纳押金
 		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoList.get(0);
-		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("order  ERROR! not pay deposit! uid:{} ", oldUserInfo.getUid());
+
+		//判断是否缴纳押金
+		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
+			log.error("ELECTRICITY  ERROR! not pay deposit! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
-
 
 
 		//已绑定电池
@@ -155,7 +157,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0045", "已绑定电池");
 		}
-
 
 		//判断电池是否存在，或者已经被绑定
 		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getElectricityBatterySn());
@@ -270,9 +271,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			log.error("order  ERROR! not pay deposit! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
-
-
-
 
 
 		if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) || Objects.isNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {

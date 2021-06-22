@@ -272,7 +272,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 
 		//判断是否缴纳押金
-		if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
+		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
 				|| Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
 			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");

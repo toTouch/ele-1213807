@@ -7,6 +7,8 @@ import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 租电池记录(TRentBatteryOrder)表数据库访问层
  *
@@ -19,7 +21,7 @@ public interface RentBatteryOrderMapper extends BaseMapper<RentBatteryOrder> {
     /**
      * 查询指定行数据
      */
-    IPage queryList(Page page, @Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
+    List<RentBatteryOrder> queryList(@Param("query") RentBatteryOrderQuery rentBatteryOrderQuery);
 
 
 }

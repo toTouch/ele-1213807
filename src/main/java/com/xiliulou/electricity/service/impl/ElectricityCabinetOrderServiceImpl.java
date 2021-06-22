@@ -210,6 +210,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
+		//判断该换电柜用户是否租电池等 TODO
+
 
 		//是否缴纳押金，是否绑定电池
 		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -226,12 +228,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
 		}
 
-		//判断该换电柜用户是否租电池等 TODO
 
 		//未缴纳押金
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("order  ERROR! not pay deposit! uid:{} ", user.getUid());
+
+
+		//判断是否缴纳押金
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 

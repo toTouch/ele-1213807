@@ -1092,11 +1092,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//未缴纳押金
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("order  ERROR! not pay deposit! uid:{} ", user.getUid());
+
+		//判断是否缴纳押金
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+			log.error("ELECTRICITY  ERROR! not pay deposit! userInfo:{} ", userInfo);
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
-
 
 
 		//判断用户是否开通月卡
@@ -1445,7 +1447,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (result) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
 		}
-		//判断是否缴纳押金
+
+		//用户
 		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo)) {
 			log.error("ELECTRICITY  ERROR! not found user!uid:{} ", user.getUid());
@@ -1457,6 +1460,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
+
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
 			log.error("ELECTRICITY  ERROR! USER not auth! uid:{} ", user.getUid());
