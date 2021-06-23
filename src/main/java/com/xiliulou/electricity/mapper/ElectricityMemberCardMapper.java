@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMemberCard> {
 
-    List<ElectricityMemberCard> electricityMemberCardList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type);
+    List<ElectricityMemberCard> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type);
 
-	List<ElectricityMemberCard>  queryElectricityMemberCard(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Integer id);
+	List<ElectricityMemberCard> queryUserList(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Integer id);
 }

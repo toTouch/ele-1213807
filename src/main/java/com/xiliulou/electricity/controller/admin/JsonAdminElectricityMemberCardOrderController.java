@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,7 +45,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.queryStartTime(queryStartTime)
 				.queryEndTime(queryEndTime).build();
 
-		return electricityMemberCardOrderService.memberCardOrderPage(offset, size, memberCardOrderQuery);
+		return electricityMemberCardOrderService.queryList(offset, size, memberCardOrderQuery);
 	}
 
 	//换电柜购卡订单导出报表

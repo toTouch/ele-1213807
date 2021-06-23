@@ -28,23 +28,15 @@ public class JsonUserElectricityMemberCardOrderController {
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
 
-    @GetMapping("user/memberCard/payParams/{memberId}")
-    public R payMemberCard(@PathVariable(value = "memberId") Integer memberId, HttpServletRequest request) {
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户!");
-        }
-        return electricityMemberCardOrderService.createOrder(uid, memberId, request);
+    @GetMapping("user/memberCard/payMemberCard")
+    public R payMemberCard(@RequestParam(value = "memberId") Integer memberId,@RequestParam(value = "electricityCabinetId") Integer electricityCabinetId, HttpServletRequest request) {
+        return electricityMemberCardOrderService.createOrder(memberId,electricityCabinetId, request);
     }
 
-    @GetMapping("user/memberCardOrder/page")
-    public R getMemberCardOrderPage(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+    @GetMapping("user/memberCardOrder/list")
+    public R queryUserList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
                                     @RequestParam(value = "queryStartTime", required = false) Long queryStartTime, @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
-        Long uid = SecurityUtils.getUid();
-        if (Objects.isNull(uid)) {
-            return R.fail("ELECTRICITY.0001", "未找到用户!");
-        }
-        return electricityMemberCardOrderService.getMemberCardOrderPage(uid, offset, size, queryStartTime, queryEndTime);
+        return electricityMemberCardOrderService.queryUserList(offset, size, queryStartTime, queryEndTime);
     }
 
     @GetMapping("user/memberCardOrder/count")

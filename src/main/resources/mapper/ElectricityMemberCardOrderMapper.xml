@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
-	<select id="memberCardOrderPage" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
+	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
 		select tel.* , tui.phone as phone from
 		t_electricity_member_card_order tel
 
@@ -21,12 +21,11 @@
 			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
 		</if>
 		order by tel.create_time desc
-
-
+		limit #{query.offset}, #{query.size}
 	</select>
 
 
-	<select id="getMemberCardOrderPage" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
 		SELECT * FROM
 		t_electricity_member_card_order
 		WHERE uid =#{uid}

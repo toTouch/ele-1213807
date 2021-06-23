@@ -1242,27 +1242,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-		//换电柜是否在线
-		boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-		if (!eleResult) {
-			log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
-			return R.fail("ELECTRICITY.0035", "换电柜不在线");
-		}
-
-
-		//换电柜是否出现异常被锁住
-		String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
-		if (StringUtils.isNotEmpty(isLock)) {
-			log.error("ELECTRICITY  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
-			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
-		}
-
-		//换电柜是否营业
-		Boolean result = this.isBusiness(electricityCabinet);
-		if (result) {
-			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
-		}
-
 		return R.ok(electricityCabinet);
 
 	}

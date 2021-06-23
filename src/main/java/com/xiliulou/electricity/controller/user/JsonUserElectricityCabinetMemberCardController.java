@@ -30,10 +30,10 @@ public class JsonUserElectricityCabinetMemberCardController {
 	 * @param
 	 * @return
 	 */
-	@GetMapping(value = "/user/memberCard/page")
-	public R getElectricityBatteryPage(@RequestParam(value = "offset", required = false) Long offset,
-			@RequestParam(value = "size", required = false) Long size
-	) {
+	@GetMapping(value = "/user/memberCard/list")
+	public R queryUserList(@RequestParam(value = "offset", required = false) Long offset,
+			@RequestParam(value = "size", required = false) Long size,
+			@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
 		if (Objects.isNull(size)) {
 			size = 10L;
 		}
@@ -41,6 +41,6 @@ public class JsonUserElectricityCabinetMemberCardController {
 		if (Objects.isNull(offset) || offset < 0) {
 			offset = 0L;
 		}
-		return electricityMemberCardService.queryElectricityMemberCard(offset, size);
+		return electricityMemberCardService.queryUserList(offset, size,electricityCabinetId);
 	}
 }

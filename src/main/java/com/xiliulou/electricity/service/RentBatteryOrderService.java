@@ -3,9 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
-import com.xiliulou.electricity.query.ReturnBatteryQuery;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -29,9 +27,9 @@ public interface RentBatteryOrderService {
     R queryList(RentBatteryOrderQuery rentBatteryOrderQuery);
 
 
-    R rentBattery(RentBatteryQuery rentBatteryQuery);
+    R rentBattery(Integer electricityCabinetId);
 
-    R returnBattery(ReturnBatteryQuery returnBatteryQuery);
+    R returnBattery(Integer electricityCabinetId);
 
     void update(RentBatteryOrder rentBatteryOrder);
 

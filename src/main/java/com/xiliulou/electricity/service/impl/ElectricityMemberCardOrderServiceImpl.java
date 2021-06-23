@@ -2,21 +2,22 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.utils.PageUtil;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -55,52 +56,131 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	@Autowired
 	UserService userService;
 	@Autowired
-	UserOauthBindService UserOauthBindService;
+	UserOauthBindService userOauthBindService;
+	@Autowired
+	StoreService storeService;
+	@Autowired
+	ElectricityCabinetService electricityCabinetService;
+	@Autowired
+	FranchiseeUserInfoService franchiseeUserInfoService;
 
 	/**
 	 * 创建月卡订单
 	 *
-	 * @param uid
+	 * @param
 	 * @param memberId
 	 * @return
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R createOrder(Long uid, Integer memberId, HttpServletRequest request) {
-		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache();
+	public R createOrder(Integer memberId,Integer electricityCabinetId, HttpServletRequest request) {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("rentBattery  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		//支付相关
+		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
 		if (Objects.isNull(electricityPayParams)) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
 			return R.failMsg("未配置支付参数!");
 		}
-		User user = userService.queryByUidFromCache(uid);
-		if (Objects.isNull(user)) {
-			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND SYS_USER UID:{}", uid);
-			return R.failMsg("未找到系统用户信息!");
-		}
-		UserOauthBind userOauthBind = UserOauthBindService.queryUserOauthBySysId(uid);
+
+		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid());
 
 		if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
-			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", uid);
+			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
 			return R.failMsg("未找到用户的第三方授权信息!");
 		}
-		UserInfo userInfo = userInfoService.selectUserByUid(uid);
+
+		//换电柜
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		if (Objects.isNull(electricityCabinet)) {
+			log.error("rentBattery  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			return R.fail("ELECTRICITY.0005", "未找到换电柜");
+		}
+
+
+
+		//3、查出套餐
+		//查找换电柜门店
+		if(Objects.isNull(electricityCabinet.getStoreId())){
+			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+		}
+		Store store=storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+		if(Objects.isNull(store)){
+			log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+			return R.fail("ELECTRICITY.0018", "未找到门店");
+		}
+
+
+		//查找门店加盟商
+		if(Objects.isNull(store.getFranchiseeId())){
+			log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+		}
+
+
+		//用户
+		UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
 
 		if (Objects.isNull(userInfo)) {
 			log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
+
 		//用户是否可用
 		if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
+
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("ELECTRICITY  ERROR! not auth! userInfo:{} ", userInfo);
+			log.error("ELECTRICITY  ERROR! user not auth! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
-		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.getElectricityMemberCard(memberId);
+		//是否缴纳押金，是否绑定电池
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		//未找到用户
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("rentBattery  ERROR! not found user! uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
+		//出现多个用户绑定或没有用户绑定
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("rentBattery  ERROR! user status is error! uid:{} ",user.getUid());
+			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+		}
+
+
+		//用户
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
+
+		//判断该换电柜加盟商和用户加盟商是否一致
+		if(!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
+			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(),store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId());
+			return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+		}
+
+		//判断是否缴纳押金
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+			log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0042", "未缴纳押金");
+		}
+
+
+		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberId);
 		if (Objects.isNull(electricityMemberCard)) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", memberId);
 			return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
@@ -110,30 +190,28 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
 
+
 		Long now = System.currentTimeMillis();
 		Long remainingNumber = electricityMemberCard.getMaxUseCount();
-		//同一个套餐可以提前三天续费
-		if (Objects.equals(userInfo.getCardId(), memberId)) {
-			if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
-					userInfo.getMemberCardExpireTime() > now + 3 * 24 * 60 * 60 * 1000L &&
-					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
-				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
-				return R.fail("ELECTRICITY.0093", "您的月卡离过期时间大于三天,无法续费!");
-			}
-			now = userInfo.getMemberCardExpireTime();
+
+		//同一个套餐可以续费
+		if (Objects.equals(franchiseeUserInfo.getCardId(), memberId)) {
+			now = franchiseeUserInfo.getMemberCardExpireTime();
 			//TODO 使用次数暂时叠加
-			if (userInfo.getRemainingNumber() > 0) {
-				remainingNumber = remainingNumber + userInfo.getRemainingNumber();
+			if (franchiseeUserInfo.getRemainingNumber() > 0) {
+				remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
 			}
 
 		} else {
-			if (Objects.nonNull(userInfo.getMemberCardExpireTime()) && Objects.nonNull(userInfo.getRemainingNumber()) &&
-					userInfo.getMemberCardExpireTime() > now &&
-					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, userInfo.getRemainingNumber()) || userInfo.getRemainingNumber() > 0)) {
+			if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime())
+					&& Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) &&
+					franchiseeUserInfo.getMemberCardExpireTime() > now &&
+					(ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, franchiseeUserInfo.getRemainingNumber()) || franchiseeUserInfo.getRemainingNumber() > 0)) {
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
 				return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
 			}
 		}
+
 
 		ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
 		electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -141,7 +219,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
 		electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
 		electricityMemberCardOrder.setMemberCardId(memberId);
-		electricityMemberCardOrder.setUid(uid);
+		electricityMemberCardOrder.setUid(user.getUid());
 		electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
 		electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
 		electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
@@ -151,17 +229,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		baseMapper.insert(electricityMemberCardOrder);
 		//支付零元
 		if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-			UserInfo userInfoUpdate = new UserInfo();
-			userInfoUpdate.setId(userInfo.getId());
+
+			//用户
+			FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+			franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
 			Long memberCardExpireTime = now +
 					electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-			userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
-			userInfoUpdate.setRemainingNumber(remainingNumber);
-			userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
-			userInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
-			userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
-			userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-			userInfoService.updateById(userInfoUpdate);
+			franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+			franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
+			franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
+			franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
+			franchiseeUserInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+			franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+			franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+
+			//月卡订单
 			ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
 			electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
 			electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
@@ -169,12 +252,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			baseMapper.updateById(electricityMemberCardOrderUpdate);
 			return R.ok();
 		}
-		Pair<Boolean, Object> getPayParamsPair =
-				electricityTradeOrderService.createTradeOrderAndGetPayParams(electricityMemberCardOrder, electricityPayParams, userOauthBind.getThirdId(), request);
-		if (!getPayParamsPair.getLeft()) {
-			return R.failMsg(getPayParamsPair.getRight().toString());
+
+		//调起支付
+		try {
+			CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+					.orderId(electricityMemberCardOrder.getOrderId())
+					.uid(user.getUid())
+					.payAmount(electricityMemberCardOrder.getPayAmount())
+					.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
+					.attach(ElectricityTradeOrder.ATTACH_DEPOSIT).build();
+
+			WechatJsapiOrderResultDTO resultDTO =
+					electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+			return R.ok(resultDTO);
+		} catch (WechatPayException e) {
+			log.error("CREATE MEMBER_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
 		}
-		return R.ok(getPayParamsPair.getRight());
+
+		return R.fail("ELECTRICITY.0099", "下单失败");
 	}
 
 	@Override
@@ -188,8 +283,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	}
 
 	@Override
-	public R getMemberCardOrderPage(Long uid, Long offset, Long size, Long startTime, Long endTime) {
-		return R.ok(baseMapper.getMemberCardOrderPage(uid, offset, size, startTime, endTime));
+	public R queryUserList(Long offset, Long size, Long startTime, Long endTime) {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("rentBattery  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+		return R.ok(baseMapper.queryUserList(user.getUid(), offset, size, startTime, endTime));
 	}
 
 	/**
@@ -203,35 +304,17 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		return R.ok(baseMapper.getMemberCardOrderCount(uid, startTime, endTime));
 	}
 
-	/**
-	 * 获取最近的电池交易记录
-	 *
-	 * @param uid
-	 * @return
-	 */
-	@Override
-	public ElectricityMemberCardOrder getRecentOrder(Long uid) {
-		return baseMapper.getRecentOrder(uid);
-	}
 
 	@Override
 	@DS("slave_1")
-	public R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
-		Page page = PageUtil.getPage(offset, size);
-
-		return R.ok(baseMapper.memberCardOrderPage(page, memberCardOrderQuery));
+	public R queryList(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
+		return R.ok(baseMapper.queryList(memberCardOrderQuery));
 	}
 
 	@Override
 	public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
-		Page page = PageUtil.getPage(0L, 2000L);
-		baseMapper.memberCardOrderPage(page, memberCardOrderQuery);
-		if (ObjectUtil.isEmpty(page.getRecords())) {
-			throw new CustomBusinessException("查不到订单");
-		}
-
-		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = page.getRecords();
-		if (!DataUtil.collectionIsUsable(electricityMemberCardOrderVOList)) {
+		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList =baseMapper.queryList(memberCardOrderQuery);
+		if (ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
 			throw new CustomBusinessException("查不到订单");
 		}
 

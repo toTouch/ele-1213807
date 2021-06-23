@@ -121,7 +121,7 @@ public class FranchiseeBindCardServiceImpl implements FranchiseeBindCardService 
 
         List<ElectricityMemberCard> electricityMemberCardList=new ArrayList<>();
         for (FranchiseeBindCard franchiseeBindCard:franchiseeBindCardList) {
-            ElectricityMemberCard electricityMemberCard=electricityMemberCardService.getElectricityMemberCard(franchiseeBindCard.getCardId());
+            ElectricityMemberCard electricityMemberCard=electricityMemberCardService.queryByCache(franchiseeBindCard.getCardId());
             if(Objects.nonNull(electricityMemberCard)){
                 electricityMemberCardList.add(electricityMemberCard);
             }

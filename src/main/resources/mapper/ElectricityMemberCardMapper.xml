@@ -3,30 +3,29 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardMapper">
 
 
-    <select id="electricityMemberCardList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
-            SELECT *
-            FROM t_electricity_member_card
-        <where>
-            <if test="status != null">
-                AND status = #{status}
-            </if>
-            <if test="type != null">
-                AND type = #{type}
-            </if>
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+		SELECT *
+		FROM t_electricity_member_card
+		<where>
+			<if test="status != null">
+				AND status = #{status}
+			</if>
+			<if test="type != null">
+				AND type = #{type}
+			</if>
 
-        </where>
+		</where>
+		ORDER BY create_time DESC
+		limit #{query.offset}, #{query.size}
+	</select>
 
-        ORDER BY create_time DESC
-
-
-    </select>
-
-    <select id="queryElectricityMemberCard" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
         SELECT temc.*
         FROM t_electricity_member_card as temc
         left join electricity.t_franchisee_bind_card as tfbc on temc.id=tfbc.card_id
         where temc.status=0 and tfbc.franchisee_id=#{id}
         ORDER BY temc.create_time DESC
+        limit #{query.offset}, #{query.size}
     </select>
 
 

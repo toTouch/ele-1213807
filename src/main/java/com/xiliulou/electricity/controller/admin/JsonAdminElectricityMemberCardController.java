@@ -29,8 +29,8 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @PostMapping("admin/electricityMemberCard")
-    public R saveElectricityMemberCard(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
-        return electricityMemberCardService.saveElectricityMemberCard(electricityMemberCard);
+    public R add(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
+        return electricityMemberCardService.add(electricityMemberCard);
     }
 
     /**
@@ -39,11 +39,11 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @PutMapping("admin/electricityMemberCard")
-    public R updateElectricityMemberCard(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
+    public R update(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
         if (Objects.isNull(electricityMemberCard)) {
             return R.failMsg("请求参数不能为空!");
         }
-        return electricityMemberCardService.updateElectricityMemberCard(electricityMemberCard);
+        return electricityMemberCardService.update(electricityMemberCard);
     }
 
     /**
@@ -52,8 +52,8 @@ public class JsonAdminElectricityMemberCardController {
      * @return
      */
     @DeleteMapping("admin/electricityMemberCard/{id}")
-    public R deleteElectricityMemberCard(@PathVariable(value = "id") Integer id) {
-        return electricityMemberCardService.deleteElectricityMemberCard(id);
+    public R delete(@PathVariable(value = "id") Integer id) {
+        return electricityMemberCardService.delete(id);
     }
 
     /**
@@ -61,14 +61,14 @@ public class JsonAdminElectricityMemberCardController {
      *
      * @return
      */
-    @GetMapping("admin/electricityMemberCard/page")
+    @GetMapping("admin/electricityMemberCard/list")
     public R getElectricityMemberCardPage(@RequestParam(value = "offset") Long offset,
                                           @RequestParam(value = "size") Long size,
                                           @RequestParam(value = "type", required = false) Integer type,
                                           @RequestParam(value = "status", required = false) Integer status) {
 
 
-        return electricityMemberCardService.getElectricityMemberCardPage(offset, size, status, type);
+        return electricityMemberCardService.queryList(offset, size, status, type);
     }
 
 }

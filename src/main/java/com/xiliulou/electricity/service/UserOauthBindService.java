@@ -71,5 +71,5 @@ public interface UserOauthBindService {
 
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
 
-    UserOauthBind queryUserOauthBySysId(Long uid);
+     UserOauthBind queryUserOauthBySysId(Long uid);
 }

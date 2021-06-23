@@ -13,9 +13,9 @@ import java.util.List;
 public interface ElectricityMemberCardOrderService {
 
 
-    R createOrder(Long uid, Integer memberId, HttpServletRequest request);
+    R createOrder(Integer memberId,Integer electricityCabinetId, HttpServletRequest request);
 
-    R getMemberCardOrderPage(Long uid, Long offset, Long size, Long startTime, Long endTime);
+    R queryUserList(Long offset, Long size, Long startTime, Long endTime);
 
     BigDecimal homeOne(Long first, Long now,List<Integer> cardIdList);
 
@@ -23,9 +23,8 @@ public interface ElectricityMemberCardOrderService {
 
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
-    ElectricityMemberCardOrder getRecentOrder(Long uid);
 
-    R memberCardOrderPage(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery);
+    R queryList(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery);
 
 	void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
 }

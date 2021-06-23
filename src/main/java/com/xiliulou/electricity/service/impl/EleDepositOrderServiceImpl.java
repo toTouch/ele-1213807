@@ -129,6 +129,20 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
 
+		//支付相关
+		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+		if (Objects.isNull(electricityPayParams)) {
+			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+			return R.failMsg("未配置支付参数!");
+		}
+
+		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid());
+
+		if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+			return R.failMsg("未找到用户的第三方授权信息!");
+		}
+
 		//换电柜
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
 		if (Objects.isNull(electricityCabinet)) {
@@ -257,8 +271,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 					.payAmount(payAmount)
 					.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
 					.attach(ElectricityTradeOrder.ATTACH_DEPOSIT).build();
-			ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-			UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid());
+
 
 			WechatJsapiOrderResultDTO resultDTO =
 					electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);

@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
-import com.xiliulou.electricity.query.ReturnBatteryQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,14 +24,14 @@ public class JsonUserRentBatteryOrderController {
 
     //租电池
     @PostMapping("/user/rentBattery")
-    public R rentBattery(@RequestBody RentBatteryQuery rentBatteryQuery) {
-        return rentBatteryOrderService.rentBattery(rentBatteryQuery);
+    public R rentBattery(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        return rentBatteryOrderService.rentBattery(electricityCabinetId);
     }
 
     //还电池
     @PostMapping("/user/returnBattery")
-    public R returnBattery(@RequestBody ReturnBatteryQuery returnBatteryQuery) {
-        return rentBatteryOrderService.returnBattery(returnBatteryQuery);
+    public R returnBattery(@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        return rentBatteryOrderService.returnBattery(electricityCabinetId);
     }
 
     //再次开门

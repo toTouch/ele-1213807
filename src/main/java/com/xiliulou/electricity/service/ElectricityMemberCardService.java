@@ -6,17 +6,17 @@ import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import java.util.List;
 
 public interface ElectricityMemberCardService {
-    R saveElectricityMemberCard(ElectricityMemberCard electricityMemberCard);
+    R add(ElectricityMemberCard electricityMemberCard);
 
-    R updateElectricityMemberCard(ElectricityMemberCard electricityMemberCard);
+    R update(ElectricityMemberCard electricityMemberCard);
 
-    R deleteElectricityMemberCard(Integer id);
+    R delete(Integer id);
 
-    ElectricityMemberCard getElectricityMemberCard(Integer id);
+    ElectricityMemberCard queryByCache(Integer id);
 
-    R getElectricityMemberCardPage(Long offset, Long size, Integer status, Integer type);
+    R queryList(Long offset, Long size, Integer status, Integer type);
 
-	R queryElectricityMemberCard(Long offset, Long size);
+	R queryUserList(Long offset, Long size,Integer electricityCabinetId);
 
 	List<ElectricityMemberCard> queryByFranchisee(Integer id);
 }
