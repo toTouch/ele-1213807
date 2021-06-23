@@ -144,27 +144,31 @@ public class ElectricityTradeOrderServiceImpl extends
         Long now =System.currentTimeMillis();
         Long memberCardExpireTime;
         Long remainingNumber= electricityMemberCardOrder.getMaxUseCount();
-        UserInfo userInfoUpdate = new UserInfo();
-        userInfoUpdate.setId(userInfo.getId());
-        if(Objects.isNull(userInfo.getMemberCardExpireTime())||userInfo.getMemberCardExpireTime()<now) {
-            memberCardExpireTime = System.currentTimeMillis() +
-                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-        }else {
-            memberCardExpireTime=userInfo.getMemberCardExpireTime()+
-                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            if(userInfo.getRemainingNumber()>0&&!Objects.equals(electricityMemberCardOrder.getMaxUseCount(),-1)) {
-                remainingNumber=remainingNumber+userInfo.getRemainingNumber();
-            }
-        }
-        userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
 
-        userInfoUpdate.setRemainingNumber(remainingNumber);
-        userInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
-        userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
-        userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
-        userInfoUpdate.setUpdateTime(System.currentTimeMillis());
-        log.info("NOTIFY info USERINFO:{}", userInfoUpdate);
-        userInfoService.updateById(userInfoUpdate);
+        if(Objects.equals(memberOrderStatus,ElectricityMemberCardOrder.STATUS_SUCCESS)) {
+            UserInfo userInfoUpdate = new UserInfo();
+            userInfoUpdate.setId(userInfo.getId());
+            if (Objects.isNull(userInfo.getMemberCardExpireTime()) || userInfo.getMemberCardExpireTime() < now) {
+                memberCardExpireTime = System.currentTimeMillis() +
+                        electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            } else {
+                memberCardExpireTime = userInfo.getMemberCardExpireTime() +
+                        electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+                if (userInfo.getRemainingNumber() > 0 && !Objects.equals(electricityMemberCardOrder.getMaxUseCount(), -1)) {
+                    remainingNumber = remainingNumber + userInfo.getRemainingNumber();
+                }
+            }
+            userInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+
+            userInfoUpdate.setRemainingNumber(remainingNumber);
+            userInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
+            userInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+            userInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
+            userInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            log.info("NOTIFY info USERINFO:{}", userInfoUpdate);
+            userInfoService.updateById(userInfoUpdate);
+
+        }
         ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
         electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
         electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
