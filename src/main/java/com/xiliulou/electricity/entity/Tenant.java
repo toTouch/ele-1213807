@@ -1,28 +1,28 @@
 package com.xiliulou.electricity.entity;
 
 
-    
 
 
 
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
                                 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -55,21 +55,24 @@ public class Tenant {
     */
     private String code;
     /**
-    * 0正常 9-冻结
+    * 0正常 1-冻结
     */
     private Integer status;
     /**
     * 删除标记
     */
     private Integer delFlag;
-    
+
     private Long createTime;
-    
+
     private Long updateTime;
-    
+
     private Long expireTime;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer STA_NO_OUT = 0;
+    public static final Integer STA_OUT = 1;
 
 }

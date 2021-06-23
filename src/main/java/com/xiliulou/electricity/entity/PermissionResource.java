@@ -1,36 +1,5 @@
 package com.xiliulou.electricity.entity;
-
-
-    
-
-
-
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-
-                                            import lombok.AllArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -77,11 +46,11 @@ public class PermissionResource {
     * 描述
     */
     private String desc;
-    
+
     private Long createTime;
-    
+
     private Long updateTime;
-    
+
     private Integer delFlag;
 
     public static final Integer DEL_NORMAL = 0;

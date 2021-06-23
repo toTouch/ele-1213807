@@ -24,43 +24,7 @@
         limit #{offset}, #{limit}
     </select>
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultMap="RolePermissionMap">
-        select
-          id, role_id, p_id
-        from electricity.t_role_permission
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="roleId != null">
-                and role_id = #{roleId}
-            </if>
-            <if test="pId != null">
-                and p_id = #{pId}
-            </if>
-        </where>
-    </select>
 
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into electricity.t_role_permission(role_id, p_id)
-        values (#{roleId}, #{pId})
-    </insert>
-
-    <!--通过主键修改数据-->
-    <update id="update">
-        update electricity.t_role_permission
-        <set>
-            <if test="roleId != null">
-                role_id = #{roleId},
-            </if>
-            <if test="pId != null">
-                p_id = #{pId},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
 
     <!--通过主键删除-->
     <delete id="deleteById">

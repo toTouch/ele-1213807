@@ -16,6 +16,7 @@ import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
@@ -152,6 +153,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 
 	@Override
 	public Pair<Boolean, Object> addPermissionResource(PermissionResourceQuery permissionResourceQuery) {
+
 		Long uid = SecurityUtils.getUid();
 
 		PermissionResource permissionResource = new PermissionResource();
@@ -315,7 +317,4 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		return result;
 	}
 
-	private Pair<Boolean, Object> unBindPermissionStrategy(Long rolePerId, Long permissionId) {
-		return Pair.of(false, "频繁操作，请稍后再试！");
-	}
 }

@@ -94,4 +94,14 @@ public interface ElectricityCabinetConstant {
     //加盟商缓存
     String CACHE_FRANCHISEE = "franchisee:";
 
+    /**
+     * 角色名称和code
+     */
+    String OPERATE_NAME = "OPERATE_USER";
+    String OPERATE_CODE = "运营商";
+    String FRANCHISEE_NAME = "FRANCHISEE_USER";
+    String FRANCHISEE_CODE = "加盟商";
+    String STORE_NAME = "STORE_USER";
+    String STORE_CODE = "门店";
+
 }

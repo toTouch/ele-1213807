@@ -83,7 +83,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public RolePermission insert(RolePermission rolePermission) {
-		this.rolePermissionMapper.insertOne(rolePermission);
+		this.rolePermissionMapper.insert(rolePermission);
 		return rolePermission;
 	}
 
@@ -96,7 +96,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(RolePermission rolePermission) {
-		return this.rolePermissionMapper.update(rolePermission);
+		return this.rolePermissionMapper.updateById(rolePermission);
 
 	}
 
@@ -130,12 +130,9 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 	}
 
 	@Override
-	public boolean deleteByRoleIdAndPermissionId(Long rolePerId, Long permissionId) {
-		return rolePermissionMapper.deleteByRoleIdAndPermissionId(rolePerId, permissionId) > 0;
-	}
-
-	@Override
 	public boolean deleteByRoleId(Long roleId) {
 		return rolePermissionMapper.deleteByRoleId(roleId) > 0;
 	}
+
+
 }

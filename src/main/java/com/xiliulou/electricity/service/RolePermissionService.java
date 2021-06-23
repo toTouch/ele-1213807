@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.RolePermission;
+
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -19,7 +21,7 @@ public interface RolePermissionService {
      * @return 实例对象
      */
     RolePermission queryByIdFromDB(Long id);
-    
+
       /**
      * 通过ID查询单条数据从缓存
      *
@@ -63,7 +65,7 @@ public interface RolePermissionService {
 
 	List<Long> queryPidsByRid(Long rid);
 
-	boolean deleteByRoleIdAndPermissionId(Long rolePerId, Long permissionId);
 
     boolean deleteByRoleId(Long roleId);
+
 }

@@ -33,29 +33,6 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
 	 */
 	List<RolePermission> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
 
-	/**
-	 * 通过实体作为筛选条件查询
-	 *
-	 * @param rolePermission 实例对象
-	 * @return 对象列表
-	 */
-	List<RolePermission> queryAll(RolePermission rolePermission);
-
-	/**
-	 * 新增数据
-	 *
-	 * @param rolePermission 实例对象
-	 * @return 影响行数
-	 */
-	int insertOne(RolePermission rolePermission);
-
-	/**
-	 * 修改数据
-	 *
-	 * @param rolePermission 实例对象
-	 * @return 影响行数
-	 */
-	int update(RolePermission rolePermission);
 
 	/**
 	 * 通过主键删除数据
@@ -65,8 +42,6 @@ public interface RolePermissionMapper extends BaseMapper<RolePermission> {
 	 */
 	int deleteById(Long id);
 
-	@Delete("delete from electricity.t_role_permission where role_id = #{rid} and p_id = #{pid}")
-	int deleteByRoleIdAndPermissionId(@Param("rid") Long rolePerId, @Param("pid") Long permissionId);
 
 	@Delete("delete from electricity.t_role_permission where role_id = #{rid}")
 	int deleteByRoleId(@Param("rid")Long roleId);
