@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  **/
 @RestController
 @Slf4j
-public class JsonOuterPayNotifyController {
+public class JsonOuterCallBackController {
     @Autowired
     WechatV3PostProcessHandler wechatV3PostProcessHandler;
 

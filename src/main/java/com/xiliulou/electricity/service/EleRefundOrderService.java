@@ -5,6 +5,9 @@ import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
 import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
@@ -24,7 +27,7 @@ public interface EleRefundOrderService {
      * @return 实例对象
      */
     EleRefundOrder queryByIdFromDB(Long id);
-    
+
       /**
      * 通过ID查询单条数据从缓存
      *
@@ -51,12 +54,11 @@ public interface EleRefundOrderService {
 
 
     //调起退款
-    Pair<Boolean, Object> commonCreateRefundOrder(RefundOrder refundOrder,
-                                                  ElectricityPayParams electricityPayParams,
-                                                  HttpServletRequest request);
+    WechatJsapiRefundResultDTO commonCreateRefundOrder(RefundOrder refundOrder,
+                                                  HttpServletRequest request) throws WechatPayException;
 
 
-    Pair<Boolean, Object> notifyDepositRefundOrder(Map<String, String> refundMap);
+    Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
 
     R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request);
 
