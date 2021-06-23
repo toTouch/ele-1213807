@@ -1,24 +1,15 @@
 package com.xiliulou.electricity.controller.outer;
 
-import cn.hutool.core.util.ObjectUtil;
-import com.jpay.ext.kit.HttpKit;
-import com.jpay.ext.kit.PaymentKit;
-import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
-import com.xiliulou.pay.weixin.notify.WeiXinPayNotifyService;
+import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
+import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
+import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
+import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Map;
-import java.util.Objects;
 
 /**
  * @program: XILIULOU
@@ -30,55 +21,29 @@ import java.util.Objects;
 @Slf4j
 public class JsonOuterPayNotifyController {
     @Autowired
-    WeiXinPayNotifyService weiXinPayNotifyService;
+    WechatV3PostProcessHandler wechatV3PostProcessHandler;
 
-    @Autowired
-    RedisService redisService;
-    @Autowired
-    ElectricityPayParamsService electricityPayParamsService;
-    @Autowired
-    ElectricityTradeOrderService electricityTradeOrderService;
-
-    @PostMapping("outer/pay/notify/weixin/{tenantId}")
-    public String payNotified(HttpServletRequest request) {
-        String xmlMsg = HttpKit.readData(request);
-        log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
-        //转换成map
-        Map<String, String> params = PaymentKit.xmlToMap(xmlMsg);
-        String orderNo = params.get("out_trade_no");
-        String attach = params.get("attach");
-
-        if (!redisService.setNx("notify_order_no" + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
-            return "FAILED";
-        }
-        //去重
-        ElectricityPayParams electricityPayParams
-                = electricityPayParamsService.queryFromCache();
-        if (ObjectUtil.isEmpty(electricityPayParams)) {
-            log.error("WEIXIN_PAY_NOTIFY  ERROR,NOT FOUND ELECTRICITY_PAY_PARAMS");
-            return "FAILED";
-        }
-        Pair<Boolean, Object> paramPair = weiXinPayNotifyService.handlerNotify(params, electricityPayParams.getPaternerKey());
-        if (!paramPair.getLeft()) {
-            return "FAILED";
-        }
-        WeiXinPayNotify weiXinPayNotify = (WeiXinPayNotify) paramPair.getRight();
-        Pair<Boolean, Object> notifyOrderPair=null;
-        if(Objects.equals(attach, ElectricityTradeOrder.ATTACH_DEPOSIT)){
-            notifyOrderPair=electricityTradeOrderService.notifyDepositOrder(weiXinPayNotify);
-        }else {
-            notifyOrderPair=electricityTradeOrderService.notifyMemberOrder(weiXinPayNotify);
-        }
-
-        redisService.delete("notify_order_no" + orderNo);
-        if (notifyOrderPair.getLeft()) {
-
-            return "OK";
-        } else {
-            return "FAILED";
-
-        }
-
+    /**
+     * 微信支付通知
+     *
+     * @return
+     */
+    @PostMapping("/outer/wechat/pay/notified/{tenantId}")
+    public WechatV3CallBackResult payNotified(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3OrderCallBackQuery wechatV3OrderCallBackQuery) {
+        wechatV3OrderCallBackQuery.setTenantId(tenantId);
+        wechatV3PostProcessHandler.postProcessAfterWechatPay(wechatV3OrderCallBackQuery);
+        return WechatV3CallBackResult.success();
     }
 
+    /**
+     * 微信退款通知
+     *
+     * @return
+     */
+    @PostMapping("/outer/wechat/refund/notified/{tenantId}")
+    public WechatV3CallBackResult refundNotified(@PathVariable("tenantId") Integer tenantId, @RequestBody WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+        wechatV3RefundOrderCallBackQuery.setTenantId(tenantId);
+        wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
+        return WechatV3CallBackResult.success();
+    }
 }
