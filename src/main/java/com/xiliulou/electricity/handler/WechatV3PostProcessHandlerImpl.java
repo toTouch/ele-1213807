@@ -1,0 +1,159 @@
+package com.xiliulou.electricity.handler;
+
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.service.ElectricityTradeOrderService;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.query.WechatCallBackResouceData;
+import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
+import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
+import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
+import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
+import com.xiliulou.pay.weixinv3.service.WechatV3MerchantLoadAndUpdateCertificateService;
+import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
+import com.xiliulou.pay.weixinv3.util.AesUtil;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+/**
+ * @author: eclair
+ * @Date: 2021/3/18 19:10
+ * @Description:
+ */
+@Service
+@Slf4j
+public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandler {
+
+	@Autowired
+	WechatV3MerchantLoadAndUpdateCertificateService certificateService;
+
+
+	@Autowired
+	RedisService redisService;
+
+	@Autowired
+	ElectricityTradeOrderService electricityTradeOrderService;
+
+	@Override
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+	public void postProcessBeforeWechatPay(WechatV3OrderQuery wechatV3OrderQuery) {
+		//暂时什么都不处理 TODO
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+	public void postProcessAfterWechatPay(WechatV3OrderCallBackQuery wechatV3OrderCallBackQuery) {
+		WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
+		if (Objects.isNull(resource)) {
+			log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
+			return;
+		}
+
+		String decryptJson = null;
+		try {
+			decryptJson = AesUtil.decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8),
+					resource.getNonce().getBytes(StandardCharsets.UTF_8),
+					resource.getCiphertext(),
+					certificateService.getMerchantApiV3Key(wechatV3OrderCallBackQuery.getTenantId()).getBytes(StandardCharsets.UTF_8));
+
+		} catch (Exception e) {
+			log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3OrderCallBackQuery, e);
+			return;
+		}
+
+		WechatJsapiOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiOrderCallBackResource.class);
+
+		//幂等加锁
+		String orderNo = callBackResource.getOutTradeNo();
+		if (!redisService.setNx("notify_order_no" + orderNo, String.valueOf(System.currentTimeMillis()), 10 * 1000L, false)) {
+			return;
+		}
+
+		if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
+			electricityTradeOrderService.notifyDepositOrder(callBackResource);
+		} else {
+			electricityTradeOrderService.notifyMemberOrder(callBackResource);
+		}
+	}
+
+
+
+
+
+
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+	public void postProcessBeforeWechatRefund(WechatV3RefundQuery wechatV3RefundQuery) {
+		//保存下单记录
+		WechatRefundOrder order = WechatRefundOrder.builder()
+				.mchid(certificateService.getMerchantId(wechatV3RefundQuery.getTenantId()))
+				.createTime(System.currentTimeMillis())
+				.total(wechatV3RefundQuery.getTotal())
+				.orderId(wechatV3RefundQuery.getOrderId())
+				.refundId(wechatV3RefundQuery.getRefundId())
+				.refund(wechatV3RefundQuery.getRefund())
+				.status(WechatRefundOrder.STATUS_PREPARED)
+				.tenantId(wechatV3RefundQuery.getTenantId())
+				.updateTime(System.currentTimeMillis())
+				.build();
+		wechatRefundOrderService.insert(order);
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
+	public void postProcessAfterWechatRefund(WechatV3RefundOrderCallBackQuery wechatV3RefundOrderCallBackQuery) {
+		WechatCallBackResouceData resource = wechatV3RefundOrderCallBackQuery.getResource();
+		if (Objects.isNull(resource)) {
+			log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3RefundOrderCallBackQuery);
+			return;
+		}
+
+		String decryptJson = null;
+		try {
+			decryptJson = AesUtil.decryptToString(resource.getAssociated_data().getBytes(StandardCharsets.UTF_8),
+					resource.getNonce().getBytes(StandardCharsets.UTF_8),
+					resource.getCiphertext(),
+					certificateService.getMerchantApiV3Key(wechatV3RefundOrderCallBackQuery.getTenantId()).getBytes(StandardCharsets.UTF_8));
+
+		} catch (Exception e) {
+			log.error("WECHAT ERROR! wechat decrypt error! msg={}", wechatV3RefundOrderCallBackQuery, e);
+			return;
+		}
+
+		WechatJsapiRefundOrderCallBackResource callBackResource = JsonUtil.fromJson(decryptJson, WechatJsapiRefundOrderCallBackResource.class);
+
+		if (!redisService.setNx(WechatPayConstant.REFUND_ORDER_ID_CALL_BACK + callBackResource.getOutTradeNo(), "ok", 5000L, false)) {
+			log.warn("WECHT WARN,repeat callback! orderId={}", callBackResource.getOutTradeNo());
+			return;
+		}
+
+		WechatRefundOrder wechatRefundOrder = wechatRefundOrderService.queryByOrderId(callBackResource.getOutTradeNo());
+		if (Objects.isNull(wechatRefundOrder)) {
+			log.error("WECHAT ERROR! not found wechatRefundOrder! orderId={}", callBackResource.getOutTradeNo());
+			return;
+		}
+
+		if (Objects.equals(wechatRefundOrder.getStatus(), WechatRefundOrder.STATUS_SUCCESS)) {
+			log.warn("WECHT WARN,repeat callback! orderId={}", callBackResource.getOutTradeNo());
+			return;
+		}
+
+		wechatRefundOrder.setUpdateTime(System.currentTimeMillis());
+		wechatRefundOrder.setStatus(WechatJsapiRefundOrderCallBackResource.REFUND_STATUS_SUCCESS.equalsIgnoreCase(callBackResource.getRefundStatus()) ? WechatRefundOrder.STATUS_SUCCESS : WechatRefundOrder.STATUS_FAIL);
+		wechatRefundOrder.setUserReceivedAccount(callBackResource.getUserReceivedAccount());
+		wechatRefundOrder.setWechatStatus(callBackResource.getRefundStatus());
+		wechatRefundOrderService.update(wechatRefundOrder);
+
+	}
+
+}

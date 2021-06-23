@@ -50,7 +50,7 @@ public class FranchiseeUserInfo {
     /**
     * 月卡剩余次数
     */
-    private Integer remainingNumber;
+    private Long remainingNumber;
     /**
     * 初始电池编号
     */

@@ -39,8 +39,8 @@ public class JsonOuterPayNotifyController {
     @Autowired
     ElectricityTradeOrderService electricityTradeOrderService;
 
-    @PostMapping("outer/pay/notify/weixin")
-    public String WeiXinPayNotify(HttpServletRequest request) {
+    @PostMapping("outer/pay/notify/weixin/{tenantId}")
+    public String payNotified(HttpServletRequest request) {
         String xmlMsg = HttpKit.readData(request);
         log.info("WEI_XIN PAY_NOTIFY MSG:{}", xmlMsg);
         //转换成map

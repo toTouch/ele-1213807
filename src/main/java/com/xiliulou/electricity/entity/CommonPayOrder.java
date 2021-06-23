@@ -23,6 +23,8 @@ public class CommonPayOrder {
     private Integer orderType;
     //额外参数
     private String attach;
+    //
+    private Integer tenantId;
 
 
 }

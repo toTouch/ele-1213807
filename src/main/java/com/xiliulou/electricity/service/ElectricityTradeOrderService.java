@@ -6,31 +6,33 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.pay.weixin.entity.WeiXinPayNotify;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
+import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
+import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
 
 public interface ElectricityTradeOrderService {
 
-
-    Pair<Boolean, Object> createTradeOrderAndGetPayParams(ElectricityMemberCardOrder electricityMemberCardOrder,
-                                                          ElectricityPayParams electricityPayParams,
-                                                          String openId,
-                                                          HttpServletRequest request);
-
-
-    Pair<Boolean, Object> notifyMemberOrder(WeiXinPayNotify weiXinPayNotify);
-
     //通用生成订单，调起支付
-    Pair<Boolean, Object> commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder,
-                                                                ElectricityPayParams electricityPayParams,
-                                                                String openId,
-                                                                HttpServletRequest request);
+    WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder,
+            ElectricityPayParams electricityPayParams,
+            String openId,
+            HttpServletRequest request) throws WechatPayException;
+
+
+    //月卡回调
+    Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
+
+
 
     //押金支付回调
-    Pair<Boolean, Object> notifyDepositOrder(WeiXinPayNotify weiXinPayNotify);
+    Pair<Boolean, Object> notifyDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
+
 
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
+
 
     ElectricityTradeOrder selectTradeOrderByOrderId(String orderId);
 }
