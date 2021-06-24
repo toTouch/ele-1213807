@@ -120,7 +120,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
 				return R.fail("ELECTRICITY.0093", "您的月卡离过期时间大于三天,无法续费!");
 			}
-			now = userInfo.getMemberCardExpireTime();
+			if(now<userInfo.getMemberCardExpireTime()) {
+				now = userInfo.getMemberCardExpireTime();
+			}
 			//TODO 使用次数暂时叠加
 			if (userInfo.getRemainingNumber() > 0&&!Objects.equals(electricityMemberCard.getMaxUseCount(),-1)) {
 				remainingNumber = remainingNumber + userInfo.getRemainingNumber();
