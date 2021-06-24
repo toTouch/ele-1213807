@@ -14,7 +14,7 @@
             and name = #{query.name}
         </if>
         order by update_time desc
-
+        limit #{query.offset}, #{query.size}
     </select>
 
 

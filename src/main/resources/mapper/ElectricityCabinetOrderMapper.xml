@@ -2,35 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinetOrder" id="ElectricityCabinetOrderMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
-        <result property="phone" column="phone" jdbcType="VARCHAR"/>
-        <result property="uid" column="uid" jdbcType="INTEGER"/>
-        <result property="payAmount" column="pay_amount" jdbcType="INTEGER"/>
-        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
-        <result property="oldElectricityBatterySn" column="old_electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="newElectricityBatterySn" column="new_electricity_battery_sn" jdbcType="VARCHAR"/>
-        <result property="oldCellNo" column="old_cell_no" jdbcType="INTEGER"/>
-        <result property="newCellNo" column="new_cell_no" jdbcType="INTEGER"/>
-        <result property="status" column="status" jdbcType="INTEGER"/>
-        <result property="paymentMethod" column="payment_method" jdbcType="INTEGER"/>
-        <result property="source" column="source" jdbcType="INTEGER"/>
-        <result property="remark" column="remark" jdbcType="VARCHAR"/>
-        <result property="switchBeginTime" column="switch_begin_time" jdbcType="INTEGER"/>
-        <result property="switchEndTime" column="switch_end_time" jdbcType="INTEGER"/>
-        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
-        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-    </resultMap>
-
-    <!--查询单个-->
-    <select id="queryById" resultMap="ElectricityCabinetOrderMap">
-        select
-          id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time
-        from electricity.t_electricity_cabinet_order
-        where id = #{id}
-    </select>
-
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
@@ -117,64 +88,6 @@
             </if>
     </select>
 
-    <!--通过主键修改数据-->
-    <update id="update">
-        update electricity.t_electricity_cabinet_order
-        <set>
-            <if test="orderId != null and orderId != ''">
-                order_id = #{orderId},
-            </if>
-            <if test="phone != null and phone != ''">
-                phone = #{phone},
-            </if>
-            <if test="uid != null">
-                uid = #{uid},
-            </if>
-            <if test="payAmount != null">
-                pay_amount = #{payAmount},
-            </if>
-            <if test="electricityCabinetId != null">
-                electricity_cabinet_id = #{electricityCabinetId},
-            </if>
-            <if test="oldElectricityBatterySn != null and oldElectricityBatterySn != ''">
-                old_electricity_battery_sn = #{oldElectricityBatterySn},
-            </if>
-            <if test="newElectricityBatterySn != null and newElectricityBatterySn != ''">
-                new_electricity_battery_sn = #{newElectricityBatterySn},
-            </if>
-            <if test="oldCellNo != null">
-                old_cell_no = #{oldCellNo},
-            </if>
-            <if test="newCellNo != null">
-                new_cell_no = #{newCellNo},
-            </if>
-            <if test="status != null">
-                status = #{status},
-            </if>
-            <if test="paymentMethod != null">
-                payment_method = #{paymentMethod},
-            </if>
-            <if test="source != null">
-                source = #{source},
-            </if>
-            <if test="remark != null and remark != ''">
-                remark = #{remark},
-            </if>
-            <if test="switchBeginTime != null">
-                switch_begin_time = #{switchBeginTime},
-            </if>
-            <if test="switchEndTime != null">
-                switch_end_time = #{switchEndTime},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
-            <if test="updateTime != null">
-                update_time = #{updateTime},
-            </if>
-        </set>
-        where id = #{id}
-    </update>
     <update id="updateExpiredCancelOrder">
         update electricity.t_electricity_cabinet_order
         set status = 8 , update_time = #{updateTime}

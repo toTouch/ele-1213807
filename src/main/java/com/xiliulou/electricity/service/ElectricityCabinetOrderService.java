@@ -20,14 +20,6 @@ import java.util.List;
 public interface ElectricityCabinetOrderService {
 
     /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinetOrder queryByIdFromDB(Long id);
-
-    /**
      * 修改数据
      *
      * @param electricityCabinetOrder 实例对象

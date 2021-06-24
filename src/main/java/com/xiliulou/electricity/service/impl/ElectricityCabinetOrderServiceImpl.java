@@ -77,16 +77,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	StoreService storeService;
 
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public ElectricityCabinetOrder queryByIdFromDB(Long id) {
-		return this.electricityCabinetOrderMapper.queryById(id);
-	}
 
 	/**
 	 * 修改数据
@@ -97,7 +87,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(ElectricityCabinetOrder electricityCabinetOrder) {
-		return this.electricityCabinetOrderMapper.update(electricityCabinetOrder);
+		return this.electricityCabinetOrderMapper.updateById(electricityCabinetOrder);
 
 	}
 
@@ -575,7 +565,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
 		newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
 		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-		electricityCabinetOrderMapper.update(newElectricityCabinetOrder);
+		electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
 
 
 		//回退月卡

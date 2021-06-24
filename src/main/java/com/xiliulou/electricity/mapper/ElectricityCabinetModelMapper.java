@@ -7,6 +7,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 换电柜型号表(TElectricityCabinetModel)表数据库访问层
  *
@@ -19,7 +21,7 @@ public interface ElectricityCabinetModelMapper extends BaseMapper<ElectricityCab
     /**
      * @return 对象列表
      */
-    IPage queryList(Page page, @Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
+    List<ElectricityCabinetModel> queryList(@Param("query") ElectricityCabinetModelQuery electricityCabinetModelQuery);
 
 
 

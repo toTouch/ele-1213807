@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -13,12 +12,10 @@ import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.PageUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -97,7 +94,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
-        int update = electricityCabinetModelMapper.update(electricityCabinetModel);
+        int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
@@ -133,8 +130,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
-        Page page = PageUtil.getPage(electricityCabinetModelQuery.getOffset(), electricityCabinetModelQuery.getSize());
-        return R.ok(electricityCabinetModelMapper.queryList(page, electricityCabinetModelQuery));
+        return R.ok(electricityCabinetModelMapper.queryList(electricityCabinetModelQuery));
     }
 
 }

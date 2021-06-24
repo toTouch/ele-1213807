@@ -20,29 +20,11 @@ import java.util.List;
 public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCabinetOrder> {
 
     /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinetOrder queryById(Long id);
-
-    /**
      * 查询指定行数据
      *
      * @return 对象列表
      */
     List<ElectricityCabinetOrderVO> queryList( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
-
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetOrder 实例对象
-     * @return 影响行数
-     */
-    int update(ElectricityCabinetOrder electricityCabinetOrder);
-
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList );
 
