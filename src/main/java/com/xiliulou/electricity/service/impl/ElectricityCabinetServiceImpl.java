@@ -137,12 +137,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (Objects.isNull(user)) {
 			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
+		};
+
 		//操作频繁
 		boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -217,6 +219,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
+
 		//操作频繁
 		boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
 		if (!result) {
@@ -328,10 +331,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return null;
 		});
 		return R.ok();
-	}
-
-	public static void main(String[] args) {
-		System.out.println(Long.valueOf((new Double(Math.ceil(1.1))).longValue()));
 	}
 
 	@Override
