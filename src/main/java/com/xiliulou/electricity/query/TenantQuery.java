@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -13,6 +14,7 @@ import javax.validation.constraints.NotNull;
 @Data
 public class TenantQuery {
 
+    @NotNull(groups = UpdateGroup.class, message = "租户ID不能为空")
     private Integer id;
 
     @NotNull(groups = CreateGroup.class, message = "租户名称不能为空")
@@ -30,4 +32,6 @@ public class TenantQuery {
     private Integer delFlag;
     private Long createTime;
     private Long updateTime;
+
+    private Long expireTime;
 }

@@ -20,15 +20,8 @@ public interface TenantService {
      * @param tenantQuery 实例对象
      * @return 实例对象
      */
-    R addTenantId(TenantQuery tenantQuery);
-
-    /**
-     * 修改数据
-     *
-     * @param tenant 实例对象
-     * @return 实例对象
-     */
-    Integer update(Tenant tenant);
+    R addTenant(TenantQuery tenantQuery);
 
 
+    R editTenant(TenantQuery tenantQuery);
 }

@@ -80,7 +80,7 @@ public class TenantServiceImpl implements TenantService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R addTenantId(TenantQuery tenantQuery) {
+    public R addTenant(TenantQuery tenantQuery) {
 
         //判断用户名是否存在
         if (!Objects.isNull(userService.queryByUserName(tenantQuery.getName()))) {
@@ -188,18 +188,21 @@ public class TenantServiceImpl implements TenantService {
         return R.ok();
     }
 
-    /**
-     * 修改数据
-     *
-     * @param tenant 实例对象
-     * @return 实例对象
-     */
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(Tenant tenant) {
-       return tenantMapper.updateById(tenant);
+    public R editTenant(TenantQuery tenantQuery) {
+        Tenant tenant=tenantMapper.selectById(tenantQuery.getId());
+        if(Objects.isNull(tenant)){
+            return R.fail("ELECTRICITY.00101", "找不到租户");
+        }
 
+        //修改租户信息
+        tenant.setStatus(tenantQuery.getStatus());
+        tenant.setUpdateTime(System.currentTimeMillis());
+        tenant.setExpireTime(tenantQuery.getExpireTime());
+        tenantMapper.insert(tenant);
+        return R.ok();
     }
+
 
     /**
      * 生成新的租户code

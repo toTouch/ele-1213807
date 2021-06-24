@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -22,21 +23,17 @@ public class JsonAdminTenantController {
     @Autowired
     private TenantService tenantService;
 
-    /**
-     * 保存
-     */
-    //新增门店
+
+    //新增租户
     @PostMapping(value = "/admin/tenant")
-    public R add(@Validated(value = CreateGroup.class) @RequestBody TenantQuery tenantQuery){
-        return this.tenantService.addTenantId(tenantQuery);
+    public R addTenant(@Validated(value = CreateGroup.class) @RequestBody TenantQuery tenantQuery){
+        return this.tenantService.addTenant(tenantQuery);
     }
 
-    /**
-     * 通过code查询租户
-     */
-    @PostMapping(value = "/admin/getCode/{code}")
-    public R getCode(@PathVariable("code") String code){
-        return this.tenantService.getCode(code);
+    //修改租户
+    @PutMapping(value = "/admin/tenant")
+    public R editTenant(@Validated(value = UpdateGroup.class) @RequestBody TenantQuery tenantQuery){
+        return this.tenantService.editTenant(tenantQuery);
     }
 
 
