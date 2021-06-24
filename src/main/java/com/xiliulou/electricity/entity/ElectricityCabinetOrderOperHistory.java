@@ -61,6 +61,9 @@ public class ElectricityCabinetOrderOperHistory {
     //错误信息
     private String msg;
 
+    //租户id
+    private Integer tenantId;
+
     //开门系统错误
     public static final Integer STATUS_ERROR = 1;
     //开门成功

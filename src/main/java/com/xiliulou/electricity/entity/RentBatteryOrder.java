@@ -27,7 +27,7 @@ public class RentBatteryOrder {
      * 订单Id
      */
     private String orderId;
-    
+
     private Long uid;
     /**
     * 用户名
@@ -69,6 +69,8 @@ public class RentBatteryOrder {
      * 更新时间
      */
     private Long updateTime;
+    //租户id
+    private Integer tenantId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

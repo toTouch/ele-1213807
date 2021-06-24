@@ -249,6 +249,7 @@ public class EleOperateQueueHandler {
 				.status(status)
 				.type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_OPEN_DOOR)
 				.uid(electricityCabinetOrder.getUid())
+				.tenantId(electricityCabinetOrder.getTenantId())
 				.build();
 		electricityCabinetOrderOperHistoryService.insert(history);
 	}
@@ -333,6 +334,7 @@ public class EleOperateQueueHandler {
 					.status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
 					.type(ElectricityCabinetOrderOperHistory.TYPE_OLD_BATTERY_CHECK)
 					.uid(electricityCabinetOrder.getUid())
+					.tenantId(electricityCabinetOrder.getTenantId())
 					.build();
 			electricityCabinetOrderOperHistoryService.insert(history);
 
@@ -391,6 +393,7 @@ public class EleOperateQueueHandler {
 				.status(status)
 				.type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_OPEN_DOOR)
 				.uid(electricityCabinetOrder.getUid())
+				.tenantId(electricityCabinetOrder.getTenantId())
 				.build();
 		electricityCabinetOrderOperHistoryService.insert(history);
 	}
@@ -449,6 +452,7 @@ public class EleOperateQueueHandler {
 				.status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
 				.type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)
 				.uid(electricityCabinetOrder.getUid())
+				.tenantId(electricityCabinetOrder.getTenantId())
 				.build();
 		electricityCabinetOrderOperHistoryService.insert(history);
 
@@ -606,6 +610,7 @@ public class EleOperateQueueHandler {
 				.status(status)
 				.type(type)
 				.uid(rentBatteryOrder.getUid())
+				.tenantId(rentBatteryOrder.getTenantId())
 				.build();
 		if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR)
 				|| Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_CHECK)) {
@@ -670,6 +675,7 @@ public class EleOperateQueueHandler {
 				.status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
 				.type(type)
 				.uid(rentBatteryOrder.getUid())
+				.tenantId(rentBatteryOrder.getTenantId())
 				.build();
 		electricityCabinetOrderOperHistoryService.insert(history);
 	}
@@ -731,6 +737,7 @@ public class EleOperateQueueHandler {
 				.status(ElectricityCabinetOrderOperHistory.STATUS_BATTERY_CHECK_SUCCESS)
 				.type(ElectricityCabinetOrderOperHistory.TYPE_NEW_BATTERY_CHECK)
 				.uid(rentBatteryOrder.getUid())
+				.tenantId(rentBatteryOrder.getTenantId())
 				.build();
 		electricityCabinetOrderOperHistoryService.insert(history);
 	}
@@ -755,6 +762,7 @@ public class EleOperateQueueHandler {
 					.type(type)
 					.uid(electricityCabinetOrder.getUid())
 					.msg(msg)
+					.tenantId(electricityCabinetOrder.getTenantId())
 					.build();
 			electricityCabinetOrderOperHistoryService.insert(history);
 			return true;
@@ -782,6 +790,7 @@ public class EleOperateQueueHandler {
 					.type(type)
 					.uid(electricityCabinetOrder.getUid())
 					.msg(msg)
+					.tenantId(electricityCabinetOrder.getTenantId())
 					.build();
 			electricityCabinetOrderOperHistoryService.insert(history);
 			return true;
@@ -803,6 +812,7 @@ public class EleOperateQueueHandler {
 					.type(type)
 					.uid(rentBatteryOrder.getUid())
 					.msg(msg)
+					.tenantId(rentBatteryOrder.getTenantId())
 					.build();
 			//若是租电池则是租电池
 			if (Objects.equals(type, ElectricityCabinetOrderOperHistory.TYPE_RENT_BATTERY_OPEN_DOOR)
