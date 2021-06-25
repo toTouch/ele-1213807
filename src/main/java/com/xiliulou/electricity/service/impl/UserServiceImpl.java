@@ -6,7 +6,6 @@ import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -27,7 +26,6 @@ import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
-import com.xiliulou.electricity.utils.PageUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserVo;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -87,16 +85,6 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	UserOauthBindService userOauthBindService;
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param uid 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public User queryByIdFromDB(Long uid) {
-		return this.userMapper.queryById(uid);
-	}
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -111,7 +99,7 @@ public class UserServiceImpl implements UserService {
 			return cacheUser;
 		}
 
-		User user = queryByIdFromDB(uid);
+		User user = userMapper.selectById(uid);
 		if (Objects.isNull(user)) {
 			return null;
 		}
@@ -122,17 +110,6 @@ public class UserServiceImpl implements UserService {
 		return user;
 	}
 
-	/**
-	 * 查询多条数据
-	 *
-	 * @param offset 查询起始位置
-	 * @param limit  查询条数
-	 * @return 对象列表
-	 */
-	@Override
-	public List<User> queryAllByLimit(int offset, int limit) {
-		return this.userMapper.queryAllByLimit(offset, limit);
-	}
 
 	/**
 	 * 新增数据
@@ -144,7 +121,7 @@ public class UserServiceImpl implements UserService {
 	@Transactional(rollbackFor = Exception.class)
 	@DS("master")
 	public User insert(User user) {
-		int insert = this.userMapper.insertOne(user);
+		int insert = this.userMapper.insert(user);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
@@ -278,9 +255,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@DS("slave_1")
 	public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime) {
-		Page page = PageUtil.getPage(offset, size);
-
-		return Pair.of(true, this.userMapper.queryListUserByCriteria(page, uid, size, offset, name, phone, type, startTime, endTime));
+		return Pair.of(true, this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime));
 
 	}
 

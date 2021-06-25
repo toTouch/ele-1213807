@@ -2,15 +2,6 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper">
 
-
-	<!--查询单个-->
-	<select id="queryById" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
-        select
-          id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status, status,is_lock,is_fan,temperature,is_heat,is_light, create_time, update_time, del_flag
-        from electricity.t_electricity_cabinet_box
-        where  del_flag=0 and  id = #{id}
-    </select>
-
 	<!--查询指定行数据-->
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
 		select
@@ -29,53 +20,6 @@
 		limit #{query.offset}, #{query.size}
 	</select>
 
-
-	<!--通过主键修改数据-->
-	<update id="update">
-		update electricity.t_electricity_cabinet_box
-		<set>
-			<if test="electricityCabinetId != null">
-				electricity_cabinet_id = #{electricityCabinetId},
-			</if>
-			<if test="cellNo != null and cellNo != ''">
-				cell_no = #{cellNo},
-			</if>
-			<if test="electricityBatteryId != null">
-				electricity_battery_id = #{electricityBatteryId},
-			</if>
-			<if test="usableStatus != null">
-				usable_status = #{usableStatus},
-			</if>
-			<if test="status != null">
-				status = #{status},
-			</if>
-			<if test="isLock != null">
-				is_lock = #{isLock},
-			</if>
-			<if test="isFan != null">
-				is_fan = #{isFan},
-			</if>
-			<if test="temperature != null">
-				temperature = #{temperature},
-			</if>
-			<if test="isHeat != null">
-				is_heat = #{isHeat},
-			</if>
-			<if test="isLight != null">
-				is_light = #{isLight},
-			</if>
-			<if test="createTime != null">
-				create_time = #{createTime},
-			</if>
-			<if test="updateTime != null">
-				update_time = #{updateTime},
-			</if>
-			<if test="delFlag != null">
-				del_flag = #{delFlag},
-			</if>
-		</set>
-		where id = #{id}
-	</update>
 
 	<update id="batchDeleteBoxByElectricityCabinetId">
         update electricity.t_electricity_cabinet_box

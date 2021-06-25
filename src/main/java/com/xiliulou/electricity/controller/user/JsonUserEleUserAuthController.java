@@ -108,12 +108,7 @@ public class JsonUserEleUserAuthController {
 	 */
 	@GetMapping(value = "/user/serviceStatus")
 	public R getEleUserServiceStatus() {
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		return eleUserAuthService.getEleUserServiceStatus(uid);
+		return eleUserAuthService.getEleUserServiceStatus();
 	}
 
 	/**

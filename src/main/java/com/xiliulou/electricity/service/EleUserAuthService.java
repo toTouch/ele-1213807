@@ -13,21 +13,6 @@ import java.util.List;
  */
 public interface EleUserAuthService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleUserAuth queryByIdFromDB(Long id);
-
-      /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleUserAuth queryByIdFromCache(Long id);
 
     /**
      * 新增数据
@@ -53,7 +38,7 @@ public interface EleUserAuthService {
 
     R selectCurrentEleAuthEntriesList(Long uid);
 
-    R getEleUserServiceStatus(Long uid);
+    R getEleUserServiceStatus();
 
     void updateByUid(Long uid, Integer authStatus);
 

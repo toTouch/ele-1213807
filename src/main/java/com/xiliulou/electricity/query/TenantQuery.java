@@ -2,7 +2,9 @@ package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import lombok.Builder;
 import lombok.Data;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.validation.constraints.NotNull;
 
@@ -12,26 +14,15 @@ import javax.validation.constraints.NotNull;
  * @Description:
  */
 @Data
+@Builder
 public class TenantQuery {
 
-    @NotNull(groups = UpdateGroup.class, message = "租户ID不能为空")
-    private Integer id;
-
-    @NotNull(groups = CreateGroup.class, message = "租户名称不能为空")
-    private String name;
-
-    private String code;
-
-    @NotNull(groups = CreateGroup.class, message = "密码不能为空")
-    private String password;
-
-    @NotNull(groups = CreateGroup.class, message = "手机号不能为空")
-    private String phone;
-
-    private Integer status;
-    private Integer delFlag;
-    private Long createTime;
-    private Long updateTime;
-
-    private Long expireTime;
+    private Long  size;
+    private Long offset;
+    private Integer tenantId;
+    private  String name;
+    private  String code;
+    private  Integer status;
+    private  Long beginTime;
+    private  Long endTime;
 }

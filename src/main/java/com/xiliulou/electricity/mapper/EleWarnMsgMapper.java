@@ -18,43 +18,12 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg>{
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleWarnMsg queryById(Long id);
 
     /**
      * 查询指定行数据
      *
      */
-    IPage queryList(Page page, @Param("query") EleWarnMsgQuery eleWarnMsgQuery);
+    List<EleWarnMsg> queryList(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
-
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param eleWarnMsg 实例对象
-     * @return 对象列表
-     */
-    List<EleWarnMsg> queryAll(EleWarnMsg eleWarnMsg);
-
-    /**
-     * 新增数据
-     *
-     * @param eleWarnMsg 实例对象
-     * @return 影响行数
-     */
-    int insertOne(EleWarnMsg eleWarnMsg);
-
-    /**
-     * 修改数据
-     *
-     * @param eleWarnMsg 实例对象
-     * @return 影响行数
-     */
-    int update(EleWarnMsg eleWarnMsg);
 
 }

@@ -55,16 +55,6 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Autowired
 	RolePermissionService rolePermissionService;
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public PermissionResource queryByIdFromDB(Long id) {
-		return this.permissionResourceMapper.queryById(id);
-	}
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -80,7 +70,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return withHash;
 		}
 
-		PermissionResource permissionResource = permissionResourceMapper.queryById(id);
+		PermissionResource permissionResource = permissionResourceMapper.selectById(id);
 		if (Objects.isNull(permissionResource)) {
 			return null;
 		}
@@ -89,17 +79,6 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		return permissionResource;
 	}
 
-	/**
-	 * 查询多条数据
-	 *
-	 * @param offset 查询起始位置
-	 * @param limit  查询条数
-	 * @return 对象列表
-	 */
-	@Override
-	public List<PermissionResource> queryAllByLimit(int offset, int limit) {
-		return this.permissionResourceMapper.queryAllByLimit(offset, limit);
-	}
 
 	/**
 	 * 新增数据
@@ -110,7 +89,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public PermissionResource insert(PermissionResource permissionResource) {
-		this.permissionResourceMapper.insertOne(permissionResource);
+		this.permissionResourceMapper.insert(permissionResource);
 		if (Objects.nonNull(permissionResource.getId())) {
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId(), permissionResource);
 		}
@@ -126,7 +105,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(PermissionResource permissionResource) {
-		int update = this.permissionResourceMapper.update(permissionResource);
+		int update = this.permissionResourceMapper.updateById(permissionResource);
 		if (update > 0) {
 			redisService.delete(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId());
 		}
@@ -237,7 +216,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 
 	@Override
 	public Pair<Boolean, Object> bindPermissionToRole(Long roleId, List<Long> pids) {
-		Role role = roleService.queryByIdFromCache(roleId);
+		Role role = roleService.queryByIdFromDB(roleId);
 		if (Objects.isNull(role)) {
 			return Pair.of(false, "角色查询不到！");
 		}

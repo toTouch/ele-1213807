@@ -2,9 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
-
-import java.util.List;
 
 /**
  * 租户表(Tenant)表服务接口
@@ -17,11 +16,15 @@ public interface TenantService {
     /**
      * 新增数据
      *
-     * @param tenantQuery 实例对象
+     * @param tenantAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R addTenant(TenantQuery tenantQuery);
+    R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery);
 
 
-    R editTenant(TenantQuery tenantQuery);
+    R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery);
+
+    R queryListTenant(TenantQuery tenantQuery);
+
+    Tenant queryByIdFromCache(Integer tenantId);
 }

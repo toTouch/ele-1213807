@@ -60,7 +60,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	 */
 	@Override
 	public ElectricityCabinetBox queryByIdFromDB(Long id) {
-		return this.electricityCabinetBoxMapper.queryById(id);
+		return this.electricityCabinetBoxMapper.selectById(id);
 	}
 
 	@Override
@@ -111,8 +111,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
 	@Override
 	public R modify(ElectricityCabinetBox electricityCabinetBox) {
-		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-		electricityCabinetBoxMapper.update(electricityCabinetBox);
+		electricityCabinetBoxMapper.updateById(electricityCabinetBox);
 		return R.ok();
 	}
 

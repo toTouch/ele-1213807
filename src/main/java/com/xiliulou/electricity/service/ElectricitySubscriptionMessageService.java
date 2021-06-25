@@ -8,7 +8,6 @@ public interface ElectricitySubscriptionMessageService {
 
     ElectricitySubscriptionMessage getSubscriptionMessageByType(Integer type);
 
-    void delSubscriptionMessageCacheByType(Integer type);
 
     R updateElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage);
 

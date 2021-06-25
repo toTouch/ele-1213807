@@ -70,27 +70,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	@Autowired
 	WechatV3JsapiService wechatV3JsapiService;
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public EleRefundOrder queryByIdFromDB(Long id) {
-		return this.eleRefundOrderMapper.queryById(id);
-	}
-
-	/**
-	 * 通过ID查询单条数据从缓存
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public EleRefundOrder queryByIdFromCache(Long id) {
-		return null;
-	}
 
 	/**
 	 * 新增数据
@@ -114,7 +93,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(EleRefundOrder eleRefundOrder) {
-		return this.eleRefundOrderMapper.update(eleRefundOrder);
+		return this.eleRefundOrderMapper.updateById(eleRefundOrder);
 
 	}
 

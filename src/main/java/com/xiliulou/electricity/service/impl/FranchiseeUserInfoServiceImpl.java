@@ -23,31 +23,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     private FranchiseeUserInfoMapper franchiseeUserInfoMapper;
 
     /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public FranchiseeUserInfo queryByIdFromDB(Long id) {
-        return this.franchiseeUserInfoMapper.selectById(id);
-    }
-
-
-    /**
-     * 新增数据
-     *
-     * @param franchiseeUserInfo 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public FranchiseeUserInfo insert(FranchiseeUserInfo franchiseeUserInfo) {
-        this.franchiseeUserInfoMapper.insert(franchiseeUserInfo);
-        return franchiseeUserInfo;
-    }
-
-    /**
      * 修改数据
      *
      * @param franchiseeUserInfo 实例对象

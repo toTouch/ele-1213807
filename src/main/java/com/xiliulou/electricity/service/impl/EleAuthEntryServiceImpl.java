@@ -10,9 +10,7 @@ import com.xiliulou.electricity.service.EleAuthEntryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,17 +29,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     @Autowired
     RedisService redisService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public EleAuthEntry queryByIdFromDB(Integer id) {
-        return this.eleAuthEntryMapper.selectById(id);
-    }
-    
+
         /**
      * 通过ID查询单条数据从缓存
      *
@@ -59,56 +47,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         }
         return eleAuthEntry;
     }
-    
-    /**
-     * 新增数据
-     *
-     * @param eleAuthEntry 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public EleAuthEntry insert(EleAuthEntry eleAuthEntry) {
-        this.eleAuthEntryMapper.insert(eleAuthEntry);
-        return eleAuthEntry;
-    }
 
-    /**
-     * 修改数据
-     *
-     * @param eleAuthEntry 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(EleAuthEntry eleAuthEntry) {
-       return this.eleAuthEntryMapper.updateById(eleAuthEntry);
-         
-    }
-
-    @Override
-    public R batchInsertAuthEntry(List<EleAuthEntry> eleAuthEntryList) {
-        List<EleAuthEntry> eleAuthEntryListWillInsertList = new ArrayList<>(eleAuthEntryList.size());
-        for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
-            if (ObjectUtil.isEmpty(eleAuthEntry.getType()) || !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
-                return R.fail("ELECTRICITY.0007", "不合法的参数");
-            }
-            eleAuthEntryListWillInsertList.add(eleAuthEntry);
-        }
-        long effectRows = eleAuthEntryListWillInsertList.parallelStream().map(e -> {
-            e.setCreateTime(System.currentTimeMillis());
-            e.setUpdateTime(System.currentTimeMillis());
-            e.setDelFlag(EleAuthEntry.DEL_NORMAL);
-
-            return eleAuthEntryMapper.insert(e);
-        }).count();
-
-        if (effectRows < eleAuthEntryListWillInsertList.size()) {
-            log.error("insert size is  more than insert effectRows ");
-            return R.fail("SYSTEM.0001","系统错误!");
-        }
-        return R.ok();
-    }
 
     @Override
     public R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList) {

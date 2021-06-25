@@ -104,6 +104,8 @@ public class JsonAdminElectricityCabinetBoxController {
                 .build();
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         return electricityCabinetBoxService.modify(electricityCabinetBox);
     }
 

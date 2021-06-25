@@ -16,56 +16,8 @@ import java.util.List;
  */
 public interface UserMapper extends BaseMapper<User> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param uid 主键
-     * @return 实例对象
-     */
-    User queryById(Long uid);
 
-    /**
-     * 查询指定行数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    List<User> queryAllByLimit(@Param("offset") int offset, @Param("limit") int limit);
 
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param user 实例对象
-     * @return 对象列表
-     */
-    List<User> queryAll(User user);
-
-    /**
-     * 新增数据
-     *
-     * @param user 实例对象
-     * @return 影响行数
-     */
-    int insertOne(User user);
-
-    /**
-     * 修改数据
-     *
-     * @param user 实例对象
-     * @return 影响行数
-     */
-    @Deprecated
-    int update(User user);
-
-    /**
-     * 通过主键删除数据
-     *
-     * @param uid 主键
-     * @return 影响行数
-     */
-    int deleteById(Long uid);
-
-    IPage queryListUserByCriteria(Page page, @Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+    List<User> queryListUserByCriteria(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
 }

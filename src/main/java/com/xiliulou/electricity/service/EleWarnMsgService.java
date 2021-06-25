@@ -19,14 +19,8 @@ public interface EleWarnMsgService {
      * @return 实例对象
      */
     EleWarnMsg queryByIdFromDB(Long id);
-    
-      /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleWarnMsg queryByIdFromCache(Long id);
+
+
 
     /**
      * 新增数据

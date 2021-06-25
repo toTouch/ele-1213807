@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+import java.util.Map;
 
 /**
  * 订单的操作历史记录(TElectricityCabinetOrderOperHistory)表数据库访问层
@@ -15,5 +17,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<ElectricityCabinetOrderOperHistory>{
 
-    IPage queryList(Page page, @Param("query")ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+    List<Map<String,Object>> queryList(@Param("query")ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 }

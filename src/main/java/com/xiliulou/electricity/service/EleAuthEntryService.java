@@ -13,14 +13,6 @@ import java.util.List;
  */
 public interface EleAuthEntryService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    EleAuthEntry queryByIdFromDB(Integer id);
-    
       /**
      * 通过ID查询单条数据从缓存
      *
@@ -29,24 +21,6 @@ public interface EleAuthEntryService {
      */
     EleAuthEntry queryByIdFromCache(Integer id);
 
-    /**
-     * 新增数据
-     *
-     * @param eleAuthEntry 实例对象
-     * @return 实例对象
-     */
-    EleAuthEntry insert(EleAuthEntry eleAuthEntry);
-
-    /**
-     * 修改数据
-     *
-     * @param eleAuthEntry 实例对象
-     * @return 实例对象
-     */
-    Integer update(EleAuthEntry eleAuthEntry);
-
-
-    R batchInsertAuthEntry(List<EleAuthEntry> eleAuthEntryList);
 
     R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList);
 

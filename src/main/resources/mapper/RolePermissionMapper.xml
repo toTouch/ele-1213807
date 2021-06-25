@@ -2,33 +2,4 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.RolePermissionMapper">
 
-    <resultMap type="com.xiliulou.electricity.entity.RolePermission" id="RolePermissionMap">
-        <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="roleId" column="role_id" jdbcType="INTEGER"/>
-        <result property="pId" column="p_id" jdbcType="INTEGER"/>
-    </resultMap>
-
-    <!--查询单个-->
-    <select id="queryById" resultMap="RolePermissionMap">
-        select
-          id, role_id, p_id
-        from electricity.t_role_permission
-        where id = #{id}
-    </select>
-
-    <!--查询指定行数据-->
-    <select id="queryAllByLimit" resultMap="RolePermissionMap">
-        select
-          id, role_id, p_id
-        from electricity.t_role_permission
-        limit #{offset}, #{limit}
-    </select>
-
-
-
-    <!--通过主键删除-->
-    <delete id="deleteById">
-        delete from electricity.t_role_permission where id = #{id}
-    </delete>
-
 </mapper>

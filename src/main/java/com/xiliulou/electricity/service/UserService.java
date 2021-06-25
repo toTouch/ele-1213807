@@ -20,13 +20,6 @@ import java.util.List;
  */
 public interface UserService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param uid 主键
-     * @return 实例对象
-     */
-    User queryByIdFromDB(Long uid);
 
     /**
      * 通过ID查询单条数据从缓存
@@ -36,14 +29,6 @@ public interface UserService {
      */
     User queryByUidFromCache(Long uid);
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    List<User> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据

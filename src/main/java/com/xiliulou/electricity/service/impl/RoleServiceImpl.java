@@ -68,31 +68,10 @@ public class RoleServiceImpl implements RoleService {
 	 */
 	@Override
 	public Role queryByIdFromDB(Long id) {
-		return this.roleMapper.queryById(id);
+		return this.roleMapper.selectById(id);
 	}
 
-	/**
-	 * 通过ID查询单条数据从缓存
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public Role queryByIdFromCache(Long id) {
-		return queryByIdFromDB(id);
-	}
 
-	/**
-	 * 查询多条数据
-	 *
-	 * @param offset 查询起始位置
-	 * @param limit  查询条数
-	 * @return 对象列表
-	 */
-	@Override
-	public List<Role> queryAllByLimit(int offset, int limit) {
-		return this.roleMapper.queryAllByLimit(offset, limit);
-	}
 
 	/**
 	 * 新增数据
@@ -116,7 +95,7 @@ public class RoleServiceImpl implements RoleService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(Role role) {
-		return this.roleMapper.update(role);
+		return this.roleMapper.updateById(role);
 
 	}
 
@@ -140,7 +119,7 @@ public class RoleServiceImpl implements RoleService {
 		role.setUpdateTime(System.currentTimeMillis());
 		role.setCreateTime(System.currentTimeMillis());
 
-		int insert = roleMapper.insertOne(role);
+		int insert = roleMapper.insert(role);
 		return insert > 0 ? R.ok() : R.fail("保存失败！");
 	}
 
@@ -157,7 +136,7 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public Pair<Boolean, Object> deleteRole(Long id) {
-		Role role = queryByIdFromCache(id);
+		Role role = queryByIdFromDB(id);
 		if (Objects.isNull(role)) {
 			return Pair.of(false, "该id的角色不存在!");
 		}
@@ -201,28 +180,6 @@ public class RoleServiceImpl implements RoleService {
 		return Pair.of(true, "绑定成功!");
 	}
 
-	@Override
-	public Pair<Boolean, Object> unBindUserRole(Long userRoleId) {
-		if (userRoleService.deleteById(userRoleId)) {
-			return Pair.of(true, null);
-		}
-		return Pair.of(false, "解绑失败！");
-	}
-
-	@Override
-	public R queryListByCondition(Integer offset, Integer size) {
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("SYSTEM.0001", "查询不到uid");
-		}
-		List<Role> roles = roleMapper.queryListByCondition(offset, size);
-		if (uid == 1) {
-			return R.ok(roles);
-		}
-
-		List<Role> collect = roles.stream().filter(e -> e.getId().equals(1L)).collect(Collectors.toList());
-		return R.ok(collect);
-	}
 
 	@Override
 	public Pair<Boolean, Object> getMenuByUid() {

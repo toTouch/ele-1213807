@@ -13,23 +13,6 @@ import java.util.List;
 public interface FranchiseeUserInfoService {
 
     /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    FranchiseeUserInfo queryByIdFromDB(Long id);
-
-
-    /**
-     * 新增数据
-     *
-     * @param franchiseeUserInfo 实例对象
-     * @return 实例对象
-     */
-    FranchiseeUserInfo insert(FranchiseeUserInfo franchiseeUserInfo);
-
-    /**
      * 修改数据
      *
      * @param franchiseeUserInfo 实例对象

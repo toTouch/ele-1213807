@@ -105,15 +105,6 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 
     }
 
-    /**
-     * 删除 缓存
-     *
-     * @param type
-     */
-    @Override
-    public void delSubscriptionMessageCacheByType(Integer type) {
-        redisService.delete(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + type);
-    }
 
     @Override
     @DS("slave_1")

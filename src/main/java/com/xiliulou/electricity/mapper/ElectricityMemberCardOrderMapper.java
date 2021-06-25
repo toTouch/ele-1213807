@@ -28,8 +28,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cardIdList") List<Integer> cardIdList);
 
-    @Select("SELECT * FROM  t_electricity_member_card_order  WHERE uid = #{uid} AND status =1  ORDER BY create_time desc LIMIT 0,1")
-    ElectricityMemberCardOrder getRecentOrder(@Param("uid") Long uid);
 
     List<ElectricityMemberCardOrderVO> queryList(@Param("query") MemberCardOrderQuery memberCardOrderQuery);
 

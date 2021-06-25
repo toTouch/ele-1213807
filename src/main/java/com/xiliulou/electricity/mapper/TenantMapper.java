@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.Tenant;
 import java.util.List;
+
+import com.xiliulou.electricity.query.TenantQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -16,10 +18,10 @@ public interface TenantMapper  extends BaseMapper<Tenant>{
     /**
      * 通过实体作为筛选条件查询
      *
-     * @param tenant 实例对象
+     * @param tenantQuery 实例对象
      * @return 对象列表
      */
-    List<Tenant> queryAll(Tenant tenant);
+    List<Tenant> queryAll(TenantQuery tenantQuery);
 
 
 

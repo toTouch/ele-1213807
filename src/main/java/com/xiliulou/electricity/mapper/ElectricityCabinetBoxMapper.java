@@ -18,27 +18,12 @@ import java.util.List;
  */
 public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabinetBox> {
 
-    /**
-     * 通过ID查询单条数据
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ElectricityCabinetBox queryById(Long id);
 
     /**
      * @return 对象列表
      */
     List<ElectricityCabinetBoxVO> queryList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
-
-    /**
-     * 修改数据
-     *
-     * @param electricityCabinetBox 实例对象
-     * @return 影响行数
-     */
-    int update(ElectricityCabinetBox electricityCabinetBox);
 
 
     void batchDeleteBoxByElectricityCabinetId(@Param("id") Integer id, @Param("updateTime") Long updateTime);

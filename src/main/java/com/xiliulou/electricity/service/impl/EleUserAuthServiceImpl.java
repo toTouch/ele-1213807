@@ -7,13 +7,17 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleUserAuthMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -56,28 +60,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 	@Autowired
 	ElectricityConfigService electricityConfigService;
+	@Autowired
+	FranchiseeUserInfoService franchiseeUserInfoService;
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public EleUserAuth queryByIdFromDB(Long id) {
-		return this.eleUserAuthMapper.queryById(id);
-	}
-
-	/**
-	 * 通过ID查询单条数据从缓存
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public EleUserAuth queryByIdFromCache(Long id) {
-		return null;
-	}
 
 	/**
 	 * 新增数据
@@ -101,7 +86,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(EleUserAuth eleUserAuth) {
-		return this.eleUserAuthMapper.update(eleUserAuth);
+		return this.eleUserAuthMapper.updateById(eleUserAuth);
 
 	}
 
@@ -109,20 +94,28 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R webAuth(List<EleUserAuth> eleUserAuthList){
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("payDeposit  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-		UserInfo oldUserInfo = userInfoService.queryByUid(uid);
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		//用户
+		UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(oldUserInfo)) {
-			log.error("ELECTRICITY  ERROR! not found user,uid:{} ", oldUserInfo);
+			log.error("ELECTRICITY  ERROR! not found user！uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 		//用户是否可用
 		if (Objects.equals(oldUserInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! user is unusable! userInfo:{} ", oldUserInfo);
+			log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
+
 
 		if (Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_PENDING_REVIEW)) {
 			return R.fail("审核中，无法修改!");
@@ -136,7 +129,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 		//是否需要人工审核
 		Integer status=EleUserAuth.STATUS_PENDING_REVIEW;
-		ElectricityConfig electricityConfig=electricityConfigService.queryOne();
+		ElectricityConfig electricityConfig=electricityConfigService.queryOne(tenantId);
 		if(Objects.nonNull(electricityConfig)){
 			if (Objects.equals(electricityConfig.getIsManualReview(),ElectricityConfig.AUTO_REVIEW)){
 				status=EleUserAuth.STATUS_REVIEW_PASSED;
@@ -145,7 +138,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		}
 
 		for (EleUserAuth eleUserAuth : eleUserAuthList) {
-			eleUserAuth.setUid(uid);
+			eleUserAuth.setUid(user.getUid());
 			if (StringUtils.isEmpty(eleUserAuth.getValue())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
@@ -169,11 +162,11 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 				eleUserAuth.setCreateTime(System.currentTimeMillis());
 				eleUserAuthMapper.insert(eleUserAuth);
 			} else {
-				eleUserAuthMapper.update(eleUserAuth);
+				eleUserAuthMapper.updateById(eleUserAuth);
 			}
 		}
 
-		userInfo.setUid(uid);
+		userInfo.setUid(user.getUid());
 		userInfo.setAuthStatus(status);
 		userInfo.setUpdateTime(System.currentTimeMillis());
 		userInfoService.update(userInfo);
@@ -210,28 +203,57 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 	}
 
 	@Override
-	public R getEleUserServiceStatus(Long uid) {
+	public R getEleUserServiceStatus() {
 
-		UserInfo userInfo = userInfoService.queryByUid(uid);
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("payDeposit  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
+			log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 		Integer serviceStatus = userInfo.getServiceStatus();
 
-		if (ObjectUtil.equal(userInfo.getServiceStatus(), UserInfo.STATUS_IS_DEPOSIT)) {
-			//判断用户是否开通月卡
-			if (Objects.isNull(userInfo.getMemberCardExpireTime()) || Objects.isNull(userInfo.getRemainingNumber())) {
-				log.error("ELECTRICITY  ERROR! not found memberCard ");
-				serviceStatus = -1;
-			} else {
-				Long now = System.currentTimeMillis();
-				if (userInfo.getMemberCardExpireTime() < now || userInfo.getRemainingNumber() == 0) {
-					log.error("ELECTRICITY  ERROR! not found memberCard ");
-					serviceStatus = -1;
-				}
-			}
+		//是否缴纳押金，是否绑定电池
+		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+		//未找到用户
+		if (franchiseeUserInfoList.size() < 1) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
 		}
+
+		//出现多个用户绑定或没有用户绑定
+		if (franchiseeUserInfoList.size() > 1) {
+			log.error("payDeposit  ERROR! user status is error! uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
+		}
+
+		//用户
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
+
+		if(!Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
+			serviceStatus=franchiseeUserInfo.getServiceStatus();
+		}
+
+		//用户是否开通月卡
+		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+				|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+			log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
+			serviceStatus=-1;
+		}
+		Long now = System.currentTimeMillis();
+		if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
+			log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+			serviceStatus=-1;
+		}
+
 		return R.ok(serviceStatus);
 	}
 

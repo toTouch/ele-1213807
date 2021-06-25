@@ -10,9 +10,6 @@
           id, name, code, status, del_flag, create_time, update_time, expire_time
         from t_tenant
         <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
             <if test="name != null and name != ''">
                 and name = #{name}
             </if>
@@ -22,19 +19,15 @@
             <if test="status != null">
                 and status = #{status}
             </if>
-            <if test="delFlag != null">
-                and del_flag = #{delFlag}
+            <if test="startTime != null">
+                and create_time &gt;=#{startTime}
             </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="expireTime != null">
-                and expire_time = #{expireTime}
+            <if test="endTime != null">
+                and create_time &lt;=#{endTime}
             </if>
         </where>
+        order by create_time desc
+        limit #{offset}, #{size}
     </select>
 
 

@@ -32,69 +32,9 @@ public class CityServiceImpl implements CityService {
 	 */
 	@Override
 	public City queryByIdFromDB(Integer id) {
-		return this.cityMapper.queryById(id);
+		return this.cityMapper.selectById(id);
 	}
 
-	/**
-	 * 通过ID查询单条数据从缓存
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public City queryByIdFromCache(Integer id) {
-		return null;
-	}
-
-	/**
-	 * 查询多条数据
-	 *
-	 * @param offset 查询起始位置
-	 * @param limit  查询条数
-	 * @return 对象列表
-	 */
-	@Override
-	public List<City> queryAllByLimit(int offset, int limit) {
-		return this.cityMapper.queryAllByLimit(offset, limit);
-	}
-
-	/**
-	 * 新增数据
-	 *
-	 * @param city 实例对象
-	 * @return 实例对象
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public City insert(City city) {
-		this.cityMapper.insert(city);
-		return city;
-	}
-
-	/**
-	 * 修改数据
-	 *
-	 * @param city 实例对象
-	 * @return 实例对象
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Integer update(City city) {
-		return this.cityMapper.update(city);
-
-	}
-
-	/**
-	 * 通过主键删除数据
-	 *
-	 * @param id 主键
-	 * @return 是否成功
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Boolean deleteById(Integer id) {
-		return this.cityMapper.deleteById(id) > 0;
-	}
 
 	@Override
 	public City queryCityByCode(String code) {

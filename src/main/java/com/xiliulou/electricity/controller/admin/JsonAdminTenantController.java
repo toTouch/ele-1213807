@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -26,14 +28,43 @@ public class JsonAdminTenantController {
 
     //新增租户
     @PostMapping(value = "/admin/tenant")
-    public R addTenant(@Validated(value = CreateGroup.class) @RequestBody TenantQuery tenantQuery){
-        return this.tenantService.addTenant(tenantQuery);
+    public R addTenant(@Validated(value = CreateGroup.class) @RequestBody TenantAddAndUpdateQuery tenantAddAndUpdateQuery){
+        return this.tenantService.addTenant(tenantAddAndUpdateQuery);
     }
 
     //修改租户
     @PutMapping(value = "/admin/tenant")
-    public R editTenant(@Validated(value = UpdateGroup.class) @RequestBody TenantQuery tenantQuery){
-        return this.tenantService.editTenant(tenantQuery);
+    public R editTenant(@Validated(value = UpdateGroup.class) @RequestBody TenantAddAndUpdateQuery tenantAddAndUpdateQuery){
+        return this.tenantService.editTenant(tenantAddAndUpdateQuery);
+    }
+
+    //查询租户
+    @GetMapping("/admin/list")
+    public R listTenant(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "tenantId", required = false) Integer tenantId,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        TenantQuery tenantQuery = TenantQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .tenantId(tenantId)
+                .code(code)
+                .status(status).build();
+        return tenantService.queryListTenant(tenantQuery);
     }
 
 

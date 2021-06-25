@@ -41,31 +41,9 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
      */
     @Override
     public UserOauthBind queryByIdFromDB(Long id) {
-        return this.userOauthBindMapper.queryById(id);
+        return this.userOauthBindMapper.selectById(id);
     }
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public UserOauthBind queryByIdFromCache(Long id) {
-        return null;
-    }
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<UserOauthBind> queryAllByLimit(int offset, int limit) {
-        return this.userOauthBindMapper.queryAllByLimit(offset, limit);
-    }
 
     /**
      * 新增数据
@@ -76,7 +54,7 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UserOauthBind insert(UserOauthBind userOauthBind) {
-        this.userOauthBindMapper.insertOne(userOauthBind);
+        this.userOauthBindMapper.insert(userOauthBind);
         return userOauthBind;
     }
 
@@ -89,21 +67,10 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserOauthBind userOauthBind) {
-        return this.userOauthBindMapper.update(userOauthBind);
+        return this.userOauthBindMapper.updateById(userOauthBind);
 
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.userOauthBindMapper.deleteById(id) > 0;
-    }
 
     @Override
     public UserOauthBind queryOauthByOpenIdAndSource(String openid, int source) {

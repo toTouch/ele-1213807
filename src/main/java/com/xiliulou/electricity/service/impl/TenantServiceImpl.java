@@ -17,6 +17,7 @@ import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.TenantMapper;
+import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
@@ -75,42 +76,42 @@ public class TenantServiceImpl implements TenantService {
     /**
      * 新增数据
      *
-     * @param tenantQuery 实例对象
+     * @param tenantAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R addTenant(TenantQuery tenantQuery) {
+    public R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
 
         //判断用户名是否存在
-        if (!Objects.isNull(userService.queryByUserName(tenantQuery.getName()))) {
+        if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
             return R.fail("LOCKER.10015", "用户名已存在");
         }
 
         //1.保存租户信息
-        tenantQuery.setCode(genTenantCode());
-        tenantQuery.setCreateTime(System.currentTimeMillis());
-        tenantQuery.setDelFlag(Tenant.DEL_NORMAL);
-        tenantQuery.setStatus(Tenant.STA_NO_OUT);
-        tenantQuery.setUpdateTime(System.currentTimeMillis());
+        tenantAddAndUpdateQuery.setCode(genTenantCode());
+        tenantAddAndUpdateQuery.setCreateTime(System.currentTimeMillis());
+        tenantAddAndUpdateQuery.setDelFlag(Tenant.DEL_NORMAL);
+        tenantAddAndUpdateQuery.setStatus(Tenant.STA_NO_OUT);
+        tenantAddAndUpdateQuery.setUpdateTime(System.currentTimeMillis());
 
         Tenant tenant = new Tenant();
-        BeanUtil.copyProperties(tenantQuery, tenant);
+        BeanUtil.copyProperties(tenantAddAndUpdateQuery, tenant);
         tenant.setExpireTime(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
         tenantMapper.insert(tenant);
 
         //2.保存用户信息
-        String decryptPassword = decryptPassword(tenantQuery.getPassword());
+        String decryptPassword = decryptPassword(tenantAddAndUpdateQuery.getPassword());
         if (StrUtil.isEmpty(decryptPassword)) {
-            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantQuery.getName(), tenantQuery.getPhone(), tenantQuery.getPassword());
+            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantAddAndUpdateQuery.getName(), tenantAddAndUpdateQuery.getPhone(), tenantAddAndUpdateQuery.getPassword());
             return R.fail("SYSTEM.0001", "系统错误!");
         }
         String loginPwd = StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword);
 
         User user = new User();
-        user.setName(tenantQuery.getName());
+        user.setName(tenantAddAndUpdateQuery.getName());
         user.setLoginPwd(loginPwd);
-        user.setPhone(tenantQuery.getPhone());
+        user.setPhone(tenantAddAndUpdateQuery.getPhone());
         user.setAvatar("");
         user.setGender(User.GENDER_MALE);
         user.setDelFlag(User.DEL_NORMAL);
@@ -189,20 +190,29 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
-    public R editTenant(TenantQuery tenantQuery) {
-        Tenant tenant=tenantMapper.selectById(tenantQuery.getId());
+    public R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
+        Tenant tenant=tenantMapper.selectById(tenantAddAndUpdateQuery.getId());
         if(Objects.isNull(tenant)){
             return R.fail("ELECTRICITY.00101", "找不到租户");
         }
 
         //修改租户信息
-        tenant.setStatus(tenantQuery.getStatus());
+        tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
         tenant.setUpdateTime(System.currentTimeMillis());
-        tenant.setExpireTime(tenantQuery.getExpireTime());
+        tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
         tenantMapper.insert(tenant);
         return R.ok();
     }
 
+    @Override
+    public R queryListTenant(TenantQuery tenantQuery) {
+        return R.ok(tenantMapper.queryAll(tenantQuery));
+    }
+
+    @Override
+    public Tenant queryByIdFromCache(Integer tenantId) {
+        return null;
+    }
 
     /**
      * 生成新的租户code
