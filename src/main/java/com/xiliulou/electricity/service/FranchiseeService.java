@@ -36,5 +36,4 @@ public interface FranchiseeService {
 
     Franchisee queryByUid(Long uid);
 
-    Franchisee queryByCid(Integer cid);
 }

@@ -415,7 +415,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	}
 
 	@Override
-	public R queryDeposit() {
+	public R queryUserDeposit() {
 		Map<String, String> map = new HashMap<>();
 		//用户信息
 		Long uid = SecurityUtils.getUid();
@@ -461,11 +461,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.ok(map);
 		}
 
-		//根据换电柜id查找押金 TODO
-		map.put("deposit", null);
-		map.put("time", null);
-		map.put("refundStatus", null);
-		return R.ok(map);
+		return R.ok(null);
 	}
 
 	@Override
@@ -519,6 +515,43 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		} catch (IOException e) {
 			log.error("导出报表失败！", e);
 		}
+	}
+
+	@Override
+	public R queryDeposit(Integer electricityCabinetId) {
+		//换电柜
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		if (Objects.isNull(electricityCabinet)) {
+			log.error("queryDeposit  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			return R.fail("ELECTRICITY.0005", "未找到换电柜");
+		}
+
+		//查询押金
+		//查找换电柜门店
+		if (Objects.isNull(electricityCabinet.getStoreId())) {
+			log.error("queryDeposit  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+		}
+		Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+		if (Objects.isNull(store)) {
+			log.error("queryDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+			return R.fail("ELECTRICITY.0018", "未找到门店");
+		}
+
+		//查找门店加盟商
+		if (Objects.isNull(store.getFranchiseeId())) {
+			log.error("queryDeposit  ERROR! not found Franchisee ！storeId{}", store.getId());
+			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+		}
+
+		Franchisee franchisee = franchiseeService.queryByIdFromCache(store.getFranchiseeId());
+		if (Objects.isNull(franchisee)) {
+			log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
+			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+		}
+
+
+		return R.ok(franchisee.getBatteryDeposit());
 	}
 
 	public String generateOrderId(Long uid) {

@@ -223,8 +223,4 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
     }
 
-    @Override
-    public Franchisee queryByCid(Integer cid) {
-        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getCid,cid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
-    }
 }

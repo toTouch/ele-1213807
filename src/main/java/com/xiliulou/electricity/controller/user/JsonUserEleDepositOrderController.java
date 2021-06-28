@@ -57,10 +57,16 @@ public class JsonUserEleDepositOrderController {
         return R.ok(eleDepositOrder.getStatus());
     }
 
+    //用户查询缴纳押金
+    @GetMapping(value = "/user/queryUserDeposit")
+    public R queryUserDeposit(){
+        return eleDepositOrderService.queryUserDeposit();
+    }
+
     //用户查询押金
     @GetMapping(value = "/user/queryDeposit")
-    public R queryDeposit(){
-        return eleDepositOrderService.queryDeposit();
+    public R queryDeposit(@RequestParam("electricityCabinetId") Integer electricityCabinetId){
+        return eleDepositOrderService.queryDeposit(electricityCabinetId);
     }
 
 }

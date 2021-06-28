@@ -26,7 +26,9 @@ public interface EleDepositOrderService {
 
     void update(EleDepositOrder eleDepositOrderUpdate);
 
-    R queryDeposit();
+    R queryUserDeposit();
 
 	void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
+
+    R queryDeposit(Integer electricityCabinetId);
 }
