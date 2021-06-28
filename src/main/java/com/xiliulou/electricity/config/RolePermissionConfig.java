@@ -14,7 +14,7 @@ import java.util.List;
  */
 
 @Configuration
-@ConfigurationProperties("userRole")
+@ConfigurationProperties("userrole")
 @Data
 @RefreshScope
 public class RolePermissionConfig {
