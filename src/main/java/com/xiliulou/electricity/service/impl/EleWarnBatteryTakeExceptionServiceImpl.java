@@ -33,18 +33,6 @@ public class EleWarnBatteryTakeExceptionServiceImpl implements EleWarnService {
 
 	@Override
 	public Pair<Boolean, Integer> handleEleWarn(EleWarnRequest eleWarnRequest, ElectricityCabinet electricityCabinet) {
-		//锁住换电柜
-		redisService.saveWithString(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE+electricityCabinet.getId(),electricityCabinet.getId());
-		//禁用用户导致锁定柜机的用户
-		if(Objects.nonNull(eleWarnRequest)&&Objects.nonNull(eleWarnRequest.getCellNo())) {
-			ElectricityCabinetOrder electricityCabinetOrder=electricityCabinetOrderService.queryByCellNoAndEleId(electricityCabinet.getId(),eleWarnRequest.getCellNo());
-			if(Objects.nonNull(electricityCabinetOrder)){
-				UserInfo userInfo=new UserInfo();
-				userInfo.setUid(electricityCabinetOrder.getUid());
-				userInfo.setUsableStatus(UserInfo.USER_UN_USABLE_STATUS);
-				userInfoService.updateByUid(userInfo);
-			}
-		}
 		return Pair.of(true,null);
 	}
 }
