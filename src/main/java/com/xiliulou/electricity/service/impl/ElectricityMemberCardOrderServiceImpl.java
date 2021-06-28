@@ -187,7 +187,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 		//同一个套餐可以续费
 		if (Objects.equals(franchiseeUserInfo.getCardId(), memberId)) {
-			now = franchiseeUserInfo.getMemberCardExpireTime();
+			if(now<franchiseeUserInfo.getMemberCardExpireTime()) {
+				now = franchiseeUserInfo.getMemberCardExpireTime();
+			}
 			//TODO 使用次数暂时叠加
 			if (franchiseeUserInfo.getRemainingNumber() > 0) {
 				remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
