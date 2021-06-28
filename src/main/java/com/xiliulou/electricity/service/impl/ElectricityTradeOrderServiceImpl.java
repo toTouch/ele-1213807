@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -33,7 +32,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
-import java.util.List;
 import java.util.Objects;
 
 /**
