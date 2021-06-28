@@ -68,7 +68,7 @@ public class RoleServiceImpl implements RoleService {
 	 */
 	@Override
 	public Role queryByIdFromDB(Long id) {
-		return this.roleMapper.selectById(id);
+		return this.roleMapper.queryById(id);
 	}
 
 
