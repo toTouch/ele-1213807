@@ -1348,23 +1348,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
-			log.error("queryByDevice  ERROR! not found user! uid:{} ", user.getUid());
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
-
-		//出现多个用户绑定，则用户异常
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("queryByDevice  ERROR! user status is error! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-		//用户
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 
 		//判断该换电柜加盟商和用户加盟商是否一致
@@ -1543,24 +1534,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
-			log.error("queryByRentBattery  ERROR! not found user! uid:{} ", user.getUid());
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
-
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("queryByRentBattery  ERROR! user status is error! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-
-		//用户
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 
 		//判断该换电柜加盟商和用户加盟商是否一致

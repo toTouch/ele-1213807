@@ -34,10 +34,6 @@ public class ElectricityCabinetOrderOperHistory {
      */
     private Integer orderType;
     /**
-    * 创建时间
-    */
-    private Long createTime;
-    /**
     * 换电柜id
     */
     private Integer electricityCabinetId;
@@ -60,6 +56,11 @@ public class ElectricityCabinetOrderOperHistory {
 
     //错误信息
     private String msg;
+
+    /**
+     * 创建时间
+     */
+    private Long createTime;
 
     //租户id
     private Integer tenantId;

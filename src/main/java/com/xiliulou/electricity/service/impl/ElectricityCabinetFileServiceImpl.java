@@ -69,7 +69,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
 
     @Override
     public List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer  isUseOSS) {
-        return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getElectricityCabinetId, electricityCabinetId)
+        return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getOtherId, electricityCabinetId)
                 .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getIsOss,isUseOSS));
     }
 

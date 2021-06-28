@@ -79,6 +79,9 @@ public class FranchiseeUserInfo {
     * 更新时间
     */
     private Long updateTime;
+
+    //租户
+    private Integer tenantId;
     //初始化
     public static final Integer STATUS_IS_INIT=1;
     //已缴纳押金

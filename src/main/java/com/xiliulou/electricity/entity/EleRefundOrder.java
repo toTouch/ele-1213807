@@ -51,10 +51,6 @@ public class EleRefundOrder {
     */
     private String errMsg;
     /**
-    * 是否删除（0-正常，1-删除）
-    */
-    private Object delFlag;
-    /**
     * 创建时间
     */
     private Long createTime;
@@ -62,6 +58,9 @@ public class EleRefundOrder {
     * 更新时间
     */
     private Long updateTime;
+
+    //租户id
+    private Integer tenantId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

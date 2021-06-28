@@ -54,6 +54,14 @@ public class UserInfo {
      */
     private Integer serviceStatus;
     /**
+     * 可用状态(0--启用，1--禁用)
+     */
+    private Integer usableStatus;
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
+    /**
      * 创建时间
      */
     private Long createTime;
@@ -61,16 +69,9 @@ public class UserInfo {
      * 更新时间
      */
     private Long updateTime;
-    /**
-     * 可用状态(0--启用，1--禁用)
-     */
-    private Integer usableStatus;
 
+    //租户
     private Integer tenantId;
-    /**
-     * 0--正常 1--删除
-     */
-    private Integer delFlag;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

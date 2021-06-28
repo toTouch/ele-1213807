@@ -185,23 +185,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
+		if (Objects.isNull(franchiseeUserInfo)) {
 			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
 
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("payDeposit  ERROR! user status is error! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-		//已缴纳押金
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
 			log.error("payDeposit  ERROR! user is rent deposit! ,uid:{} ", user.getUid());
@@ -244,7 +236,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				.payAmount(payAmount)
 				.status(EleDepositOrder.STATUS_INIT)
 				.createTime(System.currentTimeMillis())
-				.updateTime(System.currentTimeMillis()).build();
+				.updateTime(System.currentTimeMillis())
+				.tenantId(tenantId).build();
 
 		//支付零元
 		if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -313,22 +306,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
-			log.error("returnDeposit  ERROR! not found user! uid:{} ", user.getUid());
+		if (Objects.isNull(oldFranchiseeUserInfo)) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
-
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("returnDeposit  ERROR! user status is error! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-		//用户
-		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 		//判断是否退电池
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
@@ -413,7 +398,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				.refundAmount(payAmount)
 				.status(EleRefundOrder.STATUS_INIT)
 				.createTime(System.currentTimeMillis())
-				.updateTime(System.currentTimeMillis()).build();
+				.updateTime(System.currentTimeMillis())
+				.tenantId(eleDepositOrder.getTenantId()).build();
 		eleRefundOrderService.insert(eleRefundOrder);
 
 		//等到后台同意退款
@@ -452,22 +438,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
-			log.error("payDeposit  ERROR! not found user! uid:{} ", userInfo.getUid());
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
-
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("payDeposit  ERROR! user status is error! uid:{} ", userInfo.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-		//
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 		if ((Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
 				|| Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))

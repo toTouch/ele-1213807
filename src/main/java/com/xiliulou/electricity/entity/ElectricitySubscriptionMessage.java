@@ -28,4 +28,7 @@ public class ElectricitySubscriptionMessage extends Model<ElectricitySubscriptio
     private String remark;
     private Long createTime;
     private Long updateTime;
+
+    //租户id
+    private Integer tenantId;
 }

@@ -21,13 +21,13 @@ public class EleWarnMsg {
 
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
-    
+
     private Integer electricityCabinetId;
-    
+
     private String electricityCabinetName;
-    
+
     private Integer cellNo;
-    
+
     private String msg;
     /**
     *
@@ -37,7 +37,7 @@ public class EleWarnMsg {
     * (1--未读消息，0--已读消息)
     */
     private Integer status;
-    
+
     private Long operateUid;
     /**
     * 创建时间
@@ -47,6 +47,9 @@ public class EleWarnMsg {
     * 更新时间
     */
     private Long updateTime;
+
+    //租户id
+    private Integer tenantId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

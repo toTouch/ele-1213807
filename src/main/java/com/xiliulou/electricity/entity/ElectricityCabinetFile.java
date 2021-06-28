@@ -28,7 +28,7 @@ public class ElectricityCabinetFile {
     /**
     * 换电柜id
     */
-    private Integer electricityCabinetId;
+    private Integer otherId;
     /**
     * 类型
     */
@@ -57,6 +57,9 @@ public class ElectricityCabinetFile {
     * 更新时间
     */
     private Long updateTime;
+
+    //租户id
+    private Integer tenantId;
 
     //换电柜柜机图片
     public static final Integer TYPE_ELECTRICITY_CABINET = 1;

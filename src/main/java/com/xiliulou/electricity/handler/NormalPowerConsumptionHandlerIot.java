@@ -80,6 +80,7 @@ public class NormalPowerConsumptionHandlerIot extends AbstractIotMessageHandler 
 				.createTime(System.currentTimeMillis())
 				.date(LocalDate.parse(powerConsumption.getDate(), formatter))
 				.eid(electricityCabinet.getId().longValue())
+				.tenantId(electricityCabinet.getTenantId())
 				.build();
 		electricityCabinetPowerService.insertOrUpdate(build);
 		return true;

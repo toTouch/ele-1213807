@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
@@ -156,23 +157,17 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        //用户
-        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
         //未找到用户
-        if (franchiseeUserInfoList.size() < 1) {
+        if (Objects.isNull(franchiseeUserInfo)) {
             log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return Pair.of(false, "未找到用户信息!");
 
+
         }
 
-        //出现多个用户绑定或没有用户绑定
-        if (franchiseeUserInfoList.size() > 1) {
-            log.error("payDeposit  ERROR! user status is error! uid:{} ", userInfo.getUid());
-            return Pair.of(false, "用户状态异常");
-        }
-
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 
         //用户月卡
@@ -264,24 +259,16 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "未找到用户信息!");
         }
 
-        //用户
-        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
         //未找到用户
-        if (franchiseeUserInfoList.size() < 1) {
+        if (Objects.isNull(franchiseeUserInfo)) {
             log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return Pair.of(false, "未找到用户信息!");
 
-        }
 
-        //出现多个用户绑定或没有用户绑定
-        if (franchiseeUserInfoList.size() > 1) {
-            log.error("payDeposit  ERROR! user status is error! uid:{} ", userInfo.getUid());
-            return Pair.of(false, "用户状态异常");
         }
-
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
         //用户押金
         if(Objects.equals(depositOrderStatus,EleDepositOrder.STATUS_SUCCESS)) {

@@ -36,8 +36,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public List<FranchiseeUserInfo> queryByUserInfoId(Long id) {
-        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>()
+    public FranchiseeUserInfo queryByUserInfoId(Long id) {
+        return franchiseeUserInfoMapper.selectOne(new LambdaQueryWrapper<FranchiseeUserInfo>()
         .eq(FranchiseeUserInfo::getUserInfoId,id).eq(FranchiseeUserInfo::getDelFlag,FranchiseeUserInfo.DEL_NORMAL));
     }
 
@@ -70,6 +70,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public void updateRefund(FranchiseeUserInfo franchiseeUserInfo) {
 
+    }
+
+    @Override
+    public void insert(FranchiseeUserInfo insertFranchiseeUserInfo) {
+        franchiseeUserInfoMapper.insert(insertFranchiseeUserInfo);
     }
 
 }

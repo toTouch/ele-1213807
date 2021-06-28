@@ -71,17 +71,9 @@ public class NormalWarnHandlerIot extends AbstractIotMessageHandler {
                 .status(EleWarnMsg.STATUS_UNREAD)
                 .createTime(eleWarnVO.getCreateTime())
                 .updateTime(eleWarnVO.getCreateTime())
+                .tenantId(electricityCabinet.getTenantId())
                 .build();
         eleWarnMsgService.insert(eleWarnMsg);
-      /*  //后续处理
-        EleWarnRequest eleWarnRequest=new EleWarnRequest();
-        eleWarnRequest.setCellNo(eleWarnVO.getCellNo());
-        EleWarnService eleWarnService = eleWarnFactory.getInstance(eleWarnVO.getMsgType());
-        if (Objects.isNull(eleWarnService)) {
-            log.warn("ELE WARN ERROR! not found operate service! eleWarnType:{}", eleWarnVO.getMsgType());
-            return false;
-        }
-        eleWarnService.handleEleWarn(eleWarnRequest, electricityCabinet);*/
         return true;
     }
 

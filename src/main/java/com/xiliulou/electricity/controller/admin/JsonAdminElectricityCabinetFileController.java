@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.query.CallBackQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
@@ -77,6 +78,10 @@ public class JsonAdminElectricityCabinetFileController {
     //统一上传
     @PostMapping("/admin/electricityCabinetFileService/call/back")
     public R callBack(@RequestBody CallBackQuery callBackQuery) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
         if (ObjectUtil.isEmpty(callBackQuery.getFileNameList())) {
             return R.ok();
         }
@@ -94,12 +99,13 @@ public class JsonAdminElectricityCabinetFileController {
                 ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
-                        .electricityCabinetId(callBackQuery.getElectricityCabinetId())
+                        .otherId(callBackQuery.getElectricityCabinetId())
                         .type(callBackQuery.getFileType())
                         .url(StorageConfig.HTTPS + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + fileName)
                         .name(fileName)
                         .sequence(index)
-                        .isOss(StorageConfig.IS_USE_OSS).build();
+                        .isOss(StorageConfig.IS_USE_OSS)
+                        .tenantId(tenantId).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
                 index = index + 1;
             }
@@ -110,12 +116,13 @@ public class JsonAdminElectricityCabinetFileController {
                 ElectricityCabinetFile electricityCabinetFile = ElectricityCabinetFile.builder()
                         .createTime(System.currentTimeMillis())
                         .updateTime(System.currentTimeMillis())
-                        .electricityCabinetId(callBackQuery.getElectricityCabinetId())
+                        .otherId(callBackQuery.getElectricityCabinetId())
                         .type(callBackQuery.getFileType())
                         .bucketName(storageConfig.getBucketName())
                         .name(fileName)
                         .sequence(index)
-                        .isOss(StorageConfig.IS_USE_MINIO).build();
+                        .isOss(StorageConfig.IS_USE_MINIO)
+                        .tenantId(tenantId).build();
                 electricityCabinetFileService.insert(electricityCabinetFile);
                 index = index + 1;
             }

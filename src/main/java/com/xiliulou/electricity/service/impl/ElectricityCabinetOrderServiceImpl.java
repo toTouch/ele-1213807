@@ -21,6 +21,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
@@ -131,6 +132,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(rentBatteryOrder1)) {
@@ -224,24 +228,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
-			log.error("order  ERROR! not found user! uid:{} ", user.getUid());
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
-
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("order  ERROR! user status is error! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-
-		//用户
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 		//判断该换电柜加盟商和用户加盟商是否一致
 		if(!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
@@ -317,7 +311,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 					.source(orderQuery.getSource())
 					.paymentMethod(franchiseeUserInfo.getCardType())
 					.createTime(System.currentTimeMillis())
-					.updateTime(System.currentTimeMillis()).build();
+					.updateTime(System.currentTimeMillis())
+					.tenantId(tenantId).build();
 			electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
 			//4.开旧电池门
@@ -514,11 +509,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
 			if (Objects.nonNull(userInfo)) {
 				//
-				List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-				Long now = System.currentTimeMillis();
-				if (franchiseeUserInfoList.size()==1) {
-					FranchiseeUserInfo franchiseeUserInfo =franchiseeUserInfoList.get(0);
-
+				//是否缴纳押金，是否绑定电池
+				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+				if (Objects.nonNull(franchiseeUserInfo)) {
+					Long now = System.currentTimeMillis();
 					if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber())
 							&& franchiseeUserInfo.getMemberCardExpireTime() > now && franchiseeUserInfo.getRemainingNumber() != -1) {
 						//回退月卡次数
@@ -572,11 +566,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
 		if (Objects.nonNull(userInfo)) {
 			//
-			List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-			Long now = System.currentTimeMillis();
-			if (franchiseeUserInfoList.size()==1) {
-				FranchiseeUserInfo franchiseeUserInfo =franchiseeUserInfoList.get(0);
-
+			//是否缴纳押金，是否绑定电池
+			FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+			if (Objects.nonNull(franchiseeUserInfo)) {
+				Long now = System.currentTimeMillis();
 				if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber())
 						&& franchiseeUserInfo.getMemberCardExpireTime() > now && franchiseeUserInfo.getRemainingNumber() != -1) {
 					//回退月卡次数

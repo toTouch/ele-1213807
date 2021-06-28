@@ -45,6 +45,9 @@ public class ElectricityMemberCardOrder {
     //修改时间
     private Long updateTime;
 
+    //租户id
+    private Integer tenantId;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 0;

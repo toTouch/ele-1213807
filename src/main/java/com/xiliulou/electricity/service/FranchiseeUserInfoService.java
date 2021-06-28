@@ -20,7 +20,7 @@ public interface FranchiseeUserInfoService {
      */
     Integer update(FranchiseeUserInfo franchiseeUserInfo);
 
-    List<FranchiseeUserInfo> queryByUserInfoId(Long id);
+    FranchiseeUserInfo queryByUserInfoId(Long id);
 
     Integer queryCountByBatterySn(String electricityBatterySn);
 
@@ -33,4 +33,6 @@ public interface FranchiseeUserInfoService {
     void plusCount(Long id);
 
 	void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
+
+	void insert(FranchiseeUserInfo insertFranchiseeUserInfo);
 }

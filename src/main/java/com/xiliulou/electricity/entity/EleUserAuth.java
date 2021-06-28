@@ -33,10 +33,6 @@ public class EleUserAuth {
     */
     private String value;
     /**
-    * 创建时间
-    */
-    private Long createTime;
-    /**
     * 资料项状态 0--未审核，1--审核成功 2--审核失败
     */
     private Object status;
@@ -44,8 +40,19 @@ public class EleUserAuth {
     * 删除标记
     */
     private Object delFlag;
-    
+
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+
+    /**
+     * 更新时间
+     */
     private Long updateTime;
+
+    //租户id
+    private Integer tenantId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

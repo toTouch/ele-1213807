@@ -160,6 +160,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			eleUserAuth.setUpdateTime(System.currentTimeMillis());
 			if (Objects.isNull(eleUserAuth.getId())) {
 				eleUserAuth.setCreateTime(System.currentTimeMillis());
+				eleUserAuth.setTenantId(tenantId);
 				eleUserAuthMapper.insert(eleUserAuth);
 			} else {
 				eleUserAuthMapper.updateById(eleUserAuth);
@@ -220,23 +221,14 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		Integer serviceStatus = userInfo.getServiceStatus();
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
+		if (Objects.isNull(franchiseeUserInfo)) {
 			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 
 		}
-
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("payDeposit  ERROR! user status is error! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
-
-		//用户
-		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoList.get(0);
 
 		if(!Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
 			serviceStatus=franchiseeUserInfo.getServiceStatus();

@@ -168,24 +168,19 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		}
 
 		//是否缴纳押金，是否绑定电池
-		List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
 		//未找到用户
-		if (franchiseeUserInfoList.size() < 1) {
+		if (Objects.isNull(oldFranchiseeUserInfo)) {
 			log.error("NOTIFY  ERROR! not found user! uid:{} ", userInfo.getUid());
 			return Pair.of(false, "未找到用户信息!");
 
 		}
 
-		//出现多个用户绑定或没有用户绑定
-		if (franchiseeUserInfoList.size() > 1) {
-			log.error("NOTIFY  ERROR! user status is error! uid:{} ", userInfo.getUid());
-			return Pair.of(false, "用户状态异常!");
-		}
 
 		if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
 			FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-			franchiseeUserInfo.setId(userInfo.getId());
+			franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
 			franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
 			franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 			franchiseeUserInfo.setBatteryDeposit(null);

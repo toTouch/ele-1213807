@@ -39,7 +39,7 @@ public interface UserInfoService extends IService<UserInfo> {
      * @param userInfo 实例对象
      * @return 实例对象
      */
-    UserInfo insert(UserInfo userInfo);
+    Integer insert(UserInfo userInfo);
 
     /**
      * 修改数据
