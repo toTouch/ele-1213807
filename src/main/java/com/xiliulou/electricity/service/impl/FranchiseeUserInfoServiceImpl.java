@@ -58,18 +58,19 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
-
+    public Integer plusCount(Long id) {
+        return franchiseeUserInfoMapper.plusCount(id);
     }
 
-    @Override
-    public void plusCount(Long id) {
 
+    @Override
+    public void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateByUserInfoId(franchiseeUserInfo);
     }
 
     @Override
     public void updateRefund(FranchiseeUserInfo franchiseeUserInfo) {
-
+        franchiseeUserInfoMapper.updateRefund(franchiseeUserInfo);
     }
 
     @Override

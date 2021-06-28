@@ -28,9 +28,9 @@ public interface FranchiseeUserInfoService {
 
     Integer minCount(Long id);
 
-    void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+	Integer plusCount(Long id);
 
-    void plusCount(Long id);
+    void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
 	void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
 

@@ -270,7 +270,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		FranchiseeUserInfo franchiseeUserInfo= new FranchiseeUserInfo();
 		franchiseeUserInfo.setId(id);
 		franchiseeUserInfo.setNowElectricityBatterySn(null);
-		franchiseeUserInfo.setBatteryDeposit(null);
 		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
 		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 		Integer update = franchiseeUserInfoService.unBind(franchiseeUserInfo);
