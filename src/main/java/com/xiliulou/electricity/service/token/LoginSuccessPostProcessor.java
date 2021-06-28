@@ -4,6 +4,7 @@ package com.xiliulou.electricity.service.token;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.LoginInfo;
 import com.xiliulou.electricity.service.LoginInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.AuthenticationSuccessPostProcessor;
 import com.xiliulou.security.bean.SecurityUser;
 import com.xiliulou.security.bean.TokenUser;
@@ -27,6 +28,9 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, SecurityUser user, Integer type) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         LoginInfo loginInfo = new LoginInfo();
         String ip = getIP(request);
         loginInfo.setIp(ip);
@@ -34,6 +38,7 @@ public class LoginSuccessPostProcessor implements AuthenticationSuccessPostProce
         loginInfo.setPhone(user.getPhone());
         loginInfo.setType(type);
         loginInfo.setLoginTime(System.currentTimeMillis());
+        loginInfo.setTenantId(tenantId);
         loginInfoService.insert(loginInfo);
     }
 

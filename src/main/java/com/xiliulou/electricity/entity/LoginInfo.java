@@ -48,4 +48,7 @@ public class LoginInfo {
      */
     private String remark;
 
+    //租户id
+    private Integer tenantId;
+
 }
