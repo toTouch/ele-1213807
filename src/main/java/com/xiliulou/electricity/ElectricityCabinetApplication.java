@@ -29,7 +29,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableXllRestTemplate
 @EnableDynamicDataSource
 @MapperScan("com.xiliulou.**.mapper")
-@EnablePay
+@EnablePay(isOpenWechatV3 = true)
 /*@EnableXllXxlJob*/
 @EnableSms
 public class ElectricityCabinetApplication {
