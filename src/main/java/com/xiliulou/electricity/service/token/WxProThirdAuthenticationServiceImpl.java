@@ -349,7 +349,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
 				.createAuthorityList(dbAuthsSet.toArray(new String[0]));
 
-		return new SecurityUser(oauthBind.getThirdId(), user.getPhone(), user.getUid(), user.getUserType(), user.getLoginPwd(), user.isLock(), authorities);
+		return new SecurityUser(oauthBind.getThirdId(), user.getPhone(), user.getUid(), user.getUserType(), user.getLoginPwd(), user.isLock(), authorities,user.getTenantId());
 	}
 
 	private SecurityUser createUserAndOauthBind(WXMinProAuth2SessionResult result, WXMinProPhoneResultDTO wxMinProPhoneResultDTO) {
