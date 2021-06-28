@@ -16,7 +16,6 @@ import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
@@ -70,7 +69,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return withHash;
 		}
 
-		PermissionResource permissionResource = permissionResourceMapper.selectById(id);
+		PermissionResource permissionResource = permissionResourceMapper.queryById(id);
 		if (Objects.isNull(permissionResource)) {
 			return null;
 		}
