@@ -10,7 +10,7 @@
         select
         id, uid, name, address, longitude, latitude, del_flag,
         create_time, update_time,usable_status,service_phone, business_time
-        from electricity.t_store
+        from t_store
         where del_flag=0
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
@@ -61,7 +61,7 @@
         )
         ) * 1000
         ) AS distance
-        from electricity.t_store
+        from t_store
         where del_flag = 0
         <if test="query.distance != null">
             having distance &lt; #{query.distance}
@@ -70,7 +70,7 @@
     </select>
     <select id="homeTwoTotal" resultType="java.lang.Integer">
         select count(1)
-        from electricity.t_store
+        from t_store
         where del_flag=0
         <if test="storeIdList!=null and storeIdList!=''">
             and id in
@@ -82,7 +82,7 @@
     <select id="homeTwoBusiness" resultType="com.xiliulou.electricity.entity.Store">
         select id, uid, name, address, longitude, latitude, del_flag,
         create_time, update_time,usable_status,service_phone, business_time
-        from electricity.t_store
+        from t_store
         where del_flag=0
         <if test="storeIdList!=null and storeIdList!=''">
             and id in

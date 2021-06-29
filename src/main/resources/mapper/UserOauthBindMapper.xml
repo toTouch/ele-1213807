@@ -6,7 +6,7 @@
     <select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.UserOauthBind">
         select
         id, uid, source, third_id, third_nick, access_token, refresh_token, status, create_time, update_time,phone
-        from electricity.t_user_oauth_bind
+        fromt_user_oauth_bind
         <where>
             <if test="phone != null and phone != ''">
                 phone = #{phone}

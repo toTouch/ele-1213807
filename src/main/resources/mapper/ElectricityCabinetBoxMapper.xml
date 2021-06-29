@@ -8,7 +8,7 @@
 		id, electricity_cabinet_id, cell_no, electricity_battery_id, usable_status,
 		status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
 		update_time, del_flag,tenant_id
-		from electricity.t_electricity_cabinet_box
+		from t_electricity_cabinet_box
 		where del_flag=0
 		<if test="query.electricityCabinetId != null">
 			and electricity_cabinet_id = #{query.electricityCabinetId}
@@ -22,14 +22,14 @@
 
 
 	<update id="batchDeleteBoxByElectricityCabinetId">
-        update electricity.t_electricity_cabinet_box
+        update t_electricity_cabinet_box
         set del_flag = 1, update_time = #{updateTime}
         where electricity_cabinet_id = #{id}
     </update>
 
 
 	<update id="modifyByCellNo">
-		update electricity.t_electricity_cabinet_box
+		update t_electricity_cabinet_box
 		set sn = #{sn},
 		status = #{status},
 		update_time = #{updateTime}

@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetFileMapper">
 
     <delete id="deleteByDeviceInfo">
-        delete from electricity.t_electricity_cabinet_file
+        delete from t_electricity_cabinet_file
         where type = #{fileType} and is_oss=#{isUseOSS}
         <if test="electricityCabinetId != null">
             and electricity_cabinet_id = #{electricityCabinetId}

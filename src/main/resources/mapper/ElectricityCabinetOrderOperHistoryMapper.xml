@@ -9,8 +9,8 @@
         tecooh.electricity_cabinet_id as electricityCabinetId, tecooh.cell_no as cellNo, tecooh.status
         as status, tecooh.uid as uid, tecooh.type as type, tecooh.msg as msg, tecooh.create_time as createTime,
         tec.name as electricityCabinetName
-        from electricity.t_electricity_cabinet_order_oper_history as tecooh
-        left join electricity.t_electricity_cabinet as tec on tec.id=tecooh.electricity_cabinet_id
+        from t_electricity_cabinet_order_oper_history as tecooh
+        left join t_electricity_cabinet as tec on tec.id=tecooh.electricity_cabinet_id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and tecooh.order_id = #{query.orderId}

@@ -6,7 +6,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
         select
         id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time
-        from electricity.t_electricity_cabinet_order
+        from t_electricity_cabinet_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and order_id = #{query.orderId}
@@ -42,7 +42,7 @@
 
     <select id="homeThree" resultType="java.util.HashMap">
          select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as orderCount
-        from electricity.t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
+        from t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
         <if test="eleIdList!=null and eleIdList!=''">
             and electricity_cabinet_id in
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
@@ -54,7 +54,7 @@
     </select>
     <select id="homeOneCount" resultType="java.lang.Integer">
         select count(1)
-        from electricity.t_electricity_cabinet_order
+        from t_electricity_cabinet_order
         <where>
             <if test="first != null">
                 and create_time &gt;=#{first}
@@ -72,7 +72,7 @@
     </select>
     <select id="homeOneSuccess" resultType="java.lang.Integer">
         select count(1)
-        from electricity.t_electricity_cabinet_order
+        from t_electricity_cabinet_order
         where status=6
             <if test="first != null">
                 and create_time &gt;=#{first}
@@ -89,7 +89,7 @@
     </select>
 
     <update id="updateExpiredCancelOrder">
-        update electricity.t_electricity_cabinet_order
+        update t_electricity_cabinet_order
         set status = 8 , update_time = #{updateTime}
         where  order_id = #{orderId} and status in(1,2,3);
     </update>

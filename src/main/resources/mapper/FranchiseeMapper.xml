@@ -9,7 +9,7 @@
         select
         id, cid, name, uid, del_flag,
         create_time, update_time, battery_deposit,tenant_id
-        from electricity.t_franchisee
+        from t_franchisee
         where del_flag=0
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}

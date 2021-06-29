@@ -10,7 +10,7 @@
         id,  name, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
          online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
         update_time, del_flag,tenant_id
-        from electricity.t_electricity_cabinet
+        from t_electricity_cabinet
         where del_flag=0 and  tenant_id = #{query.tenantId}
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
@@ -70,7 +70,7 @@
         )
         ) * 1000
         ) AS distance
-        from electricity.t_electricity_cabinet
+        from t_electricity_cabinet
         where del_flag = 0
         <if test="query.distance != null">
             having distance &lt; #{query.distance}
@@ -89,7 +89,7 @@
     <select id="queryNameList" resultType="java.util.Map">
         select
         id, name
-        from electricity.t_electricity_cabinet
+        from t_electricity_cabinet
         where del_flag=0
         <if test="eleIdList!=null and eleIdList!=''">
             and id in
@@ -103,7 +103,7 @@
     <select id="queryAll" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select
         id,  name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
-        from electricity.t_electricity_cabinet
+        from t_electricity_cabinet
         where del_flag=0
         <if test="eleIdList!=null and eleIdList!=''">
             and id in

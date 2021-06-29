@@ -6,7 +6,7 @@
 	<select id="queryAll" resultType="com.xiliulou.electricity.entity.PermissionResource">
 		select
 		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag
-		from electricity.t_permission_resource
+		from t_permission_resource
 		where del_flag = 0 order by sort
 
 	</select>
@@ -15,7 +15,7 @@
 	<select id="queryListByIds" resultType="com.xiliulou.electricity.entity.PermissionResource">
 		select
 		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag
-		from electricity.t_permission_resource
+		from t_permission_resource
 		where
 		id in
 		<foreach collection="list" item="p" separator="," open="(" close=")">

@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
         select
         id, pay_amount, create_time, update_time, uid, order_id, status, name, phone
-        from electricity.t_ele_deposit_order
+        from t_ele_deposit_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and order_id = #{query.orderId}

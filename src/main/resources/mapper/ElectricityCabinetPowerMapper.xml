@@ -7,8 +7,8 @@
         select
         tecp.id as id, tecp.eid as electricityCabinetId, tecp.same_day_power as sameDayPower, tecp.sum_power as sumPower,
          tecp.`date` as `date`, tecp.create_time as createTime, tecp.update_time as updateTime,tec.name as electricityCabinetName
-        from electricity.t_electricity_cabinet_power as tecp
-        left join electricity.t_electricity_cabinet as tec on tecp.eid=tec.id
+        from t_electricity_cabinet_power as tecp
+        left join t_electricity_cabinet as tec on tecp.eid=tec.id
         <where>
             <if test="query.electricityCabinetId != null">
                 and tecp.eid = #{query.electricityCabinetId}

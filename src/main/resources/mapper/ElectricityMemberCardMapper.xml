@@ -22,7 +22,7 @@
 	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
         SELECT temc.*
         FROM t_electricity_member_card as temc
-        left join electricity.t_franchisee_bind_card as tfbc on temc.id=tfbc.card_id
+        left join t_franchisee_bind_card as tfbc on temc.id=tfbc.card_id
         where temc.status=0 and tfbc.franchisee_id=#{id}
         ORDER BY temc.create_time DESC
         limit #{query.offset}, #{query.size}

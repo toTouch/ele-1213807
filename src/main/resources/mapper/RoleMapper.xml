@@ -8,7 +8,7 @@
     <select id="queryAll" resultType="com.xiliulou.electricity.entity.Role">
         select
           id, name, code, `desc`, create_time, update_time
-        from electricity.t_role
+        from t_role
         order by create_time desc
     </select>
 
@@ -16,7 +16,7 @@
     <select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.Role">
          select
           id, name, code, `desc`, create_time, update_time
-        from electricity.t_role
+        from t_role
         order by create_time desc
         limit #{offset},#{size}
     </select>
@@ -24,7 +24,7 @@
     <select id="queryByRoleIds" resultType="com.xiliulou.electricity.entity.Role">
            select
           id, name, code, `desc`, create_time, update_time
-        from electricity.t_role
+        from t_role
         where id in
          <foreach collection="list" close=")" open="(" item="r" separator=",">
              #{r}
