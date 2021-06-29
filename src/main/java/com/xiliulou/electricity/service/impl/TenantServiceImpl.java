@@ -8,6 +8,7 @@ import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -70,6 +71,9 @@ public class TenantServiceImpl implements TenantService {
 
     @Autowired
     private RolePermissionService rolePermissionService;
+
+    @Autowired
+    private RedisService redisService;
 
 
 
@@ -211,7 +215,18 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Tenant queryByIdFromCache(Integer tenantId) {
-        return null;
+        Tenant cacheTenant = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, Tenant.class);
+        if (Objects.nonNull(cacheTenant)) {
+            return cacheTenant;
+        }
+
+        Tenant tenant = this.tenantMapper.selectById(tenantId);
+        if (Objects.isNull(tenant)) {
+            return null;
+        }
+
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, tenant);
+        return tenant;
     }
 
     /**

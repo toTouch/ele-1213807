@@ -104,4 +104,6 @@ public interface ElectricityCabinetConstant {
     String STORE_NAME = "STORE_USER";
     String STORE_CODE = "门店";
 
+    String CACHE_TENANT_ID = "tenant_cache:";
+
 }
