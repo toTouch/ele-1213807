@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -352,12 +353,17 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	public List<Store> queryByFranchiseeId(Integer id) {
-		return null;
+		return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL));
 	}
 
 	@Override
 	public Store queryByUid(Long uid) {
-		return null;
+		return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid,uid).eq(Store::getDelFlag,Store.DEL_NORMAL));
+	}
+
+	@Override
+	public R queryCount(StoreQuery storeQuery) {
+		return R.ok(storeMapper.queryCount(storeQuery));
 	}
 
 	public Long getTime(Long time) {

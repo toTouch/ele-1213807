@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.StoreVO;
@@ -30,4 +31,6 @@ public interface StoreMapper extends BaseMapper<Store> {
     Integer homeTwoTotal(@Param("storeIdList") List<Integer> storeIdList);
 
     List<Store> homeTwoBusiness(@Param("storeIdList") List<Integer> storeIdList);
+
+	Integer queryCount(StoreQuery storeQuery);
 }

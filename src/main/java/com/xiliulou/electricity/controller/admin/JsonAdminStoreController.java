@@ -87,6 +87,25 @@ public class JsonAdminStoreController {
         return storeService.queryList(storeQuery);
     }
 
+    //列表查询
+    @GetMapping(value = "/admin/store/queryCount")
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
+
+
+        StoreQuery storeQuery = StoreQuery.builder()
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .address(address)
+                .usableStatus(usableStatus).build();
+
+        return storeService.queryCount(storeQuery);
+    }
+
     //加盟商列表查询
     @GetMapping(value = "/admin/store/listByFranchisee")
     public R listByFranchisee(@RequestParam(value = "size", required = false) Long size,
