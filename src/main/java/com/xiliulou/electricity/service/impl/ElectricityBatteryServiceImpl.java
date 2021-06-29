@@ -140,9 +140,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public List<ElectricityBattery> homeTwo(List<Long> batteryIdList) {
+    public List<ElectricityBattery> homeTwo(List<Long> batteryIdList,Integer tenantId) {
 
-        return electricitybatterymapper.homeTwo(batteryIdList);
+        return electricitybatterymapper.homeTwo(batteryIdList,tenantId);
     }
 
     /**

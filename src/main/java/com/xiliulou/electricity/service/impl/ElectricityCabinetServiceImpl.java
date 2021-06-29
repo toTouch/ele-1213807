@@ -741,6 +741,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		HashMap<String, HashMap<String, String>> homeTwo = new HashMap<>();
 		//门店
 		HashMap<String, String> storeInfo = new HashMap<>();
@@ -857,7 +860,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 			}
 			if (flag3) {
-				List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(batteryIdList);
+				List<ElectricityBattery> electricityBatteryList = electricityBatteryService.homeTwo(batteryIdList,tenantId);
 				Integer batteryTotal = electricityBatteryList.size();
 				Integer cabinetCount = 0;
 				Integer userCount = 0;
