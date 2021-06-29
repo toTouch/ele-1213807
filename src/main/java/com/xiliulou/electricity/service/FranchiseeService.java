@@ -36,4 +36,5 @@ public interface FranchiseeService {
 
     Franchisee queryByUid(Long uid);
 
+	R queryCount(FranchiseeQuery franchiseeQuery);
 }

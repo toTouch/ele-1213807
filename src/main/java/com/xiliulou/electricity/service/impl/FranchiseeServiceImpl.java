@@ -223,4 +223,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getUid,uid).eq(Franchisee::getDelFlag,Franchisee.DEL_NORMAL));
     }
 
+    @Override
+    public R queryCount(FranchiseeQuery franchiseeQuery) {
+        return R.ok(franchiseeMapper.queryCount(franchiseeQuery));
+    }
+
 }

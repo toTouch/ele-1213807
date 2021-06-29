@@ -97,6 +97,26 @@ public class JsonAdminFranchiseeController {
 
     }
 
+    //列表查询
+    @GetMapping(value = "/admin/franchisee/queryCount")
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .tenantId(tenantId).build();
+
+        return franchiseeService.queryCount(franchiseeQuery);
+
+    }
+
     //分配电池
     @PostMapping(value = "/admin/store/bindElectricityBattery")
     public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery){
