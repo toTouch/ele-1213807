@@ -113,6 +113,7 @@ public class StoreServiceImpl implements StoreService {
 		store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
 		store.setTenantId(tenantId);
 		store.setServicePhone(storeAddAndUpdate.getPhone());
+		store.setUid(result);
 
 
 		int insert = storeMapper.insert(store);
