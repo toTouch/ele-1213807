@@ -63,7 +63,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         //新增加盟商新增用户
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         BeanUtil.copyProperties(franchiseeAddAndUpdate,adminUserQuery);
-        adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+        adminUserQuery.setUserType(User.TYPE_USER_STORE);
         adminUserQuery.setLang(User.DEFAULT_LANG);
         adminUserQuery.setGender(User.GENDER_FEMALE);
 

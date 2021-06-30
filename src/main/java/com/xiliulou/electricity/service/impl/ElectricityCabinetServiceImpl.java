@@ -628,6 +628,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			//查月卡
 			Boolean flag2 = true;
 			List<Integer> cardIdList = null;
+
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 				if (Objects.nonNull(franchisee)) {
@@ -748,36 +749,44 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		List<HashMap<String, String>> homeThree = new ArrayList<>();
 
-		if(type==1){
+		if (type == 1) {
 			//查用户
 			if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 					|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-				homeThree = userInfoService.homeThreeTotal(beginTime, endTime,tenantId);
+				homeThree = userInfoService.homeThreeTotal(beginTime, endTime, tenantId);
 
 			}
 			return R.ok(homeThree);
 		}
 
+		if (type == 2) {
 
-		//如果是查全部则直接跳过
-		Boolean flag = true;
-		List<Integer> eleIdList = null;
-		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-			if (Objects.isNull(userTypeService)) {
-				log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-				return R.fail("ELECTRICITY.0066", "用户权限不足");
+		}
+		if (type == 3) {
+
+            //如果是查全部则直接跳过
+			Boolean flag = true;
+			List<Integer> eleIdList = null;
+			if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+					&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+				UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+				if (Objects.isNull(userTypeService)) {
+					log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+					return R.fail("ELECTRICITY.0066", "用户权限不足");
+				}
+				eleIdList = userTypeService.getEleIdListByUserType(user);
+				if (ObjectUtil.isEmpty(eleIdList)) {
+					flag = false;
+				}
 			}
-			eleIdList = userTypeService.getEleIdListByUserType(user);
-			if (ObjectUtil.isEmpty(eleIdList)) {
-				flag = false;
+
+			//查换电
+			if (flag) {
+				homeThree = electricityCabinetOrderService.homeThree(beginTime, endTime, eleIdList, tenantId);
 			}
 		}
+		if (type == 4) {
 
-		//查换电
-		if (flag) {
-			homeThree = electricityCabinetOrderService.homeThree(beginTime, endTime, eleIdList, tenantId);
 		}
 
 		return R.ok(homeThree);
