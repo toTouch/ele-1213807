@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -102,7 +103,7 @@ public class TenantServiceImpl implements TenantService {
         Tenant tenant = new Tenant();
         BeanUtil.copyProperties(tenantAddAndUpdateQuery, tenant);
         tenant.setExpireTime(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
-        tenantMapper.insert(tenant);
+        this.insert(tenant);
 
         //2.保存用户信息
         String decryptPassword = decryptPassword(tenantAddAndUpdateQuery.getPassword());
@@ -127,9 +128,7 @@ public class TenantServiceImpl implements TenantService {
         user.setCity("");
         user.setProvince("");
         userService.insert(user);
-        if (user.getUid() == null) {
-            return R.fail("ELECTRICITY.0086", "操作失败");
-        }
+
 
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
@@ -162,9 +161,7 @@ public class TenantServiceImpl implements TenantService {
         userRole.setUid(user.getUid());
         userRole.setRoleId(operateRole.getId());
         userRoleService.insert(userRole);
-        if (Objects.isNull(userRole)) {
-            return R.fail("ELECTRICITY.0086", "操作失败");
-        }
+
 
         //5.角色赋予权限
         ArrayList<RolePermission> rolePermissionList = new ArrayList<>();
@@ -232,6 +229,13 @@ public class TenantServiceImpl implements TenantService {
     @Override
     public R queryCount(TenantQuery tenantQuery) {
         return R.ok(tenantMapper.queryCount(tenantQuery));
+    }
+
+    @Override
+    public Tenant insert(Tenant tenant) {
+        int insert = this.tenantMapper.insert(tenant);
+        DbUtils.dbOperateSuccessThen(insert, () -> tenant);
+        return tenant;
     }
 
     /**
