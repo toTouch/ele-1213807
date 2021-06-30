@@ -45,7 +45,6 @@
 		<if test="endTime != null">
 			and create_time &lt;=#{endTime}
 		</if>
-		order by create_time desc
 	</select>
 
 
