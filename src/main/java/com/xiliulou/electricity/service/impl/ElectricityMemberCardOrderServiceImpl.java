@@ -269,12 +269,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	}
 
 	@Override
-	public BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList) {
+	public BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList,Integer tenantId) {
 		return baseMapper.homeOne(first, now, cardIdList);
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList,Integer tenantId) {
+	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList) {
 		return baseMapper.homeThree(startTimeMilliDay, endTimeMilliDay, cardIdList);
 	}
 
