@@ -92,5 +92,12 @@ public class StoreAddAndUpdate {
     private Integer provinceId;
 
 
+    /**
+     * 加盟商Id
+     */
+    @NotNull(message = "加盟商Id不能为空!", groups = {CreateGroup.class})
+    private Integer franchiseeId;
+
+
 
 }
