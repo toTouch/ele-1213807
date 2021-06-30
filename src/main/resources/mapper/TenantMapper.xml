@@ -29,6 +29,7 @@
 	</select>
 	<select id="queryCount" resultType="java.lang.Integer">
 		select count(1)
+		from t_tenant
 		where del_flag=0
 		<if test="name != null and name != ''">
 			and name = #{name}
