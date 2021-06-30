@@ -16,6 +16,7 @@ import java.math.BigDecimal;
 @Data
 @TableName("t_electricity_member_card_order")
 public class ElectricityMemberCardOrder {
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     //支付金额

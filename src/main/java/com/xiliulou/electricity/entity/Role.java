@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -19,6 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_role")
 public class Role {
 
+	@TableId(value = "id", type = IdType.AUTO)
 	private Long id;
 	/**
 	 * 角色名称

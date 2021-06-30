@@ -1,4 +1,6 @@
 package com.xiliulou.electricity.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,6 +22,7 @@ import java.math.BigDecimal;
 @TableName("t_franchisee_user_info")
 public class FranchiseeUserInfo {
 
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     private Long userInfoId;

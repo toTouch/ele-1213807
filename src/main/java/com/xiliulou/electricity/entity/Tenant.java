@@ -24,6 +24,8 @@ package com.xiliulou.electricity.entity;
 
 
 
+                                import com.baomidou.mybatisplus.annotation.IdType;
+                                import com.baomidou.mybatisplus.annotation.TableId;
                                 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -45,6 +47,7 @@ public class Tenant {
     /**
     * 租户id
     */
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
     * 租户名称

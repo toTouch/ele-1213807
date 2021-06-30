@@ -123,7 +123,7 @@ public class JsonAdminFranchiseeController {
         return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
     }
 
-    //查询电池
+    //查询套餐
     @GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Integer id){
         return franchiseeService.getElectricityBatteryList(id);

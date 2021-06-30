@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 @Builder
 @TableName("t_rent_battery_order")
 public class RentBatteryOrder {
+
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**

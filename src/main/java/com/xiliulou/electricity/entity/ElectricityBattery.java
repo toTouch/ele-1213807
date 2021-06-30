@@ -24,6 +24,7 @@ import javax.validation.constraints.NotNull;
 @Builder
 @TableName("t_electricity_battery")
 public class ElectricityBattery {
+
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 

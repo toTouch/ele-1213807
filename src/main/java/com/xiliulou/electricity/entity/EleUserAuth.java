@@ -18,6 +18,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @TableName("t_ele_user_auth")
 public class EleUserAuth {
+
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**

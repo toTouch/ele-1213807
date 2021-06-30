@@ -1,4 +1,6 @@
 package com.xiliulou.electricity.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -17,6 +19,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_permission_resource")
 public class PermissionResource {
 
+    @TableId(value = "id", type = IdType.AUTO)
 	private Long id;
     /**
     * 权限名称

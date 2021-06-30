@@ -18,6 +18,7 @@ import java.math.BigDecimal;
 @Data
 @TableName("t_electricity_member_card")
 public class ElectricityMemberCard {
+
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
