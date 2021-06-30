@@ -58,11 +58,7 @@ public class StoreAddAndUpdate {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
-    /**
-     * 联系电话
-     */
-    @NotEmpty(message = "联系电话不能为空!", groups = {CreateGroup.class})
-    private String servicePhone;
+
     /**
      * 营业时间类型
      */

@@ -748,6 +748,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		List<HashMap<String, String>> homeThree = new ArrayList<>();
 
+		if(type==1){
+			//查用户
+			if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+					|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+				homeThree = userInfoService.homeThreeTotal(beginTime, endTime,tenantId);
+
+			}
+			return R.ok(homeThree);
+		}
+
+
 		//如果是查全部则直接跳过
 		Boolean flag = true;
 		List<Integer> eleIdList = null;
@@ -769,14 +780,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			homeThree = electricityCabinetOrderService.homeThree(beginTime, endTime, eleIdList, tenantId);
 		}
 
-		//查用户
-		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-			 homeThree = userInfoService.homeThreeTotal(beginTime, endTime,tenantId);
-
-		}
-
 		return R.ok(homeThree);
+
 	}
 
 	@Override

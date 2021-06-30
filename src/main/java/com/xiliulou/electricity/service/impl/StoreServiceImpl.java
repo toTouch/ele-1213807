@@ -112,6 +112,7 @@ public class StoreServiceImpl implements StoreService {
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
 		store.setTenantId(tenantId);
+		store.setServicePhone(storeAddAndUpdate.getPhone());
 
 
 		int insert = storeMapper.insert(store);

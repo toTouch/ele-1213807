@@ -175,6 +175,11 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.homeTwo(beginTime,endTime);
     }
 
+
+    //type 1--用户
+    //     2--柜机
+    //     3--换电次数
+    //     4--门店
     //首页三
     @GetMapping(value = "/admin/electricityCabinet/homeThree")
     public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
