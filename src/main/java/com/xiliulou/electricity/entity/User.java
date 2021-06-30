@@ -21,7 +21,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_user")
 public class User {
 
-	@TableId(value = "id", type = IdType.AUTO)
+	@TableId(value = "uid", type = IdType.AUTO)
 	private Long uid;
 	/**
 	 * 手机号

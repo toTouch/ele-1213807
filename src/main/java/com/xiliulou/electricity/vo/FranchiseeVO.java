@@ -54,6 +54,7 @@ public class FranchiseeVO {
     private String cityName;
     //用户名称
     private String userName;
+
     private BigDecimal batteryDeposit;
 
 
