@@ -258,6 +258,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId,id));
     }
 
+
     /**
      * 获取套餐
      *

@@ -19,4 +19,5 @@ public interface ElectricityMemberCardService {
 	R queryUserList(Long offset, Long size,Integer electricityCabinetId);
 
 	List<ElectricityMemberCard> queryByFranchisee(Integer id);
+
 }

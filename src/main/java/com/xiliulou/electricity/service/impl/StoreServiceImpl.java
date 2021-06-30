@@ -361,7 +361,7 @@ public class StoreServiceImpl implements StoreService {
 		return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid,uid).eq(Store::getDelFlag,Store.DEL_NORMAL));
 	}
 
-	@Override
+	@Override 
 	public R queryCount(StoreQuery storeQuery) {
 		return R.ok(storeMapper.queryCount(storeQuery));
 	}

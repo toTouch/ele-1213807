@@ -71,4 +71,10 @@ public class JsonAdminElectricityMemberCardController {
         return electricityMemberCardService.queryList(offset, size, status, type);
     }
 
+    //查询换电套餐根据加盟商
+    @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
+    public R getElectricityBatteryList(@PathVariable("id") Integer id){
+        return R.ok(electricityMemberCardService.queryByFranchisee(id));
+    }
+
 }
