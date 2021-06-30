@@ -38,4 +38,13 @@ public class SecurityUtils {
         }
         return user;
     }
+
+    public static boolean isAdmin() {
+        TokenUser user = getUserInfo();
+        if (Objects.isNull(user)) {
+            return false;
+        }
+
+        return Objects.equals(user.getUid(), 1);
+    }
 }
