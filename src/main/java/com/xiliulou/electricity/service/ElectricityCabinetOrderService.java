@@ -35,9 +35,9 @@ public interface ElectricityCabinetOrderService {
 
     R openDoor(OpenDoorQuery openDoorQuery);
 
-    Integer homeOneCount(Long first, Long now,List<Integer> eleIdList);
+    Integer homeOneCount(Long first, Long now,List<Integer> eleIdList,Integer tenantId);
 
-    BigDecimal homeOneSuccess(Long first, Long now,List<Integer> eleIdList);
+    BigDecimal homeOneSuccess(Long first, Long now,List<Integer> eleIdList,Integer tenantId);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList );
 

@@ -559,61 +559,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
 	@Override
-	public R homeOne(Integer type) {
-		if (type == 1) {
-			Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(new Date());
-			cal.add(Calendar.DATE, -1);
-			Date dateBefore = cal.getTime();
-			Long firstTodayBefore = DateUtil.beginOfDay(dateBefore).getTime();
-			Long endToday = DateUtil.endOfDay(dateBefore).getTime();
-			return getHomeOne(firstToday, firstTodayBefore, endToday);
-		}
-		if (type == 2) {
-			Long firstWeek = DateUtil.beginOfWeek(new Date()).getTime();
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(new Date());
-			cal.add(Calendar.DATE, -7);
-			Date dateBefore = cal.getTime();
-			Long firstWeekBefore = DateUtil.beginOfWeek(dateBefore).getTime();
-			Long endWeek = DateUtil.endOfWeek(dateBefore).getTime();
-			return getHomeOne(firstWeek, firstWeekBefore, endWeek);
-		}
-		if (type == 3) {
-			Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(new Date());
-			cal.add(Calendar.MONTH, -1);
-			Date dateBefore = cal.getTime();
-			Long firstMonthBefore = DateUtil.beginOfMonth(dateBefore).getTime();
-			Long endMonth = DateUtil.endOfMonth(dateBefore).getTime();
-			return getHomeOne(firstMonth, firstMonthBefore, endMonth);
-		}
-		if (type == 4) {
-			Long firstQuarter = DateUtil.beginOfQuarter(new Date()).getTime();
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(new Date());
-			cal.add(Calendar.MONTH, (cal.get(Calendar.MONTH) / 3 - 1) * 3 - cal.get(Calendar.MONTH));
-			Date dateBefore = cal.getTime();
-			Long firstQuarterBefore = DateUtil.beginOfQuarter(dateBefore).getTime();
-			Long endQuarter = DateUtil.endOfQuarter(dateBefore).getTime();
-			return getHomeOne(firstQuarter, firstQuarterBefore, endQuarter);
-		}
-		if (type == 5) {
-			Long firstYear = DateUtil.beginOfYear(new Date()).getTime();
-			Calendar cal = Calendar.getInstance();
-			cal.setTime(new Date());
-			cal.add(Calendar.YEAR, -1);
-			Date dateBefore = cal.getTime();
-			Long firstYearBefore = DateUtil.beginOfYear(dateBefore).getTime();
-			Long endYear = DateUtil.endOfYear(dateBefore).getTime();
-			return getHomeOne(firstYear, firstYearBefore, endYear);
-		}
-		return R.ok();
-	}
-
-	public R getHomeOne(Long first, Long firstBefore, Long end) {
+	public R homeOne(Long beginTime,Long endTime) {
 		//用户区分
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -621,27 +567,36 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		HashMap<String, HashMap<String, String>> homeOne = new HashMap<>();
-		HashMap<String, String> userInfo = new HashMap<>();
-		userInfo.put("totalCount", null);
-		userInfo.put("authCount", null);
-		userInfo.put("allTotalCount", null);
-		homeOne.put("userInfo", userInfo);
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-		HashMap<String, String> moneyInfo = new HashMap<>();
-		moneyInfo.put("nowMoney", null);
-		moneyInfo.put("beforeMoney", null);
-		moneyInfo.put("totalMoney", null);
-		homeOne.put("moneyInfo", moneyInfo);
+		HashMap<String, String> homeOne = new HashMap<>();
+		//用户数
+		homeOne.put("userCount", null);
+		//总收益
+		homeOne.put("moneyCount", null);
+		//电柜数
+		homeOne.put("eleCount", null);
+		//订单数
+		homeOne.put("orderCount", null);
+		//门店数
+		homeOne.put("storeCount", null);
+		//在线电柜
+		homeOne.put("onlineEleCount", null);
+		//离线电柜
+		homeOne.put("offlineEleCount", null);
+		//成功率
+		homeOne.put("successCount", null);
 
-		HashMap<String, String> orderInfo = new HashMap<>();
-		orderInfo.put("nowCount", null);
-		orderInfo.put("beforeCount", null);
-		orderInfo.put("successOrder", null);
-		orderInfo.put("totalCount", null);
-		homeOne.put("orderInfo", orderInfo);
 
-		//如果是查全部则直接跳过
+		//查用户
+		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			Integer userCount = userInfoService.homeOneTotal(beginTime, endTime,tenantId);
+			homeOne.put("userCount", userCount.toString());
+		}
+
+		//查换电柜相关
 		Boolean flag = true;
 		List<Integer> eleIdList = null;
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
@@ -654,83 +609,65 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			eleIdList = userTypeService.getEleIdListByUserType(user);
 			if (ObjectUtil.isEmpty(eleIdList)) {
 				flag = false;
-				userInfo.put("totalCount", "0");
-				userInfo.put("authCount", "0");
-				userInfo.put("allTotalCount", "0");
-				homeOne.put("userInfo", userInfo);
 			}
 		}
 
-		Long now = System.currentTimeMillis();
+		//换电柜相关
+		if (flag) {
+			//换电次数
+			Integer eleCount = electricityCabinetOrderService.homeOneCount(beginTime, endTime, eleIdList,tenantId);
+			//换电成功率
+			BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(beginTime, endTime, eleIdList,tenantId);
+
+			//电柜总数 TODO
+
+			//在线数
+
+			//离线数
+			homeOne.put("eleCount", eleCount.toString());
+			homeOne.put("successOrder", successOrder.toString());
+		}
+
+
+		//查月卡
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-		        ||Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			//查用户
+				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+			//查月卡
 			Boolean flag2 = true;
 			List<Integer> cardIdList = null;
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 				if (Objects.nonNull(franchisee)) {
-
-						//月卡id
-						List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.queryByFranchisee(franchisee.getId());
-						if (ObjectUtil.isNotEmpty(electricityMemberCardList)) {
-							cardIdList = new ArrayList<>();
-							for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
-								cardIdList.add(electricityMemberCard.getId());
-							}
+					//月卡id
+					List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.queryByFranchisee(franchisee.getId());
+					if (ObjectUtil.isNotEmpty(electricityMemberCardList)) {
+						cardIdList = new ArrayList<>();
+						for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
+							cardIdList.add(electricityMemberCard.getId());
 						}
+					}
 				}
 				if (Objects.isNull(cardIdList)) {
 					flag2 = false;
 				}
-			}else {
-				Integer totalCount = userInfoService.homeOneTotal(first, now);
-				Integer authCount = userInfoService.homeOneAuth(first, now);
-				Integer allTotalCount = userInfoService.homeOneTotal(0L, now);
-				userInfo.put("totalCount", totalCount.toString());
-				userInfo.put("authCount", authCount.toString());
-				userInfo.put("allTotalCount", allTotalCount.toString());
-				homeOne.put("userInfo", userInfo);
 			}
 
 
 			if (flag2) {
-				BigDecimal nowMoney = electricityMemberCardOrderService.homeOne(first, now, cardIdList);
-				BigDecimal beforeMoney = electricityMemberCardOrderService.homeOne(firstBefore, end, cardIdList);
-				BigDecimal totalMoney = electricityMemberCardOrderService.homeOne(0L, now, cardIdList);
-				if (Objects.isNull(nowMoney)) {
-					nowMoney = BigDecimal.valueOf(0);
+				BigDecimal moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime,  cardIdList,tenantId);
+				if (Objects.isNull(moneyCount)) {
+					moneyCount = BigDecimal.valueOf(0);
 				}
-				if (Objects.isNull(beforeMoney)) {
-					beforeMoney = BigDecimal.valueOf(0);
-				}
-				if (Objects.isNull(totalMoney)) {
-					totalMoney = BigDecimal.valueOf(0);
-				}
-				moneyInfo.put("nowMoney", nowMoney.toString());
-				moneyInfo.put("beforeMoney", beforeMoney.toString());
-				moneyInfo.put("totalMoney", totalMoney.toString());
-				homeOne.put("moneyInfo", moneyInfo);
+				homeOne.put("moneyCount", moneyCount.toString());
 			}
 
 		}
 
-		if (flag) {
-			//换电
-			Integer nowCount = electricityCabinetOrderService.homeOneCount(first, now, eleIdList);
-			Integer beforeCount = electricityCabinetOrderService.homeOneCount(firstBefore, end, eleIdList);
-			Integer count = electricityCabinetOrderService.homeOneCount(0L, now, eleIdList);
-			//成功率
-			BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(first, now, eleIdList);
-			orderInfo.put("nowCount", nowCount.toString());
-			orderInfo.put("beforeCount", beforeCount.toString());
-			orderInfo.put("successOrder", successOrder.toString());
-			orderInfo.put("totalCount", count.toString());
-			homeOne.put("orderInfo", orderInfo);
-		}
+
 		return R.ok(homeOne);
 	}
+
 
 	@Override
 	public R homeTwo() {
@@ -1618,8 +1555,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList) {
-		return electricityCabinetMapper.queryNameList(size, offset, eleIdList);
+	public List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList,Integer tenantId) {
+		return electricityCabinetMapper.queryNameList(size, offset, eleIdList,tenantId);
 	}
 
 	@Override

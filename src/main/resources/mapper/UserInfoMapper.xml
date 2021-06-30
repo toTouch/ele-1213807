@@ -64,14 +64,10 @@
         where tui.del_flag=0
         and tui.create_time &gt;=#{first}
         and tui.create_time &lt;=#{now}
+        <if test="tenantId != null and tenantId != ''">
+            and tenant_id = #{tenantId}
+        </if>
     </select>
-    <select id="homeOneAuth" resultType="java.lang.Integer">
-        select count(1)
-        from t_user_info as tui
-        left join t_user as tu on tui.uid=tu.uid
-        where tui.del_flag=0 and service_status in(1,2,3)
-        and tui.create_time &gt;=#{first}
-        and tui.create_time &lt;=#{now}
-    </select>
+
 
 </mapper>

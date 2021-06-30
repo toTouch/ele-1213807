@@ -156,9 +156,16 @@ public class JsonAdminElectricityCabinetController {
 
 
     //首页一
-    @GetMapping(value = "/admin/electricityCabinet/homeOne/{type}")
-    public R homeOne(@PathVariable("type") Integer type) {
-        return electricityCabinetService.homeOne(type);
+    @GetMapping(value = "/admin/electricityCabinet/homeOne")
+    public R homeOne(@RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+        if(Objects.isNull(beginTime)){
+            beginTime=0L;
+        }
+        if(Objects.isNull(endTime)){
+            endTime=System.currentTimeMillis();
+        }
+        return electricityCabinetService.homeOne(beginTime,endTime);
     }
 
     //首页二
@@ -279,7 +286,11 @@ public class JsonAdminElectricityCabinetController {
                 return R.ok();
             }
         }
-        return R.ok(electricityCabinetService.queryNameList(size,offset,eleIdList));
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return R.ok(electricityCabinetService.queryNameList(size,offset,eleIdList,tenantId));
     }
 
     //列表查询

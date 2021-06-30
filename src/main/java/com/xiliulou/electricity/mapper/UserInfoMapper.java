@@ -26,13 +26,12 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
 
 
-
     List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
+
 
     List<HashMap<String, String>> homeThreeAuth(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay);
 
 
-    Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now);
+    Integer homeOneTotal(@Param("first") Long first, @Param("now") Long now,@Param("tenantId")Integer tenantId);
 
-    Integer homeOneAuth(@Param("first") Long first, @Param("now") Long now);
 }

@@ -304,14 +304,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public Integer homeOneTotal(Long first, Long now) {
-		return userInfoMapper.homeOneTotal(first,now);
+	public Integer homeOneTotal(Long first, Long now,Integer tenantId) {
+		return userInfoMapper.homeOneTotal(first,now,tenantId);
 	}
 
-	@Override
-	public Integer homeOneAuth(Long first, Long now) {
-		return userInfoMapper.homeOneAuth(first,now);
-	}
 
 
 	@Override

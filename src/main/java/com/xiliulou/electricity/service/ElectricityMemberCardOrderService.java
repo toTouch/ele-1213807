@@ -17,7 +17,7 @@ public interface ElectricityMemberCardOrderService {
 
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
 
-    BigDecimal homeOne(Long first, Long now,List<Integer> cardIdList);
+    BigDecimal homeOne(Long first, Long now,List<Integer> cardIdList,Integer tenantId);
 
     List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cardIdList);
 

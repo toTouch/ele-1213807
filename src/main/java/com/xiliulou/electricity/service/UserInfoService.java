@@ -59,9 +59,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     UserInfo queryByUid(Long uid);
 
-    Integer homeOneTotal(Long first, Long now);
+    Integer homeOneTotal(Long first, Long now,Integer tenantId);
 
-    Integer homeOneAuth(Long first, Long now);
 
     List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay);
 

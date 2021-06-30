@@ -450,13 +450,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
-	public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList) {
-		return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList);
+	public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList,Integer tenantId) {
+		return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList,tenantId);
 	}
 
 	@Override
-	public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList) {
-		Integer countTotal = homeOneCount(first, now, eleIdList);
+	public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList,Integer tenantId) {
+		Integer countTotal = homeOneCount(first, now, eleIdList,tenantId);
 		Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList);
 		if (successTotal == 0 || countTotal == 0) {
 			return BigDecimal.valueOf(0);

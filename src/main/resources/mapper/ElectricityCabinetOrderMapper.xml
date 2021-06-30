@@ -2,93 +2,104 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper">
 
-    <!--查询指定行数据-->
-    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
-        select
-        id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn, new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time, switch_end_time, create_time, update_time
-        from t_electricity_cabinet_order
-        <where>
-            <if test="query.orderId != null and query.orderId != ''">
-                and order_id = #{query.orderId}
-            </if>
-            <if test="query.phone != null and query.phone != ''">
-                and phone = #{query.phone}
-            </if>
-            <if test="query.status != null">
-                and status = #{query.status}
-            </if>
-            <if test="query.beginTime != null">
-                and create_time &gt;=#{query.beginTime}
-            </if>
-            <if test="query.endTime != null">
-                and create_time &lt;=#{query.endTime}
-            </if>
-            <if test="query.paymentMethod != null">
-                and payment_method = #{query.paymentMethod}
-            </if>
-            <if test="query.uid != null">
-                and uid = #{query.uid}
-            </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
-        order by update_time desc
-        limit #{query.offset}, #{query.size}
-    </select>
+	<!--查询指定行数据-->
+	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
+		select
+		id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn,
+		new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time,
+		switch_end_time, create_time, update_time
+		from t_electricity_cabinet_order
+		<where>
+			<if test="query.orderId != null and query.orderId != ''">
+				and order_id = #{query.orderId}
+			</if>
+			<if test="query.phone != null and query.phone != ''">
+				and phone = #{query.phone}
+			</if>
+			<if test="query.status != null">
+				and status = #{query.status}
+			</if>
+			<if test="query.beginTime != null">
+				and create_time &gt;=#{query.beginTime}
+			</if>
+			<if test="query.endTime != null">
+				and create_time &lt;=#{query.endTime}
+			</if>
+			<if test="query.paymentMethod != null">
+				and payment_method = #{query.paymentMethod}
+			</if>
+			<if test="query.uid != null">
+				and uid = #{query.uid}
+			</if>
+			<if test="query.eleIdList!=null and query.eleIdList!=''">
+				and electricity_cabinet_id in
+				<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="query.tenantId != null and query.tenantId != ''">
+				and tenant_id = #{query.tenantId}
+			</if>
+		</where>
+		order by update_time desc
+		limit #{query.offset}, #{query.size}
+	</select>
 
-    <select id="homeThree" resultType="java.util.HashMap">
-         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as orderCount
-        from t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
-        <if test="eleIdList!=null and eleIdList!=''">
-            and electricity_cabinet_id in
-            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-        group by date
-        order by date desc
-    </select>
-    <select id="homeOneCount" resultType="java.lang.Integer">
-        select count(1)
-        from t_electricity_cabinet_order
-        <where>
-            <if test="first != null">
-                and create_time &gt;=#{first}
-            </if>
-            <if test="now != null">
-                and create_time &lt;=#{now}
-            </if>
-            <if test="eleIdList!=null and eleIdList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-        </where>
-    </select>
-    <select id="homeOneSuccess" resultType="java.lang.Integer">
-        select count(1)
-        from t_electricity_cabinet_order
-        where status=6
-            <if test="first != null">
-                and create_time &gt;=#{first}
-            </if>
-            <if test="now != null">
-                and create_time &lt;=#{now}
-            </if>
-            <if test="eleIdList!=null and eleIdList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-    </select>
+	<select id="homeThree" resultType="java.util.HashMap">
+		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as orderCount
+		from t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
+		<if test="eleIdList!=null and eleIdList!=''">
+			and electricity_cabinet_id in
+			<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+		group by date
+		order by date desc
+	</select>
+	<select id="homeOneCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_electricity_cabinet_order
+		<where>
+			<if test="first != null">
+				and create_time &gt;=#{first}
+			</if>
+			<if test="now != null">
+				and create_time &lt;=#{now}
+			</if>
+			<if test="eleIdList!=null and eleIdList!=''">
+				and electricity_cabinet_id in
+				<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="tenantId != null and tenantId != ''">
+				and tenant_id = #{tenantId}
+			</if>
+		</where>
+	</select>
+	<select id="homeOneSuccess" resultType="java.lang.Integer">
+		select count(1)
+		from t_electricity_cabinet_order
+		where status=6
+		<if test="first != null">
+			and create_time &gt;=#{first}
+		</if>
+		<if test="now != null">
+			and create_time &lt;=#{now}
+		</if>
+		<if test="eleIdList!=null and eleIdList!=''">
+			and electricity_cabinet_id in
+			<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+		<if test="tenantId != null and tenantId != ''">
+			and tenant_id = #{tenantId}
+		</if>
+	</select>
 
-    <update id="updateExpiredCancelOrder">
+	<update id="updateExpiredCancelOrder">
         update t_electricity_cabinet_order
         set status = 8 , update_time = #{updateTime}
         where  order_id = #{orderId} and status in(1,2,3);

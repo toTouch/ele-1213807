@@ -274,7 +274,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList) {
+	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList,Integer tenantId) {
 		return baseMapper.homeThree(startTimeMilliDay, endTimeMilliDay, cardIdList);
 	}
 

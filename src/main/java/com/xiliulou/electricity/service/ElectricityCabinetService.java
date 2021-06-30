@@ -53,7 +53,7 @@ public interface ElectricityCabinetService {
 
     R updateStatus(Integer id,Integer usableStatus);
 
-    R homeOne(Integer type);
+    R homeOne(Long beginTime,Long endTime);
 
     R homeTwo();
 
@@ -75,7 +75,7 @@ public interface ElectricityCabinetService {
 
     R queryByRentBattery(String productKey, String deviceName);
 
-    List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList);
+    List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList,Integer tenantId);
 
     R batteryReport(BatteryReportQuery batteryReportQuery);
 
