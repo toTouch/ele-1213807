@@ -86,6 +86,7 @@ public class StoreServiceImpl implements StoreService {
 		adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
+		adminUserQuery.setPhone(storeAddAndUpdate.getServicePhone());
 
 		R result= userService.addInnerUser(adminUserQuery);
 		if(result.getCode()==1){
@@ -113,7 +114,6 @@ public class StoreServiceImpl implements StoreService {
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
 		store.setTenantId(tenantId);
-		store.setServicePhone(storeAddAndUpdate.getPhone());
 		store.setUid(uid);
 
 

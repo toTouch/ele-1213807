@@ -77,7 +77,7 @@ public class StoreAddAndUpdate {
     @NotBlank(message = "密码不能为空", groups = {CreateGroup.class})
     private String password;
     @NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
-    private String phone;
+    private String servicePhone;
 
     /**
      * 城市编号

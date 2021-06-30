@@ -9,7 +9,7 @@
             resultType="com.xiliulou.electricity.vo.StoreVO">
         select
         id, uid, name, address, longitude, latitude, del_flag,
-        create_time, update_time,usable_status,service_phone, business_time
+        create_time, update_time,usable_status,service_phone, business_time,franchisee_id
         from t_store
         where del_flag=0
         <if test="query.name != null and query.name != ''">

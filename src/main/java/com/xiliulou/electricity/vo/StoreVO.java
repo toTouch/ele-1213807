@@ -86,6 +86,8 @@ public class StoreVO {
      */
     private String userName;
 
+    private Integer franchiseeId;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
