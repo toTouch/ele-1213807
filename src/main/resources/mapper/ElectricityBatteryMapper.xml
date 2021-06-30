@@ -30,18 +30,6 @@
 	</select>
 
 
-	<select id="homeTwo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,electricity_cabinet_id,
-		electricity_cabinet_name,uid,user_name
-		from t_electricity_battery
-		where del_flag=0 and tenant_id = #{tenantId}
-		<if test="batteryIdList!=null and batteryIdList!=''">
-			and id in
-			<foreach collection="batteryIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-	</select>
 
 	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
         select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,electricity_cabinet_id,

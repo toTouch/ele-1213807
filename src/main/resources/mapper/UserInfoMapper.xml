@@ -37,24 +37,20 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+
     <select id="homeThreeTotal" resultType="java.util.HashMap">
         select from_unixtime(tui.create_time / 1000, '%Y-%m-%d') date, count(*) as totalCount
         from t_user_info as tui
         left join t_user as tu on tui.uid=tu.uid
         where tui.del_flag=0
         and tui.create_time &gt;= #{startTimeMilliDay} and tui.create_time &lt;=#{endTimeMilliDay}
+        <if test="tenantId != null and tenantId != ''">
+            and tenant_id = #{tenantId}
+        </if>
         group by date
         order by date desc
     </select>
-    <select id="homeThreeAuth" resultType="java.util.HashMap">
-        select from_unixtime(tui.create_time / 1000, '%Y-%m-%d') date, count(*) as authCount
-        from t_user_info as tui
-        left join t_user as tu on tui.uid=tu.uid
-        where tui.del_flag=0 and tui.service_status in(1,2,3)
-        and tui.create_time &gt;= #{startTimeMilliDay} and tui.create_time &lt;=#{endTimeMilliDay}
-        group by date
-        order by date desc
-    </select>
+
 
 
     <select id="homeOneTotal" resultType="java.lang.Integer">

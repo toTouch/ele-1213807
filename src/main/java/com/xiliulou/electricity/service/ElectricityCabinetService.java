@@ -55,9 +55,9 @@ public interface ElectricityCabinetService {
 
     R homeOne(Long beginTime,Long endTime);
 
-    R homeTwo();
+    R homeTwo(Long beginTime,Long endTime);
 
-    R homeThree(Integer day);
+    R homeThree(Long beginTime,Long endTime,Integer type);
 
     R home();
 

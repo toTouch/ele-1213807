@@ -63,12 +63,14 @@
 				#{id}
 			</foreach>
 		</if>
-
+		<if test="tenantId != null and tenantId != ''">
+			and tenant_id = #{tenantId}
+		</if>
 
 	</select>
 
 
-	<select id="homeThree" resultType="java.util.HashMap">
+	<select id="homeTwo" resultType="java.util.HashMap">
 
 		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money
 		from t_electricity_member_card_order
@@ -79,6 +81,9 @@
 			<foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
 				#{id}
 			</foreach>
+		</if>
+		<if test="tenantId != null and tenantId != ''">
+			and tenant_id = #{tenantId}
 		</if>
 		group by date
 		order by date desc

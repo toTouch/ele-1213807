@@ -139,11 +139,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 .eq(ElectricityBattery::getSn, initElectricityBatterySn));
     }
 
-    @Override
-    public List<ElectricityBattery> homeTwo(List<Long> batteryIdList,Integer tenantId) {
-
-        return electricitybatterymapper.homeTwo(batteryIdList,tenantId);
-    }
 
     /**
      * 获取个人电池

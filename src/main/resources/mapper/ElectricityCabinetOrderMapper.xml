@@ -45,6 +45,7 @@
 		limit #{query.offset}, #{query.size}
 	</select>
 
+
 	<select id="homeThree" resultType="java.util.HashMap">
 		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as orderCount
 		from t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
@@ -54,9 +55,14 @@
 				#{id}
 			</foreach>
 		</if>
+		<if test="tenantId != null and tenantId != ''">
+			and tenant_id = #{tenantId}
+		</if>
 		group by date
 		order by date desc
 	</select>
+
+
 	<select id="homeOneCount" resultType="java.lang.Integer">
 		select count(1)
 		from t_electricity_cabinet_order
@@ -78,6 +84,8 @@
 			</if>
 		</where>
 	</select>
+
+
 	<select id="homeOneSuccess" resultType="java.lang.Integer">
 		select count(1)
 		from t_electricity_cabinet_order

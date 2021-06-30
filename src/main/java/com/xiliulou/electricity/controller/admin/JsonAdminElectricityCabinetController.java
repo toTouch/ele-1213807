@@ -168,16 +168,19 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.homeOne(beginTime,endTime);
     }
 
-    //首页二
+    //首页三
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
-    public R homeTwo() {
-        return electricityCabinetService.homeTwo();
+    public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+        return electricityCabinetService.homeTwo(beginTime,endTime);
     }
 
     //首页三
-    @GetMapping(value = "/admin/electricityCabinet/homeThree/{day}")
-    public R homeThree(@PathVariable("day") Integer day) {
-        return electricityCabinetService.homeThree(day);
+    @GetMapping(value = "/admin/electricityCabinet/homeThree")
+    public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam("type") Integer type) {
+        return electricityCabinetService.homeThree(beginTime,endTime,type);
     }
 
     //发送命令

@@ -256,40 +256,10 @@ public class StoreServiceImpl implements StoreService {
 
 
 	@Override
-	public Integer homeTwoTotal(List<Integer> storeIdList) {
-		return storeMapper.homeTwoTotal(storeIdList);
+	public Integer homeOneTotal(List<Integer> storeIdList,Integer tenantId) {
+		return storeMapper.homeOneTotal(storeIdList,tenantId);
 	}
 
-	@Override
-	public Integer homeTwoBusiness(List<Integer> storeIdList) {
-		List<Store> storeList = storeMapper.homeTwoBusiness(storeIdList);
-		Integer countBusiness = 0;
-		if (ObjectUtil.isNotEmpty(storeList)) {
-			for (Store store : storeList) {
-				//营业时间
-				if (Objects.nonNull(store.getBusinessTime())) {
-					String businessTime = store.getBusinessTime();
-					if (Objects.equals(businessTime, StoreVO.ALL_DAY)) {
-						countBusiness = countBusiness + 1;
-					} else {
-						int index = businessTime.indexOf("-");
-						if (!Objects.equals(index, -1) && index > 0) {
-							Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-							long now = System.currentTimeMillis();
-							Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
-							Long beginTime = getTime(totalBeginTime);
-							Long totalEndTime = Long.valueOf(businessTime.substring(index + 1));
-							Long endTime = getTime(totalEndTime);
-							if (firstToday + beginTime < now || firstToday + endTime > now) {
-								countBusiness = countBusiness + 1;
-							}
-						}
-					}
-				}
-			}
-		}
-		return countBusiness;
-	}
 
 	@Override
 	public R showInfoByDistance(StoreQuery storeQuery) {

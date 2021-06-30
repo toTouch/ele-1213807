@@ -465,8 +465,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList) {
-		return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList);
+	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList,Integer tenantId) {
+		return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList,tenantId);
 	}
 
 	@Override

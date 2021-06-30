@@ -311,14 +311,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
 	@Override
-	public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay) {
-		return userInfoMapper.homeThreeTotal(startTimeMilliDay, endTimeMilliDay);
+	public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay,Integer tenantId) {
+		return userInfoMapper.homeThreeTotal(startTimeMilliDay, endTimeMilliDay,tenantId);
 	}
 
-	@Override
-	public List<HashMap<String, String>> homeThreeAuth(long startTimeMilliDay, Long endTimeMilliDay) {
-		return userInfoMapper.homeThreeAuth(startTimeMilliDay, endTimeMilliDay);
-	}
 
 	/**
 	 * 获取用户套餐信息

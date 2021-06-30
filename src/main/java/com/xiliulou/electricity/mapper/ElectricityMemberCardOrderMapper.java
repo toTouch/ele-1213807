@@ -22,11 +22,11 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
                                                             @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
 
-    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now,@Param("cardIdList") List<Integer> cardIdList);
+    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now,@Param("cardIdList") List<Integer> cardIdList,@Param("tenantId")Integer tenantId);
 
 
 
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cardIdList") List<Integer> cardIdList);
+    List<HashMap<String, String>> homeTwo(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cardIdList") List<Integer> cardIdList,@Param("tenantId")Integer tenantId);
 
 
     List<ElectricityMemberCardOrderVO> queryList(@Param("query") MemberCardOrderQuery memberCardOrderQuery);

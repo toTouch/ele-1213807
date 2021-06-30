@@ -19,7 +19,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBattery> getElectricityBatteryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
                                     @Param("offset") Long offset, @Param("size") Long size);
 
-    List<ElectricityBattery> homeTwo(@Param("batteryIdList") List<Long> batteryIdList,@Param("tenantId") Integer tenantId);
 
     ElectricityBattery selectBatteryInfo(@Param("uid") Long uid);
 

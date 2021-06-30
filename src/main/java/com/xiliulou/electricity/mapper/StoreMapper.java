@@ -28,9 +28,7 @@ public interface StoreMapper extends BaseMapper<Store> {
 
     List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);
 
-    Integer homeTwoTotal(@Param("storeIdList") List<Integer> storeIdList);
-
-    List<Store> homeTwoBusiness(@Param("storeIdList") List<Integer> storeIdList);
+    Integer homeOneTotal(@Param("storeIdList") List<Integer> storeIdList,@Param("tenantId") Integer tenantId);
 
 	Integer queryCount(StoreQuery storeQuery);
 }

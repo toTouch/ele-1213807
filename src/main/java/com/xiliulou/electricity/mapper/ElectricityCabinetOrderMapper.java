@@ -26,7 +26,7 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
      */
     List<ElectricityCabinetOrderVO> queryList( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
-    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList );
+    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
 
     int updateExpiredCancelOrder(@Param("orderId") String orderId, @Param("updateTime") Long updateTime);
 

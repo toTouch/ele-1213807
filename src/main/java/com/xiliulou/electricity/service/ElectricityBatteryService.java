@@ -28,7 +28,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
-    List<ElectricityBattery> homeTwo(List<Long> batteryIdList,Integer tenantId);
 
     R getSelfBattery(Long uid);
 

@@ -33,5 +33,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
     List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList, @Param("tenantId")Integer tenantId);
 
-    List<ElectricityCabinet> queryAll(@Param("eleIdList") List<Integer> eleIdList);
+    List<ElectricityCabinet> homeOne(@Param("eleIdList") List<Integer> eleIdList,@Param("tenantId") Integer tenantId);
 }

@@ -103,7 +103,7 @@
         limit #{offset}, #{size}
     </select>
 
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+    <select id="homeOne" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select
         id,  name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
         from t_electricity_cabinet
@@ -113,6 +113,9 @@
             <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
                 #{id}
             </foreach>
+        </if>
+        <if test="tenantId != null and tenantId != ''">
+            and tenant_id = #{tenantId}
         </if>
     </select>
 
