@@ -67,10 +67,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         adminUserQuery.setLang(User.DEFAULT_LANG);
         adminUserQuery.setGender(User.GENDER_FEMALE);
 
-        Long result= userService.addInnerUser(adminUserQuery);
-        if(result==-1L){
-            return R.fail("ELECTRICITY.0086", "操作失败");
+        R result= userService.addInnerUser(adminUserQuery);
+        if(result.getCode()==1){
+            return result;
         }
+
+        Long uid=(Long) result.getData();
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -80,7 +82,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         franchisee.setTenantId(tenantId);
-        franchisee.setUid(result);
+        franchisee.setUid(uid);
         franchisee.setCid(franchiseeAddAndUpdate.getCityId());
         int insert =franchiseeMapper.insert(franchisee);
 

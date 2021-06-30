@@ -87,11 +87,12 @@ public class StoreServiceImpl implements StoreService {
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
 
-		Long result= userService.addInnerUser(adminUserQuery);
-		if(result==-1L){
-			return R.fail("ELECTRICITY.0086", "操作失败");
+		R result= userService.addInnerUser(adminUserQuery);
+		if(result.getCode()==1){
+			return result;
 		}
 
+		Long uid=(Long) result.getData();
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -113,7 +114,7 @@ public class StoreServiceImpl implements StoreService {
 		store.setDelFlag(ElectricityCabinet.DEL_NORMAL);
 		store.setTenantId(tenantId);
 		store.setServicePhone(storeAddAndUpdate.getPhone());
-		store.setUid(result);
+		store.setUid(uid);
 
 
 		int insert = storeMapper.insert(store);

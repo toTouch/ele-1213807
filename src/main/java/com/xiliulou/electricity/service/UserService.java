@@ -74,5 +74,5 @@ public interface UserService {
 
     R endLimitUser(Long uid);
 
-    Long addInnerUser(AdminUserQuery adminUserQuery);
+    R addInnerUser(AdminUserQuery adminUserQuery);
 }

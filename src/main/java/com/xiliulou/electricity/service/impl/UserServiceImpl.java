@@ -460,7 +460,7 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public Long addInnerUser(AdminUserQuery adminUserQuery) {
+	public R addInnerUser(AdminUserQuery adminUserQuery) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -468,12 +468,13 @@ public class UserServiceImpl implements UserService {
 
 		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
 		if (Objects.nonNull(phoneUserExists)) {
-			return -1L;
+			return R.fail("手机号已存在！无法修改!");
+
 		}
 
 		User userNameExists = queryByUserName(adminUserQuery.getName());
 		if (Objects.nonNull(userNameExists)) {
-			return -1L;
+			return R.fail("用户名已经存在！无法修改！");
 		}
 
 		//解密密码
@@ -481,7 +482,7 @@ public class UserServiceImpl implements UserService {
 		String decryptPassword = decryptPassword(encryptPassword);
 		if (StrUtil.isEmpty(decryptPassword)) {
 			log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
-			return -1L;
+			return R.fail("系统错误!");
 		}
 
 		//处理城市和省份
@@ -516,10 +517,10 @@ public class UserServiceImpl implements UserService {
 		userRoleService.insert(userRole);
 
 		if (Objects.nonNull(insert.getUid())) {
-			return insert.getUid();
+			return R.ok(insert.getUid());
 		}
 
-		return -1L;
+		return R.fail("系统错误!");
 	}
 
 }
