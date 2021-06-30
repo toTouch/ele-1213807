@@ -18,8 +18,8 @@
 		<if test="status != null">
 			and status = #{status}
 		</if>
-		<if test="startTime != null">
-			and create_time &gt;=#{startTime}
+		<if test="beginTime != null">
+			and create_time &gt;=#{beginTime}
 		</if>
 		<if test="endTime != null">
 			and create_time &lt;=#{endTime}
