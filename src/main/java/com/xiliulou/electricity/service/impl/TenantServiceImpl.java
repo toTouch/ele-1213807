@@ -215,18 +215,23 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Tenant queryByIdFromCache(Integer tenantId) {
-       /* Tenant cacheTenant = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, Tenant.class);
+        Tenant cacheTenant = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, Tenant.class);
         if (Objects.nonNull(cacheTenant)) {
             return cacheTenant;
         }
-*/
+
         Tenant tenant = this.tenantMapper.selectById(tenantId);
         if (Objects.isNull(tenant)) {
             return null;
         }
 
-        /*redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, tenant);*/
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, tenant);
         return tenant;
+    }
+
+    @Override
+    public R queryCount(TenantQuery tenantQuery) {
+        return R.ok(tenantMapper.queryCount(tenantQuery));
     }
 
     /**

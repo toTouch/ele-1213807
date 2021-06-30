@@ -3,33 +3,50 @@
 <mapper namespace="com.xiliulou.electricity.mapper.TenantMapper">
 
 
-
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.Tenant">
-        select
-          id, name, code, status, del_flag, create_time, update_time, expire_time
-        from t_tenant
-        <where>
-            <if test="name != null and name != ''">
-                and name = #{name}
-            </if>
-            <if test="code != null and code != ''">
-                and code = #{code}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="startTime != null">
-                and create_time &gt;=#{startTime}
-            </if>
-            <if test="endTime != null">
-                and create_time &lt;=#{endTime}
-            </if>
-        </where>
-        order by create_time desc
-        limit #{offset}, #{size}
-    </select>
-
+	<!--通过实体作为筛选条件查询-->
+	<select id="queryAll" resultType="com.xiliulou.electricity.entity.Tenant">
+		select
+		id, name, code, status, del_flag, create_time, update_time, expire_time
+		from t_tenant
+		where del_flag=0
+		<if test="name != null and name != ''">
+			and name = #{name}
+		</if>
+		<if test="code != null and code != ''">
+			and code = #{code}
+		</if>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;=#{startTime}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;=#{endTime}
+		</if>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		where del_flag=0
+		<if test="name != null and name != ''">
+			and name = #{name}
+		</if>
+		<if test="code != null and code != ''">
+			and code = #{code}
+		</if>
+		<if test="status != null">
+			and status = #{status}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;=#{startTime}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;=#{endTime}
+		</if>
+		order by create_time desc
+	</select>
 
 
 </mapper>

@@ -27,4 +27,6 @@ public interface TenantService {
     R queryListTenant(TenantQuery tenantQuery);
 
     Tenant queryByIdFromCache(Integer tenantId);
+
+	R queryCount(TenantQuery tenantQuery);
 }
