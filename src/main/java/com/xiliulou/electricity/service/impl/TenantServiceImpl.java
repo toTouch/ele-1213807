@@ -126,6 +126,7 @@ public class TenantServiceImpl implements TenantService {
         user.setLang(User.DEFAULT_LANG);
         user.setCity("");
         user.setProvince("");
+        user.setTenantId(tenant.getId());
         userService.insert(user);
 
 
