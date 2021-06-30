@@ -41,7 +41,6 @@ public class JsonAdminTenantController {
     //查询租户
     @GetMapping("/admin/tenant/list")
     public R listTenant(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
-            @RequestParam(value = "tenantId", required = false) Integer tenantId,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "status", required = false) Integer status,
@@ -61,7 +60,6 @@ public class JsonAdminTenantController {
                 .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
                 .code(code)
                 .status(status).build();
         return tenantService.queryListTenant(tenantQuery);
@@ -69,8 +67,7 @@ public class JsonAdminTenantController {
 
     //查询租户
     @GetMapping("/admin/tenant/queryCount")
-    public R queryCount(@RequestParam(value = "tenantId", required = false) Integer tenantId,
-            @RequestParam(value = "name", required = false) String name,
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "code", required = false) String code,
             @RequestParam(value = "status", required = false) Integer status,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
@@ -80,7 +77,6 @@ public class JsonAdminTenantController {
                 .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
                 .code(code)
                 .status(status).build();
         return tenantService.queryCount(tenantQuery);

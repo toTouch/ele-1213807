@@ -19,7 +19,6 @@ public class TenantQuery {
 
     private Long  size;
     private Long offset;
-    private Integer tenantId;
     private  String name;
     private  String code;
     private  Integer status;
