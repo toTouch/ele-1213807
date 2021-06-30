@@ -1,30 +1,5 @@
 package com.xiliulou.electricity.entity;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-                                import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.IdType;
                                 import com.baomidou.mybatisplus.annotation.TableId;
                                 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -66,10 +41,12 @@ public class Tenant {
     */
     private Integer delFlag;
 
+
     private Long createTime;
 
     private Long updateTime;
 
+    //过期时间
     private Long expireTime;
 
     public static final Integer DEL_NORMAL = 0;
