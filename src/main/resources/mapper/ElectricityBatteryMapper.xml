@@ -6,7 +6,7 @@
 	<!--电池分页-->
 	<select id="getElectricityBatteryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
 		select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,electricity_cabinet_id,
-		electricity_cabinet_name,uid,user_name
+		electricity_cabinet_name,uid,user_name,model
 		from t_electricity_battery
 		where del_flag = 0 and tenant_id = #{query.tenantId}
 		<if test="query.sn != null and query.sn !=''">
