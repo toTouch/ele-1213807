@@ -215,7 +215,7 @@ public class JsonAdminStoreController {
 
 
     //禁启用门店
-    @PostMapping(value = "/admin/store/updateStatus")
+    @PutMapping(value = "/admin/store/updateStatus")
     public R updateStatus(@RequestParam("id") Integer id,@RequestParam("usableStatus") Integer usableStatus) {
         return storeService.updateStatus(id,usableStatus);
     }
