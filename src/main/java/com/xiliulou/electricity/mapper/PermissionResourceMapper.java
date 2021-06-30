@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.PermissionResource;
 import java.util.List;
+
+import com.xiliulou.electricity.entity.Role;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
@@ -21,4 +23,6 @@ public interface PermissionResourceMapper  extends BaseMapper<PermissionResource
 
     @Select("SELECT id,name,type,uri,method,sort,parent,create_time,update_time,del_flag FROM t_permission_resource WHERE id=#{id}")
     PermissionResource queryById(Long id);
+
+    Integer insertOne(PermissionResource permissionResource);
 }

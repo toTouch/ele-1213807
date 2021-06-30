@@ -82,7 +82,7 @@ public class RoleServiceImpl implements RoleService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Role insert(Role role) {
-		this.roleMapper.insert(role);
+		this.roleMapper.insertOne(role);
 		return role;
 	}
 

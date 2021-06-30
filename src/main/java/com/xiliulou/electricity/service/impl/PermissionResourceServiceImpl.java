@@ -88,7 +88,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public PermissionResource insert(PermissionResource permissionResource) {
-		this.permissionResourceMapper.insert(permissionResource);
+		this.permissionResourceMapper.insertOne(permissionResource);
 		if (Objects.nonNull(permissionResource.getId())) {
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId(), permissionResource);
 		}

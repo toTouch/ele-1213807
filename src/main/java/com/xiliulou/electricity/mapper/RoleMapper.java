@@ -31,4 +31,7 @@ public interface RoleMapper  extends BaseMapper<Role>{
 
     @Select("SELECT id,name,code,create_time,update_time,tenant_id FROM t_role WHERE id=#{id}")
 	Role queryById(Long id);
+
+
+	Integer insertOne(Role role);
 }
