@@ -25,8 +25,6 @@ public interface RoleMapper  extends BaseMapper<Role>{
     List<Role> queryAll(Integer tenantId);
 
 
-    List<Role> queryListByCondition(@Param("offset") Integer offset, @Param("size")Integer size);
-
     List<Role> queryByRoleIds(List<Long> roleIds);
 
     @Select("SELECT id,name,code,create_time,update_time,tenant_id FROM t_role WHERE id=#{id}")
