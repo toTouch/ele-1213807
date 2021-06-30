@@ -124,6 +124,9 @@ public class ElectricityCabinetVO {
      */
     private Integer isLock;
 
+    //门店id
+    private Integer storeId;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
