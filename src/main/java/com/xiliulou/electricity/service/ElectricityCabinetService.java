@@ -84,4 +84,6 @@ public interface ElectricityCabinetService {
     R queryByDevice(String productKey, String deviceName);
 
     boolean isBusiness(ElectricityCabinet electricityCabinet);
+
+	R queryCount(ElectricityCabinetQuery electricityCabinetQuery);
 }

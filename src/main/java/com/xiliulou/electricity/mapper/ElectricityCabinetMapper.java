@@ -25,8 +25,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<ElectricityCabinetVO> queryList( @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 
-
     List<ElectricityCabinetVO> showInfoByDistance(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+
 
     List<String> queryFullyElectricityBattery(Integer id);
 
@@ -34,4 +34,6 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList, @Param("tenantId")Integer tenantId);
 
     List<ElectricityCabinet> homeOne(@Param("eleIdList") List<Integer> eleIdList,@Param("tenantId") Integer tenantId);
+
+	Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 }

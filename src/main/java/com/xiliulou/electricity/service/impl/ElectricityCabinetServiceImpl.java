@@ -1481,4 +1481,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 		return false;
 	}
+
+	@Override
+	public R queryCount(ElectricityCabinetQuery electricityCabinetQuery) {
+		return R.ok(electricityCabinetMapper.queryCount(electricityCabinetQuery));
+	}
 }
