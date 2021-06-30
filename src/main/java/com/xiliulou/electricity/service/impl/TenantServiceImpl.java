@@ -200,7 +200,7 @@ public class TenantServiceImpl implements TenantService {
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
         tenant.setUpdateTime(System.currentTimeMillis());
         tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
-        tenantMapper.insert(tenant);
+        tenantMapper.updateById(tenant);
         return R.ok();
     }
 
