@@ -3,39 +3,44 @@
 <mapper namespace="com.xiliulou.electricity.mapper.RoleMapper">
 
 
-    <!--新增所有列-->
-    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+	<!--新增所有列-->
+	<insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
         insert into t_role(name, code, `desc`, create_time, update_time,tenant_id)
         values (#{name}, #{code}, #{desc}, #{createTime}, #{updateTime},#{tenantId})
     </insert>
 
 
 	<!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.Role">
+	<select id="queryAll" resultType="com.xiliulou.electricity.entity.Role">
         select
-          id, name, code, `desc`, create_time, update_time
+          id, name, code, `desc`, create_time, update_time,tenent_id
         from t_role
         order by create_time desc
     </select>
 
 
-    <select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.Role">
-         select
-          id, name, code, `desc`, create_time, update_time
-        from t_role
-        order by create_time desc
-        limit #{offset},#{size}
-    </select>
+	<select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.Role">
+		select
+		id, name, code, `desc`, create_time, update_time
+		from t_role
+		<where>
+			<if test="tenantId != null and tenantId != ''">
+				and tenant_id = #{tenantId}
+			</if>
+		</where>
+		order by create_time desc
+		limit #{offset},#{size}
+	</select>
 
-    <select id="queryByRoleIds" resultType="com.xiliulou.electricity.entity.Role">
-           select
-          id, name, code, `desc`, create_time, update_time
-        from t_role
-        where id in
-         <foreach collection="list" close=")" open="(" item="r" separator=",">
-             #{r}
-         </foreach>
+	<select id="queryByRoleIds" resultType="com.xiliulou.electricity.entity.Role">
+		select
+		id, name, code, `desc`, create_time, update_time
+		from t_role
+		where id in
+		<foreach collection="list" close=")" open="(" item="r" separator=",">
+			#{r}
+		</foreach>
 
-    </select>
+	</select>
 
 </mapper>

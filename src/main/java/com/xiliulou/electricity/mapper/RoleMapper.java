@@ -22,7 +22,7 @@ public interface RoleMapper  extends BaseMapper<Role>{
      *
      * @return 对象列表
      */
-    List<Role> queryAll();
+    List<Role> queryAll(Integer tenantId);
 
 
     List<Role> queryListByCondition(@Param("offset") Integer offset, @Param("size")Integer size);

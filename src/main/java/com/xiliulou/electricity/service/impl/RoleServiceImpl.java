@@ -18,6 +18,7 @@ import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.RoleQuery;
@@ -232,7 +233,13 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public R queryAll() {
-		List<Role> roles = this.roleMapper.queryAll();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		if(SecurityUtils.isAdmin()){
+			tenantId=null;
+		}
+
+		List<Role> roles = this.roleMapper.queryAll(tenantId);
 		if (!DataUtil.collectionIsUsable(roles)) {
 			return R.ok(Collections.EMPTY_LIST);
 		}
