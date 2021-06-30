@@ -165,6 +165,54 @@ public class JsonAdminStoreController {
         return storeService.queryList(storeQuery);
     }
 
+    //加盟商列表查询
+    @GetMapping(value = "/admin/store/queryCountByFranchisee")
+    public R queryCountByFranchisee(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
+
+
+        StoreQuery storeQuery = StoreQuery.builder()
+                .name(name)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .address(address)
+                .usableStatus(usableStatus).build();
+
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //1、先找到加盟商
+        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+        if(ObjectUtil.isEmpty(franchisee)){
+            return null;
+        }
+
+        List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
+
+        if(ObjectUtil.isEmpty(storeList)){
+            return null;
+        }
+        //2、再找加盟商绑定的门店
+        List<Integer> storeIdList=new ArrayList<>();
+        for (Store store:storeList) {
+            storeIdList.add(store.getId());
+        }
+        if(ObjectUtil.isEmpty(storeIdList)){
+            return null;
+        }
+
+        storeQuery.setStoreIdList(storeIdList);
+
+        return storeService.queryCountByFranchisee(storeQuery);
+    }
+
 
     //禁启用门店
     @PostMapping(value = "/admin/store/updateStatus/{id}")

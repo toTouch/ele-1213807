@@ -45,4 +45,6 @@ public interface StoreService {
 	Store queryByUid(Long uid);
 
 	R queryCount(StoreQuery storeQuery);
+
+	R queryCountByFranchisee(StoreQuery storeQuery);
 }
