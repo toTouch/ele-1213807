@@ -247,7 +247,7 @@ public class StoreServiceImpl implements StoreService {
 		Store store = new Store();
 		store.setId(id);
 		store.setUpdateTime(System.currentTimeMillis());
-		store.setUsableStatus(Store.STORE_UN_USABLE_STATUS);
+		store.setUsableStatus(usableStatus);
 		int update = storeMapper.updateById(store);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
