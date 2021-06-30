@@ -29,14 +29,6 @@ public class StoreVO {
     */
     private Double latitude;
     /**
-    * 租电池服务(0--支持，1--不支持)
-    */
-    private Integer batteryService;
-    /**
-    * 租车服务(0--支持，1--不支持)
-    */
-    private Integer carService;
-    /**
     * 0--正常 1--删除
     */
     private Object delFlag;
