@@ -81,6 +81,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setDelFlag(ElectricityCabinet.DEL_NORMAL);
         franchisee.setTenantId(tenantId);
         franchisee.setUid(result);
+        franchisee.setCid(franchiseeAddAndUpdate.getCityId());
         int insert =franchiseeMapper.insert(franchisee);
 
         DbUtils.dbOperateSuccessThen(insert, () -> {
