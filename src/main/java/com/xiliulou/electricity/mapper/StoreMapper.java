@@ -30,5 +30,5 @@ public interface StoreMapper extends BaseMapper<Store> {
 
     Integer homeOneTotal(@Param("storeIdList") List<Integer> storeIdList,@Param("tenantId") Integer tenantId);
 
-	Integer queryCount(StoreQuery storeQuery);
+	Integer queryCount(@Param("query") StoreQuery storeQuery);
 }
