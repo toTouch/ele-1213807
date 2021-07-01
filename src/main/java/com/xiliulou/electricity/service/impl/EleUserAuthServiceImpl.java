@@ -137,6 +137,8 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 		}
 
+		log.info("userInfo1 is -->{}",userInfo);
+
 		for (EleUserAuth eleUserAuth : eleUserAuthList) {
 			eleUserAuth.setUid(user.getUid());
 			if (StringUtils.isEmpty(eleUserAuth.getValue())) {
@@ -167,7 +169,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 		}
 
-		log.info("userInfo is -->{}",userInfo);
+		log.info("userInfo2 is -->{}",userInfo);
 
 		userInfo.setUid(user.getUid());
 		userInfo.setAuthStatus(status);
