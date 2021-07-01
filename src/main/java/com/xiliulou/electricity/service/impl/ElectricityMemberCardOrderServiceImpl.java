@@ -73,7 +73,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R createOrder(Integer memberId,Integer electricityCabinetId, HttpServletRequest request) {
+	public R createOrder(Integer memberId,String productKey, String deviceName, HttpServletRequest request) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -99,9 +99,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		}
 
 		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("rentBattery  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey,deviceName);
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 

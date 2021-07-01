@@ -13,7 +13,7 @@ import java.util.List;
 public interface ElectricityMemberCardOrderService {
 
 
-    R createOrder(Integer memberId,Integer electricityCabinetId, HttpServletRequest request);
+    R createOrder(Integer memberId,String productKey, String deviceName, HttpServletRequest request);
 
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
 

@@ -29,8 +29,9 @@ public class JsonUserElectricityMemberCardOrderController {
 
 
     @GetMapping("user/memberCard/payMemberCard")
-    public R payMemberCard(@RequestParam(value = "memberId") Integer memberId,@RequestParam(value = "electricityCabinetId") Integer electricityCabinetId, HttpServletRequest request) {
-        return electricityMemberCardOrderService.createOrder(memberId,electricityCabinetId, request);
+    public R payMemberCard(@RequestParam(value = "memberId") Integer memberId,@RequestParam("productKey") String productKey,
+            @RequestParam("deviceName") String deviceName, HttpServletRequest request) {
+        return electricityMemberCardOrderService.createOrder(memberId,productKey,deviceName, request);
     }
 
     @GetMapping("user/memberCardOrder/list")
