@@ -468,13 +468,13 @@ public class UserServiceImpl implements UserService {
 
 		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
 		if (Objects.nonNull(phoneUserExists)) {
-			return R.fail("手机号已存在！无法修改!");
+			return R.fail("手机号已存在！");
 
 		}
 
 		User userNameExists = queryByUserName(adminUserQuery.getName());
 		if (Objects.nonNull(userNameExists)) {
-			return R.fail("用户名已经存在！无法修改！");
+			return R.fail("用户名已经存在！");
 		}
 
 		//解密密码
