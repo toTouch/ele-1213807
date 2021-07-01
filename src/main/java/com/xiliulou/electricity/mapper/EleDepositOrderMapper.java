@@ -24,5 +24,5 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder>{
      */
     List<EleDepositOrder> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
-	Integer queryCount(EleDepositOrderQuery eleDepositOrderQuery);
+	Integer queryCount(@Param("query")  EleDepositOrderQuery eleDepositOrderQuery);
 }
