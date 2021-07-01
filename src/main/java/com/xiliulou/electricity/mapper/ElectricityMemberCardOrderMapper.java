@@ -32,4 +32,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     List<ElectricityMemberCardOrderVO> queryList(@Param("query") MemberCardOrderQuery memberCardOrderQuery);
 
     Long getMemberCardOrderCount(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+
+    Integer queryCount(MemberCardOrderQuery memberCardOrderQuery);
 }

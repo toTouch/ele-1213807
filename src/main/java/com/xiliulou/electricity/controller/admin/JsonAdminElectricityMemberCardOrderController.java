@@ -59,6 +59,29 @@ public class JsonAdminElectricityMemberCardOrderController {
 		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
 	}
 
+	/**
+	 * 分页
+	 *
+	 * @return
+	 */
+	@GetMapping("admin/electricityMemberCardOrder/queryCount")
+	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "orderId", required = false) String orderId,
+			@RequestParam(value = "memberCardType", required = false) Integer cardType,
+			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+
+
+		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
+				.phone(phone)
+				.orderId(orderId)
+				.cardType(cardType)
+				.queryStartTime(queryStartTime)
+				.queryEndTime(queryEndTime).build();
+
+		return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
+	}
+
 	//换电柜购卡订单导出报表
 	@GetMapping("/admin/electricityMemberCardOrder/exportExcel")
 	public void exportExcel(@RequestParam(value = "phone", required = false) String phone,

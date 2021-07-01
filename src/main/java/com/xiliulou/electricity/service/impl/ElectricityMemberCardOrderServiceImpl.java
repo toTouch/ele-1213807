@@ -376,4 +376,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			log.error("导出报表失败！", e);
 		}
 	}
+
+	@Override
+	public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
+		return R.ok(baseMapper.queryCount(memberCardOrderQuery));
+	}
 }

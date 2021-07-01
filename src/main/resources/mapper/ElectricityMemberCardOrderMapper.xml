@@ -89,5 +89,24 @@
 		order by date desc
 
 	</select>
+	<select id="queryCount" resultType="java.lang.Integer">
+		select COUNT(1)
+		from t_electricity_member_card_order tel
+		LEFT JOIN t_user_info tui on tui.uid = tel.uid
+
+		WHERE 0= 0
+		<if test="query.phone != null">
+			and tui.phone =#{query.phone}
+		</if>
+		<if test="query.orderId != null">
+			and tel.order_id =#{query.orderId}
+		</if>
+		<if test="query.cardType != null">
+			and tel.member_card_type =#{query.cardType}
+		</if>
+		<if test="query.queryStartTime != null">
+			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+		</if>
+	</select>
 
 </mapper>
