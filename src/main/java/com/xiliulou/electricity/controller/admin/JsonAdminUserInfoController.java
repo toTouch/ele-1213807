@@ -80,7 +80,7 @@ public class JsonAdminUserInfoController {
     }
 
     //禁/启用
-    @PostMapping(value = "/admin/userInfo/updateStatus")
+    @PutMapping(value = "/admin/userInfo/updateStatus")
     public R updateStatus(@RequestParam("id") Long id,@RequestParam("usableStatus") Integer usableStatus) {
         return userInfoService.updateStatus(id,usableStatus);
     }
