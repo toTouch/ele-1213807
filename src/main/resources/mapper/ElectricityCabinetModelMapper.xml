@@ -13,6 +13,9 @@
         <if test="query.name != null and query.name != ''">
             and name = #{query.name}
         </if>
+        <if test="query.tenantId != null and query.tenantId != ''">
+            and tenant_id = #{query.tenantId}
+        </if>
         order by update_time desc
         limit #{query.offset}, #{query.size}
     </select>
