@@ -142,6 +142,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 
             return R.ok();
         } else {
+            electricityPayParams.setId(oldElectricityPayParams.getId());
             redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
             baseMapper.updateById(electricityPayParams);
             redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
