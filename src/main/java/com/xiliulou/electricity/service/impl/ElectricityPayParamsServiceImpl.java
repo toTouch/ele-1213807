@@ -142,9 +142,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 
             return R.ok();
         } else {
-            if (ObjectUtil.notEqual(oldElectricityPayParams.getId(), electricityPayParams.getId())) {
-                return R.fail("请求参数id,不合法!");
-            }
             redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
             baseMapper.updateById(electricityPayParams);
             redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
