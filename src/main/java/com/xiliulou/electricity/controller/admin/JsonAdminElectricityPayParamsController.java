@@ -41,7 +41,7 @@ public class JsonAdminElectricityPayParamsController {
     }
 
     /**
-     * huoqu
+     * 获取支付参数
      *
      * @param
      * @return
@@ -51,6 +51,7 @@ public class JsonAdminElectricityPayParamsController {
         Integer tenantId = TenantContextHolder.getTenantId();
         return R.ok(electricityPayParamsService.queryFromCache(tenantId));
     }
+
 
 
 }

@@ -10,4 +10,6 @@ public interface ElectricityPayParamsService {
     ElectricityPayParams queryFromCache(Integer tenantId);
 
     R uploadFile(MultipartFile file);
+
+    R getTenantId(String appId);
 }

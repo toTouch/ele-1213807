@@ -55,10 +55,18 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return R.failMsg("操作频繁!");
         }
 
-        ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
+        ElectricityPayParams oldElectricityPayParams1 = queryFromCache(tenantId);
+
+        ElectricityPayParams oldElectricityPayParams2=baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId,electricityPayParams.getMerchantMinProAppId()));
+
+        if(Objects.nonNull(oldElectricityPayParams2)){
+            if(Objects.isNull(oldElectricityPayParams1)||Objects.equals(oldElectricityPayParams1.getId(),oldElectricityPayParams2.getId())){
+                return R.failMsg("该小程序appId已被使用，请勿重复使用!");
+            }
+        }
 
         electricityPayParams.setUpdateTime(System.currentTimeMillis());
-        if (Objects.isNull(oldElectricityPayParams)) {
+        if (Objects.isNull(oldElectricityPayParams1)) {
             electricityPayParams.setCreateTime(System.currentTimeMillis());
             electricityPayParams.setTenantId(tenantId);
             baseMapper.insert(electricityPayParams);
@@ -67,7 +75,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 
             return R.ok();
         } else {
-            if (ObjectUtil.notEqual(oldElectricityPayParams.getId(), electricityPayParams.getId())) {
+            if (ObjectUtil.notEqual(oldElectricityPayParams1.getId(), electricityPayParams.getId())) {
                 return R.fail("请求参数id,不合法!");
             }
             redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
@@ -142,5 +150,14 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
             return R.ok();
         }
+    }
+
+    @Override
+    public R getTenantId(String appId) {
+        ElectricityPayParams electricityPayParams=baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId,appId));
+        if(Objects.isNull(electricityPayParams)) {
+            return R.fail("ELECTRICITY.00101", "找不到租户");
+        }
+        return R.ok(electricityPayParams.getTenantId());
     }
 }
