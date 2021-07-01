@@ -195,7 +195,7 @@ public class JsonAdminElectricityCabinetController {
 
 
     //禁启用换电柜
-    @PostMapping(value = "/admin/electricityCabinet/updateStatus")
+    @PutMapping(value = "/admin/electricityCabinet/updateStatus")
     public R updateStatus(@RequestParam("id") Integer id,@RequestParam("usableStatus") Integer usableStatus) {
         return electricityCabinetService.updateStatus(id,usableStatus);
     }
