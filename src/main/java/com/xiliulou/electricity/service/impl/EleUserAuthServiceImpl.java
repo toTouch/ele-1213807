@@ -137,14 +137,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 		}
 
-		log.info("userInfo1 is -->{}",userInfo);
 
 		for (EleUserAuth eleUserAuth : eleUserAuthList) {
 			eleUserAuth.setUid(user.getUid());
-			if (StringUtils.isEmpty(eleUserAuth.getValue())) {
-				log.error("NOT FOUND VALUE entryId:{}", eleUserAuth.getEntryId());
-				return R.fail("ELECTRICITY.0007", "不合法的参数");
-			}
 
 			EleAuthEntry eleAuthEntryDb = eleAuthEntryService.queryByIdFromCache(eleUserAuth.getEntryId());
 			if (Objects.isNull(eleAuthEntryDb)) {
@@ -170,7 +165,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 		}
 
-		log.info("userInfo2 is -->{}",userInfo);
 
 		userInfo.setUid(user.getUid());
 		userInfo.setAuthStatus(status);
