@@ -59,6 +59,27 @@ public class JsonAdminEleDepositOrderController {
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
+    //列表查询
+    @GetMapping(value = "/admin/eleDepositOrder/queryCount")
+    public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+
+
+        EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
+                .name(name)
+                .phone(phone)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(status)
+                .orderId(orderId).build();
+
+        return eleDepositOrderService.queryCount(eleDepositOrderQuery);
+    }
+
     //押金订单导出报表
     @GetMapping("/admin/eleDepositOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "status", required = false) Integer status,

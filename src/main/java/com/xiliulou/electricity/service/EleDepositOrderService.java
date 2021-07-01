@@ -32,4 +32,6 @@ public interface EleDepositOrderService {
 	void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
 
     R queryDeposit(String productKey,String deviceName);
+
+	R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
 }

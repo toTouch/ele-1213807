@@ -536,6 +536,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		return R.ok(franchisee.getBatteryDeposit());
 	}
 
+	@Override
+	public R queryCount(EleDepositOrderQuery eleDepositOrderQuery) {
+		return R.ok(eleDepositOrderMapper.queryCount(eleDepositOrderQuery));
+	}
+
 	public String generateOrderId(Long uid) {
 		return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
 				RandomUtil.randomNumbers(6);
