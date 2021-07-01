@@ -72,8 +72,8 @@ public class TokenWebSecurityConfig extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 
-		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())
-				.accessDeniedHandler(new CustomAccessDeniedHandler())
+		http.exceptionHandling().authenticationEntryPoint(new CustomAuthenticationEntryPoint())//匿名用户访问无权限资源时的异常
+				.accessDeniedHandler(new CustomAccessDeniedHandler())//认证过的用户访问无权限资源时的异常
 				.and().csrf().disable()
 				.logout().logoutUrl("/auth/token/logout")
 				.addLogoutHandler(new TokenLogoutHandler(redisService, jwtTokenManager()))
