@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 
 /**
  * @program: XILIULOU
@@ -38,14 +39,24 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 
+		if (Objects.isNull(size)) {
+			size = 10L;
+		}
+
+		if (Objects.isNull(offset) || offset < 0) {
+			offset = 0L;
+		}
+
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
 				.cardType(cardType)
 				.queryStartTime(queryStartTime)
-				.queryEndTime(queryEndTime).build();
+				.queryEndTime(queryEndTime)
+				.offset(offset)
+				.size(size).build();
 
-		return electricityMemberCardOrderService.queryList(offset, size, memberCardOrderQuery);
+		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
 	}
 
 	//换电柜购卡订单导出报表

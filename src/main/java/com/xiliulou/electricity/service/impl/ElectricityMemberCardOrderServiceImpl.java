@@ -304,12 +304,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 	@Override
 	@DS("slave_1")
-	public R queryList(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery) {
+	public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
 		return R.ok(baseMapper.queryList(memberCardOrderQuery));
 	}
 
 	@Override
 	public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
+		memberCardOrderQuery.setOffset(0L);
+		memberCardOrderQuery.setSize(2000L);
 		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList =baseMapper.queryList(memberCardOrderQuery);
 		if (ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
 			throw new CustomBusinessException("查不到订单");

@@ -24,7 +24,7 @@ public interface ElectricityMemberCardOrderService {
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
 
-    R queryList(Long offset, Long size, MemberCardOrderQuery memberCardOrderQuery);
+    R queryList(MemberCardOrderQuery memberCardOrderQuery);
 
 	void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
 }

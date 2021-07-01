@@ -21,7 +21,7 @@
 			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
 		</if>
 		order by tel.create_time desc
-		limit #{offset}, #{size}
+		limit #{query.offset}, #{query.size}
 	</select>
 
 

@@ -18,4 +18,6 @@ public class MemberCardOrderQuery {
     private Integer cardType;
     private Long queryStartTime;
     private Long queryEndTime;
+    private Long size;
+    private Long offset;
 }
