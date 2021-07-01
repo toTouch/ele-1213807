@@ -40,10 +40,6 @@ public class UserInfo {
      */
     private String name;
     /**
-     * 邮箱
-     */
-    private String mailbox;
-    /**
      * 身份证号
      */
     private String idNumber;
