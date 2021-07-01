@@ -235,12 +235,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         }
 
-        //判断该换电柜加盟商和用户加盟商是否一致
-        if(Objects.nonNull(franchiseeUserInfo.getFranchiseeId())&&!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
-            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(),store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId());
-            return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
-        }
-
         //判断是否缴纳押金
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
                 || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
@@ -248,9 +242,17 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+        //判断该换电柜加盟商和用户加盟商是否一致
+        if(!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
+            log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(),store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+        }
+
+
+
 
         //查找加盟商下的可用套餐
-        return R.ok(baseMapper.queryUserList(offset,size,franchiseeUserInfo.getFranchiseeId()));
+        return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId()));
     }
 
     @Override
