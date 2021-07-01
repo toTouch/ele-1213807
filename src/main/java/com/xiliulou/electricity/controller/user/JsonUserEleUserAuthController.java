@@ -54,8 +54,7 @@ public class JsonUserEleUserAuthController {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
 
-		eleUserAuthService.webAuth(eleUserAuthList);
-		return R.ok();
+		return eleUserAuthService.webAuth(eleUserAuthList);
 
 	}
 
