@@ -31,8 +31,13 @@ public class JsonAdminElectricityPayParamsController {
      * @return
      */
     @PostMapping(value = "/admin/electricityPayParams")
-    public R save(@RequestBody @Validated ElectricityPayParams electricityPayParams,@RequestParam("file") MultipartFile file) {
-        return electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams, file);
+    public R save(@RequestBody @Validated ElectricityPayParams electricityPayParams) {
+        return electricityPayParamsService.saveOrUpdateElectricityPayParams(electricityPayParams);
+    }
+
+    @PostMapping(value = "/admin/electricityPayParams/uploadFile")
+    public R save(@RequestParam("file") MultipartFile file) {
+        return electricityPayParamsService.uploadFile(file);
     }
 
     /**

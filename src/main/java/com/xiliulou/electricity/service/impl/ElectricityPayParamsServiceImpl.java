@@ -46,7 +46,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
      * @return
      */
     @Override
-    public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams, MultipartFile file) {
+    public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams) {
         Integer tenantId = TenantContextHolder.getTenantId();
         //加锁
         Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
@@ -55,23 +55,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             return R.failMsg("操作频繁!");
         }
 
-
         ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
-
-        String fileName = file.getOriginalFilename();
-        String path = config.getMchCertificateDirectory() + fileName;
-
-        try (InputStream inputStream = file.getInputStream(); FileOutputStream fileOutputStream = new FileOutputStream(path)) {
-            byte[] buff = new byte[1024];
-            int length = 0;
-            while ((length = inputStream.read(buff)) != -1) {
-                fileOutputStream.write(buff, 0, length);
-            }
-            fileOutputStream.flush();
-        } catch (Exception e) {
-            log.error("LOCKER ERROR! save config error! tenantId={}", tenantId, e);
-            throw new CustomBusinessException("保存私钥文件失败！");
-        }
 
         electricityPayParams.setUpdateTime(System.currentTimeMillis());
         if (Objects.isNull(oldElectricityPayParams)) {
@@ -110,5 +94,53 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
             }
         }
         return electricityPayParams;
+    }
+
+    @Override
+    public R uploadFile(MultipartFile file) {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        //加锁
+        Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+                String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
+        if (!getLockerSuccess) {
+            return R.failMsg("操作频繁!");
+        }
+
+        String fileName = file.getOriginalFilename();
+        String path = config.getMchCertificateDirectory() + fileName;
+
+        try (InputStream inputStream = file.getInputStream(); FileOutputStream fileOutputStream = new FileOutputStream(path)) {
+            byte[] buff = new byte[1024];
+            int length = 0;
+            while ((length = inputStream.read(buff)) != -1) {
+                fileOutputStream.write(buff, 0, length);
+            }
+            fileOutputStream.flush();
+        } catch (Exception e) {
+            log.error("LOCKER ERROR! save config error! tenantId={}", tenantId, e);
+            throw new CustomBusinessException("保存私钥文件失败！");
+        }
+
+        ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
+
+        ElectricityPayParams electricityPayParams=new ElectricityPayParams();
+        electricityPayParams.setUpdateTime(System.currentTimeMillis());
+        if (Objects.isNull(oldElectricityPayParams)) {
+            electricityPayParams.setCreateTime(System.currentTimeMillis());
+            electricityPayParams.setTenantId(tenantId);
+            baseMapper.insert(electricityPayParams);
+            redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+            redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+
+            return R.ok();
+        } else {
+            if (ObjectUtil.notEqual(oldElectricityPayParams.getId(), electricityPayParams.getId())) {
+                return R.fail("请求参数id,不合法!");
+            }
+            redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+            baseMapper.updateById(electricityPayParams);
+            redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+            return R.ok();
+        }
     }
 }
