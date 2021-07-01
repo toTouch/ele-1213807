@@ -60,7 +60,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
         ElectricityPayParams oldElectricityPayParams2=baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getMerchantMinProAppId,electricityPayParams.getMerchantMinProAppId()));
 
         if(Objects.nonNull(oldElectricityPayParams2)){
-            if(Objects.isNull(oldElectricityPayParams1)||Objects.equals(oldElectricityPayParams1.getId(),oldElectricityPayParams2.getId())){
+            if(Objects.isNull(oldElectricityPayParams1)||!Objects.equals(oldElectricityPayParams1.getId(),oldElectricityPayParams2.getId())){
                 return R.failMsg("该小程序appId已被使用，请勿重复使用!");
             }
         }
