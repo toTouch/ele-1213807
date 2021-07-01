@@ -25,6 +25,8 @@ import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,22 +114,23 @@ public class TenantServiceImpl implements TenantService {
         }
         String loginPwd = StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword);
 
-        User user = new User();
-        user.setName(tenantAddAndUpdateQuery.getName());
-        user.setLoginPwd(loginPwd);
-        user.setPhone(tenantAddAndUpdateQuery.getPhone());
-        user.setAvatar("");
-        user.setGender(User.GENDER_MALE);
-        user.setDelFlag(User.DEL_NORMAL);
-        user.setLockFlag(User.USER_UN_LOCK);
-        user.setUserType(User.TYPE_USER_FRANCHISEE);
-        user.setCreateTime(System.currentTimeMillis());
-        user.setUpdateTime(System.currentTimeMillis());
-        user.setLang(User.DEFAULT_LANG);
-        user.setCity("");
-        user.setProvince("");
-        user.setTenantId(tenant.getId());
-        userService.insert(user);
+
+
+        AdminUserQuery adminUserQuery=new AdminUserQuery();
+        adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
+        adminUserQuery.setPassword(loginPwd);
+        adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
+        adminUserQuery.setGender(User.GENDER_MALE);
+        adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+        adminUserQuery.setLang(User.DEFAULT_LANG);
+        adminUserQuery.setCityId(null);
+        adminUserQuery.setProvinceId(null);
+        TenantContextHolder.setTenantId(tenant.getId());
+        R result= userService.addInnerUser(adminUserQuery);
+        if(result.getCode()==1){
+            return result;
+        }
+        Long uid=(Long) result.getData();
 
 
         //3.构建三大角色，运营商，代理商，门店
@@ -158,7 +161,7 @@ public class TenantServiceImpl implements TenantService {
 
         // 4.构建角色用户关联表信息
         UserRole userRole = new UserRole();
-        userRole.setUid(user.getUid());
+        userRole.setUid(uid);
         userRole.setRoleId(operateRole.getId());
         userRoleService.insert(userRole);
 
