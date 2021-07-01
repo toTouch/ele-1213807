@@ -65,8 +65,8 @@ public class JsonUserEleDepositOrderController {
 
     //用户查询押金
     @GetMapping(value = "/user/queryDeposit")
-    public R queryDeposit(@RequestParam("electricityCabinetId") Integer electricityCabinetId){
-        return eleDepositOrderService.queryDeposit(electricityCabinetId);
+    public R queryDeposit(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName){
+        return eleDepositOrderService.queryDeposit(productKey,deviceName);
     }
 
 }

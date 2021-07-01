@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -30,5 +31,5 @@ public interface EleDepositOrderService {
 
 	void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
 
-    R queryDeposit(Integer electricityCabinetId);
+    R queryDeposit(String productKey,String deviceName);
 }

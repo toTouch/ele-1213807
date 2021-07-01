@@ -518,11 +518,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	}
 
 	@Override
-	public R queryDeposit(Integer electricityCabinetId) {
+	public R queryDeposit(String productKey,String deviceName) {
 		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("queryDeposit  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey,deviceName);
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
