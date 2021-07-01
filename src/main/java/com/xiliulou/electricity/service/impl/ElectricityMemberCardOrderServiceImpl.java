@@ -220,6 +220,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setUserName(userInfo.getUserName());
 		electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
 		electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
+		electricityMemberCardOrder.setFranchiseeId(store.getFranchiseeId());
 		baseMapper.insert(electricityMemberCardOrder);
 
 
