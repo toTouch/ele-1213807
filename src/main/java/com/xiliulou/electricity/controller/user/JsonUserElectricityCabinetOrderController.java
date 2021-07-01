@@ -4,11 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,12 +65,16 @@ public class JsonUserElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .offset(offset)
                 .size(size)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .uid(user.getUid()).build();
+                .uid(user.getUid())
+                .tenantId(tenantId).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
 
@@ -86,10 +89,14 @@ public class JsonUserElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .uid(user.getUid()).build();
+                .uid(user.getUid())
+                .tenantId(tenantId).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 

@@ -43,5 +43,7 @@ public class ElectricityCabinetOrderQuery {
 
     private List<Integer> eleIdList;
 
+    private Integer tenantId;
+
 
 }

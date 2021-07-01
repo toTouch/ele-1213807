@@ -481,9 +481,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 	@Override
 	public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-		Integer count = electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, electricityCabinetOrderQuery.getBeginTime(), electricityCabinetOrderQuery.getEndTime())
-				.eq(ElectricityCabinetOrder::getUid, electricityCabinetOrderQuery.getUid()));
-		return R.ok(count);
+		return R.ok(electricityCabinetOrderMapper.queryCount( electricityCabinetOrderQuery));
 	}
 
 	@Override

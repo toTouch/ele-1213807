@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -64,6 +65,9 @@ public class JsonAdminElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
@@ -89,8 +93,58 @@ public class JsonAdminElectricityCabinetOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .paymentMethod(paymentMethod)
-                .eleIdList(eleIdList).build();
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+    }
+
+
+    //换电柜订单查询
+    @GetMapping("/admin/electricityCabinetOrder/queryCount")
+    public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
+
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if(Objects.isNull(eleIdList)){
+                return R.ok();
+            }
+        }
+
+
+
+        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+                .orderId(orderId)
+                .phone(phone)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .paymentMethod(paymentMethod)
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
+        return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 
 

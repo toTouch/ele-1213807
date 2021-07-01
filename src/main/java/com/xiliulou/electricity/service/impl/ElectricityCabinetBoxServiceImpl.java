@@ -9,8 +9,6 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -100,7 +98,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 			for (ElectricityCabinetBoxVO electricityCabinetBoxVO : electricityCabinetBoxVOList) {
 				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxVO.getSn());
 				if (Objects.nonNull(electricityBattery)) {
-					electricityCabinetBoxVO.setSn(electricityBattery.getSn());
 					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
 				}
 				electricityCabinetBoxVOs.add(electricityCabinetBoxVO);

@@ -4,6 +4,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 订单表(TElectricityCabinetOrder)实体类
  *
@@ -39,6 +41,10 @@ public class ElectricityCabinetOrderOperHistoryQuery {
 
     private Long beginTime;
     private Long endTime;
+
+    private List<Integer> eleIdList;
+
+    private Integer tenantId;
 
 
 

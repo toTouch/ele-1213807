@@ -22,4 +22,6 @@ public interface ElectricityCabinetOrderOperHistoryService {
 
 
     R queryList(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+
+    R queryCount(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 }
