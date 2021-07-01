@@ -110,7 +110,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R payDeposit(Integer electricityCabinetId, HttpServletRequest request) {
+	public R payDeposit(String productKey,String deviceName, HttpServletRequest request) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -142,31 +142,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("payDeposit  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey,deviceName);
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-		//换电柜是否在线
-		boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-		if (!eleResult) {
-			log.error("payDeposit  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
-			return R.fail("ELECTRICITY.0035", "换电柜不在线");
-		}
-
-		//换电柜是否出现异常被锁住
-		String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
-		if (StringUtils.isNotEmpty(isLock)) {
-			log.error("payDeposit  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
-			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
-		}
-
-		//换电柜营业时间
-		Boolean result = electricityCabinetService.isBusiness(electricityCabinet);
-		if (result) {
-			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
-		}
 
 		//判断是否实名认证
 		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
@@ -549,6 +530,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
+
 
 
 		return R.ok(franchisee.getBatteryDeposit());

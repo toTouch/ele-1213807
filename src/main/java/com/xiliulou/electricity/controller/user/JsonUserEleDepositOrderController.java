@@ -34,8 +34,8 @@ public class JsonUserEleDepositOrderController {
 
     //缴纳押金
     @PostMapping("/user/payDeposit")
-    public R payDeposit(@RequestParam("orderId") Integer electricityCabinetId,HttpServletRequest request) {
-        return eleDepositOrderService.payDeposit(electricityCabinetId,request);
+    public R payDeposit(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName,HttpServletRequest request) {
+        return eleDepositOrderService.payDeposit(productKey,deviceName,request);
     }
 
     //退还押金

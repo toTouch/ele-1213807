@@ -19,7 +19,7 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryByOrderId(String orderNo);
 
-    R payDeposit(Integer electricityCabinetId,HttpServletRequest request);
+    R payDeposit(String productKey,String deviceName,HttpServletRequest request);
 
     R returnDeposit(HttpServletRequest request);
 
