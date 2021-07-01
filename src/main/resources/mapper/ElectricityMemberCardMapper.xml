@@ -18,11 +18,10 @@
 	</select>
 
 	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
-        SELECT temc.*
-        FROM t_electricity_member_card as temc
-        left join t_franchisee_bind_card as tfbc on temc.id=tfbc.card_id
-        where temc.status=0 and tfbc.franchisee_id=#{id} and temc.del_flag=0
-        ORDER BY temc.create_time DESC
+        SELECT *
+        FROM t_electricity_member_card
+        where status=0 and franchisee_id=#{id} and del_flag=0
+        ORDER BY create_time DESC
         limit #{offset}, #{size}
     </select>
 
