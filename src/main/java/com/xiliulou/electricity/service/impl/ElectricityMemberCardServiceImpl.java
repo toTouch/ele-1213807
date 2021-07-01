@@ -82,7 +82,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setUpdateTime(System.currentTimeMillis());
         electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
         electricityMemberCard.setTenantId(tenantId);
-        electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
+        electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
 
         Integer insert=baseMapper.insert(electricityMemberCard);
         DbUtils.dbOperateSuccessThen(insert, () -> {
