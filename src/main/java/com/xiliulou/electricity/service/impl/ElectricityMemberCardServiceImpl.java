@@ -236,7 +236,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //判断该换电柜加盟商和用户加盟商是否一致
-        if(!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
+        if(Objects.nonNull(franchiseeUserInfo.getFranchiseeId())&&!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
             log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(),store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
