@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetModelService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -61,6 +62,10 @@ public class JsonAdminElectricityCabinetModelController {
         }
 
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        if(SecurityUtils.isAdmin()){
+            tenantId=null;
+        }
 
         ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
                 .offset(offset)
