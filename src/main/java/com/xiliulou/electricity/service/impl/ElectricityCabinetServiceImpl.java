@@ -809,6 +809,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
 		//总换电
 		Integer totalCount = electricityCabinetOrderService.homeTotal(user.getUid());
+
+		//校验用户
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		if (Objects.isNull(userInfo)) {
+			log.error("order  ERROR! not found user,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
+		}
+
+		//是否缴纳押金，是否绑定电池
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+		//未找到用户
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
+		//套餐剩余天数
+		long cardDay=0;
+		if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
+			cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+		}
 		//月卡剩余天数
 		homeInfo.put("monthCount", monthCount.toString());
 		homeInfo.put("totalCount", totalCount.toString());
