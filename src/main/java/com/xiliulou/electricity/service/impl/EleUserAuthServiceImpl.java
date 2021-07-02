@@ -63,7 +63,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
 
-
 	/**
 	 * 新增数据
 	 *
@@ -90,10 +89,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 	}
 
-
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R webAuth(List<EleUserAuth> eleUserAuthList){
+	public R webAuth(List<EleUserAuth> eleUserAuthList) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -116,7 +114,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
-
 		if (Objects.equals(oldUserInfo.getAuthStatus(), UserInfo.AUTH_STATUS_PENDING_REVIEW)) {
 			return R.fail("审核中，无法修改!");
 		}
@@ -128,15 +125,14 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		userInfo.setId(oldUserInfo.getId());
 
 		//是否需要人工审核
-		Integer status=EleUserAuth.STATUS_PENDING_REVIEW;
-		ElectricityConfig electricityConfig=electricityConfigService.queryOne(tenantId);
-		if(Objects.nonNull(electricityConfig)){
-			if (Objects.equals(electricityConfig.getIsManualReview(),ElectricityConfig.AUTO_REVIEW)){
-				status=EleUserAuth.STATUS_REVIEW_PASSED;
+		Integer status = EleUserAuth.STATUS_PENDING_REVIEW;
+		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		if (Objects.nonNull(electricityConfig)) {
+			if (Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.AUTO_REVIEW)) {
+				status = EleUserAuth.STATUS_REVIEW_PASSED;
 				userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
 			}
 		}
-
 
 		for (EleUserAuth eleUserAuth : eleUserAuthList) {
 			eleUserAuth.setUid(user.getUid());
@@ -164,7 +160,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 				eleUserAuthMapper.updateById(eleUserAuth);
 			}
 		}
-
 
 		userInfo.setUid(user.getUid());
 		userInfo.setAuthStatus(status);
@@ -229,20 +224,21 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 		}
 
-		if(!Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
-			serviceStatus=franchiseeUserInfo.getServiceStatus();
+		if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+			serviceStatus = franchiseeUserInfo.getServiceStatus();
 		}
 
 		//用户是否开通月卡
 		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
 				|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
 			log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
-			serviceStatus=-1;
-		}
-		Long now = System.currentTimeMillis();
-		if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-			log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
-			serviceStatus=-1;
+			serviceStatus = -1;
+		} else {
+			Long now = System.currentTimeMillis();
+			if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
+				log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+				serviceStatus = -1;
+			}
 		}
 
 		return R.ok(serviceStatus);
