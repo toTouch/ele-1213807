@@ -341,7 +341,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		}
 
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+		if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
 			log.error("order  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
