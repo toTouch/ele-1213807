@@ -25,6 +25,9 @@
 		<if test="serviceStatus != null">
 			service_status = #{serviceStatus},
 		</if>
+		<if test="initElectricityBatterySn != null">
+			init_electricity_battery_sn = #{initElectricityBatterySn},
+		</if>
 		where user_info_id = #{userInfoId} and del_flag=0
 	</update>
 
