@@ -19,7 +19,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.Objects;
 
@@ -118,16 +120,13 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		String fileName = file.getOriginalFilename();
 		String path = config.getMchCertificateDirectory() + fileName;
 
-		try (InputStream inputStream = file.getInputStream(); FileOutputStream fileOutputStream = new FileOutputStream(path)) {
-			byte[] buff = new byte[1024];
-			int length = 0;
-			while ((length = inputStream.read(buff)) != -1) {
-				fileOutputStream.write(buff, 0, length);
-			}
-			fileOutputStream.flush();
-		} catch (Exception e) {
-			log.error("LOCKER ERROR! save config error! tenantId={}", tenantId, e);
-			throw new CustomBusinessException("保存私钥文件失败！");
+		File newFile = new File(path);
+		//MultipartFile（注意这个时候）
+		try {
+			file.transferTo(newFile);
+		} catch (IOException e) {
+			log.error("上传失败", e);
+			return R.fail(e.getLocalizedMessage());
 		}
 
 		log.info("path is -->{}",path);
