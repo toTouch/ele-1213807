@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
 import com.xiliulou.electricity.vo.UserAuthInfoVo;
+import com.xiliulou.electricity.vo.UserInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -200,12 +202,28 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Override
 	@DS("slave_1")
 	public R queryList(UserInfoQuery userInfoQuery) {
-		List<UserInfo> UserInfoList = userInfoMapper.queryList(userInfoQuery);
-		if (ObjectUtil.isEmpty(UserInfoList)) {
-			return R.ok(new ArrayList<>());
+		List<UserInfo> userInfoList = userInfoMapper.queryList(userInfoQuery);
+		if (ObjectUtil.isEmpty(userInfoList)) {
+			return R.ok(userInfoList);
 		}
-		UserInfoList.stream().sorted(Comparator.comparing(UserInfo::getCreateTime).reversed()).collect(Collectors.toList());
-		return R.ok(UserInfoList);
+
+		List<UserInfoVO> userInfoVOList=new ArrayList<>();
+		for (UserInfo userInfo:userInfoList) {
+			UserInfoVO userInfoVO=new UserInfoVO();
+			FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+			if(Objects.nonNull(franchiseeUserInfo)){
+				BeanUtil.copyProperties(franchiseeUserInfo,userInfoVO);
+				if(!Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
+					userInfo.setServiceStatus(franchiseeUserInfo.getServiceStatus());
+				}
+			}
+			BeanUtil.copyProperties(userInfo,userInfoVO);
+
+			userInfoVOList.add(userInfoVO);
+		}
+
+		userInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getCreateTime).reversed()).collect(Collectors.toList());
+		return R.ok(userInfoVOList);
 	}
 
 	@Override
