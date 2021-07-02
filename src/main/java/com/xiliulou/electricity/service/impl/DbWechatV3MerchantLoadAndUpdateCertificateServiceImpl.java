@@ -78,6 +78,7 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
     public PrivateKey getMerchantCertificatePrivateKey(Integer tenantId) {
         try {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            log.info("electricityPayParams is -->{}",electricityPayParams);
             return WechatCertificateUtils.getPrivateKey(electricityPayParams.getWechatMerchantPrivateKeyPath());
         } catch (Exception e) {
             throw new RuntimeException("获取私钥失败！tenantId=" + tenantId, e);
