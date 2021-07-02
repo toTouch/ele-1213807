@@ -4,12 +4,15 @@
 
 
 	<update id="unBind">
-        update t_franchisee_user_info
-        set service_status = #{serviceStatus},
-            now_electricity_battery_sn = #{nowElectricityBatterySn},
-            update_time = #{updateTime}
-        where id = #{id} and del_flag=0
-    </update>
+		update t_franchisee_user_info
+		set service_status = #{serviceStatus},
+		now_electricity_battery_sn = #{nowElectricityBatterySn},
+		update_time = #{updateTime},
+		<if test="initElectricityBatterySn != null">
+			init_electricity_battery_sn = #{initElectricityBatterySn},
+		</if>
+		where id = #{id} and del_flag=0
+	</update>
 	<update id="updateRefund">
 		update t_franchisee_user_info
         set service_status = #{serviceStatus},
