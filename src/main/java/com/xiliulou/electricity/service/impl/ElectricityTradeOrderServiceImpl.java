@@ -288,8 +288,9 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
             franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
+            franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
             franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
+            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         }
 

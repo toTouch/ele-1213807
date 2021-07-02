@@ -216,7 +216,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				.status(EleDepositOrder.STATUS_INIT)
 				.createTime(System.currentTimeMillis())
 				.updateTime(System.currentTimeMillis())
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.franchiseeId(franchisee.getId()).build();
 
 		//支付零元
 		if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
