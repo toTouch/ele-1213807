@@ -809,9 +809,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		Integer monthCount = electricityCabinetOrderService.homeMonth(user.getUid(), firstMonth, now);
 		//总换电
 		Integer totalCount = electricityCabinetOrderService.homeTotal(user.getUid());
+		//月卡剩余天数
 		homeInfo.put("monthCount", monthCount.toString());
 		homeInfo.put("totalCount", totalCount.toString());
 		homeInfo.put("serviceStatus", String.valueOf(serviceStatus));
+		homeInfo.put("cardDay", String.valueOf(cardDay));
 		return R.ok(homeInfo);
 	}
 
