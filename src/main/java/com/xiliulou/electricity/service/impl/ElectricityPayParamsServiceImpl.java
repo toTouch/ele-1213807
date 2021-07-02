@@ -120,7 +120,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		String fileName = file.getOriginalFilename();
 		String path = config.getMchCertificateDirectory() + fileName;
 
+		//需要优化,实现MultipartFile接口，在里面进行重写 TODO
 		File newFile = new File(path);
+		if(newFile.exists()){
+			newFile.delete();
+		}
 		//MultipartFile（注意这个时候）
 		try {
 			file.transferTo(newFile);
@@ -129,7 +133,6 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 			return R.fail(e.getLocalizedMessage());
 		}
 
-		log.info("path is -->{}",path);
 		ElectricityPayParams electricityPayParams = new ElectricityPayParams();
 		electricityPayParams.setId(oldElectricityPayParams.getId());
 		electricityPayParams.setWechatMerchantPrivateKeyPath(path);
