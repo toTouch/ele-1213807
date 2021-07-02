@@ -20,9 +20,12 @@
 	</update>
 	<update id="updateByUserInfoId">
 		update t_franchisee_user_info
-        set now_electricity_battery_sn = #{nowElectricityBatterySn},
-            update_time = #{updateTime}
-        where user_info_id = #{userInfoId} and del_flag=0
+		set now_electricity_battery_sn = #{nowElectricityBatterySn},
+		update_time = #{updateTime},
+		<if test="serviceStatus != null">
+			service_status = #{serviceStatus},
+		</if>
+		where user_info_id = #{userInfoId} and del_flag=0
 	</update>
 
 </mapper>
