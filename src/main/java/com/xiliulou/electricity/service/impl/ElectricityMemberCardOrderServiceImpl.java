@@ -257,7 +257,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					.uid(user.getUid())
 					.payAmount(electricityMemberCardOrder.getPayAmount())
 					.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
-					.attach(ElectricityTradeOrder.ATTACH_DEPOSIT)
+					.attach(ElectricityTradeOrder.ATTACH_MEMBER)
 					.tenantId(tenantId).build();
 
 			WechatJsapiOrderResultDTO resultDTO =

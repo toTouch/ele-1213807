@@ -53,5 +53,8 @@ public class ElectricityTradeOrder {
     //押金支付附加信息
     public static final String ATTACH_DEPOSIT = "deposit";
 
+    //押金支付附加信息
+    public static final String ATTACH_MEMBER = "memberCard";
+
 
 }
