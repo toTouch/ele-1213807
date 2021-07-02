@@ -832,10 +832,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
 			cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
 		}
+
+		//我的电池
+		Double battery=;
+		if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
+			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(franchiseeUserInfo.getNowElectricityBatterySn());
+			if (Objects.nonNull(electricityBattery)) {
+				battery = electricityBattery.getPower();
+			}
+		}
+
 		//月卡剩余天数
 		homeInfo.put("monthCount", monthCount.toString());
 		homeInfo.put("totalCount", totalCount.toString());
 		homeInfo.put("serviceStatus", String.valueOf(serviceStatus));
+		homeInfo.put("cardDay", String.valueOf(cardDay));
 		homeInfo.put("cardDay", String.valueOf(cardDay));
 		return R.ok(homeInfo);
 	}
