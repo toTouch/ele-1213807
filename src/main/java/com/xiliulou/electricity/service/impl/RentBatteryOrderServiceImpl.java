@@ -27,6 +27,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
@@ -121,7 +122,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R rentBattery(Integer electricityCabinetId) {
+	public R rentBattery(RentBatteryQuery rentBatteryQuery) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -156,9 +157,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 
 		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryQuery.getElectricityCabinetId());
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("rentBattery  ERROR! not found electricityCabinet ！electricityCabinetId{}", electricityCabinetId);
+			log.error("rentBattery  ERROR! not found electricityCabinet ！electricityCabinetId{}", rentBatteryQuery.getElectricityCabinetId());
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
@@ -283,14 +284,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 
 		//分配电池 --只分配满电电池
-		String cellNo = findUsableBatteryCellNo(electricityCabinetId, null);
+		String cellNo = findUsableBatteryCellNo(rentBatteryQuery.getElectricityCabinetId(), null);
 		try {
 			if (Objects.isNull(cellNo)) {
 				return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 			}
 
 			//根据换电柜id和仓门查出电池
-			ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetId, cellNo);
+			ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(rentBatteryQuery.getElectricityCabinetId(), cellNo);
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
 			if (Objects.isNull(electricityBattery)) {
 				return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
@@ -332,7 +333,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			log.error("order is error" + e);
 			return R.fail("ELECTRICITY.0025", "下单失败");
 		} finally {
-			redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetId + "_" + cellNo);
+			redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + rentBatteryQuery.getElectricityCabinetId() + "_" + cellNo);
 		}
 
 	}
