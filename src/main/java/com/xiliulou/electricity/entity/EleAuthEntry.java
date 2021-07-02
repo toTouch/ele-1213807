@@ -67,9 +67,9 @@ public class EleAuthEntry {
     //身份证
     public static final Integer ID_ID_CARD = 2;
     //身份证正面
-    public static final  Integer ID_CARD_FRONT_PHOTO = 3;
+    public static final  Integer ID_CARD_FRONT_PHOTO = 4;
     //身份证反面
-    public static final  Integer ID_CARD_BACK_PHOTO = 4;
+    public static final  Integer ID_CARD_BACK_PHOTO = 5;
     //默认可修改
     public static final Integer DEFAULT_MODIFY = 0;
     //使用
