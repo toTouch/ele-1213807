@@ -91,7 +91,7 @@ public class ElectricityTradeOrderServiceImpl extends
         wechatV3OrderQuery.setCurrency("CNY");
         wechatV3OrderQuery.setAttach(commonOrder.getAttach());
         wechatV3OrderQuery.setAmount(commonOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());
-        wechatV3OrderQuery.setAppid(electricityPayParams.getOfficeAccountAppId());
+        wechatV3OrderQuery.setAppid(electricityPayParams.getMerchantMinProAppId());
         log.info("wechatV3OrderQuery is -->{}",wechatV3OrderQuery);
         return wechatV3JsapiService.order(wechatV3OrderQuery);
 

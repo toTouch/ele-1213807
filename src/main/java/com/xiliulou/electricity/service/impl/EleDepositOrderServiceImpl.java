@@ -242,7 +242,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 					.uid(user.getUid())
 					.payAmount(payAmount)
 					.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
-					.attach(ElectricityTradeOrder.ATTACH_DEPOSIT).build();
+					.attach(ElectricityTradeOrder.ATTACH_DEPOSIT)
+					.tenantId(tenantId).build();
 
 
 			WechatJsapiOrderResultDTO resultDTO =
