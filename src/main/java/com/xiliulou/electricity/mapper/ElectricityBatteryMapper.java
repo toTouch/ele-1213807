@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import org.apache.ibatis.annotations.Param;
@@ -22,5 +23,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBattery selectBatteryInfo(@Param("uid") Long uid);
 
-
+	R updateByOrder(ElectricityBattery electricityBattery);
 }

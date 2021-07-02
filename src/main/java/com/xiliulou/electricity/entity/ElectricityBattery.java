@@ -87,16 +87,10 @@ public class ElectricityBattery {
      */
     private Integer electricityCabinetId;
 
-    /**
-     * 所属换电柜柜
-     */
-    private String electricityCabinetName;
 
     //所属用户id
     private Long uid;
 
-    //所属用户
-    private String userName;
 
 
     public static final Integer DEL_NORMAL = 0;

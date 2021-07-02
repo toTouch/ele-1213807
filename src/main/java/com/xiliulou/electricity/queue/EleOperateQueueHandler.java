@@ -314,7 +314,9 @@ public class EleOperateQueueHandler {
 			ElectricityBattery oldElectricityBattery = new ElectricityBattery();
 			oldElectricityBattery.setId(electricityBattery.getId());
 			oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-			electricityBatteryService.update(oldElectricityBattery);
+			oldElectricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+			oldElectricityBattery.setUid(null);
+			electricityBatteryService.updateByOrder(oldElectricityBattery);
 
 			//用户解绑旧电池
 			FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
@@ -439,7 +441,9 @@ public class EleOperateQueueHandler {
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-		electricityBatteryService.update(newElectricityBattery);
+		newElectricityBattery.setElectricityCabinetId(null);
+		newElectricityBattery.setUid(electricityCabinetOrder.getUid());
+		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//加入操作记录表
 		ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
@@ -662,7 +666,9 @@ public class EleOperateQueueHandler {
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-		electricityBatteryService.update(newElectricityBattery);
+		newElectricityBattery.setElectricityCabinetId(null);
+		newElectricityBattery.setUid(rentBatteryOrder.getUid());
+		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//加入操作记录表
 		ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
@@ -716,7 +722,9 @@ public class EleOperateQueueHandler {
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-		electricityBatteryService.update(newElectricityBattery);
+		newElectricityBattery.setElectricityCabinetId(rentBatteryOrder.getElectricityCabinetId());
+		newElectricityBattery.setUid(null);
+		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//用户解绑电池
 		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();

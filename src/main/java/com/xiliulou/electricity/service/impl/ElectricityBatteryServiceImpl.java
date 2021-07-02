@@ -173,4 +173,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         electricitybatterymapper.updateById(electricityBattery);
     }
 
+    @Override
+    public R updateByOrder(ElectricityBattery electricityBattery) {
+        return electricitybatterymapper.updateByOrder(electricityBattery);
+    }
+
 }

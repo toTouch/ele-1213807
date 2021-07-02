@@ -34,4 +34,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 
     void updateReport(ElectricityBattery newElectricityBattery);
+
+    R updateByOrder(ElectricityBattery electricityBattery);
 }
