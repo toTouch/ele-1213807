@@ -249,7 +249,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		}
 
 
-		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+		//判断是否缴纳押金
+		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
 			log.error("order  ERROR! not pay deposit! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
@@ -341,8 +343,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		}
 
-		if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("order  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
+		//判断是否缴纳押金
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+			log.error("returnBattery  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
@@ -398,8 +402,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		}
 
 
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			log.error("order  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
+		//判断是否缴纳押金
+		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
+				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
+			log.error("returnBattery  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
