@@ -834,8 +834,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//我的电池
-		Double battery=;
-		if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_BATTERY)) {
+		Double battery=null;
+		if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(userInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(franchiseeUserInfo.getNowElectricityBatterySn());
 			if (Objects.nonNull(electricityBattery)) {
 				battery = electricityBattery.getPower();
@@ -847,7 +847,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		homeInfo.put("totalCount", totalCount.toString());
 		homeInfo.put("serviceStatus", String.valueOf(serviceStatus));
 		homeInfo.put("cardDay", String.valueOf(cardDay));
-		homeInfo.put("cardDay", String.valueOf(cardDay));
+		homeInfo.put("battery", String.valueOf(battery));
 		return R.ok(homeInfo);
 	}
 
