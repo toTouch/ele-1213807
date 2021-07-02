@@ -831,7 +831,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		return null;
 	}
 
-
+	@Override
+	public R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery) {
+		return R.ok(rentBatteryOrderMapper.queryCount( rentBatteryOrderQuery));
+	}
 
 	public boolean isBusiness(ElectricityCabinet electricityCabinet) {
 		//营业时间

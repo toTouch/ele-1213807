@@ -94,6 +94,51 @@ public class JsonAdminRentBatteryOrderController {
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
 
+    //列表查询
+    @GetMapping(value = "/admin/rentBatteryOrder/queryCount")
+    public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "orderId", required = false) String orderId) {
+
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if(Objects.isNull(eleIdList)){
+                return R.ok();
+            }
+        }
+
+        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+                .name(name)
+                .phone(phone)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .status(status)
+                .orderId(orderId)
+                .type(type)
+                .eleIdList(eleIdList).build();
+
+        return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
+    }
+
     //租电池订单导出报表
     @GetMapping("/admin/rentBatteryOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "status", required = false) Integer status,
