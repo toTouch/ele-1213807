@@ -84,7 +84,7 @@ public class ElectricityTradeOrderServiceImpl extends
         WechatV3OrderQuery wechatV3OrderQuery = new WechatV3OrderQuery();
         wechatV3OrderQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
         wechatV3OrderQuery.setTenantId(electricityTradeOrder.getTenantId());
-        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl());
+        wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl()+electricityTradeOrder.getTenantId());
         wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
         wechatV3OrderQuery.setOpenId(openId);
         wechatV3OrderQuery.setDescription("locker_order");
