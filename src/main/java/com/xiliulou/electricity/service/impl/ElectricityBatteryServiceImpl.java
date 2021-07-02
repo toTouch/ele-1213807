@@ -214,7 +214,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public R updateByOrder(ElectricityBattery electricityBattery) {
+    public Integer updateByOrder(ElectricityBattery electricityBattery) {
         return electricitybatterymapper.updateByOrder(electricityBattery);
     }
 

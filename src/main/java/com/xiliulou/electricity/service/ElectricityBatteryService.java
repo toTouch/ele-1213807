@@ -35,5 +35,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void updateReport(ElectricityBattery newElectricityBattery);
 
-    R updateByOrder(ElectricityBattery electricityBattery);
+    Integer updateByOrder(ElectricityBattery electricityBattery);
 }

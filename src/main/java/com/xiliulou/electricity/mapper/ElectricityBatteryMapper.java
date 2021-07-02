@@ -23,5 +23,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBattery selectBatteryInfo(@Param("uid") Long uid);
 
-	R updateByOrder(ElectricityBattery electricityBattery);
+	Integer updateByOrder(ElectricityBattery electricityBattery);
 }
