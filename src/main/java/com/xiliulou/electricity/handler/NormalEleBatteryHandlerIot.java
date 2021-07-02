@@ -165,7 +165,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 
 		//修改仓门
-		electricityCabinetBox.setSn(newElectricityBattery.getSn());
+		electricityCabinetBox.setSn(electricityBattery.getSn());
 		electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
 		electricityCabinetBox.setCellNo(cellNo);
 		electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
