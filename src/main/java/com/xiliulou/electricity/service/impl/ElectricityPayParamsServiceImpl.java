@@ -114,6 +114,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 			return R.fail("找不到支付配置");
 		}
 
+
 		String fileName = file.getOriginalFilename();
 		String path = config.getMchCertificateDirectory() + fileName;
 
@@ -129,6 +130,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 			throw new CustomBusinessException("保存私钥文件失败！");
 		}
 
+		log.info("path is -->{}",path);
 		ElectricityPayParams electricityPayParams = new ElectricityPayParams();
 		electricityPayParams.setId(oldElectricityPayParams.getId());
 		electricityPayParams.setWechatMerchantPrivateKeyPath(path);
