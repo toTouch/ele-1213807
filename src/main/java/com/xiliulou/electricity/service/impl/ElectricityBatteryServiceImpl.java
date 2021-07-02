@@ -1,20 +1,29 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -31,6 +40,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     private ElectricityBatteryMapper electricitybatterymapper;
     @Autowired
     StoreService storeService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 保存电池
@@ -97,7 +110,34 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer tenantId = TenantContextHolder.getTenantId();
         electricityBatteryQuery.setTenantId(tenantId);
 
-        return R.ok(electricitybatterymapper.getElectricityBatteryList(electricityBatteryQuery, offset, size));
+        List<ElectricityBattery> electricityBatteryList=electricitybatterymapper.getElectricityBatteryList(electricityBatteryQuery, offset, size);
+
+        if(ObjectUtil.isEmpty(electricityBatteryList)){
+            return R.ok(electricityBatteryList);
+        }
+
+        List<ElectricityBatteryVO> electricityBatteryVOList=new ArrayList<>();
+
+        for (ElectricityBattery electricityBattery: electricityBatteryList) {
+
+
+            ElectricityBatteryVO electricityBatteryVO=new ElectricityBatteryVO();
+            BeanUtil.copyProperties(electricityBattery,electricityBatteryVO);
+
+
+            if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)&&Objects.nonNull(electricityBattery.getUid())){
+                UserInfo userInfo=userInfoService.queryByUid(electricityBattery.getUid());
+                electricityBatteryVO.setUserName(userInfo.getName());
+            }
+
+            if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)&&Objects.nonNull(electricityBattery.getElectricityCabinetId())){
+                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
+                electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+            }
+
+            electricityBatteryVOList.add(electricityBatteryVO);
+        }
+        return R.ok(electricityBatteryVOList);
     }
 
     @Override

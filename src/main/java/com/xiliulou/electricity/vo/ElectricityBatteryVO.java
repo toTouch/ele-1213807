@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
 
 import com.baomidou.mybatisplus.annotation.IdType;
@@ -10,7 +10,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 /**
  * 换电柜电池表(ElectricityBattery)实体类
@@ -22,16 +21,13 @@ import javax.validation.constraints.NotNull;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_electricity_battery")
-public class ElectricityBattery {
+public class ElectricityBatteryVO {
 
-    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
      * sn码
      */
-    @NotEmpty(message = "电池编码不能不能为空!")
     private String sn;
     /**
      * 电池型号
@@ -87,23 +83,16 @@ public class ElectricityBattery {
      */
     private Integer electricityCabinetId;
 
+    /**
+     * 所属换电柜柜
+     */
+    private String electricityCabinetName;
 
     //所属用户id
     private Long uid;
 
-
-
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
-    //在仓
-    public static final Integer WARE_HOUSE_STATUS = 0;
-    //在库
-    public static final Integer STOCK_STATUS = 1;
-    //租借
-    public static final Integer LEASE_STATUS = 2;
-    //异常取走
-    public static final Integer EXCEPTION_STATUS = 3;
+    //所属用户
+    private String userName;
 
 
 }
