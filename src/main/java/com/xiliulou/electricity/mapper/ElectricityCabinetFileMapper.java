@@ -13,5 +13,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface ElectricityCabinetFileMapper extends BaseMapper<ElectricityCabinetFile>{
 
 
-    void deleteByDeviceInfo(@Param("electricityCabinetId") Integer electricityCabinetId, @Param("fileType")Integer fileType, @Param("isUseOSS")Integer isUseOSS);
+    void deleteByDeviceInfo(@Param("otherId") Integer otherId, @Param("fileType")Integer fileType, @Param("isUseOSS")Integer isUseOSS);
 }

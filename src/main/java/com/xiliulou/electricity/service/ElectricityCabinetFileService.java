@@ -36,5 +36,5 @@ public interface ElectricityCabinetFileService {
 
     void getMinioFile(String fileName, HttpServletResponse response);
 
-    void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer  isUseOSS);
+    void deleteByDeviceInfo(Integer otherId, Integer fileType,Integer  isUseOSS);
 }

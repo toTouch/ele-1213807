@@ -5,8 +5,8 @@
     <delete id="deleteByDeviceInfo">
         delete from t_electricity_cabinet_file
         where type = #{fileType} and is_oss=#{isUseOSS}
-        <if test="electricityCabinetId != null">
-            and electricity_cabinet_id = #{electricityCabinetId}
+        <if test="otherId != null">
+            and other_id = #{otherId}
         </if>
     </delete>
 

@@ -86,7 +86,7 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     }
 
     @Override
-    public void deleteByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer isUseOSS) {
-        electricityCabinetFileMapper.deleteByDeviceInfo(electricityCabinetId,fileType,isUseOSS);
+    public void deleteByDeviceInfo(Integer otherId, Integer fileType,Integer isUseOSS) {
+        electricityCabinetFileMapper.deleteByDeviceInfo(otherId,fileType,isUseOSS);
     }
 }
