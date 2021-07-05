@@ -50,7 +50,7 @@ public class EleRefundOrderVO {
     /**
     * 是否删除（0-正常，1-删除）
     */
-    private Object delFlag;
+    private Integer delFlag;
     /**
     * 创建时间
     */
