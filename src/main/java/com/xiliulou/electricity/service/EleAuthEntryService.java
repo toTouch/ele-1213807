@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
-import com.xiliulou.electricity.utils.SecurityUtils;
 
 import java.util.List;
 
