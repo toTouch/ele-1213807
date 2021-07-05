@@ -34,4 +34,6 @@ public class StoreQuery {
 
 	private List<Integer> storeIdList;
 
+	private Integer tenantId;
+
 }

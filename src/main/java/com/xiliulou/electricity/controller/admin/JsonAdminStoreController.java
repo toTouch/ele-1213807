@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -75,6 +76,9 @@ public class JsonAdminStoreController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         StoreQuery storeQuery = StoreQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -82,7 +86,9 @@ public class JsonAdminStoreController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .address(address)
-                .usableStatus(usableStatus).build();
+                .usableStatus(usableStatus)
+                .tenantId(tenantId).build();
+
 
         return storeService.queryList(storeQuery);
     }
