@@ -235,9 +235,7 @@ public class RoleServiceImpl implements RoleService {
 	public R queryAll() {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-		if(SecurityUtils.isAdmin()){
-			tenantId=null;
-		}
+
 
 		List<Role> roles = this.roleMapper.queryAll(tenantId);
 		if (!DataUtil.collectionIsUsable(roles)) {

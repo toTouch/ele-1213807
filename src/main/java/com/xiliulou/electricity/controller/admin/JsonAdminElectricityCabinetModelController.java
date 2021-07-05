@@ -63,9 +63,6 @@ public class JsonAdminElectricityCabinetModelController {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if(SecurityUtils.isAdmin()){
-            tenantId=null;
-        }
 
         ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
                 .offset(offset)

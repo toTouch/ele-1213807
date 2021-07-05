@@ -78,9 +78,7 @@ public class JsonAdminFranchiseeController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if(SecurityUtils.isAdmin()){
-            tenantId=null;
-        }
+
 
         FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
                 .offset(offset)
@@ -104,9 +102,6 @@ public class JsonAdminFranchiseeController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if(SecurityUtils.isAdmin()){
-            tenantId=null;
-        }
 
         FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
                 .name(name)
