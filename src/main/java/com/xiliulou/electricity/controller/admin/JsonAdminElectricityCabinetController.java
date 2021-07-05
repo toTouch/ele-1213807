@@ -206,6 +206,7 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping(value = "/admin/electricityCabinet/homeOne")
     public R homeOne(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
+        //不传查全部
         if(Objects.isNull(beginTime)){
             beginTime=0L;
         }
@@ -219,8 +220,9 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
     public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
+        //不传查近七天
         if(Objects.isNull(beginTime)){
-            beginTime=0L;
+            beginTime=System.currentTimeMillis()-1000 * 60 * 60 * 24 * 7L;
         }
         if(Objects.isNull(endTime)){
             endTime=System.currentTimeMillis();
@@ -238,8 +240,9 @@ public class JsonAdminElectricityCabinetController {
     public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam("type") Integer type) {
+        //不传查近七天
         if(Objects.isNull(beginTime)){
-            beginTime=0L;
+            beginTime=System.currentTimeMillis()-1000 * 60 * 60 * 24 * 7L;
         }
         if(Objects.isNull(endTime)){
             endTime=System.currentTimeMillis();
