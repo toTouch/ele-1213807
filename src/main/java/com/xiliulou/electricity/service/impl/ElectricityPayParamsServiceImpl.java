@@ -96,11 +96,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	@Override
 	@DS("slave_1")
 	public ElectricityPayParams queryFromCache(Integer tenantId) {
-		ElectricityPayParams electricityPayParams = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS, ElectricityPayParams.class);
+		ElectricityPayParams electricityPayParams = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS+tenantId, ElectricityPayParams.class);
 		if (Objects.isNull(electricityPayParams)) {
 			electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getTenantId, tenantId));
 			if (Objects.nonNull(electricityPayParams)) {
-				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS, electricityPayParams);
+				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS+tenantId, electricityPayParams);
 			}
 		}
 		return electricityPayParams;
