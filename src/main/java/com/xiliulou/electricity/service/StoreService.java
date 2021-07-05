@@ -34,9 +34,7 @@ public interface StoreService {
 
     R updateStatus(Integer id,Integer usableStatus);
 
-
-    Integer homeOneTotal(List<Integer> storeIdList,Integer tenantId);
-
+    Integer homeOne(List<Integer> storeIdList,Integer tenantId);
 
     R showInfoByDistance(StoreQuery storeQuery);
 

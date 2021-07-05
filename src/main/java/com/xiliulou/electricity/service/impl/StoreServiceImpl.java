@@ -259,8 +259,8 @@ public class StoreServiceImpl implements StoreService {
 
 
 	@Override
-	public Integer homeOneTotal(List<Integer> storeIdList,Integer tenantId) {
-		return storeMapper.homeOneTotal(storeIdList,tenantId);
+	public Integer homeOne(List<Integer> storeIdList,Integer tenantId) {
+		return storeMapper.homeOne(storeIdList,tenantId);
 	}
 
 

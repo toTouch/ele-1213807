@@ -674,11 +674,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					}
 				}
 				if (ObjectUtil.isNotEmpty(storeIdList)) {
-					storeCount = storeService.homeOneTotal(storeIdList, tenantId);
+					storeCount = storeService.homeOne(storeIdList, tenantId);
 
 				}
 			} else {
-				storeCount = storeService.homeOneTotal(null, tenantId);
+				storeCount = storeService.homeOne(null, tenantId);
 			}
 			homeOne.put("storeCount", storeCount.toString());
 		}
