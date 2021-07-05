@@ -239,13 +239,17 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping(value = "/admin/electricityCabinet/homeThree")
     public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam("type") Integer type) {
+            @RequestParam(value = "type", required = false) Integer type) {
         //不传查近七天
         if(Objects.isNull(beginTime)){
             beginTime=System.currentTimeMillis()-1000 * 60 * 60 * 24 * 7L;
         }
         if(Objects.isNull(endTime)){
             endTime=System.currentTimeMillis();
+        }
+        //不传默认查用户
+        if(Objects.isNull(type)){
+            type=1;
         }
         return electricityCabinetService.homeThree(beginTime,endTime,type);
     }
