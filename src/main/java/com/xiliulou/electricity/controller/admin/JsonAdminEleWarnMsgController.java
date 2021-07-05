@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -53,12 +54,16 @@ public class JsonAdminEleWarnMsgController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         //如果是查全部则直接跳过
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
@@ -81,6 +86,7 @@ public class JsonAdminEleWarnMsgController {
                 .type(type)
                 .status(status)
                 .eleIdList(eleIdList)
+                .tenantId(tenantId)
                 .build();
 
         return eleWarnMsgService.queryList(eleWarnMsgQuery);

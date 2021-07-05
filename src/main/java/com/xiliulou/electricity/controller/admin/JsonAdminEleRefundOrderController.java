@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -45,13 +46,17 @@ public class JsonAdminEleRefundOrderController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
                 .offset(offset)
                 .size(size)
                 .orderId(orderId)
                 .status(status)
                 .beginTime(beginTime)
-                .endTime(endTime).build();
+                .endTime(endTime)
+                .tenantId(tenantId).build();
 
         return eleRefundOrderService.queryList(eleRefundQuery);
     }

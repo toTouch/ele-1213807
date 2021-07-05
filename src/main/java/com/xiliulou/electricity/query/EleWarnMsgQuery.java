@@ -21,4 +21,6 @@ public class EleWarnMsgQuery {
     private Integer status;
 
     List<Integer> eleIdList;
+
+    private Integer tenantId;
 }

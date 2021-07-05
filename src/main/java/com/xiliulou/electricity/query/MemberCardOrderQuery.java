@@ -20,4 +20,6 @@ public class MemberCardOrderQuery {
     private Long queryEndTime;
     private Long size;
     private Long offset;
+
+    private Integer tenantId;
 }

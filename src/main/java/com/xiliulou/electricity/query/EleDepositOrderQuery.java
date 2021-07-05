@@ -24,4 +24,6 @@ public class EleDepositOrderQuery {
     private Integer status;
     private String orderId;
 
+    private Integer tenantId;
+
 }

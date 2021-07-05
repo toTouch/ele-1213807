@@ -4,6 +4,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -47,6 +48,9 @@ public class JsonAdminElectricityMemberCardOrderController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
@@ -54,7 +58,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.queryStartTime(queryStartTime)
 				.queryEndTime(queryEndTime)
 				.offset(offset)
-				.size(size).build();
+				.size(size)
+				.tenantId(tenantId).build();
 
 		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
 	}

@@ -35,6 +35,8 @@ public class EleRefundQuery {
     private Long beginTime;
     private Long endTime;
 
+    private Integer tenantId;
+
 
 
 

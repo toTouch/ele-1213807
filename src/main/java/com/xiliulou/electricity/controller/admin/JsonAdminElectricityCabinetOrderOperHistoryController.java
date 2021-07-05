@@ -56,6 +56,9 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -64,8 +67,6 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)

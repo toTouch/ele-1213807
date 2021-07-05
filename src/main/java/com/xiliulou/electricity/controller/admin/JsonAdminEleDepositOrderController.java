@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -46,6 +47,9 @@ public class JsonAdminEleDepositOrderController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -54,7 +58,8 @@ public class JsonAdminEleDepositOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
-                .orderId(orderId).build();
+                .orderId(orderId)
+                .tenantId(tenantId).build();
 
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
