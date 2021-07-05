@@ -45,7 +45,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
      */
     @GetMapping("admin/servicePhone")
     public R getServicePhone() {
-        return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE));
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId));
     }
 
     /**
@@ -55,8 +57,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
      */
     @PostMapping("admin/servicePhone")
     public R getServicePhone(@RequestBody ServicePhoneQuery servicePhoneQuery) {
-
-        redisService.set(ElectricityCabinetConstant.CACHE_SERVICE_PHONE, servicePhoneQuery.getPhone());
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        redisService.set(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
         return R.ok();
     }
 
