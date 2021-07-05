@@ -20,12 +20,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
+import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.util.Collections;
@@ -189,7 +190,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 		List<EleUserAuth> collect = eleUserAuths.stream().map(e -> {
 			if (e.getEntryId().equals(EleAuthEntry.ID_CARD_BACK_PHOTO) || e.getEntryId().equals(EleAuthEntry.ID_CARD_FRONT_PHOTO)) {
-				e.setValue("https://" + storageConfig.getUrlPrefix() + "/" + e.getValue());
+				if(StringUtils.isNotEmpty(e.getValue())) {
+					e.setValue("https://" + storageConfig.getUrlPrefix() + "/" + e.getValue());
+				}
 
 			}
 			return e;
