@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.service.EleAuthEntryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -44,7 +45,8 @@ public class JsonAdminEleAuthEntryController {
      */
     @GetMapping(value = "/admin/authEntry/list")
     public R getEleAuthEntriesList() {
-        return R.ok(eleAuthEntryService.getEleAuthEntriesList());
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return R.ok(eleAuthEntryService.getEleAuthEntriesList(tenantId));
     }
 
 

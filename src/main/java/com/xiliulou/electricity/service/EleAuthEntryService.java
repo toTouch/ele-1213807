@@ -24,7 +24,7 @@ public interface EleAuthEntryService {
 
     R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList);
 
-    Object getEleAuthEntriesList();
+    List<EleAuthEntry> getEleAuthEntriesList(Integer tenantId);
 
-    Object getUseEleAuthEntriesList();
+    List<EleAuthEntry> getUseEleAuthEntriesList(Integer tenantId);
 }

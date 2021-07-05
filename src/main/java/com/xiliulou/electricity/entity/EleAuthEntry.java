@@ -55,6 +55,9 @@ public class EleAuthEntry {
     //是否可以修改(0,可以修改,1.不可修改) 默认为不可以修改
     private Object needModify;
 
+    //租户id
+    private Integer tenantId;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

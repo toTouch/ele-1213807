@@ -66,13 +66,13 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
     }
 
     @Override
-    public  List<EleAuthEntry> getEleAuthEntriesList() {
-        return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL));
+    public  List<EleAuthEntry> getEleAuthEntriesList(Integer tenantId) {
+        return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL).eq(EleAuthEntry::getTenantId,tenantId));
     }
 
     @Override
-    public Object getUseEleAuthEntriesList() {
-        return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getIsUse,EleAuthEntry.IS_USE).eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL));
+    public List<EleAuthEntry> getUseEleAuthEntriesList(Integer tenantId) {
+        return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getIsUse,EleAuthEntry.IS_USE).eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL).eq(EleAuthEntry::getTenantId,tenantId));
     }
 
 

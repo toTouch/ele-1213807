@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,7 +65,8 @@ public class JsonUserEleUserAuthController {
 	 */
 	@GetMapping(value = "/user/authEntry/list")
 	public R getEleAuthEntriesList() {
-		return R.ok(eleAuthEntryService.getUseEleAuthEntriesList());
+		Integer tenantId = TenantContextHolder.getTenantId();
+		return R.ok(eleAuthEntryService.getUseEleAuthEntriesList(tenantId));
 	}
 
 	/**
