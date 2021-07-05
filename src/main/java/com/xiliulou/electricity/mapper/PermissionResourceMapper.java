@@ -25,4 +25,6 @@ public interface PermissionResourceMapper  extends BaseMapper<PermissionResource
     PermissionResource queryById(Long id);
 
     Integer insertOne(PermissionResource permissionResource);
+
+    Integer update(PermissionResource permissionResource);
 }

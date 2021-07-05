@@ -7,6 +7,42 @@
         insert into t_permission_resource(name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag)
         values (#{name}, #{type}, #{uri}, #{method}, #{sort}, #{parent}, #{desc}, #{createTime}, #{updateTime}, #{delFlag})
     </insert>
+	<update id="update">
+		update t_permission_resource
+		<set>
+			<if test="name != null and name != ''">
+				name = #{name},
+			</if>
+			<if test="type != null ">
+				type = #{type},
+			</if>
+			<if test="uri != null and uri != ''">
+				uri = #{uri},
+			</if>
+			<if test="method != null and method != ''">
+				method = #{method},
+			</if>
+			<if test="sort != null ">
+				sort = #{sort},
+			</if>
+			<if test="parent != null ">
+				parent = #{parent},
+			</if>
+			<if test="desc != null and desc != ''">
+				`desc` = #{desc},
+			</if>
+			<if test="createTime != null ">
+				createTime = #{createTime},
+			</if>
+			<if test="updateTime != null ">
+				update_time = #{updateTime},
+			</if>
+			<if test="delFlag != null ">
+				del_flag = #{delFlag},
+			</if>
+		</set>
+		where id =#{id}
+	</update>
 
 
 	<!--通过实体作为筛选条件查询-->
@@ -26,7 +62,7 @@
 		where
 		id in
 		<foreach collection="list" item="p" separator="," open="(" close=")">
-		 #{p}
+			#{p}
 		</foreach>
 
 	</select>

@@ -104,7 +104,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(PermissionResource permissionResource) {
-		int update = this.permissionResourceMapper.updateById(permissionResource);
+		int update = this.permissionResourceMapper.update(permissionResource);
 		if (update > 0) {
 			redisService.delete(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId());
 		}
