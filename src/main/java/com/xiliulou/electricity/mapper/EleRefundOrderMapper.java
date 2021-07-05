@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import java.util.List;
+import java.util.Map;
 
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.vo.EleRefundOrderVO;
@@ -21,7 +22,7 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder>{
      * 查询指定行数据
      *
      */
-    List<EleRefundOrderVO> queryList(@Param("query") EleRefundQuery eleRefundQuery);
+    List<Map<String,Object>> queryList(@Param("query") EleRefundQuery eleRefundQuery);
 
 
 }
