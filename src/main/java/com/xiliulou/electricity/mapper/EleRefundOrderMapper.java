@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.vo.EleRefundOrderVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
