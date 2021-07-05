@@ -43,7 +43,7 @@
         from t_user_info
         where del_flag=0
         and create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
-        <if test="tenantId != null and tenantId != ''">
+        <if test="tenantId != null ">
             and tenant_id = #{tenantId}
         </if>
         group by date
@@ -58,7 +58,7 @@
         where del_flag=0
         and create_time &gt;=#{first}
         and create_time &lt;=#{now}
-        <if test="tenantId != null and tenantId != ''">
+        <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
     </select>

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -67,8 +68,8 @@ public class JsonAdminElectricityMemberCardController {
                                           @RequestParam(value = "type", required = false) Integer type,
                                           @RequestParam(value = "status", required = false) Integer status) {
 
-
-        return electricityMemberCardService.queryList(offset, size, status, type);
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricityMemberCardService.queryList(offset, size, status, type,tenantId);
     }
 
     //查询换电套餐根据加盟商

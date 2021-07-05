@@ -160,9 +160,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @DS("slave_1")
-    public R queryList(Long offset, Long size, Integer status, Integer type) {
+    public R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId) {
 
-        return R.ok(baseMapper.queryList(offset, size, status, type));
+        return R.ok(baseMapper.queryList(offset, size, status, type,tenantId));
     }
 
     @Override

@@ -63,7 +63,7 @@
 				#{id}
 			</foreach>
 		</if>
-		<if test="tenantId != null and tenantId != ''">
+		<if test="tenantId != null ">
 			and tenant_id = #{tenantId}
 		</if>
 
@@ -82,7 +82,7 @@
 				#{id}
 			</foreach>
 		</if>
-		<if test="tenantId != null and tenantId != ''">
+		<if test="tenantId != null">
 			and tenant_id = #{tenantId}
 		</if>
 		group by date

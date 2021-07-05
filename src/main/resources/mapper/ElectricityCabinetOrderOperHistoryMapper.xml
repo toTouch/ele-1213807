@@ -43,7 +43,7 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.tenantId != null and query.tenantId != ''">
+            <if test="query.tenantId != null ">
                 and tecooh.tenant_id = #{query.tenantId}
             </if>
         </where>
@@ -85,7 +85,7 @@
                     #{id}
                 </foreach>
             </if>
-            <if test="query.tenantId != null and query.tenantId != ''">
+            <if test="query.tenantId != null">
                 and tenant_id = #{query.tenantId}
             </if>
         </where>

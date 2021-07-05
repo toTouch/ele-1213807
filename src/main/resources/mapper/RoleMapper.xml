@@ -16,7 +16,7 @@
           id, name, code, `desc`, create_time, update_time,tenant_id
         from t_role
 		<where>
-			<if test="tenantId != null and tenantId != ''">
+			<if test="tenantId != null ">
 				and tenant_id = #{tenantId}
 			</if>
 		</where>

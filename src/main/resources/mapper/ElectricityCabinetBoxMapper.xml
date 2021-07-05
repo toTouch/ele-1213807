@@ -13,7 +13,7 @@
 		<if test="query.electricityCabinetId != null">
 			and electricity_cabinet_id = #{query.electricityCabinetId}
 		</if>
-		<if test="query.tenantId != null and query.tenantId != ''">
+		<if test="query.tenantId != null ">
 			and tenant_id = #{query.tenantId}
 		</if>
 		order by -cell_no DESC
