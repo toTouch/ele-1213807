@@ -344,6 +344,11 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok(storeMapper.queryCount(storeQuery));
 	}
 
+	@Override
+	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId) {
+		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList,tenantId);
+	}
+
 	public Long getTime(Long time) {
 		Date date1 = new Date(time);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,6 +59,8 @@ public interface ElectricityCabinetService {
     R homeTwo(Long beginTime,Long endTime);
 
     R homeThree(Long beginTime,Long endTime,Integer type);
+
+    List<HashMap<String, String>> homeThreeInner(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId);
 
     R home();
 

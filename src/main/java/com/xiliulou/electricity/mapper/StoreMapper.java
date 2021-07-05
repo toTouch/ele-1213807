@@ -9,6 +9,7 @@ import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -31,4 +32,6 @@ public interface StoreMapper extends BaseMapper<Store> {
     Integer homeOneTotal(@Param("storeIdList") List<Integer> storeIdList,@Param("tenantId") Integer tenantId);
 
 	Integer queryCount(@Param("query") StoreQuery storeQuery);
+
+	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("storeIdList") List<Integer> storeIdList ,@Param("tenantId")Integer tenantId);
 }

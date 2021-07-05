@@ -47,7 +47,7 @@
 
 
 	<select id="homeThree" resultType="java.util.HashMap">
-		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as orderCount
+		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
 		from t_electricity_cabinet_order where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
 		<if test="eleIdList!=null and eleIdList!=''">
 			and electricity_cabinet_id in

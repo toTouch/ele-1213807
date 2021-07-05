@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -46,4 +47,6 @@ public interface StoreService {
 	R queryCount(StoreQuery storeQuery);
 
 	R queryCountByFranchisee(StoreQuery storeQuery);
+
+	List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId);
 }

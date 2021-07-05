@@ -700,38 +700,42 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//返回参数
 		List<HashMap<String, String>> homeTwo = new ArrayList<>();
 
+		//只有用户admin,运营商，加盟商时才有收益
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			//查用户
-			Boolean flag2 = true;
-			List<Integer> cardIdList = null;
+
+			//如果用户类型不等于admin和运营商，则查询绑定的月卡
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-				if (Objects.nonNull(franchisee)) {
 
-					//月卡id
-					List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.queryByFranchisee(franchisee.getId());
-					if (ObjectUtil.isNotEmpty(electricityMemberCardList)) {
-						cardIdList = new ArrayList<>();
-						for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
-							cardIdList.add(electricityMemberCard.getId());
-						}
-					}
+				//查不到加盟商
+				if (Objects.isNull(franchisee)) {
+					log.info("homeTwo  info! not found franchisee！uid:{} ", user.getUid());
+					return R.ok(homeTwo);
 				}
-				if (Objects.isNull(cardIdList)) {
-					flag2 = false;
-				}
-			}
 
-			//查收益
-			if (flag2) {
+				//查不到加盟商月卡
+				List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.queryByFranchisee(franchisee.getId());
+				if (ObjectUtil.isEmpty(electricityMemberCardList)) {
+					log.info("homeTwo  info! not found ElectricityMemberCard！franchiseeId:{} ", franchisee.getId());
+					return R.ok(homeTwo);
+				}
+
+				List<Integer> cardIdList = new ArrayList<>();
+				for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
+					cardIdList.add(electricityMemberCard.getId());
+				}
+
 				homeTwo = electricityMemberCardOrderService.homeTwo(beginTime, endTime, cardIdList, tenantId);
+				return R.ok(homeTwo);
 			}
-		}
 
+			homeTwo = electricityMemberCardOrderService.homeTwo(beginTime, endTime, null, tenantId);
+		}
 		return R.ok(homeTwo);
 	}
 
@@ -747,50 +751,112 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//返回参数
 		List<HashMap<String, String>> homeThree = new ArrayList<>();
 
+		//查用户
 		if (type == 1) {
-			//查用户
 			if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 					|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 				homeThree = userInfoService.homeThreeTotal(beginTime, endTime, tenantId);
-
 			}
 			return R.ok(homeThree);
 		}
 
+		//查柜机
 		if (type == 2) {
-
-		}
-		if (type == 3) {
-
-            //如果是查全部则直接跳过
-			Boolean flag = true;
-			List<Integer> eleIdList = null;
+			//如果用户类型不等于admin和运营商，则查询绑定的换电柜
 			if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 					&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+
 				UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
 				if (Objects.isNull(userTypeService)) {
 					log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
 					return R.fail("ELECTRICITY.0066", "用户权限不足");
 				}
-				eleIdList = userTypeService.getEleIdListByUserType(user);
+				//查询绑定的换电柜
+				List<Integer> eleIdList = userTypeService.getEleIdListByUserType(user);
 				if (ObjectUtil.isEmpty(eleIdList)) {
-					flag = false;
+					log.info("homeThree  info! not found ele！uid:{} ", user.getUid());
+					return R.ok(homeThree);
 				}
-			}
 
-			//查换电
-			if (flag) {
-				homeThree = electricityCabinetOrderService.homeThree(beginTime, endTime, eleIdList, tenantId);
+				homeThree = homeThreeInner(beginTime, endTime, eleIdList, tenantId);
+
+			} else {
+				homeThree = homeThreeInner(beginTime, endTime, null, tenantId);
 			}
 		}
+
+		//查换电
+		if (type == 3) {
+
+			//如果用户类型不等于admin和运营商，则查询绑定的换电柜
+			if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+					&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+
+				UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+				if (Objects.isNull(userTypeService)) {
+					log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+					return R.fail("ELECTRICITY.0066", "用户权限不足");
+				}
+
+				//查询绑定的换电柜
+				List<Integer> eleIdList = userTypeService.getEleIdListByUserType(user);
+				if (ObjectUtil.isEmpty(eleIdList)) {
+					log.info("homeThree  info! not found ele！uid:{} ", user.getUid());
+					return R.ok(homeThree);
+				}
+
+				homeThree = electricityCabinetOrderService.homeThree(beginTime, endTime, eleIdList, tenantId);
+
+			} else {
+				homeThree = electricityCabinetOrderService.homeThree(beginTime, endTime, null, tenantId);
+			}
+
+		}
+
+		//查门店
 		if (type == 4) {
+			if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+					|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+					|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+
+				//查用户
+				if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+					Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+					if (Objects.isNull(franchisee)) {
+						log.info("homeThree  info! not found franchisee！uid:{} ", user.getUid());
+						return R.ok(homeThree);
+					}
+					List<Store> franchiseeBindList = storeService.queryByFranchiseeId(franchisee.getId());
+					if (ObjectUtil.isEmpty(franchiseeBindList)) {
+						log.info("homeThree  info! not found Store！franchiseeId:{} ", franchisee.getId());
+						return R.ok(homeThree);
+					}
+
+					List<Integer> storeIdList = new ArrayList<>();
+					for (Store store : franchiseeBindList) {
+						storeIdList.add(store.getId());
+					}
+
+					homeThree = storeService.homeThree(beginTime, endTime, storeIdList, tenantId);
+
+				} else {
+					homeThree = storeService.homeThree(beginTime, endTime, null, tenantId);
+				}
+			}
 
 		}
 
 		return R.ok(homeThree);
 
+	}
+
+	@Override
+	public List<HashMap<String, String>> homeThreeInner(Long startTimeMilliDay, Long
+			endTimeMilliDay, List<Integer> eleIdList, Integer tenantId) {
+		return electricityCabinetMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList, tenantId);
 	}
 
 	@Override
@@ -828,13 +894,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//套餐剩余天数
-		long cardDay=0;
+		long cardDay = 0;
 		if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
 			cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
 		}
 
 		//我的电池
-		Double battery=null;
+		Double battery = null;
 		if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(franchiseeUserInfo.getNowElectricityBatterySn());
 			if (Objects.nonNull(electricityBattery)) {
@@ -1436,7 +1502,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList, Integer tenantId) {
+	public List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList, Integer
+			tenantId) {
 		return electricityCabinetMapper.queryNameList(size, offset, eleIdList, tenantId);
 	}
 

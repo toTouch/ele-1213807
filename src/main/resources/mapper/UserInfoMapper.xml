@@ -39,7 +39,7 @@
 
 
     <select id="homeThreeTotal" resultType="java.util.HashMap">
-        select from_unixtime(tui.create_time / 1000, '%Y-%m-%d') date, count(*) as totalCount
+        select from_unixtime(tui.create_time / 1000, '%Y-%m-%d') date, count(*) as count
         from t_user_info as tui
         left join t_user as tu on tui.uid=tu.uid
         where tui.del_flag=0

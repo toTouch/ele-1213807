@@ -150,6 +150,21 @@
             </foreach>
         </if>
     </select>
+	<select id="homeThree" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
+        from t_electricity_cabinet where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="tenantId != null and tenantId != ''">
+            and tenant_id = #{tenantId}
+        </if>
+        group by date
+        order by date desc
+    </select>
 
 
 </mapper>
