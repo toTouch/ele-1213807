@@ -5,6 +5,7 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -63,7 +64,11 @@ public class JsonAdminUserController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
-        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime));
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
     }
 
     @PutMapping("/user")

@@ -60,7 +60,7 @@ public interface UserService {
 
     User queryByUserPhone(String phone, Integer type);
 
-    Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime);
+    Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
 
     Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery);
 

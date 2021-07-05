@@ -30,6 +30,9 @@
 			<if test="endTime != null">
 				and create_time &lt;=#{endTime}
 			</if>
+			<if test="tenantId != null and tenantId != ''">
+				and tenant_id = #{tenantId}
+			</if>
 		</where>
 		order by create_time desc
 		limit #{offset}, #{size}

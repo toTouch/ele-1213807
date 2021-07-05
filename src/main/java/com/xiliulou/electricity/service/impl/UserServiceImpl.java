@@ -254,8 +254,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	@DS("slave_1")
-	public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime) {
-		return Pair.of(true, this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime));
+	public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
+		return Pair.of(true, this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
 
 	}
 
