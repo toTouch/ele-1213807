@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
 import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -33,17 +34,24 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
     @Override
     public R edit(String name,Integer orderTime,Integer isManualReview) {
+        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
         //操作频繁
         boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_CONFIG_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
-        ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<>());
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
+        ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId,tenantId));
         if(Objects.isNull(electricityConfig)){
             electricityConfig=new ElectricityConfig();
             electricityConfig.setName(name);
@@ -51,9 +59,11 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsManualReview(isManualReview);
             electricityConfig.setCreateTime(System.currentTimeMillis());
             electricityConfig.setUpdateTime(System.currentTimeMillis());
+            electricityConfig.setTenantId(tenantId);
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
+
         electricityConfig.setName(name);
         electricityConfig.setOrderTime(orderTime);
         electricityConfig.setIsManualReview(isManualReview);
