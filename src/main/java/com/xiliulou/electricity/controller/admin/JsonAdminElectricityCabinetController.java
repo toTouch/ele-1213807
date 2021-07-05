@@ -219,6 +219,12 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping(value = "/admin/electricityCabinet/homeTwo")
     public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
+        if(Objects.isNull(beginTime)){
+            beginTime=0L;
+        }
+        if(Objects.isNull(endTime)){
+            endTime=System.currentTimeMillis();
+        }
         return electricityCabinetService.homeTwo(beginTime,endTime);
     }
 
@@ -232,6 +238,12 @@ public class JsonAdminElectricityCabinetController {
     public R homeThree(@RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam("type") Integer type) {
+        if(Objects.isNull(beginTime)){
+            beginTime=0L;
+        }
+        if(Objects.isNull(endTime)){
+            endTime=System.currentTimeMillis();
+        }
         return electricityCabinetService.homeThree(beginTime,endTime,type);
     }
 
