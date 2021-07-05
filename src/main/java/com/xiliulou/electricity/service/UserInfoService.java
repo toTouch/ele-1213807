@@ -61,9 +61,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer homeOneTotal(Long first, Long now,Integer tenantId);
 
-
     List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay,Integer tenantId);
-
 
     R getMemberCardInfo(Long uid);
 
