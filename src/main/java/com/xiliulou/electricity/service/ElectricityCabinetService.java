@@ -58,7 +58,7 @@ public interface ElectricityCabinetService {
 
     R homeTwo(Long beginTime,Long endTime);
 
-    R homeThree(Long beginTime,Long endTime,Integer type);
+     R homeThree(Long beginTime,Long endTime,Integer type);
 
     List<HashMap<String, String>> homeThreeInner(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId);
 
