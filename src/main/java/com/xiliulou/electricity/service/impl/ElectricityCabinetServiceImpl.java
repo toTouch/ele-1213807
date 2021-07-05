@@ -625,35 +625,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			//查月卡
-			Boolean flag2 = true;
-			List<Integer> cardIdList = null;
 
+			BigDecimal moneyCount = null;
+			//查月卡
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+
+				List<Integer> cardIdList = new ArrayList<>();
 				if (Objects.nonNull(franchisee)) {
-					//月卡id
+
+					//月卡
 					List<ElectricityMemberCard> electricityMemberCardList = electricityMemberCardService.queryByFranchisee(franchisee.getId());
 					if (ObjectUtil.isNotEmpty(electricityMemberCardList)) {
-						cardIdList = new ArrayList<>();
 						for (ElectricityMemberCard electricityMemberCard : electricityMemberCardList) {
 							cardIdList.add(electricityMemberCard.getId());
 						}
 					}
 				}
-				if (Objects.isNull(cardIdList)) {
-					flag2 = false;
+				if (Objects.nonNull(cardIdList)) {
+					moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, cardIdList, tenantId);
 				}
+			} else {
+				moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, null, tenantId);
 			}
 
-			if (flag2) {
-				BigDecimal moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, cardIdList, tenantId);
-				if (Objects.isNull(moneyCount)) {
-					moneyCount = BigDecimal.valueOf(0);
-				}
-				homeOne.put("moneyCount", moneyCount.toString());
+			if (Objects.isNull(moneyCount)) {
+				moneyCount = BigDecimal.valueOf(0);
 			}
-
+			homeOne.put("moneyCount", moneyCount.toString());
 		}
 
 		//门店
@@ -661,28 +660,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-			Boolean flag3 = true;
-			List<Integer> storeIdList = null;
+			Integer storeCount = null;
 			//查用户
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+
+				List<Integer> storeIdList = new ArrayList<>();
 				if (Objects.nonNull(franchisee)) {
 					List<Store> franchiseeBindList = storeService.queryByFranchiseeId(franchisee.getId());
 					if (ObjectUtil.isNotEmpty(franchiseeBindList)) {
-						storeIdList = new ArrayList<>();
 						for (Store store : franchiseeBindList) {
 							storeIdList.add(store.getId());
 						}
 					}
 				}
-				if (ObjectUtil.isEmpty(storeIdList)) {
-					flag3 = false;
+				if (ObjectUtil.isNotEmpty(storeIdList)) {
+					storeCount = storeService.homeOneTotal(storeIdList, tenantId);
+
 				}
+			} else {
+				storeCount = storeService.homeOneTotal(null, tenantId);
 			}
-			if (flag3) {
-				Integer storeCount = storeService.homeOneTotal(storeIdList, tenantId);
-				homeOne.put("storeCount", storeCount.toString());
-			}
+			homeOne.put("storeCount", storeCount.toString());
 		}
 
 		return R.ok(homeOne);
