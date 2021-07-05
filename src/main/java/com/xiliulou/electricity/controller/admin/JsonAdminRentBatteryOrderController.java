@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -58,6 +59,9 @@ public class JsonAdminRentBatteryOrderController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -89,7 +93,8 @@ public class JsonAdminRentBatteryOrderController {
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList).build();
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
 
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
@@ -104,6 +109,8 @@ public class JsonAdminRentBatteryOrderController {
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "orderId", required = false) String orderId) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -134,7 +141,8 @@ public class JsonAdminRentBatteryOrderController {
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList).build();
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
 
         return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
     }
@@ -153,6 +161,9 @@ public class JsonAdminRentBatteryOrderController {
         if (days > 33) {
             throw new CustomBusinessException("搜索日期不能大于33天");
         }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -183,7 +194,8 @@ public class JsonAdminRentBatteryOrderController {
                 .status(status)
                 .orderId(orderId)
                 .type(type)
-                .eleIdList(eleIdList).build();
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
 
         rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
     }

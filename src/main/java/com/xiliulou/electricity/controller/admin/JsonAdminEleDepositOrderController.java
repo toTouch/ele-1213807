@@ -73,6 +73,8 @@ public class JsonAdminEleDepositOrderController {
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
@@ -80,7 +82,8 @@ public class JsonAdminEleDepositOrderController {
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
-                .orderId(orderId).build();
+                .orderId(orderId)
+                .tenantId(tenantId).build();
 
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);
     }
@@ -98,13 +101,19 @@ public class JsonAdminEleDepositOrderController {
         if (days > 33) {
             throw new CustomBusinessException("搜索日期不能大于33天");
         }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .status(status)
-                .orderId(orderId).build();
+                .orderId(orderId)
+                .tenantId(tenantId).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
     }
 

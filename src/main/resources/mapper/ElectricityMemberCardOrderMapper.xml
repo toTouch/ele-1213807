@@ -107,6 +107,9 @@
 		<if test="query.cardType != null">
 			and tel.member_card_type =#{query.cardType}
 		</if>
+		<if test="query.tenantId != null">
+			and tel.tenant_id = #{query.tenantId}
+		</if>
 		<if test="query.queryStartTime != null">
 			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
 		</if>

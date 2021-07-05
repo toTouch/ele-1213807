@@ -58,6 +58,9 @@ public class JsonAdminElectricityCabinetOrderController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -65,8 +68,6 @@ public class JsonAdminElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
@@ -108,6 +109,8 @@ public class JsonAdminElectricityCabinetOrderController {
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
@@ -116,8 +119,6 @@ public class JsonAdminElectricityCabinetOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         List<Integer> eleIdList = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
@@ -168,6 +169,9 @@ public class JsonAdminElectricityCabinetOrderController {
             throw new CustomBusinessException("搜索日期不能大于33天");
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -196,7 +200,8 @@ public class JsonAdminElectricityCabinetOrderController {
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .eleIdList(eleIdList).build();
+                .eleIdList(eleIdList)
+                .tenantId(tenantId).build();
         electricityCabinetOrderService.exportExcel(electricityCabinetOrderQuery, response);
     }
 

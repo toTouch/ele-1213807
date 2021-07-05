@@ -76,13 +76,16 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
 				.cardType(cardType)
 				.queryStartTime(queryStartTime)
-				.queryEndTime(queryEndTime).build();
+				.queryEndTime(queryEndTime)
+				.tenantId(tenantId).build();
 
 		return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
 	}
@@ -100,12 +103,17 @@ public class JsonAdminElectricityMemberCardOrderController {
 		if (days > 33) {
 			throw new CustomBusinessException("搜索日期不能大于33天");
 		}
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
 				.cardType(cardType)
 				.queryStartTime(queryStartTime)
-				.queryEndTime(queryEndTime).build();
+				.queryEndTime(queryEndTime)
+				.tenantId(tenantId).build();
 		electricityMemberCardOrderService.exportExcel(memberCardOrderQuery,response);
 	}
 

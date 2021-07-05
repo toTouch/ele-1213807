@@ -27,4 +27,5 @@ public class RentBatteryOrderQuery {
     private String orderId;
     private Integer type;
     private List<Integer> eleIdList;
+    private Integer tenantId;
 }
