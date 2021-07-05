@@ -598,7 +598,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			BigDecimal successOrder = electricityCabinetOrderService.homeOneSuccess(beginTime, endTime, eleIdList, tenantId);
 
 			homeOne.put("orderCount", orderCount.toString());
-			homeOne.put("successOrder", successOrder.toString());
+			homeOne.put("successCount", successOrder.toString());
 
 			//电柜
 			List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.homeOne(eleIdList, tenantId);
