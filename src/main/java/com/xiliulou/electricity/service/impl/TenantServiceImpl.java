@@ -20,6 +20,7 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
+import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.TenantService;
@@ -76,6 +77,9 @@ public class TenantServiceImpl implements TenantService {
 
     @Autowired
     private RedisService redisService;
+
+    @Autowired
+    EleAuthEntryService eleAuthEntryService;
 
 
 
@@ -185,9 +189,12 @@ public class TenantServiceImpl implements TenantService {
             shopRP.setRoleId(storeRole.getId());
         });
         rolePermissionList.parallelStream().forEach(e -> {
-
             rolePermissionService.insert(e);
         });
+
+
+        //新增实名认证审核项
+        eleAuthEntryService.insertByTenantId(tenant.getId());
 
         return R.ok();
     }

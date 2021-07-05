@@ -27,4 +27,6 @@ public interface EleAuthEntryService {
     List<EleAuthEntry> getEleAuthEntriesList(Integer tenantId);
 
     List<EleAuthEntry> getUseEleAuthEntriesList(Integer tenantId);
+
+    void insertByTenantId(Integer tenantId);
 }

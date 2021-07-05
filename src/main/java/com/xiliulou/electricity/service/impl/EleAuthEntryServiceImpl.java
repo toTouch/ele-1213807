@@ -75,6 +75,40 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         return eleAuthEntryMapper.selectList(new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getIsUse,EleAuthEntry.IS_USE).eq(EleAuthEntry::getDelFlag,EleAuthEntry.DEL_NORMAL).eq(EleAuthEntry::getTenantId,tenantId));
     }
 
+    @Override
+    public void insertByTenantId(Integer tenantId) {
+        EleAuthEntry eleAuthEntry=new EleAuthEntry();
+        eleAuthEntry.setIsUse(EleAuthEntry.IS_USE);
+        eleAuthEntry.setCreateTime(System.currentTimeMillis());
+        eleAuthEntry.setUpdateTime(System.currentTimeMillis());
+        eleAuthEntry.setDelFlag(EleAuthEntry.DEL_NORMAL);
+        eleAuthEntry.setTenantId(tenantId);
+
+        //真实姓名
+        eleAuthEntry.setName("真实姓名");
+        eleAuthEntry.setType("input");
+        eleAuthEntry.setIdentify(EleAuthEntry.ID_NAME_ID);
+        eleAuthEntryMapper.insert(eleAuthEntry);
+
+        //身份证号
+        eleAuthEntry.setName("身份证号");
+        eleAuthEntry.setIdentify(EleAuthEntry.ID_ID_CARD);
+        eleAuthEntryMapper.insert(eleAuthEntry);
+
+        //身份证正面照片
+        eleAuthEntry.setName("身份证正面照片");
+        eleAuthEntry.setType("file");
+        eleAuthEntry.setIdentify(EleAuthEntry.ID_CARD_FRONT_PHOTO);
+        eleAuthEntryMapper.insert(eleAuthEntry);
+
+        //身份证反面照片
+        eleAuthEntry.setName("身份证反面照片");
+        eleAuthEntry.setType("file");
+        eleAuthEntry.setIdentify(EleAuthEntry.ID_CARD_BACK_PHOTO);
+        eleAuthEntryMapper.insert(eleAuthEntry);
+
+
+    }
 
     /**
      * 检查资料类型是否合法

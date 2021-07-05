@@ -52,7 +52,7 @@ public class EleAuthEntry {
     */
     private String remark;
 
-    //是否可以修改(1--姓名，2--身份证，3--身份证正面 ，4--身份证反面)
+    //唯一标识(1--姓名，2--身份证，3--身份证正面 ，4--身份证反面)
     private Integer identify;
 
     //租户id
