@@ -26,101 +26,100 @@ import java.util.Objects;
 @Slf4j
 public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<ElectricitySubscriptionMessageMapper, ElectricitySubscriptionMessage> implements ElectricitySubscriptionMessageService {
 
-    @Autowired
-    RedisService redisService;
+	@Autowired
+	RedisService redisService;
 
-    /**
-     * 保存订阅消息
-     *
-     * @param electricitySubscriptionMessage
-     * @return
-     */
-    @Override
-    public R saveElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage) {
+	/**
+	 * 保存订阅消息
+	 *
+	 * @param electricitySubscriptionMessage
+	 * @return
+	 */
+	@Override
+	public R saveElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage) {
 
-        Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
-                String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
-        if (!getLockerSuccess) {
-            return R.failMsg("操作频繁!");
-        }
+		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+				String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
+		if (!getLockerSuccess) {
+			return R.failMsg("操作频繁!");
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
+		ElectricitySubscriptionMessage electricitySubscriptionMessageDb = getSubscriptionMessageByType(electricitySubscriptionMessage.getType(),tenantId);
+		if (Objects.nonNull(electricitySubscriptionMessageDb)) {
+			return R.failMsg("您已添加此订阅消息!");
+		}
+		electricitySubscriptionMessage.setCreateTime(System.currentTimeMillis());
+		electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
+		electricitySubscriptionMessage.setTenantId(tenantId);
+		Integer raws = baseMapper.insert(electricitySubscriptionMessage);
 
-        ElectricitySubscriptionMessage electricitySubscriptionMessageDb = getSubscriptionMessageByType(electricitySubscriptionMessage.getType());
-        if (Objects.nonNull(electricitySubscriptionMessageDb)) {
-            return R.failMsg("您已添加此订阅消息!");
-        }
-        electricitySubscriptionMessage.setCreateTime(System.currentTimeMillis());
-        electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
-        electricitySubscriptionMessage.setTenantId(tenantId);
-        Integer raws = baseMapper.insert(electricitySubscriptionMessage);
+		redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+		if (raws > 0) {
+			return R.ok();
+		} else {
+			return R.failMsg("新增失败!");
+		}
+	}
 
-        redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
-        if (raws > 0) {
-            return R.ok();
-        } else {
-            return R.failMsg("新增失败!");
-        }
-    }
+	/**
+	 * @param type
+	 * @return
+	 */
+	@Override
+	@DS("slave_1")
+	public ElectricitySubscriptionMessage getSubscriptionMessageByType(Integer type, Integer tenantId) {
+		ElectricitySubscriptionMessage electricitySubscriptionMessage = null;
+		electricitySubscriptionMessage = redisService.getWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + tenantId + type, ElectricitySubscriptionMessage.class);
+		if (Objects.isNull(electricitySubscriptionMessage)) {
+			electricitySubscriptionMessage = baseMapper.selectOne(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
+					.eq(ElectricitySubscriptionMessage::getType, type)
+					.eq(ElectricitySubscriptionMessage::getTenantId, tenantId));
+			if (Objects.nonNull(electricitySubscriptionMessage)) {
+				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + tenantId + type, electricitySubscriptionMessage);
+			}
+		}
+		return electricitySubscriptionMessage;
+	}
 
-    /**
-     * @param type
-     * @return
-     */
-    @Override
-    @DS("slave_1")
-    public ElectricitySubscriptionMessage getSubscriptionMessageByType(Integer type) {
-        ElectricitySubscriptionMessage electricitySubscriptionMessage = null;
-        electricitySubscriptionMessage = redisService.getWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + type, ElectricitySubscriptionMessage.class);
-        if (Objects.isNull(electricitySubscriptionMessage)) {
-            electricitySubscriptionMessage = baseMapper.selectOne(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
-                    .eq(ElectricitySubscriptionMessage::getType, type));
-            if (Objects.nonNull(electricitySubscriptionMessage)) {
-                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + type, electricitySubscriptionMessage);
-            }
-        }
-        return electricitySubscriptionMessage;
-    }
+	/**
+	 * @param electricitySubscriptionMessage
+	 * @return
+	 */
+	@Override
+	public R updateElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage) {
 
-    /**
-     * @param electricitySubscriptionMessage
-     * @return
-     */
-    @Override
-    public R updateElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage) {
+		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+				String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
+		if (!getLockerSuccess) {
+			return R.failMsg("操作频繁!");
+		}
 
-        Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
-                String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
-        if (!getLockerSuccess) {
-            return R.failMsg("操作频繁!");
-        }
+		ElectricitySubscriptionMessage electricitySubscriptionMessageDb = baseMapper.selectOne(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
+				.eq(ElectricitySubscriptionMessage::getType, electricitySubscriptionMessage.getType())
+				.ne(ElectricitySubscriptionMessage::getId, electricitySubscriptionMessage.getId()));
+		if (Objects.nonNull(electricitySubscriptionMessageDb)) {
+			return R.failMsg("您已添加此订阅消息!");
+		}
 
-        ElectricitySubscriptionMessage electricitySubscriptionMessageDb = baseMapper.selectOne(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
-                .eq(ElectricitySubscriptionMessage::getType, electricitySubscriptionMessage.getType())
-                .ne(ElectricitySubscriptionMessage::getId, electricitySubscriptionMessage.getId()));
-        if (Objects.nonNull(electricitySubscriptionMessageDb)) {
-            return R.failMsg("您已添加此订阅消息!");
-        }
+		electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
+		Integer raws = baseMapper.updateById(electricitySubscriptionMessage);
+		redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+		if (raws > 0) {
+			return R.ok();
+		} else {
+			return R.failMsg("修改失败!");
+		}
 
+	}
 
-        electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
-        Integer raws = baseMapper.updateById(electricitySubscriptionMessage);
-        redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
-        if (raws > 0) {
-            return R.ok();
-        } else {
-            return R.failMsg("修改失败!");
-        }
-
-    }
-
-
-    @Override
-    @DS("slave_1")
-    public R getElectricitySubscriptionMessagePage(Integer type) {
-        return R.ok(baseMapper.selectList(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
-                .eq(Objects.nonNull(type), ElectricitySubscriptionMessage::getType, type)));
-    }
+	@Override
+	@DS("slave_1")
+	public R getElectricitySubscriptionMessagePage(Integer type, Integer tenantId) {
+		return R.ok(baseMapper.selectList(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
+				.eq(Objects.nonNull(type), ElectricitySubscriptionMessage::getType, type)
+				.eq(ElectricitySubscriptionMessage::getTenantId, tenantId)));
+	}
 }

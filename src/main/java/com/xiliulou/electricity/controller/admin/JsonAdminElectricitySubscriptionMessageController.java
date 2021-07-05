@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -81,8 +82,9 @@ public class JsonAdminElectricitySubscriptionMessageController {
      */
     @GetMapping("admin/subscriptionMessage/list")
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type) {
-
-        return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type);
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricitySubscriptionMessageService.getElectricitySubscriptionMessagePage(type,tenantId);
     }
 
 }
