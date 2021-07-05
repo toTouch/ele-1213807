@@ -32,7 +32,7 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
 
     Integer homeOneCount(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList,@Param("tenantId")Integer tenantId);
 
-    Integer homeOneSuccess(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList);
+    Integer homeOneSuccess(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList,@Param("tenantId")Integer tenantId);
 
 	Integer queryCount( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 }

@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.date.DateTime;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -571,7 +570,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//查用户
 		if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-			Integer userCount = userInfoService.homeOneTotal(beginTime, endTime, tenantId);
+			Integer userCount = userInfoService.homeOne(beginTime, endTime, tenantId);
 			homeOne.put("userCount", userCount.toString());
 		}
 

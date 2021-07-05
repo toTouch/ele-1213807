@@ -53,7 +53,7 @@
 
 
 
-    <select id="homeOneTotal" resultType="java.lang.Integer">
+    <select id="homeOne" resultType="java.lang.Integer">
         select count(1)
         from t_user_info
         where del_flag=0

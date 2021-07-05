@@ -328,8 +328,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public Integer homeOneTotal(Long first, Long now,Integer tenantId) {
-		return userInfoMapper.homeOneTotal(first,now,tenantId);
+	public Integer homeOne(Long first, Long now,Integer tenantId) {
+		return userInfoMapper.homeOne(first,now,tenantId);
 	}
 
 

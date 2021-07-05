@@ -457,7 +457,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList,Integer tenantId) {
 		Integer countTotal = homeOneCount(first, now, eleIdList,tenantId);
-		Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList);
+		Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList,tenantId);
 		if (successTotal == 0 || countTotal == 0) {
 			return BigDecimal.valueOf(0);
 		}
