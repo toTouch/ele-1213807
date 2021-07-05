@@ -31,7 +31,9 @@
 	<update id="modifyByCellNo">
 		update t_electricity_cabinet_box
 		set sn = #{sn},
-		status = #{status},
+		<if test="status!= null ">
+			and status = #{status},
+		</if>
 		update_time = #{updateTime}
 		where cell_no = #{cellNo}
 		and electricity_cabinet_id = #{electricityCabinetId}
