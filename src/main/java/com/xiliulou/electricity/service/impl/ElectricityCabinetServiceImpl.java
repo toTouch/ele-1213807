@@ -756,7 +756,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (type == 1) {
 			if (Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 					|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-				homeThree = userInfoService.homeThreeTotal(beginTime, endTime, tenantId);
+				homeThree = userInfoService.homeThree(beginTime, endTime, tenantId);
 			}
 			return R.ok(homeThree);
 		}

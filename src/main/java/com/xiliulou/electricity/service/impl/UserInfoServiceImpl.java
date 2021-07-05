@@ -335,8 +335,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
 	@Override
-	public List<HashMap<String, String>> homeThreeTotal(long startTimeMilliDay, Long endTimeMilliDay,Integer tenantId) {
-		return userInfoMapper.homeThreeTotal(startTimeMilliDay, endTimeMilliDay,tenantId);
+	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay,Integer tenantId) {
+		return userInfoMapper.homeThree(startTimeMilliDay, endTimeMilliDay,tenantId);
 	}
 
 

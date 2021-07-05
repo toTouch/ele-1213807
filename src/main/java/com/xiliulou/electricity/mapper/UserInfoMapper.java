@@ -25,7 +25,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
     List<UserInfo> queryList( @Param("query") UserInfoQuery userInfoQuery);
 
 
-    List<HashMap<String, String>> homeThreeTotal(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("tenantId")Integer tenantId);
+    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("tenantId")Integer tenantId);
 
 
     Integer homeOne(@Param("first") Long first, @Param("now") Long now,@Param("tenantId")Integer tenantId);
