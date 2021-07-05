@@ -101,13 +101,16 @@ public class JsonAdminStoreController {
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         StoreQuery storeQuery = StoreQuery.builder()
                 .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .address(address)
-                .usableStatus(usableStatus).build();
+                .usableStatus(usableStatus)
+                .tenantId(tenantId).build();
 
         return storeService.queryCount(storeQuery);
     }

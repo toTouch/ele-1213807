@@ -26,12 +26,11 @@ public interface StoreMapper extends BaseMapper<Store> {
      */
     List<StoreVO> queryList(@Param("query") StoreQuery storeQuery);
 
+	Integer queryCount(@Param("query") StoreQuery storeQuery);
 
     List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);
 
     Integer homeOne(@Param("storeIdList") List<Integer> storeIdList,@Param("tenantId") Integer tenantId);
-
-	Integer queryCount(@Param("query") StoreQuery storeQuery);
 
 	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("storeIdList") List<Integer> storeIdList ,@Param("tenantId")Integer tenantId);
 }
