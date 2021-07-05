@@ -83,7 +83,7 @@ public class StoreServiceImpl implements StoreService {
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
 		BeanUtil.copyProperties(storeAddAndUpdate,adminUserQuery);
-		adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+		adminUserQuery.setUserType(User.TYPE_USER_STORE);
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
 		adminUserQuery.setPhone(storeAddAndUpdate.getServicePhone());

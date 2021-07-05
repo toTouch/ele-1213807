@@ -53,17 +53,19 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     @Autowired
     RedisService redisService;
 
-
     @Autowired
     CityService cityService;
+
     @Autowired
     UserService userService;
+
+
     @Override
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
         //新增加盟商新增用户
         AdminUserQuery adminUserQuery = new AdminUserQuery();
         BeanUtil.copyProperties(franchiseeAddAndUpdate,adminUserQuery);
-        adminUserQuery.setUserType(User.TYPE_USER_STORE);
+        adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
         adminUserQuery.setLang(User.DEFAULT_LANG);
         adminUserQuery.setGender(User.GENDER_FEMALE);
 
