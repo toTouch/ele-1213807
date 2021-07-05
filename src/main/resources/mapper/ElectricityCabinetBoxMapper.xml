@@ -32,7 +32,7 @@
 		update t_electricity_cabinet_box
 		set sn = #{sn},
 		<if test="status!= null ">
-			and status = #{status},
+			status = #{status},
 		</if>
 		update_time = #{updateTime}
 		where cell_no = #{cellNo}
