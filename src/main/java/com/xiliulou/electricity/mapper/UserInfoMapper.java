@@ -30,4 +30,6 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
     Integer homeOne(@Param("first") Long first, @Param("now") Long now,@Param("tenantId")Integer tenantId);
 
+
+	Integer queryCount( @Param("query") UserInfoQuery userInfoQuery);
 }

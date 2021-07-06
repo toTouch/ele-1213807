@@ -38,4 +38,37 @@
 		limit #{offset}, #{size}
 	</select>
 
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select COUNT(1)
+		from t_user
+		<where>
+			del_flag = 0
+			<if test="uid != null">
+				and uid = #{uid}
+			</if>
+			<if test="name != null and name != '' ">
+				and name like concat('%',#{name},'%')
+			</if>
+			<if test="type != null and type !=-1">
+				and user_type = #{type}
+			</if>
+			<if test="type != null and type ==-1">
+				and user_type !=11
+			</if>
+			<if test="phone != null and phone != ''">
+				and phone=#{phone}
+			</if>
+			<if test="startTime != null">
+				and create_time &gt;=#{startTime}
+			</if>
+			<if test="endTime != null">
+				and create_time &lt;=#{endTime}
+			</if>
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+		</where>
+	</select>
+
 </mapper>

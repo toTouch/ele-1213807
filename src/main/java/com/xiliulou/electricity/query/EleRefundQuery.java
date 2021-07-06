@@ -18,10 +18,6 @@ public class EleRefundQuery {
      * 缴纳押金订单编号
      */
     private String orderId;
-    /**
-     * 退款单号
-     */
-    private String refundOrderNo;
 
     /**
      * 订单的状态

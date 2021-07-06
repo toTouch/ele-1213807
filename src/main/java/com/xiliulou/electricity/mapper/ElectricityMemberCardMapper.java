@@ -13,4 +13,6 @@ public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMembe
     List<ElectricityMemberCard> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId);
 
 	List<ElectricityMemberCard> queryUserList(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Integer id);
+
+	Integer queryCount(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId);
 }

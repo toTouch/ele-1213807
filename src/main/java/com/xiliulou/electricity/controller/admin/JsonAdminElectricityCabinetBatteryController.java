@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -83,34 +84,70 @@ public class JsonAdminElectricityCabinetBatteryController {
                                        @RequestParam(value = "size") Long size,
                                        @RequestParam(value = "status", required = false) Integer status,
                                        @RequestParam(value = "sn", required = false) String sn) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //组装参数
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
-        return electricityBatteryService.getElectricityBatteryList(electricityBatteryQuery, offset, size);
+        electricityBatteryQuery.setTenantId(tenantId);
+        return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
     /**
-     * 加盟商电池
+     * 电池分页数量
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/admin/battery/queryCount")
+    public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "sn", required = false) String sn) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //组装参数
+        ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setTenantId(tenantId);
+        return electricityBatteryService.queryCount(electricityBatteryQuery);
+    }
+
+
+
+    /**
+     * 加盟商电池数量
      *
      * @param
      * @return
      */
     @GetMapping(value = "/admin/battery/pageByFranchisee")
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset,
-                                       @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "status", required = false) Integer status,
-                                       @RequestParam(value = "sn", required = false) String sn) {
+            @RequestParam(value = "size") Long size,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "sn", required = false) String sn) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(Objects.isNull(franchisee)){
             return R.ok();
         }
+
+        //加盟商电池
         List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
 
         if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)){
@@ -128,7 +165,59 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
-        return electricityBatteryService.getElectricityBatteryList(electricityBatteryQuery, offset, size);
+        electricityBatteryQuery.setTenantId(tenantId);
+
+        return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
+    }
+
+
+    /**
+     * 加盟商电池
+     *
+     * @param
+     * @return
+     */
+    @GetMapping(value = "/admin/battery/queryCountByFranchisee")
+    public R queryCountByFranchisee(@RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "sn", required = false) String sn) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //加盟商
+        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+        if(Objects.isNull(franchisee)){
+            return R.ok();
+        }
+
+        //加盟商电池
+        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
+
+        if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)){
+            return R.ok();
+        }
+        List<Long> electricityBatteryIdList=new ArrayList<>();
+        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
+            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
+        }
+        if(ObjectUtil.isEmpty(electricityBatteryIdList)){
+            return R.ok();
+        }
+
+        ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
+        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setSn(sn);
+        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
+        electricityBatteryQuery.setTenantId(tenantId);
+
+        return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
 
 

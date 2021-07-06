@@ -74,4 +74,20 @@ public class JsonAdminElectricityCabinetModelController {
     }
 
 
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinetModel/queryCount")
+    public R queryCount(@RequestParam(value = "name", required = false) String name) {
+
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
+        ElectricityCabinetModelQuery electricityCabinetModelQuery = ElectricityCabinetModelQuery.builder()
+                .name(name)
+                .tenantId(tenantId).build();
+
+        return electricityCabinetModelService.queryCount(electricityCabinetModelQuery);
+    }
+
+
 }

@@ -523,4 +523,10 @@ public class UserServiceImpl implements UserService {
 		return R.fail("系统错误!");
 	}
 
+	@Override
+	public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
+		return Pair.of(true, this.userMapper.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
+
+	}
+
 }

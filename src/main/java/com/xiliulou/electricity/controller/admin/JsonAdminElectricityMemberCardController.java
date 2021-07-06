@@ -72,6 +72,20 @@ public class JsonAdminElectricityMemberCardController {
         return electricityMemberCardService.queryList(offset, size, status, type,tenantId);
     }
 
+    /**
+     * 分页
+     *
+     * @return
+     */
+    @GetMapping("admin/electricityMemberCard/queryCount")
+    public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "status", required = false) Integer status) {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricityMemberCardService.queryCount(status, type,tenantId);
+    }
+
+
     //查询换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Integer id){

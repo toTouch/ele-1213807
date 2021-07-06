@@ -20,7 +20,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R update(ElectricityBattery electricityBattery);
 
-    R getElectricityBatteryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
+    R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
     ElectricityBattery queryById(Long electricityBatteryId);
 
@@ -36,4 +36,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void updateReport(ElectricityBattery newElectricityBattery);
 
     Integer updateByOrder(ElectricityBattery electricityBattery);
+
+	R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
 }

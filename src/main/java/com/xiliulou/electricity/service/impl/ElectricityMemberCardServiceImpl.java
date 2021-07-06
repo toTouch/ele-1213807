@@ -161,7 +161,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     @DS("slave_1")
     public R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId) {
-
         return R.ok(baseMapper.queryList(offset, size, status, type,tenantId));
     }
 
@@ -249,8 +248,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
 
-
-
         //查找加盟商下的可用套餐
         return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId()));
     }
@@ -260,6 +257,10 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId,id));
     }
 
+    @Override
+    public R queryCount(Integer status, Integer type, Integer tenantId) {
+        return R.ok(baseMapper.queryCount(status, type,tenantId));
+    }
 
     /**
      * 获取套餐

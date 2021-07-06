@@ -17,11 +17,13 @@ import java.util.List;
 public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery> {
 
 
-    List<ElectricityBattery> getElectricityBatteryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
+    List<ElectricityBattery> queryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
                                     @Param("offset") Long offset, @Param("size") Long size);
 
 
     ElectricityBattery selectBatteryInfo(@Param("uid") Long uid);
 
 	Integer updateByOrder(ElectricityBattery electricityBattery);
+
+	Integer queryCount(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 }

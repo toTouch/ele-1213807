@@ -8,7 +8,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
@@ -16,7 +15,6 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
@@ -105,12 +103,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     @DS("slave_1")
-    public R getElectricityBatteryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-        electricityBatteryQuery.setTenantId(tenantId);
+    public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
 
-        List<ElectricityBattery> electricityBatteryList=electricitybatterymapper.getElectricityBatteryList(electricityBatteryQuery, offset, size);
+        List<ElectricityBattery> electricityBatteryList=electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
 
         if(ObjectUtil.isEmpty(electricityBatteryList)){
             return R.ok(electricityBatteryList);
@@ -188,7 +183,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R getSelfBattery(Long uid) {
-
         return R.ok(baseMapper.selectBatteryInfo(uid));
     }
 
@@ -216,6 +210,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public Integer updateByOrder(ElectricityBattery electricityBattery) {
         return electricitybatterymapper.updateByOrder(electricityBattery);
+    }
+
+    @Override
+    public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
+        return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
     }
 
 }

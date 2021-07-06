@@ -21,4 +21,5 @@ public interface ElectricityMemberCardService {
 
 	List<ElectricityMemberCard> queryByFranchisee(Integer id);
 
+	R queryCount(Integer status, Integer type, Integer tenantId);
 }

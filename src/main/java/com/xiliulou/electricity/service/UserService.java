@@ -75,4 +75,6 @@ public interface UserService {
     R endLimitUser(Long uid);
 
     R addInnerUser(AdminUserQuery adminUserQuery);
+
+	Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
 }

@@ -31,4 +31,6 @@ public interface ElectricityCabinetModelService {
     R delete(Integer id);
 
     R queryList(ElectricityCabinetModelQuery electricityCabinetModelQuery);
+
+	R queryCount(ElectricityCabinetModelQuery electricityCabinetModelQuery);
 }

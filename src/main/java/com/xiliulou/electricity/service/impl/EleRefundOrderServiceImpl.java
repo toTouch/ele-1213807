@@ -266,4 +266,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		return eleRefundOrderList.get(0).getStatus();
 	}
 
+	@Override
+	public R queryCount(EleRefundQuery eleRefundQuery) {
+		return R.ok(eleRefundOrderMapper.queryCount(eleRefundQuery));
+	}
+
 }

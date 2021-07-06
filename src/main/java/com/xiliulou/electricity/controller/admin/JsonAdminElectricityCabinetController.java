@@ -145,7 +145,7 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.queryList(electricityCabinetQuery);
     }
 
-    //列表查询
+    //列表数量查询
     @GetMapping(value = "/admin/electricityCabinet/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "address", required = false) String address,

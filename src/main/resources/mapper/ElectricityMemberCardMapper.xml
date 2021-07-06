@@ -20,6 +20,7 @@
 		limit #{offset}, #{size}
 	</select>
 
+
 	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
         SELECT *
         FROM t_electricity_member_card
@@ -27,6 +28,22 @@
         ORDER BY create_time DESC
         limit #{offset}, #{size}
     </select>
+
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		SELECT COUNT(1)
+		FROM t_electricity_member_card
+		where del_flag=0
+		<if test="status != null">
+			AND status = #{status}
+		</if>
+		<if test="type != null">
+			AND type = #{type}
+		</if>
+		<if test="tenantId != null ">
+			and tenant_id = #{tenantId}
+		</if>
+	</select>
 
 
 </mapper>

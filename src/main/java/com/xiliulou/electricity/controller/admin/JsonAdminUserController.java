@@ -71,6 +71,22 @@ public class JsonAdminUserController extends BaseController {
         return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
     }
 
+
+    @GetMapping("/user/queryCount")
+    public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "beginTime", required = false) Long startTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
+    }
+
     @PutMapping("/user")
     public R updateAdminUser(@Validated(value = UpdateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
         if (result.hasFieldErrors()) {

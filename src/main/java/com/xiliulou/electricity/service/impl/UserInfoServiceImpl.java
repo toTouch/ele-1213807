@@ -563,4 +563,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return R.ok(result);
 	}
 
+	@Override
+	public R queryCount(UserInfoQuery userInfoQuery) {
+		return R.ok(userInfoMapper.queryCount(userInfoQuery));
+	}
+
 }

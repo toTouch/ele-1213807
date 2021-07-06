@@ -72,4 +72,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R updateAuth(UserInfo userInfo);
 
     R queryUserAuthInfo(UserInfoQuery userInfoQuery);
+
+	R queryCount(UserInfoQuery userInfoQuery);
 }

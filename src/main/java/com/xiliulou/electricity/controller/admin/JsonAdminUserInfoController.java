@@ -79,6 +79,30 @@ public class JsonAdminUserInfoController {
         return userInfoService.queryList(userInfoQuery);
     }
 
+    //列表查询
+    @GetMapping(value = "/admin/userInfo/queryCount")
+    public R queryCount(@RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "phone", required = false) String phone,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
+            @RequestParam(value = "authStatus", required = false) Integer authStatus) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .name(name)
+                .phone(phone)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .serviceStatus(serviceStatus)
+                .authStatus(authStatus)
+                .tenantId(tenantId).build();
+
+        return userInfoService.queryCount(userInfoQuery);
+    }
+
     //禁/启用
     @PutMapping(value = "/admin/userInfo/updateStatus")
     public R updateStatus(@RequestParam("id") Long id,@RequestParam("usableStatus") Integer usableStatus) {

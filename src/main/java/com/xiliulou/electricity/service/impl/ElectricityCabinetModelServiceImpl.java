@@ -133,4 +133,9 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         return R.ok(electricityCabinetModelMapper.queryList(electricityCabinetModelQuery));
     }
 
+    @Override
+    public R queryCount(ElectricityCabinetModelQuery electricityCabinetModelQuery) {
+        return R.ok(electricityCabinetModelMapper.queryCount(electricityCabinetModelQuery));
+    }
+
 }

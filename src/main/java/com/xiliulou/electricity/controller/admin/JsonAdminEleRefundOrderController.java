@@ -33,7 +33,6 @@ public class JsonAdminEleRefundOrderController {
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
-                       @RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -59,6 +58,28 @@ public class JsonAdminEleRefundOrderController {
                 .tenantId(tenantId).build();
 
         return eleRefundOrderService.queryList(eleRefundQuery);
+    }
+
+    //退款列表总数
+    @GetMapping("/admin/eleRefundOrder/queryCount")
+    public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
+            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+
+
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
+                .orderId(orderId)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .tenantId(tenantId).build();
+
+        return eleRefundOrderService.queryCount(eleRefundQuery);
     }
 
     //后台退款处理
