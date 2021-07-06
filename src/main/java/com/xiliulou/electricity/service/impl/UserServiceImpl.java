@@ -175,7 +175,7 @@ public class UserServiceImpl implements UserService {
 			return Triple.of(false, null, "无权限操作！");
 		}
 
-		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(),tenantId);
 		if (Objects.nonNull(phoneUserExists)) {
 			return Triple.of(false, null, "手机号已存在");
 		}
@@ -235,19 +235,19 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User queryByUserPhone(String phone, Integer type) {
-		User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + phone + ":" + type, User.class);
+	public User queryByUserPhone(String phone, Integer type,Integer tenantId) {
+		User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE+tenantId + phone + ":" + type, User.class);
 		if (Objects.nonNull(cacheUser)) {
 			return cacheUser;
 		}
 
-		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL));
+		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId,tenantId));
 		if (Objects.isNull(user)) {
 			return null;
 		}
 
 		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
-		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE +tenantId+ user.getPhone() + ":" + user.getUserType(), user);
 
 		return user;
 	}
@@ -267,7 +267,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
-			User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE);
+			User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE,user.getTenantId());
 			if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
 				return Pair.of(false, "手机号已存在！无法修改!");
 			}
@@ -466,7 +466,7 @@ public class UserServiceImpl implements UserService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 
-		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType());
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(),tenantId);
 		if (Objects.nonNull(phoneUserExists)) {
 			return R.fail("手机号已存在！");
 

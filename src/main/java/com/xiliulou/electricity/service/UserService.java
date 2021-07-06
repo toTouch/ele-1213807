@@ -58,7 +58,7 @@ public interface UserService {
 
     Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery);
 
-    User queryByUserPhone(String phone, Integer type);
+    User queryByUserPhone(String phone, Integer type,Integer tenantId);
 
     Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
 

@@ -73,13 +73,13 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
 
 
     @Override
-    public UserOauthBind queryOauthByOpenIdAndSource(String openid, int source) {
-        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getThirdId, openid).eq(UserOauthBind::getSource, source));
+    public UserOauthBind queryOauthByOpenIdAndSource(String openid, int source,Integer tenantId) {
+        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getThirdId, openid).eq(UserOauthBind::getSource, source).eq(UserOauthBind::getTenantId,tenantId));
     }
 
     @Override
-    public UserOauthBind queryByUserPhone(String phone, int source) {
-        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source).eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND));
+    public UserOauthBind queryByUserPhone(String phone, int source,Integer tenantId) {
+        return this.userOauthBindMapper.selectOne(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getPhone, phone).eq(UserOauthBind::getSource, source).eq(UserOauthBind::getStatus, UserOauthBind.STATUS_BIND).eq(UserOauthBind::getTenantId,tenantId));
     }
 
     @Override

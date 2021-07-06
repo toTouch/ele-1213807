@@ -40,9 +40,9 @@ public interface UserOauthBindService {
     Integer update(UserOauthBind userOauthBind);
 
 
-    UserOauthBind queryOauthByOpenIdAndSource(String openid, int source);
+    UserOauthBind queryOauthByOpenIdAndSource(String openid, int source,Integer tenantId);
 
-    UserOauthBind queryByUserPhone(String phone, int source);
+    UserOauthBind queryByUserPhone(String phone, int source,Integer tenantId);
 
     Pair<Boolean, Object> queryListByCondition(Integer size, Integer offset, Long uid, String thirdId, String phone);
 

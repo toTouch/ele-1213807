@@ -130,9 +130,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
 			//先检查openId存在吗
-			Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid());
+			Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid(),tenantId);
 			//检查手机号是否存在
-			Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber);
+			Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber,tenantId);
 
 			//如果两个都不存在，创建用户
 			if (!existPhone.getLeft() && !existsOpenId.getLeft()) {
@@ -262,7 +262,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			//openid不存在的时候,手机号存在
 			if (!existsOpenId.getLeft() && existPhone.getLeft()) {
 
-				UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO);
+				UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO,tenantId);
 				if (Objects.nonNull(userOauthBind)) {
 					//这里uid必须相同
 					if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
@@ -420,13 +420,13 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	}
 
-	private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber) {
-		User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO);
+	private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber,Integer tenantId) {
+		User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO,tenantId);
 		return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
 	}
 
-	private Pair<Boolean, UserOauthBind> checkOpenIdExists(String openid) {
-		UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(openid, UserOauthBind.SOURCE_WX_PRO);
+	private Pair<Boolean, UserOauthBind> checkOpenIdExists(String openid,Integer tenantId) {
+		UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(openid, UserOauthBind.SOURCE_WX_PRO,tenantId);
 		return Objects.nonNull(userOauthBind) ? Pair.of(true, userOauthBind) : Pair.of(false, null);
 	}
 
