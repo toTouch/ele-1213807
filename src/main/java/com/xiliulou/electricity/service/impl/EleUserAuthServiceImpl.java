@@ -197,6 +197,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 			return e;
 		}).collect(Collectors.toList());
+		log.info("collect is -->{}",collect);
 		return R.ok(collect);
 	}
 
