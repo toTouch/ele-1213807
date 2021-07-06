@@ -156,13 +156,13 @@ public class JsonAdminStoreController {
         //1、先找到加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(ObjectUtil.isEmpty(franchisee)){
-            return null;
+            return R.ok();
         }
 
         List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
 
         if(ObjectUtil.isEmpty(storeList)){
-            return null;
+            return R.ok();
         }
         //2、再找加盟商绑定的门店
         List<Integer> storeIdList=new ArrayList<>();
@@ -170,7 +170,7 @@ public class JsonAdminStoreController {
             storeIdList.add(store.getId());
         }
         if(ObjectUtil.isEmpty(storeIdList)){
-            return null;
+            return  R.ok();
         }
 
         storeQuery.setStoreIdList(storeIdList);
@@ -207,13 +207,13 @@ public class JsonAdminStoreController {
         //1、先找到加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(ObjectUtil.isEmpty(franchisee)){
-            return null;
+            return R.ok(0);
         }
 
         List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
 
         if(ObjectUtil.isEmpty(storeList)){
-            return null;
+            return  R.ok(0);
         }
         //2、再找加盟商绑定的门店
         List<Integer> storeIdList=new ArrayList<>();
@@ -221,7 +221,7 @@ public class JsonAdminStoreController {
             storeIdList.add(store.getId());
         }
         if(ObjectUtil.isEmpty(storeIdList)){
-            return null;
+            return  R.ok(0);
         }
 
         storeQuery.setStoreIdList(storeIdList);
