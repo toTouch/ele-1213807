@@ -641,7 +641,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 						}
 					}
 				}
-				if (Objects.nonNull(cardIdList)) {
+				if (ObjectUtil.isNotEmpty(cardIdList)) {
 					moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, cardIdList, tenantId);
 				}
 			} else {
