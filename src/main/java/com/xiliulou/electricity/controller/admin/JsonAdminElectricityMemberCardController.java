@@ -131,8 +131,8 @@ public class JsonAdminElectricityMemberCardController {
      *
      * @return
      */
-    @GetMapping("admin/electricityMemberCard/listByFranchisee")
-    public R listByFranchisee(@RequestParam(value = "type", required = false) Integer type,
+    @GetMapping("admin/electricityMemberCard/listCountByFranchisee")
+    public R listCountByFranchisee(@RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "status", required = false) Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
