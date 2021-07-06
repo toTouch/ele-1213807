@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -13,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -119,7 +121,7 @@ public class JsonAdminElectricityMemberCardController {
         //加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(Objects.isNull(franchisee)){
-            return R.ok();
+            return R.ok(new ArrayList<>());
         }
 
 
@@ -148,7 +150,7 @@ public class JsonAdminElectricityMemberCardController {
         //加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(Objects.isNull(franchisee)){
-            return R.ok();
+            return R.ok(0);
         }
 
 

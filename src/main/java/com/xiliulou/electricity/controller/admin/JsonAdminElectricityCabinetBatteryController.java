@@ -144,21 +144,21 @@ public class JsonAdminElectricityCabinetBatteryController {
         //加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(Objects.isNull(franchisee)){
-            return R.ok();
+            return R.ok(new ArrayList<>());
         }
 
         //加盟商电池
         List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
 
         if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)){
-            return R.ok();
+            return R.ok(new ArrayList<>());
         }
         List<Long> electricityBatteryIdList=new ArrayList<>();
         for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
             electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
         }
         if(ObjectUtil.isEmpty(electricityBatteryIdList)){
-            return R.ok();
+            return R.ok(new ArrayList<>());
         }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
@@ -194,21 +194,21 @@ public class JsonAdminElectricityCabinetBatteryController {
         //加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(Objects.isNull(franchisee)){
-            return R.ok();
+            return R.ok(0);
         }
 
         //加盟商电池
         List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
 
         if(ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)){
-            return R.ok();
+            return R.ok(0);
         }
         List<Long> electricityBatteryIdList=new ArrayList<>();
         for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
             electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
         }
         if(ObjectUtil.isEmpty(electricityBatteryIdList)){
-            return R.ok();
+            return R.ok(0);
         }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
