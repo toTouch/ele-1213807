@@ -51,7 +51,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams) {
 		Integer tenantId = TenantContextHolder.getTenantId();
 		//加锁
-		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY + tenantId,
 				String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
 		if (!getLockerSuccess) {
 			return R.failMsg("操作频繁!");
@@ -72,19 +72,15 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 			electricityPayParams.setCreateTime(System.currentTimeMillis());
 			electricityPayParams.setTenantId(tenantId);
 			baseMapper.insert(electricityPayParams);
-			redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
-			redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
-
-			return R.ok();
 		} else {
 			if (ObjectUtil.notEqual(oldElectricityPayParams1.getId(), electricityPayParams.getId())) {
 				return R.fail("请求参数id,不合法!");
 			}
-			redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+			redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS + tenantId);
 			baseMapper.updateById(electricityPayParams);
-			redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
-			return R.ok();
 		}
+		redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY + tenantId);
+		return R.ok();
 	}
 
 	/**
@@ -96,11 +92,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	@Override
 	@DS("slave_1")
 	public ElectricityPayParams queryFromCache(Integer tenantId) {
-		ElectricityPayParams electricityPayParams = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS+tenantId, ElectricityPayParams.class);
+		ElectricityPayParams electricityPayParams = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS + tenantId, ElectricityPayParams.class);
 		if (Objects.isNull(electricityPayParams)) {
 			electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getTenantId, tenantId));
 			if (Objects.nonNull(electricityPayParams)) {
-				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS+tenantId, electricityPayParams);
+				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS + tenantId, electricityPayParams);
 			}
 		}
 		return electricityPayParams;
@@ -116,13 +112,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 			return R.fail("找不到支付配置");
 		}
 
-
 		String fileName = file.getOriginalFilename();
 		String path = config.getMchCertificateDirectory() + fileName;
 
 		//需要优化,实现MultipartFile接口，在里面进行重写 TODO
 		File newFile = new File(path);
-		if(newFile.exists()){
+		if (newFile.exists()) {
 			newFile.delete();
 		}
 		//MultipartFile（注意这个时候）
@@ -138,7 +133,8 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		electricityPayParams.setWechatMerchantPrivateKeyPath(path);
 		electricityPayParams.setUpdateTime(System.currentTimeMillis());
 		baseMapper.updateById(electricityPayParams);
-		redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS);
+
+		redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS+oldElectricityPayParams.getTenantId());
 		return R.ok();
 
 	}
