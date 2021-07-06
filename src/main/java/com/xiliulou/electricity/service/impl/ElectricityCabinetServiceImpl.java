@@ -659,7 +659,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 				|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-			Integer storeCount = null;
+			Integer storeCount = 0;
 			//查用户
 			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
