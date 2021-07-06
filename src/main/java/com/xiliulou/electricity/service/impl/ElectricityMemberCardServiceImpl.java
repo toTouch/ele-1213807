@@ -262,6 +262,16 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return R.ok(baseMapper.queryCount(status, type,tenantId));
     }
 
+    @Override
+    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer franchiseeId) {
+       return R.ok(baseMapper.listByFranchisee(offset, size, status, type,tenantId,franchiseeId));
+    }
+
+    @Override
+    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Integer franchiseeId) {
+        return R.ok(baseMapper.listCountByFranchisee(status, type,tenantId,franchiseeId));
+    }
+
     /**
      * 获取套餐
      *

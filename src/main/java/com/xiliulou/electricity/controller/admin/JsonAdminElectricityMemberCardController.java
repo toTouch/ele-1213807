@@ -2,8 +2,12 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -23,6 +27,9 @@ public class JsonAdminElectricityMemberCardController {
 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
 
     /**
      * 新增
@@ -72,8 +79,10 @@ public class JsonAdminElectricityMemberCardController {
         return electricityMemberCardService.queryList(offset, size, status, type,tenantId);
     }
 
+
+
     /**
-     * 分页
+     * 分页数量
      *
      * @return
      */
@@ -83,6 +92,67 @@ public class JsonAdminElectricityMemberCardController {
 
         Integer tenantId = TenantContextHolder.getTenantId();
         return electricityMemberCardService.queryCount(status, type,tenantId);
+    }
+
+
+    /**
+     * 加盟商分页
+     *
+     * @return
+     */
+    @GetMapping("admin/electricityMemberCard/listByFranchisee")
+    public R listByFranchisee(@RequestParam(value = "offset") Long offset,
+            @RequestParam(value = "size") Long size,
+            @RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "status", required = false) Integer status) {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //加盟商
+        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+        if(Objects.isNull(franchisee)){
+            return R.ok();
+        }
+
+
+        return electricityMemberCardService.listByFranchisee(offset, size, status, type,tenantId,franchisee.getId());
+    }
+
+    /**
+     * 加盟商分页数量
+     *
+     * @return
+     */
+    @GetMapping("admin/electricityMemberCard/listByFranchisee")
+    public R listByFranchisee(@RequestParam(value = "type", required = false) Integer type,
+            @RequestParam(value = "status", required = false) Integer status) {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //加盟商
+        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+        if(Objects.isNull(franchisee)){
+            return R.ok();
+        }
+
+
+        return electricityMemberCardService.listCountByFranchisee(status, type,tenantId,franchisee.getId());
     }
 
 
