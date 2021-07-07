@@ -349,6 +349,14 @@ public class StoreServiceImpl implements StoreService {
 		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList,tenantId);
 	}
 
+	@Override
+	public void deleteByUid(Long uid) {
+		Store store=queryByUid(uid);
+		if(Objects.nonNull(store)){
+			delete(store.getId());
+		}
+	}
+
 	public Long getTime(Long time) {
 		Date date1 = new Date(time);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

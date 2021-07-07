@@ -47,4 +47,6 @@ public interface StoreService {
 	R queryCountByFranchisee(StoreQuery storeQuery);
 
 	List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId);
+
+	void deleteByUid(Long uid);
 }

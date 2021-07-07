@@ -34,6 +34,7 @@ public class JsonAdminStoreController {
      */
     @Autowired
     StoreService storeService;
+
     @Autowired
     FranchiseeService franchiseeService;
 

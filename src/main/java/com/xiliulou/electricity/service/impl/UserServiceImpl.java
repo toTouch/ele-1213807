@@ -20,8 +20,10 @@ import com.xiliulou.electricity.entity.UserRole;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ProvinceService;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
@@ -89,6 +91,12 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	RoleService roleService;
+
+	@Autowired
+	FranchiseeService franchiseeService;
+
+	@Autowired
+	StoreService storeService;
 
 
 	/**
@@ -378,6 +386,15 @@ public class UserServiceImpl implements UserService {
 		if (deleteById(uid)) {
 			redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
 			redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+
+			//删除加盟商或门店
+			if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+				franchiseeService.deleteByUid(uid);
+			}
+			if (Objects.equals(user.getUserType(), User.TYPE_USER_STORE)) {
+				storeService.deleteByUid(uid);
+			}
+
 		}
 		return Pair.of(true, null);
 	}

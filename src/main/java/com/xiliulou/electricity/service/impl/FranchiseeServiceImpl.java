@@ -233,4 +233,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         return R.ok(franchiseeMapper.queryCount(franchiseeQuery));
     }
 
+    @Override
+    public void deleteByUid(Long uid) {
+        Franchisee franchisee=queryByUid(uid);
+        if(Objects.nonNull(franchisee)) {
+            delete(franchisee.getId());
+        }
+    }
+
 }
