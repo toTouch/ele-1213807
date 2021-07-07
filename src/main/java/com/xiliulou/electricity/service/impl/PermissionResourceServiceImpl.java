@@ -264,7 +264,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		}
 
 		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
-		//排序
+
 
 		return Pair.of(true, permissionResourceTrees);
 	}
