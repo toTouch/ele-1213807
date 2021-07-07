@@ -457,7 +457,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
 				}
 				if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)
-						&& Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
+						/*&& Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)*/) {
 					electricityCabinets.add(e);
 				}
 			});
