@@ -151,12 +151,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		}
 
 		//判断电池是否存在，或者已经被绑定
-		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getElectricityBatterySn());
+		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 		if (Objects.isNull(oldElectricityBattery)) {
-			log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getElectricityBatterySn());
+			log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 			return R.fail("ELECTRICITY.0020", "未找到电池");
 		}
-		Integer count = franchiseeUserInfoService.queryCountByBatterySn(userInfoBatteryAddAndUpdate.getElectricityBatterySn());
+		Integer count = franchiseeUserInfoService.queryCountByBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 		if (count>0) {
 			return R.fail("ELECTRICITY.0039", "电池已被绑定");
 		}
@@ -166,9 +166,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
 		franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
 		if (Objects.isNull(oldFranchiseeUserInfo.getInitElectricityBatterySn())) {
-			franchiseeUserInfo.setInitElectricityBatterySn(userInfoBatteryAddAndUpdate.getElectricityBatterySn());
+			franchiseeUserInfo.setInitElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 		}
-		franchiseeUserInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getElectricityBatterySn());
+		franchiseeUserInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
 		Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);

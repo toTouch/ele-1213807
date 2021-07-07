@@ -31,7 +31,7 @@ public class UserInfoBatteryAddAndUpdate {
     * 初始电池编号
     */
     @NotEmpty(message = "初始电池编号不能为空!", groups = {UpdateGroup.class})
-    private String electricityBatterySn;
+    private String initElectricityBatterySn;
     /**
     * 租电池押金
     */
