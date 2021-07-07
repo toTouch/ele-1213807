@@ -31,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,7 +128,7 @@ public class JsonAdminElectricityCabinetController {
             }
             eleIdList=userTypeService.getEleIdListByUserType(user);
             if(ObjectUtil.isEmpty(eleIdList)){
-                return R.ok();
+                return R.ok(new ArrayList<>());
             }
         }
 

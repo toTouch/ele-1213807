@@ -157,7 +157,7 @@ public class JsonAdminStoreController {
         //1、先找到加盟商
         Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
         if(ObjectUtil.isEmpty(franchisee)){
-            return R.ok();
+            return R.ok(new ArrayList<>());
         }
 
         List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
