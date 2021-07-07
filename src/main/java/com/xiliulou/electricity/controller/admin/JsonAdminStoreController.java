@@ -163,7 +163,7 @@ public class JsonAdminStoreController {
         List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
 
         if(ObjectUtil.isEmpty(storeList)){
-            return R.ok();
+            return R.ok(new ArrayList<>());
         }
         //2、再找加盟商绑定的门店
         List<Integer> storeIdList=new ArrayList<>();
@@ -171,7 +171,7 @@ public class JsonAdminStoreController {
             storeIdList.add(store.getId());
         }
         if(ObjectUtil.isEmpty(storeIdList)){
-            return  R.ok();
+            return R.ok(new ArrayList<>());
         }
 
         storeQuery.setStoreIdList(storeIdList);
