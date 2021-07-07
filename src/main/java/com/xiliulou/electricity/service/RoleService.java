@@ -63,4 +63,6 @@ public interface RoleService {
     List<Long> queryRidsByUid(Long uid);
 
     R queryAll();
+
+    Long queryByName(String name, Integer tenantId);
 }

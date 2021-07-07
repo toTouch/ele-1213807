@@ -13,6 +13,7 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Province;
+import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserRole;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ProvinceService;
+import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserRoleService;
@@ -84,6 +86,9 @@ public class UserServiceImpl implements UserService {
 
 	@Autowired
 	UserOauthBindService userOauthBindService;
+
+	@Autowired
+	RoleService roleService;
 
 
 	/**
@@ -218,9 +223,36 @@ public class UserServiceImpl implements UserService {
 				.build();
 		User insert = insert(user);
 
+		//默认值
+		Long roleId=adminUserQuery.getUserType().longValue() + 1;
+		//运营商
+		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_OPERATE)){
+			Long role=roleService.queryByName("OPERATE_USER",tenantId);
+			if(Objects.nonNull(role)){
+				roleId=role;
+			}
+
+		}
+
+		//加盟商
+		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_FRANCHISEE)){
+			Long role=roleService.queryByName("FRANCHISEE_USER",tenantId);
+			if(Objects.nonNull(role)){
+				roleId=role;
+			}
+		}
+
+		//门店
+		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_STORE)){
+			Long role=roleService.queryByName("STORE_USER",tenantId);
+			if(Objects.nonNull(role)){
+				roleId=role;
+			}
+		}
+
 		//设置角色
 		UserRole userRole = new UserRole();
-		userRole.setRoleId(adminUserQuery.getUserType().longValue() + 1);
+		userRole.setRoleId(roleId);
 		userRole.setUid(insert.getUid());
 		userRoleService.insert(userRole);
 
@@ -510,9 +542,38 @@ public class UserServiceImpl implements UserService {
 				.build();
 		User insert = insert(user);
 
+
+		//默认值
+		Long roleId=adminUserQuery.getUserType().longValue() + 1;
+		//运营商
+		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_OPERATE)){
+			Long role=roleService.queryByName("OPERATE_USER",tenantId);
+			if(Objects.nonNull(role)){
+				roleId=role;
+			}
+
+		}
+
+		//加盟商
+		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_FRANCHISEE)){
+			Long role=roleService.queryByName("FRANCHISEE_USER",tenantId);
+			if(Objects.nonNull(role)){
+				roleId=role;
+			}
+		}
+
+		//门店
+		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_STORE)){
+			Long role=roleService.queryByName("STORE_USER",tenantId);
+			if(Objects.nonNull(role)){
+				roleId=role;
+			}
+		}
+
+
 		//设置角色
 		UserRole userRole = new UserRole();
-		userRole.setRoleId(adminUserQuery.getUserType().longValue() + 1);
+		userRole.setRoleId(roleId);
 		userRole.setUid(insert.getUid());
 		userRoleService.insert(userRole);
 

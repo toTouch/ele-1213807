@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -247,6 +248,15 @@ public class RoleServiceImpl implements RoleService {
 		}
 		//不显示超级管理员角色
 		return R.ok(roles.stream().filter(e -> e.getId() > 1).collect(Collectors.toList()));
+	}
+
+	@Override
+	public Long queryByName(String name, Integer tenantId) {
+		Role role=roleMapper.selectOne(new LambdaQueryWrapper<Role>().eq(Role::getName,name).eq(Role::getTenantId,tenantId));
+		if(Objects.isNull(role)) {
+			return null;
+		}
+		return role.getId();
 	}
 
 }
