@@ -252,7 +252,7 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public Long queryByName(String name, Integer tenantId) {
-		Role role=roleMapper.selectOne(new LambdaQueryWrapper<Role>().eq(Role::getName,name).eq(Role::getTenantId,tenantId));
+		Role role=roleMapper.queryByName(name,tenantId);
 		if(Objects.isNull(role)) {
 			return null;
 		}
