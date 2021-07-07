@@ -211,6 +211,8 @@ public class TenantServiceImpl implements TenantService {
         tenant.setUpdateTime(System.currentTimeMillis());
         tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
         tenantMapper.updateById(tenant);
+
+        redisService.delete(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId());
         return R.ok();
     }
 
