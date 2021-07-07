@@ -120,7 +120,7 @@ public class RoleServiceImpl implements RoleService {
 		role.setUpdateTime(System.currentTimeMillis());
 		role.setCreateTime(System.currentTimeMillis());
 
-		int insert = roleMapper.insert(role);
+		int insert = roleMapper.insertOne(role);
 		return insert > 0 ? R.ok() : R.fail("保存失败！");
 	}
 
