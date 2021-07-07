@@ -32,4 +32,6 @@ public interface RoleMapper  extends BaseMapper<Role>{
 
 
 	Integer insertOne(Role role);
+
+	Integer update(Role role);
 }

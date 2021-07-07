@@ -96,7 +96,7 @@ public class RoleServiceImpl implements RoleService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(Role role) {
-		return this.roleMapper.updateById(role);
+		return this.roleMapper.update(role);
 
 	}
 
