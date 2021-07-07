@@ -32,11 +32,7 @@ public class UserInfoBatteryAddAndUpdate {
     */
     @NotEmpty(message = "初始电池编号不能为空!", groups = {UpdateGroup.class})
     private String initElectricityBatterySn;
-    /**
-    * 租电池押金
-    */
-    @NotNull(message = "租电池押金不能为空!", groups = {UpdateGroup.class})
-    private Double batteryDeposit;
+
 
 
 
