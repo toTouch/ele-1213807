@@ -200,6 +200,7 @@ public class TenantServiceImpl implements TenantService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
         Tenant tenant=tenantMapper.selectById(tenantAddAndUpdateQuery.getId());
         if(Objects.isNull(tenant)){

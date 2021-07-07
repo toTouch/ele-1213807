@@ -25,6 +25,8 @@ import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -61,6 +63,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
         //新增加盟商新增用户
         AdminUserQuery adminUserQuery = new AdminUserQuery();
@@ -102,6 +105,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
 
         Franchisee oldFranchisee = queryByIdFromCache(franchiseeAddAndUpdate.getId());
@@ -127,6 +131,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R delete(Integer id) {
 
         Franchisee franchisee = queryByIdFromCache(id);

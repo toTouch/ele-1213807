@@ -77,7 +77,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
@@ -128,7 +128,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public R edit(StoreAddAndUpdate storeAddAndUpdate) {
 
 		Store store = new Store();
@@ -158,7 +158,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	@Transactional
+	@Transactional(rollbackFor = Exception.class)
 	public R delete(Integer id) {
 
 		Store store = queryByIdFromCache(id);
