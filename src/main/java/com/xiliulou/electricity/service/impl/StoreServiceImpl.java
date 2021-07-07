@@ -166,13 +166,6 @@ public class StoreServiceImpl implements StoreService {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
-		//先删除用户
-		Boolean result = userService.deleteById(store.getUid());
-
-		if (!result) {
-			return R.fail("ELECTRICITY.0086", "操作失败");
-		}
-
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_DEL);
 
@@ -180,8 +173,11 @@ public class StoreServiceImpl implements StoreService {
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//删除缓存
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
+			//删除用户
+			 userService.deleteById(store.getUid());
 			return null;
 		});
+
 
 		if (update > 0) {
 			return R.ok();

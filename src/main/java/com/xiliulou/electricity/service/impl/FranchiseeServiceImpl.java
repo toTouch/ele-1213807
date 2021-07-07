@@ -134,13 +134,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        //先删除用户
-        Boolean result=userService.deleteById(franchisee.getUid());
-
-        if(!result){
-            return R.fail("ELECTRICITY.0086", "操作失败");
-        }
-
         //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());
         franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
@@ -149,8 +142,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         DbUtils.dbOperateSuccessThen(update, () -> {
             //修改缓存
             redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + id);
+            //删除用户
+            userService.deleteById(franchisee.getUid());
             return null;
         });
+
 
         if (update > 0) {
             return R.ok();
