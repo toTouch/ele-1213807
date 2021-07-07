@@ -56,7 +56,6 @@ public class StoreServiceImpl implements StoreService {
 	@Autowired
 	UserService userService;
 
-
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -82,21 +81,20 @@ public class StoreServiceImpl implements StoreService {
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
-		BeanUtil.copyProperties(storeAddAndUpdate,adminUserQuery);
+		BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
 		adminUserQuery.setUserType(User.TYPE_USER_STORE);
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
 		adminUserQuery.setPhone(storeAddAndUpdate.getServicePhone());
 
-		R result= userService.addInnerUser(adminUserQuery);
-		if(result.getCode()==1){
+		R result = userService.addInnerUser(adminUserQuery);
+		if (result.getCode() == 1) {
 			return result;
 		}
 
-		Long uid=(Long) result.getData();
+		Long uid = (Long) result.getData();
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
 
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
@@ -116,7 +114,6 @@ public class StoreServiceImpl implements StoreService {
 		store.setTenantId(tenantId);
 		store.setUid(uid);
 
-
 		int insert = storeMapper.insert(store);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//新增缓存
@@ -129,7 +126,6 @@ public class StoreServiceImpl implements StoreService {
 		}
 		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
-
 
 	@Override
 	@Transactional
@@ -165,23 +161,20 @@ public class StoreServiceImpl implements StoreService {
 	@Transactional
 	public R delete(Integer id) {
 
-
 		Store store = queryByIdFromCache(id);
 		if (Objects.isNull(store)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
 		//先删除用户
-		Boolean result=userService.deleteById(store.getUid());
+		Boolean result = userService.deleteById(store.getUid());
 
-		if(!result){
+		if (!result) {
 			return R.fail("ELECTRICITY.0086", "操作失败");
 		}
 
-
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_DEL);
-
 
 		int update = storeMapper.updateById(store);
 		DbUtils.dbOperateSuccessThen(update, () -> {
@@ -189,7 +182,6 @@ public class StoreServiceImpl implements StoreService {
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
 			return null;
 		});
-
 
 		if (update > 0) {
 			return R.ok();
@@ -200,7 +192,7 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@DS("slave_1")
 	public R queryList(StoreQuery storeQuery) {
-		List<StoreVO> storeVOList =storeMapper.queryList(storeQuery);
+		List<StoreVO> storeVOList = storeMapper.queryList(storeQuery);
 		if (ObjectUtil.isEmpty(storeVOList)) {
 			return R.ok(new ArrayList<>());
 		}
@@ -223,12 +215,12 @@ public class StoreServiceImpl implements StoreService {
 						}
 					}
 				}
-				    if(Objects.nonNull(e.getUid())) {
-					    User user = userService.queryByUidFromCache(e.getUid());
-					    if (Objects.nonNull(user)) {
-						    e.setUserName(user.getName());
-					    }
-				    }
+				if (Objects.nonNull(e.getUid())) {
+					User user = userService.queryByUidFromCache(e.getUid());
+					if (Objects.nonNull(user)) {
+						e.setUserName(user.getName());
+					}
+				}
 			});
 		}
 		storeVOList.stream().sorted(Comparator.comparing(StoreVO::getCreateTime).reversed()).collect(Collectors.toList());
@@ -237,8 +229,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	@Transactional
-	public R updateStatus(Integer id,Integer usableStatus) {
-
+	public R updateStatus(Integer id, Integer usableStatus) {
 
 		Store oldStore = queryByIdFromCache(id);
 		if (Objects.isNull(oldStore)) {
@@ -257,12 +248,10 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok();
 	}
 
-
 	@Override
-	public Integer homeOne(List<Integer> storeIdList,Integer tenantId) {
-		return storeMapper.homeOne(storeIdList,tenantId);
+	public Integer homeOne(List<Integer> storeIdList, Integer tenantId) {
+		return storeMapper.homeOne(storeIdList, tenantId);
 	}
-
 
 	@Override
 	public R showInfoByDistance(StoreQuery storeQuery) {
@@ -306,13 +295,13 @@ public class StoreServiceImpl implements StoreService {
 				List<ElectricityCabinet> electricityCabinetList = electricityCabinetService.queryByStoreId(e.getId());
 				if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
 					for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
-							//动态查询在线状态
-							boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-							if (result) {
-								onlineElectricityCabinetCount = onlineElectricityCabinetCount + 1;
-								Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
-								fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
-							}
+						//动态查询在线状态
+						boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+						if (result) {
+							onlineElectricityCabinetCount = onlineElectricityCabinetCount + 1;
+							Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
+							fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
+						}
 					}
 				}
 				e.setOnlineElectricityCabinet(onlineElectricityCabinetCount);
@@ -323,15 +312,14 @@ public class StoreServiceImpl implements StoreService {
 		return R.ok(storeVOs.stream().sorted(Comparator.comparing(StoreVO::getDistance)).collect(Collectors.toList()));
 	}
 
-
 	@Override
 	public List<Store> queryByFranchiseeId(Integer id) {
-		return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL));
+		return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
 	}
 
 	@Override
 	public Store queryByUid(Long uid) {
-		return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid,uid).eq(Store::getDelFlag,Store.DEL_NORMAL));
+		return storeMapper.selectOne(new LambdaQueryWrapper<Store>().eq(Store::getUid, uid).eq(Store::getDelFlag, Store.DEL_NORMAL));
 	}
 
 	@Override
@@ -346,13 +334,13 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId) {
-		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList,tenantId);
+		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
 	}
 
 	@Override
 	public void deleteByUid(Long uid) {
-		Store store=queryByUid(uid);
-		if(Objects.nonNull(store)){
+		Store store = queryByUid(uid);
+		if (Objects.nonNull(store)) {
 			delete(store.getId());
 		}
 	}
