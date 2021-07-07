@@ -114,11 +114,15 @@ public class RoleServiceImpl implements RoleService {
 
 	@Override
 	public R addRole(RoleQuery roleQuery) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		Role role = new Role();
 		BeanUtils.copyProperties(roleQuery, role);
 
 		role.setUpdateTime(System.currentTimeMillis());
 		role.setCreateTime(System.currentTimeMillis());
+		role.setTenantId(tenantId);
 
 		int insert = roleMapper.insertOne(role);
 		return insert > 0 ? R.ok() : R.fail("保存失败！");
