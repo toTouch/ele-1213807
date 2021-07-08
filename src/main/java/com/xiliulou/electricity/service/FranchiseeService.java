@@ -39,4 +39,6 @@ public interface FranchiseeService {
 	R queryCount(FranchiseeQuery franchiseeQuery);
 
     void deleteByUid(Long uid);
+
+	Integer queryByFanchisee(Long uid);
 }

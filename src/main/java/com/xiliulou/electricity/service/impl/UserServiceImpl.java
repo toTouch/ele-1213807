@@ -383,6 +383,22 @@ public class UserServiceImpl implements UserService {
 			return Pair.of(false, "非法操作");
 		}
 
+		//不让删除租户
+		if (Objects.equals(user.getTenantId(),1)&&Objects.equals(user.getUserType(), User.TYPE_USER_OPERATE)) {
+			return Pair.of(false, "非法操作");
+		}
+
+
+		//加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
+		if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+
+			Integer count=franchiseeService.queryByFanchisee(user.getUid());
+			if(count>0) {
+				return Pair.of(false, "加盟商用户已绑定普通用户");
+			}
+		}
+
+
 		if (deleteById(uid)) {
 			redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
 			redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());

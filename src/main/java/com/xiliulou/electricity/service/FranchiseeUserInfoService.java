@@ -35,4 +35,6 @@ public interface FranchiseeUserInfoService {
 	void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
 
 	void insert(FranchiseeUserInfo insertFranchiseeUserInfo);
+
+	Integer queryCountByFranchisee(Integer id);
 }
