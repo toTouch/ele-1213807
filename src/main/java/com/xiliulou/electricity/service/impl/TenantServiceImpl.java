@@ -112,7 +112,6 @@ public class TenantServiceImpl implements TenantService {
 
         //2.保存用户信息
         String encryptPassword = tenantAddAndUpdateQuery.getPassword();
-        log.info("encryptPassword is -->{}",encryptPassword);
         String decryptPassword = userService.decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
             log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantAddAndUpdateQuery.getName(), tenantAddAndUpdateQuery.getPhone(), tenantAddAndUpdateQuery.getPassword());

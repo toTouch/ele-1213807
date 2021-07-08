@@ -199,7 +199,6 @@ public class UserServiceImpl implements UserService {
 
 		//解密密码
 		String encryptPassword = adminUserQuery.getPassword();
-		log.info("encryptPassword2 is -->{}",encryptPassword);
 		String decryptPassword = decryptPassword(encryptPassword);
 		if (StrUtil.isEmpty(decryptPassword)) {
 			log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", adminUserQuery.getName(), adminUserQuery.getPhone(), adminUserQuery.getPassword());
@@ -269,10 +268,11 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public String decryptPassword(String encryptPassword) {
-		log.info("encodeKey is  -->{}",encodeKey);
+		log.info("encryptPassword is  -->{}",encryptPassword);
+		log.info("encodeKey1 is  -->{}",encodeKey);
 		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
 				new IvParameterSpec(encodeKey.getBytes()));
-
+		log.info("encodeKey2 is  -->{}",encodeKey);
 		return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
 	}
 
