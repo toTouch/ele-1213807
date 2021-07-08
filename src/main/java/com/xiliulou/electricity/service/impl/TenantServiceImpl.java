@@ -203,6 +203,7 @@ public class TenantServiceImpl implements TenantService {
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
         tenant.setUpdateTime(System.currentTimeMillis());
         tenant.setExpireTime(tenantAddAndUpdateQuery.getExpireTime());
+        tenant.setName(tenantAddAndUpdateQuery.getName());
         tenantMapper.updateById(tenant);
 
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId(),tenant);
