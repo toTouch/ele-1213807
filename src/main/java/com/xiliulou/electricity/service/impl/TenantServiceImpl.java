@@ -110,18 +110,11 @@ public class TenantServiceImpl implements TenantService {
         tenant.setExpireTime(System.currentTimeMillis() + 7 * 24 * 3600 * 1000);
         tenantMapper.insert(tenant);
 
-        //2.保存用户信息
-        String encryptPassword = tenantAddAndUpdateQuery.getPassword();
-        String decryptPassword = userService.decryptPassword(encryptPassword);
-        if (StrUtil.isEmpty(decryptPassword)) {
-            log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantAddAndUpdateQuery.getName(), tenantAddAndUpdateQuery.getPhone(), tenantAddAndUpdateQuery.getPassword());
-            return R.fail("SYSTEM.0001", "系统错误!");
-        }
 
 
         AdminUserQuery adminUserQuery=new AdminUserQuery();
         adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
-        adminUserQuery.setPassword(customPasswordEncoder.encode(decryptPassword));
+        adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
         adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
         adminUserQuery.setGender(User.GENDER_MALE);
         adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
