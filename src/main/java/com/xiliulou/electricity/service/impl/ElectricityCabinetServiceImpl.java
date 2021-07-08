@@ -136,7 +136,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-		;
+
 
 		//操作频繁
 		boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
@@ -259,6 +259,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 			}
 		}
+
 
 		//快递柜老型号
 		Integer oldModelId = oldElectricityCabinet.getModelId();
