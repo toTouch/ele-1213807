@@ -53,8 +53,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TenantServiceImpl implements TenantService {
 
-    @Value("${security.encode.key:xiliu&lo@u%12345}")
-    private String encodeKey;
 
     @Resource
     private TenantMapper tenantMapper;
@@ -115,7 +113,7 @@ public class TenantServiceImpl implements TenantService {
         //2.保存用户信息
         String encryptPassword = tenantAddAndUpdateQuery.getPassword();
         log.info("encryptPassword is -->{}",encryptPassword);
-        String decryptPassword = decryptPassword(encryptPassword);
+        String decryptPassword = userService.decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
             log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantAddAndUpdateQuery.getName(), tenantAddAndUpdateQuery.getPhone(), tenantAddAndUpdateQuery.getPassword());
             return R.fail("SYSTEM.0001", "系统错误!");
@@ -256,11 +254,5 @@ public class TenantServiceImpl implements TenantService {
         return genTenantCode();
     }
 
-    private String decryptPassword(String encryptPassword) {
-        AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
-                new IvParameterSpec(encodeKey.getBytes()));
-
-        return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
-    }
 
 }

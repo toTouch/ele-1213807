@@ -39,6 +39,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -265,7 +266,8 @@ public class UserServiceImpl implements UserService {
 		return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
 	}
 
-	private String decryptPassword(String encryptPassword) {
+	@Override
+	public String decryptPassword(String encryptPassword) {
 		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
 				new IvParameterSpec(encodeKey.getBytes()));
 
