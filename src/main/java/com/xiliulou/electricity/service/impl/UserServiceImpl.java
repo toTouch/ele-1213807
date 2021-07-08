@@ -577,7 +577,7 @@ public class UserServiceImpl implements UserService {
 				.name(adminUserQuery.getName())
 				.phone(adminUserQuery.getPhone())
 				.updateTime(System.currentTimeMillis())
-				.userType(User.TYPE_USER_OPERATE)
+				.userType(adminUserQuery.getUserType())
 				.salt("")
 				.city(Objects.nonNull(city) ? city.getName() : null)
 				.province(Objects.nonNull(province) ? province.getName() : null)
