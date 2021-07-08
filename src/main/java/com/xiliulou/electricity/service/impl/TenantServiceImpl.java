@@ -155,11 +155,6 @@ public class TenantServiceImpl implements TenantService {
             roleService.insert(item);
         });
 
-        // 4.构建角色用户关联表信息
-        UserRole userRole = new UserRole();
-        userRole.setUid(uid);
-        userRole.setRoleId(operateRole.getId());
-        userRoleService.insert(userRole);
 
         //5.角色赋予权限
         ArrayList<RolePermission> rolePermissionList = new ArrayList<>();
