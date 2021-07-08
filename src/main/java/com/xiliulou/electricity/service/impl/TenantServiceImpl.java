@@ -113,7 +113,9 @@ public class TenantServiceImpl implements TenantService {
         tenantMapper.insert(tenant);
 
         //2.保存用户信息
-        String decryptPassword = decryptPassword(tenantAddAndUpdateQuery.getPassword());
+        String encryptPassword = tenantAddAndUpdateQuery.getPassword();
+        log.info("encryptPassword is -->{}",encryptPassword);
+        String decryptPassword = decryptPassword(encryptPassword);
         if (StrUtil.isEmpty(decryptPassword)) {
             log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantAddAndUpdateQuery.getName(), tenantAddAndUpdateQuery.getPhone(), tenantAddAndUpdateQuery.getPassword());
             return R.fail("SYSTEM.0001", "系统错误!");
