@@ -66,3 +66,5 @@ public interface RoleService {
 
     Long queryByName(String name, Integer tenantId);
 }
+
+
