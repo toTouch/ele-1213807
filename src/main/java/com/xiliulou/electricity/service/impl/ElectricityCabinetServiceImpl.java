@@ -1587,4 +1587,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	public R queryCount(ElectricityCabinetQuery electricityCabinetQuery) {
 		return R.ok(electricityCabinetMapper.queryCount(electricityCabinetQuery));
 	}
+
+	@Override
+	public Integer queryCountByStoreId(Integer id) {
+		return electricityCabinetMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getStoreId,id).eq(ElectricityCabinet::getDelFlag,ElectricityCabinet.DEL_NORMAL).last("limit 0,1"));
+	}
 }

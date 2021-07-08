@@ -49,4 +49,8 @@ public interface StoreService {
 	List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId);
 
 	void deleteByUid(Long uid);
+
+	Integer queryCountByFranchiseeId(Integer id);
+
+	Integer queryByFanchisee(Long uid);
 }

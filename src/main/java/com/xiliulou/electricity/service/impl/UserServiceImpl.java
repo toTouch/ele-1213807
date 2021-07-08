@@ -394,7 +394,16 @@ public class UserServiceImpl implements UserService {
 
 			Integer count=franchiseeService.queryByFanchisee(user.getUid());
 			if(count>0) {
-				return Pair.of(false, "加盟商用户已绑定普通用户");
+				return Pair.of(false, "加盟商用户已绑定门店或用户");
+			}
+		}
+
+		//门店用户删除查看是否绑定换电柜
+		if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+
+			Integer count=storeService.queryByFanchisee(user.getUid());
+			if(count>0) {
+				return Pair.of(false, "门店用户已绑定换电柜");
 			}
 		}
 

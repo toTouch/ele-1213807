@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
@@ -166,6 +167,13 @@ public class StoreServiceImpl implements StoreService {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
+		//查询门店是否绑定换电柜
+		Integer count=electricityCabinetService.queryCountByStoreId(store.getId());
+
+		if(count>0){
+			return R.fail("门店已绑定换电柜");
+		}
+
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setDelFlag(ElectricityCabinet.DEL_DEL);
 
@@ -231,11 +239,15 @@ public class StoreServiceImpl implements StoreService {
 		if (Objects.isNull(oldStore)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
+
+
 		Store store = new Store();
 		store.setId(id);
 		store.setUpdateTime(System.currentTimeMillis());
 		store.setUsableStatus(usableStatus);
 		int update = storeMapper.updateById(store);
+
+
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
@@ -339,6 +351,22 @@ public class StoreServiceImpl implements StoreService {
 		if (Objects.nonNull(store)) {
 			delete(store.getId());
 		}
+	}
+
+	@Override
+	public Integer queryCountByFranchiseeId(Integer id) {
+		return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL).last("limit 0,1"));
+	}
+
+	@Override
+	public Integer queryByFanchisee(Long uid) {
+		Store store=queryByUid(uid);
+
+		if(Objects.isNull(store)){
+			return 0;
+		}
+
+		return electricityCabinetService.queryCountByStoreId(store.getId());
 	}
 
 	public Long getTime(Long time) {

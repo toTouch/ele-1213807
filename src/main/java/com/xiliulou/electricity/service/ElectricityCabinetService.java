@@ -89,4 +89,6 @@ public interface ElectricityCabinetService {
     boolean isBusiness(ElectricityCabinet electricityCabinet);
 
 	R queryCount(ElectricityCabinetQuery electricityCabinetQuery);
+
+	Integer queryCountByStoreId(Integer id);
 }

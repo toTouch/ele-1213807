@@ -19,13 +19,13 @@ import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.FranchiseeVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -66,6 +66,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+
+	@Autowired
+	StoreService storeService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -143,11 +146,14 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 			return R.fail("ELECTRICITY.0038", "未找到加盟商");
 		}
 
-		//查询加盟商是否绑定普通用户
-		Integer count = franchiseeUserInfoService.queryCountByFranchisee(franchisee.getId());
+		//查询加盟商是否绑定门店，绑定门店则不能删除
+		Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
 
-		if (count > 0) {
-			return R.fail("加盟商用户已绑定普通用户");
+		//查询加盟商是否绑定普通用户
+		Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
+
+		if (count1 > 0 || count2 > 0) {
+			return R.fail("加盟商已绑定门店或用户");
 		}
 
 		//再删除加盟商
@@ -256,7 +262,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		if (Objects.isNull(franchisee)) {
 			return 0;
 		}
-		return franchiseeUserInfoService.queryCountByFranchisee(franchisee.getId());
+		//查询加盟商是否绑定门店，绑定门店则不能删除
+		Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
+
+		//查询加盟商是否绑定普通用户
+		Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
+
+		if (count1 > 0 || count2 > 0) {
+			return 1;
+		}
+
+		return 0;
 	}
 
 }
