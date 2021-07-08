@@ -61,7 +61,7 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
             newElectricityCabinet.setVersion(receiverMessage.getVersion());
             if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                 redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName());
+                redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName()+electricityCabinet.getTenantId());
             }
             log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
         });
