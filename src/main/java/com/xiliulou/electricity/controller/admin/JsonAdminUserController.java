@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author: eclair
@@ -67,6 +69,10 @@ public class JsonAdminUserController extends BaseController {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
+            tenantId=null;
+        }
 
         return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
     }

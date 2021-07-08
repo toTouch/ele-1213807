@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.utils;
 
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -40,11 +41,6 @@ public class SecurityUtils {
     }
 
     public static boolean isAdmin() {
-        TokenUser user = getUserInfo();
-        if (Objects.isNull(user)) {
-            return false;
-        }
-
-        return Objects.equals(user.getUid(), 1);
+        return Objects.equals(TenantContextHolder.getTenantId(), 1);
     }
 }
