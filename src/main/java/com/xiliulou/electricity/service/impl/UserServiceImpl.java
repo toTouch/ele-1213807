@@ -269,6 +269,7 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public String decryptPassword(String encryptPassword) {
+		log.info("encodeKey is  -->{}",encodeKey);
 		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
 				new IvParameterSpec(encodeKey.getBytes()));
 
