@@ -383,10 +383,10 @@ public class UserServiceImpl implements UserService {
 			return Pair.of(false, "非法操作");
 		}
 
-		//不让删除租户
+		/*//不让删除租户
 		if (Objects.equals(user.getTenantId(), 1) && Objects.equals(user.getUserType(), User.TYPE_USER_OPERATE)) {
 			return Pair.of(false, "非法操作");
-		}
+		}*/
 
 		//加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
 		if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
