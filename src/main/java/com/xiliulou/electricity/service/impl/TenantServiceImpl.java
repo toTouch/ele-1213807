@@ -12,6 +12,8 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.Province;
 import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.entity.Tenant;
@@ -116,13 +118,11 @@ public class TenantServiceImpl implements TenantService {
             log.error("ADMIN USER ERROR! decryptPassword error! username={},phone={},password={}", tenantAddAndUpdateQuery.getName(), tenantAddAndUpdateQuery.getPhone(), tenantAddAndUpdateQuery.getPassword());
             return R.fail("SYSTEM.0001", "系统错误!");
         }
-        String loginPwd = StrUtil.isEmpty(decryptPassword) ? null : customPasswordEncoder.encode(decryptPassword);
-
 
 
         AdminUserQuery adminUserQuery=new AdminUserQuery();
         adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
-        adminUserQuery.setPassword(loginPwd);
+        adminUserQuery.setPassword(customPasswordEncoder.encode(decryptPassword));
         adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
         adminUserQuery.setGender(User.GENDER_MALE);
         adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
