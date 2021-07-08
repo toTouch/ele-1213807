@@ -165,7 +165,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 			//修改缓存
 			redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + id);
 			//删除用户
-			userService.deleteById(franchisee.getUid());
+			userService.deleteInnerUser(franchisee.getUid());
 			return null;
 		});
 
@@ -252,7 +252,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	public void deleteByUid(Long uid) {
 		Franchisee franchisee = queryByUid(uid);
 		if (Objects.nonNull(franchisee)) {
-			delete(franchisee.getId());
+			//删除加盟商
+			franchisee.setUpdateTime(System.currentTimeMillis());
+			franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
+
+			int update = franchiseeMapper.updateById(franchisee);
+
+			DbUtils.dbOperateSuccessThen(update, () -> {
+				//修改缓存
+				redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + franchisee.getId());
+				return null;
+			});
 		}
 	}
 

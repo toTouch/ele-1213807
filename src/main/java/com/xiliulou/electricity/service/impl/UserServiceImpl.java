@@ -98,7 +98,6 @@ public class UserServiceImpl implements UserService {
 	@Autowired
 	StoreService storeService;
 
-
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -122,7 +121,6 @@ public class UserServiceImpl implements UserService {
 
 		return user;
 	}
-
 
 	/**
 	 * 新增数据
@@ -188,7 +186,7 @@ public class UserServiceImpl implements UserService {
 			return Triple.of(false, null, "无权限操作！");
 		}
 
-		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(),tenantId);
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(), tenantId);
 		if (Objects.nonNull(phoneUserExists)) {
 			return Triple.of(false, null, "手机号已存在");
 		}
@@ -232,29 +230,29 @@ public class UserServiceImpl implements UserService {
 		User insert = insert(user);
 
 		//默认值
-		Long roleId=adminUserQuery.getUserType().longValue() + 1;
+		Long roleId = adminUserQuery.getUserType().longValue() + 1;
 		//运营商
-		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_OPERATE)){
-			Long role=roleService.queryByName("OPERATE_USER",tenantId);
-			if(Objects.nonNull(role)){
-				roleId=role;
+		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
+			Long role = roleService.queryByName("OPERATE_USER", tenantId);
+			if (Objects.nonNull(role)) {
+				roleId = role;
 			}
 
 		}
 
 		//加盟商
-		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_FRANCHISEE)){
-			Long role=roleService.queryByName("FRANCHISEE_USER",tenantId);
-			if(Objects.nonNull(role)){
-				roleId=role;
+		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+			Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
+			if (Objects.nonNull(role)) {
+				roleId = role;
 			}
 		}
 
 		//门店
-		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_STORE)){
-			Long role=roleService.queryByName("STORE_USER",tenantId);
-			if(Objects.nonNull(role)){
-				roleId=role;
+		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
+			Long role = roleService.queryByName("STORE_USER", tenantId);
+			if (Objects.nonNull(role)) {
+				roleId = role;
 			}
 		}
 
@@ -275,19 +273,19 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
-	public User queryByUserPhone(String phone, Integer type,Integer tenantId) {
-		User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE+tenantId + phone + ":" + type, User.class);
+	public User queryByUserPhone(String phone, Integer type, Integer tenantId) {
+		User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + tenantId + phone + ":" + type, User.class);
 		if (Objects.nonNull(cacheUser)) {
 			return cacheUser;
 		}
 
-		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId,tenantId));
+		User user = this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getPhone, phone).eq(User::getUserType, type).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
 		if (Objects.isNull(user)) {
 			return null;
 		}
 
 		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
-		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE +tenantId+ user.getPhone() + ":" + user.getUserType(), user);
+		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType(), user);
 
 		return user;
 	}
@@ -295,7 +293,7 @@ public class UserServiceImpl implements UserService {
 	@Override
 	@DS("slave_1")
 	public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
-		return Pair.of(true, this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
+		return Pair.of(true, this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime, tenantId));
 
 	}
 
@@ -307,7 +305,7 @@ public class UserServiceImpl implements UserService {
 		}
 
 		if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
-			User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE,user.getTenantId());
+			User phone = queryByUserPhone(adminUserQuery.getPhone(), User.TYPE_USER_OPERATE, user.getTenantId());
 			if (Objects.nonNull(phone) && !Objects.equals(phone.getUid(), adminUserQuery.getUid())) {
 				return Pair.of(false, "手机号已存在！无法修改!");
 			}
@@ -384,16 +382,15 @@ public class UserServiceImpl implements UserService {
 		}
 
 		//不让删除租户
-		if (Objects.equals(user.getTenantId(),1)&&Objects.equals(user.getUserType(), User.TYPE_USER_OPERATE)) {
+		if (Objects.equals(user.getTenantId(), 1) && Objects.equals(user.getUserType(), User.TYPE_USER_OPERATE)) {
 			return Pair.of(false, "非法操作");
 		}
-
 
 		//加盟商用户删除查看是否绑定普通用户，绑定普通用户则不让删除
 		if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
 
-			Integer count=franchiseeService.queryByFanchisee(user.getUid());
-			if(count>0) {
+			Integer count = franchiseeService.queryByFanchisee(user.getUid());
+			if (count > 0) {
 				return Pair.of(false, "加盟商用户已绑定门店或用户");
 			}
 		}
@@ -401,12 +398,11 @@ public class UserServiceImpl implements UserService {
 		//门店用户删除查看是否绑定换电柜
 		if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
 
-			Integer count=storeService.queryByFanchisee(user.getUid());
-			if(count>0) {
+			Integer count = storeService.queryByFanchisee(user.getUid());
+			if (count > 0) {
 				return Pair.of(false, "门店用户已绑定换电柜");
 			}
 		}
-
 
 		if (deleteById(uid)) {
 			redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
@@ -539,8 +535,7 @@ public class UserServiceImpl implements UserService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-
-		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(),tenantId);
+		User phoneUserExists = queryByUserPhone(adminUserQuery.getPhone(), adminUserQuery.getUserType(), tenantId);
 		if (Objects.nonNull(phoneUserExists)) {
 			return R.fail("手机号已存在！");
 
@@ -584,34 +579,32 @@ public class UserServiceImpl implements UserService {
 				.build();
 		User insert = insert(user);
 
-
 		//默认值
-		Long roleId=adminUserQuery.getUserType().longValue() + 1;
+		Long roleId = adminUserQuery.getUserType().longValue() + 1;
 		//运营商
-		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_OPERATE)){
-			Long role=roleService.queryByName("OPERATE_USER",tenantId);
-			if(Objects.nonNull(role)){
-				roleId=role;
+		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
+			Long role = roleService.queryByName("OPERATE_USER", tenantId);
+			if (Objects.nonNull(role)) {
+				roleId = role;
 			}
 
 		}
 
 		//加盟商
-		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_FRANCHISEE)){
-			Long role=roleService.queryByName("FRANCHISEE_USER",tenantId);
-			if(Objects.nonNull(role)){
-				roleId=role;
+		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_FRANCHISEE)) {
+			Long role = roleService.queryByName("FRANCHISEE_USER", tenantId);
+			if (Objects.nonNull(role)) {
+				roleId = role;
 			}
 		}
 
 		//门店
-		if(Objects.equals(adminUserQuery.getUserType(),User.TYPE_USER_STORE)){
-			Long role=roleService.queryByName("STORE_USER",tenantId);
-			if(Objects.nonNull(role)){
-				roleId=role;
+		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_STORE)) {
+			Long role = roleService.queryByName("STORE_USER", tenantId);
+			if (Objects.nonNull(role)) {
+				roleId = role;
 			}
 		}
-
 
 		//设置角色
 		UserRole userRole = new UserRole();
@@ -627,8 +620,20 @@ public class UserServiceImpl implements UserService {
 	}
 
 	@Override
+	public void deleteInnerUser(Long uid) {
+		User user = queryByUidFromCache(uid);
+		if (Objects.nonNull(user)) {
+			if (deleteById(uid)) {
+				redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
+				redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+
+			}
+		}
+	}
+
+	@Override
 	public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
-		return Pair.of(true, this.userMapper.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
+		return Pair.of(true, this.userMapper.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
 
 	}
 

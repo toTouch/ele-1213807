@@ -76,5 +76,7 @@ public interface UserService {
 
     R addInnerUser(AdminUserQuery adminUserQuery);
 
+    void deleteInnerUser(Long uid);
+
 	Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
 }

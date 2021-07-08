@@ -30,9 +30,7 @@ public interface FranchiseeService {
 
     R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
-
     R getElectricityBatteryList(Integer id);
-
 
     Franchisee queryByUid(Long uid);
 

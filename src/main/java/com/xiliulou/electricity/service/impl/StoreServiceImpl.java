@@ -182,7 +182,7 @@ public class StoreServiceImpl implements StoreService {
 			//删除缓存
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
 			//删除用户
-			 userService.deleteById(store.getUid());
+			 userService.deleteInnerUser(store.getUid());
 			return null;
 		});
 
@@ -349,7 +349,17 @@ public class StoreServiceImpl implements StoreService {
 	public void deleteByUid(Long uid) {
 		Store store = queryByUid(uid);
 		if (Objects.nonNull(store)) {
-			delete(store.getId());
+
+			//删除用户
+			store.setUpdateTime(System.currentTimeMillis());
+			store.setDelFlag(ElectricityCabinet.DEL_DEL);
+
+			int update = storeMapper.updateById(store);
+			DbUtils.dbOperateSuccessThen(update, () -> {
+				//删除缓存
+				redisService.delete(ElectricityCabinetConstant.CACHE_STORE + store.getId());
+				return null;
+			});
 		}
 	}
 
