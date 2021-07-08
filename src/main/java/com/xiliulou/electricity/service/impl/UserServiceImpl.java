@@ -268,11 +268,8 @@ public class UserServiceImpl implements UserService {
 
 	@Override
 	public String decryptPassword(String encryptPassword) {
-		log.info("encryptPassword is  -->{}",encryptPassword);
-		log.info("encodeKey1 is  -->{}",encodeKey);
 		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
 				new IvParameterSpec(encodeKey.getBytes()));
-		log.info("encodeKey2 is  -->{}",encodeKey);
 		return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
 	}
 
