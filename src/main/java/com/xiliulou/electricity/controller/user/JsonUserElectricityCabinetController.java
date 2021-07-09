@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,7 +111,9 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	 */
 	@GetMapping("user/servicePhone")
 	public R getServicePhone() {
-		return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE));
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId));
 	}
 
 	@PostMapping("/user/address")
