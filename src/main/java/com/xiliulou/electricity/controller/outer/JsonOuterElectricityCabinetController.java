@@ -92,10 +92,10 @@ public class JsonOuterElectricityCabinetController {
                             @RequestParam("deviceName") String deviceName,
                             @RequestParam("file") MultipartFile file)  {
 
-        ElectricityCabinet electricityCabinet=electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
-        if(Objects.isNull(electricityCabinet)){
-            return R.fail("ELECTRICITY.0005", "未找到换电柜");
-        }
+//        ElectricityCabinet electricityCabinet=electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
+//        if(Objects.isNull(electricityCabinet)){
+//            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+//        }
 
         File tmpFile = null;
         ZipFile zipFile = null;
