@@ -345,7 +345,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 						e.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
 					} else {
 						e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-						Integer index = businessTime.indexOf("-");
+						int index = businessTime.indexOf("-");
 						if (!Objects.equals(index, -1) && index > 0) {
 							e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
 							Long beginTime = Long.valueOf(businessTime.substring(0, index));
@@ -364,8 +364,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 				//查满仓空仓数
 				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
-				Integer electricityBatteryTotal = 0;
-				Integer noElectricityBattery = 0;
+				int electricityBatteryTotal = 0;
+				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
 				if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
@@ -387,7 +387,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				e.setFullyElectricityBattery(fullyElectricityBattery);
 
 				//是否锁住
-				Integer isLock = 0;
+				int isLock = 0;
 				String LockResult = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + e.getId());
 				if (StringUtil.isNotEmpty(LockResult)) {
 					isLock = 1;
@@ -415,7 +415,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 						e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
 					} else {
 						e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-						Integer index = businessTime.indexOf("-");
+						int index = businessTime.indexOf("-");
 						if (!Objects.equals(index, -1) && index > 0) {
 							e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
 							Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
@@ -425,7 +425,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 							e.setBeginTime(totalBeginTime);
 							e.setEndTime(totalEndTime);
 							Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-							Long now = System.currentTimeMillis();
+							long now = System.currentTimeMillis();
 							if (firstToday + beginTime > now || firstToday + endTime < now) {
 								e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
 							} else {
@@ -439,8 +439,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
 
 				//查满仓空仓数
-				Integer electricityBatteryTotal = 0;
-				Integer noElectricityBattery = 0;
+				int electricityBatteryTotal = 0;
+				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
 				if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
@@ -477,7 +477,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		List<Integer> counts = new ArrayList<>();
 		Integer totalCount = sns.size();
 		counts.add(totalCount);
-		Integer count = 0;
+		int count = 0;
 
 		//该电池是否绑定用户
 		for (String sn : sns) {
@@ -562,17 +562,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		//总收益
 		homeOne.put("moneyCount", null);
 		//电柜数
-		homeOne.put("eleCount", null);
+		homeOne.put("eleCount", "0");
 		//订单数
-		homeOne.put("orderCount", null);
+		homeOne.put("orderCount", "0");
 		//门店数
 		homeOne.put("storeCount", null);
 		//在线电柜
-		homeOne.put("onlineEleCount", null);
+		homeOne.put("onlineEleCount", "0");
 		//离线电柜
-		homeOne.put("offlineEleCount", null);
+		homeOne.put("offlineEleCount", "0");
 		//成功率
-		homeOne.put("successCount", null);
+		homeOne.put("successCount", "0");
 
 		//1、查用户
 		CompletableFuture<Void> successUserFuture = CompletableFuture.runAsync(() -> {
@@ -587,7 +587,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		});
 
 		//2、换电柜
-		Boolean flag = true;
+		boolean flag = true;
 		List<Integer> eleIdList = null;
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
@@ -604,7 +604,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//2、查换电柜相关
 		List<Integer> finalEleIdList = eleIdList;
-		Boolean finalFlag = flag;
+		boolean finalFlag = flag;
 		CompletableFuture<Void> successOrderFuture = CompletableFuture.runAsync(() -> {
 			if (finalFlag) {
 				//换电次数
@@ -646,7 +646,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					|| Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
 					|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-				BigDecimal moneyCount = null;
+				BigDecimal moneyCount = BigDecimal.valueOf(0);
 				//查月卡
 				if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 					Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
@@ -669,9 +669,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, null, tenantId);
 				}
 
-				if (Objects.isNull(moneyCount)) {
-					moneyCount = BigDecimal.valueOf(0);
-				}
 				homeOne.put("moneyCount", moneyCount.toString());
 			}
 		}, executorService).exceptionally(e -> {
@@ -1069,10 +1066,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
+		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
 		//查满仓空仓数
-		Integer electricityBatteryTotal = 0;
-		Integer noElectricityBattery = 0;
+		int electricityBatteryTotal = 0;
+		int noElectricityBattery = 0;
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
 		if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 			//空仓
@@ -1122,7 +1119,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 						e.setIsBusiness(ElectricityCabinetVO.IS_BUSINESS);
 					} else {
 						e.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
-						Integer index = businessTime.indexOf("-");
+						int index = businessTime.indexOf("-");
 						if (!Objects.equals(index, -1) && index > 0) {
 							e.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
 							Long totalBeginTime = Long.valueOf(businessTime.substring(0, index));
@@ -1132,7 +1129,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 							e.setBeginTime(totalBeginTime);
 							e.setEndTime(totalEndTime);
 							Long firstToday = DateUtil.beginOfDay(new Date()).getTime();
-							Long now = System.currentTimeMillis();
+							long now = System.currentTimeMillis();
 							if (firstToday + beginTime > now || firstToday + endTime < now) {
 								e.setIsBusiness(ElectricityCabinetVO.IS_NOT_BUSINESS);
 							} else {
@@ -1143,10 +1140,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
+				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
 				//查满仓空仓数
-				Integer electricityBatteryTotal = 0;
-				Integer noElectricityBattery = 0;
+				int electricityBatteryTotal = 0;
+				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
 				if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 					//空仓
@@ -1251,7 +1248,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//换电柜是否营业
-		Boolean result = this.isBusiness(electricityCabinet);
+		boolean result = this.isBusiness(electricityCabinet);
 		if (result) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
 		}
@@ -1356,8 +1353,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//查满仓空仓数
-		Integer electricityBatteryTotal = 0;
-		Integer noElectricityBattery = 0;
+		int electricityBatteryTotal = 0;
+		int noElectricityBattery = 0;
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
 		if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 			//空仓
@@ -1423,7 +1420,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//营业时间
-		Boolean result = this.isBusiness(electricityCabinet);
+		boolean result = this.isBusiness(electricityCabinet);
 		if (result) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
 		}
