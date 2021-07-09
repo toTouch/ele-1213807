@@ -1057,7 +1057,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		Integer tenantId = electricityCabinet.getTenantId();
 
 		//营业时间
-		Boolean result = this.isBusiness(electricityCabinet);
+		boolean result = this.isBusiness(electricityCabinet);
 		if (result) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
 		}
@@ -1516,8 +1516,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			}
 		}
 		//查满仓空仓数
-		Integer electricityBatteryTotal = 0;
-		Integer noElectricityBattery = 0;
+		int electricityBatteryTotal = 0;
+		int noElectricityBattery = 0;
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
 		if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 			//空仓
