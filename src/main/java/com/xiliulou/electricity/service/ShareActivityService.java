@@ -2,8 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.query.ActivityAddAndUpdateQuery;
-import com.xiliulou.electricity.query.ActivityQuery;
+import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.FranchiseeActivityQuery;
 
 /**
@@ -33,28 +33,28 @@ public interface ShareActivityService {
     /**
      * 新增数据
      *
-     * @param activityAddAndUpdateQuery 实例对象
+     * @param shareActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R insert(ActivityAddAndUpdateQuery activityAddAndUpdateQuery);
+    R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
 
     /**
      * 修改数据
      *
-     * @param activityAddAndUpdateQuery 实例对象
+     * @param shareActivityAddAndUpdateQuery 实例对象
      * @return 实例对象
      */
-    R update(ActivityAddAndUpdateQuery activityAddAndUpdateQuery);
+    R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
 
 
     R delete(Integer id);
 
 
-    R queryList(ActivityQuery activityQuery);
+    R queryList(ShareActivityQuery shareActivityQuery);
 
     R queryInfo(Integer id,Boolean flag);
 
-    R queryCount(ActivityQuery activityQuery);
+    R queryCount(ShareActivityQuery shareActivityQuery);
 
 
     R franchiseeHome();

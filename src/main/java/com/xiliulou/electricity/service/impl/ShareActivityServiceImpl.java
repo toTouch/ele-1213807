@@ -16,10 +16,10 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
-import com.xiliulou.electricity.query.ActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ActivityBindUrlQuery;
-import com.xiliulou.electricity.query.ActivityQuery;
-import com.xiliulou.electricity.query.ActivityBindCouponQuery;
+import com.xiliulou.electricity.query.ShareActivityQuery;
+import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ActivityBindUrlService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -134,12 +134,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	/**
 	 * 新增数据
 	 *
-	 * @param activityAddAndUpdateQuery 实例对象
+	 * @param shareActivityAddAndUpdateQuery 实例对象
 	 * @return 实例对象
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R insert(ActivityAddAndUpdateQuery activityAddAndUpdateQuery) {
+	public R insert(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
 		//创建账号
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -149,14 +149,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		//判断参数
 		if(Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
-			if(Objects.isNull(activityAddAndUpdateQuery.getFranchiseeId())){
+			if(Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())){
 				log.error("Activity  ERROR! not found FranchiseeId ");
 				return R.fail("ELECTRICITY.0094", "加盟商不能为空");
 			}
 		}else {
-			if(Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE)
-			||Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE_OUT_URL))  {
-				if(Objects.isNull(activityAddAndUpdateQuery.getFranchiseeId())){
+			if(Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE)
+			||Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE_OUT_URL))  {
+				if(Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())){
 					log.error("Activity  ERROR! not found FranchiseeId ");
 					return R.fail("ELECTRICITY.0094", "加盟商不能为空");
 				}
@@ -164,10 +164,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 
-		if (Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
-				|| Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM_OUT_URL)) {
+		if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
+				|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM_OUT_URL)) {
 			//判断是否有自营首页推荐
-			if (Objects.equals(activityAddAndUpdateQuery.getShowWay(), ShareActivity.SHOW_HOME)) {
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getShowWay(), ShareActivity.SHOW_HOME)) {
 				Integer count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getShowWay, ShareActivity.SHOW_HOME)
 						.in(ShareActivity::getType, ShareActivity.SYSTEM, ShareActivity.SYSTEM_OUT_URL).eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL));
 				if (count > 0) {
@@ -176,7 +176,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			}
 		} else {
 			//判断是否有加盟商首页推荐
-			if (Objects.equals(activityAddAndUpdateQuery.getShowWay(), ShareActivity.SHOW_HOME)) {
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getShowWay(), ShareActivity.SHOW_HOME)) {
 				Integer count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getShowWay, ShareActivity.SHOW_HOME)
 						.in(ShareActivity::getType, ShareActivity.FRANCHISEE, ShareActivity.FRANCHISEE_OUT_URL).eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL));
 				if (count > 0) {
@@ -185,11 +185,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			}
 		}
 
-		List<ActivityBindUrlQuery> activityBindUrlQueryList = activityAddAndUpdateQuery.getActivityBindUrlQueryList();
-		List<ActivityBindCouponQuery> activityBindCouponQueryList = activityAddAndUpdateQuery.getActivityBindCouponQueryList();
+		List<ActivityBindUrlQuery> activityBindUrlQueryList = shareActivityAddAndUpdateQuery.getActivityBindUrlQueryList();
+		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
 		ShareActivity shareActivity = new ShareActivity();
-		BeanUtil.copyProperties(activityAddAndUpdateQuery, shareActivity);
+		BeanUtil.copyProperties(shareActivityAddAndUpdateQuery, shareActivity);
 		shareActivity.setUid(user.getUid());
 		shareActivity.setUserName(user.getUsername());
 		shareActivity.setCreateTime(System.currentTimeMillis());
@@ -204,14 +204,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 
 			//添加优惠,只有小活动有优惠券
-			if (ObjectUtil.isNotEmpty(activityBindCouponQueryList) && (Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
-					|| Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE))) {
-				for (ActivityBindCouponQuery activityBindCouponQuery : activityBindCouponQueryList) {
+			if (ObjectUtil.isNotEmpty(shareActivityRuleQueryList) && (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
+					|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE))) {
+				for (ShareActivityRuleQuery shareActivityRuleQuery : shareActivityRuleQueryList) {
 					ShareActivityRule.ActivityBindCouponBuilder activityBindCouponBuild = ShareActivityRule.builder()
 							.activityId(shareActivity.getId())
-							.couponId(activityBindCouponQuery.getCouponId())
-							.couponCount(activityBindCouponQuery.getCouponCount())
-							.discountType(activityBindCouponQuery.getDiscountType())
+							.couponId(shareActivityRuleQuery.getCouponId())
+							.couponCount(shareActivityRuleQuery.getCouponCount())
+							.discountType(shareActivityRuleQuery.getDiscountType())
 							.createTime(System.currentTimeMillis())
 							.updateTime(System.currentTimeMillis());
 					ShareActivityRule shareActivityRule = activityBindCouponBuild.build();
@@ -220,8 +220,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			}
 
 			//外部活动添加链接
-			if (ObjectUtil.isNotEmpty(activityBindUrlQueryList) && (Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM_OUT_URL)
-					|| Objects.equals(activityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE_OUT_URL))) {
+			if (ObjectUtil.isNotEmpty(activityBindUrlQueryList) && (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM_OUT_URL)
+					|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE_OUT_URL))) {
 				for (ActivityBindUrlQuery activityBindUrlQuery : activityBindUrlQueryList) {
 					ActivityBindUrl activityBindUrl = new ActivityBindUrl();
 					BeanUtil.copyProperties(activityBindUrlQuery, activityBindUrl);
@@ -244,19 +244,19 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	/**
 	 * 修改数据(暂只支持上下架）
 	 *
-	 * @param activityAddAndUpdateQuery 实例对象
+	 * @param shareActivityAddAndUpdateQuery 实例对象
 	 * @return 实例对象
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R update(ActivityAddAndUpdateQuery activityAddAndUpdateQuery) {
-		ShareActivity oldShareActivity = queryByIdFromCache(activityAddAndUpdateQuery.getId());
+	public R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+		ShareActivity oldShareActivity = queryByIdFromCache(shareActivityAddAndUpdateQuery.getId());
 		if (Objects.isNull(oldShareActivity)) {
-			log.error("update Activity  ERROR! not found Activity ! ActivityId:{} ", activityAddAndUpdateQuery.getId());
+			log.error("update Activity  ERROR! not found Activity ! ActivityId:{} ", shareActivityAddAndUpdateQuery.getId());
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
-		BeanUtil.copyProperties(activityAddAndUpdateQuery, oldShareActivity);
+		BeanUtil.copyProperties(shareActivityAddAndUpdateQuery, oldShareActivity);
 		oldShareActivity.setUpdateTime(System.currentTimeMillis());
 
 		int update = shareActivityMapper.updateById(oldShareActivity);
@@ -296,8 +296,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
-	public R queryList(ActivityQuery activityQuery) {
-		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(activityQuery);
+	public R queryList(ShareActivityQuery shareActivityQuery) {
+		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
 		if (ObjectUtil.isEmpty(shareActivityList)) {
 			return R.ok();
 		}
@@ -442,8 +442,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
-	public R queryCount(ActivityQuery activityQuery) {
-		Integer count = shareActivityMapper.queryCount(activityQuery);
+	public R queryCount(ShareActivityQuery shareActivityQuery) {
+		Integer count = shareActivityMapper.queryCount(shareActivityQuery);
 		return R.ok(count);
 	}
 

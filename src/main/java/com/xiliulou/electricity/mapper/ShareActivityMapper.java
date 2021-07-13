@@ -3,7 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.xiliulou.electricity.entity.ShareActivity;
 import java.util.List;
 
-import com.xiliulou.electricity.query.ActivityQuery;
+import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.FranchiseeActivityQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -23,10 +23,10 @@ public interface ShareActivityMapper extends BaseMapper<ShareActivity>{
      * 查询指定行数据
      *
      */
-    List<ShareActivity> queryList(@Param("query") ActivityQuery activityQuery);
+    List<ShareActivity> queryList(@Param("query") ShareActivityQuery shareActivityQuery);
 
 
-    Integer queryCount(@Param("query") ActivityQuery activityQuery);
+    Integer queryCount(@Param("query") ShareActivityQuery shareActivityQuery);
 
     @Select("select  id, name, type, status, show_way, description, del_flg, create_time,\n" +
             "        update_time,start_time,end_time, uid,user_name\n" +
