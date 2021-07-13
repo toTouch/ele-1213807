@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareActivityMapper">
+
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivity">
+        select
+        id, name, type, status, show_way, description, del_flg, create_time,
+        update_time,start_time,end_time, uid,user_name,franchisee_id
+        from electricity.t_activity
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and name = #{query.name}
+            </if>
+            <if test="query.typeList!=null and query.typeList!=''">
+                and type in
+                <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id =#{query.franchiseeId}
+            </if>
+            <if test="query.franchiseeIdList!=null and query.franchiseeIdList!=''">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        order by update_time desc
+        <if test="query.offset != null and query.size != null">
+            limit #{query.offset}, #{query.size}
+        </if>
+    </select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from electricity.t_activity
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and name = #{query.name}
+            </if>
+            <if test="query.typeList!=null and query.typeList!=''">
+                and type in
+                <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id =#{query.franchiseeId}
+            </if>
+            <if test="query.franchiseeIdList!=null and query.franchiseeIdList!=''">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

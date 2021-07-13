@@ -47,10 +47,6 @@ public class Coupon {
     */
     private Integer status;
     /**
-    * 触发金额
-    */
-    private Double triggerAmount;
-    /**
     * 优惠类型，1--减免券，2--打折券，3-天数劵
     */
     @NotNull(message = "优惠类型不能为空!", groups = {CreateGroup.class})

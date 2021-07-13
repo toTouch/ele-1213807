@@ -1,0 +1,107 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareActivityRuleMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ShareActivityRule" id="TActivityBindCouponMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="activityId" column="activity_id" jdbcType="INTEGER"/>
+        <result property="couponId" column="coupon_id" jdbcType="INTEGER"/>
+        <result property="discountType" column="discount_type" jdbcType="OTHER"/>
+        <result property="couponCount" column="coupon_count" jdbcType="INTEGER"/>
+        <result property="receiveCount" column="receive_count" jdbcType="INTEGER"/>
+        <result property="delFlg" column="del_flg" jdbcType="OTHER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="OTHER"/>
+    </resultMap>
+
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultMap="TActivityBindCouponMap">
+        select
+          id, activity_id, coupon_id, discount_type, coupon_count, receive_count, del_flg, create_time, update_time, status
+        from electricity.t_activity_bind_coupon
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="TActivityBindCouponMap">
+        select
+          id, activity_id, coupon_id, discount_type, coupon_count, receive_count, del_flg, create_time, update_time, status
+        from electricity.t_activity_bind_coupon
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="activityId != null">
+                and activity_id = #{activityId}
+            </if>
+            <if test="couponId != null">
+                and coupon_id = #{couponId}
+            </if>
+            <if test="discountType != null">
+                and discount_type = #{discountType}
+            </if>
+            <if test="couponCount != null">
+                and coupon_count = #{couponCount}
+            </if>
+            <if test="receiveCount != null">
+                and receive_count = #{receiveCount}
+            </if>
+            <if test="delFlg != null">
+                and del_flg = #{delFlg}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into electricity.t_activity_bind_coupon(activity_id, coupon_id, discount_type, coupon_count, receive_count, del_flg, create_time, update_time, status)
+        values (#{activityId}, #{couponId}, #{discountType}, #{couponCount}, #{receiveCount}, #{delFlg}, #{createTime}, #{updateTime}, #{status})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update electricity.t_activity_bind_coupon
+        <set>
+            <if test="activityId != null">
+                activity_id = #{activityId},
+            </if>
+            <if test="couponId != null">
+                coupon_id = #{couponId},
+            </if>
+            <if test="discountType != null">
+                discount_type = #{discountType},
+            </if>
+            <if test="couponCount != null">
+                coupon_count = #{couponCount},
+            </if>
+            <if test="receiveCount != null">
+                receive_count = #{receiveCount},
+            </if>
+            <if test="delFlg != null">
+                del_flg = #{delFlg},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+</mapper>
