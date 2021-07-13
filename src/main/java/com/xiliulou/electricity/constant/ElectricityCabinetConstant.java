@@ -111,4 +111,7 @@ public interface ElectricityCabinetConstant {
     //优惠券缓存
     String CACHE_COUPON_CACHE = "coupon_cache:";
 
+    //活动缓存
+    String CACHE_ACTIVITY_CACHE = "activity_cache:";
+
 }

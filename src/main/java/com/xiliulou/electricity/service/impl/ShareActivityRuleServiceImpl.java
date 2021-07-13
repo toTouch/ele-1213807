@@ -22,16 +22,6 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
     @Resource
     private ShareActivityRuleMapper shareActivityRuleMapper;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public ShareActivityRule queryByIdFromDB(Long id) {
-        return this.shareActivityRuleMapper.selectById(id);
-    }
 
 
     /**
@@ -47,18 +37,6 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
         return shareActivityRule;
     }
 
-    /**
-     * 修改数据
-     *
-     * @param shareActivityRule 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Integer update(ShareActivityRule shareActivityRule) {
-        return this.shareActivityRuleMapper.update(shareActivityRule);
-
-    }
 
     @Override
     public List<ShareActivityRule> queryByActivity(Integer id) {
@@ -66,17 +44,7 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
                 .eq(ShareActivityRule::getDelFlg, ShareActivityRule.DEL_NORMAL));
     }
 
-    @Override
-    public ShareActivityRule queryByCouponId(Integer activityId, Integer couponId) {
-        return shareActivityRuleMapper.selectOne(new LambdaQueryWrapper<ShareActivityRule>().eq(ShareActivityRule::getActivityId, activityId)
-                .eq(ShareActivityRule::getCouponId, couponId)
-                .eq(ShareActivityRule::getDelFlg, ShareActivityRule.DEL_NORMAL));
-    }
 
-    @Override
-    public void updateByCoupon(Integer id) {
-        shareActivityRuleMapper.updateByCoupon(id,System.currentTimeMillis());
-    }
 
     @Override
     public void updateByActivity(Integer id) {

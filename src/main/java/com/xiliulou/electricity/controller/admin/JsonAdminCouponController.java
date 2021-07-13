@@ -1,5 +1,4 @@
 package com.xiliulou.electricity.controller.admin;
-import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -16,8 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**

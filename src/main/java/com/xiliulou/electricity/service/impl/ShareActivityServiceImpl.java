@@ -328,7 +328,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<ShareActivity> shareActivityList = shareActivityMapper.selectList(new LambdaQueryWrapper<ShareActivity>()
 				.in(ShareActivity::getType, ShareActivity.SYSTEM)
 				.eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL)
-				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON);
+				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 		if (ObjectUtil.isEmpty(shareActivityList)) {
 			return R.ok();
 		}

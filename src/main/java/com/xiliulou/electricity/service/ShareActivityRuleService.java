@@ -13,15 +13,6 @@ import java.util.List;
 public interface ShareActivityRuleService {
 
     /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ShareActivityRule queryByIdFromDB(Long id);
-
-
-    /**
      * 新增数据
      *
      * @param shareActivityRule 实例对象
@@ -29,20 +20,9 @@ public interface ShareActivityRuleService {
      */
     ShareActivityRule insert(ShareActivityRule shareActivityRule);
 
-    /**
-     * 修改数据
-     *
-     * @param shareActivityRule 实例对象
-     * @return 实例对象
-     */
-    Integer update(ShareActivityRule shareActivityRule);
-
 
     List<ShareActivityRule> queryByActivity(Integer id);
 
-    ShareActivityRule queryByCouponId(Integer activityId, Integer couponId);
-
-    void updateByCoupon(Integer id);
 
     void updateByActivity(Integer id);
 }

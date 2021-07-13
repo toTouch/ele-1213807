@@ -46,8 +46,6 @@ public interface ShareActivityRuleMapper extends BaseMapper<ShareActivityRule>{
      */
     int update(ShareActivityRule shareActivityRule);
 
-    @Update("update  t_activity_bind_coupon set status=2,update_time=#{currentTime} where coupon_id = #{id} and status = 1 and del_flg = 0 ")
-    void updateByCoupon(@Param("id")Integer id,@Param("currentTime") Long currentTime);
 
     @Update("update  t_activity_bind_coupon set status=2,update_time=#{currentTime} where activity_id = #{id} and status = 1 and del_flg = 0 ")
     void updateByActivity(Integer id, long currentTimeMillis);
