@@ -70,6 +70,7 @@ public class Coupon {
     /**
     * 有效天数
     */
+    @NotNull(message = "有效天数不能为空!", groups = {CreateGroup.class})
     private Integer days;
     /**
     * 优惠券描述
@@ -126,6 +127,6 @@ public class Coupon {
     //邀请活动优惠券
     public static final Integer APPLY_TYPE_SHARE = 1;
     //普通活动优惠券
-    public static final Integer APPLY_TYPE_DEFLAUT = 2;
+    public static final Integer APPLY_TYPE_DEFAULT = 2;
 
 }

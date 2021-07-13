@@ -26,13 +26,25 @@ public class UserCoupon {
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
+     * 优惠券来源 0--后台发放，1--邀请好友活动
+     */
+    private Integer source;
+    /**
      * 活动id
      */
     private Integer activityId;
     /**
+     * 优惠券id
+     */
+    private Integer couponId;
+    /**
     * 优惠券名称，也就是t_coupon的名称
     */
     private String name;
+    /**
+     * 优惠类型，1--减免券，2--打折券，3-体验劵
+     */
+    private Integer discountType;
     /**
     * 用户uid
     */
@@ -41,14 +53,6 @@ public class UserCoupon {
     * 用户手机号
     */
     private String phone;
-    /**
-    * 优惠券规则id
-    */
-    private Integer couponId;
-    /**
-     * 优惠类型，1--减免券，2--打折券，3-体验劵
-     */
-    private Integer discountType;
     /**
     * 优惠券截止time
     */
@@ -74,14 +78,6 @@ public class UserCoupon {
     */
     private Integer status;
     /**
-    * 优惠券来源0--后台发放，..其他自定义，每个活动可以是一个source
-    */
-    private Integer source;
-    /**
-     * 体验次数
-     */
-    private Integer count;
-    /**
     * 0--正常 1--删除
     */
     private Integer delFlg;
@@ -92,8 +88,8 @@ public class UserCoupon {
     //后台发送
     public static final Integer TYPE_SOURCE_ADMIN_SEND = 1;
 
-    //活动领取
-    public static final Integer TYPE_SOURCE_ACTIVITY = 2;
+    //邀请好友活动领取
+    public static final Integer TYPE_SOURCE_SHARE_ACTIVITY = 2;
 
     //未使用
     public static final Integer STATUS_UNUSED = 1;

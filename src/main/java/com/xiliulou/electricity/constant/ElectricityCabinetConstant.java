@@ -38,10 +38,13 @@ public interface ElectricityCabinetConstant {
     String CACHE_STORE = "store:";
 
     String CACHE_SERVICE_PHONE = "CACHE_SERVICE_PHONE:";
+
     //下单缓存
     String ORDER_UID = "order_uid:";
+
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
+
     //修改换电柜缓存
     String ELE_EDIT_UID = "ele_edit_uid:";
 
@@ -60,8 +63,6 @@ public interface ElectricityCabinetConstant {
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
 
-    //实名认证审核资料锁
-    String ELE_CACHE_AUTH_ENTRY_LOCK_KEY = "ele_cache_auth_entry_lock_key:";
 
     //实名认证资料项缓存key
     String ELE_CACHE_AUTH_ENTRY = "ele_cache_auth_entry:";
@@ -105,5 +106,9 @@ public interface ElectricityCabinetConstant {
     String STORE_CODE = "门店";
 
     String CACHE_TENANT_ID = "tenant_cache:";
+
+
+    //优惠券缓存
+    String CACHE_COUPON_CACHE = "coupon_cache:";
 
 }

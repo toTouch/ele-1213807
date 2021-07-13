@@ -130,18 +130,6 @@ public class CouponServiceImpl implements CouponService {
             }
         }
 
-        if (Objects.equals(coupon.getTimeType(), Coupon.TYPE_TIME_SPECIFIC)) {
-            if (Objects.isNull(coupon.getStartTime()) || Objects.isNull(coupon.getEndTime())) {
-                return R.fail("ELECTRICITY.0075", "时间段不能为空");
-            }
-        }
-
-        if (Objects.equals(coupon.getTimeType(), Coupon.TYPE_TIME_DAY)) {
-            if (Objects.isNull(coupon.getDays())) {
-                return R.fail("ELECTRICITY.0076", "有效期限不能为空");
-            }
-        }
-
 
         coupon.setUid(user.getUid());
         coupon.setUserName(user.getUsername());
@@ -236,8 +224,6 @@ public class CouponServiceImpl implements CouponService {
             int update = couponMapper.updateById(coupon);
             DbUtils.dbOperateSuccessThen(update, () -> {
                 redisService.saveWithHash(ElectricityCabinetConstant.CACHE_COUPON_CACHE + coupon.getId(), coupon);
-                //把已绑定活动的优惠券下架
-                activityBindCouponService.updateByCoupon(coupon.getId());
                 return null;
             });
         }

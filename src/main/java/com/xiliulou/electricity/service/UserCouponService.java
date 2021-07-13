@@ -14,29 +14,6 @@ import java.util.List;
  */
 public interface UserCouponService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserCoupon queryByIdFromDB(Long id);
-
-    /**
-     * 新增数据
-     *
-     * @param userCoupon 实例对象
-     * @return 实例对象
-     */
-    UserCoupon insert(UserCoupon userCoupon);
-
-    /**
-     * 修改数据
-     *
-     * @param userCoupon 实例对象
-     * @return 实例对象
-     */
-    Integer update(UserCoupon userCoupon);
 
 
     R queryList(UserCouponQuery userCouponQuery);
