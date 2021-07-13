@@ -95,6 +95,11 @@ public class Coupon {
      */
     private Integer franchiseeId;
 
+    /**
+     * 租户
+     */
+    private Integer tenantId;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

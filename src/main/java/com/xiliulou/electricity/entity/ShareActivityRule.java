@@ -37,7 +37,7 @@ public class ShareActivityRule {
     /**
     * 优惠券id
     */
-    private List<Integer> couponIds;
+    private String couponIds;
     /**
     * 优惠类型，1--减免券，2--打折券，3-天数
     */
@@ -54,6 +54,11 @@ public class ShareActivityRule {
     * 修改时间
     */
     private Long updateTime;
+
+    /**
+     * 租户
+     */
+    private Integer tenantId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

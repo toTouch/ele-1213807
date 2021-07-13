@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.aliyuncs.utils.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -285,8 +286,16 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<Coupon> couponList = new ArrayList<>();
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
 
+			String couponIds = shareActivityRule.getCouponIds();
+			List<Integer> couponIdList=new ArrayList<>();
+			if (!StringUtils.isEmpty(couponIds)) {
+				String[] split = couponIds.split(",");
+				for (String couponId : split) {
+					couponIdList.add(Integer.valueOf(couponId));
+				}
+			}
 			//优惠券名称
-			List<Coupon> coupons = couponService.queryByIds(shareActivityRule.getCouponIds());
+			List<Coupon> coupons = couponService.queryByIds(couponIdList);
 			if (Objects.nonNull(coupons)) {
 				couponList.addAll(coupons);
 			}
