@@ -1,0 +1,108 @@
+package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Coupon;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.CouponQuery;
+import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.security.bean.TokenUser;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+
+/**
+ * 优惠券规则表(TCoupon)表控制层
+ *
+ * @author makejava
+ * @since 2021-04-14 09:28:22
+ */
+@RestController
+@Slf4j
+public class JsonAdminCouponController {
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private CouponService couponService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
+
+    //新增
+    @PostMapping(value = "/admin/coupon")
+    public R save(@RequestBody @Validated(value = CreateGroup.class) Coupon coupon) {
+        return couponService.insert(coupon);
+    }
+
+    //修改--暂时无此功能
+    @PutMapping(value = "/admin/coupon")
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) Coupon coupon) {
+        return couponService.update(coupon);
+    }
+
+    //删除--暂时无此功能
+    @DeleteMapping(value = "/admin/coupon/{id}")
+    public R delete(@PathVariable("id") Integer id) {
+        if (Objects.isNull(id)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return couponService.delete(id);
+    }
+
+
+    //列表查询
+    @GetMapping(value = "/admin/coupon/list")
+    public R queryList(@RequestParam(value = "size", required = false) Long size,
+                       @RequestParam(value = "offset", required = false) Long offset,
+                       @RequestParam(value = "discountType", required = false) Integer discountType,
+                       @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
+                       @RequestParam(value = "name", required = false) String name) {
+        if (Objects.isNull(size)) {
+            size = 10L;
+        }
+
+        if (Objects.isNull(offset) || offset < 0) {
+            offset = 0L;
+        }
+        List<Integer> franchiseeIdList=null;
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
+            if (ObjectUtil.isEmpty(franchiseeList)) {
+                return R.ok();
+            }
+
+            franchiseeIdList = new ArrayList<>();
+            for (Franchisee franchisee : franchiseeList) {
+                franchiseeIdList.add(franchisee.getId());
+            }
+        }
+
+        CouponQuery couponQuery = CouponQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .discountType(discountType)
+                .franchiseeId(franchiseeId)
+                .franchiseeIdList(franchiseeIdList).build();
+        return couponService.queryList(couponQuery);
+    }
+
+
+}
