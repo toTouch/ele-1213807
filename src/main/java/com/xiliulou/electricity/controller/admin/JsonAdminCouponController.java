@@ -74,7 +74,6 @@ public class JsonAdminCouponController {
         if (Objects.isNull(offset) || offset < 0) {
             offset = 0L;
         }
-        List<Integer> franchiseeIdList=null;
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -83,15 +82,11 @@ public class JsonAdminCouponController {
         }
 
         if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
-            if (ObjectUtil.isEmpty(franchiseeList)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
                 return R.ok();
             }
-
-            franchiseeIdList = new ArrayList<>();
-            for (Franchisee franchisee : franchiseeList) {
-                franchiseeIdList.add(franchisee.getId());
-            }
+            franchiseeId= franchisee.getId();
         }
 
         CouponQuery couponQuery = CouponQuery.builder()
@@ -99,8 +94,7 @@ public class JsonAdminCouponController {
                 .size(size)
                 .name(name)
                 .discountType(discountType)
-                .franchiseeId(franchiseeId)
-                .franchiseeIdList(franchiseeIdList).build();
+                .franchiseeId(franchiseeId).build();
         return couponService.queryList(couponQuery);
     }
 

@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -10,7 +9,6 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.query.CouponQuery;
-import com.xiliulou.electricity.service.ActivityBindCouponService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -40,9 +38,6 @@ public class CouponServiceImpl implements CouponService {
     RedisService redisService;
 
 
-
-    @Autowired
-    private ActivityBindCouponService activityBindCouponService;
 
     /**
      * 通过ID查询单条数据从DB

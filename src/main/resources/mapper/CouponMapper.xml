@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.Coupon">
         select
-          id, name, status, apply_type, trigger_amount, discount_type, amount, discount, count, time_type, days, start_time, end_time, max_times_everyone, description,
+          id, name, status, apply_type, trigger_amount, discount_type, amount, discount, count, days,  description,
           uid, user_name, create_time, update_time, del_flg,franchisee_id
         from electricity.t_coupon
         <where>
@@ -18,12 +18,6 @@
             </if>
             <if test="query.franchiseeId!=null">
                 and franchisee_id =#{query.franchiseeId}
-            </if>
-            <if test="query.franchiseeIdList!=null and query.franchiseeIdList!=''">
-                and franchisee_id in
-                <foreach collection="query.franchiseeIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
             </if>
         </where>
         <if test="query.offset != null and query.size != null">
