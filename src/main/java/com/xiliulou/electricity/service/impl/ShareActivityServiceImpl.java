@@ -91,20 +91,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	StorageService storageService;
 
-
 	@Autowired
 	private RedisTemplate redisTemplate;
-
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public ShareActivity queryByIdFromDB(Integer id) {
-		return this.shareActivityMapper.selectById(id);
-	}
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -148,44 +136,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//判断参数
-		if(Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
-			if(Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())){
+		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
 				log.error("Activity  ERROR! not found FranchiseeId ");
 				return R.fail("ELECTRICITY.0094", "加盟商不能为空");
 			}
-		}else {
-			if(Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE)
-			||Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE_OUT_URL))  {
-				if(Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())){
+		} else {
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE)) {
+				if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
 					log.error("Activity  ERROR! not found FranchiseeId ");
 					return R.fail("ELECTRICITY.0094", "加盟商不能为空");
 				}
 			}
 		}
 
-
-		if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
-				|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM_OUT_URL)) {
-			//判断是否有自营首页推荐
-			if (Objects.equals(shareActivityAddAndUpdateQuery.getShowWay(), ShareActivity.SHOW_HOME)) {
-				Integer count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getShowWay, ShareActivity.SHOW_HOME)
-						.in(ShareActivity::getType, ShareActivity.SYSTEM, ShareActivity.SYSTEM_OUT_URL).eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL));
-				if (count > 0) {
-					return R.fail("ELECTRICITY.0078", "首页推荐已存在，不能重复添加");
-				}
-			}
-		} else {
-			//判断是否有加盟商首页推荐
-			if (Objects.equals(shareActivityAddAndUpdateQuery.getShowWay(), ShareActivity.SHOW_HOME)) {
-				Integer count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getShowWay, ShareActivity.SHOW_HOME)
-						.in(ShareActivity::getType, ShareActivity.FRANCHISEE, ShareActivity.FRANCHISEE_OUT_URL).eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL));
-				if (count > 0) {
-					return R.fail("ELECTRICITY.0078", "首页推荐已存在，不能重复添加");
-				}
-			}
-		}
-
-		List<ActivityBindUrlQuery> activityBindUrlQueryList = shareActivityAddAndUpdateQuery.getActivityBindUrlQueryList();
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
 		ShareActivity shareActivity = new ShareActivity();
@@ -195,40 +159,22 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivity.setCreateTime(System.currentTimeMillis());
 		shareActivity.setUpdateTime(System.currentTimeMillis());
 
-		//加盟商活动需要申请
-		if(Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
-			shareActivity.setStatus(ShareActivity.STATUS_PENDING);
-		}
-
 		int insert = shareActivityMapper.insert(shareActivity);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 
-			//添加优惠,只有小活动有优惠券
+			//添加优惠
 			if (ObjectUtil.isNotEmpty(shareActivityRuleQueryList) && (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
 					|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE))) {
 				for (ShareActivityRuleQuery shareActivityRuleQuery : shareActivityRuleQueryList) {
-					ShareActivityRule.ActivityBindCouponBuilder activityBindCouponBuild = ShareActivityRule.builder()
+					ShareActivityRule.ShareActivityRuleBuilder activityBindCouponBuild = ShareActivityRule.builder()
 							.activityId(shareActivity.getId())
-							.couponId(shareActivityRuleQuery.getCouponId())
-							.couponCount(shareActivityRuleQuery.getCouponCount())
+							.couponIds(shareActivityRuleQuery.getCouponIds())
+							.triggerCount(shareActivityRuleQuery.getTriggerCount())
 							.discountType(shareActivityRuleQuery.getDiscountType())
 							.createTime(System.currentTimeMillis())
 							.updateTime(System.currentTimeMillis());
 					ShareActivityRule shareActivityRule = activityBindCouponBuild.build();
 					shareActivityRuleService.insert(shareActivityRule);
-				}
-			}
-
-			//外部活动添加链接
-			if (ObjectUtil.isNotEmpty(activityBindUrlQueryList) && (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM_OUT_URL)
-					|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE_OUT_URL))) {
-				for (ActivityBindUrlQuery activityBindUrlQuery : activityBindUrlQueryList) {
-					ActivityBindUrl activityBindUrl = new ActivityBindUrl();
-					BeanUtil.copyProperties(activityBindUrlQuery, activityBindUrl);
-					activityBindUrl.setActivityId(shareActivity.getId());
-					activityBindUrl.setCreateTime(System.currentTimeMillis());
-					activityBindUrl.setUpdateTime(System.currentTimeMillis());
-					activityBindUrlService.insert(activityBindUrl);
 				}
 			}
 
@@ -268,28 +214,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		});
 
 		if (update > 0) {
-			return R.ok();
-		}
-		return R.fail("ELECTRICITY.0086", "操作失败");
-	}
-
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public R delete(Integer id) {
-		ShareActivity oldShareActivity = queryByIdFromCache(id);
-		if (Objects.isNull(oldShareActivity)) {
-			log.error("delete Activity  ERROR! not found Activity ! ActivityId:{} ", id);
-			return R.fail("ELECTRICITY.0069", "未找到活动");
-		}
-
-		int delete = shareActivityMapper.deleteById(id);
-		DbUtils.dbOperateSuccessThen(delete, () -> {
-			//删除缓存
-			redisService.delete(ElectricityCabinetConstant.CACHE_ACTIVITY_CACHE + id);
-			return null;
-		});
-
-		if (delete > 0) {
 			return R.ok();
 		}
 		return R.fail("ELECTRICITY.0086", "操作失败");
@@ -359,52 +283,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//小活动
-		if (Objects.equals(shareActivity.getType(), ShareActivity.SYSTEM)
-				|| Objects.equals(shareActivity.getType(), ShareActivity.FRANCHISEE)) {
-			getCouponVOList(activityVO, flag);
-			return R.ok(activityVO);
-		}
-
-		//外部活动
-		if (Objects.equals(shareActivity.getType(), ShareActivity.SYSTEM_OUT_URL)
-				|| Objects.equals(shareActivity.getType(), ShareActivity.FRANCHISEE_OUT_URL)) {
-			List<ActivityBindUrl> activityBindUrlList = activityBindUrlService.queryByActivityId(shareActivity.getId());
-			if (ObjectUtil.isEmpty(activityBindUrlList)) {
-				return R.ok(activityVO);
-			}
-
-			//图片
-			List<ElectricityCabinetFile> electricityCabinetFileList2 = electricityCabinetFileService
-					.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_OUT_ACTIVITY, storageConfig.getIsUseOSS());
-
-			List<ActivityBindUrlVO> activityBindUrlVOList = new ArrayList<>();
-			for (ActivityBindUrl activityBindUrl : activityBindUrlList) {
-				ActivityBindUrlVO activityBindUrlVO = new ActivityBindUrlVO();
-				BeanUtil.copyProperties(activityBindUrl, activityBindUrlVO);
-
-				if (ObjectUtil.isEmpty(electricityCabinetFileList2)) {
-					activityBindUrlVOList.add(activityBindUrlVO);
-					continue;
-				}
-				List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-				for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList2) {
-					if (Objects.equals(electricityCabinetFile.getName(), activityBindUrl.getPageBannerImageName())) {
-						if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-							electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-						}
-						electricityCabinetFiles.add(electricityCabinetFile);
-					}
-				}
-				activityBindUrlVO.setElectricityCabinetFiles(electricityCabinetFiles);
-				activityBindUrlVOList.add(activityBindUrlVO);
-			}
-
-			activityVO.setActivityBindUrlVOList(activityBindUrlVOList);
-			return R.ok(activityVO);
-
-		}
-
-
+		getCouponVOList(activityVO, flag);
 		return R.ok(activityVO);
 	}
 
@@ -449,191 +328,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 
 
-	@Override
-	public R franchiseeHome() {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		User user = userService.queryByUidFromCache(uid);
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
 
-		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(uid);
-		//用户是否可用
-		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
-			return R.fail("ELECTRICITY.0024", "用户已被禁用");
-		}
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			return R.fail("ELECTRICITY.0041", "未实名认证");
-		}
-
-		//用户加盟商
-		Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
-		if (Objects.isNull(franchisee)) {
-			log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ", user.getCid());
-			//未找到加盟商默认西安，西安也找不到再提示找不到 其余客服需要换  TODO
-			franchisee = franchiseeService.queryByCid(283);
-			if (Objects.isNull(franchisee)) {
-				return R.ok();
-			}
-		}
-
-		Long now = System.currentTimeMillis();
-		//查询加盟活动
-		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
-				.in(ShareActivity::getType, ShareActivity.FRANCHISEE, ShareActivity.FRANCHISEE_OUT_URL)
-				.eq(ShareActivity::getShowWay, ShareActivity.SHOW_HOME)
-				.eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL)
-				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON)
-				.eq(ShareActivity::getFranchiseeId,franchisee.getId())
-				.lt(ShareActivity::getStartTime, now)
-				.gt(ShareActivity::getEndTime, now));
-		if (Objects.isNull(shareActivity)) {
-			return R.ok();
-		}
-		ActivityVO activityVO = new ActivityVO();
-		BeanUtil.copyProperties(shareActivity, activityVO);
-
-		//图片
-		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-				.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_ACTIVITY, storageConfig.getIsUseOSS());
-
-		if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
-			return R.ok(activityVO);
-		}
-
-		List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-		getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		return R.ok(activityVO);
-	}
-
-	@Override
-	public R systemHome() {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		User user = userService.queryByUidFromCache(uid);
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(uid);
-		//用户是否可用
-		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
-			return R.fail("ELECTRICITY.0024", "用户已被禁用");
-		}
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			return R.fail("ELECTRICITY.0041", "未实名认证");
-		}
-
-		Long now = System.currentTimeMillis();
-		//查询系统活动
-		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
-				.in(ShareActivity::getType, ShareActivity.SYSTEM, ShareActivity.SYSTEM_OUT_URL)
-				.eq(ShareActivity::getShowWay, ShareActivity.SHOW_HOME)
-				.eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL)
-				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON)
-				.lt(ShareActivity::getStartTime, now)
-				.gt(ShareActivity::getEndTime, now));
-		if (Objects.isNull(shareActivity)) {
-			return R.ok();
-		}
-		ActivityVO activityVO = new ActivityVO();
-		BeanUtil.copyProperties(shareActivity, activityVO);
-
-		//图片
-		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-				.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_ACTIVITY, storageConfig.getIsUseOSS());
-
-		if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
-			return R.ok(activityVO);
-		}
-
-		List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-		getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		return R.ok(activityVO);
-	}
-
-	@Override
-	public R franchiseeCenter() {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		User user = userService.queryByUidFromCache(uid);
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(uid);
-		//用户是否可用
-		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
-			return R.fail("ELECTRICITY.0024", "用户已被禁用");
-		}
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			return R.fail("ELECTRICITY.0041", "未实名认证");
-		}
-
-		//用户加盟商
-		Franchisee franchisee = franchiseeService.queryByCid(user.getCid());
-		if (Objects.isNull(franchisee)) {
-			log.error("ELECTRICITY  ERROR! not found franchisee ! cid:{} ", user.getCid());
-			//未找到加盟商默认西安，西安也找不到再提示找不到 其余客服需要换  TODO
-			franchisee = franchiseeService.queryByCid(283);
-			if (Objects.isNull(franchisee)) {
-				return R.ok();
-			}
-		}
-
-		Long now = System.currentTimeMillis();
-		//查询系统活动
-		List<ShareActivity> shareActivityList = shareActivityMapper.selectList(new LambdaQueryWrapper<ShareActivity>()
-				.in(ShareActivity::getType, ShareActivity.FRANCHISEE, ShareActivity.FRANCHISEE_OUT_URL)
-				.eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL)
-				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON)
-				.eq(ShareActivity::getFranchiseeId,franchisee.getId())
-				.lt(ShareActivity::getStartTime, now)
-				.gt(ShareActivity::getEndTime, now));
-		if (ObjectUtil.isEmpty(shareActivityList)) {
-			return R.ok();
-		}
-
-		List<ActivityVO> activityVOList = new ArrayList<>();
-		for (ShareActivity shareActivity : shareActivityList) {
-
-			ActivityVO activityVO = new ActivityVO();
-			BeanUtil.copyProperties(shareActivity, activityVO);
-
-			//图片
-			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-					.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_ACTIVITY, storageConfig.getIsUseOSS());
-
-			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
-				activityVOList.add(activityVO);
-				continue;
-			}
-
-			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-			getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-			activityVOList.add(activityVO);
-		}
-		return R.ok(activityVOList);
-	}
 
 	@Override
 	public R systemCenter() {
@@ -692,8 +387,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 		return R.ok(activityVOList);
 	}
-
-
 
 	@Override
 	public R activityInfo(Integer id) {

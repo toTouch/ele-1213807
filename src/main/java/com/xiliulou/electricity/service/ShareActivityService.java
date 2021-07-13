@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
-import com.xiliulou.electricity.query.FranchiseeActivityQuery;
 
 /**
  * 活动表(Activity)表服务接口
@@ -14,13 +13,6 @@ import com.xiliulou.electricity.query.FranchiseeActivityQuery;
  */
 public interface ShareActivityService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    ShareActivity queryByIdFromDB(Integer id);
 
       /**
      * 通过ID查询单条数据从缓存

@@ -33,7 +33,7 @@ public class ShareActivityRule {
     /**
      * 触发人数
      */
-    private Double triggerCount;
+    private Integer triggerCount;
     /**
     * 优惠券id
     */

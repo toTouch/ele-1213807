@@ -26,6 +26,5 @@ public class ShareActivityQuery {
      */
     private Integer franchiseeId;
 
-    private List<Integer> franchiseeIdList;
 
 }

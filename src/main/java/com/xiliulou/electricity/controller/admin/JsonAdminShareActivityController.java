@@ -5,6 +5,8 @@ import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -42,14 +44,14 @@ public class JsonAdminShareActivityController {
 
     //新增
     @PostMapping(value = "/admin/shareActivity")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) ActivityAddAndUpdateQuery activityAddAndUpdateQuery) {
-        return shareActivityService.insert(activityAddAndUpdateQuery);
+    public R save(@RequestBody @Validated(value = CreateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+        return shareActivityService.insert(shareActivityAddAndUpdateQuery);
     }
 
     //修改--暂时无此功能
     @PutMapping(value = "/admin/shareActivity")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) ActivityAddAndUpdateQuery activityAddAndUpdateQuery) {
-        return shareActivityService.update(activityAddAndUpdateQuery);
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+        return shareActivityService.update(shareActivityAddAndUpdateQuery);
     }
 
 
@@ -69,7 +71,6 @@ public class JsonAdminShareActivityController {
             offset = 0L;
         }
 
-        List<Integer> franchiseeIdList=null;
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -78,25 +79,21 @@ public class JsonAdminShareActivityController {
         }
 
         if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
-            if (ObjectUtil.isEmpty(franchiseeList)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
                 return R.ok();
             }
 
-            franchiseeIdList = new ArrayList<>();
-            for (Franchisee franchisee : franchiseeList) {
-                franchiseeIdList.add(franchisee.getId());
-            }
+            franchiseeId=franchisee.getId();
         }
 
 
 
-        ActivityQuery activityQuery = ActivityQuery.builder()
+        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .offset(offset)
                 .size(size)
                 .name(name)
-                .franchiseeId(franchiseeId)
-                .franchiseeIdList(franchiseeIdList).build();
+                .franchiseeId(franchiseeId).build();
 
 
 
@@ -105,9 +102,9 @@ public class JsonAdminShareActivityController {
                     JSONUtil.parseArray(type).toArray(Integer[].class);
 
             List<Integer> typeList = Arrays.asList(types);
-            activityQuery.setTypeList(typeList);
+            shareActivityQuery.setTypeList(typeList);
         }
-        return activityService.queryList(activityQuery);
+        return shareActivityService.queryList(shareActivityQuery);
     }
 
     //列表查询
@@ -117,41 +114,35 @@ public class JsonAdminShareActivityController {
                         @RequestParam(value = "type", required = false) String type) {
 
 
-        List<Integer> franchiseeIdList=null;
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+
         if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            List<Franchisee> franchiseeList = franchiseeService.queryByUid(user.getUid());
-            if (ObjectUtil.isEmpty(franchiseeList)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
                 return R.ok();
             }
 
-            franchiseeIdList = new ArrayList<>();
-            for (Franchisee franchisee : franchiseeList) {
-                franchiseeIdList.add(franchisee.getId());
-            }
+            franchiseeId=franchisee.getId();
         }
 
 
-
-        ActivityQuery activityQuery = ActivityQuery.builder()
+        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .name(name)
-                .franchiseeId(franchiseeId)
-                .franchiseeIdList(franchiseeIdList).build();
+                .franchiseeId(franchiseeId).build();
 
         if (StringUtils.isNotEmpty(type)) {
             Integer[] types = (Integer[])
                     JSONUtil.parseArray(type).toArray(Integer[].class);
 
             List<Integer> typeList = Arrays.asList(types);
-            activityQuery.setTypeList(typeList);
+            shareActivityQuery.setTypeList(typeList);
         }
-        return activityService.queryCount(activityQuery);
+        return shareActivityService.queryCount(shareActivityQuery);
     }
 
     //根据id查询活动详情
@@ -160,6 +151,6 @@ public class JsonAdminShareActivityController {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        return activityService.queryInfo(id,false);
+        return shareActivityService.queryInfo(id,false);
     }
 }
