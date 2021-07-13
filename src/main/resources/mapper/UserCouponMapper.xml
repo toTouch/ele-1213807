@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserCouponMapper">
+
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.UserCoupon">
+        select
+        id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source, del_flg,discount_type
+        from electricity.t_user_coupon
+        <where>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and phone = #{query.phone}
+            </if>
+            <if test="query.couponId != null">
+                and coupon_id = #{query.couponId}
+            </if>
+            <if test="query.statusList!=null and query.statusList!=''">
+                and status in
+                <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.typeList!=null and query.typeList!=''">
+                and discount_type in
+                <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+        <if test="query.offset != null and query.size != null">
+            limit #{query.offset}, #{query.size}
+        </if>
+    </select>
+
+
+</mapper>
