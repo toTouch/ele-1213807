@@ -9,19 +9,15 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.ActivityBindUrl;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
-import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
-import com.xiliulou.electricity.query.ActivityBindUrlQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.ActivityBindUrlService;
 import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
@@ -30,16 +26,13 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ActivityBindUrlVO;
 import com.xiliulou.electricity.vo.ActivityVO;
-import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -78,8 +71,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	private CouponService couponService;
 
-	@Autowired
-	ActivityBindUrlService activityBindUrlService;
 
 	@Autowired
 	ElectricityCabinetFileService electricityCabinetFileService;
@@ -91,8 +82,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	StorageService storageService;
 
-	@Autowired
-	private RedisTemplate redisTemplate;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -233,7 +222,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 			//图片
 			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-					.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_ACTIVITY, storageConfig.getIsUseOSS());
+					.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
 
 			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
 				activityVOList.add(activityVO);
@@ -262,7 +251,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 	@Override
-	public R queryInfo(Integer id, Boolean flag) {
+	public R queryInfo(Integer id) {
 		ShareActivity shareActivity = queryByIdFromCache(id);
 		if (Objects.isNull(shareActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
@@ -274,7 +263,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		//图片
 		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-				.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_ACTIVITY, storageConfig.getIsUseOSS());
+				.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
 
 		if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
 
@@ -283,41 +272,27 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//小活动
-		getCouponVOList(activityVO, flag);
+		getCouponList(activityVO);
 		return R.ok(activityVO);
 	}
 
-	private void getCouponVOList(ActivityVO activityVO, Boolean flag) {
+	private void getCouponList(ActivityVO activityVO) {
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityVO.getId());
 		if (ObjectUtil.isEmpty(shareActivityRuleList)) {
 			return;
 		}
 
-		List<CouponVO> couponVOList = new ArrayList<>();
+		List<Coupon> couponList = new ArrayList<>();
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-			//优惠券名称
-			Coupon coupon = couponService.queryByIdFromCache(shareActivityRule.getCouponId());
-			if (Objects.isNull(coupon)) {
-				continue;
-			}
-			CouponVO couponVO = new CouponVO();
-			BeanUtil.copyProperties(coupon, couponVO);
-			couponVO.setCouponCount(shareActivityRule.getCouponCount());
-			couponVO.setReceiveCount(shareActivityRule.getReceiveCount());
-			if (flag) {
-				if (Objects.equals(coupon.getStatus(), Coupon.STATUS_ON)) {
-					if (Objects.equals(Coupon.TYPE_TIME_DAY, coupon.getTimeType())) {
-						couponVOList.add(couponVO);
-					} else if (coupon.getEndTime() > System.currentTimeMillis()) {
-						couponVOList.add(couponVO);
-					}
-				}
-			} else {
-				couponVOList.add(couponVO);
-			}
 
+			//优惠券名称
+			List<Coupon> coupons = couponService.queryByIds(shareActivityRule.getCouponIds());
+			if (Objects.nonNull(coupons)) {
+				couponList.addAll(coupons);
+			}
 		}
-		activityVO.setCouponVOList(couponVOList);
+
+		activityVO.setCouponList(couponList);
 	}
 
 	@Override
@@ -327,11 +302,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 
-
-
-
 	@Override
-	public R systemCenter() {
+	public R shareActivityCenter() {
 		//用户信息
 		Long uid = SecurityUtils.getUid();
 		if (Objects.isNull(uid)) {
@@ -343,25 +315,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(uid);
 		//用户是否可用
+		UserInfo userInfo = userInfoService.queryByUid(uid);
+
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			return R.fail("ELECTRICITY.0041", "未实名认证");
-		}
 
-		Long now = System.currentTimeMillis();
-		//查询系统活动
+
+		//查询邀请活动
 		List<ShareActivity> shareActivityList = shareActivityMapper.selectList(new LambdaQueryWrapper<ShareActivity>()
-				.in(ShareActivity::getType, ShareActivity.SYSTEM, ShareActivity.SYSTEM_OUT_URL)
+				.in(ShareActivity::getType, ShareActivity.SYSTEM)
 				.eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL)
-				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON)
-				.lt(ShareActivity::getStartTime, now)
-				.gt(ShareActivity::getEndTime, now));
+				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON);
 		if (ObjectUtil.isEmpty(shareActivityList)) {
 			return R.ok();
 		}
@@ -374,7 +341,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 			//图片
 			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-					.queryByActivityId(activityVO.getId(), ElectricityCabinetFile.TYPE_ACTIVITY, storageConfig.getIsUseOSS());
+					.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
 
 			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
 				activityVOList.add(activityVO);
@@ -401,25 +368,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(uid);
 		//用户是否可用
+		UserInfo userInfo = userInfoService.queryByUid(uid);
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			return R.fail("ELECTRICITY.0041", "未实名认证");
-		}
 
-		//活动浏览次数
-		Long count = (Long) redisTemplate.opsForValue().get(ElectricityCabinetConstant.CACHE_LOOK_ACTIVITY + id);
-		if (Objects.isNull(count)) {
-			count = 0L;
-		}
-		redisTemplate.opsForValue().set(ElectricityCabinetConstant.CACHE_LOOK_ACTIVITY + id, count + 1L);
-
-		return queryInfo(id, true);
+		return queryInfo(id);
 	}
 
 	@Override

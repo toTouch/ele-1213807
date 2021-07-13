@@ -151,6 +151,6 @@ public class JsonAdminShareActivityController {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        return shareActivityService.queryInfo(id,false);
+        return shareActivityService.queryInfo(id);
     }
 }

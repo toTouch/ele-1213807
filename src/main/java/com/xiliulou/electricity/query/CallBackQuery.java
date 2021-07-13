@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 public class CallBackQuery {
     private List<String> fileNameList;
-    private Integer electricityCabinetId;
+    private Integer otherId;
     @NotNull(message = "fileType不能为空!", groups = {UpdateGroup.class})
     private Integer fileType;
 }

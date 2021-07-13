@@ -3,6 +3,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.query.CouponQuery;
 
+import java.util.List;
+
 /**
  * 优惠券规则表(TCoupon)表服务接口
  *
@@ -51,4 +53,6 @@ public interface CouponService {
 
 
     void handelCouponExpired();
+
+    List<Coupon> queryByIds(List<Integer> couponIds);
 }

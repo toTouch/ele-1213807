@@ -229,4 +229,9 @@ public class CouponServiceImpl implements CouponService {
         }
     }
 
+    @Override
+    public List<Coupon> queryByIds(List<Integer> couponIds) {
+        return null;
+    }
+
 }

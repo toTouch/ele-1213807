@@ -64,4 +64,7 @@ public class ElectricityCabinetFile {
     //换电柜柜机图片
     public static final Integer TYPE_ELECTRICITY_CABINET = 1;
 
+    //邀请活动图片
+    public static final Integer TYPE_SHARE_ACTIVITY = 1;
+
 }

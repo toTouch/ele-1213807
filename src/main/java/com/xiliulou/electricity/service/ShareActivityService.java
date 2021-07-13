@@ -39,23 +39,14 @@ public interface ShareActivityService {
     R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
 
 
-    R delete(Integer id);
-
-
     R queryList(ShareActivityQuery shareActivityQuery);
 
-    R queryInfo(Integer id,Boolean flag);
+    R queryInfo(Integer id);
 
     R queryCount(ShareActivityQuery shareActivityQuery);
 
 
-    R franchiseeHome();
-
-    R systemHome();
-
-    R franchiseeCenter();
-
-    R systemCenter();
+    R shareActivityCenter();
 
     R activityInfo(Integer id);
 
