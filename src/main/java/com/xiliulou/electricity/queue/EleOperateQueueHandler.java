@@ -213,7 +213,7 @@ public class EleOperateQueueHandler {
 					HashMap<String, Object> dataMap = Maps.newHashMap();
 					dataMap.put("cell_no", cellNo);
 					dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-					dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
+					/*dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());*/
 					dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
 					HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -298,7 +298,7 @@ public class EleOperateQueueHandler {
 			newElectricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
 			electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
-			//修改旧仓门为有电池
+			/*//修改旧仓门为有电池
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
 			ElectricityCabinetBox oldElectricityCabinetBox = new ElectricityCabinetBox();
 			if (Objects.nonNull(electricityBattery)) {
@@ -316,9 +316,9 @@ public class EleOperateQueueHandler {
 			oldElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 			oldElectricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
 			oldElectricityBattery.setUid(null);
-			electricityBatteryService.updateByOrder(oldElectricityBattery);
+			electricityBatteryService.updateByOrder(oldElectricityBattery);*/
 
-			//用户解绑旧电池
+			//用户解绑旧电池 旧电池到底是哪块，不确定
 			FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
 			franchiseeUserInfo.setUserInfoId(userInfo.getId());
 			franchiseeUserInfo.setNowElectricityBatterySn(null);
@@ -578,7 +578,7 @@ public class EleOperateQueueHandler {
 						HashMap<String, Object> dataMap = Maps.newHashMap();
 						dataMap.put("cellNo", cellNo);
 						dataMap.put("orderId", rentBatteryOrder.getOrderId());
-						dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());
+						/*dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());*/
 
 						HardwareCommandQuery comm = HardwareCommandQuery.builder()
 								.sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
@@ -706,7 +706,7 @@ public class EleOperateQueueHandler {
 		newRentBatteryOrder.setStatus(RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED);
 		rentBatteryOrderService.update(newRentBatteryOrder);
 
-		//修改仓门为有电池
+		/*//修改仓门为有电池
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
 		ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
 		if (Objects.nonNull(electricityBattery)) {
@@ -724,7 +724,7 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(rentBatteryOrder.getElectricityCabinetId());
 		newElectricityBattery.setUid(null);
-		electricityBatteryService.updateByOrder(newElectricityBattery);
+		electricityBatteryService.updateByOrder(newElectricityBattery);*/
 
 		//用户解绑电池
 		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();

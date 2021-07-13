@@ -363,7 +363,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -436,7 +436,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
 
 				//查满仓空仓数
 				int electricityBatteryTotal = 0;
@@ -463,7 +463,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
 				}
 				if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)
-					&& Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
+						&& Objects.equals(e.getOnlineStatus(), ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS)) {
 					electricityCabinets.add(e);
 				}
 			});
@@ -472,11 +472,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public List<Integer> queryFullyElectricityBattery(Integer id) {
+	public Integer queryFullyElectricityBattery(Integer id) {
 		List<String> sns = electricityCabinetMapper.queryFullyElectricityBattery(id);
-		List<Integer> counts = new ArrayList<>();
+		/*List<Integer> counts = new ArrayList<>();*/
 		Integer totalCount = sns.size();
-		counts.add(totalCount);
+		/*counts.add(totalCount);
 		int count = 0;
 
 		//该电池是否绑定用户
@@ -486,8 +486,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				count = count + 1;
 			}
 		}
-		counts.add(count);
-		return counts;
+		counts.add(count);*/
+		return totalCount;
 	}
 
 	@Override
@@ -710,7 +710,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return null;
 		});
 
-		CompletableFuture<Void> resultComplete = CompletableFuture.allOf(successUserFuture, successOrderFuture, successCardFuture,successStoreFuture);
+		CompletableFuture<Void> resultComplete = CompletableFuture.allOf(successUserFuture, successOrderFuture, successCardFuture, successStoreFuture);
 
 		try {
 			resultComplete.get(10, TimeUnit.SECONDS);
@@ -718,7 +718,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				Exception e) {
 			log.error("operateOrderCount ERROR! uid={}", user.getUid(), e);
 		}
-
 
 		return R.ok(homeOne);
 	}
@@ -1066,7 +1065,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
+		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
 		int noElectricityBattery = 0;
@@ -1140,7 +1139,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId()).get(1);
+				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
 				//查满仓空仓数
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
@@ -1330,27 +1329,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
 
-		//用户状态异常
+		/*//用户状态异常
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
 				&& Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn())) {
 			log.error("queryByDevice  ERROR! user STATUS IS ERROR! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
+		}*/
 
 		ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(0);
+		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
 		if (fullyElectricityBattery <= 0) {
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
 
-		//是否有可用满电电池
-		Integer usableElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
+		/*//是否有可用满电电池
+		Integer usableElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
 		if (usableElectricityBattery <= 0) {
 			return R.fail("ELECTRICITY.0050", "换电柜暂无可用满电电池");
-		}
+		}*/
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1500,21 +1499,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
-		//是否有可用满电电池
-		Integer usableElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(1);
+		/*//是否有可用满电电池
+		Integer usableElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());*/
 
-		//已缴纳押金则租电池
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-			//查满仓空仓数
-			Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId()).get(0);
-			//查满仓空仓数
-			if (fullyElectricityBattery <= 0) {
-				return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
-			}
-			if (usableElectricityBattery <= 0) {
-				return R.fail("ELECTRICITY.0050", "换电柜暂无可用满电电池");
-			}
+		//查满仓空仓数
+		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
+		//查满仓空仓数
+		if (fullyElectricityBattery <= 0) {
+			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
+			/*if (usableElectricityBattery <= 0) {
+				return R.fail("ELECTRICITY.0050", "换电柜暂无可用满电电池");
+			}*/
+
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
 		int noElectricityBattery = 0;
@@ -1534,7 +1531,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
 		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
-		electricityCabinetVO.setFullyElectricityBattery(usableElectricityBattery);
+		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
 		return R.ok(electricityCabinetVO);
 	}
 

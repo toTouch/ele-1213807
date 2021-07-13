@@ -22,7 +22,7 @@ public interface FranchiseeUserInfoService {
 
     FranchiseeUserInfo queryByUserInfoId(Long id);
 
-    Integer queryCountByBatterySn(String electricityBatterySn);
+    /*Integer queryCountByBatterySn(String electricityBatterySn);*/
 
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);
 

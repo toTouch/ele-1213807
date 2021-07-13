@@ -113,7 +113,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Transactional
 	public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
-		//查找用户
+	/*	//查找用户
 		UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
 		if (Objects.isNull(oldUserInfo)) {
 			return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -145,7 +145,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
 		//已绑定电池
-		if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
+		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
 			return R.fail("ELECTRICITY.0045", "已绑定电池");
 		}
@@ -156,10 +156,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 			return R.fail("ELECTRICITY.0020", "未找到电池");
 		}
-		Integer count = franchiseeUserInfoService.queryCountByBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+		*//*Integer count = franchiseeUserInfoService.queryCountByBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 		if (count>0) {
 			return R.fail("ELECTRICITY.0039", "电池已被绑定");
-		}
+		}*//*
 
 
 		//绑定电池
@@ -195,7 +195,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			electricityBattery.setUid(rentBatteryOrder.getUid());
 			electricityBatteryService.updateByOrder(electricityBattery);
 			return null;
-		});
+		});*/
 		return R.ok();
 	}
 
@@ -245,7 +245,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Override
 	@Transactional
 	public R webUnBindBattery(Long id) {
-		//查找用户
+		/*//查找用户
 		UserInfo oldUserInfo = queryByIdFromDB(id);
 		if (Objects.isNull(oldUserInfo)) {
 			return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -277,7 +277,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		}
 
 
-		if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) || Objects.isNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
+		if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) ) {
 			log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ", oldUserInfo);
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
@@ -318,7 +318,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			electricityBattery.setUid(null);
 			electricityBatteryService.updateByOrder(electricityBattery);
 			return null;
-		});
+		});*/
 		return R.ok();
 	}
 

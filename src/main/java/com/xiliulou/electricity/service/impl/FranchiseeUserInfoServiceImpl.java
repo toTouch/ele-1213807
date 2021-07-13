@@ -41,11 +41,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         .eq(FranchiseeUserInfo::getUserInfoId,id).eq(FranchiseeUserInfo::getDelFlag,FranchiseeUserInfo.DEL_NORMAL));
     }
 
-    @Override
+   /* @Override
     public Integer queryCountByBatterySn(String electricityBatterySn) {
         return franchiseeUserInfoMapper.selectCount(new LambdaQueryWrapper<FranchiseeUserInfo>()
                 .eq(FranchiseeUserInfo::getNowElectricityBatterySn,electricityBatterySn).eq(FranchiseeUserInfo::getDelFlag,FranchiseeUserInfo.DEL_NORMAL));
-    }
+    }*/
 
     @Override
     public Integer unBind(FranchiseeUserInfo franchiseeUserInfo) {

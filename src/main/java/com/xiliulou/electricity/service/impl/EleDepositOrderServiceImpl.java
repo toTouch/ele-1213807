@@ -302,12 +302,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0046", "未退还电池");
 		}
 
-		//用户状态异常
+		/*//用户状态异常
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
 				&& Objects.isNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
 			log.error("returnDeposit  ERROR! userInfo is error!uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
+		}*/
 
 		//判断是否缴纳押金
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)

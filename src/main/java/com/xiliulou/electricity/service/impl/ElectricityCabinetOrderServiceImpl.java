@@ -270,12 +270,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
 
-		//用户状态异常
+		/*//用户状态异常
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
 				&& Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn())) {
 			log.error("order  ERROR! user status is error! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}
+		}*/
 
 		//默认是小程序下单
 		if (Objects.isNull(orderQuery.getSource())) {
@@ -299,13 +299,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			}
 
 			//3.根据用户查询旧电池
-			String oldElectricityBatterySn = franchiseeUserInfo.getNowElectricityBatterySn();
+			/*String oldElectricityBatterySn = franchiseeUserInfo.getNowElectricityBatterySn();*/
 			ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
 					.orderId(generateOrderId(orderQuery.getElectricityCabinetId(), cellNo))
 					.uid(user.getUid())
 					.phone(userInfo.getPhone())
 					.electricityCabinetId(orderQuery.getElectricityCabinetId())
-					.oldElectricityBatterySn(oldElectricityBatterySn)
+					/*.oldElectricityBatterySn(oldElectricityBatterySn)*/
 					.oldCellNo(Integer.valueOf(cellNo))
 					.status(ElectricityCabinetOrder.STATUS_ORDER_PAY)
 					.source(orderQuery.getSource())
@@ -320,7 +320,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cell_no", cellNo);
 			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-			dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
+			/*dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());*/
 			dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -414,7 +414,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
 			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-			dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());
+			/*dataMap.put("serial_number", electricityCabinetOrder.getOldElectricityBatterySn());*/
 			dataMap.put("status", electricityCabinetOrder.getStatus().toString());
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -506,7 +506,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			//回退月卡
 			UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
 			if (Objects.nonNull(userInfo)) {
-				//
 				//是否缴纳押金，是否绑定电池
 				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 				if (Objects.nonNull(franchiseeUserInfo)) {
@@ -740,12 +739,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 				isTry = 0;
 			}
 
-			//提示放入电池不对，应该放入什么电池
+			/*//提示放入电池不对，应该放入什么电池
 			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
 				queryStatus = "放入电池不对，应该放入编号为" + electricityCabinetOrder.getOldElectricityBatterySn() + "的电池";
 			}else {
 				queryStatus = warnMsgVo.getMsg();
-			}
+			}*/
 
 			map.put("queryStatus", queryStatus);
 			type = 1;

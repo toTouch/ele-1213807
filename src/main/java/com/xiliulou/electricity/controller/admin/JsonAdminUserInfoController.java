@@ -31,12 +31,14 @@ public class JsonAdminUserInfoController {
 
 
     //绑定电池
+    @Deprecated
     @PutMapping(value = "/admin/userInfo/bindBattery")
     public R webBindBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         return userInfoService.webBindBattery(userInfoBatteryAddAndUpdate);
     }
 
     //解绑电池
+    @Deprecated
     @PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
     public R webUnBindBattery(@PathVariable("id") Long id) {
         return userInfoService.webUnBindBattery(id);
