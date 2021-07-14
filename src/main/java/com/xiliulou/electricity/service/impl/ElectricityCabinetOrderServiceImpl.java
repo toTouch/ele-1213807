@@ -301,7 +301,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			//3.根据用户查询旧电池
 			/*String oldElectricityBatterySn = franchiseeUserInfo.getNowElectricityBatterySn();*/
 			ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
-					.orderId(generateOrderId(orderQuery.getElectricityCabinetId(), cellNo))
+					.orderId(generateOrderId(orderQuery.getElectricityCabinetId(), cellNo,user.getUid()))
 					.uid(user.getUid())
 					.phone(userInfo.getPhone())
 					.electricityCabinetId(orderQuery.getElectricityCabinetId())
@@ -786,10 +786,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		return resultList;
 	}
 
-	public String generateOrderId(Integer id, String cellNo) {
+	public String generateOrderId(Integer id, String cellNo,Long uid) {
 		return String.valueOf(System.currentTimeMillis()).substring(2) + id +
-				cellNo +
-				RandomUtil.randomNumbers(6);
+				cellNo +uid;
 	}
 
 	public Long getTime(Long time) {

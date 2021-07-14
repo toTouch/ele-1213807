@@ -63,5 +63,11 @@ public class ActivityVO {
      */
     private List<ElectricityCabinetFile> electricityCabinetFiles;
 
+    //邀请人数
+    private Integer count;
+
+
+
+
 
 }

@@ -1,10 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.crypto.Mode;
-import cn.hutool.crypto.Padding;
-import cn.hutool.crypto.symmetric.AES;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
@@ -30,10 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
@@ -203,7 +195,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 	}
 
-
-
+	@Override
+	public ShareActivityRecord queryByUidAndTenantId(Long uid, Integer tenantId) {
+		return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
+				.eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId, tenantId));
+	}
 
 }

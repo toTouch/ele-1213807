@@ -2,22 +2,22 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
-import com.aliyuncs.utils.StringUtils;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.CouponService;
@@ -84,6 +84,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	StorageService storageService;
 
+	@Autowired
+	ShareActivityRecordService shareActivityRecordService;
+
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -129,20 +132,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		//判断参数
-		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
-				log.error("Activity  ERROR! not found FranchiseeId ");
-				return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-			}
-		} else {
-			if (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE)) {
-				if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
-					log.error("Activity  ERROR! not found FranchiseeId ");
-					return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-				}
-			}
-		}
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
@@ -153,6 +142,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivity.setCreateTime(System.currentTimeMillis());
 		shareActivity.setUpdateTime(System.currentTimeMillis());
 		shareActivity.setTenantId(tenantId);
+
+		if(Objects.isNull(shareActivity.getType())){
+			shareActivity.setType(ShareActivity.SYSTEM);
+		}
 
 		int insert = shareActivityMapper.insert(shareActivity);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -216,44 +209,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
-		/*if (ObjectUtil.isEmpty(shareActivityList)) {
-			return R.ok();
-		}
-		//活动图片
-		List<ActivityVO> activityVOList = new ArrayList<>();
-		for (ShareActivity shareActivity : shareActivityList) {
-			ActivityVO activityVO = new ActivityVO();
-			BeanUtil.copyProperties(shareActivity, activityVO);
-
-			//图片
-			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-					.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
-
-			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
-				activityVOList.add(activityVO);
-				continue;
-			}
-
-			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-			getElectricityCabinetFile(activityVOList, activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		}*/
 		return R.ok(shareActivityList);
 	}
-
-	/*private void getElectricityCabinetFile(List<ActivityVO> activityVOList, ActivityVO activityVO, List<ElectricityCabinetFile> electricityCabinetFileList, List<ElectricityCabinetFile> electricityCabinetFiles) {
-		getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		activityVOList.add(activityVO);
-	}
-
-	private void getElectricityCabinetFiles(ActivityVO activityVO, List<ElectricityCabinetFile> electricityCabinetFileList, List<ElectricityCabinetFile> electricityCabinetFiles) {
-		for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-			if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-				electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-			}
-			electricityCabinetFiles.add(electricityCabinetFile);
-		}
-		activityVO.setElectricityCabinetFiles(electricityCabinetFiles);
-	}*/
 
 	@Override
 	public R queryInfo(Integer id) {
@@ -265,16 +222,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		ActivityVO activityVO = new ActivityVO();
 		BeanUtil.copyProperties(shareActivity, activityVO);
-
-	/*	//图片
-		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-				.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
-
-		if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-
-			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-			getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		}*/
 
 		//小活动
 		getCouponList(activityVO);
@@ -322,6 +269,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUid(uid);
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -329,7 +279,27 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
-		return queryInfo(id);
+		ShareActivity shareActivity = queryByIdFromCache(id);
+		if (Objects.isNull(shareActivity)) {
+			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+
+		ActivityVO activityVO = new ActivityVO();
+		BeanUtil.copyProperties(shareActivity, activityVO);
+
+
+		//小活动
+		getCouponList(activityVO);
+
+		int count=0;
+		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUidAndTenantId(user.getUid(),tenantId);
+		if(Objects.nonNull(shareActivityRecord)){
+			count=shareActivityRecord.getCount();
+		}
+		activityVO.setCount(count);
+		return R.ok(activityVO);
+
 	}
 
 

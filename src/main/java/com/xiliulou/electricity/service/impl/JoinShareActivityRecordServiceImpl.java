@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.AESUtil;
@@ -7,6 +8,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -16,6 +19,7 @@ import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -109,22 +113,21 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		//用户是否可用
+		UserInfo userInfo = userInfoService.queryByUid(uid);
+		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
+			return R.fail("ELECTRICITY.0024", "用户已被禁用");
+		}
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则 TODO
 		if (Objects.equals(uid, user.getUid())) {
-			JoinShareActivityRecord joinShareActivityRecord=joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>().
-					eq(JoinShareActivityRecord::getJoinUid,user.getUid()).eq(JoinShareActivityRecord::getTenantId,tenantId));
-
+			return R.ok();
 		}
 
-		//校验用户
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
-		if (Objects.isNull(userInfo)) {
-			log.error("order  ERROR! not found user,uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0019", "未找到用户");
-		}
 
 		//2、别人点击链接登录
 
@@ -163,10 +166,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 		joinShareActivityRecord.setStartTime(System.currentTimeMillis());
 		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+24*60*60*1000L);
+		joinShareActivityRecord.setTenantId(tenantId);
+		joinShareActivityRecordMapper.insert(joinShareActivityRecord);
 
-		return null;
+		return R.ok();
 
 	}
+
 
 	private Boolean checkUserIsCard(UserInfo userInfo) {
 

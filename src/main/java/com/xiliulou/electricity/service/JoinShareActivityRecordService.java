@@ -39,4 +39,5 @@ public interface JoinShareActivityRecordService {
 	R decryptScene(String scene);
 
     R joinActivity(Integer activityId, Long uid);
+
 }
