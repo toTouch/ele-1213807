@@ -164,7 +164,7 @@ public class JsonAdminCouponController {
 			in = conn.getInputStream();
 
 		} catch (Exception e) {
-			System.out.println("发送 POST 请求出现异常！" + e);
+			log.info("发送 POST 请求出现异常！" + e);
 			e.printStackTrace();
 		}
 		// 使用finally块来关闭输出流、输入流
