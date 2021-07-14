@@ -27,8 +27,8 @@ public interface ShareActivityMapper extends BaseMapper<ShareActivity>{
 
     Integer queryCount(@Param("query") ShareActivityQuery shareActivityQuery);
 
-    @Select("select  id, name, type, status, show_way, description, del_flg, create_time,\n" +
-            "        update_time,start_time,end_time, uid,user_name\n" +
-            "        from electricity.t_activity where end_time < #{currentTime} and status = 1 and del_flg = 0 ")
+    @Select("select  id, name, type, status,  description, del_flg, create_time,\n" +
+            "        update_time, uid,user_name\n" +
+            "        from t_share_activity where end_time < #{currentTime} and status = 1 and del_flg = 0 ")
     List<ShareActivity> getExpiredActivity(long currentTimeMillis);
 }

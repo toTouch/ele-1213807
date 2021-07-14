@@ -6,9 +6,9 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivity">
         select
-        id, name, type, status, show_way, description, del_flg, create_time,
-        update_time,start_time,end_time, uid,user_name,franchisee_id
-        from electricity.t_activity
+        id, name, type, status,  description, del_flg, create_time,
+        update_time, uid,user_name,franchisee_id
+        from t_share_activity
         <where>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
