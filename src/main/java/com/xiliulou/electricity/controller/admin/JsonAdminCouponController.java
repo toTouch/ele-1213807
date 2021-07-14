@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.json.JsonUtil;
@@ -21,6 +22,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.HashMap;
 import java.util.Objects;
 
@@ -111,16 +117,15 @@ public class JsonAdminCouponController {
 			return R.fail("失败");
 		}
 
-		HashMap<String, String> map = new HashMap<>();
-		map.put("path", "pages/start/index");
-		map.put("scene", "1");
-		map.put("responseType", "arraybuffer");
 
-		//发送
 		String url = " https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
-		log.info("SEND_SUBSCRIPTION_MESSAGE ,JSON_PARAMS:{}", JsonUtil.toJson(map));
-		String mapResult = HttpUtil.post(url, JsonUtil.toJson(map));
-		return R.ok(mapResult);
+
+		//发送给微信服务器的数据
+		String jsonStr = "{\"path\": \"pages/start/index\",\"scene\": \"1\"}";
+
+		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
+		InputStream response = sendPost(jsonStr, url);
+		return R.ok(response);
 
 	}
 
@@ -131,6 +136,47 @@ public class JsonAdminCouponController {
 		String accessToken = JSONUtil.toBean(result, AccessTokenResult.class).getAccess_token();
 		log.info("GET ACCESS_TOKEN  RESULT：" + result);
 		return accessToken;
+	}
+
+	//post请求
+	public static InputStream sendPost(String param, String url) {
+		PrintWriter out = null;
+		InputStream in = null;
+		String result = "";
+		try {
+			URL realUrl = new URL(url);
+			// 打开和URL之间的连接
+			URLConnection conn = realUrl.openConnection();
+			// 设置通用的请求属性
+			conn.setRequestProperty("accept", "*/*");
+			conn.setRequestProperty("connection", "Keep-Alive");
+			conn.setRequestProperty("user-agent",
+					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			// 发送POST请求必须设置如下两行
+			conn.setDoOutput(true);
+			conn.setDoInput(true);
+			// 获取URLConnection对象对应的输出流
+
+			out = new PrintWriter(new OutputStreamWriter(
+					conn.getOutputStream(), "utf-8"));
+			// 发送请求参数
+			out.print(param);
+			// flush输出流的缓冲
+			out.flush();
+			out = new PrintWriter(conn.getOutputStream());
+			in = conn.getInputStream();
+
+		} catch (Exception e) {
+			System.out.println("发送 POST 请求出现异常！" + e);
+			e.printStackTrace();
+		}
+		// 使用finally块来关闭输出流、输入流
+		finally {
+			if (out != null) {
+				out.close();
+			}
+		}
+		return in;
 	}
 
 }
