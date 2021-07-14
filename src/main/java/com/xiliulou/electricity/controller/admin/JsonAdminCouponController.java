@@ -53,7 +53,8 @@ public class JsonAdminCouponController {
 			@RequestParam(value = "offset", required = false) Long offset,
 			@RequestParam(value = "discountType", required = false) Integer discountType,
 			@RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
-			@RequestParam(value = "name", required = false) String name) {
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "applyType", required = false) Integer applyType) {
 		if (Objects.isNull(size)) {
 			size = 10L;
 		}
@@ -81,7 +82,8 @@ public class JsonAdminCouponController {
 				.size(size)
 				.name(name)
 				.discountType(discountType)
-				.franchiseeId(franchiseeId).build();
+				.franchiseeId(franchiseeId)
+				.applyType(applyType).build();
 		return couponService.queryList(couponQuery);
 	}
 
@@ -90,7 +92,8 @@ public class JsonAdminCouponController {
 	@GetMapping(value = "/admin/coupon/count")
 	public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType,
 			@RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
-			@RequestParam(value = "name", required = false) String name) {
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "applyType", required = false) Integer applyType) {
 
 
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -110,7 +113,8 @@ public class JsonAdminCouponController {
 		CouponQuery couponQuery = CouponQuery.builder()
 				.name(name)
 				.discountType(discountType)
-				.franchiseeId(franchiseeId).build();
+				.franchiseeId(franchiseeId)
+				.applyType(applyType).build();
 		return couponService.queryCount(couponQuery);
 	}
 

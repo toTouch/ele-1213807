@@ -19,6 +19,9 @@
             <if test="query.franchiseeId!=null">
                 and franchisee_id =#{query.franchiseeId}
             </if>
+            <if test="query.applyType!=null">
+                and apply_type =#{query.applyType}
+            </if>
         </where>
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
@@ -37,6 +40,9 @@
             </if>
             <if test="query.franchiseeId!=null">
                 and franchisee_id =#{query.franchiseeId}
+            </if>
+            <if test="query.applyType!=null">
+                and apply_type =#{query.applyType}
             </if>
         </where>
     </select>

@@ -28,5 +28,9 @@ public class CouponQuery {
      * 加盟商Id
      */
     private Integer franchiseeId;
+    /**
+     * 适用类型  1--邀请活动优惠券  2--普通活动优惠券
+     */
+    private Integer applyType;
 
 }
