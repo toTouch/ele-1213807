@@ -20,7 +20,6 @@ public interface JoinShareActivityRecordService {
      */
     JoinShareActivityRecord queryByIdFromDB(Long id);
 
-
     /**
      * 新增数据
      *
@@ -36,8 +35,6 @@ public interface JoinShareActivityRecordService {
      * @return 实例对象
      */
     Integer update(JoinShareActivityRecord joinShareActivityRecord);
-
-
 
 	R decryptScene(String scene);
 
