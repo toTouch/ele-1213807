@@ -1,11 +1,8 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
-import com.alibaba.nacos.client.identify.Base64;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -23,14 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.HashMap;
 import java.util.Objects;
 
 /**
@@ -147,7 +142,7 @@ public class JsonAdminCouponController {
 		InputStream in = null;
 		String result = "";
 		try {
-			URL realUrl = new URL(url);
+			URL realUrl = new URL(new URI(url).toASCIIString());
 			// 打开和URL之间的连接
 			URLConnection conn = realUrl.openConnection();
 			// 设置通用的请求属性
