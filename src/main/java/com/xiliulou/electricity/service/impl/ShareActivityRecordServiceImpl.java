@@ -1,0 +1,167 @@
+package com.xiliulou.electricity.service.impl;
+
+import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
+import com.xiliulou.electricity.entity.Tenant;
+import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import org.springframework.transaction.annotation.Transactional;
+import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
+
+import lombok.extern.slf4j.Slf4j;
+/**
+ * 发起邀请活动记录(ShareActivityRecord)表服务实现类
+ *
+ * @author makejava
+ * @since 2021-07-14 09:45:04
+ */
+@Service("shareActivityRecordService")
+@Slf4j
+public class ShareActivityRecordServiceImpl implements ShareActivityRecordService {
+    @Resource
+    private ShareActivityRecordMapper shareActivityRecordMapper;
+
+    @Autowired
+    RedisService redisService;
+
+    /**
+     * 通过ID查询单条数据从DB
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public ShareActivityRecord queryByIdFromDB(Long id) {
+        return this.shareActivityRecordMapper.queryById(id);
+    }
+
+        /**
+     * 通过ID查询单条数据从缓存
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public  ShareActivityRecord queryByIdFromCache(Long id) {
+        return null;
+    }
+
+
+    /**
+     * 查询多条数据
+     *
+     * @param offset 查询起始位置
+     * @param limit 查询条数
+     * @return 对象列表
+     */
+    @Override
+    public List<ShareActivityRecord> queryAllByLimit(int offset, int limit) {
+        return this.shareActivityRecordMapper.queryAllByLimit(offset, limit);
+    }
+
+    /**
+     * 新增数据
+     *
+     * @param shareActivityRecord 实例对象
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ShareActivityRecord insert(ShareActivityRecord shareActivityRecord) {
+        this.shareActivityRecordMapper.insertOne(shareActivityRecord);
+        return shareActivityRecord;
+    }
+
+    /**
+     * 修改数据
+     *
+     * @param shareActivityRecord 实例对象
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer update(ShareActivityRecord shareActivityRecord) {
+       return this.shareActivityRecordMapper.update(shareActivityRecord);
+
+    }
+
+    /**
+     * 通过主键删除数据
+     *
+     * @param id 主键
+     * @return 是否成功
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteById(Long id) {
+        return this.shareActivityRecordMapper.deleteById(id) > 0;
+    }
+
+    /**
+     *
+     * 1、判断是否分享过
+     * 2、生成分享记录
+     * 3、加密scene
+     * 4、调起微信，生成海报
+     * 5、返回
+     *
+     */
+    @Override
+    public R generateShareUrl(Integer activityId) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("order  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //操作频繁
+        boolean result = redisService.setNx(ElectricityCabinetConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 15 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+
+        //1、判断是否分享过
+
+
+        //2、生成分享链接
+
+
+        //2.1 、生成code
+        String code = RandomUtil.randomNumbers(6);
+
+        //2.2、生成分享记录
+        ShareActivityRecord shareActivityRecord=new ShareActivityRecord();
+        shareActivityRecord.setActivityId(activityId);
+        shareActivityRecord.setUid(user.getUid());
+        shareActivityRecord.setTenantId(tenantId);
+        shareActivityRecord.setCode(code);
+        shareActivityRecord.setCreateTime(System.currentTimeMillis());
+        shareActivityRecord.setUpdateTime(System.currentTimeMillis());
+        shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
+
+
+
+        return null;
+    }
+
+
+
+}

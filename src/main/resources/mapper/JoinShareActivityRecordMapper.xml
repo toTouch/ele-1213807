@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.JoinShareActivityRecord" id="JoinShareActivityRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="uid" column="uid" jdbcType="INTEGER"/>
+        <result property="joinUid" column="join_uid" jdbcType="INTEGER"/>
+        <result property="startTime" column="start_time" jdbcType="INTEGER"/>
+        <result property="expiredTime" column="expired_time" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlg" column="del_flg" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="JoinShareActivityRecordMap">
+        select
+          id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
+        from t_join_share_activity_record
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="JoinShareActivityRecordMap">
+        select
+          id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
+        from t_join_share_activity_record
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="JoinShareActivityRecordMap">
+        select
+          id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
+        from t_join_share_activity_record
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="uid != null">
+                and uid = #{uid}
+            </if>
+            <if test="joinUid != null">
+                and join_uid = #{joinUid}
+            </if>
+            <if test="startTime != null">
+                and start_time = #{startTime}
+            </if>
+            <if test="expiredTime != null">
+                and expired_time = #{expiredTime}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlg != null">
+                and del_flg = #{delFlg}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_join_share_activity_record(uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id)
+        values (#{uid}, #{joinUid}, #{startTime}, #{expiredTime}, #{status}, #{delFlg}, #{createTime}, #{updateTime}, #{tenantId})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_join_share_activity_record
+        <set>
+            <if test="uid != null">
+                uid = #{uid},
+            </if>
+            <if test="joinUid != null">
+                join_uid = #{joinUid},
+            </if>
+            <if test="startTime != null">
+                start_time = #{startTime},
+            </if>
+            <if test="expiredTime != null">
+                expired_time = #{expiredTime},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlg != null">
+                del_flg = #{delFlg},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_join_share_activity_record where id = #{id}
+    </delete>
+
+</mapper>
