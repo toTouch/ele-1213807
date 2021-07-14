@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivity">
         select
         id, name, type, status,  description, del_flag, create_time,
-        update_time, uid,user_name,franchisee_id
+        update_time, uid,user_name,franchisee_id,hours
         from t_share_activity
         <where>
             <if test="query.name != null and query.name != ''">
