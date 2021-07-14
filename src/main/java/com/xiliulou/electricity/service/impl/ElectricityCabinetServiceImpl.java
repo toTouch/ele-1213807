@@ -952,7 +952,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
+	public ElectricityCabinet   queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
 		Integer tenantId = TenantContextHolder.getTenantId();
 		//先查缓存
 		ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName + tenantId, ElectricityCabinet.class);
