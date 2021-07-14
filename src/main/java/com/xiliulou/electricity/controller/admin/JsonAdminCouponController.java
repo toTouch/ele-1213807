@@ -140,7 +140,6 @@ public class JsonAdminCouponController {
 	public static InputStream sendPost(String param, String url) {
 		PrintWriter out = null;
 		InputStream in = null;
-		String result = "";
 		try {
 			URL realUrl = new URL(new URI(url).toASCIIString());
 			// 打开和URL之间的连接
