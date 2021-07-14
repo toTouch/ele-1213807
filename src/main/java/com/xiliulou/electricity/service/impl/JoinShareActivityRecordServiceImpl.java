@@ -137,7 +137,11 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		}
 
 		//2、别人点击链接登录
-		//2.1 判断此人是否首次购买月卡
+
+		//2.1 判断此人是否参与过活动
+
+
+		//2.2 判断此人是否首次购买月卡
 		Boolean result = checkUserIsCard(userInfo);
 
 		//已购买月卡,则直接返回首页

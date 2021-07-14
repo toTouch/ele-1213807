@@ -126,6 +126,12 @@ public class CouponServiceImpl implements CouponService {
         coupon.setUpdateTime(System.currentTimeMillis());
 
 
+        //先默认为自营活动 以后需要前端传值 TODO
+        if(Objects.isNull(coupon.getType())){
+            coupon.setType(Coupon.TYPE_SYSTEM);
+        }
+
+
         int insert = couponMapper.insert(coupon);
 
 
