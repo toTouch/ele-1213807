@@ -122,7 +122,11 @@ public class JsonAdminCouponController {
 		String url = " https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
 
 		//发送给微信服务器的数据
-		String jsonStr = "{\"scene\": \"1\",\"page\": \"pages/home/index\"}";
+		String scene="1";
+
+		//发送给微信服务器的数据
+		String jsonStr = "{\"scene\": " + scene + ",\"page\": \"pages/home/index\"}";
+
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
 		String response = sendPost(jsonStr, url);
