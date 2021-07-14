@@ -39,8 +39,8 @@ public interface ElectricityCabinetConstant {
 
     String CACHE_SERVICE_PHONE = "CACHE_SERVICE_PHONE:";
 
-    //下单缓存
-    String ORDER_UID = "order_uid:";
+    //下单加锁缓存
+    String ORDER_UID = "order_lock_uid:";
 
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
@@ -109,9 +109,13 @@ public interface ElectricityCabinetConstant {
 
 
     //优惠券缓存
-    String CACHE_COUPON_CACHE = "coupon_cache:";
+    String COUPON_CACHE = "coupon_cache:";
 
     //活动缓存
-    String CACHE_ACTIVITY_CACHE = "activity_cache:";
+    String SHARE_ACTIVITY_CACHE = "share_activity_cache:";
+
+
+    //邀请分享缓存
+    String SHARE_ACTIVITY_UID = "share_activity__lock_uid:";
 
 }

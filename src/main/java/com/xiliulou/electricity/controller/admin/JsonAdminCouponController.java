@@ -15,18 +15,14 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.pay.weixin.entity.AccessTokenResult;
-import com.xiliulou.pay.weixin.entity.SubscriptionMessageResult;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
 import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 /**
  * 优惠券规则表(TCoupon)表控制层

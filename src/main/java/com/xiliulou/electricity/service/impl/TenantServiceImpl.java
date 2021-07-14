@@ -126,7 +126,6 @@ public class TenantServiceImpl implements TenantService {
         if(result.getCode()==1){
             return result;
         }
-        Long uid=(Long) result.getData();
 
 
         //3.构建三大角色，运营商，代理商，门店
