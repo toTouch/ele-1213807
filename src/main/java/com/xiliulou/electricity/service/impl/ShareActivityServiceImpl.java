@@ -25,6 +25,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ActivityVO;
@@ -125,6 +126,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		//判断参数
 		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 			if (Objects.isNull(shareActivityAddAndUpdateQuery.getFranchiseeId())) {
@@ -148,6 +152,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivity.setUserName(user.getUsername());
 		shareActivity.setCreateTime(System.currentTimeMillis());
 		shareActivity.setUpdateTime(System.currentTimeMillis());
+		shareActivity.setTenantId(tenantId);
 
 		int insert = shareActivityMapper.insert(shareActivity);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
