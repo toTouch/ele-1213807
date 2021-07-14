@@ -148,9 +148,10 @@ public class JsonAdminCouponController {
 		String result = "";
 		try {
 
-			URL realUrl = new URL(url);
+			URL realUrl =new URL(url);
 			// 打开和URL之间的连接
-			URLConnection conn = realUrl.openConnection();
+			sun.net.www.protocol.http.HttpURLConnection conn = (sun.net.www.protocol.http.HttpURLConnection) realUrl.openConnection();
+
 			// 设置通用的请求属性
 			conn.setRequestProperty("accept", "*/*");
 			conn.setRequestProperty("connection", "Keep-Alive");
