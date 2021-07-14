@@ -188,7 +188,7 @@ public class JsonAdminCouponController {
 					}
 				}
 			}
-			return new String(Base64.encodeBase64(data));
+			return new String(data);
 		} catch (Exception e) {
 			log.info("发送 POST 请求出现异常！" + e);
 			e.printStackTrace();
