@@ -127,7 +127,7 @@ public class JsonAdminCouponController {
 		String jsonStr = "{\"scene\": \"1\",\"page\": \"pages/home/index\"}";
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		String response = sendPost(jsonStr, url);
+		InputStream response = sendPost(jsonStr, url);
 		return R.ok(response);
 
 	}
@@ -142,16 +142,14 @@ public class JsonAdminCouponController {
 	}
 
 	//post请求
-	public static String sendPost(String param, String url) {
+	public static InputStream sendPost(String param, String url) {
 		PrintWriter out = null;
 		InputStream in = null;
 		String result = "";
 		try {
-
-			URL realUrl =new URL(url);
+			URL realUrl = new URL(url);
 			// 打开和URL之间的连接
-			sun.net.www.protocol.http.HttpURLConnection conn = (sun.net.www.protocol.http.HttpURLConnection) realUrl.openConnection();
-
+			URLConnection conn = realUrl.openConnection();
 			// 设置通用的请求属性
 			conn.setRequestProperty("accept", "*/*");
 			conn.setRequestProperty("connection", "Keep-Alive");
@@ -170,46 +168,18 @@ public class JsonAdminCouponController {
 			out.flush();
 			out = new PrintWriter(conn.getOutputStream());
 			in = conn.getInputStream();
-			byte[] data = null;
-			// 读取图片字节数组
-			try {
-				ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
-				byte[] buff = new byte[100];
-				int rc = 0;
-				while ((rc = in.read(buff, 0, 100)) > 0) {
-					swapStream.write(buff, 0, rc);
-				}
-				data = swapStream.toByteArray();
-			} catch (IOException e) {
-				e.printStackTrace();
-			} finally {
-				if (in != null) {
-					try {
-						in.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-				}
-			}
-			return new String(Base64.encodeBase64(data));
+
 		} catch (Exception e) {
-			log.info("发送 POST 请求出现异常！" ,e);
+			System.out.println("发送 POST 请求出现异常！" + e);
 			e.printStackTrace();
 		}
 		// 使用finally块来关闭输出流、输入流
 		finally {
-			try {
-				if (out != null) {
-					out.close();
-				}
-				if (in != null) {
-					in.close();
-				}
-			} catch (IOException ex) {
-				ex.printStackTrace();
+			if (out != null) {
+				out.close();
 			}
 		}
-		return result;
+		return in;
 	}
 
 }
