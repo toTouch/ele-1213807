@@ -125,7 +125,7 @@ public class JsonAdminCouponController {
 		String scene="1";
 
 		//发送给微信服务器的数据
-		String jsonStr = "{\"scene\": " + scene + ",\"page\": \"pages/home/index\"}";
+		String jsonStr = "{\"scene\": " + scene + ",\"page\": \"pages/start/index\"}";
 
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
