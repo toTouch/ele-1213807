@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.Header;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.nacos.client.identify.Base64;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
@@ -22,6 +23,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -121,10 +124,10 @@ public class JsonAdminCouponController {
 		String url = " https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
 
 		//发送给微信服务器的数据
-		String jsonStr = "{\"path\": \"pages/start/index\",\"scene\": \"1\"}";
+		String jsonStr = "{\"scene\": \"1\",\"page\": \"pages/home/index\"}";
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		InputStream response = sendPost(jsonStr, url);
+		String response = sendPost(jsonStr, url);
 		return R.ok(response);
 
 	}
@@ -139,11 +142,12 @@ public class JsonAdminCouponController {
 	}
 
 	//post请求
-	public static InputStream sendPost(String param, String url) {
+	public static String sendPost(String param, String url) {
 		PrintWriter out = null;
 		InputStream in = null;
 		String result = "";
 		try {
+
 			URL realUrl = new URL(url);
 			// 打开和URL之间的连接
 			URLConnection conn = realUrl.openConnection();
@@ -156,7 +160,7 @@ public class JsonAdminCouponController {
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			// 获取URLConnection对象对应的输出流
-
+			// out = new PrintWriter(conn.getOutputStream());
 			out = new PrintWriter(new OutputStreamWriter(
 					conn.getOutputStream(), "utf-8"));
 			// 发送请求参数
@@ -165,18 +169,46 @@ public class JsonAdminCouponController {
 			out.flush();
 			out = new PrintWriter(conn.getOutputStream());
 			in = conn.getInputStream();
-
+			byte[] data = null;
+			// 读取图片字节数组
+			try {
+				ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+				byte[] buff = new byte[100];
+				int rc = 0;
+				while ((rc = in.read(buff, 0, 100)) > 0) {
+					swapStream.write(buff, 0, rc);
+				}
+				data = swapStream.toByteArray();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return new String(Base64.encodeBase64(data));
 		} catch (Exception e) {
 			System.out.println("发送 POST 请求出现异常！" + e);
 			e.printStackTrace();
 		}
 		// 使用finally块来关闭输出流、输入流
 		finally {
-			if (out != null) {
-				out.close();
+			try {
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
 			}
 		}
-		return in;
+		return result;
 	}
 
 }
