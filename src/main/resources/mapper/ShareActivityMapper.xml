@@ -30,7 +30,7 @@
     </select>
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
-        from electricity.t_activity
+        from t_share_activity
         <where>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
