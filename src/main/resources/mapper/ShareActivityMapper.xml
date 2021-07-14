@@ -22,12 +22,6 @@
             <if test="query.franchiseeId!=null">
                 and franchisee_id =#{query.franchiseeId}
             </if>
-            <if test="query.franchiseeIdList!=null and query.franchiseeIdList!=''">
-                and franchisee_id in
-                <foreach collection="query.franchiseeIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
         </where>
         order by update_time desc
         <if test="query.offset != null and query.size != null">
@@ -49,12 +43,6 @@
             </if>
             <if test="query.franchiseeId!=null">
                 and franchisee_id =#{query.franchiseeId}
-            </if>
-            <if test="query.franchiseeIdList!=null and query.franchiseeIdList!=''">
-                and franchisee_id in
-                <foreach collection="query.franchiseeIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
             </if>
         </where>
     </select>
