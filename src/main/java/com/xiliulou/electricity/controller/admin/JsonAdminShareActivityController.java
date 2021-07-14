@@ -57,7 +57,7 @@ public class JsonAdminShareActivityController {
 
 
     //列表查询
-    @GetMapping(value = "/admin/activity/list")
+    @GetMapping(value = "/admin/shareActivity/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
@@ -108,7 +108,7 @@ public class JsonAdminShareActivityController {
     }
 
     //列表查询
-    @GetMapping(value = "/admin/activity/count")
+    @GetMapping(value = "/admin/shareActivity/count")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
                         @RequestParam(value = "type", required = false) String type) {
@@ -146,7 +146,7 @@ public class JsonAdminShareActivityController {
     }
 
     //根据id查询活动详情
-    @GetMapping(value = "/admin/activity/queryInfo/{id}")
+    @GetMapping(value = "/admin/shareActivity/queryInfo/{id}")
     public R queryInfo(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");

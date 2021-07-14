@@ -5,13 +5,16 @@ import cn.hutool.core.util.RandomUtil;
 import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.utils.AESUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
+import com.xiliulou.electricity.query.SharePictureQuery;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -30,6 +33,7 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
@@ -160,11 +164,15 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 			id = oldShareActivityRecord.getId();
 		}
 
-		String str = "{\"uid\": " + user.getUid() + ",\"activityId\":"+activityId+",\"code\":"+oldShareActivityRecord.getCode()+"}";
-		String sign=encrypt(str);
-
 		//3、加密scene
-		String scene = "{\"sign\": " + sign + ",\"tenantId\":"+tenantId+"}";
+		SharePictureQuery sharePictureQuery=new SharePictureQuery();
+		sharePictureQuery.setUid(user.getUid());
+		sharePictureQuery.setActivityId(activityId);
+		sharePictureQuery.setCode(oldShareActivityRecord.getCode());
+
+
+		String str = JSONObject.toJSONString(sharePictureQuery);
+		String scene= AESUtil.encrypt(AESUtil.SECRET_KEY,str);
 
 
 		//修改分享状态
@@ -195,21 +203,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 	}
 
-	//加密
-	@Override
-	public String encrypt(String decrypt) {
-		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
-				new IvParameterSpec(encodeKey.getBytes()));
-		return Base64.encode(aes.encrypt(decrypt));
-	}
 
-	//解密
-	@Override
-	public String decrypt(String encrypt) {
-		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
-				new IvParameterSpec(encodeKey.getBytes()));
-		return new String(aes.decrypt(Base64.decode(encrypt.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
-	}
 
 
 }

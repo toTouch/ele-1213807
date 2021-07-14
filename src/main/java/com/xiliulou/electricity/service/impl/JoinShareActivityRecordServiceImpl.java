@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.utils.AESUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
@@ -91,24 +92,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	@Override
 	public R decryptScene(String scene) {
 
-		JSONObject jsonObject = JSONObject.parseObject(scene);
-		String tenantIdResult = jsonObject.getString("tenantId");
-		String sign = jsonObject.getString("scene");
 
-		if (StringUtils.isEmpty(tenantIdResult) || StringUtils.isEmpty(sign)) {
-			return R.fail("ELECTRICITY.0007", "不合法的参数");
-		}
-
-		Integer tenantId = Integer.valueOf(tenantIdResult);
-
-		//获取小程序appId
-		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-		if (Objects.isNull(electricityPayParams)) {
-			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
-			return R.fail("未配置支付参数!");
-		}
-
-		String result = shareActivityRecordService.decrypt(sign);
+		String result = AESUtil.decrypt(AESUtil.SECRET_KEY,scene);
 
 		JSONObject jsonResult = JSONObject.parseObject(scene);
 		Integer uid = Integer.valueOf(jsonResult.getString("uid"));

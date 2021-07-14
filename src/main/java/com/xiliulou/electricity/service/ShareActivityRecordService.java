@@ -42,8 +42,5 @@ public interface ShareActivityRecordService {
 
 	R generateSharePicture(Integer activityId,String page);
 
-    String encrypt(String decrypt);
-
-    String decrypt(String encrypt);
 
 }
