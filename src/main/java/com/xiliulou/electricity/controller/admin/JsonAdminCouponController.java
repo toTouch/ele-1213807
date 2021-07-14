@@ -119,7 +119,7 @@ public class JsonAdminCouponController {
 		}
 
 
-		String url = "https://api.weixin.qq.com/wxa/getwxacode?access_token=" + accessToken;
+		String url = " https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
 
 		//发送给微信服务器的数据
 		String scene="1";
