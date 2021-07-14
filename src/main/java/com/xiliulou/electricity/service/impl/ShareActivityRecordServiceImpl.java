@@ -119,6 +119,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
      * 4、判断海报还是链接
      * 5、调起微信
      *
+     * type 1--分享图片  2--分享链接
      */
     @Override
     public R generateShareUrl(Integer activityId,Integer type) {
@@ -130,7 +131,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //操作频繁
+        //限频
         boolean result = redisService.setNx(ElectricityCabinetConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 15 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
