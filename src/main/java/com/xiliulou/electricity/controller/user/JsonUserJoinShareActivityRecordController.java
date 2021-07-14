@@ -23,6 +23,26 @@ public class JsonUserJoinShareActivityRecordController {
     private JoinShareActivityRecordService joinShareActivityRecordService;
 
 
+    /**
+     * 解密分享图片
+     *
+     */
+    @GetMapping(value = "/outer/joinShareActivityRecord/decryptScene")
+    public R decryptScene(@RequestParam(value = "scene") String scene) {
+        return joinShareActivityRecordService.decryptScene(scene);
+    }
+
+
+    /**
+     * 点击分享链接进入活动
+     *
+     */
+    @PostMapping(value = "/user/joinShareActivityRecord/joinActivity")
+    public R joinActivity(@RequestParam(value = "activityId") Integer activityId,@RequestParam(value = "uid") Integer uid) {
+        return joinShareActivityRecordService.joinActivity(activityId,uid);
+    }
+
+
 
 
 }

@@ -2,19 +2,16 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.codec.Base64;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
@@ -24,10 +21,8 @@ import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -36,7 +31,6 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
@@ -62,6 +56,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	@Autowired
 	ElectricityPayParamsService electricityPayParamsService;
 
+	@Value("${security.encode.key:xiliu&lo@u%12345}")
+	private String encodeKey;
+
 	/**
 	 * 通过ID查询单条数据从DB
 	 *
@@ -72,8 +69,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	public ShareActivityRecord queryByIdFromDB(Long id) {
 		return this.shareActivityRecordMapper.selectById(id);
 	}
-
-
 
 	/**
 	 * 新增数据
@@ -101,18 +96,15 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 	}
 
-
 	/**
 	 * 1、判断是否分享过
 	 * 2、生成分享记录
 	 * 3、加密scene
-	 * 4、判断海报还是链接
-	 * 5、调起微信
-	 * <p>
-	 * type 1--分享图片  2--分享链接
+	 * 4、调起微信
+	 *
 	 */
 	@Override
-	public R generateShareUrl(Integer activityId, Integer type, String page) {
+	public R generateSharePicture(Integer activityId, String page) {
 
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -169,8 +161,11 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 			id = oldShareActivityRecord.getId();
 		}
 
+		String str = "{\"uid\": " + user.getUid() + ",\"activityId\":"+activityId+",\"code\":"+oldShareActivityRecord.getCode()+"}";
+		String sign=encrypt(str);
+
 		//3、加密scene
-		String scene = encrypt(oldShareActivityRecord.getUid().toString(), oldShareActivityRecord.getCode());
+		String scene = "{\"sign\": " + sign + ",\"tenantId\":"+tenantId+"}";
 
 
 		//修改分享状态
@@ -178,53 +173,44 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		newShareActivityRecord.setId(id);
 		newShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 
-		//4、判断海报还是链接
-		//4.1、海报
-		if (type == 1) {
-			//5、调起微信
-			SharePicture sharePicture = new SharePicture();
-			sharePicture.setPage(page);
-			sharePicture.setScene(scene);
-			sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
-			sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
-			Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
+		//4、调起微信
+		SharePicture sharePicture = new SharePicture();
+		sharePicture.setPage(page);
+		sharePicture.setScene(scene);
+		sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
+		sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
+		Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
-			//分享失败
-			if (!getShareUrlPair.getLeft()) {
-				newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_FAIL);
-				shareActivityRecordMapper.updateById(newShareActivityRecord);
-				return R.fail(getShareUrlPair.getRight());
-			}
-
-			//分享成功
-			newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_SUCCESS);
+		//分享失败
+		if (!getShareUrlPair.getLeft()) {
+			newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_FAIL);
 			shareActivityRecordMapper.updateById(newShareActivityRecord);
-			return R.ok(getShareUrlPair.getRight());
+			return R.fail(getShareUrlPair.getRight());
 		}
 
-		//4.2、链接 TODO
-		if (type == 2) {
-			//5、调起微信
-		}
+		//分享成功
+		newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_SUCCESS);
+		shareActivityRecordMapper.updateById(newShareActivityRecord);
+		return R.ok(getShareUrlPair.getRight());
 
-		return null;
 	}
 
 	//加密
 	@Override
-	public String encrypt(String decrypt, String code) {
-		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(code.getBytes(), "AES"),
-				new IvParameterSpec(code.getBytes()));
+	public String encrypt(String decrypt) {
+		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
+				new IvParameterSpec(encodeKey.getBytes()));
 		return Base64.encode(aes.encrypt(decrypt));
 	}
 
 	//解密
 	@Override
-	public String decrypt(String encrypt, String code) {
-		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(code.getBytes(), "AES"),
-				new IvParameterSpec(code.getBytes()));
+	public String decrypt(String encrypt) {
+		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
+				new IvParameterSpec(encodeKey.getBytes()));
 		return new String(aes.decrypt(Base64.decode(encrypt.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
 	}
+
 
 }

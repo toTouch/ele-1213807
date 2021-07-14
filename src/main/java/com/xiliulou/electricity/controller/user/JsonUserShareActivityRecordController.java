@@ -23,14 +23,24 @@ public class JsonUserShareActivityRecordController {
 
 
     /**
+     * 生成分享图片
+     *
+     *
+     */
+    @PostMapping(value = "/user/shareActivityRecord/generateSharePicture")
+    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId,
+            @RequestParam(value = "page", required = false) String page) {
+       return shareActivityRecordService.generateSharePicture(activityId,page);
+    }
+
+    /**
      * 生成分享链接
      *
-     * type 1--分享图片  2--分享链接
+     *
      */
-    @GetMapping(value = "/shareActivityRecord/generateShareUrl")
-    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId,@RequestParam(value = "type") Integer type,
-            @RequestParam(value = "page", required = false) String page) {
-       return shareActivityRecordService.generateShareUrl(activityId,type,page);
+    @GetMapping(value = "/user/shareActivityRecord/generateShareUrl")
+    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId) {
+        return null;
     }
 
 }

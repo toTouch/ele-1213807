@@ -40,10 +40,10 @@ public interface ShareActivityRecordService {
 
 
 
-	R generateShareUrl(Integer activityId,Integer type,String page);
+	R generateSharePicture(Integer activityId,String page);
 
-    String encrypt(String decrypt,String code);
+    String encrypt(String decrypt);
 
-    String decrypt(String encrypt,String code);
+    String decrypt(String encrypt);
 
 }
