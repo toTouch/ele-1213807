@@ -4,7 +4,6 @@ import com.xiliulou.electricity.entity.ShareActivity;
 import java.util.List;
 
 import com.xiliulou.electricity.query.ShareActivityQuery;
-import com.xiliulou.electricity.query.FranchiseeActivityQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Select;
