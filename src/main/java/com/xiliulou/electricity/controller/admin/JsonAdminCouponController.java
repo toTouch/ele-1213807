@@ -1,9 +1,4 @@
 package com.xiliulou.electricity.controller.admin;
-
-import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.http.HttpUtil;
-import cn.hutool.json.JSONUtil;
-import com.alibaba.nacos.client.identify.Base64;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -14,21 +9,11 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
-import com.xiliulou.pay.weixin.entity.AccessTokenResult;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.URI;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.Objects;
 
 /**
@@ -61,14 +46,6 @@ public class JsonAdminCouponController {
 		return couponService.update(coupon);
 	}
 
-	//删除--暂时无此功能
-	@DeleteMapping(value = "/admin/coupon/{id}")
-	public R delete(@PathVariable("id") Integer id) {
-		if (Objects.isNull(id)) {
-			return R.fail("ELECTRICITY.0007", "不合法的参数");
-		}
-		return couponService.delete(id);
-	}
 
 	//列表查询
 	@GetMapping(value = "/admin/coupon/list")

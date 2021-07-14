@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserCoupon">
         select
         id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source, del_flg,discount_type
-        from electricity.t_user_coupon
+        from t_user_coupon
         <where>
             <if test="query.uid != null">
                 and uid = #{query.uid}

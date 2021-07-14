@@ -13,13 +13,6 @@ import java.util.List;
  */
 public interface CouponService {
 
-    /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    Coupon queryByIdFromDB(Integer id);
 
       /**
      * 通过ID查询单条数据从缓存
@@ -45,8 +38,6 @@ public interface CouponService {
      */
     R update(Coupon coupon);
 
-
-    R delete(Integer id);
 
 
     R queryList(CouponQuery couponQuery);

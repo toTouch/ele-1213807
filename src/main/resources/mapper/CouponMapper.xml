@@ -8,7 +8,7 @@
         select
           id, name, status, apply_type, trigger_amount, discount_type, amount, discount, count, days,  description,
           uid, user_name, create_time, update_time, del_flg,franchisee_id
-        from electricity.t_coupon
+        from t_coupon
         <where>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}

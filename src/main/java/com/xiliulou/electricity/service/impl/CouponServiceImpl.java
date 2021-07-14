@@ -40,17 +40,6 @@ public class CouponServiceImpl implements CouponService {
 
 
     /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public Coupon queryByIdFromDB(Integer id) {
-        return this.couponMapper.selectById(id);
-    }
-
-    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -181,29 +170,7 @@ public class CouponServiceImpl implements CouponService {
 
     }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public R delete(Integer id) {
-        Coupon oldCoupon = queryByIdFromCache(id);
-        if (Objects.isNull(oldCoupon)) {
-            log.error("delete Coupon  ERROR! not found coupon ! couponId:{} ", id);
-            return R.fail("ELECTRICITY.0085", "找不到优惠券");
-        }
 
-
-        int delete = couponMapper.deleteById(id);
-        DbUtils.dbOperateSuccessThen(delete, () -> {
-            //删除缓存
-            redisService.delete(ElectricityCabinetConstant.COUPON_CACHE + id);
-            return null;
-        });
-
-
-        if (delete > 0) {
-            return R.ok();
-        }
-        return R.fail("ELECTRICITY.0086", "操作失败");
-    }
 
     @Override
     public R queryList(CouponQuery couponQuery) {
