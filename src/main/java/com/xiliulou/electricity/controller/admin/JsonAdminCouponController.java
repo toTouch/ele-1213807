@@ -118,7 +118,8 @@ public class JsonAdminCouponController {
 		HashMap<String, String> map = new HashMap<>();
 		map.put("path", "pages/start/index");
 		map.put("scene", "1");
-		//发送模板消息
+
+		//发送
 		String url = " https://api.weixin.qq.com/wxa/getwxacodeunlimit?access_token=" + accessToken;
 		log.info("SEND_SUBSCRIPTION_MESSAGE ,JSON_PARAMS:{}", JsonUtil.toJson(map));
 		String mapResult = HttpUtil.post(url, JsonUtil.toJson(map));
