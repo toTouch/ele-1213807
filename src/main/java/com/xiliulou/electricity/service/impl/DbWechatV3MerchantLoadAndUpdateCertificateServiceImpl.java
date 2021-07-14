@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.nullness.qual.NonNull;
 import org.checkerframework.checker.nullness.qual.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.PostConstruct;
@@ -78,6 +79,9 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
     public PrivateKey getMerchantCertificatePrivateKey(Integer tenantId) {
         try {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            if(Objects.isNull(electricityPayParams)){
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
             return WechatCertificateUtils.getPrivateKey(electricityPayParams.getWechatMerchantPrivateKeyPath());
         } catch (Exception e) {
             throw new RuntimeException("获取私钥失败！tenantId=" + tenantId, e);
@@ -88,6 +92,9 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
     public String getMerchantCertificateSerialNo(Integer tenantId) {
         try {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            if(Objects.isNull(electricityPayParams)){
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
             return electricityPayParams.getWechatMerchantCertificateSno();
         } catch (Exception e) {
             throw new RuntimeException("获取商户证书序列号失败！tenantId=" + tenantId, e);
@@ -103,6 +110,9 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
     public String getMerchantId(Integer tenantId) {
         try {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            if(Objects.isNull(electricityPayParams)){
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
             return electricityPayParams.getWechatMerchantId();
         } catch (Exception e) {
             throw new RuntimeException("获取商户id失败！tenantId=" + tenantId, e);
@@ -113,6 +123,9 @@ public class DbWechatV3MerchantLoadAndUpdateCertificateServiceImpl implements We
     public String getMerchantApiV3Key(Integer tenantId) {
         try {
             ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+            if(Objects.isNull(electricityPayParams)){
+                throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+            }
             return electricityPayParams.getWechatV3ApiKey();
         } catch (Exception e) {
             throw new RuntimeException("获取商户apiV3密钥失败！tenantId=" + tenantId, e);

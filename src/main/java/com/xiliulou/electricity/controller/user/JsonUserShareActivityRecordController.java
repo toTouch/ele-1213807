@@ -28,8 +28,9 @@ public class JsonUserShareActivityRecordController {
      * type 1--分享图片  2--分享链接
      */
     @GetMapping(value = "/shareActivityRecord/generateShareUrl")
-    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId,@RequestParam(value = "type") Integer type) {
-       return shareActivityRecordService.generateShareUrl(activityId,type);
+    public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId,@RequestParam(value = "type") Integer type,
+            @RequestParam(value = "page", required = false) String page) {
+       return shareActivityRecordService.generateShareUrl(activityId,type,page);
     }
 
 }
