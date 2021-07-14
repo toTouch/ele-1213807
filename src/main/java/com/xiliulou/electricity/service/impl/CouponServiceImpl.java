@@ -189,27 +189,7 @@ public class CouponServiceImpl implements CouponService {
     }
 
 
-    @Override
-    public void handelCouponExpired() {
-        List<Coupon> couponList = couponMapper.getExpiredCoupon(System.currentTimeMillis());
-        if (!DataUtil.collectionIsUsable(couponList)) {
-            return;
-        }
-        for (Coupon coupon : couponList) {
-            coupon.setStatus(Coupon.STATUS_OFF);
-            coupon.setUpdateTime(System.currentTimeMillis());
-            int update = couponMapper.updateById(coupon);
-            DbUtils.dbOperateSuccessThen(update, () -> {
-                redisService.saveWithHash(ElectricityCabinetConstant.COUPON_CACHE + coupon.getId(), coupon);
-                return null;
-            });
-        }
-    }
 
-    @Override
-    public List<Coupon> queryByIds(List<Integer> couponIds) {
-        return null;
-    }
 
     @Override
     public R queryCount(CouponQuery couponQuery) {

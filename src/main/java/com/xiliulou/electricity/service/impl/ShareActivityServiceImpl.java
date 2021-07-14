@@ -163,9 +163,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				for (ShareActivityRuleQuery shareActivityRuleQuery : shareActivityRuleQueryList) {
 					ShareActivityRule.ShareActivityRuleBuilder activityBindCouponBuild = ShareActivityRule.builder()
 							.activityId(shareActivity.getId())
-							.couponIds(shareActivityRuleQuery.getCouponIds())
+							.couponId(shareActivityRuleQuery.getCouponId())
 							.triggerCount(shareActivityRuleQuery.getTriggerCount())
-							.discountType(shareActivityAddAndUpdateQuery.getDiscountType())
 							.createTime(System.currentTimeMillis())
 							.updateTime(System.currentTimeMillis());
 					ShareActivityRule shareActivityRule = activityBindCouponBuild.build();
@@ -217,7 +216,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	public R queryList(ShareActivityQuery shareActivityQuery) {
 		List<ShareActivity> shareActivityList = shareActivityMapper.queryList(shareActivityQuery);
-		if (ObjectUtil.isEmpty(shareActivityList)) {
+		/*if (ObjectUtil.isEmpty(shareActivityList)) {
 			return R.ok();
 		}
 		//活动图片
@@ -237,11 +236,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
 			getElectricityCabinetFile(activityVOList, activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		}
-		return R.ok(activityVOList);
+		}*/
+		return R.ok(shareActivityList);
 	}
 
-	private void getElectricityCabinetFile(List<ActivityVO> activityVOList, ActivityVO activityVO, List<ElectricityCabinetFile> electricityCabinetFileList, List<ElectricityCabinetFile> electricityCabinetFiles) {
+	/*private void getElectricityCabinetFile(List<ActivityVO> activityVOList, ActivityVO activityVO, List<ElectricityCabinetFile> electricityCabinetFileList, List<ElectricityCabinetFile> electricityCabinetFiles) {
 		getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
 		activityVOList.add(activityVO);
 	}
@@ -254,7 +253,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			electricityCabinetFiles.add(electricityCabinetFile);
 		}
 		activityVO.setElectricityCabinetFiles(electricityCabinetFiles);
-	}
+	}*/
 
 	@Override
 	public R queryInfo(Integer id) {
@@ -267,7 +266,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ActivityVO activityVO = new ActivityVO();
 		BeanUtil.copyProperties(shareActivity, activityVO);
 
-		//图片
+	/*	//图片
 		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
 				.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
 
@@ -275,7 +274,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
 			getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-		}
+		}*/
 
 		//小活动
 		getCouponList(activityVO);
@@ -291,18 +290,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		List<Coupon> couponList = new ArrayList<>();
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
 
-			String couponIds = shareActivityRule.getCouponIds();
-			List<Integer> couponIdList=new ArrayList<>();
-			if (!StringUtils.isEmpty(couponIds)) {
-				String[] split = couponIds.split(",");
-				for (String couponId : split) {
-					couponIdList.add(Integer.valueOf(couponId));
-				}
-			}
+			Integer couponId = shareActivityRule.getCouponId();
 			//优惠券名称
-			List<Coupon> coupons = couponService.queryByIds(couponIdList);
-			if (Objects.nonNull(coupons)) {
-				couponList.addAll(coupons);
+			Coupon coupon = couponService.queryByIdFromCache(couponId);
+			if (Objects.nonNull(coupon)) {
+				couponList.add(coupon);
 			}
 		}
 
@@ -316,58 +308,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	}
 
 
-	@Override
-	public R shareActivityCenter() {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		User user = userService.queryByUidFromCache(uid);
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		//用户是否可用
-		UserInfo userInfo = userInfoService.queryByUid(uid);
-
-		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
-			return R.fail("ELECTRICITY.0024", "用户已被禁用");
-		}
-
-
-		//查询邀请活动
-		List<ShareActivity> shareActivityList = shareActivityMapper.selectList(new LambdaQueryWrapper<ShareActivity>()
-				.in(ShareActivity::getType, ShareActivity.SYSTEM)
-				.eq(ShareActivity::getDelFlg, ShareActivity.DEL_NORMAL)
-				.eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
-		if (ObjectUtil.isEmpty(shareActivityList)) {
-			return R.ok();
-		}
-
-		List<ActivityVO> activityVOList = new ArrayList<>();
-		for (ShareActivity shareActivity : shareActivityList) {
-
-			ActivityVO activityVO = new ActivityVO();
-			BeanUtil.copyProperties(shareActivity, activityVO);
-
-			//图片
-			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService
-					.queryByDeviceInfo(activityVO.getId(), ElectricityCabinetFile.TYPE_SHARE_ACTIVITY, storageConfig.getIsUseOSS());
-
-			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
-				activityVOList.add(activityVO);
-				continue;
-			}
-
-			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-			getElectricityCabinetFiles(activityVO, electricityCabinetFileList, electricityCabinetFiles);
-			activityVOList.add(activityVO);
-		}
-		return R.ok(activityVOList);
-	}
 
 	@Override
 	public R activityInfo(Integer id) {
@@ -392,22 +332,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return queryInfo(id);
 	}
 
-	@Override
-	public void handelActivityExpired() {
-		List<ShareActivity> shareActivityList = shareActivityMapper.getExpiredActivity(System.currentTimeMillis());
-		if (!DataUtil.collectionIsUsable(shareActivityList)) {
-			return;
-		}
-		for (ShareActivity shareActivity : shareActivityList) {
-			shareActivity.setStatus(Coupon.STATUS_OFF);
-			shareActivity.setUpdateTime(System.currentTimeMillis());
-			int update = shareActivityMapper.updateById(shareActivity);
-			DbUtils.dbOperateSuccessThen(update, () -> {
-				redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + shareActivity.getId(), shareActivity);
-				return null;
-			});
-		}
-	}
 
 }
 

@@ -46,9 +46,6 @@ public interface ShareActivityService {
     R queryCount(ShareActivityQuery shareActivityQuery);
 
 
-    R shareActivityCenter();
-
     R activityInfo(Integer id);
 
-    void handelActivityExpired();
 }
