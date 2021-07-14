@@ -85,4 +85,33 @@ public class JsonAdminCouponController {
 		return couponService.queryList(couponQuery);
 	}
 
+
+	//列表查询
+	@GetMapping(value = "/admin/coupon/count")
+	public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType,
+			@RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
+			@RequestParam(value = "name", required = false) String name) {
+
+
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				return R.ok();
+			}
+			franchiseeId = franchisee.getId();
+		}
+
+		CouponQuery couponQuery = CouponQuery.builder()
+				.name(name)
+				.discountType(discountType)
+				.franchiseeId(franchiseeId).build();
+		return couponService.queryCount(couponQuery);
+	}
+
 }

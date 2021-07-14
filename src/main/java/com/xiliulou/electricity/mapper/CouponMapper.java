@@ -27,4 +27,6 @@ public interface CouponMapper extends BaseMapper<Coupon>{
     @Select("select  id, name, status, apply_type, trigger_amount, discount_type, amount, discount, count, time_type, days, start_time, end_time, max_times_everyone, description, uid, user_name, create_time, update_time, del_flg" +
             " from t_coupon where time_type=1 and end_time < #{currentTime} and status = 1 and del_flg = 0 ")
     List<Coupon> getExpiredCoupon(@Param("currentTime") Long currentTime);
+
+    Integer queryCount(@Param("query") CouponQuery couponQuery);
 }

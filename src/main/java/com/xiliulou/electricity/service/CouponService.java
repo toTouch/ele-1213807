@@ -46,4 +46,6 @@ public interface CouponService {
     void handelCouponExpired();
 
     List<Coupon> queryByIds(List<Integer> couponIds);
+
+    R queryCount(CouponQuery couponQuery);
 }

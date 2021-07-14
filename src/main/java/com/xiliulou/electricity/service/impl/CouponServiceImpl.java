@@ -174,8 +174,7 @@ public class CouponServiceImpl implements CouponService {
 
     @Override
     public R queryList(CouponQuery couponQuery) {
-        List<Coupon> couponList = couponMapper.queryList(couponQuery);
-        return R.ok(couponList);
+        return R.ok(couponMapper.queryList(couponQuery));
     }
 
 
@@ -199,6 +198,11 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public List<Coupon> queryByIds(List<Integer> couponIds) {
         return null;
+    }
+
+    @Override
+    public R queryCount(CouponQuery couponQuery) {
+        return R.ok(couponMapper.queryCount(couponQuery));
     }
 
 }
