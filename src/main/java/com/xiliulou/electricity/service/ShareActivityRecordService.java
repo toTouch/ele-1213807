@@ -61,5 +61,5 @@ public interface ShareActivityRecordService {
      */
     Boolean deleteById(Long id);
 
-	R generateShareUrl(Integer activityId);
+	R generateShareUrl(Integer activityId,Integer type);
 }

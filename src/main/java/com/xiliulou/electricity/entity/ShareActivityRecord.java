@@ -40,10 +40,6 @@ public class ShareActivityRecord {
     */
     private Integer count;
     /**
-    * 0--正常 1--删除
-    */
-    private Integer delFlg;
-    /**
     * 创建时间
     */
     private Long createTime;

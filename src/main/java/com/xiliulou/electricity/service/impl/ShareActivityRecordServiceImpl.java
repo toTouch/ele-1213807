@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.RandomUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
@@ -114,12 +116,12 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
      * 1、判断是否分享过
      * 2、生成分享记录
      * 3、加密scene
-     * 4、调起微信，生成海报
-     * 5、返回
+     * 4、判断海报还是链接
+     * 5、调起微信
      *
      */
     @Override
-    public R generateShareUrl(Integer activityId) {
+    public R generateShareUrl(Integer activityId,Integer type) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -139,23 +141,44 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 
         //1、判断是否分享过
+        ShareActivityRecord oldShareActivityRecord=shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
+                .eq(ShareActivityRecord::getUid,user.getUid()).eq(ShareActivityRecord::getActivityId,activityId));
 
 
-        //2、生成分享链接
+        //第一次分享
+        if(Objects.isNull(oldShareActivityRecord)) {
+            //2、生成分享记录
+            //2.1 、生成code
+            String code = RandomUtil.randomNumbers(6);
+
+            //2.2、生成分享记录
+            ShareActivityRecord shareActivityRecord = new ShareActivityRecord();
+            shareActivityRecord.setActivityId(activityId);
+            shareActivityRecord.setUid(user.getUid());
+            shareActivityRecord.setTenantId(tenantId);
+            shareActivityRecord.setCode(code);
+            shareActivityRecord.setCreateTime(System.currentTimeMillis());
+            shareActivityRecord.setUpdateTime(System.currentTimeMillis());
+            shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
+            shareActivityRecordMapper.insert(shareActivityRecord);
+
+            //3、加密scene
+
+        }
 
 
-        //2.1 、生成code
-        String code = RandomUtil.randomNumbers(6);
+        //4、判断海报还是链接
 
-        //2.2、生成分享记录
-        ShareActivityRecord shareActivityRecord=new ShareActivityRecord();
-        shareActivityRecord.setActivityId(activityId);
-        shareActivityRecord.setUid(user.getUid());
-        shareActivityRecord.setTenantId(tenantId);
-        shareActivityRecord.setCode(code);
-        shareActivityRecord.setCreateTime(System.currentTimeMillis());
-        shareActivityRecord.setUpdateTime(System.currentTimeMillis());
-        shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
+
+        //海报
+        if(type==1){
+            //5、调起微信
+        }
+
+        //链接
+        if(type==2){
+            //5、调起微信
+        }
 
 
 
