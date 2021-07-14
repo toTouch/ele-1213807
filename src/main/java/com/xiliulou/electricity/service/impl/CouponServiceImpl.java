@@ -59,7 +59,7 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public Coupon queryByIdFromCache(Integer id) {
         //先查缓存
-        Coupon couponCache = redisService.getWithHash(ElectricityCabinetConstant.CACHE_COUPON_CACHE + id, Coupon.class);
+        Coupon couponCache = redisService.getWithHash(ElectricityCabinetConstant.COUPON_CACHE + id, Coupon.class);
         if (Objects.nonNull(couponCache)) {
             return couponCache;
         }
@@ -73,7 +73,7 @@ public class CouponServiceImpl implements CouponService {
 
 
         //放入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_COUPON_CACHE + id, coupon);
+        redisService.saveWithHash(ElectricityCabinetConstant.COUPON_CACHE + id, coupon);
         return coupon;
     }
 
@@ -169,7 +169,7 @@ public class CouponServiceImpl implements CouponService {
         int update = couponMapper.updateById(oldCoupon);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_COUPON_CACHE + oldCoupon.getId(), oldCoupon);
+            redisService.saveWithHash(ElectricityCabinetConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
             return null;
         });
 
@@ -194,7 +194,7 @@ public class CouponServiceImpl implements CouponService {
         int delete = couponMapper.deleteById(id);
         DbUtils.dbOperateSuccessThen(delete, () -> {
             //删除缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_COUPON_CACHE + id);
+            redisService.delete(ElectricityCabinetConstant.COUPON_CACHE + id);
             return null;
         });
 
@@ -223,7 +223,7 @@ public class CouponServiceImpl implements CouponService {
             coupon.setUpdateTime(System.currentTimeMillis());
             int update = couponMapper.updateById(coupon);
             DbUtils.dbOperateSuccessThen(update, () -> {
-                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_COUPON_CACHE + coupon.getId(), coupon);
+                redisService.saveWithHash(ElectricityCabinetConstant.COUPON_CACHE + coupon.getId(), coupon);
                 return null;
             });
         }
