@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.CouponMapper;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -82,6 +83,9 @@ public class CouponServiceImpl implements CouponService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
 
         //判断参数
         if(Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
@@ -124,6 +128,7 @@ public class CouponServiceImpl implements CouponService {
         coupon.setUserName(user.getUsername());
         coupon.setCreateTime(System.currentTimeMillis());
         coupon.setUpdateTime(System.currentTimeMillis());
+        coupon.setTenantId(tenantId);
 
 
         //先默认为自营活动 以后需要前端传值 TODO
