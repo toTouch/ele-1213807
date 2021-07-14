@@ -70,31 +70,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	 */
 	@Override
 	public ShareActivityRecord queryByIdFromDB(Long id) {
-		return this.shareActivityRecordMapper.queryById(id);
+		return this.shareActivityRecordMapper.selectById(id);
 	}
 
-	/**
-	 * 通过ID查询单条数据从缓存
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public ShareActivityRecord queryByIdFromCache(Long id) {
-		return null;
-	}
 
-	/**
-	 * 查询多条数据
-	 *
-	 * @param offset 查询起始位置
-	 * @param limit  查询条数
-	 * @return 对象列表
-	 */
-	@Override
-	public List<ShareActivityRecord> queryAllByLimit(int offset, int limit) {
-		return this.shareActivityRecordMapper.queryAllByLimit(offset, limit);
-	}
 
 	/**
 	 * 新增数据
@@ -105,7 +84,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public ShareActivityRecord insert(ShareActivityRecord shareActivityRecord) {
-		this.shareActivityRecordMapper.insertOne(shareActivityRecord);
+		this.shareActivityRecordMapper.insert(shareActivityRecord);
 		return shareActivityRecord;
 	}
 
@@ -118,21 +97,10 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public Integer update(ShareActivityRecord shareActivityRecord) {
-		return this.shareActivityRecordMapper.update(shareActivityRecord);
+		return this.shareActivityRecordMapper.updateById(shareActivityRecord);
 
 	}
 
-	/**
-	 * 通过主键删除数据
-	 *
-	 * @param id 主键
-	 * @return 是否成功
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Boolean deleteById(Long id) {
-		return this.shareActivityRecordMapper.deleteById(id) > 0;
-	}
 
 	/**
 	 * 1、判断是否分享过
@@ -225,13 +193,13 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 			//分享失败
 			if (!getShareUrlPair.getLeft()) {
 				newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_FAIL);
-				shareActivityRecordMapper.update(newShareActivityRecord);
+				shareActivityRecordMapper.updateById(newShareActivityRecord);
 				return R.fail(getShareUrlPair.getRight());
 			}
 
 			//分享成功
 			newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_SUCCESS);
-			shareActivityRecordMapper.update(newShareActivityRecord);
+			shareActivityRecordMapper.updateById(newShareActivityRecord);
 			return R.ok(getShareUrlPair.getRight());
 		}
 
