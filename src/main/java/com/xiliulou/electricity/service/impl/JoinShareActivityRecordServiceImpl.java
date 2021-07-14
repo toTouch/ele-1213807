@@ -92,10 +92,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	@Override
 	public R decryptScene(String scene) {
 
-
 		String result = AESUtil.decrypt(AESUtil.SECRET_KEY,scene);
-
-		JSONObject jsonResult = JSONObject.parseObject(scene);
+		JSONObject jsonResult = JSONObject.parseObject(result);
 		Integer uid = Integer.valueOf(jsonResult.getString("uid"));
 		String activityId = jsonResult.getString("activityId");
 		return R.ok();
@@ -116,6 +114,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 		//1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则 TODO
 		if (Objects.equals(uid, user.getUid())) {
+			JoinShareActivityRecord joinShareActivityRecord=joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>().
+					eq(JoinShareActivityRecord::getJoinUid,user.getUid()).eq(JoinShareActivityRecord::getTenantId,tenantId));
 
 		}
 

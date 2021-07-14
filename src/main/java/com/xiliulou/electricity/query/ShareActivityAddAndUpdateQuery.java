@@ -24,13 +24,23 @@ public class ShareActivityAddAndUpdateQuery {
     @NotEmpty(message = "活动名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
+     * 优惠类型，1--减免券，2--打折券，3-天数
+     */
+    @NotNull(message = "优惠类型不能为空!", groups = {CreateGroup.class})
+    private Integer discountType;
+
+    /**
+     * 有效时间
+     */
+    @NotNull(message = "有效时间不能为空!", groups = {CreateGroup.class})
+    private Integer hours;
+    /**
     * 活动状态，分为 1--上架，2--下架
     */
     private Integer status;
     /**
      * 活动类型，分为 1--自营，2--代理
      */
-    @NotNull(message = "活动类型不能为空!", groups = {CreateGroup.class})
     private Integer type;
     /**
     * 活动说明
@@ -67,4 +77,8 @@ public class ShareActivityAddAndUpdateQuery {
 
 
 
+
+
 }
+
+

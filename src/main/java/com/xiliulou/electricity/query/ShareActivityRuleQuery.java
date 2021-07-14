@@ -19,10 +19,7 @@ public class ShareActivityRuleQuery {
     /**
      * 优惠券id
      */
-    private String couponIds;
-    /**
-     * 优惠类型，1--减免券，2--打折券，3-天数
-     */
-    private Integer discountType;
+    private Integer couponId;
+
 
 }
