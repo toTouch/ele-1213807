@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.nacos.client.identify.Base64;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -20,6 +21,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
@@ -122,7 +125,7 @@ public class JsonAdminCouponController {
 		String jsonStr = "{\"scene\": \"1\",\"page\": \"pages/home/index\"}";
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		InputStream response = sendPost(jsonStr, url);
+		String response = sendPost(jsonStr, url);
 		return R.ok(response);
 
 	}
@@ -137,11 +140,13 @@ public class JsonAdminCouponController {
 	}
 
 	//post请求
-	public static InputStream sendPost(String param, String url) {
+	public static String sendPost(String param, String url) {
 		PrintWriter out = null;
 		InputStream in = null;
+		String result = "";
 		try {
-			URL realUrl = new URL(new URI(url).toASCIIString());
+
+			URL realUrl = new URL(url);
 			// 打开和URL之间的连接
 			URLConnection conn = realUrl.openConnection();
 			// 设置通用的请求属性
@@ -162,18 +167,46 @@ public class JsonAdminCouponController {
 			out.flush();
 			out = new PrintWriter(conn.getOutputStream());
 			in = conn.getInputStream();
-
+			byte[] data = null;
+			// 读取图片字节数组
+			try {
+				ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+				byte[] buff = new byte[100];
+				int rc = 0;
+				while ((rc = in.read(buff, 0, 100)) > 0) {
+					swapStream.write(buff, 0, rc);
+				}
+				data = swapStream.toByteArray();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return new String(Base64.encodeBase64(data));
 		} catch (Exception e) {
 			log.info("发送 POST 请求出现异常！" + e);
 			e.printStackTrace();
 		}
 		// 使用finally块来关闭输出流、输入流
 		finally {
-			if (out != null) {
-				out.close();
+			try {
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
 			}
 		}
-		return in;
+		return result;
 	}
 
 }
