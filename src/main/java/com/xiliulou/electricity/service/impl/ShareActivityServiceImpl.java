@@ -93,7 +93,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	public ShareActivity queryByIdFromCache(Integer id) {
 		//先查缓存
-		ShareActivity shareActivityCache = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ACTIVITY_CACHE + id, ShareActivity.class);
+		ShareActivity shareActivityCache = redisService.getWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + id, ShareActivity.class);
 		if (Objects.nonNull(shareActivityCache)) {
 			return shareActivityCache;
 		}
@@ -105,7 +105,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//放入缓存
-		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ACTIVITY_CACHE + id, shareActivity);
+		redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + id, shareActivity);
 		return shareActivity;
 	}
 
@@ -198,7 +198,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		int update = shareActivityMapper.updateById(oldShareActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ACTIVITY_CACHE + oldShareActivity.getId(), oldShareActivity);
+			redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + oldShareActivity.getId(), oldShareActivity);
 
 			return null;
 		});
@@ -398,7 +398,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			shareActivity.setUpdateTime(System.currentTimeMillis());
 			int update = shareActivityMapper.updateById(shareActivity);
 			DbUtils.dbOperateSuccessThen(update, () -> {
-				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ACTIVITY_CACHE + shareActivity.getId(), shareActivity);
+				redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + shareActivity.getId(), shareActivity);
 				return null;
 			});
 		}
