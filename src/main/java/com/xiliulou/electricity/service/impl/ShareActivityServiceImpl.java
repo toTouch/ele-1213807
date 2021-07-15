@@ -263,33 +263,34 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 
 	@Override
-	public R activityInfo(Integer id) {
-		//用户信息
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-		User user = userService.queryByUidFromCache(uid);
+	public R activityInfo() {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user! userId:{}", uid);
+			log.error("order  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+
+
 		//用户是否可用
-		UserInfo userInfo = userInfoService.queryByUid(uid);
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
+			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
-		ShareActivity shareActivity = queryByIdFromCache(id);
+
+		//邀请活动
+		ShareActivity shareActivity =shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
 		if (Objects.isNull(shareActivity)) {
-			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
+			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
+
 
 		ActivityVO activityVO = new ActivityVO();
 		BeanUtil.copyProperties(shareActivity, activityVO);
