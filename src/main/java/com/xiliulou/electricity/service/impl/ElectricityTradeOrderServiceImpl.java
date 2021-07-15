@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -16,6 +17,8 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -59,6 +62,10 @@ public class ElectricityTradeOrderServiceImpl extends
     WechatConfig wechatConfig;
     @Autowired
     WechatV3JsapiService wechatV3JsapiService;
+    @Autowired
+    JoinShareActivityRecordService joinShareActivityRecordService;
+    @Autowired
+    ShareActivityRecordService shareActivityRecordService;
 
 
     @Override
@@ -194,6 +201,25 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+            //被邀请新买月卡用户
+            //是否是新用户
+            if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+                    || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+                //是否有人邀请
+                JoinShareActivityRecord joinShareActivityRecord =joinShareActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
+                if(Objects.nonNull(joinShareActivityRecord)){
+                    //修改邀请状态
+                    joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+                    joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+                    joinShareActivityRecordService.update(joinShareActivityRecord);
+
+                    //给邀请人增加邀请成功人数
+                    shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+                }
+
+
+            }
 
         }
 
