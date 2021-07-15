@@ -66,7 +66,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
 	UserCouponService userCouponService;
-	@Autowire
+	@Autowired
 	CouponService couponService;
 
 	/**
@@ -190,6 +190,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		//查找计算优惠券
 		//满减折扣劵
 		UserCoupon userCoupon = null;
+		BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
 		if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
 			userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrderQuery.getUserCouponId());
 			if (Objects.isNull(userCoupon)) {
@@ -273,7 +274,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
 		electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
 		electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
-		electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
+		electricityMemberCardOrder.setPayAmount(payAmount);
 		electricityMemberCardOrder.setUserName(userInfo.getUserName());
 		electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
 		electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
@@ -304,6 +305,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
 			electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
 			baseMapper.updateById(electricityMemberCardOrderUpdate);
+
+			//被邀请新买月卡用户 TODO
+			if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+
+			}
+
 			return R.ok();
 		}
 

@@ -246,6 +246,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			log.error("rentBattery  ERROR! not found memberCard ! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
+
+
+		//月卡是否过期
 		Long now = System.currentTimeMillis();
 		if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
 			log.error("rentBattery  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
