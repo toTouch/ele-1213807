@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -131,6 +132,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//查询该租户是否有邀请活动，有则不能添加
+		int count=shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId,tenantId));
+        if(count>0){
+	        return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+        }
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
