@@ -41,7 +41,7 @@ public class ShareActivityRuleServiceImpl implements ShareActivityRuleService {
     @Override
     public List<ShareActivityRule> queryByActivity(Integer id) {
         return shareActivityRuleMapper.selectList(new LambdaQueryWrapper<ShareActivityRule>().eq(ShareActivityRule::getActivityId, id)
-                .eq(ShareActivityRule::getDelFlg, ShareActivityRule.DEL_NORMAL));
+                .eq(ShareActivityRule::getDelFlag, ShareActivityRule.DEL_NORMAL));
     }
 
 
