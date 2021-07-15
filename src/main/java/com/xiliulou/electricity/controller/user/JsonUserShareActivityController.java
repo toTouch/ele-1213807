@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
-public class JsonAdminShareActivityController {
+public class JsonUserShareActivityController {
     /**
      * 服务对象
      */
