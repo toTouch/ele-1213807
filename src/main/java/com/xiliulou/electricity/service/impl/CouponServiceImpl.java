@@ -158,7 +158,7 @@ public class CouponServiceImpl implements CouponService {
         Coupon oldCoupon = queryByIdFromCache(coupon.getId());
         if (Objects.isNull(oldCoupon)) {
             log.error("update Coupon  ERROR! not found coupon ! couponId:{} ", coupon.getId());
-            return R.fail("ELECTRICITY.0085", "找不到优惠券");
+            return R.fail("ELECTRICITY.00104", "找不到优惠券");
         }
 
 

@@ -40,5 +40,5 @@ public interface JoinShareActivityRecordService {
 
     R joinActivity(Integer activityId, Long uid);
 
-    JoinShareActivityRecord queryByJoinId(Long uid);
+    JoinShareActivityRecord queryByJoinUid(Long uid);
 }

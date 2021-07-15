@@ -18,14 +18,14 @@ public interface UserCouponService {
 
     R queryList(UserCouponQuery userCouponQuery);
 
-    R batchRelease(Integer id,   Long[] uidS);
+    R batchRelease(Integer id,   Long[] uids);
 
     void handelUserCouponExpired();
 
 
     R queryMyCoupon( List<Integer> statusList,List<Integer> typeList);
 
-    R getCoupon(List<Integer> couponIdList,Integer id,Integer type);
+    R getShareCoupon(Integer activityId,Integer couponId);
 
     UserCoupon queryByIdFromDB(Integer userCouponId);
 }

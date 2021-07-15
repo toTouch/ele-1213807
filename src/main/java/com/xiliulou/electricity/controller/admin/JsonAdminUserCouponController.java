@@ -49,9 +49,9 @@ public class JsonAdminUserCouponController {
 
     //批量发放优惠券
     @PostMapping(value = "/admin/coupon/batchRelease")
-    public R batchRelease(@RequestParam("id") Integer id,@RequestParam("uidS") String uidS) {
+    public R batchRelease(@RequestParam("id") Integer id,@RequestParam("uid") String uid) {
         Long[] uids = (Long[])
-                JSONUtil.parseArray(uidS).toArray(Long[].class);
+                JSONUtil.parseArray(uid).toArray(Long[].class);
         return userCouponService.batchRelease(id,uids);
     }
 

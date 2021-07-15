@@ -200,7 +200,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrderQuery.getUserCouponId());
 			if (Objects.isNull(userCoupon)) {
 				log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
-				return R.fail("ELECTRICITY.0085", "找不到优惠券");
+				return R.fail("ELECTRICITY.0085", "未找到优惠券");
 			}
 
 			//优惠券是否使用
@@ -218,7 +218,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
 			if (Objects.isNull(coupon)) {
 				log.error("ELECTRICITY  ERROR! not found coupon! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
-				return R.fail("ELECTRICITY.0085", "找不到优惠券");
+				return R.fail("ELECTRICITY.0085", "未找到优惠券");
 			}
 
 
@@ -317,7 +317,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
 					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
 				//是否有人邀请
-				JoinShareActivityRecord joinShareActivityRecord =joinShareActivityRecordService.queryByJoinId(user.getUid());
+				JoinShareActivityRecord joinShareActivityRecord =joinShareActivityRecordService.queryByJoinUid(user.getUid());
 				if(Objects.nonNull(joinShareActivityRecord)){
 					//修改邀请状态
 					joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
