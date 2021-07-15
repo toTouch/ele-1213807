@@ -193,6 +193,18 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
+		//查询该租户是否有邀请活动，有则不能启用
+		if(Objects.equals(shareActivityAddAndUpdateQuery.getStatus(),ShareActivity.STATUS_ON)) {
+			int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId, tenantId));
+			if (count > 0) {
+				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+			}
+		}
+
 		BeanUtil.copyProperties(shareActivityAddAndUpdateQuery, oldShareActivity);
 		oldShareActivity.setUpdateTime(System.currentTimeMillis());
 
