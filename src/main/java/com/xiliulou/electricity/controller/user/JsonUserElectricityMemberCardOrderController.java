@@ -4,8 +4,10 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,7 +35,7 @@ public class JsonUserElectricityMemberCardOrderController {
 
 
     @PostMapping("user/memberCard/payMemberCard")
-    public R payMemberCard(@RequestBody ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
+    public R payMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
         return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
     }
 
