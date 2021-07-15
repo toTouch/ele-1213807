@@ -56,7 +56,7 @@ public class ActivityVO {
     private Integer type;
 
     //优惠券列表
-    private List<Coupon> couponList;
+    private List<CouponVO> couponVOList;
 
     /**
      * 活动图片url

@@ -27,6 +27,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ActivityVO;
+import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -231,18 +232,20 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return;
 		}
 
-		List<Coupon> couponList = new ArrayList<>();
+		List<CouponVO> couponVOList = new ArrayList<>();
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-
+			CouponVO couponVO=new CouponVO();
+			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
 			Integer couponId = shareActivityRule.getCouponId();
 			//优惠券名称
 			Coupon coupon = couponService.queryByIdFromCache(couponId);
 			if (Objects.nonNull(coupon)) {
-				couponList.add(coupon);
+				couponVO.setCoupon(coupon);
 			}
+			couponVOList.add(couponVO);
 		}
 
-		activityVO.setCouponList(couponList);
+		activityVO.setCouponVOList(couponVOList);
 	}
 
 	@Override
