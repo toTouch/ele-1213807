@@ -20,7 +20,6 @@ import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -51,8 +50,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	@Autowired
 	ElectricityPayParamsService electricityPayParamsService;
 
-	@Value("${security.encode.key:xiliu&lo@u%12345}")
-	private String encodeKey;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -196,9 +193,14 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	}
 
 	@Override
-	public ShareActivityRecord queryByUidAndTenantId(Long uid, Integer tenantId) {
+	public ShareActivityRecord queryByUid(Long uid) {
 		return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
-				.eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId, tenantId));
+				.eq(ShareActivityRecord::getUid, uid));
+	}
+
+	@Override
+	public void addCountByUid(Long uid) {
+		shareActivityRecordMapper.addCountByUid(uid);
 	}
 
 }

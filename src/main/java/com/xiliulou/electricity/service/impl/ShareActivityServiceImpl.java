@@ -5,7 +5,6 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
@@ -16,7 +15,6 @@ import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -151,8 +149,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 
 			//添加优惠
-			if (ObjectUtil.isNotEmpty(shareActivityRuleQueryList) && (Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.SYSTEM)
-					|| Objects.equals(shareActivityAddAndUpdateQuery.getType(), ShareActivity.FRANCHISEE))) {
+			if (ObjectUtil.isNotEmpty(shareActivityRuleQueryList)) {
 				for (ShareActivityRuleQuery shareActivityRuleQuery : shareActivityRuleQueryList) {
 					ShareActivityRule.ShareActivityRuleBuilder activityBindCouponBuild = ShareActivityRule.builder()
 							.activityId(shareActivity.getId())
@@ -293,7 +290,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		getCouponList(activityVO);
 
 		int count=0;
-		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUidAndTenantId(user.getUid(),tenantId);
+		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
 		if(Objects.nonNull(shareActivityRecord)){
 			count=shareActivityRecord.getCount();
 		}

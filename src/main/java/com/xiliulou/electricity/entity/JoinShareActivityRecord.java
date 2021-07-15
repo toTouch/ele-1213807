@@ -55,4 +55,11 @@ public class JoinShareActivityRecord {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    //初始化
+    public static Integer STATUS_INIT = 1;
+    //已参与
+    public static Integer STATUS_SUCCESS = 2;
+    //已过期
+    public static Integer STATUS_FAIL = 3;
+
 }

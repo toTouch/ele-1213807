@@ -173,6 +173,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	}
 
+	@Override
+	public JoinShareActivityRecord queryByJoinId(Long uid) {
+		return joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
+				.eq(JoinShareActivityRecord::getJoinUid,uid).lt(JoinShareActivityRecord::getExpiredTime,System.currentTimeMillis())
+				.eq(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT));
+	}
 
 	private Boolean checkUserIsCard(UserInfo userInfo) {
 

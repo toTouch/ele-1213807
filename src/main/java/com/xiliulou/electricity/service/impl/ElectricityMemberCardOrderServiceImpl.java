@@ -68,6 +68,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	UserCouponService userCouponService;
 	@Autowired
 	CouponService couponService;
+	@Autowired
+	JoinShareActivityRecordService joinShareActivityRecordService;
+	@Autowired
+	ShareActivityRecordService shareActivityRecordService;
 
 	/**
 	 * 创建月卡订单
@@ -102,6 +106,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
 			return R.failMsg("未找到用户的第三方授权信息!");
 		}
+
 
 		//换电柜
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(),electricityMemberCardOrderQuery.getDeviceName());
@@ -306,9 +311,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
 			baseMapper.updateById(electricityMemberCardOrderUpdate);
 
-			//被邀请新买月卡用户 TODO
+
+			//被邀请新买月卡用户
+			//是否是新用户
 			if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
 					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+				//是否有人邀请
+				JoinShareActivityRecord joinShareActivityRecord =joinShareActivityRecordService.queryByJoinId(user.getUid());
+				if(Objects.nonNull(joinShareActivityRecord)){
+					//修改邀请状态
+					joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+					joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+					joinShareActivityRecordService.update(joinShareActivityRecord);
+
+					//给邀请人增加邀请成功人数
+					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+				}
+
 
 			}
 
