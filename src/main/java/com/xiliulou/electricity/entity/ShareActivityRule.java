@@ -41,7 +41,7 @@ public class ShareActivityRule {
     /**
     * 0--正常 1--删除
     */
-    private Integer delFlg;
+    private Integer delFlag;
     /**
     * 创建时间
     */

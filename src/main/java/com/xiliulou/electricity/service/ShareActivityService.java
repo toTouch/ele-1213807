@@ -45,7 +45,6 @@ public interface ShareActivityService {
 
     R queryCount(ShareActivityQuery shareActivityQuery);
 
-
     R activityInfo(Integer id);
 
 }
