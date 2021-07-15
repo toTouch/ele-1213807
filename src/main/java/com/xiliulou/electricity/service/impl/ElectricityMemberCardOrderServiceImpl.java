@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
+import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -68,12 +69,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	 * 创建月卡订单
 	 *
 	 * @param
-	 * @param memberId
+	 * @param electricityMemberCardOrderQuery
 	 * @return
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R createOrder(Integer memberId,String productKey, String deviceName, HttpServletRequest request) {
+	public R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -99,9 +100,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		}
 
 		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey,deviceName);
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(),electricityMemberCardOrderQuery.getDeviceName());
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey,deviceName);
+			log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", electricityMemberCardOrderQuery.getProductKey(),electricityMemberCardOrderQuery.getDeviceName());
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
@@ -171,13 +172,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		}
 
 
-		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberId);
+		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
 		if (Objects.isNull(electricityMemberCard)) {
-			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", memberId);
+			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", electricityMemberCardOrderQuery.getMemberId());
 			return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
 		}
 		if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-			log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", memberId);
+			log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", electricityMemberCardOrderQuery.getMemberId());
 			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
 
@@ -186,7 +187,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
 		//同一个套餐可以续费
-		if (Objects.equals(franchiseeUserInfo.getCardId(), memberId)) {
+		if (Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
 			if(now<franchiseeUserInfo.getMemberCardExpireTime()) {
 				now = franchiseeUserInfo.getMemberCardExpireTime();
 			}
@@ -211,7 +212,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
 		electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
 		electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
-		electricityMemberCardOrder.setMemberCardId(memberId);
+		electricityMemberCardOrder.setMemberCardId(electricityMemberCardOrderQuery.getMemberId());
 		electricityMemberCardOrder.setUid(user.getUid());
 		electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
 		electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());

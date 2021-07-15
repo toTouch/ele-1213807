@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -9,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -31,9 +33,8 @@ public class JsonUserElectricityMemberCardOrderController {
 
 
     @PostMapping("user/memberCard/payMemberCard")
-    public R payMemberCard(@RequestParam(value = "memberId") Integer memberId,@RequestParam("productKey") String productKey,
-            @RequestParam("deviceName") String deviceName, HttpServletRequest request) {
-        return electricityMemberCardOrderService.createOrder(memberId,productKey,deviceName, request);
+    public R payMemberCard(@RequestBody ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
+        return electricityMemberCardOrderService.createOrder(electricityMemberCardOrderQuery, request);
     }
 
     @GetMapping("user/memberCardOrder/list")

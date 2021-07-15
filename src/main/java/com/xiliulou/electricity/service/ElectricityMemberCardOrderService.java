@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
+import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,7 +14,7 @@ import java.util.List;
 public interface ElectricityMemberCardOrderService {
 
 
-    R createOrder(Integer memberId,String productKey, String deviceName, HttpServletRequest request);
+    R createOrder(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
 
