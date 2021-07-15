@@ -287,7 +287,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 
-
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -300,7 +299,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ShareActivity shareActivity =shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
 		if (Objects.isNull(shareActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
-			return R.fail("ELECTRICITY.0069", "未找到活动");
+			return R.ok();
 		}
 
 
