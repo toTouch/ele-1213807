@@ -195,4 +195,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 
 		return R.ok();
 	}
+
+	@Override
+	public UserCoupon queryByIdFromDB(Integer userCouponId) {
+		return userCouponMapper.selectById(userCouponId);
+	}
 }

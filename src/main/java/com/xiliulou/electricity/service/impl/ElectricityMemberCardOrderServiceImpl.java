@@ -64,6 +64,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+	@Autowired
+	UserCouponService userCouponService;
+	@Autowire
+	CouponService couponService;
 
 	/**
 	 * 创建月卡订单
@@ -181,6 +185,58 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", electricityMemberCardOrderQuery.getMemberId());
 			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
+
+
+		//查找计算优惠券
+		//满减折扣劵
+		UserCoupon userCoupon = null;
+		if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
+			userCoupon = userCouponService.queryByIdFromDB(electricityMemberCardOrderQuery.getUserCouponId());
+			if (Objects.isNull(userCoupon)) {
+				log.error("ELECTRICITY  ERROR! not found userCoupon! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+				return R.fail("ELECTRICITY.0085", "找不到优惠券");
+			}
+
+			//优惠券是否使用
+			if (Objects.equals(UserCoupon.STATUS_USED, userCoupon.getStatus())) {
+				log.error("ELECTRICITY  ERROR!  userCoupon is used! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+				return R.fail("ELECTRICITY.0090", "您的优惠券已被使用");
+			}
+
+			//优惠券是否过期
+			if (userCoupon.getDeadline() < System.currentTimeMillis()) {
+				log.error("ELECTRICITY  ERROR!  userCoupon is deadline!userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+				return R.fail("ELECTRICITY.0091", "您的优惠券已过期");
+			}
+
+			Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
+			if (Objects.isNull(coupon)) {
+				log.error("ELECTRICITY  ERROR! not found coupon! userCouponId:{} ", electricityMemberCardOrderQuery.getUserCouponId());
+				return R.fail("ELECTRICITY.0085", "找不到优惠券");
+			}
+
+
+			//使用满减劵
+			if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.FULL_REDUCTION)) {
+
+				//计算满减
+				payAmount = payAmount.subtract(coupon.getAmount());
+			}
+
+			//使用折扣劵
+			if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.DISCOUNT)) {
+
+				//计算折扣
+				payAmount = payAmount.multiply(coupon.getDiscount().divide(BigDecimal.valueOf(100)));
+			}
+
+		}
+
+		//支付金额不能为负数
+		if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+			payAmount = BigDecimal.valueOf(0);
+		}
+
 
 
 		Long now = System.currentTimeMillis();

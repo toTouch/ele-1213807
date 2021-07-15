@@ -26,4 +26,6 @@ public interface UserCouponService {
     R queryMyCoupon( List<Integer> statusList,List<Integer> typeList);
 
     R getCoupon(List<Integer> couponIdList,Integer id,Integer type);
+
+    UserCoupon queryByIdFromDB(Integer userCouponId);
 }

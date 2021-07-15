@@ -20,5 +20,5 @@ public class ElectricityMemberCardOrderQuery {
 	private String deviceName;
 
 	//优惠券
-	private Integer couponId;
+	private Integer userCouponId;
 }
