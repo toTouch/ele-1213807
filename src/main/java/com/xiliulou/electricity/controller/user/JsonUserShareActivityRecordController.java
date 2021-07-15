@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
  * @since 2021-07-14 09:45:04
  */
 @RestController
-@RequestMapping("shareActivityRecord")
 public class JsonUserShareActivityRecordController {
     /**
      * 服务对象

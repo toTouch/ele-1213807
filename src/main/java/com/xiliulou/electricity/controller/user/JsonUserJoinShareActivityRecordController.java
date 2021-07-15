@@ -14,7 +14,6 @@ import javax.annotation.Resource;
  * @since 2021-07-14 09:44:36
  */
 @RestController
-@RequestMapping("joinShareActivityRecord")
 public class JsonUserJoinShareActivityRecordController {
     /**
      * 服务对象
