@@ -1,36 +1,29 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.AESUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
 import java.util.Objects;
-
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.util.StringUtils;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务实现类
@@ -55,6 +48,9 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+
+	@Autowired
+	ShareActivityService shareActivityService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -113,15 +109,24 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUid(uid);
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
-			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", uid);
+			log.error("joinActivity  ERROR! not found userInfo,uid:{} ", uid);
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+		//查找活动
+		ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
+		if (Objects.isNull(shareActivity)) {
+			log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
+			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+
+
 
 		//1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则 TODO
 		if (Objects.equals(uid, user.getUid())) {
@@ -144,6 +149,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		JoinShareActivityRecord oldJoinShareActivityRecord=joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>().
 				eq(JoinShareActivityRecord::getJoinUid,user.getUid()).eq(JoinShareActivityRecord::getTenantId,tenantId));
 
+
 		if(Objects.nonNull(oldJoinShareActivityRecord)){
 			if(Objects.equals(oldJoinShareActivityRecord.getUid(),uid)){
 				return R.ok();
@@ -153,7 +159,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			oldJoinShareActivityRecord.setUid(uid);
 			//过期时间可配置
 			oldJoinShareActivityRecord.setStartTime(System.currentTimeMillis());
-			oldJoinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+24*60*60*1000L);
+			oldJoinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 			oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
 			return R.ok();
@@ -165,7 +171,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		joinShareActivityRecord.setCreateTime(System.currentTimeMillis());
 		joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 		joinShareActivityRecord.setStartTime(System.currentTimeMillis());
-		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+24*60*60*1000L);
+		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 		joinShareActivityRecord.setTenantId(tenantId);
 		joinShareActivityRecordMapper.insert(joinShareActivityRecord);
 
