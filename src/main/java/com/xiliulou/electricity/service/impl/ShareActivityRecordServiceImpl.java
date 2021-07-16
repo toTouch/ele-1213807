@@ -162,6 +162,8 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		String str = JSONObject.toJSONString(sharePictureQuery);
 		String scene= AESUtil.encrypt(AESUtil.SECRET_KEY,str);
 
+		log.info("scene is -->{}",scene);
+
 
 		//修改分享状态
 		ShareActivityRecord newShareActivityRecord = new ShareActivityRecord();
