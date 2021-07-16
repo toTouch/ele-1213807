@@ -136,7 +136,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		if (Objects.isNull(oldShareActivityRecord)) {
 			//2、生成分享记录
 			//2.1 、生成code
-			String code = RandomUtil.randomNumbers(16);
+			String code = RandomUtil.randomNumbers(6);
 
 			//2.2、生成分享记录
 			ShareActivityRecord shareActivityRecord = new ShareActivityRecord();

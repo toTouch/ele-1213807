@@ -39,7 +39,6 @@ public interface ShareActivityRecordService {
     Integer update(ShareActivityRecord shareActivityRecord);
 
 
-
 	R generateSharePicture(Integer activityId,String page);
 
 	ShareActivityRecord queryByUid(Long uid);
