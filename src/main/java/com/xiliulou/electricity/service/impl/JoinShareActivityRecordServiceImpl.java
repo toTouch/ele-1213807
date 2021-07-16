@@ -7,6 +7,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -51,6 +53,9 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Autowired
 	ShareActivityService shareActivityService;
+
+	@Autowired
+	UserService userService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -91,6 +96,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Override
 	public R checkScene(String scene) {
+		String[] split = scene.split(",");
 		return R.ok();
 	}
 
@@ -119,6 +125,13 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		if (Objects.isNull(shareActivity)) {
 			log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+
+		//查找分享的用户
+		User oldUser = userService.queryByUidFromCache(uid);
+		if (Objects.isNull(oldUser)) {
+			log.error("joinActivity  ERROR! not found oldUser ,uid :{}",uid);
+			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
 
