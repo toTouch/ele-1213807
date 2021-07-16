@@ -150,7 +150,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 				.eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
 
 		//3、scene
-		String scene = "uid="+user.getUid()+"_id="+activityId+"_code="+shareActivityRecord.getCode();
+		String scene = "uid:"+user.getUid()+",id:"+activityId+",code:"+shareActivityRecord.getCode();
 
 		log.info("scene is -->{}",scene);
 
