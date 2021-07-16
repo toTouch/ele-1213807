@@ -171,7 +171,7 @@ public class JsonUserJoinShareActivityRecordController {
 			if(data.length>1000) {
 				return new String(Base64.encodeBase64(data));
 			}
-			return new String(data);
+			return JsonUtil.fetchObject(new String(data), "/errcode").toString();
 		} catch (Exception e) {
 			System.out.println("发送 POST 请求出现异常！" + e);
 			e.printStackTrace();
