@@ -123,9 +123,8 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
      * @return
      */
     @Override
-    public UserOauthBind queryUserOauthBySysId(Long uid) {
+    public UserOauthBind queryUserOauthBySysId(Long uid,Integer tenantId) {
 
-
-        return   userOauthBindMapper.queryUserOauthBySysId(uid);
+        return   userOauthBindMapper.queryUserOauthBySysId(uid,tenantId);
     }
 }

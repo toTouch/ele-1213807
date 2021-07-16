@@ -18,5 +18,5 @@ public interface UserOauthBindMapper extends BaseMapper<UserOauthBind> {
     List<UserOauthBind> queryListByCondition(@Param("size") Integer size, @Param("offset") Integer offset, @Param("uid") Long uid, @Param("thirdId") String thirdId, @Param("phone") String phone);
 
 
-    UserOauthBind queryUserOauthBySysId(@Param("uid") Long uid);
+    UserOauthBind queryUserOauthBySysId(@Param("uid") Long uid,@Param("tenantId") Integer tenantId);
 }

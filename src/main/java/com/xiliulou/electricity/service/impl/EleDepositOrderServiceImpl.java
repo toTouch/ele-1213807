@@ -134,7 +134,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.failMsg("未配置支付参数!");
 		}
 
-		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid());
+		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(),tenantId);
 
 		if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());

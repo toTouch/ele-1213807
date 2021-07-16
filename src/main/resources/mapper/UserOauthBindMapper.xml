@@ -38,7 +38,7 @@
                 FROM
                 t_user_oauth_bind
                 WHERE
-                uid = #{uid}
+                uid = #{uid} and tenant_id=#{tenantId}
 
     </select>
 
