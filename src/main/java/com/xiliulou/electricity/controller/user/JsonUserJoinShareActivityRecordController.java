@@ -99,7 +99,7 @@ public class JsonUserJoinShareActivityRecordController {
 
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		String response = sendPost(JsonUtil.toJson(sharePictureQuery),url);
+		String response = sendPost(url,JsonUtil.toJson(sharePictureQuery));
 		return Pair.of(false, response);
 
 	}
@@ -120,7 +120,7 @@ public class JsonUserJoinShareActivityRecordController {
 	}
 
 	//post请求
-	public static String sendPost(String param, String url) {
+	public static String sendPost( String url,String param) {
 		PrintWriter out = null;
 		InputStream in = null;
 		String result = "";
