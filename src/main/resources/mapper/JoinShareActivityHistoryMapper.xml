@@ -1,12 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper">
-
+<mapper namespace="com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper">
     <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.JoinShareActivityRecord">
+    <select id="queryAll" resultType="com.xiliulou.electricity.entity.JoinShareActivityHistory">
         select
-          id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
-        from t_join_share_activity_record
+        id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
+        from t_join_share_activity_history
         <where>
             <if test="id != null">
                 and id = #{id}
@@ -40,5 +39,4 @@
             </if>
         </where>
     </select>
-
 </mapper>

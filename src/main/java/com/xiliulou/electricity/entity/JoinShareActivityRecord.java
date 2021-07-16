@@ -52,8 +52,6 @@ public class JoinShareActivityRecord {
     */
     private Integer tenantId;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
 
     //初始化
     public static Integer STATUS_INIT = 1;

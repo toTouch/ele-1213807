@@ -1,44 +1,45 @@
 package com.xiliulou.electricity.entity;
+
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * 发起邀请活动记录(ShareActivityRecord)实体类
+ * 参与邀请活动记录(JoinShareActivityRecord)实体类
  *
  * @author Eclair
- * @since 2021-07-14 09:45:04
+ * @since 2021-07-14 09:44:36
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_share_activity_record")
-public class ShareActivityRecord {
+@TableName("t_join_share_activity_history")
+public class JoinShareActivityHistory {
 
     private Long id;
     /**
-    * 活动id
-    */
-    private Integer activityId;
-    /**
-    * 加密code
-    */
-    private String code;
-    /**
-     * 分享状态 1--初始化，2--已分享，3--分享失败
-     */
-    private Integer status;
-    /**
-    * 用户uid
+    * 邀请用户uid
     */
     private Long uid;
     /**
-    * 邀请人数
+    * 参与用户uid
     */
-    private Integer count;
+    private Long joinUid;
+    /**
+    * 参与开始时间
+    */
+    private Long startTime;
+    /**
+    * 参与过期时间
+    */
+    private Long expiredTime;
+    /**
+    * 参与状态 1--初始化，2--已参与，3--已过期，4--被替换
+    */
+    private Integer status;
     /**
     * 创建时间
     */
@@ -55,9 +56,9 @@ public class ShareActivityRecord {
 
     //初始化
     public static Integer STATUS_INIT = 1;
-    //分享成功
+    //已参与
     public static Integer STATUS_SUCCESS = 2;
-    //分享失败
+    //已过期
     public static Integer STATUS_FAIL = 3;
 
 }

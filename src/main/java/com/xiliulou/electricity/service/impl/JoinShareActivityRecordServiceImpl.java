@@ -170,6 +170,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			oldJoinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 			oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
+
+			//新增邀请记录
 			return R.ok();
 		}
 
@@ -182,6 +184,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 		joinShareActivityRecord.setTenantId(tenantId);
 		joinShareActivityRecordMapper.insert(joinShareActivityRecord);
+
+		//新增邀请记录
 
 		return R.ok();
 
