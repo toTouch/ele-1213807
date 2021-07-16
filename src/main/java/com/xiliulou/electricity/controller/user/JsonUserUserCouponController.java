@@ -11,7 +11,10 @@ import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import shaded.org.apache.commons.lang3.StringUtils;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,37 +31,35 @@ public class JsonUserUserCouponController {
     @Autowired
     private UserCouponService userCouponService;
 
-    //用户优惠券列表查询
-    @GetMapping(value = "/admin/coupon/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "couponId", required = false) Integer couponId,
-                       @RequestParam(value = "uid", required = false) Long uid,
-                       @RequestParam(value = "phone", required = false) String phone) {
-        if (Objects.isNull(size)) {
-            size = 10L;
+    //我的优惠券查询
+    //status 1--未使用  2--已使用  3--已过期
+    //type  1--减免券，2--打折券，3-体验劵
+    @GetMapping(value = "/user/userCoupon/queryMyCoupon")
+    public R queryMyCoupon(@RequestParam(value = "status", required = false) String status, @RequestParam(value = "type", required = false) String type) {
+        List<Integer> typeList = null;
+        if (StringUtils.isNotEmpty(type)) {
+            Integer[] types = (Integer[])
+                    JSONUtil.parseArray(type).toArray(Integer[].class);
+
+            typeList = Arrays.asList(types);
         }
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
+        List<Integer> statusList = null;
+        if (StringUtils.isNotEmpty(status)) {
+            Integer[] statuses = (Integer[])
+                    JSONUtil.parseArray(status).toArray(Integer[].class);
+
+            statusList = Arrays.asList(statuses);
         }
-
-        UserCouponQuery userCouponQuery = UserCouponQuery.builder()
-                .offset(offset)
-                .size(size)
-                .couponId(couponId)
-                .uid(uid)
-                .phone(phone).build();
-        return userCouponService.queryMyCoupon(userCouponQuery);
+        return userCouponService.queryMyCoupon(statusList, typeList);
     }
 
-    //批量发放优惠券
-    @PostMapping(value = "/admin/coupon/batchRelease")
-    public R batchRelease(@RequestParam("id") Integer id,@RequestParam("uid") String uid) {
-        Long[] uids = (Long[])
-                JSONUtil.parseArray(uid).toArray(Long[].class);
-        return userCouponService.batchRelease(id,uids);
-    }
 
+    //领劵
+    @PostMapping(value = "/user/userCoupon/getCoupon")
+    public R getCoupon( @RequestParam("activityId") Integer activityId,@RequestParam("couponId") Integer couponId) {
+
+        return userCouponService.getShareCoupon(activityId,couponId);
+    }
 
 }
