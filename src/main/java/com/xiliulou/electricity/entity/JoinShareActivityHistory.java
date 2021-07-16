@@ -20,6 +20,11 @@ import lombok.NoArgsConstructor;
 public class JoinShareActivityHistory {
 
     private Long id;
+
+    /**
+     * recordId
+     */
+    private Long recordId;
     /**
     * 邀请用户uid
     */
@@ -60,5 +65,7 @@ public class JoinShareActivityHistory {
     public static Integer STATUS_SUCCESS = 2;
     //已过期
     public static Integer STATUS_FAIL = 3;
+    //被替换
+    public static Integer STATUS_REPLACE = 4;
 
 }

@@ -34,5 +34,5 @@ public interface JoinShareActivityHistoryService {
      */
     Integer update(JoinShareActivityHistory joinShareActivityHistory);
 
-
+    JoinShareActivityHistory queryByRecordIdAndStatus(Long id);
 }

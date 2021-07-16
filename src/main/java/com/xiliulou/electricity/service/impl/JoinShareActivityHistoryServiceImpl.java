@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
@@ -56,6 +57,12 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	public Integer update(JoinShareActivityHistory joinShareActivityHistory) {
 		return this.joinShareActivityHistoryMapper.updateById(joinShareActivityHistory);
 
+	}
+
+	@Override
+	public JoinShareActivityHistory queryByRecordIdAndStatus(Long id) {
+		return joinShareActivityHistoryMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityHistory>()
+				.eq(JoinShareActivityHistory::getRecordId,id).eq(JoinShareActivityHistory::getUpdateTime,JoinShareActivityHistory.STATUS_INIT));
 	}
 
 }

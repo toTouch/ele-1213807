@@ -294,6 +294,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
+		//未实名认证
+		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0041", "未实名认证");
+		}
+
 
 		//邀请活动
 		ShareActivity shareActivity =shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));

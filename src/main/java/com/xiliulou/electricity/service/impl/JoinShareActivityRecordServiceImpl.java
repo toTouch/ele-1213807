@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xiliulou.core.utils.AESUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.User;
@@ -12,6 +11,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -40,10 +40,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	private JoinShareActivityRecordMapper joinShareActivityRecordMapper;
 
 	@Autowired
-	ElectricityPayParamsService electricityPayParamsService;
-
-	@Autowired
-	ShareActivityRecordService shareActivityRecordService;
+	private JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 	@Autowired
 	UserInfoService userInfoService;
@@ -171,7 +168,25 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
 
-			//新增邀请记录
+
+			//修改被替换掉的历史记录状态
+			JoinShareActivityHistory oldJoinShareActivityHistory=joinShareActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareActivityRecord.getId());
+			oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
+			oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+			joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+
+
+			//新增邀请历史记录
+			JoinShareActivityHistory joinShareActivityHistory=new JoinShareActivityHistory();
+			joinShareActivityHistory.setRecordId(oldJoinShareActivityRecord.getId());
+			joinShareActivityHistory.setUid(uid);
+			joinShareActivityHistory.setJoinUid(user.getUid());
+			joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
+			joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+			joinShareActivityHistory.setStartTime(System.currentTimeMillis());
+			joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
+			joinShareActivityHistory.setTenantId(tenantId);
+			joinShareActivityHistoryService.insert(joinShareActivityHistory);
 			return R.ok();
 		}
 
@@ -185,7 +200,17 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		joinShareActivityRecord.setTenantId(tenantId);
 		joinShareActivityRecordMapper.insert(joinShareActivityRecord);
 
-		//新增邀请记录
+		//新增邀请历史记录
+		JoinShareActivityHistory joinShareActivityHistory=new JoinShareActivityHistory();
+		joinShareActivityHistory.setRecordId(oldJoinShareActivityRecord.getId());
+		joinShareActivityHistory.setUid(uid);
+		joinShareActivityHistory.setJoinUid(user.getUid());
+		joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
+		joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+		joinShareActivityHistory.setStartTime(System.currentTimeMillis());
+		joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
+		joinShareActivityHistory.setTenantId(tenantId);
+		joinShareActivityHistoryService.insert(joinShareActivityHistory);
 
 		return R.ok();
 
