@@ -90,7 +90,8 @@ public class JsonUserJoinShareActivityRecordController {
 		sharePictureQuery.setPage(sharePicture.getPage());
 		sharePictureQuery.setScene(sharePicture.getScene());
 
-		log.info("sharePictureQuery is -->{}", sharePictureQuery);
+		log.info("sharePictureQuery1 is -->{}", sharePictureQuery);
+		log.info("sharePictureQuery2 is -->{}", JsonUtil.toJson(sharePictureQuery));
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
 		String response = HttpUtil.post(url, JsonUtil.toJson(sharePictureQuery));
