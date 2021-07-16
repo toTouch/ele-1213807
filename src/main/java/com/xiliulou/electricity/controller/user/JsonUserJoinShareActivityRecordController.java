@@ -58,7 +58,7 @@ public class JsonUserJoinShareActivityRecordController {
     public R test(){
     SharePicture sharePicture = new SharePicture();
 		sharePicture.setPage("pages/start/index");
-		sharePicture.setScene("uid=15_id=1_code=880894");
+		sharePicture.setScene("uid=15id=1code=880894");
 		sharePicture.setAppId("wx76159ea6aa7a64bc");
 		sharePicture.setAppSecret("b44586ca1b4ff8def2b4c869cdd8ea6a");
         Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
