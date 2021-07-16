@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONUtil;
+import com.alibaba.nacos.client.identify.Base64;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
@@ -12,13 +13,19 @@ import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.entity.SharePictureQuery;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.URL;
+import java.net.URLConnection;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -92,7 +99,7 @@ public class JsonUserJoinShareActivityRecordController {
 
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		String response = HttpUtil.post(url, JsonUtil.toJson(sharePictureQuery));
+		String response = sendPost(JsonUtil.toJson(sharePictureQuery),url);
 		return Pair.of(false, response);
 
 	}
@@ -110,6 +117,76 @@ public class JsonUserJoinShareActivityRecordController {
 		}
 
 		return Pair.of(true, accessToken);
+	}
+
+	//post请求
+	public static String sendPost(String param, String url) {
+		PrintWriter out = null;
+		InputStream in = null;
+		String result = "";
+		try {
+
+			URL realUrl = new URL(url);
+			// 打开和URL之间的连接
+			URLConnection conn = realUrl.openConnection();
+			// 设置通用的请求属性
+			conn.setRequestProperty("accept", "*/*");
+			conn.setRequestProperty("connection", "Keep-Alive");
+			conn.setRequestProperty("user-agent",
+					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
+			// 发送POST请求必须设置如下两行
+			conn.setDoOutput(true);
+			conn.setDoInput(true);
+			// 获取URLConnection对象对应的输出流
+			// out = new PrintWriter(conn.getOutputStream());
+			out = new PrintWriter(new OutputStreamWriter(
+					conn.getOutputStream(), "utf-8"));
+			// 发送请求参数
+			out.print(param);
+			// flush输出流的缓冲
+			out.flush();
+			out = new PrintWriter(conn.getOutputStream());
+			in = conn.getInputStream();
+			byte[] data = null;
+			// 读取图片字节数组
+			try {
+				ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+				byte[] buff = new byte[100];
+				int rc = 0;
+				while ((rc = in.read(buff, 0, 100)) > 0) {
+					swapStream.write(buff, 0, rc);
+				}
+				data = swapStream.toByteArray();
+			} catch (IOException e) {
+				e.printStackTrace();
+			} finally {
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+			}
+			return new String(Base64.encodeBase64(data));
+		} catch (Exception e) {
+			System.out.println("发送 POST 请求出现异常！" + e);
+			e.printStackTrace();
+		}
+		// 使用finally块来关闭输出流、输入流
+		finally {
+			try {
+				if (out != null) {
+					out.close();
+				}
+				if (in != null) {
+					in.close();
+				}
+			} catch (IOException ex) {
+				ex.printStackTrace();
+			}
+		}
+		return result;
 	}
 
 }
