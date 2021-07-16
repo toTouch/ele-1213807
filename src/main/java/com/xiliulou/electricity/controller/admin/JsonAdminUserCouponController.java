@@ -24,7 +24,7 @@ public class JsonAdminUserCouponController {
     private UserCouponService userCouponService;
 
     //用户优惠券列表查询
-    @GetMapping(value = "/admin/coupon/list")
+    @GetMapping(value = "/admin/userCoupon/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "couponId", required = false) Integer couponId,
@@ -48,7 +48,7 @@ public class JsonAdminUserCouponController {
     }
 
     //批量发放优惠券
-    @PostMapping(value = "/admin/coupon/batchRelease")
+    @PostMapping(value = "/admin/userCoupon/batchRelease")
     public R batchRelease(@RequestParam("id") Integer id,@RequestParam("uid") String uid) {
         Long[] uids = (Long[])
                 JSONUtil.parseArray(uid).toArray(Long[].class);
