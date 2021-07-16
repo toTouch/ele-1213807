@@ -154,6 +154,17 @@ public class JsonOuterElectricityCabinetController {
         return electricityCabinetService.batteryReport(batteryReportQuery);
     }
 
+    /**
+     * 电池电量上报
+     *
+     * @return
+     */
+    @GetMapping(value = "/outer/checkBattery")
+    public R checkBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName,
+            @RequestParam("batterySn") String batterySn) {
+        return electricityCabinetService.checkBattery(productKey,deviceName,batterySn);
+    }
+
 
 
 }

@@ -1628,4 +1628,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	public Integer queryCountByStoreId(Integer id) {
 		return electricityCabinetMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getStoreId, id).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).last("limit 0,1"));
 	}
+
+	@Override
+	public R checkBattery(String productKey, String deviceName, String batterySn) {
+		//换电柜
+		ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+		if (Objects.isNull(electricityCabinet)) {
+			log.error("checkBattery error! no electricityCabinet,productKey:{},deviceName:{}", productKey,deviceName);
+			return R.fail("未找到换电柜");
+		}
+
+
+		//电池
+		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batterySn);
+		if (Objects.isNull(electricityBattery)) {
+			log.error("checkBattery error! no electricityBattery,sn:{}", batterySn);
+			return R.fail("未找到电池");
+		}
+
+		return R.ok();
+	}
 }
