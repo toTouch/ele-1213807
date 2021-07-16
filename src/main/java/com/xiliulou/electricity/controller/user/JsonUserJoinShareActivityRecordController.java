@@ -66,52 +66,9 @@ public class JsonUserJoinShareActivityRecordController {
 		sharePicture.setScene("1");
 		sharePicture.setAppId("wx76159ea6aa7a64bc");
 		sharePicture.setAppSecret("b44586ca1b4ff8def2b4c869cdd8ea6a");
-		Pair<Boolean, Object> getShareUrlPair = generateSharePicture(sharePicture);
+		Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 		return R.ok(getShareUrlPair.getRight());
 
-	}
-
-	public Pair<Boolean, Object> generateSharePicture(SharePicture sharePicture) {
-
-		//获取AccessToken
-		Pair<Boolean, Object> getAccessTokenPair =
-				getAccessToken(sharePicture.getAppId(), sharePicture.getAppSecret());
-		if (!getAccessTokenPair.getLeft()) {
-			return getAccessTokenPair;
-		}
-
-		String accessToken = getAccessTokenPair.getRight().toString();
-
-		String url = String.format(WechatConstant.GET_WX_SHARE_PICTURE, accessToken);
-
-		//发送给微信服务器的数据
-
-		SharePictureQuery sharePictureQuery = new SharePictureQuery();
-		sharePictureQuery.setPage(sharePicture.getPage());
-		sharePictureQuery.setScene(sharePicture.getScene());
-
-		log.info("sharePictureQuery1 is -->{}", sharePictureQuery);
-		log.info("sharePictureQuery2 is -->{}", JsonUtil.toJson(sharePictureQuery));
-
-		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		String response = HttpUtil.post(url, JsonUtil.toJson(sharePictureQuery));
-		return Pair.of(false, response);
-
-	}
-
-	private Pair<Boolean, Object> getAccessToken(String appId, String appSecret) {
-
-		String url = String.format(WechatConstant.GET_WX_ACCESS_TOKEN, appId, appSecret);
-		String result = HttpUtil.get(url);
-		String accessToken = JSONUtil.toBean(result, AccessTokenResult.class).getAccess_token();
-		log.info("GET ACCESS_TOKEN  RESULT：" + result);
-		if (ObjectUtil.isEmpty(accessToken)) {
-			log.error("WX_PRO SEND_TEMPLATE ERROR,GET ACCESS_TOKEN ERROR,MSG:{},APPID:{},SECRET:{}",
-					result, appId, appSecret);
-			return Pair.of(false, "获取微信accessToken失败!");
-		}
-
-		return Pair.of(true, accessToken);
 	}
 
 }
