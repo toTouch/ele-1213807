@@ -1,14 +1,15 @@
 package com.xiliulou.electricity.controller.user;
 
-import com.alibaba.fastjson.JSONObject;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.pay.weixin.entity.SharePicture;
+import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
+import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表控制层
@@ -23,6 +24,9 @@ public class JsonUserJoinShareActivityRecordController {
      */
     @Resource
     private JoinShareActivityRecordService joinShareActivityRecordService;
+
+    @Autowired
+    GenerateShareUrlService generateShareUrlService;
 
 
     /**
@@ -42,6 +46,28 @@ public class JsonUserJoinShareActivityRecordController {
     @PostMapping(value = "/user/joinShareActivityRecord/joinActivity")
     public R joinActivity(@RequestParam(value = "activityId") Integer activityId,@RequestParam(value = "uid") Long uid) {
         return joinShareActivityRecordService.joinActivity(activityId,uid);
+    }
+
+
+
+    /**
+     * 点击分享链接进入活动
+     *
+     */
+    @GetMapping(value = "/outer/test")
+    public R test(){
+    SharePicture sharePicture = new SharePicture();
+		sharePicture.setPage("pages/start/index");
+		sharePicture.setScene("uid=15_id=1_code=880894");
+		sharePicture.setAppId("wx76159ea6aa7a64bc");
+		sharePicture.setAppSecret("b44586ca1b4ff8def2b4c869cdd8ea6a");
+        Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
+        //分享失败
+
+        return R.ok(getShareUrlPair.getRight());
+
+
+
     }
 
 
