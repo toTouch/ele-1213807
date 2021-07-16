@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserCoupon">
         select
-        id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source, del_flg,discount_type
+        id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source, del_flag,discount_type
         from t_user_coupon
         <where>
             <if test="query.uid != null">
