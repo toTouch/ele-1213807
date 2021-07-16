@@ -28,4 +28,6 @@ public interface UserCouponService {
     R getShareCoupon(Integer activityId,Integer couponId);
 
     UserCoupon queryByIdFromDB(Integer userCouponId);
+
+    UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId);
 }

@@ -10,7 +10,7 @@ import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
@@ -22,6 +22,7 @@ import com.xiliulou.electricity.service.ShareActivityService;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -86,6 +87,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	@Autowired
 	ShareActivityRecordService shareActivityRecordService;
+
+	@Autowired
+	UserCouponService userCouponService;
 
 
 	/**
@@ -240,11 +244,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		BeanUtil.copyProperties(shareActivity, activityVO);
 
 		//小活动
-		getCouponList(activityVO);
+		getCouponVOList(activityVO);
 		return R.ok(activityVO);
 	}
 
-	private void getCouponList(ActivityVO activityVO) {
+	private void getCouponVOList(ActivityVO activityVO) {
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityVO.getId());
 		if (ObjectUtil.isEmpty(shareActivityRuleList)) {
 			return;
@@ -262,6 +266,54 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			}
 			couponVOList.add(couponVO);
 		}
+
+		activityVO.setCouponVOList(couponVOList);
+	}
+
+	private void getUserCouponVOList(ActivityVO activityVO,TokenUser user) {
+		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityVO.getId());
+		if (ObjectUtil.isEmpty(shareActivityRuleList)) {
+			return;
+		}
+
+		List<CouponVO> couponVOList = new ArrayList<>();
+		int couponCount=0;
+		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
+
+
+			CouponVO couponVO=new CouponVO();
+			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
+			couponVO.setIsGet(CouponVO.IS_NOT_GET);
+			Integer couponId = shareActivityRule.getCouponId();
+
+
+			//优惠券名称
+			Coupon coupon = couponService.queryByIdFromCache(couponId);
+			if (Objects.nonNull(coupon)) {
+
+
+				//是否领取该活动该优惠券
+				UserCoupon userCoupon=userCouponService.queryByActivityIdAndCouponId(activityVO.getId(),coupon.getId());
+				if(Objects.nonNull(userCoupon)){
+					couponVO.setIsGet(CouponVO.IS_GET);
+					couponCount=couponCount+1;
+				}
+				couponVO.setCoupon(coupon);
+			}
+			couponVOList.add(couponVO);
+		}
+
+		//邀请好友数
+		int count=0;
+		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
+		if(Objects.nonNull(shareActivityRecord)){
+			count=shareActivityRecord.getCount();
+		}
+		activityVO.setCount(count);
+
+
+		//领卷次数
+		activityVO.setCouponCount(couponCount);
 
 		activityVO.setCouponVOList(couponVOList);
 	}
@@ -314,14 +366,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 
 		//小活动
-		getCouponList(activityVO);
+		getUserCouponVOList(activityVO,user);
 
-		int count=0;
-		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
-		if(Objects.nonNull(shareActivityRecord)){
-			count=shareActivityRecord.getCount();
-		}
-		activityVO.setCount(count);
+
+
+
 		return R.ok(activityVO);
 
 	}

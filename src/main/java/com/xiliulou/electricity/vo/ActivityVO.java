@@ -66,6 +66,9 @@ public class ActivityVO {
     //邀请人数
     private Integer count;
 
+    //领劵次数
+    private Integer couponCount;
+
 
 
 

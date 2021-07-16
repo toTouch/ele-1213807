@@ -20,4 +20,12 @@ public class CouponVO {
 	 * 优惠券
 	 */
 	private Coupon coupon;
+
+	/**
+	 * 是否领取 1--领取  2--未领取
+	 */
+	private Integer isGet;
+
+	public static final Integer IS_GET = 1;
+	public static final Integer IS_NOT_GET = 2;
 }

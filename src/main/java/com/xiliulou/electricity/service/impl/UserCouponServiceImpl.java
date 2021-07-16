@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
@@ -224,6 +225,11 @@ public class UserCouponServiceImpl implements UserCouponService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
+		UserCoupon oldUserCoupon=queryByActivityIdAndCouponId(activityId,couponId);
+		if(Objects.nonNull(oldUserCoupon)){
+			return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
+		}
+
 		//判断用户是否可以领取优惠券
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid());
 		if (Objects.isNull(shareActivityRecord)) {
@@ -271,5 +277,11 @@ public class UserCouponServiceImpl implements UserCouponService {
 	@Override
 	public UserCoupon queryByIdFromDB(Integer userCouponId) {
 		return userCouponMapper.selectById(userCouponId);
+	}
+
+	@Override
+	public UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId) {
+		return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>()
+				.eq(UserCoupon::getActivityId,activityId).eq(UserCoupon::getCouponId,couponId));
 	}
 }
