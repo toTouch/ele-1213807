@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.shareUrl.GenerateShareUrlService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -18,6 +18,7 @@ import javax.annotation.Resource;
  * @since 2021-07-14 09:44:36
  */
 @RestController
+@Slf4j
 public class JsonUserJoinShareActivityRecordController {
     /**
      * 服务对象
@@ -63,7 +64,7 @@ public class JsonUserJoinShareActivityRecordController {
 		sharePicture.setAppSecret("b44586ca1b4ff8def2b4c869cdd8ea6a");
         Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
         //分享失败
-
+        log.info("getShareUrlPair is -->{}",getShareUrlPair);
         return R.ok(getShareUrlPair.getRight());
 
 
