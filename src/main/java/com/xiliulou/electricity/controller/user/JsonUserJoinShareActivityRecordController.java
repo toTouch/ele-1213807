@@ -44,17 +44,6 @@ public class JsonUserJoinShareActivityRecordController {
         return joinShareActivityRecordService.joinActivity(activityId,uid);
     }
 
-    public static void main(String[] args) {
-        String result1="{\"errcode\":40001,\"errmsg\":\"invalid credential, access_token is invalid or not latest rid: 60f0f179-5deeae17-5d58cbd2\"}";
-        Object object1 = JsonUtil.fetchObject(result1, "/errcode");
-        System.out.println(object1);
-
-
-        String result2="12334444";
-        Object object2 = JsonUtil.fetchObject(result2, "/errcode");
-        System.out.println(object2);
-    }
-
 
 
 }
