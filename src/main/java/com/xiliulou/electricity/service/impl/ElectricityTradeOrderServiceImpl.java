@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
@@ -17,6 +18,7 @@ import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -66,6 +68,8 @@ public class ElectricityTradeOrderServiceImpl extends
     JoinShareActivityRecordService joinShareActivityRecordService;
     @Autowired
     ShareActivityRecordService shareActivityRecordService;
+    @Autowired
+    JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 
     @Override
@@ -213,6 +217,14 @@ public class ElectricityTradeOrderServiceImpl extends
                     joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
                     joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
                     joinShareActivityRecordService.update(joinShareActivityRecord);
+
+                    //修改历史记录状态
+                    JoinShareActivityHistory oldJoinShareActivityHistory=joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+                    if(Objects.nonNull(oldJoinShareActivityHistory)) {
+                        oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+                        oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+                        joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+                    }
 
                     //给邀请人增加邀请成功人数
                     shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());

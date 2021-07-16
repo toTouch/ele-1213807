@@ -72,6 +72,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	JoinShareActivityRecordService joinShareActivityRecordService;
 	@Autowired
 	ShareActivityRecordService shareActivityRecordService;
+	@Autowired
+	JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 	/**
 	 * 创建月卡订单
@@ -323,6 +325,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
 					joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 					joinShareActivityRecordService.update(joinShareActivityRecord);
+
+					//修改历史记录状态
+					JoinShareActivityHistory oldJoinShareActivityHistory=joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+					if(Objects.nonNull(oldJoinShareActivityHistory)) {
+						oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+						oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+						joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+					}
 
 					//给邀请人增加邀请成功人数
 					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());

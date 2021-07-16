@@ -1,11 +1,16 @@
-package com.xiliulou.electricity.controller.admin;
+package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.UserCouponService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import java.util.Objects;
 
@@ -16,7 +21,7 @@ import java.util.Objects;
  * @since 2021-04-14 09:27:59
  */
 @RestController
-public class JsonAdminUserCouponController {
+public class JsonUserUserCouponController {
     /**
      * 服务对象
      */
@@ -44,7 +49,7 @@ public class JsonAdminUserCouponController {
                 .couponId(couponId)
                 .uid(uid)
                 .phone(phone).build();
-        return userCouponService.queryList(userCouponQuery);
+        return userCouponService.queryMyCoupon(userCouponQuery);
     }
 
     //批量发放优惠券
