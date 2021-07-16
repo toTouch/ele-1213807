@@ -95,11 +95,7 @@ public class JsonUserJoinShareActivityRecordController {
 
 		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
 		String response = HttpUtil.post(url, JsonUtil.toJson(sharePictureQuery));
-		Object object = JsonUtil.fetchObject(response, "/errcode");
-		if (Objects.isNull(object)) {
-			return Pair.of(true, Base64.encodeBase64(response.getBytes()));
-		}
-		return Pair.of(false, JsonUtil.fetchObject(response, "/errmsg"));
+		return Pair.of(false, response);
 
 	}
 
