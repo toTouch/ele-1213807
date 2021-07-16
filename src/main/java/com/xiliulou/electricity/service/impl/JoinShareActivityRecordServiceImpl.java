@@ -90,12 +90,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	}
 
 	@Override
-	public R decryptScene(String scene) {
-
-		String result = AESUtil.decrypt(AESUtil.SECRET_KEY,scene);
-		JSONObject jsonResult = JSONObject.parseObject(result);
-		Integer uid = Integer.valueOf(jsonResult.getString("uid"));
-		String activityId = jsonResult.getString("activityId");
+	public R checkScene(String scene) {
 		return R.ok();
 	}
 

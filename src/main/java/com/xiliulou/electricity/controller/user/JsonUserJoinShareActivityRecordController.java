@@ -26,9 +26,9 @@ public class JsonUserJoinShareActivityRecordController {
      * 解密分享图片
      *
      */
-    @GetMapping(value = "/outer/joinShareActivityRecord/decryptScene")
-    public R decryptScene(@RequestParam(value = "scene") String scene) {
-        return joinShareActivityRecordService.decryptScene(scene);
+    @GetMapping(value = "/outer/joinShareActivityRecord/checkScene")
+    public R checkScene(@RequestParam(value = "scene") String scene) {
+        return joinShareActivityRecordService.checkScene(scene);
     }
 
 

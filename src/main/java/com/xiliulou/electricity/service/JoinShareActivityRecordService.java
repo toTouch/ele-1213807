@@ -36,9 +36,10 @@ public interface JoinShareActivityRecordService {
      */
     Integer update(JoinShareActivityRecord joinShareActivityRecord);
 
-	R decryptScene(String scene);
+	R checkScene(String scene);
 
     R joinActivity(Integer activityId, Long uid);
 
     JoinShareActivityRecord queryByJoinUid(Long uid);
+
 }

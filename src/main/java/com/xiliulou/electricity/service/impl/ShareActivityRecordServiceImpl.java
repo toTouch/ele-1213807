@@ -152,17 +152,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		ShareActivityRecord shareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
 				.eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
 
-		//3、加密scene
-		SharePictureQuery sharePictureQuery=new SharePictureQuery();
-		sharePictureQuery.setUid(user.getUid());
-		sharePictureQuery.setActivityId(activityId);
-		sharePictureQuery.setCode(shareActivityRecord.getCode());
+		//3、scene
+		String scene = "uid="+user.getUid()+"&id="+activityId+"&code="+shareActivityRecord.getCode();
 
-
-		String str = JSONObject.toJSONString(sharePictureQuery);
-		String scene= AESUtil.encrypt(AESUtil.SECRET_KEY,str);
-
-		log.info("scene is -->{}",scene);
 
 
 		//修改分享状态
