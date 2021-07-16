@@ -22,7 +22,7 @@ public class CouponVO {
 	private Coupon coupon;
 
 	/**
-	 * 是否领取 1--领取  2--未领取
+	 * 是否领取 1--已领取  2--未领取
 	 */
 	private Integer isGet;
 
