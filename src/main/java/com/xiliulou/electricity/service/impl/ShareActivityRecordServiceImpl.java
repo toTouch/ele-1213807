@@ -130,7 +130,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		ShareActivityRecord oldShareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
 				.eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
 
-		Long id;
 
 		//第一次分享
 		if (Objects.isNull(oldShareActivityRecord)) {
@@ -148,16 +147,16 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 			shareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
 			shareActivityRecordMapper.insert(shareActivityRecord);
-			id = shareActivityRecord.getId();
-		} else {
-			id = oldShareActivityRecord.getId();
 		}
+
+		ShareActivityRecord shareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
+				.eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
 
 		//3、加密scene
 		SharePictureQuery sharePictureQuery=new SharePictureQuery();
 		sharePictureQuery.setUid(user.getUid());
 		sharePictureQuery.setActivityId(activityId);
-		sharePictureQuery.setCode(oldShareActivityRecord.getCode());
+		sharePictureQuery.setCode(shareActivityRecord.getCode());
 
 
 		String str = JSONObject.toJSONString(sharePictureQuery);
@@ -166,7 +165,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 		//修改分享状态
 		ShareActivityRecord newShareActivityRecord = new ShareActivityRecord();
-		newShareActivityRecord.setId(id);
+		newShareActivityRecord.setId(shareActivityRecord.getId());
 		newShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 
 
