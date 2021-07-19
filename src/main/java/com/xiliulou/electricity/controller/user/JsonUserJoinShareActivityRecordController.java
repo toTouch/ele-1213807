@@ -62,13 +62,6 @@ public class JsonUserJoinShareActivityRecordController {
 		return joinShareActivityRecordService.joinActivity(activityId, uid);
 	}
 
-	/**
-	 * 用户邀请记录
-	 */
-	@GetMapping(value = "/user/joinShareActivityRecord/list")
-	public R joinActivity() {
-		return joinShareActivityRecordService.userList();
-	}
 
 	/**
 	 * 点击分享链接进入活动
