@@ -431,11 +431,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		}
 
+
 		//判断该换电柜加盟商和用户加盟商是否一致
 		if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
 			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
 			return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
 		}
+
 
 		//判断是否缴纳押金
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
@@ -452,13 +454,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 
-		/*//用户状态异常
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
-				&& Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn())) {
-			log.error("returnBattery  ERROR! userInfo is error!uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}*/
-
 		//分配开门格挡
 		String cellNo = electricityCabinetOrderService.findUsableCellNo(electricityCabinet.getId());
 		try {
@@ -471,7 +466,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			//生成订单
 			RentBatteryOrder rentBatteryOrder = RentBatteryOrder.builder()
 					.orderId(orderId)
-					/*.electricityBatterySn(franchiseeUserInfo.getNowElectricityBatterySn())*/
 					.uid(user.getUid())
 					.phone(userInfo.getPhone())
 					.name(userInfo.getName())
@@ -488,7 +482,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cellNo", cellNo);
 			dataMap.put("orderId", orderId);
-			/*dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());*/
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
 					.sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
@@ -579,7 +572,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cellNo", rentBatteryOrder.getCellNo());
 			dataMap.put("orderId", rentBatteryOrder.getOrderId());
-			/*dataMap.put("serialNumber", rentBatteryOrder.getElectricityBatterySn());*/
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
 					.sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
@@ -590,29 +582,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 
 		}
-		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + rentBatteryOrder.getOrderId());
 		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + rentBatteryOrder.getOrderId());
 		return R.ok(rentBatteryOrder.getOrderId());
 	}
 
-	@Override
-	public R queryStatus(String orderId) {
-		Map<String, String> map = new HashMap<>();
-		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
-		if (Objects.isNull(rentBatteryOrder)) {
-			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
-			return R.fail("ELECTRICITY.0015", "未找到订单");
-		}
 
-		Integer queryStatus = 0;
-		String s = redisService.get(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
-		if (StrUtil.isNotEmpty(s)) {
-			queryStatus = 1;
-		}
-		map.put("status", rentBatteryOrder.getStatus().toString());
-		map.put("queryStatus", queryStatus.toString());
-		return R.ok(map);
-	}
 
 	@Override
 	public RentBatteryOrder queryByOrderId(String orderId) {
@@ -634,7 +608,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		rentBatteryOrderMapper.updateById(rentBatteryOrderUpdate);
 
 		//删除开门失败缓存
-		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + orderId);
 		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		return R.ok();
 	}
@@ -739,7 +712,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		String result = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		if (StringUtils.isNotEmpty(result)) {
 			WarnMsgVo warnMsgVo = JsonUtil.fromJson(result, WarnMsgVo.class);
-			String queryStatus = warnMsgVo.getCode().toString();
+			/*String queryStatus = warnMsgVo.getCode().toString();
 
 			//是否重试
 			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
@@ -749,14 +722,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				isTry = 0;
 			}
 
-			/*//提示放入电池不对，应该放入什么电池
-			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.BATTERY_NOT_MATCH_CLOUD.toString())) {
-				queryStatus = "放入电池不对，应该放入编号为" + rentBatteryOrder.getElectricityBatterySn() + "的电池";
-			} else {
-				queryStatus = warnMsgVo.getMsg();
-			}*/
 
-			map.put("queryStatus", queryStatus);
+			map.put("queryStatus", queryStatus);*/
 			type = 1;
 
 		}

@@ -16,16 +16,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class EleOpenDTO {
 	private String sessionId;
-	//orderId
-	private String orderId;
-	//msg
-	private String msg;
-	//orderStatus
-	private Integer orderStatus;
-	//status
-	private Integer status;
-	private String productKey;
-	private String deviceName;
+
 	//type
 	private String type;
+
+	//订单Id
+	private String orderId;
+	//本次操作是否执行失败
+	private Boolean isProcessFail;
+	//是否需要结束订单
+	private Boolean isNeedEndOrder;
+	//订单状态序号
+	private Double orderSeq;
+	//orderStatus
+	private String orderStatus;
+	//msg
+	private String msg;
 }

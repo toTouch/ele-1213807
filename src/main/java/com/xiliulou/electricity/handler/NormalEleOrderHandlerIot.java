@@ -60,60 +60,29 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 			log.error("sessionId is lock,{}", sessionId);
 			return false;
 		}
+
+
+		//操作失败
+		if (Objects.nonNull(eleOrderVo.getIsProcessFail())) {
+
+			//检测失败报错
+			WarnMsgVo warnMsgVo = new WarnMsgVo();
+			warnMsgVo.setIsNeedEndOrder(eleOrderVo.getIsNeedEndOrder());
+			warnMsgVo.setMsg(eleOrderVo.getMsg());
+			redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
+		}
+
 		EleOpenDTOBuilder builder = EleOpenDTO.builder();
 
-		//操作回调的放在redis中 只有开门命令放入
-		if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)
-				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_OPEN)
-				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR_RSP)
-				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR_RSP)) {
-			if (Objects.nonNull(eleOrderVo.getStatus()) && eleOrderVo.getStatus().equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)) {
-				//开门成功
-				redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
-			} else {
-				//开门失败
-				redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
-
-				//空仓有电池，满电仓无电池的情况，不通知前端开门失败，重新分配电池开门
-				/*if (!Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.EMPTY_CELL_HAS_BATTERY_EXCEPTION)
-						&& !Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION)) */
-				if (!Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.EMPTY_CELL_HAS_BATTERY_EXCEPTION)
-						&& (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_OPEN)||!Objects.equals(eleOrderVo.getStatus(), ElectricityCabinetOrderOperHistory.BATTERY_CELL_HAS_NOT_BATTERY_EXCEPTION))) {
-					//查询开门失败
-					redisService.set(ElectricityCabinetConstant.ELE_ORDER_OPERATOR_CACHE_KEY + eleOrderVo.getOrderId(), "false", 30L, TimeUnit.SECONDS);
-
-					//开门失败报错
-					WarnMsgVo warnMsgVo = new WarnMsgVo();
-					warnMsgVo.setCode(eleOrderVo.getStatus());
-					warnMsgVo.setMsg(eleOrderVo.getMsg());
-					redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
-				}
-			}
-		}
-
-
-		if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RENT_CHECK_BATTERY_RSP)
-				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_RETURN_CHECK_BATTERY_RSP)
-				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_OLD_DOOR_CHECK)
-				|| Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ORDER_NEW_DOOR_CHECK)) {
-
-			if (Objects.nonNull(eleOrderVo.getStatus()) && !eleOrderVo.getStatus().equals(ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_SUCCESS)) {
-				//检测失败报错
-				WarnMsgVo warnMsgVo = new WarnMsgVo();
-				warnMsgVo.setCode(eleOrderVo.getStatus());
-				warnMsgVo.setMsg(eleOrderVo.getMsg());
-				redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 1L, TimeUnit.HOURS);
-			}
-		}
 		EleOpenDTO eleOpenDTO = builder
 				.sessionId(sessionId)
 				.type(receiverMessage.getType())
 				.orderStatus(eleOrderVo.getOrderStatus())
-				.status(eleOrderVo.getStatus())
+				.orderSeq(eleOrderVo.getOrderSeq())
 				.orderId(eleOrderVo.getOrderId())
-				.msg(eleOrderVo.getMsg())
-				.productKey(receiverMessage.getProductKey())
-				.deviceName(receiverMessage.getDeviceName()).build();
+				.isNeedEndOrder(eleOrderVo.getIsNeedEndOrder())
+				.isProcessFail(eleOrderVo.getIsProcessFail())
+				.msg(eleOrderVo.getMsg()).build();
 		eleOperateQueueHandler.putQueue(eleOpenDTO);
 		return true;
 	}
@@ -121,16 +90,17 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 
 @Data
 class EleOrderVo {
-	//sessionId
-	private String sessionId;
-	//productKey
-	private String productKey;
-	//orderId
+
+	//订单Id
 	private String orderId;
+	//本次操作是否执行失败
+	private Boolean isProcessFail;
+	//是否需要结束订单
+	private Boolean isNeedEndOrder;
+	//订单状态序号
+	private Double orderSeq;
+	//orderStatus
+	private String orderStatus;
 	//msg
 	private String msg;
-	//orderStatus
-	private Integer orderStatus;
-	//status
-	private Integer status;
 }

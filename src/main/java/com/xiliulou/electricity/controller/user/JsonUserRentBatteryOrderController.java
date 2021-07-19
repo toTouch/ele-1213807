@@ -41,11 +41,6 @@ public class JsonUserRentBatteryOrderController {
         return rentBatteryOrderService.openDoor(rentOpenDoorQuery);
     }
 
-    //查订单状态
-    @GetMapping("/user/rentBatteryOrder/queryStatus")
-    public R queryStatus(@RequestParam("orderId") String orderId) {
-        return rentBatteryOrderService.queryStatus(orderId);
-    }
 
     //查订单状态（新）
     @GetMapping("/user/rentBatteryOrder/queryNewStatus")

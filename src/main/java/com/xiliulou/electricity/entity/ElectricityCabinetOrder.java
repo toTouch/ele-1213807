@@ -60,10 +60,13 @@ public class ElectricityCabinetOrder {
     * 换电柜的新仓门号
     */
     private Integer newCellNo;
+
+    //订单状态序号
+    private Double orderSeq;
     /**
     * 订单的状态
     */
-    private Integer status;
+    private String status;
     /**
     * 类型(0:月卡,1:季卡,2:年卡)
     */
@@ -95,22 +98,72 @@ public class ElectricityCabinetOrder {
     //租户id
     private Integer tenantId;
 
-    //已支付未开门
-    public static final Integer STATUS_ORDER_PAY = 1;
-    //旧电池开门
-    public static final Integer STATUS_ORDER_OLD_BATTERY_OPEN_DOOR = 2;
-    //旧电池已存入
-    public static final Integer STATUS_ORDER_OLD_BATTERY_DEPOSITED = 3;
-    //待放新电池
-    public static final Integer STATUS_ORDER_WAIT_NEW_BATTERY = 4;
-    //新电池开门
-    public static final Integer STATUS_ORDER_NEW_BATTERY_OPEN_DOOR = 5;
-    //订单完成
-    public static final Integer STATUS_ORDER_COMPLETE =6;
-    //订单异常结束
-    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 7;
+
+    /**
+     * 换电订单生成
+     */
+    public static final Double INIT=1.0;
+    /**
+     * 换电过程放入没电电池检测失败
+     */
+    public static final Double INIT_CHECK_FAIL=1.1;
+    /**
+     * 换电柜放入没电电池开门发现有电池存在
+     */
+    public static final Double INIT_CHECK_BATTERY_EXISTS=2.1;
+    /**
+     * 换电柜放入没电电池开门成功
+     */
+    public static final Double INIT_OPEN_SUCCESS=3.0;
+    /**
+     * 换电柜放入没电电池开门失败
+     */
+    public static final Double INIT_OPEN_FAIL=3.1;
+    /**
+     * 换电柜检测没电电池成功
+     */
+    public static final Double INIT_BATTERY_CHECK_SUCCESS=4.0;
+    /**
+     * 换电柜检测没电电池失败
+     */
+    public static final Double INIT_BATTERY_CHECK_FAIL=4.1;
+    /**
+     * 换电柜检测没电电池超时
+     */
+    public static final Double INIT_BATTERY_CHECK_TIMEOUT=4.2;
+
+    /**
+     * 换电柜开满电电池前置检测失败
+     */
+    public static final Double COMPLETE_CHECK_FAIL=5.1;
+    /**
+     * 换电柜开满电电池发现电池不存在
+     */
+    public static final Double COMPLETE_CHECK_BATTERY_NOT_EXISTS=5.2;
+    /**
+     * 换电柜开满电电池仓门成功
+     */
+    public static final Double COMPLETE_OPEN_SUCCESS=6.0;
+    /**
+     * 换电柜开满电电池仓门失败
+     */
+    public static final Double COMPLETE_OPEN_FAIL=6.1;
+    /**
+     * 换电柜满电电池成功取走，流程结束
+     */
+    public static final Double COMPLETE_BATTERY_TAKE_SUCCESS=7.0;
+    /**
+     * 换电柜取走满电电池超时
+     */
+    public static final Double COMPLETE_BATTERY_TAKE_TIMEOUT=7.1;
+
+
     //订单取消
-    public static final Integer STATUS_ORDER_CANCEL = 8;
+    public static final Double ORDER_CANCEL = 11.0;
+
+    //订单异常结束
+    public static final Double ORDER_EXCEPTION_CANCEL = 12.0;
+
 
     //月卡
     public static final Integer PAYMENT_METHOD_MONTH_CARD = 0;

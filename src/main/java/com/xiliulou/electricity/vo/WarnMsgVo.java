@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class WarnMsgVo {
 	//
-	private Integer code;
+	private Boolean isNeedEndOrder;
 	//
 	private String msg;
 }

@@ -57,6 +57,20 @@ public class HardwareCommand {
 	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_open_new_door_rsp";
 	//新门检测 order_new_door_check_battery_rsp
 	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check_battery_rsp";
+
+
+	//新命令
+	//旧电池
+	public static final String ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP = "init_exchange_order_rsp";
+	//新电池
+	public static final String ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP = "complete_exchange_order_rsp";
+	//租电池
+	public static final String ELE_COMMAND_RENT_ORDER_RSP = "rent_order_rsp";
+	//还电池
+	public static final String ELE_COMMAND_RETURN_ORDER_RSP = "return_order_rsp";
+
+
+
 	//物理操作
 	//仓门上报 cell_report_info
 	public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
@@ -151,5 +165,9 @@ public class HardwareCommand {
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_RSP, "OK");
 		ELE_COMMAND_MAPS.put(ELE_COMMAND_START_OPEN_CHECK_CELL, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_RENT_ORDER_RSP, "OK");
+		ELE_COMMAND_MAPS.put(ELE_COMMAND_RETURN_ORDER_RSP, "OK");
 	}
 }

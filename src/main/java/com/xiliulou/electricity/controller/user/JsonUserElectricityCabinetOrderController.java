@@ -100,12 +100,6 @@ public class JsonUserElectricityCabinetOrderController {
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 
-    //查订单状态
-    @GetMapping("/user/electricityCabinetOrder/queryStatus")
-    public R queryStatus(@RequestParam("orderId") String orderId) {
-        return electricityCabinetOrderService.queryStatus(orderId);
-    }
-
 
     //查订单状态（新）
     @GetMapping("/user/electricityCabinetOrder/queryNewStatus")
