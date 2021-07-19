@@ -223,7 +223,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	@Override
 	public JoinShareActivityRecord queryByJoinUid(Long uid) {
 		return joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
-				.eq(JoinShareActivityRecord::getJoinUid,uid).lt(JoinShareActivityRecord::getExpiredTime,System.currentTimeMillis())
+				.eq(JoinShareActivityRecord::getJoinUid,uid).gt(JoinShareActivityRecord::getExpiredTime,System.currentTimeMillis())
 				.eq(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT));
 	}
 
