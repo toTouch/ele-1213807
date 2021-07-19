@@ -50,7 +50,7 @@ public class NormalEleExchangeHandlerIot extends AbstractIotMessageHandler {
             if (StringUtils.isEmpty(receiverMessage.getVersion())) {
                 return;
             }
-            ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             if (Objects.isNull(electricityCabinet)) {
                 log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
                 return;

@@ -951,8 +951,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		return R.ok(homeInfo);
 	}
 
+
 	@Override
-	public ElectricityCabinet   queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
+	public ElectricityCabinet  queryByProductAndDeviceName(String productKey, String deviceName) {
+
+		ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinet>()
+				.eq(ElectricityCabinet::getProductKey, productKey).eq(ElectricityCabinet::getDeviceName, deviceName).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
+		if (Objects.isNull(electricityCabinet)) {
+			return null;
+		}
+		return electricityCabinet;
+	}
+
+
+	@Override
+	public ElectricityCabinet queryFromCacheByProductAndDeviceName(String productKey, String deviceName) {
 		Integer tenantId = TenantContextHolder.getTenantId();
 		//先查缓存
 		ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + productKey + deviceName + tenantId, ElectricityCabinet.class);
@@ -1047,13 +1060,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 	@Override
 	public R queryByDeviceOuter(String productKey, String deviceName) {
-		ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+		ElectricityCabinet electricityCabinet = queryByProductAndDeviceName(productKey, deviceName);
 		if (Objects.isNull(electricityCabinet)) {
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-		//租户
-		Integer tenantId = electricityCabinet.getTenantId();
 
 		//营业时间
 		boolean result = this.isBusiness(electricityCabinet);
@@ -1079,7 +1090,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//换电柜名称换成平台名称
 		String name = null;
-		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinet.getTenantId());
 		if (Objects.nonNull(electricityConfig)) {
 			name = electricityConfig.getName();
 		}

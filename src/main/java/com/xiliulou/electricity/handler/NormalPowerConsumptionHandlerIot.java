@@ -67,7 +67,7 @@ public class NormalPowerConsumptionHandlerIot extends AbstractIotMessageHandler 
 			return false;
 		}
 
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("NORMAL POWER ERROR! no electricityCabinet! p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 			return false;

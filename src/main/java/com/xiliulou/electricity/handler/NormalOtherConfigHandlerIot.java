@@ -42,7 +42,7 @@ public class NormalOtherConfigHandlerIot extends AbstractIotMessageHandler {
 
     @Override
     protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return false;
