@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 
 /**
@@ -35,4 +36,6 @@ public interface JoinShareActivityHistoryService {
     Integer update(JoinShareActivityHistory joinShareActivityHistory);
 
     JoinShareActivityHistory queryByRecordIdAndStatus(Long id);
+
+	R userList();
 }

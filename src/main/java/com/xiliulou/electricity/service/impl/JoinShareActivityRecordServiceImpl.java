@@ -228,6 +228,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	}
 
+
+
 	private Boolean checkUserIsCard(UserInfo userInfo) {
 
 		//是否缴纳押金，是否绑定电池

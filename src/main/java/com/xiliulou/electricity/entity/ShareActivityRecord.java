@@ -1,4 +1,6 @@
 package com.xiliulou.electricity.entity;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +20,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_share_activity_record")
 public class ShareActivityRecord {
 
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 活动id

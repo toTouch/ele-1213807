@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -19,6 +21,7 @@ import lombok.NoArgsConstructor;
 @TableName("t_join_share_activity_history")
 public class JoinShareActivityHistory {
 
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
 
     /**
