@@ -25,7 +25,7 @@ public class JsonUserShareActivityController {
 
 
 
-    //根据id查询活动详情
+    //查询活动详情
     @GetMapping(value = "/user/shareActivity/activityInfo")
     public R queryInfo() {
         return shareActivityService.activityInfo();

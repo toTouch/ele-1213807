@@ -42,4 +42,5 @@ public interface JoinShareActivityRecordService {
 
     JoinShareActivityRecord queryByJoinUid(Long uid);
 
+	void handelJoinShareActivityExpired();
 }

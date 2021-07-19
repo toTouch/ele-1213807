@@ -276,15 +276,31 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return;
 		}
 
+
+		//邀请好友数
+		int count=0;
+		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
+		if(Objects.nonNull(shareActivityRecord)){
+			count=shareActivityRecord.getCount();
+		}
+
+
+		//
 		List<CouponVO> couponVOList = new ArrayList<>();
 		int couponCount=0;
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
 
-
 			CouponVO couponVO=new CouponVO();
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
-			couponVO.setIsGet(CouponVO.IS_NOT_GET);
 			Integer couponId = shareActivityRule.getCouponId();
+
+
+			//是否可以领取优惠券
+			if(shareActivityRule.getTriggerCount()<count){
+				couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
+			}else {
+				couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
+			}
 
 
 			//优惠券名称
@@ -295,7 +311,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 				//是否领取该活动该优惠券
 				UserCoupon userCoupon=userCouponService.queryByActivityIdAndCouponId(activityVO.getId(),coupon.getId());
 				if(Objects.nonNull(userCoupon)){
-					couponVO.setIsGet(CouponVO.IS_GET);
+					couponVO.setIsGet(CouponVO.IS_RECEIVED);
 					couponCount=couponCount+1;
 				}
 				couponVO.setCoupon(coupon);
@@ -303,15 +319,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVOList.add(couponVO);
 		}
 
+
 		//邀请好友数
-		int count=0;
-		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
-		if(Objects.nonNull(shareActivityRecord)){
-			count=shareActivityRecord.getCount();
-		}
 		activityVO.setCount(count);
-
-
 		//领卷次数
 		activityVO.setCouponCount(couponCount);
 
@@ -360,16 +370,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("0041");
 		}
 
-
 		ActivityVO activityVO = new ActivityVO();
 		BeanUtil.copyProperties(shareActivity, activityVO);
 
 
 		//小活动
 		getUserCouponVOList(activityVO,user);
-
-
-
 
 		return R.ok(activityVO);
 

@@ -22,10 +22,16 @@ public class CouponVO {
 	private Coupon coupon;
 
 	/**
-	 * 是否领取 1--已领取  2--未领取
+	 * 是否领取 1--已领取  2--未领取  3--不能领取
 	 */
 	private Integer isGet;
 
-	public static final Integer IS_GET = 1;
-	public static final Integer IS_NOT_GET = 2;
+	//已领取
+	public static final Integer IS_RECEIVED = 1;
+
+	//未领取
+	public static final Integer IS_NOT_RECEIVE = 2;
+
+	//不能领取
+	public static final Integer IS_CANNOT_RECEIVE = 3;
 }
