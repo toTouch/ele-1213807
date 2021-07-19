@@ -172,7 +172,8 @@ public class EleOperateQueueHandler {
 				ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
 				newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
 				newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.ORDER_CANCEL);
+				newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
+				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
 			}
 
@@ -185,6 +186,7 @@ public class EleOperateQueueHandler {
 		newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
 		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
 		newElectricityCabinetOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+		newElectricityCabinetOrder.setStatus(finalOpenDTO.getOrderStatus());
 		electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
 		//订单状态为旧电池检测成功则分配新仓门
@@ -259,7 +261,8 @@ public class EleOperateQueueHandler {
 				ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
 				newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
 				newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.ORDER_CANCEL);
+				newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
+				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
 			}
 
@@ -277,6 +280,7 @@ public class EleOperateQueueHandler {
 		newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
 		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
 		newElectricityCabinetOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+		newElectricityCabinetOrder.setStatus(finalOpenDTO.getOrderStatus());
 		electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
 		//修改仓门为无电池
@@ -317,7 +321,8 @@ public class EleOperateQueueHandler {
 				RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
 				newRentBatteryOrder.setId(rentBatteryOrder.getId());
 				newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-				//TODO 订单状态
+				newRentBatteryOrder.setOrderSeq(RentBatteryOrder.STATUS_ORDER_CANCEL);
+				newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
 				rentBatteryOrderService.update(newRentBatteryOrder);
 			}
 
@@ -329,14 +334,24 @@ public class EleOperateQueueHandler {
 		RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
 		newRentBatteryOrder.setId(rentBatteryOrder.getId());
 		newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-		newRentBatteryOrder.setStatus(RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR);
+		newRentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+		newRentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
 		rentBatteryOrderService.update(newRentBatteryOrder);
 
+		if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)){
+			checkRentBatteryDoor(rentBatteryOrder);
+		}
+
+		if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+			checkReturnBatteryDoor(rentBatteryOrder);
+		}
+
+		return;
 
 	}
 
 	//检测租电池
-	public void checkRentBatteryDoor(RentBatteryOrder rentBatteryOrder, Integer status, Integer type, String msg) {
+	public void checkRentBatteryDoor(RentBatteryOrder rentBatteryOrder) {
 
 		//查找用户
 		UserInfo userInfo = userInfoService.queryByUid(rentBatteryOrder.getUid());
@@ -353,12 +368,6 @@ public class EleOperateQueueHandler {
 		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 		electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 
-		//订单状态
-		RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
-		newRentBatteryOrder.setId(rentBatteryOrder.getId());
-		newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-		newRentBatteryOrder.setStatus(RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED);
-		rentBatteryOrderService.update(newRentBatteryOrder);
 
 		//用户绑新电池
 		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
@@ -381,20 +390,13 @@ public class EleOperateQueueHandler {
 	}
 
 	//检测还电池
-	public void checkReturnBatteryDoor(RentBatteryOrder rentBatteryOrder, Integer status, Integer type, String msg) {
+	public void checkReturnBatteryDoor(RentBatteryOrder rentBatteryOrder) {
 
 		//查找用户
 		UserInfo userInfo = userInfoService.queryByUid(rentBatteryOrder.getUid());
 		if (Objects.isNull(userInfo)) {
 			return;
 		}
-
-		//订单状态
-		RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
-		newRentBatteryOrder.setId(rentBatteryOrder.getId());
-		newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-		newRentBatteryOrder.setStatus(RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED);
-		rentBatteryOrderService.update(newRentBatteryOrder);
 
 		//用户解绑电池
 		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();

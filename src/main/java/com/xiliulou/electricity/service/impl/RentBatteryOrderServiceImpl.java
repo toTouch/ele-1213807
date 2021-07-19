@@ -247,7 +247,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
 
-
 		//月卡是否过期
 		Long now = System.currentTimeMillis();
 		if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
@@ -300,7 +299,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 					.name(userInfo.getName())
 					.batteryDeposit(franchiseeUserInfo.getBatteryDeposit())
 					.type(RentBatteryOrder.TYPE_USER_RENT)
-					.status(RentBatteryOrder.STATUS_INIT)
+					.orderSeq(RentBatteryOrder.STATUS_INIT)
+					.status(RentBatteryOrder.INIT)
 					.electricityCabinetId(electricityCabinet.getId())
 					.cellNo(Integer.valueOf(cellNo))
 					.createTime(System.currentTimeMillis())
@@ -431,13 +431,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		}
 
-
 		//判断该换电柜加盟商和用户加盟商是否一致
 		if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
 			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
 			return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
 		}
-
 
 		//判断是否缴纳押金
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
@@ -452,7 +450,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			log.error("returnBattery  ERROR! not  rent battery!  uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
-
 
 		//分配开门格挡
 		String cellNo = electricityCabinetOrderService.findUsableCellNo(electricityCabinet.getId());
@@ -471,7 +468,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 					.name(userInfo.getName())
 					.batteryDeposit(franchiseeUserInfo.getBatteryDeposit())
 					.type(RentBatteryOrder.TYPE_USER_RETURN)
-					.status(RentBatteryOrder.STATUS_INIT)
+					.orderSeq(RentBatteryOrder.STATUS_INIT)
+					.status(RentBatteryOrder.INIT)
 					.electricityCabinetId(electricityCabinet.getId())
 					.cellNo(Integer.valueOf(cellNo))
 					.createTime(System.currentTimeMillis())
@@ -586,8 +584,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		return R.ok(rentBatteryOrder.getOrderId());
 	}
 
-
-
 	@Override
 	public RentBatteryOrder queryByOrderId(String orderId) {
 		return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
@@ -595,15 +591,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	@Override
 	public R endOrder(String orderId) {
-		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR));
+		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
 		if (Objects.isNull(rentBatteryOrder)) {
 			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
+
 		RentBatteryOrder rentBatteryOrderUpdate = new RentBatteryOrder();
 		rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
-		rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL);
+		/*rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL);*/
 		rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
 		rentBatteryOrderMapper.updateById(rentBatteryOrderUpdate);
 
@@ -615,7 +611,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	@Override
 	public RentBatteryOrder queryByUidAndType(Long uid, Integer type) {
 		return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, type)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR)
+				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT/*, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR*/)
 				.orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
 	}
 
@@ -644,7 +640,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrder.getCreateTime())));
 			}
 
-			if (Objects.isNull(rentBatteryOrder.getType())) {
+			/*if (Objects.isNull(rentBatteryOrder.getType())) {
 				excelVo.setType("");
 			}
 			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
@@ -677,7 +673,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			}
 			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_CANCEL)) {
 				excelVo.setStatus("订单取消");
-			}
+			}*/
 
 			rentBatteryOrderExcelVOS.add(excelVo);
 		}
@@ -751,18 +747,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			Double power = bigEleBatteryVo.getPower();
 			if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
 					&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
-				/*ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(id, newCellNo);
-				if (Objects.nonNull(electricityCabinetBox)) {
-
-					//该电池是否绑定用户
-					ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
-					if (Objects.nonNull(electricityBattery)) {
-						Integer count= franchiseeUserInfoService.queryCountByBatterySn(electricityBattery.getSn());
-						if (count<1) {*/
 				box = Integer.valueOf(newCellNo);
-					/*	}
-					}
-				}*/
+
 			}
 		}
 

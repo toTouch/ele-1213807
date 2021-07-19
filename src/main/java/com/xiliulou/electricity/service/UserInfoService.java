@@ -49,13 +49,9 @@ public interface UserInfoService extends IService<UserInfo> {
      */
     Integer update(UserInfo userInfo);
 
-    R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
-
     R queryList(UserInfoQuery userInfoQuery);
 
     R updateStatus(Long id,Integer usableStatus);
-
-    R webUnBindBattery(Long id);
 
     UserInfo queryByUid(Long uid);
 

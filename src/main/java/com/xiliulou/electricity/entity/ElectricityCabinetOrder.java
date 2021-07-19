@@ -100,69 +100,79 @@ public class ElectricityCabinetOrder {
 
 
     /**
-     * 换电订单生成
+     * 换电订单生成 0.0
      */
-    public static final Double INIT=1.0;
+    public static final String INIT="INIT";
     /**
-     * 换电过程放入没电电池检测失败
+     * 换电订单生成 0.0
      */
-    public static final Double INIT_CHECK_FAIL=1.1;
+    public static final Double STATUS_INIT=0.0;
     /**
-     * 换电柜放入没电电池开门发现有电池存在
+     * 换电过程放入没电电池检测失败 1.1
      */
-    public static final Double INIT_CHECK_BATTERY_EXISTS=2.1;
+    public static final String INIT_CHECK_FAIL="INIT_CHECK_FAIL";
     /**
-     * 换电柜放入没电电池开门成功
+     * 换电柜放入没电电池开门发现有电池存在 2.1
      */
-    public static final Double INIT_OPEN_SUCCESS=3.0;
+    public static final String INIT_CHECK_BATTERY_EXISTS="INIT_CHECK_BATTERY_EXISTS";
     /**
-     * 换电柜放入没电电池开门失败
+     * 换电柜放入没电电池开门成功 3.0
      */
-    public static final Double INIT_OPEN_FAIL=3.1;
+    public static final String INIT_OPEN_SUCCESS="INIT_OPEN_SUCCESS";
     /**
-     * 换电柜检测没电电池成功
+     * 换电柜放入没电电池开门失败 3.1
      */
-    public static final Double INIT_BATTERY_CHECK_SUCCESS=4.0;
+    public static final String INIT_OPEN_FAIL="INIT_OPEN_FAIL";
     /**
-     * 换电柜检测没电电池失败
+     * 换电柜检测没电电池成功 4.0
      */
-    public static final Double INIT_BATTERY_CHECK_FAIL=4.1;
+    public static final String INIT_BATTERY_CHECK_SUCCESS="INIT_BATTERY_CHECK_SUCCESS";
     /**
-     * 换电柜检测没电电池超时
+     * 换电柜检测没电电池失败 4.1
      */
-    public static final Double INIT_BATTERY_CHECK_TIMEOUT=4.2;
+    public static final String INIT_BATTERY_CHECK_FAIL="INIT_BATTERY_CHECK_FAIL";
+    /**
+     * 换电柜检测没电电池超时 4.2
+     */
+    public static final String INIT_BATTERY_CHECK_TIMEOUT="INIT_BATTERY_CHECK_TIMEOUT";
 
     /**
-     * 换电柜开满电电池前置检测失败
+     * 换电柜开满电电池前置检测失败 5.1
      */
-    public static final Double COMPLETE_CHECK_FAIL=5.1;
+    public static final String COMPLETE_CHECK_FAIL="COMPLETE_CHECK_FAIL";
     /**
-     * 换电柜开满电电池发现电池不存在
+     * 换电柜开满电电池发现电池不存在 5.2
      */
-    public static final Double COMPLETE_CHECK_BATTERY_NOT_EXISTS=5.2;
+    public static final String COMPLETE_CHECK_BATTERY_NOT_EXISTS="COMPLETE_CHECK_BATTERY_NOT_EXISTS";
     /**
-     * 换电柜开满电电池仓门成功
+     * 换电柜开满电电池仓门成功 6.0
      */
-    public static final Double COMPLETE_OPEN_SUCCESS=6.0;
+    public static final String COMPLETE_OPEN_SUCCESS="COMPLETE_OPEN_SUCCESS";
     /**
-     * 换电柜开满电电池仓门失败
+     * 换电柜开满电电池仓门失败 6.1
      */
-    public static final Double COMPLETE_OPEN_FAIL=6.1;
+    public static final String COMPLETE_OPEN_FAIL="COMPLETE_OPEN_FAIL";
     /**
-     * 换电柜满电电池成功取走，流程结束
+     * 换电柜满电电池成功取走，流程结束 7.0
      */
-    public static final Double COMPLETE_BATTERY_TAKE_SUCCESS=7.0;
+    public static final String COMPLETE_BATTERY_TAKE_SUCCESS="COMPLETE_BATTERY_TAKE_SUCCESS";
     /**
-     * 换电柜取走满电电池超时
+     * 换电柜取走满电电池超时 7.1
      */
-    public static final Double COMPLETE_BATTERY_TAKE_TIMEOUT=7.1;
+    public static final String COMPLETE_BATTERY_TAKE_TIMEOUT="COMPLETE_BATTERY_TAKE_TIMEOUT";
 
 
-    //订单取消
-    public static final Double ORDER_CANCEL = 11.0;
+    //订单取消 11.0
+    public static final String ORDER_CANCEL = "ORDER_CANCEL";
 
-    //订单异常结束
-    public static final Double ORDER_EXCEPTION_CANCEL = 12.0;
+    //订单取消 11.0
+    public static final Double STATUS_ORDER_CANCEL = 11.0;
+
+    //订单异常结束 12.0
+    public static final String ORDER_EXCEPTION_CANCEL = "ORDER_EXCEPTION_CANCEL";
+
+    //订单异常结束 12.0
+    public static final Double STATUS_ORDER_EXCEPTION_CANCEL = 12.0;
 
 
     //月卡

@@ -58,10 +58,12 @@ public class RentBatteryOrder {
      * 订单类型(1--租电池,2--还电池,3--后台绑电池,4--后台解绑电池)
      */
     private Integer type;
+    //订单状态序号
+    private Double orderSeq;
     /**
-    * 订单状态(1--初始化,2--已开门,3--订单完成，4--订单异常结束，5--订单取消)
-    */
-    private Integer status;
+     * 订单的状态
+     */
+    private String status;
     /**
     * 创建时间
     */
@@ -73,27 +75,86 @@ public class RentBatteryOrder {
     //租户id
     private Integer tenantId;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
     //租电池
     public static final Integer TYPE_USER_RENT = 1;
     //还电池
     public static final Integer TYPE_USER_RETURN = 2;
-    //后台绑电池
-    public static final Integer TYPE_WEB_BIND = 3;
-    //后台解绑电池
-    public static final Integer TYPE_WEB_UNBIND = 4;
+
 
     //初始化
-    public static final Integer STATUS_INIT = 1;
-    //租电池/还电池 开门
-    public static final Integer STATUS_RENT_BATTERY_OPEN_DOOR = 2;
-    //电池检测成功(订单完成)
-    public static final Integer STATUS_RENT_BATTERY_DEPOSITED = 3;
-    //订单异常结束
-    public static final Integer STATUS_ORDER_EXCEPTION_CANCEL = 4;
+    public static final Double STATUS_INIT = 0.0;
+
+    //初始化
+    public static final String INIT = "INIT";
+
+
+    /**
+     * 租电池前置检测 1.1
+     */
+    public static final String RENT_INIT_CHECK="RENT_INIT_CHECK";
+    /**
+     * 租电池格挡是空仓 1.2
+     */
+    public static final String RENT_BATTERY_NOT_EXISTS="RENT_BATTERY_NOT_EXISTS";
+
+    /**
+     * 租电池开门成功  2.0
+     */
+    public static final String RENT_OPEN_SUCCESS="RENT_OPEN_SUCCESS";
+    /**
+     * 租电池开门失败 2.1
+     */
+    public static final String RENT_OPEN_FAIL="RENT_OPEN_FAIL";
+    /**
+     * 租电池成功取走 3.0
+     */
+    public static final String RENT_BATTERY_TAKE_SUCCESS="RENT_BATTERY_TAKE_SUCCESS";
+    /**
+     * 租电池超时 3.1
+     */
+    public static final String RENT_BATTERY_TAKE_TIMEOUT="RENT_BATTERY_TAKE_TIMEOUT";
+    /**
+     * 还电池前置检测 1.1
+     */
+    public static final String RETURN_INIT_CHECK="RETURN_INIT_CHECK";
+    /**
+     * 还电池仓内有电池 1.2
+     */
+    public static final String RETURN_BATTERY_EXISTS="RETURN_BATTERY_EXISTS";
+
+    /**
+     * 还电池开门成功 2.0
+     */
+    public static final String RETURN_OPEN_SUCCESS="RETURN_OPEN_SUCCESS";
+    /**
+     * 还电池开门失败 2.1
+     */
+    public static final String RETURN_OPEN_FAIL="RETURN_OPEN_FAIL";
+    /**
+     * 还电池成功 3.0
+     */
+    public static final String RETURN_BATTERY_CHECK_SUCCESS="RETURN_BATTERY_CHECK_SUCCESS";
+    /**
+     * 还电池检测失败 3.1
+     */
+    public static final String RETURN_BATTERY_CHECK_FAIL="RETURN_BATTERY_CHECK_FAIL";
+    /**
+     * 还电池检测超时 3.2
+     */
+    public static final String RETURN_BATTERY_CHECK_TIMEOUT="RETURN_BATTERY_CHECK_TIMEOUT";
+
+
     //订单取消
-    public static final Integer STATUS_ORDER_CANCEL = 5;
+    public static final Double STATUS_ORDER_CANCEL = 5.0;
+
+    //订单取消
+    public static final String ORDER_CANCEL = "ORDER_CANCEL";
+
+
+    //订单异常结束
+    public static final Double STATUS_ORDER_EXCEPTION_CANCEL = 6.0;
+
+    //订单异常结束
+    public static final String ORDER_EXCEPTION_CANCEL = "ORDER_EXCEPTION_CANCEL";
 
 }

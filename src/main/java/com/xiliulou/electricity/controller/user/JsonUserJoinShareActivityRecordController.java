@@ -59,6 +59,8 @@ public class JsonUserJoinShareActivityRecordController {
 	 */
 	@PostMapping(value = "/user/joinShareActivityRecord/joinActivity")
 	public R joinActivity(@RequestParam(value = "activityId") Integer activityId, @RequestParam(value = "uid") Long uid) {
+		log.info("activityId is -->{}",activityId);
+		log.info("uid is -->{}",uid);
 		return joinShareActivityRecordService.joinActivity(activityId, uid);
 	}
 
