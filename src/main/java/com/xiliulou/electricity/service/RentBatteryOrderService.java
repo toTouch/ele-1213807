@@ -24,9 +24,7 @@ public interface RentBatteryOrderService {
      */
     RentBatteryOrder insert(RentBatteryOrder rentBatteryOrder);
 
-
     R queryList(RentBatteryOrderQuery rentBatteryOrderQuery);
-
 
     R rentBattery(RentBatteryQuery rentBatteryQuery);
 
@@ -35,7 +33,6 @@ public interface RentBatteryOrderService {
     void update(RentBatteryOrder rentBatteryOrder);
 
     R openDoor(RentOpenDoorQuery rentOpenDoorQuery);
-
 
     RentBatteryOrder queryByOrderId(String orderId);
 
