@@ -78,7 +78,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	@Override
 	public JoinShareActivityHistory queryByRecordIdAndStatus(Long id) {
 		return joinShareActivityHistoryMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityHistory>()
-				.eq(JoinShareActivityHistory::getRecordId,id).eq(JoinShareActivityHistory::getUpdateTime,JoinShareActivityHistory.STATUS_INIT));
+				.eq(JoinShareActivityHistory::getRecordId,id).eq(JoinShareActivityHistory::getStatus,JoinShareActivityHistory.STATUS_INIT));
 	}
 
 	@Override
