@@ -241,7 +241,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 		//用户是否开通月卡
 		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-				|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+				&& Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
 			return false;
 		}
 
