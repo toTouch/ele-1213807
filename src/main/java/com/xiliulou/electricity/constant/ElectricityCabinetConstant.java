@@ -40,7 +40,7 @@ public interface ElectricityCabinetConstant {
     String CACHE_SERVICE_PHONE = "CACHE_SERVICE_PHONE:";
 
     //下单加锁缓存
-    String ORDER_UID = "order_lock_uid:";
+    String ORDER_ELE_ID = "order_lock_ele_id:";
 
     //新增换电柜缓存
     String ELE_SAVE_UID = "ele_save_uid:";
@@ -72,11 +72,7 @@ public interface ElectricityCabinetConstant {
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
 
-    //用户租电池
-    String ELE_CACHE_USER_RENT_BATTERY_LOCK_KEY = "ele_cache_user_rent_battery_lock_key:";
 
-    //用户还电池
-    String ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY = "ele_cache_user_return_battery_lock_key:";
 
     //下单周期限制
     String ORDER_TIME_UID = "order_time_uid:";

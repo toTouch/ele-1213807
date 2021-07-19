@@ -2,8 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -124,11 +122,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//操作频繁
-		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_UID + user.getUid(), "1", 15 * 1000L, false);
-		if (!result) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -179,12 +172,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		//换电柜是否打烊
-		Boolean isBusiness = this.isBusiness(electricityCabinet);
+		boolean isBusiness = this.isBusiness(electricityCabinet);
 		if (isBusiness) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
 		}
 
-		//换电柜是否有人下单 TODO
+		//下单锁住柜机
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 *60* 1000L, false);
+		if (!result) {
+			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
+		}
+
 
 		//查找换电柜门店
 		if (Objects.isNull(electricityCabinet.getStoreId())) {

@@ -130,11 +130,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//限频
-		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_RENT_BATTERY_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
-		if (!getLockSuccess) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
 
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
@@ -176,9 +171,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//换电柜营业时间
-		Boolean result = this.isBusiness(electricityCabinet);
-		if (result) {
+		boolean isBusiness = this.isBusiness(electricityCabinet);
+		if (isBusiness) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+		}
+
+		//下单锁住柜机
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 *60* 1000L, false);
+		if (!result) {
+			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
 
 		//查找换电柜门店
@@ -340,11 +341,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//限频
-		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_RETURN_BATTERY_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
-		if (!getLockSuccess) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
 
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
@@ -386,9 +382,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//换电柜营业时间
-		Boolean result = this.isBusiness(electricityCabinet);
-		if (result) {
+		boolean isBusiness = this.isBusiness(electricityCabinet);
+		if (isBusiness) {
 			return R.fail("ELECTRICITY.0017", "换电柜已打烊");
+		}
+
+		//下单锁住柜机
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 *60* 1000L, false);
+		if (!result) {
+			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
 
 		//查找换电柜门店
