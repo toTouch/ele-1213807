@@ -290,7 +290,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 					.phone(userInfo.getPhone())
 					.electricityCabinetId(orderQuery.getElectricityCabinetId())
 					.oldCellNo(Integer.valueOf(cellNo))
-					.orderSeq(ElectricityCabinetOrder.INIT)
+					.orderSeq(ElectricityCabinetOrder.STATUS_INIT)
+					.status(ElectricityCabinetOrder.INIT)
 					.source(orderQuery.getSource())
 					.paymentMethod(franchiseeUserInfo.getCardType())
 					.createTime(System.currentTimeMillis())
@@ -477,14 +478,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	public R endOrder(String orderId) {
 		//结束异常订单只改订单状态，不用考虑其他
 		ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
-				.notIn(ElectricityCabinetOrder::getOrderSeq, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_CANCEL, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL));
+				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_CANCEL, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL));
 		if (Objects.isNull(electricityCabinetOrder)) {
 			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 		ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
 		newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
-		newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
+		newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
+		newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
 		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
 		electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
 
