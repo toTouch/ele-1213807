@@ -98,6 +98,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	}
 
 	@Override
+	@Transactional(rollbackFor = Exception.class)
 	public R joinActivity(Integer activityId, Long uid) {
 
 		//用户
@@ -204,7 +205,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 		//新增邀请历史记录
 		JoinShareActivityHistory joinShareActivityHistory=new JoinShareActivityHistory();
-		joinShareActivityHistory.setRecordId(oldJoinShareActivityRecord.getId());
+		joinShareActivityHistory.setRecordId(joinShareActivityRecord.getId());
 		joinShareActivityHistory.setUid(uid);
 		joinShareActivityHistory.setJoinUid(user.getUid());
 		joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
