@@ -99,6 +99,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Override
 	public R joinActivity(Integer activityId, Long uid) {
+		log.info("第一步");
 
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -131,6 +132,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		log.info("第二步");
 
 
 		//1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则 TODO
@@ -144,6 +146,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		//2.1 判断此人是否首次购买月卡
 		Boolean result = checkUserIsCard(userInfo);
 
+		log.info("第三步");
 		//已购买月卡,则直接返回首页
 		if (result) {
 			return R.ok();
@@ -155,6 +158,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 				eq(JoinShareActivityRecord::getJoinUid,user.getUid()).eq(JoinShareActivityRecord::getTenantId,tenantId));
 
 
+		log.info("第四步");
 		if(Objects.nonNull(oldJoinShareActivityRecord)){
 			if(Objects.equals(oldJoinShareActivityRecord.getUid(),uid)){
 				return R.ok();
