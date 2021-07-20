@@ -60,7 +60,7 @@ public class ElectricityCabinetOrderVO {
     /**
     * 订单的状态
     */
-    private Integer status;
+    private String status;
     /**
     * 支付方式 1--月卡抵扣 2--年卡抵扣
     */
