@@ -642,7 +642,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	@Override
 	public RentBatteryOrder queryByUidAndType(Long uid, Integer type) {
 		return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, type)
-				.in(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT/*, RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR*/)
+				.notIn(RentBatteryOrder::getStatus, RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS,RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS,RentBatteryOrder.ORDER_EXCEPTION_CANCEL,RentBatteryOrder.ORDER_CANCEL)
 				.orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
 	}
 
