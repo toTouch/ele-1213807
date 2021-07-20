@@ -351,7 +351,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//旧电池开门 TODO 需要优化
+		//旧电池开门
 		if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
 			if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT)
 					|| !Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL)
@@ -361,7 +361,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			}
 		}
 
-		//新电池开门 TODO 需要优化
+		//新电池开门
 		if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
 			if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)
 					|| !Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_FAIL)
