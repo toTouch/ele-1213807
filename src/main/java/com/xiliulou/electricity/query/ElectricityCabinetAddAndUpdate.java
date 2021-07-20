@@ -28,6 +28,11 @@ public class ElectricityCabinetAddAndUpdate {
     @NotEmpty(message = "换电柜名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
+     * 换电柜sn
+     */
+    @NotEmpty(message = "换电柜sn不能为空!", groups = {CreateGroup.class})
+    private String sn;
+    /**
      * 换电柜地址
      */
     @NotEmpty(message = "换电柜地址不能为空!", groups = {CreateGroup.class})

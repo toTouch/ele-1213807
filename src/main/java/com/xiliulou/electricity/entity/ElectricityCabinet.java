@@ -31,6 +31,10 @@ public class ElectricityCabinet {
      */
     private String name;
     /**
+     * 换电柜sn
+     */
+    private String sn;
+    /**
      * 换电柜地址
      */
     private String address;
