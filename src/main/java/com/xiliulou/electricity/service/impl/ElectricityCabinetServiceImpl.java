@@ -1099,6 +1099,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
 		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
 		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+		electricityCabinetVO.setBatteryFullCondition(electricityCabinetVO.getFullyCharged());
 		return R.ok(electricityCabinetVO);
 	}
 

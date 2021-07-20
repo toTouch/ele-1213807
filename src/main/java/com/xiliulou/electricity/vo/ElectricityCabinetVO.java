@@ -127,6 +127,11 @@ public class ElectricityCabinetVO {
     //门店id
     private Integer storeId;
 
+    /**
+     * 满电标准
+     */
+    private Double batteryFullCondition;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
