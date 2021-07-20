@@ -32,7 +32,8 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 	@GetMapping("/admin/electricityCabinetOrderOperHistory/list")
 	public R queryList(@RequestParam(value = "size", required = false) Long size,
 			@RequestParam(value = "offset", required = false) Long offset,
-			@RequestParam(value = "orderId", required = false) String orderId) {
+			@RequestParam("orderId") String orderId,
+			@RequestParam("type") Integer type) {
 
 		if (Objects.isNull(size)) {
 			size = 10L;
@@ -45,15 +46,20 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder()
 				.offset(offset)
 				.size(size)
-				.orderId(orderId).build();
+				.orderId(orderId)
+				.type(type).build();
 		return electricityCabinetOrderOperHistoryService.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
 	}
 
 	//换电柜历史记录查询
 	@GetMapping("/admin/electricityCabinetOrderOperHistory/queryCount")
-	public R queryCount(@RequestParam(value = "orderId", required = false) String orderId) {
+	public R queryCount(@RequestParam("orderId") String orderId,
+			@RequestParam("type") Integer type) {
+
+
 		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder()
-				.orderId(orderId).build();
+				.orderId(orderId)
+				.type(type).build();
 		return electricityCabinetOrderOperHistoryService.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery);
 	}
 

@@ -9,6 +9,7 @@
 		tenant_id
 		from t_electricity_cabinet_order_oper_history
 		where order_id = #{query.orderId}
+		AND type =#{query.type}
 		order by create_time desc
 		limit #{query.offset}, #{query.size}
 	</select>
@@ -17,5 +18,6 @@
 		select count(1)
 		from t_electricity_cabinet_order_oper_history
 		where tecooh.order_id = #{query.orderId}
+		AND type =#{query.type}
 	</select>
 </mapper>
