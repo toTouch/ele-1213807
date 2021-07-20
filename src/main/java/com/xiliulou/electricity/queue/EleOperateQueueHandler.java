@@ -127,7 +127,7 @@ public class EleOperateQueueHandler {
 			}
 
 			//若app订单状态大于云端订单状态则处理
-			if (Objects.isNull(orderSeq) || electricityCabinetOrder.getOrderSeq() <= orderSeq) {
+			if (Objects.isNull(orderSeq) || electricityCabinetOrder.getOrderSeq()-orderSeq<=1 ) {
 				if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)) {
 					handelInitExchangeOrder(electricityCabinetOrder, finalOpenDTO);
 				}
@@ -177,7 +177,13 @@ public class EleOperateQueueHandler {
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
 			}
 
-			//不取消订单,订单状态不变 TODO
+			//修改订单
+			ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+			newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+			newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+			newElectricityCabinetOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+			newElectricityCabinetOrder.setStatus(finalOpenDTO.getOrderStatus());
+			electricityCabinetOrderService.update(newElectricityCabinetOrder);
 			return;
 		}
 
@@ -266,7 +272,13 @@ public class EleOperateQueueHandler {
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
 			}
 
-			//不取消订单,订单状态不变 TODO
+			//修改订单
+			ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+			newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+			newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+			newElectricityCabinetOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+			newElectricityCabinetOrder.setStatus(finalOpenDTO.getOrderStatus());
+			electricityCabinetOrderService.update(newElectricityCabinetOrder);
 			return;
 		}
 
@@ -326,7 +338,13 @@ public class EleOperateQueueHandler {
 				rentBatteryOrderService.update(newRentBatteryOrder);
 			}
 
-			//不取消订单,订单状态不变 TODO
+			//订单状态
+			RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
+			newRentBatteryOrder.setId(rentBatteryOrder.getId());
+			newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+			newRentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+			newRentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
+			rentBatteryOrderService.update(newRentBatteryOrder);
 			return;
 		}
 
