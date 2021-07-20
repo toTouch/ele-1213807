@@ -511,29 +511,27 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//租电池开门 TODO 待优化
+		//租电池开门
 		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
-			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
+			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
 				return R.fail("ELECTRICITY.0015", "未找到订单");
 			}
 		}
 
-
-		//还电池开门 TODO 待优化
+		//还电池开门
 		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
-			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS) ||
-					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
+			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)
+					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
 			}
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
-
 
 		//判断开门用户是否匹配
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -609,21 +607,21 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//租电池  TODO  待优化
+		//租电池
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) ||
-					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL) ||
-					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)
+					|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL)
+					|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
 				log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
 				return R.fail("ELECTRICITY.0015", "未找到订单");
 			}
 		}
 
-		//还电池  TODO  待优化
+		//还电池
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS) ||
-					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL) ||
-					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)
+					|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL)
+					|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
 				log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
 				return R.fail("ELECTRICITY.0015", "未找到订单");
 			}
