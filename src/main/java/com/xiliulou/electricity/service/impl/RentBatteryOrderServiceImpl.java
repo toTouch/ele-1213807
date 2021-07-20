@@ -514,10 +514,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		//租电池开门
 		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
 			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
+					|| (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)
+					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)
+					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)
+					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL))) {
 				return R.fail("ELECTRICITY.0015", "未找到订单");
 			}
 		}
@@ -525,10 +525,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		//还电池开门
 		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
 			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)
-					|| !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
+					|| (!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)
+					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)
+					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)
+					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL))) {
 			}
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
