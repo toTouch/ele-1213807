@@ -695,7 +695,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			String msg = warnMsgVo.getMsg();
 
 			//出错信息
-			map.put("msg", msg);
+			map.put("queryStatus", msg);
 			type = 1;
 		}
 

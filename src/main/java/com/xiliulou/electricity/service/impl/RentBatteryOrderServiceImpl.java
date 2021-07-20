@@ -779,7 +779,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			String msg = warnMsgVo.getMsg();
 
 			//出错信息
-			map.put("msg", msg);
+			map.put("queryStatus", msg);
 			type = 1;
 		}
 
