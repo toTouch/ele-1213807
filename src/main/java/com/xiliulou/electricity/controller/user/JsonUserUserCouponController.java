@@ -58,7 +58,6 @@ public class JsonUserUserCouponController {
     //领劵
     @PostMapping(value = "/user/userCoupon/getCoupon")
     public R getCoupon( @RequestParam("activityId") Integer activityId,@RequestParam("couponId") Integer couponId) {
-
         return userCouponService.getShareCoupon(activityId,couponId);
     }
 
