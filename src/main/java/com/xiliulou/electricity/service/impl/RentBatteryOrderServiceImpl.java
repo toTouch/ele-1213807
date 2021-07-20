@@ -261,12 +261,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 
-		/*//用户状态异常
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
-				&& Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn())) {
-			log.error("rentBattery  ERROR! user STATUS IS ERROR! uid:{} ",user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}*/
 
 		//是否有正在退款中的退款
 		Integer refundCount = eleRefundOrderService.queryCountByOrderId(franchiseeUserInfo.getOrderId());
@@ -763,6 +757,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		//订单状态
 		map.put("status", rentBatteryOrder.getStatus());
 
+		//仓门
+		Integer cellNo=rentBatteryOrder.getCellNo();
+
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
 		//是否重试 0--重试  1--不能重试
@@ -785,6 +782,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		map.put("type", type);
 		map.put("isTry", isTry);
+		map.put("cellNo", cellNo);
 		return R.ok(map);
 	}
 

@@ -676,6 +676,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		//订单状态
 		map.put("status", electricityCabinetOrder.getStatus());
 
+		//仓门
+		Integer cellNo;
+
+		if(electricityCabinetOrder.getOrderSeq()<5){
+			cellNo=electricityCabinetOrder.getOldCellNo();
+		}else {
+			cellNo=electricityCabinetOrder.getNewCellNo();
+		}
+
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
 		//是否重试 0--重试  1--不能重试
@@ -698,6 +707,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		map.put("type", type);
 		map.put("isTry", isTry);
+		map.put("cellNo", cellNo);
 		return R.ok(map);
 	}
 
