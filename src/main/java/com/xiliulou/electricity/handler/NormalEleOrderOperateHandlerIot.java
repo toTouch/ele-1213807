@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -31,6 +34,8 @@ public class NormalEleOrderOperateHandlerIot extends AbstractIotMessageHandler {
     RedisService redisService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
 
 
     @Override
@@ -51,7 +56,18 @@ public class NormalEleOrderOperateHandlerIot extends AbstractIotMessageHandler {
             return false;
         }
 
-       //插入操作记录
+        EleOrderOperateVO eleOrderOperateVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderOperateVO.class);
+
+        //加入操作记录表
+        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
+                .createTime(System.currentTimeMillis())
+                .electricityCabinetId(electricityCabinet.getId())
+                .orderId(eleOrderOperateVO.getOrderId())
+                .type(eleOrderOperateVO.getOrderType())
+                .tenantId(electricityCabinet.getTenantId())
+                .msg(eleOrderOperateVO.getMsg())
+                .build();
+        electricityCabinetOrderOperHistoryService.insert(history);
         return true;
     }
 
@@ -59,7 +75,7 @@ public class NormalEleOrderOperateHandlerIot extends AbstractIotMessageHandler {
 
 
 @Data
-class EleOrderOperateVo {
+class EleOrderOperateVO {
 
     //订单Id
     private String orderId;
