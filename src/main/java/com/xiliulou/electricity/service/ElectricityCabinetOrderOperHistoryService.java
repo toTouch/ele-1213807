@@ -21,7 +21,7 @@ public interface ElectricityCabinetOrderOperHistoryService {
     ElectricityCabinetOrderOperHistory insert(ElectricityCabinetOrderOperHistory electricityCabinetOrderOperHistory);
 
 
-    R queryList(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+    R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 
-    R queryCount(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+    R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 }

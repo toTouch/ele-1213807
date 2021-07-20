@@ -29,10 +29,6 @@ public class ElectricityCabinetOrderOperHistory {
      *订单的类型 1--租、还电,2--换电
      */
     private Integer type;
-    /**
-    * 换电柜id
-    */
-    private Integer electricityCabinetId;
 
     //错误信息
     private String msg;

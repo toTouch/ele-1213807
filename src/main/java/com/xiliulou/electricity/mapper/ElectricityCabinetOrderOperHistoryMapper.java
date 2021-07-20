@@ -17,7 +17,7 @@ import java.util.Map;
  */
 public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<ElectricityCabinetOrderOperHistory>{
 
-    List<Map<String,Object>> queryList(@Param("query")ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+    List<ElectricityCabinetOrderOperHistory> queryListByOrderId(@Param("query")ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 
-	Integer queryCount(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+	Integer queryCountByOrderId(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 }

@@ -3,91 +3,19 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper">
 
 
-    <select id="queryList" resultType="map">
-        select
-        tecooh.id as id,tecooh.o_id as oId ,tecooh.order_id as orderId, tecooh.order_type as orderType,
-        tecooh.electricity_cabinet_id as electricityCabinetId, tecooh.cell_no as cellNo, tecooh.status
-        as status, tecooh.uid as uid, tecooh.type as type, tecooh.msg as msg, tecooh.create_time as createTime,
-        tecooh.tenant_id as tenantId,
-        tec.name as electricityCabinetName
-        from t_electricity_cabinet_order_oper_history as tecooh
-        left join t_electricity_cabinet as tec on tec.id=tecooh.electricity_cabinet_id
-        <where>
-            <if test="query.orderId != null and query.orderId != ''">
-                and tecooh.order_id = #{query.orderId}
-            </if>
-            <if test="query.status != null">
-                and tecooh.status = #{query.status}
-            </if>
-            <if test="query.beginTime != null">
-                and tecooh.create_time &gt;=#{query.beginTime}
-            </if>
-            <if test="query.endTime != null">
-                and tecooh.create_time &lt;=#{query.endTime}
-            </if>
-            <if test="query.type != null">
-                and tecooh.type = #{query.type}
-            </if>
-            <if test="query.orderType != null">
-                and tecooh.order_type = #{query.orderType}
-            </if>
-            <if test="query.cellNo != null">
-                and tecooh.cell_no = #{query.cellNo}
-            </if>
-            <if test="query.electricityCabinetId != null">
-                and tecooh.electricity_cabinet_id = #{query.electricityCabinetId}
-            </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and tecooh.electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-            <if test="query.tenantId != null ">
-                and tecooh.tenant_id = #{query.tenantId}
-            </if>
-        </where>
-        order by tecooh.create_time desc
-        limit #{query.offset}, #{query.size}
-    </select>
+	<select id="queryListByOrderId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory">
+		select
+		id ,order_id ,type , msg , create_time,
+		tenant_id
+		from t_electricity_cabinet_order_oper_history
+		where order_id = #{query.orderId}
+		order by create_time desc
+		limit #{query.offset}, #{query.size}
+	</select>
 
-	<select id="queryCount" resultType="java.lang.Integer">
-        select count(1)
-        from t_electricity_cabinet_order_oper_history
-        <where>
-            <if test="query.orderId != null and query.orderId != ''">
-                and order_id = #{query.orderId}
-            </if>
-            <if test="query.status != null">
-                and status = #{query.status}
-            </if>
-            <if test="query.beginTime != null">
-                and create_time &gt;=#{query.beginTime}
-            </if>
-            <if test="query.endTime != null">
-                and create_time &lt;=#{query.endTime}
-            </if>
-            <if test="query.type != null">
-                and type = #{query.type}
-            </if>
-            <if test="query.orderType != null">
-                and order_type = #{query.orderType}
-            </if>
-            <if test="query.cellNo != null">
-                and cell_no = #{query.cellNo}
-            </if>
-            <if test="query.electricityCabinetId != null">
-                and electricity_cabinet_id = #{query.electricityCabinetId}
-            </if>
-            <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and electricity_cabinet_id in
-                <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-            <if test="query.tenantId != null">
-                and tenant_id = #{query.tenantId}
-            </if>
-        </where>
-    </select>
+	<select id="queryCountByOrderId" resultType="java.lang.Integer">
+		select count(1)
+		from t_electricity_cabinet_order_oper_history
+		where tecooh.order_id = #{query.orderId}
+	</select>
 </mapper>

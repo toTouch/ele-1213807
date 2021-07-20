@@ -35,12 +35,12 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
     }
 
     @Override
-    public R queryList(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
-        return R.ok(electricityCabinetOrderOperHistoryMapper.queryList(electricityCabinetOrderOperHistoryQuery));
+    public R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
+        return R.ok(electricityCabinetOrderOperHistoryMapper.queryListByOrderId(electricityCabinetOrderOperHistoryQuery));
     }
 
     @Override
-    public R queryCount(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
-        return R.ok(electricityCabinetOrderOperHistoryMapper.queryCount(electricityCabinetOrderOperHistoryQuery));
+    public R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
+        return R.ok(electricityCabinetOrderOperHistoryMapper.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery));
     }
 }

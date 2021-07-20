@@ -21,30 +21,9 @@ public class ElectricityCabinetOrderOperHistoryQuery {
      */
     private String orderId;
 
-
-    /**
-     * 订单的状态
-     */
-    private Integer status;
-
-    private Integer type;
-
-    private Integer orderType;
-
-    private Integer electricityCabinetId;
-
-    private Integer cellNo;
-
     private Long size;
     private Long offset;
 
-
-    private Long beginTime;
-    private Long endTime;
-
-    private List<Integer> eleIdList;
-
-    private Integer tenantId;
 
 
 

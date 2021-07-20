@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import shaded.org.apache.commons.lang3.StringUtils;
-
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
@@ -321,25 +320,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
-	public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-
-		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
-		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
-			return R.ok(new ArrayList<>());
-		}
-		if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
-			electricityCabinetOrderVOList.parallelStream().forEach(e -> {
-				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
-				if (Objects.nonNull(electricityCabinet)) {
-					e.setElectricityCabinetName(electricityCabinet.getName());
-				}
-			});
-		}
-
-		return R.ok(electricityCabinetOrderVOList);
-	}
-
-	@Override
 	@Transactional
 	public R openDoor(OpenDoorQuery openDoorQuery) {
 		if (Objects.isNull(openDoorQuery.getOrderId()) || Objects.isNull(openDoorQuery.getOpenType())) {
@@ -435,78 +415,27 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
-	public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
-		return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
-	}
+	public R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
 
-	@Override
-	public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
-		Integer countTotal = homeOneCount(first, now, eleIdList, tenantId);
-		Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList, tenantId);
-		if (successTotal == 0 || countTotal == 0) {
-			return BigDecimal.valueOf(0);
+		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
+			return R.ok(new ArrayList<>());
 		}
-		return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal), BigDecimal.ROUND_HALF_EVEN);
-	}
+		if (ObjectUtil.isNotEmpty(electricityCabinetOrderVOList)) {
+			electricityCabinetOrderVOList.parallelStream().forEach(e -> {
+				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+				if (Objects.nonNull(electricityCabinet)) {
+					e.setElectricityCabinetName(electricityCabinet.getName());
+				}
+			});
+		}
 
-	@Override
-	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId) {
-		return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList, tenantId);
-	}
-
-	@Override
-	public Integer homeMonth(Long uid, Long first, Long now) {
-		return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid, uid));
-	}
-
-	@Override
-	public Integer homeTotal(Long uid) {
-		return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid));
+		return R.ok(electricityCabinetOrderVOList);
 	}
 
 	@Override
 	public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
 		return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
-	}
-
-
-
-	@Override
-	@Transactional
-	public R endOrder(String orderId) {
-		//结束异常订单只改订单状态，不用考虑其他
-		ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
-				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_CANCEL, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL));
-		if (Objects.isNull(electricityCabinetOrder)) {
-			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
-			return R.fail("ELECTRICITY.0015", "未找到订单");
-		}
-		ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
-		newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
-		newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
-		newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
-		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-		electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
-
-		//回退月卡
-		UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
-		if (Objects.nonNull(userInfo)) {
-			//
-			//是否缴纳押金，是否绑定电池
-			FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-			if (Objects.nonNull(franchiseeUserInfo)) {
-				Long now = System.currentTimeMillis();
-				if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber())
-						&& franchiseeUserInfo.getMemberCardExpireTime() > now && franchiseeUserInfo.getRemainingNumber() != -1) {
-					//回退月卡次数
-					franchiseeUserInfoService.plusCount(userInfo.getId());
-				}
-			}
-		}
-
-		//删除开门失败缓存
-		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
-		return R.ok();
 	}
 
 	@Override
@@ -618,10 +547,78 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 	}
 
+
 	@Override
-	public void insert(ElectricityCabinetOrder electricityCabinetOrder) {
-		electricityCabinetOrderMapper.insert(electricityCabinetOrder);
+	@Transactional
+	public R endOrder(String orderId) {
+		//结束异常订单只改订单状态，不用考虑其他
+		ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId)
+				.notIn(ElectricityCabinetOrder::getStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS, ElectricityCabinetOrder.ORDER_CANCEL, ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL));
+		if (Objects.isNull(electricityCabinetOrder)) {
+			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+			return R.fail("ELECTRICITY.0015", "未找到订单");
+		}
+		ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+		newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+		newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL);
+		newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
+		newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+		electricityCabinetOrderMapper.updateById(newElectricityCabinetOrder);
+
+		//回退月卡
+		UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
+		if (Objects.nonNull(userInfo)) {
+			//
+			//是否缴纳押金，是否绑定电池
+			FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+			if (Objects.nonNull(franchiseeUserInfo)) {
+				Long now = System.currentTimeMillis();
+				if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber())
+						&& franchiseeUserInfo.getMemberCardExpireTime() > now && franchiseeUserInfo.getRemainingNumber() != -1) {
+					//回退月卡次数
+					franchiseeUserInfoService.plusCount(userInfo.getId());
+				}
+			}
+		}
+
+		//删除开门失败缓存
+		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+		return R.ok();
 	}
+
+
+
+	@Override
+	public Integer homeOneCount(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
+		return electricityCabinetOrderMapper.homeOneCount(first, now, eleIdList, tenantId);
+	}
+
+	@Override
+	public BigDecimal homeOneSuccess(Long first, Long now, List<Integer> eleIdList, Integer tenantId) {
+		Integer countTotal = homeOneCount(first, now, eleIdList, tenantId);
+		Integer successTotal = electricityCabinetOrderMapper.homeOneSuccess(first, now, eleIdList, tenantId);
+		if (successTotal == 0 || countTotal == 0) {
+			return BigDecimal.valueOf(0);
+		}
+		return BigDecimal.valueOf(successTotal).multiply(BigDecimal.valueOf(100)).divide(BigDecimal.valueOf(countTotal), BigDecimal.ROUND_HALF_EVEN);
+	}
+
+	@Override
+	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId) {
+		return electricityCabinetOrderMapper.homeThree(startTimeMilliDay, endTimeMilliDay, eleIdList, tenantId);
+	}
+
+	@Override
+	public Integer homeMonth(Long uid, Long first, Long now) {
+		return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().between(ElectricityCabinetOrder::getCreateTime, first, now).eq(ElectricityCabinetOrder::getUid, uid));
+	}
+
+	@Override
+	public Integer homeTotal(Long uid) {
+		return electricityCabinetOrderMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getUid, uid));
+	}
+
+
 
 	@Override
 	public ElectricityCabinetOrder queryByUid(Long uid) {

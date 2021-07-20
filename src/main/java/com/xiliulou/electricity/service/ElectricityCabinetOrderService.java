@@ -31,9 +31,15 @@ public interface ElectricityCabinetOrderService {
 
     R order(OrderQuery orderQuery);
 
+    R openDoor(OpenDoorQuery openDoorQuery);
+
     R queryList(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
-    R openDoor(OpenDoorQuery openDoorQuery);
+    R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+
+    void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response);
+
+    R endOrder(String orderId);
 
     Integer homeOneCount(Long first, Long now,List<Integer> eleIdList,Integer tenantId);
 
@@ -44,15 +50,6 @@ public interface ElectricityCabinetOrderService {
     Integer homeMonth(Long uid, Long firstMonth, Long now);
 
     Integer homeTotal(Long uid);
-
-    R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
-
-
-    R endOrder(String orderId);
-
-    void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response);
-
-    void insert(ElectricityCabinetOrder electricityCabinetOrder);
 
     ElectricityCabinetOrder queryByUid(Long uid);
 
