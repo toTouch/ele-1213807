@@ -130,7 +130,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(rentBatteryOrder1)) {
@@ -177,7 +176,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//下单锁住柜机
-		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 *60* 1000L, false);
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
@@ -341,7 +340,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(rentBatteryOrder1)) {
@@ -388,7 +386,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//下单锁住柜机
-		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 *60* 1000L, false);
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
@@ -507,23 +505,35 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		if (Objects.isNull(rentOpenDoorQuery.getOrderId()) || Objects.isNull(rentOpenDoorQuery.getOpenType())) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
-		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, rentOpenDoorQuery.getOrderId()).eq(RentBatteryOrder::getStatus, RentBatteryOrder.STATUS_INIT));
+		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, rentOpenDoorQuery.getOrderId()));
 		if (Objects.isNull(rentBatteryOrder)) {
 			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", rentOpenDoorQuery.getOrderId());
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//租电池开门
-		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)
-				&& !Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+		//租电池开门 TODO 待优化
+		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
+			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
+				return R.fail("ELECTRICITY.0015", "未找到订单");
+			}
+		}
+
+
+		//还电池开门 TODO 待优化
+		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)) {
+			if (!Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS) ||
+					!Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
+			}
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//还电池开门
-		if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RETURN_OPEN_TYPE)
-				&& !Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-			return R.fail("ELECTRICITY.0015", "未找到订单");
-		}
 
 		//判断开门用户是否匹配
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -595,13 +605,34 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	public R endOrder(String orderId) {
 		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
 		if (Objects.isNull(rentBatteryOrder)) {
-			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
+			log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
 			return R.fail("ELECTRICITY.0015", "未找到订单");
+		}
+
+		//租电池  TODO  待优化
+		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS) ||
+					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL) ||
+					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
+				log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
+				return R.fail("ELECTRICITY.0015", "未找到订单");
+			}
+		}
+
+		//还电池  TODO  待优化
+		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS) ||
+					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL) ||
+					Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
+				log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
+				return R.fail("ELECTRICITY.0015", "未找到订单");
+			}
 		}
 
 		RentBatteryOrder rentBatteryOrderUpdate = new RentBatteryOrder();
 		rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
-		/*rentBatteryOrderUpdate.setStatus(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL);*/
+		rentBatteryOrderUpdate.setStatus(RentBatteryOrder.ORDER_EXCEPTION_CANCEL);
+		rentBatteryOrderUpdate.setOrderSeq(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL);
 		rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
 		rentBatteryOrderMapper.updateById(rentBatteryOrderUpdate);
 
@@ -642,7 +673,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrder.getCreateTime())));
 			}
 
-			/*if (Objects.isNull(rentBatteryOrder.getType())) {
+			if (Objects.isNull(rentBatteryOrder.getType())) {
 				excelVo.setType("");
 			}
 			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
@@ -651,31 +682,59 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
 				excelVo.setType("还电池");
 			}
-			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_WEB_BIND)) {
-				excelVo.setType("后台绑电池");
-			}
-			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_WEB_UNBIND)) {
-				excelVo.setType("后台解绑电池");
-			}
 
+			//订单状态
 			if (Objects.isNull(rentBatteryOrder.getStatus())) {
 				excelVo.setStatus("");
 			}
 			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_INIT)) {
 				excelVo.setStatus("初始化");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_RENT_BATTERY_OPEN_DOOR)) {
-				excelVo.setStatus("开门");
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)) {
+				excelVo.setStatus("租电池前置检测");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_RENT_BATTERY_DEPOSITED)) {
-				excelVo.setStatus("订单完成");
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)) {
+				excelVo.setStatus("租电池格挡是空仓");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_SUCCESS)) {
+				excelVo.setStatus("租电池开门成功");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
+				excelVo.setStatus("租电池开门失败");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
+				excelVo.setStatus("租电池成功取走");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)) {
+				excelVo.setStatus("租电池超时");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)) {
+				excelVo.setStatus("还电池前置检测");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)) {
+				excelVo.setStatus("还电池仓内有电池");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_SUCCESS)) {
+				excelVo.setStatus("还电池开门成功");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
+				excelVo.setStatus("还电池开门失败");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+				excelVo.setStatus("还电池成功");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)) {
+				excelVo.setStatus("还电池检测失败");
+			}
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
+				excelVo.setStatus("还电池检测超时");
 			}
 			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
 				excelVo.setStatus("订单异常结束");
 			}
 			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_CANCEL)) {
 				excelVo.setStatus("订单取消");
-			}*/
+			}
 
 			rentBatteryOrderExcelVOS.add(excelVo);
 		}
@@ -696,38 +755,38 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	@Override
 	public R queryNewStatus(String orderId) {
-		Map<String, String> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
 		if (Objects.isNull(rentBatteryOrder)) {
 			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
+		//订单状态
+		map.put("status", rentBatteryOrder.getStatus());
+
+		//是否出错 0--未出错 1--出错
 		Integer type = 0;
+		//是否重试 0--重试  1--不能重试
 		Integer isTry = 1;
-		map.put("status", rentBatteryOrder.getStatus().toString());
 
 		String result = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		if (StringUtils.isNotEmpty(result)) {
 			WarnMsgVo warnMsgVo = JsonUtil.fromJson(result, WarnMsgVo.class);
-			/*String queryStatus = warnMsgVo.getCode().toString();
-
-			//是否重试
-			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_LOCKER_LOCK.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_BUSINESS_PROCESS.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL.toString())) {
+			boolean isNeedEndOrder = warnMsgVo.getIsNeedEndOrder();
+			if (!isNeedEndOrder) {
 				isTry = 0;
 			}
 
+			String msg = warnMsgVo.getMsg();
 
-			map.put("queryStatus", queryStatus);*/
+			//出错信息
+			map.put("msg", msg);
 			type = 1;
-
 		}
 
-		map.put("type", type.toString());
-		map.put("isTry", isTry.toString());
+		map.put("type", type);
+		map.put("isTry", isTry);
 		return R.ok(map);
 	}
 

@@ -113,6 +113,9 @@ public class RentBatteryOrder {
      * 租电池超时 3.1
      */
     public static final String RENT_BATTERY_TAKE_TIMEOUT="RENT_BATTERY_TAKE_TIMEOUT";
+
+
+
     /**
      * 还电池前置检测 1.1
      */

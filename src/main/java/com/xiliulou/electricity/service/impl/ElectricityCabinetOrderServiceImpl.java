@@ -351,7 +351,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//旧电池开门
+		//旧电池开门 TODO 需要优化
 		if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
 			if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT)
 					|| !Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL)
@@ -361,7 +361,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			}
 		}
 
-		//新电池开门
+		//新电池开门 TODO 需要优化
 		if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.NEW_OPEN_TYPE)) {
 			if (!Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)
 					|| !Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_FAIL)
@@ -548,33 +548,59 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 				excelVo.setPaymentMethod("年卡");
 			}
 
-			/*if (Objects.isNull(electricityCabinetOrderVO.getStatus())) {
+
+			//订单状态
+			if (Objects.isNull(electricityCabinetOrderVO.getStatus())) {
 				excelVo.setStatus("");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_PAY)) {
-				excelVo.setStatus("已支付未开门");
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT)) {
+				excelVo.setStatus("换电订单生成");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_OPEN_DOOR)) {
-				excelVo.setStatus("旧电池开门");
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_CHECK_FAIL)) {
+				excelVo.setStatus("换电过程放入没电电池检测失败");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_OLD_BATTERY_DEPOSITED)) {
-				excelVo.setStatus("旧电池已存入");
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_CHECK_BATTERY_EXISTS)) {
+				excelVo.setStatus("换电柜放入没电电池开门发现有电池存在");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_WAIT_NEW_BATTERY)) {
-				excelVo.setStatus("等待新电池");
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_OPEN_SUCCESS)) {
+				excelVo.setStatus("换电柜放入没电电池开门成功");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_NEW_BATTERY_OPEN_DOOR)) {
-				excelVo.setStatus("新电池开门");
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_OPEN_FAIL)) {
+				excelVo.setStatus("换电柜放入没电电池开门失败");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_COMPLETE)) {
-				excelVo.setStatus("订单完成");
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
+				excelVo.setStatus("换电柜检测没电电池成功");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
+				excelVo.setStatus("换电柜检测没电电池失败");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
+				excelVo.setStatus("换电柜检测没电电池超时");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_FAIL)) {
+				excelVo.setStatus("换电柜开满电电池前置检测失败");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS)) {
+				excelVo.setStatus("换电柜开满电电池发现电池不存在");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)) {
+				excelVo.setStatus("换电柜开满电电池仓门成功");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)) {
+				excelVo.setStatus("换电柜开满电电池仓门失败");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+				excelVo.setStatus("换电柜满电电池成功取走，流程结束");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)) {
+				excelVo.setStatus("换电柜取走满电电池超时");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.ORDER_CANCEL)) {
+				excelVo.setStatus("订单取消");
+			}
+			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
 				excelVo.setStatus("订单异常结束");
 			}
-			if (Objects.equals(electricityCabinetOrderVO.getStatus(), ElectricityCabinetOrder.STATUS_ORDER_CANCEL)) {
-				excelVo.setStatus("订单取消");
-			}*/
 			electricityCabinetOrderExcelVOS.add(excelVo);
 		}
 
@@ -643,37 +669,38 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	public R queryNewStatus(String orderId) {
 
-		Map<String, String> map = new HashMap<>();
+		Map<String, Object> map = new HashMap<>();
 		ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, orderId));
 		if (Objects.isNull(electricityCabinetOrder)) {
 			log.error("ELECTRICITY  ERROR! not found order,orderId{} ", orderId);
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
+		//订单状态
+		map.put("status", electricityCabinetOrder.getStatus());
+
+		//是否出错 0--未出错 1--出错
 		Integer type = 0;
+		//是否重试 0--重试  1--不能重试
 		Integer isTry = 1;
-		map.put("status", electricityCabinetOrder.getStatus().toString());
 
 		String result = redisService.get(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
 		if (StringUtils.isNotEmpty(result)) {
 			WarnMsgVo warnMsgVo = JsonUtil.fromJson(result, WarnMsgVo.class);
-			/*String queryStatus = warnMsgVo.getCode().toString();
-
-			//是否重试
-			if (Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_DOOR_IS_OPEN_EXCEPTION.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_LOCKER_LOCK.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_BUSINESS_PROCESS.toString())
-					|| Objects.equals(queryStatus, ElectricityCabinetOrderOperHistory.STATUS_OPEN_DOOR_FAIL.toString())) {
-				isTry = 0;
+			boolean isNeedEndOrder = warnMsgVo.getIsNeedEndOrder();
+			if(!isNeedEndOrder){
+				isTry=0;
 			}
 
-			map.put("queryStatus", queryStatus);*/
-			type = 1;
+			String msg = warnMsgVo.getMsg();
 
+			//出错信息
+			map.put("msg", msg);
+			type = 1;
 		}
 
-		map.put("type", type.toString());
-		map.put("isTry", isTry.toString());
+		map.put("type", type);
+		map.put("isTry", isTry);
 		return R.ok(map);
 	}
 
