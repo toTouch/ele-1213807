@@ -1621,7 +1621,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	@Override
 	public R checkBattery(String productKey, String deviceName, String batterySn) {
 		//换电柜
-		ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+		ElectricityCabinet electricityCabinet = queryByProductAndDeviceName(productKey, deviceName);
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("checkBattery error! no electricityCabinet,productKey:{},deviceName:{}", productKey,deviceName);
 			return R.fail("未找到换电柜");
