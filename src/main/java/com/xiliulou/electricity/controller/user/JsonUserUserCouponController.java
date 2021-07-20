@@ -2,12 +2,9 @@ package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.UserCouponService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,7 +12,6 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Objects;
 
 /**
  * 优惠券表(TCoupon)表控制层
