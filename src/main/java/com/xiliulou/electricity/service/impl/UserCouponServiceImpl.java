@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -176,7 +178,28 @@ public class UserCouponServiceImpl implements UserCouponService {
 		userCouponQuery.setUid(uid);
 		userCouponQuery.setTypeList(typeList);
 		List<UserCoupon> userCouponList = userCouponMapper.queryList(userCouponQuery);
-		return R.ok(userCouponList);
+
+		if(Objects.isNull(userCouponList)){
+			return R.ok(userCouponList);
+		}
+
+		List<UserCouponVO> userCouponVOList=new ArrayList<>();
+		for (UserCoupon userCoupon:userCouponList) {
+
+			UserCouponVO userCouponVO=new UserCouponVO();
+			BeanUtil.copyProperties(userCoupon,userCouponVO);
+
+			Coupon coupon=couponService.queryByIdFromCache(userCoupon.getCouponId());
+			if(Objects.nonNull(coupon)){
+				userCouponVO.setAmount(coupon.getAmount());
+				userCouponVO.setDiscount(coupon.getDiscount());
+			}
+
+			userCouponVOList.add(userCouponVO);
+		}
+
+		return R.ok(userCouponVOList);
+
 	}
 
 	/*

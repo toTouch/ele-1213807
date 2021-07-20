@@ -46,6 +46,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     NormalWarnHandlerIot normalWarnHandlerIot;
     @Autowired
     NormalOtherConfigHandlerIot normalOtherConfigHandlerIot;
+    @Autowired
+    NormalEleOrderOperateHandlerIot normalEleOrderOperateHandlerIot;
 
     ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
@@ -100,7 +102,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             return false;
         }
-        if (receiverMessage.getType().contains("order")) {
+        if (receiverMessage.getType().contains("order_operate")) {
+            return normalEleOrderOperateHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("order")) {
             return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (receiverMessage.getType().contains("operate")) {
             return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);

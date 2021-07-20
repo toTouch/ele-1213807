@@ -59,16 +59,22 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
 			return false;
 		}
+
+
 		EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
 		if (Objects.isNull(eleBatteryVo)) {
 			log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
 			return false;
 		}
+
+
 		String cellNo = eleBatteryVo.getCellNo();
 		if (StringUtils.isEmpty(cellNo)) {
 			log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
 			return false;
 		}
+
+
 		ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
 		ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -84,13 +90,16 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		String batteryName = eleBatteryVo.getBatteryName();
 		Boolean existsBattery = eleBatteryVo.getExistsBattery();
 
+
 		//存在电池但是电池名字没有上报
 		if (Objects.nonNull(existsBattery) && StringUtils.isEmpty(batteryName) && existsBattery) {
 			return false;
 		}
 
+
 		//缓存存换电柜中电量最多的电池
 		BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY+electricityCabinet.getId().toString(), BigEleBatteryVo.class);
+
 
 		//不存在电池
 		if (Objects.nonNull(existsBattery) && !existsBattery) {
@@ -104,6 +113,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 
+
 			//原来仓门是否有电池
 			if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)
 					&& StringUtils.isNotEmpty(oldElectricityCabinetBox.getSn())) {
@@ -116,6 +126,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 					electricityBatteryService.updateReport(newElectricityBattery);
 				}
 			}
+
 
 			//若最大电池的仓门现在为空，则删除最大电量的缓存
 			if (Objects.nonNull(bigEleBatteryVo)) {
@@ -131,6 +142,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
 			return false;
 		}
+
 
 		//修改电池
 		newElectricityBattery.setId(electricityBattery.getId());

@@ -12,7 +12,7 @@ import lombok.Data;
 public class CouponVO {
 
 	/**
-	 * 天数劵
+	 * 邀请人数
 	 */
 	private Integer triggerCount;
 
