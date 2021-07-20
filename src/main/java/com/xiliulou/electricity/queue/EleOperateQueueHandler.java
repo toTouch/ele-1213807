@@ -196,7 +196,7 @@ public class EleOperateQueueHandler {
 		electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
 		//订单状态为旧电池检测成功则分配新仓门
-		if (Objects.equals(newElectricityCabinetOrder.getOrderSeq(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
+		if (Objects.equals(newElectricityCabinetOrder.getOrderSeq(), ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS)) {
 			String cellNo =null;
 			try {//查找用户
 				UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
