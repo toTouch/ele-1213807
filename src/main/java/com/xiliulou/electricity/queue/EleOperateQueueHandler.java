@@ -127,7 +127,7 @@ public class EleOperateQueueHandler {
 			}
 
 			//若app订单状态大于云端订单状态则处理
-			if (Objects.isNull(orderSeq) || electricityCabinetOrder.getOrderSeq()-orderSeq>=1 ) {
+			if (Objects.isNull(orderSeq) || (orderSeq-electricityCabinetOrder.getOrderSeq()>=1&&Math.abs(orderSeq-electricityCabinetOrder.getOrderSeq())<1 )){
 				if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)) {
 					handelInitExchangeOrder(electricityCabinetOrder, finalOpenDTO);
 				}
