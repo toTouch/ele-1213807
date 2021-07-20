@@ -474,19 +474,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	@Override
 	public Integer queryFullyElectricityBattery(Integer id) {
 		List<String> sns = electricityCabinetMapper.queryFullyElectricityBattery(id);
-		/*List<Integer> counts = new ArrayList<>();*/
 		Integer totalCount = sns.size();
-		/*counts.add(totalCount);
-		int count = 0;
-
-		//该电池是否绑定用户
-		for (String sn : sns) {
-			Integer innerCount = franchiseeUserInfoService.queryCountByBatterySn(sn);
-			if (innerCount < 1) {
-				count = count + 1;
-			}
-		}
-		counts.add(count);*/
 		return totalCount;
 	}
 
@@ -1341,12 +1329,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
 
-		/*//用户状态异常
-		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
-				&& Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn())) {
-			log.error("queryByDevice  ERROR! user STATUS IS ERROR! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}*/
 
 		ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
@@ -1357,11 +1339,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
 
-		/*//是否有可用满电电池
-		Integer usableElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
-		if (usableElectricityBattery <= 0) {
-			return R.fail("ELECTRICITY.0050", "换电柜暂无可用满电电池");
-		}*/
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;

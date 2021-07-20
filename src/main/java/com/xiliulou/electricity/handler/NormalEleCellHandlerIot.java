@@ -94,7 +94,7 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
             electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
         }
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+        electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
         return true;
     }
 }

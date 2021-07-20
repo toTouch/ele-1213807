@@ -43,4 +43,6 @@ public interface ElectricityCabinetBoxService {
     ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo);
 
 	void modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
+
+    void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
 }

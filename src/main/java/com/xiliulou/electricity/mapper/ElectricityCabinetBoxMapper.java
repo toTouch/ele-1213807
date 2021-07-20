@@ -31,4 +31,6 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
 
 
 	void modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
+
+	void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
 }

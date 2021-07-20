@@ -169,4 +169,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 		electricityCabinetBoxMapper.modifyByCellNo(electricityCabinetNewBox);
 	}
 
+	@Override
+	public void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox) {
+		electricityCabinetBoxMapper.modifyCellByCellNo(electricityCabinetBox);
+	}
+
 }
