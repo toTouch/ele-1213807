@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -175,6 +176,9 @@ public class EleOperateQueueHandler {
 				newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
 				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
+
+				//清除柜机锁定缓存
+				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
 				return;
 			}
 
@@ -278,6 +282,9 @@ public class EleOperateQueueHandler {
 				newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
 				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
+
+				//清除柜机锁定缓存
+				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
 				return;
 			}
 
@@ -345,6 +352,9 @@ public class EleOperateQueueHandler {
 				newRentBatteryOrder.setOrderSeq(RentBatteryOrder.STATUS_ORDER_CANCEL);
 				newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
 				rentBatteryOrderService.update(newRentBatteryOrder);
+
+				//清除柜机锁定缓存
+				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
 				return;
 			}
 

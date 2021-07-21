@@ -176,7 +176,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//下单锁住柜机
-		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 1 * 60 * 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
@@ -378,7 +378,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//下单锁住柜机
-		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 1 * 60 * 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
