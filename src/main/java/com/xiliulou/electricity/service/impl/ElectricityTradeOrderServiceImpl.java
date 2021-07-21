@@ -211,7 +211,7 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
             if(StringUtils.isNotEmpty(callBackResource.getAttach())){
-                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Long.valueOf(callBackResource.getAttach()));
+                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
                 if (Objects.nonNull(userCoupon)) {
                     //修改劵可用状态
                     userCoupon.setStatus(UserCoupon.STATUS_USED);
