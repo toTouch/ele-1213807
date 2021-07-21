@@ -673,17 +673,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//订单状态
-		map.put("status", electricityCabinetOrder.getStatus());
+		String status=electricityCabinetOrder.getStatus();
 
-		//仓门
-		Integer cellNo;
-
-		if(electricityCabinetOrder.getOrderSeq()<5){
-			cellNo=electricityCabinetOrder.getOldCellNo();
-		}else {
-			cellNo=electricityCabinetOrder.getNewCellNo();
+		//开门成功重新组装
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_OPEN_SUCCESS)){
+			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门成功";
 		}
+
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)){
+			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门成功";
+		}
+
+		//订单状态
+		map.put("status",status);
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
@@ -707,7 +709,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		map.put("type", type);
 		map.put("isTry", isTry);
-		map.put("cellNo", cellNo);
 		return R.ok(map);
 	}
 

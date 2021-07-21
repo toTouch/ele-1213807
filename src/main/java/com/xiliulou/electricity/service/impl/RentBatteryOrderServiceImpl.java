@@ -260,8 +260,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0045", "已绑定电池");
 		}
 
-
-
 		//是否有正在退款中的退款
 		Integer refundCount = eleRefundOrderService.queryCountByOrderId(franchiseeUserInfo.getOrderId());
 		if (refundCount > 0) {
@@ -636,7 +634,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	@Override
 	public RentBatteryOrder queryByUidAndType(Long uid, Integer type) {
 		return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, type)
-				.notIn(RentBatteryOrder::getStatus, RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS,RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS,RentBatteryOrder.ORDER_EXCEPTION_CANCEL,RentBatteryOrder.ORDER_CANCEL)
+				.notIn(RentBatteryOrder::getStatus, RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS, RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS, RentBatteryOrder.ORDER_EXCEPTION_CANCEL, RentBatteryOrder.ORDER_CANCEL)
 				.orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
 	}
 
@@ -754,11 +752,17 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		//订单状态
-		map.put("status", rentBatteryOrder.getStatus());
+		String status = rentBatteryOrder.getStatus();
 
-		//仓门
-		Integer cellNo=rentBatteryOrder.getCellNo();
+		//开门成功重新组装
+		if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_SUCCESS)
+				|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_SUCCESS)) {
+			status = rentBatteryOrder.getCellNo() + "号仓门开门成功";
+		}
+
+		//订单状态
+		map.put("status",status);
+
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
@@ -782,7 +786,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		map.put("type", type);
 		map.put("isTry", isTry);
-		map.put("cellNo", cellNo);
 		return R.ok(map);
 	}
 

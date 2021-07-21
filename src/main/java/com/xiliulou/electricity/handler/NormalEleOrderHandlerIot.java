@@ -63,7 +63,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 
 
 		//操作失败
-		if (Objects.nonNull(eleOrderVo.getIsProcessFail())) {
+		if (eleOrderVo.getIsProcessFail()) {
 
 			//检测失败报错
 			WarnMsgVo warnMsgVo = new WarnMsgVo();
