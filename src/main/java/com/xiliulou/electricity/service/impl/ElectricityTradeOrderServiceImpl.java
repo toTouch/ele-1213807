@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
@@ -70,6 +72,8 @@ public class ElectricityTradeOrderServiceImpl extends
     ShareActivityRecordService shareActivityRecordService;
     @Autowired
     JoinShareActivityHistoryService joinShareActivityHistoryService;
+    @Autowired
+    UserCouponService userCouponService;
 
 
     @Override
@@ -205,6 +209,17 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+            if(StringUtils.isNotEmpty(callBackResource.getAttach())){
+                UserCoupon userCoupon = userCouponService.queryByIdFromDB(Long.valueOf(callBackResource.getAttach()));
+                if (Objects.nonNull(userCoupon)) {
+                    //修改劵可用状态
+                    userCoupon.setStatus(UserCoupon.STATUS_USED);
+                    userCoupon.setUpdateTime(System.currentTimeMillis());
+                    userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+                    userCouponService.update(userCoupon);
+                }
+            }
 
             //被邀请新买月卡用户
             //是否是新用户
