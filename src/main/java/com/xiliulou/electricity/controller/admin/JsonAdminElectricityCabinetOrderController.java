@@ -46,7 +46,7 @@ public class JsonAdminElectricityCabinetOrderController {
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "status", required = false) String status,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
@@ -105,7 +105,7 @@ public class JsonAdminElectricityCabinetOrderController {
     @GetMapping("/admin/electricityCabinetOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
@@ -161,7 +161,7 @@ public class JsonAdminElectricityCabinetOrderController {
     @GetMapping("/admin/electricityCabinetOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "orderId", required = false) String orderId,
                             @RequestParam(value = "phone", required = false) String phone,
-                            @RequestParam(value = "status", required = false) Integer status,
+                            @RequestParam(value = "status", required = false) String status,
                             @RequestParam(value = "beginTime", required = false) Long beginTime,
                             @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
 

@@ -44,7 +44,7 @@ public class JsonAdminRentBatteryOrderController {
     @GetMapping(value = "/admin/rentBatteryOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "status", required = false) String status,
                        @RequestParam(value = "type", required = false) Integer type,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
@@ -101,7 +101,7 @@ public class JsonAdminRentBatteryOrderController {
 
     //列表查询
     @GetMapping(value = "/admin/rentBatteryOrder/queryCount")
-    public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+    public R queryCount(@RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,
@@ -149,7 +149,7 @@ public class JsonAdminRentBatteryOrderController {
 
     //租电池订单导出报表
     @GetMapping("/admin/rentBatteryOrder/exportExcel")
-    public void exportExcel(@RequestParam(value = "status", required = false) Integer status,
+    public void exportExcel(@RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "phone", required = false) String phone,

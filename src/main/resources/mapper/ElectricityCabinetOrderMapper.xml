@@ -16,7 +16,7 @@
 			<if test="query.phone != null and query.phone != ''">
 				and phone = #{query.phone}
 			</if>
-			<if test="query.status != null">
+			<if test="query.status != null and query.status != ''">
 				and status = #{query.status}
 			</if>
 			<if test="query.beginTime != null">
@@ -55,7 +55,7 @@
 			<if test="query.phone != null and query.phone != ''">
 				and phone = #{query.phone}
 			</if>
-			<if test="query.status != null">
+			<if test="query.status != null and query.status != ''">
 				and status = #{query.status}
 			</if>
 			<if test="query.beginTime != null">

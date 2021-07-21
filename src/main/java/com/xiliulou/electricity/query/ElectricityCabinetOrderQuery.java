@@ -28,7 +28,7 @@ public class ElectricityCabinetOrderQuery {
     /**
      * 订单的状态
      */
-    private Integer status;
+    private String status;
 
     private Long size;
     private Long offset;

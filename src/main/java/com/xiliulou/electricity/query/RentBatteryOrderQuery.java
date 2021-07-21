@@ -23,7 +23,7 @@ public class RentBatteryOrderQuery {
 
     private Long beginTime;
     private Long endTime;
-    private Integer status;
+    private String status;
     private String orderId;
     private Integer type;
     private List<Integer> eleIdList;
