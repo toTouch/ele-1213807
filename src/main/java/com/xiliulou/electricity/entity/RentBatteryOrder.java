@@ -22,6 +22,7 @@ import java.math.BigDecimal;
 @TableName("t_rent_battery_order")
 public class RentBatteryOrder {
 
+
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
@@ -79,6 +80,10 @@ public class RentBatteryOrder {
     public static final Integer TYPE_USER_RENT = 1;
     //还电池
     public static final Integer TYPE_USER_RETURN = 2;
+
+    public static final Integer TYPE_WEB_BIND = 3;
+
+    public static final Integer TYPE_WEB_UNBIND = 4;
 
 
     //初始化
