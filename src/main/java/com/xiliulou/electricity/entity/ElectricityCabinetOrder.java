@@ -128,10 +128,6 @@ public class ElectricityCabinetOrder {
      */
     public static final String INIT_BATTERY_CHECK_SUCCESS="INIT_BATTERY_CHECK_SUCCESS";
     /**
-     * 换电柜检测没电电池成功 4.0
-     */
-    public static final double STATUS_INIT_BATTERY_CHECK_SUCCESS=4.0;
-    /**
      * 换电柜检测没电电池失败 4.1
      */
     public static final String INIT_BATTERY_CHECK_FAIL="INIT_BATTERY_CHECK_FAIL";
