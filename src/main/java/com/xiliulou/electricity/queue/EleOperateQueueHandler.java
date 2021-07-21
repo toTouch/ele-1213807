@@ -376,12 +376,12 @@ public class EleOperateQueueHandler {
 		rentBatteryOrderService.update(newRentBatteryOrder);
 
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)
-				&& Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
+				&& Objects.equals(newRentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
 			checkRentBatteryDoor(rentBatteryOrder);
 		}
 
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)
-				&& Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+				&& Objects.equals(newRentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
 			checkReturnBatteryDoor(rentBatteryOrder);
 		}
 
