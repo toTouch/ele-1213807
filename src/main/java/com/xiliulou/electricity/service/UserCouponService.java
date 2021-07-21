@@ -30,4 +30,6 @@ public interface UserCouponService {
     UserCoupon queryByIdFromDB(Integer userCouponId);
 
     UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId);
+
+	void update(UserCoupon userCoupon);
 }

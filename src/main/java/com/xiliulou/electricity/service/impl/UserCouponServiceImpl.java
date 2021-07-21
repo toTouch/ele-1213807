@@ -308,4 +308,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 		return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>()
 				.eq(UserCoupon::getActivityId,activityId).eq(UserCoupon::getCouponId,couponId));
 	}
+
+	@Override
+	public void update(UserCoupon userCoupon) {
+		userCouponMapper.updateById(userCoupon);
+	}
 }

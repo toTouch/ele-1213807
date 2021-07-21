@@ -314,6 +314,15 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			baseMapper.updateById(electricityMemberCardOrderUpdate);
 
 
+			if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
+				//修改劵可用状态
+				userCoupon.setStatus(UserCoupon.STATUS_USED);
+				userCoupon.setUpdateTime(System.currentTimeMillis());
+				userCoupon.setOrderId(electricityMemberCardOrder.getOrderId());
+				userCouponService.update(userCoupon);
+			}
+
+
 			//被邀请新买月卡用户
 			//是否是新用户
 			if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
@@ -337,8 +346,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					//给邀请人增加邀请成功人数
 					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
 				}
-
-
 			}
 
 			return R.ok();
