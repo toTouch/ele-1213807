@@ -230,6 +230,13 @@ public class EleOperateQueueHandler {
 					return;
 				}
 
+				//修改订单状态
+				ElectricityCabinetOrder innerElectricityCabinetOrder = new ElectricityCabinetOrder();
+				innerElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
+				innerElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+				innerElectricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSn());
+				electricityCabinetOrderService.update(newElectricityCabinetOrder);
+
 				//新电池开门
 				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
 				//发送命令
