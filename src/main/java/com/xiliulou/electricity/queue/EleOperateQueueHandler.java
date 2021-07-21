@@ -175,6 +175,7 @@ public class EleOperateQueueHandler {
 				newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
 				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
+				return;
 			}
 
 			//修改订单
@@ -277,6 +278,7 @@ public class EleOperateQueueHandler {
 				newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
 				newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
 				electricityCabinetOrderService.update(newElectricityCabinetOrder);
+				return;
 			}
 
 			//修改订单
@@ -343,6 +345,7 @@ public class EleOperateQueueHandler {
 				newRentBatteryOrder.setOrderSeq(RentBatteryOrder.STATUS_ORDER_CANCEL);
 				newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
 				rentBatteryOrderService.update(newRentBatteryOrder);
+				return;
 			}
 
 			//订单状态
