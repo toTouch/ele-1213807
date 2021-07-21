@@ -166,7 +166,7 @@ public class EleOperateQueueHandler {
 	public void handelInitExchangeOrder(ElectricityCabinetOrder electricityCabinetOrder, EleOpenDTO finalOpenDTO) {
 
 		//开门失败
-		if (finalOpenDTO.getIsNeedEndOrder()) {
+		if (finalOpenDTO.getIsProcessFail()) {
 			//取消订单
 			if (finalOpenDTO.getIsNeedEndOrder()) {
 				ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
@@ -268,7 +268,7 @@ public class EleOperateQueueHandler {
 	//开新门通知
 	public void handelCompleteExchangeOrder(ElectricityCabinetOrder electricityCabinetOrder, EleOpenDTO finalOpenDTO) {
 		//开门失败
-		if (finalOpenDTO.getIsNeedEndOrder()) {
+		if (finalOpenDTO.getIsProcessFail()) {
 			//取消订单
 			if (finalOpenDTO.getIsNeedEndOrder()) {
 				ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
@@ -334,7 +334,7 @@ public class EleOperateQueueHandler {
 	public void handleRentOrder(RentBatteryOrder rentBatteryOrder, EleOpenDTO finalOpenDTO) {
 
 		//开门失败
-		if (finalOpenDTO.getIsNeedEndOrder()) {
+		if (finalOpenDTO.getIsProcessFail()) {
 			//取消订单
 			if (finalOpenDTO.getIsNeedEndOrder()) {
 				RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
