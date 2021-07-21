@@ -521,8 +521,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)
 					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)
 					&& !Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL))) {
+				return R.fail("ELECTRICITY.0015", "未找到订单");
 			}
-			return R.fail("ELECTRICITY.0015", "未找到订单");
+
 		}
 
 		//判断开门用户是否匹配
@@ -761,8 +762,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//订单状态
-		map.put("status",status);
-
+		map.put("status", status);
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
