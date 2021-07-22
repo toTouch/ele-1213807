@@ -335,6 +335,7 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 			newElectricityBattery.setElectricityCabinetId(null);
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
+			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 			electricityBatteryService.updateByOrder(newElectricityBattery);
 
 			//删除柜机被锁缓存
@@ -425,6 +426,7 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(null);
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
+		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//删除柜机被锁缓存
