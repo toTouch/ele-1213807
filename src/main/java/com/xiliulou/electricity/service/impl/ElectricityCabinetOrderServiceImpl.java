@@ -331,8 +331,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0015", "未找到订单");
 		}
 
-		log.info("electricityCabinetOrder is -->{}",electricityCabinetOrder);
-		log.info("openDoorQuery.getOpenType() is -->{}",openDoorQuery.getOpenType());
+
+		//开新门开旧门不易前端为准，以订单状态为准
+		if(electricityCabinetOrder.getOrderSeq()<5.0){
+			openDoorQuery.setOpenType(OpenDoorQuery.OLD_OPEN_TYPE);
+		}else {
+			openDoorQuery.setOpenType(OpenDoorQuery.NEW_OPEN_TYPE);
+		}
 
 		//旧电池开门
 		if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
