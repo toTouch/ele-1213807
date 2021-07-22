@@ -684,6 +684,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		String status=electricityCabinetOrder.getStatus();
 
+
 		//订单状态旧门开门中
 		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT
 				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS){
@@ -719,10 +720,36 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			status="新电池已取走,订单完成";
 		}
 
+		//订单状态
+		map.put("status",status);
+
+
+		//页面图片显示
+		Integer picture=0;
+
+		//return
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT
+				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
+			picture=1;
+		}
+
+
+		//rent
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
+			picture=2;
+		}
+
+
+		//error
+		if(electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_CANCEL)
+				||electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+
+			picture=3;
+		}
 
 
 		//订单状态
-		map.put("status",status);
+		map.put("picture",picture);
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
@@ -818,6 +845,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			}
 		}
 		return false;
+	}
+
+	public static void main(String[] args) {
+		String a="a";
+		a.strip();
 	}
 
 }

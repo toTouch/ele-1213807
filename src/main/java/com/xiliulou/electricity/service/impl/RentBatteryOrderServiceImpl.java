@@ -768,12 +768,35 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			status = rentBatteryOrder.getCellNo() + "号仓门开门成功，电池检测中";
 		}
 
-
-
-
-
 		//订单状态
 		map.put("status", status);
+
+
+		//页面图片显示
+		Integer picture=0;
+
+		//rent
+		if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)){
+			picture=2;
+		}
+
+
+		//return
+		if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+			picture=1;
+		}
+
+
+		//error
+		if(rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL)
+				||rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+
+			picture=3;
+		}
+
+        //订单状态
+		map.put("picture",picture);
+
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
