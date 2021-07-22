@@ -333,7 +333,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
 		//开新门开旧门不易前端为准，以订单状态为准
-		if(electricityCabinetOrder.getOrderSeq()<5.0){
+		if(electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
 			openDoorQuery.setOpenType(OpenDoorQuery.OLD_OPEN_TYPE);
 		}else {
 			openDoorQuery.setOpenType(OpenDoorQuery.NEW_OPEN_TYPE);
@@ -683,14 +683,54 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		String status=electricityCabinetOrder.getStatus();
 
-		//开门成功重新组装
+		//订单状态旧门开门中
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT
+				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS){
+			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门中";
+		}
+
+		//旧电池开门成功
 		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_OPEN_SUCCESS)){
 			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门成功";
 		}
 
+
+		//订单状态旧电池检测中
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS
+				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
+			status="旧电池存入检测中";
+		}
+
+
+		//旧电池检测成功
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS)){
+			status="旧电池已存入,准备开新门";
+		}
+
+		//订单状态新门开门中
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW
+				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS){
+			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门中";
+		}
+
+
+		//订单状态新门成功
 		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)){
 			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门成功";
 		}
+
+		//订单状态新电池检测中
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS
+				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_ORDER_CANCEL){
+			status="新电池取走检测中";
+		}
+
+		//订单状态新电池取走
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)){
+			status="新电池已取走,订单完成";
+		}
+
+
 
 		//订单状态
 		map.put("status",status);

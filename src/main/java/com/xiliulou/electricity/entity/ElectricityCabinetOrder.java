@@ -128,6 +128,10 @@ public class ElectricityCabinetOrder {
      */
     public static final String INIT_BATTERY_CHECK_SUCCESS="INIT_BATTERY_CHECK_SUCCESS";
     /**
+     * 换电柜检测没电电池成功 4.0
+     */
+    public static final Double STATUS_INIT_BATTERY_CHECK_SUCCESS=4.0;
+    /**
      * 换电柜检测没电电池失败 4.1
      */
     public static final String INIT_BATTERY_CHECK_FAIL="INIT_BATTERY_CHECK_FAIL";
@@ -135,6 +139,12 @@ public class ElectricityCabinetOrder {
      * 换电柜检测没电电池超时 4.2
      */
     public static final String INIT_BATTERY_CHECK_TIMEOUT="INIT_BATTERY_CHECK_TIMEOUT";
+
+
+    /**
+     * 新旧门状态区分
+     */
+    public static final Double STATUS_CHECK_OLD_AND_NEW=5.0;
 
     /**
      * 换电柜开满电电池前置检测失败 5.1
@@ -148,6 +158,11 @@ public class ElectricityCabinetOrder {
      * 换电柜开满电电池仓门成功 6.0
      */
     public static final String COMPLETE_OPEN_SUCCESS="COMPLETE_OPEN_SUCCESS";
+
+    /**
+     * 换电柜开满电电池仓门成功 6.0
+     */
+    public static final Double STATUS_COMPLETE_OPEN_SUCCESS=6.0;
     /**
      * 换电柜开满电电池仓门失败 6.1
      */
