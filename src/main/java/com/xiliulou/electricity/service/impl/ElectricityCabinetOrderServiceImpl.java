@@ -728,8 +728,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		Integer picture=0;
 
 		//return
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT
-				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
+		if(electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
 			picture=1;
 		}
 
