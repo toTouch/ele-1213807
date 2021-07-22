@@ -335,6 +335,9 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setElectricityCabinetId(null);
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			electricityBatteryService.updateByOrder(newElectricityBattery);
+
+			//删除柜机被锁缓存
+			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
 		}
 	}
 
@@ -423,6 +426,8 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
+		//删除柜机被锁缓存
+		redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
 	}
 
 	//检测还电池
@@ -441,6 +446,9 @@ public class EleOperateQueueHandler {
 		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
 		franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
+
+		//删除柜机被锁缓存
+		redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
 	}
 
 }

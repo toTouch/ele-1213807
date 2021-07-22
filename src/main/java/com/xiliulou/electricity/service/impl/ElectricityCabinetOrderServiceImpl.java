@@ -125,6 +125,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(rentBatteryOrder1)) {
@@ -177,7 +178,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		//下单锁住柜机
-		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 2 *60* 1000L, false);
+		boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 5 *60* 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
