@@ -7,7 +7,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
         select
-        id,  name, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
+        id,  name,sn, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
          online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
         update_time, del_flag,tenant_id,store_id
         from t_electricity_cabinet
@@ -43,11 +43,44 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_electricity_cabinet
+        where del_flag=0 and  tenant_id = #{query.tenantId}
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.address != null and query.address != ''">
+            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        <if test="query.onlineStatus != null">
+            and online_status = #{query.onlineStatus}
+        </if>
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.eleIdList!=null and query.eleIdList!=''">
+            and id in
+            <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
+
 
 
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-        select id,  name, address, longitude, latitude, product_key, device_name, device_secret,
+        select id,  name,sn, address, longitude, latitude, product_key, device_name, device_secret,
         usable_status, online_status, model_id, version,
         fully_charged, service_phone, business_time, create_time, update_time, ROUND(
         6378.138 * 2 * ASIN(
@@ -105,7 +138,7 @@
 
     <select id="homeOne" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
         select
-        id,  name,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
+        id,  name,sn,  address, longitude, latitude, product_key, device_name, device_secret, usable_status, online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time, del_flag
         from t_electricity_cabinet
         where del_flag=0
         <if test="eleIdList!=null and eleIdList!=''">
@@ -118,38 +151,7 @@
             and tenant_id = #{tenantId}
         </if>
     </select>
-    <select id="queryCount" resultType="java.lang.Integer">
-        select count(1)
-        from t_electricity_cabinet
-        where del_flag=0 and  tenant_id = #{query.tenantId}
-        <if test="query.name != null and query.name != ''">
-            and name = #{query.name}
-        </if>
-        <if test="query.address != null and query.address != ''">
-            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
-        </if>
-        <if test="query.usableStatus != null">
-            and usable_status = #{query.usableStatus}
-        </if>
-        <if test="query.onlineStatus != null">
-            and online_status = #{query.onlineStatus}
-        </if>
-        <if test="query.tenantId != null ">
-            and tenant_id = #{query.tenantId}
-        </if>
-        <if test="query.beginTime != null">
-            and create_time &gt;=#{query.beginTime}
-        </if>
-        <if test="query.endTime != null">
-            and create_time &lt;=#{query.endTime}
-        </if>
-        <if test="query.eleIdList!=null and query.eleIdList!=''">
-            and id in
-            <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-                #{id}
-            </foreach>
-        </if>
-    </select>
+
 	<select id="homeThree" resultType="java.util.HashMap">
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
         from t_electricity_cabinet where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}

@@ -873,4 +873,5 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		return String.valueOf(System.currentTimeMillis()).substring(2) + uid + cellNo +
 				RandomUtil.randomNumbers(4);
 	}
+
 }
