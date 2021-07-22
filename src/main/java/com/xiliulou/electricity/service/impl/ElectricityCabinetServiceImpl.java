@@ -1559,7 +1559,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (Objects.nonNull(longitude)) {
 			newElectricityBattery.setLongitude(longitude);
 		}
-		electricityBatteryService.updateReport(newElectricityBattery);
+		electricityBattery.setUpdateTime(System.currentTimeMillis());
+		electricityBatteryService.update(newElectricityBattery);
 		return R.ok();
 	}
 

@@ -123,7 +123,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 				if(Objects.nonNull(oldElectricityBattery)) {
 					newElectricityBattery.setId(oldElectricityBattery.getId());
 					newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
-					electricityBatteryService.updateReport(newElectricityBattery);
+					newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+					electricityBatteryService.update(newElectricityBattery);
 				}
 			}
 
@@ -148,6 +149,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+		newElectricityBattery.setUid(null);
+		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 		Double power = eleBatteryVo.getPower();
 		if (Objects.nonNull(power)) {
 			newElectricityBattery.setPower(power * 100);
@@ -160,7 +163,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		if (StringUtils.isNotEmpty(chargeStatus)) {
 			newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
 		}
-		electricityBatteryService.updateReport(newElectricityBattery);
+		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//比较最大电量，保证仓门电池是最大电量的电池
 		Double nowPower = eleBatteryVo.getPower();

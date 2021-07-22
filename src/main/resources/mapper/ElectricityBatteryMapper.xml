@@ -65,8 +65,19 @@
 
 	<update id="updateByOrder">
 		update t_electricity_battery
-		set electricity_cabinet_id=#{electricityCabinetId},
-		uid=#{uid},status=#{status}
+		set
+		<if test="chargeStatus != null">
+			charge_status =#{chargeStatus},
+		</if>
+		<if test="healthStatus != null">
+			health_status =#{healthStatus},
+		</if>
+		<if test="power != null">
+			power =#{power},
+		</if>
+		electricity_cabinet_id=#{electricityCabinetId},
+		uid=#{uid},status=#{status},
+		update_time=#{updateTime}
 		where id=#{id}
 	</update>
 
