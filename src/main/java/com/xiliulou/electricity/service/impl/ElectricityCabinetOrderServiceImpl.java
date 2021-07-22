@@ -772,6 +772,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		map.put("type", type);
 		map.put("isTry", isTry);
+		log.info("map is -->{}",map);
 		return R.ok(map);
 	}
 
