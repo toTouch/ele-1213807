@@ -240,7 +240,8 @@ public class EleOperateQueueHandler {
 				innerElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
 				innerElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
 				innerElectricityCabinetOrder.setNewElectricityBatterySn(newElectricityBattery.getSn());
-				electricityCabinetOrderService.update(newElectricityCabinetOrder);
+				innerElectricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
+				electricityCabinetOrderService.update(innerElectricityCabinetOrder);
 
 				//新电池开门
 				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());

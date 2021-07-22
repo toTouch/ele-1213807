@@ -683,46 +683,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		String status=electricityCabinetOrder.getStatus();
-
-		//订单状态旧门开门中
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT
-				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS){
-			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门中";
-		}
-
-
-		//订单状态新门开门中
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW
-				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS){
-			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门中";
-		}
-
-
-		//旧电池开门成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_OPEN_SUCCESS)){
-			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门成功，电池检测中";
-		}
-
-
-		//旧电池检测成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS)){
-			status="旧电池已存入,准备开新门";
-		}
-
-		//订单状态新门成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)){
-			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门成功，电池检测中";
-		}
-
-		//订单状态新电池取走
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)){
-			status="新电池已取走,订单完成";
-		}
-
-
+		Integer cellNo;
 
 		//订单状态
-		map.put("status",status);
+		if(electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
+			cellNo=electricityCabinetOrder.getOldCellNo();
+		}else {
+			cellNo=electricityCabinetOrder.getNewCellNo();
+		}
+
+		map.put("status", status);
+		map.put("cellNo", cellNo);
+
+
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;

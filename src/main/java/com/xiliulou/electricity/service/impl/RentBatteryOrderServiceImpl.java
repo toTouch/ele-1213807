@@ -755,25 +755,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		String status = rentBatteryOrder.getStatus();
 
-		//开门中
-		if (rentBatteryOrder.getOrderSeq()>RentBatteryOrder.STATUS_INIT
-				&& rentBatteryOrder.getOrderSeq()<RentBatteryOrder.STATUS_OPEN_SUCCESS) {
-			status = rentBatteryOrder.getCellNo() + "号仓门开门中";
-		}
-
-
-		//开门成功
-		if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_SUCCESS)
-				|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_SUCCESS)) {
-			status = rentBatteryOrder.getCellNo() + "号仓门开门成功，电池检测中";
-		}
-
-
-
-
+		Integer cellNo=rentBatteryOrder.getCellNo();
 
 		//订单状态
 		map.put("status", status);
+
+		map.put("cellNo", cellNo);
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
