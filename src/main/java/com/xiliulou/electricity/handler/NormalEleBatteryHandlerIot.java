@@ -120,7 +120,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
 				//修改电池
 				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldElectricityCabinetBox.getSn());
-				if(Objects.nonNull(oldElectricityBattery)) {
+				if(Objects.nonNull(oldElectricityBattery)&&!Objects.equals(oldElectricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)) {
 					newElectricityBattery.setId(oldElectricityBattery.getId());
 					newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
 					newElectricityBattery.setUpdateTime(System.currentTimeMillis());
