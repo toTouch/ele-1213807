@@ -768,11 +768,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			status = rentBatteryOrder.getCellNo() + "号仓门开门成功，电池检测中";
 		}
 
-		//开门失败
-		if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)
-				|| Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
-			status = rentBatteryOrder.getCellNo() + "号仓门开门失败";
-		}
+
 
 
 

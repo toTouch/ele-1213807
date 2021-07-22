@@ -689,23 +689,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门中";
 		}
 
-		//旧电池开门成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_OPEN_SUCCESS)){
-			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门成功";
-		}
-
-
-		//订单状态旧电池检测中
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS
-				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
-			status="旧电池存入检测中";
-		}
-
-
-		//旧电池检测成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS)){
-			status="旧电池已存入,准备开新门";
-		}
 
 		//订单状态新门开门中
 		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW
@@ -714,15 +697,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 
-		//订单状态新门成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)){
-			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门成功";
+		//旧电池开门成功
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_OPEN_SUCCESS)){
+			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门成功，电池检测中";
 		}
 
-		//订单状态新电池检测中
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_COMPLETE_OPEN_SUCCESS
-				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_ORDER_CANCEL){
-			status="新电池取走检测中";
+
+		//旧电池检测成功
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS)){
+			status="旧电池已存入,准备开新门";
+		}
+
+		//订单状态新门成功
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)){
+			status=electricityCabinetOrder.getNewCellNo()+"号仓门开门成功，电池检测中";
 		}
 
 		//订单状态新电池取走
