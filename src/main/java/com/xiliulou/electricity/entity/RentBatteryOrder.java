@@ -120,6 +120,10 @@ public class RentBatteryOrder {
     public static final String RENT_BATTERY_TAKE_TIMEOUT="RENT_BATTERY_TAKE_TIMEOUT";
 
 
+    /**
+     * 状态开门成功  2.0
+     */
+    public static final Double STATUS_OPEN_SUCCESS=2.0;
 
     /**
      * 还电池前置检测 1.1
