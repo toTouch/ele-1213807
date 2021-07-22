@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 
-import com.sun.org.apache.bcel.internal.generic.NEW;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
