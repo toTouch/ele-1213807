@@ -332,7 +332,7 @@ public class EleOperateQueueHandler {
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
 			ElectricityBattery newElectricityBattery = new ElectricityBattery();
 			newElectricityBattery.setId(electricityBattery.getId());
-			newElectricityBattery.setStatus(ElectricityBattery.ORDER_TAKE);
+			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 			newElectricityBattery.setElectricityCabinetId(null);
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -423,7 +423,7 @@ public class EleOperateQueueHandler {
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		newElectricityBattery.setId(electricityBattery.getId());
-		newElectricityBattery.setStatus(ElectricityBattery.ORDER_TAKE);
+		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(null);
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
