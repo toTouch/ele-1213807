@@ -321,7 +321,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	@Override
 	@Transactional
 	public R openDoor(OpenDoorQuery openDoorQuery) {
-		if (Objects.isNull(openDoorQuery.getOrderId()) || Objects.isNull(openDoorQuery.getOpenType())) {
+		if (Objects.isNull(openDoorQuery.getOrderId())) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
 		ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderMapper.selectOne(Wrappers.<ElectricityCabinetOrder>lambdaQuery().eq(ElectricityCabinetOrder::getOrderId, openDoorQuery.getOrderId()));

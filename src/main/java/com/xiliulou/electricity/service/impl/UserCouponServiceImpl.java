@@ -289,6 +289,8 @@ public class UserCouponServiceImpl implements UserCouponService {
 
 					UserCoupon userCoupon = couponBuild.build();
 					userCouponMapper.insert(userCoupon);
+
+					//领劵完，邀请人数清空 TODO
 					return R.ok("领取成功");
 				}
 			}
