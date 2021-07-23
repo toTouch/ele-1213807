@@ -90,7 +90,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
 		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
 		if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
-			return R.ok();
+			return R.ok(electricityCabinetBoxVOList);
 		}
 		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>();
 
