@@ -819,6 +819,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		map.put("type", type);
 		map.put("isTry", isTry);
+		log.info("map is -->{}",map);
 		return R.ok(map);
 	}
 
