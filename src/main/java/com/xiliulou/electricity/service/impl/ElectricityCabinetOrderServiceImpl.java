@@ -848,9 +848,4 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		return false;
 	}
 
-	public static void main(String[] args) {
-		String a="a";
-		a.strip();
-	}
-
 }
