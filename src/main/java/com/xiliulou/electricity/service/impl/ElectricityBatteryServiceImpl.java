@@ -57,7 +57,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         Integer count=electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn,electricityBattery.getSn())
                 .eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
         if(count>0){
-            return R.fail("电池编号已绑定其他电池!");
+            return R.fail("该电池已被其他租户使用!");
         }
         electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
         electricityBattery.setCreateTime(System.currentTimeMillis());
