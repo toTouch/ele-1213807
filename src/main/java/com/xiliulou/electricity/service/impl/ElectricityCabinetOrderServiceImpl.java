@@ -708,8 +708,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
 		//旧电池检测成功
-		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS)){
-			status="旧电池已存入,准备开新门";
+		if(Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)){
+			status="旧电池已存入,"+electricityCabinetOrder.getNewCellNo()+"号仓门开门中";
 		}
 
 		//订单状态新门成功
