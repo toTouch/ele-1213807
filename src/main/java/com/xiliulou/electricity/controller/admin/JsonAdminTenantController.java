@@ -82,5 +82,11 @@ public class JsonAdminTenantController {
         return tenantService.queryCount(tenantQuery);
     }
 
+    //新增租户
+    @GetMapping(value = "/admin/tenant/{id}")
+    public R addTenant(@PathVariable("id") Integer id){
+        return R.ok(tenantService.queryByIdFromCache(id));
+    }
+
 
 }
