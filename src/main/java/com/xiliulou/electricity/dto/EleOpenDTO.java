@@ -32,4 +32,6 @@ public class EleOpenDTO {
 	private String orderStatus;
 	//msg
 	private String msg;
+
+	private String batterySn;
 }

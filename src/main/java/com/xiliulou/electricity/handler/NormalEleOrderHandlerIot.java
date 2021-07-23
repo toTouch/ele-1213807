@@ -82,7 +82,8 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 				.orderId(eleOrderVo.getOrderId())
 				.isNeedEndOrder(eleOrderVo.getIsNeedEndOrder())
 				.isProcessFail(eleOrderVo.getIsProcessFail())
-				.msg(eleOrderVo.getMsg()).build();
+				.msg(eleOrderVo.getMsg())
+				.batterySn(eleOrderVo.getBatterySn()).build();
 		eleOperateQueueHandler.putQueue(eleOpenDTO);
 		return true;
 	}
@@ -103,4 +104,6 @@ class EleOrderVo {
 	private String orderStatus;
 	//msg
 	private String msg;
+
+	private String batterySn;
 }
