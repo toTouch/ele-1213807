@@ -385,5 +385,12 @@ public class JsonAdminElectricityCabinetController {
         return R.ok(map);
     }
 
+    //列表查询
+    @DeleteMapping(value = "/admin/electricityCabinet/deleteOrderLock")
+    public R deleteOrderLock(@RequestParam("id") Integer id) {
+        redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + id);
+        return R.ok();
+    }
+
 
 }

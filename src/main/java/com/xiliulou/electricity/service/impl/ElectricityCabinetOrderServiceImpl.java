@@ -592,6 +592,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 		//删除开门失败缓存
 		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+
+		//结束订单锁
+		redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
 		return R.ok();
 	}
 

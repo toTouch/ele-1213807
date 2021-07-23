@@ -629,6 +629,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		//删除开门失败缓存
 		redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId);
+
+		//结束订单锁
+		redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
 		return R.ok();
 	}
 
