@@ -756,8 +756,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		String status = rentBatteryOrder.getStatus();
 
 		//开门中
-		if (rentBatteryOrder.getOrderSeq()>RentBatteryOrder.STATUS_INIT
-				&& rentBatteryOrder.getOrderSeq()<RentBatteryOrder.STATUS_OPEN_SUCCESS) {
+		if (rentBatteryOrder.getOrderSeq()<RentBatteryOrder.STATUS_OPEN_SUCCESS) {
 			status = rentBatteryOrder.getCellNo() + "号仓门开门中";
 		}
 

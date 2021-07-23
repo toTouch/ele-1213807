@@ -686,8 +686,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
 		//订单状态旧门开门中
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_INIT
-				&&electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS){
+		if(electricityCabinetOrder.getOrderSeq()<ElectricityCabinetOrder.STATUS_INIT_BATTERY_CHECK_SUCCESS){
 			status=electricityCabinetOrder.getOldCellNo()+"号仓门开门中";
 		}
 
