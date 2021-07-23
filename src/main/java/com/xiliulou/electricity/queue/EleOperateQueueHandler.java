@@ -220,14 +220,16 @@ public class EleOperateQueueHandler {
 				franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
 				//电池改为在仓
-				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getOldElectricityBatterySn());
-				ElectricityBattery electricityBattery = new ElectricityBattery();
-				electricityBattery.setId(oldElectricityBattery.getId());
-				electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-				electricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-				electricityBattery.setUid(null);
-				electricityBattery.setUpdateTime(System.currentTimeMillis());
-				electricityBatteryService.updateByOrder(electricityBattery);
+				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(newElectricityCabinetOrder.getOldElectricityBatterySn());
+				if(Objects.nonNull(oldElectricityBattery)) {
+					ElectricityBattery electricityBattery = new ElectricityBattery();
+					electricityBattery.setId(oldElectricityBattery.getId());
+					electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+					electricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+					electricityBattery.setUid(null);
+					electricityBattery.setUpdateTime(System.currentTimeMillis());
+					electricityBatteryService.updateByOrder(electricityBattery);
+				}
 
 				//分配新仓门
 				cellNo = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
@@ -378,23 +380,21 @@ public class EleOperateQueueHandler {
 		}
 
 		//订单状态
-		RentBatteryOrder newRentBatteryOrder = new RentBatteryOrder();
-		newRentBatteryOrder.setId(rentBatteryOrder.getId());
-		newRentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-		newRentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
-		newRentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
+		rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
+		rentBatteryOrder.setOrderSeq(finalOpenDTO.getOrderSeq());
+		rentBatteryOrder.setStatus(finalOpenDTO.getOrderStatus());
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)){
-			newRentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
+			rentBatteryOrder.setElectricityBatterySn(finalOpenDTO.getBatterySn());
 		}
-		rentBatteryOrderService.update(newRentBatteryOrder);
+		rentBatteryOrderService.update(rentBatteryOrder);
 
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)
-				&& Objects.equals(newRentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
+				&& Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
 			checkRentBatteryDoor(rentBatteryOrder);
 		}
 
 		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)
-				&& Objects.equals(newRentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+				&& Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
 			checkReturnBatteryDoor(rentBatteryOrder);
 		}
 
