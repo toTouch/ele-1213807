@@ -121,10 +121,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
 
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
@@ -736,7 +734,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
 		//rent
-		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW){
+		if(electricityCabinetOrder.getOrderSeq()>ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW
+				||Objects.equals(electricityCabinetOrder.getStatus(),ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)){
 			picture=2;
 		}
 

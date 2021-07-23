@@ -126,6 +126,11 @@ public class RentBatteryOrder {
     public static final Double STATUS_OPEN_SUCCESS=2.0;
 
     /**
+     * 状态开门  2.0
+     */
+    public static final Double STATUS_OPEN_FAIL=3.0;
+
+    /**
      * 还电池前置检测 1.1
      */
     public static final String RETURN_INIT_CHECK="RETURN_INIT_CHECK";
