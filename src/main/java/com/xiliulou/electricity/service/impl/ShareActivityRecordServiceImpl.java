@@ -244,4 +244,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		return R.ok(shareActivityRecordVOList);
 	}
 
+	@Override
+	public R queryCount(ShareActivityRecordQuery shareActivityRecordQuery) {
+		return R.ok(shareActivityRecordMapper.queryCount(shareActivityRecordQuery));
+	}
+
 }

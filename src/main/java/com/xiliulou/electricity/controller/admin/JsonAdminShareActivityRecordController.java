@@ -43,5 +43,18 @@ public class JsonAdminShareActivityRecordController {
 
 	}
 
+
+	//列表查询
+	@GetMapping(value = "/admin/hareActivityRecord/queryCount")
+	public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
+
+		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
+				.uid(uid).build();
+
+		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
+
+	}
+
+
 }
 

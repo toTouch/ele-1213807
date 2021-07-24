@@ -52,4 +52,6 @@ public interface ShareActivityRecordService {
 	void reduceAvailableCountByUid(Long uid, Integer count);
 
 	R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
+
+	R queryCount(ShareActivityRecordQuery shareActivityRecordQuery);
 }

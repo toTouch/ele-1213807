@@ -25,4 +25,6 @@ public interface ShareActivityRecordMapper  extends BaseMapper<ShareActivityReco
 	void reduceAvailableCountByUid(Long uid, Integer count);
 
 	List<ShareActivityRecord> queryList(ShareActivityRecordQuery shareActivityRecordQuery);
+
+	Integer queryCount(ShareActivityRecordQuery shareActivityRecordQuery);
 }

@@ -16,6 +16,15 @@
 		order by update_time desc
 		limit #{offset}, #{size}
 	</select>
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_share_activity_record
+		<where>
+			<if test="uid != null">
+				and uid = #{uid}
+			</if>
+		</where>
+	</select>
 
 
 </mapper>
