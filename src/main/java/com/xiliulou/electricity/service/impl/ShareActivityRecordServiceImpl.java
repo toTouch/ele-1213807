@@ -217,7 +217,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 	@Override
 	public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
-		List<ShareActivityRecord> shareActivityRecordList= shareActivityRecordMapper.queryList(shareActivityRecordQuery)
+		List<ShareActivityRecord> shareActivityRecordList= shareActivityRecordMapper.queryList(shareActivityRecordQuery);
 		if(ObjectUtil.isEmpty(shareActivityRecordList)) {
 			return R.ok(shareActivityRecordList);
 		}
