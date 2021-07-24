@@ -14,10 +14,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ShareActivityRecordQuery {
+public class JsonShareActivityHistoryQuery {
     private Long size;
     private Long offset;
     private Long uid;
+    private Integer activityId;
+
 
 
 

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
+import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务接口
@@ -37,5 +38,7 @@ public interface JoinShareActivityHistoryService {
 
     JoinShareActivityHistory queryByRecordIdAndStatus(Long id);
 
-	R userList();
+	R userList(Integer activityId);
+
+	R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 }

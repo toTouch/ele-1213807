@@ -2,41 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper">
     <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.JoinShareActivityHistory">
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.JoinShareActivityHistory">
         select
-        id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
-        from t_join_share_activity_history
+        jsah.id as id, jsah.uid as uid, jsah.join_uid as joinUid, jsah.start_time as startTime,
+         jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
+         jsah.update_time as updateTime, jsah.tenant_id  as tenantId
+        from t_join_share_activity_history as jsah
+        left join t_share_activity_record as  jsar on  jsah.uid=jsar.uid
         <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
             <if test="uid != null">
-                and uid = #{uid}
+                and jsah.uid = #{uid}
             </if>
-            <if test="joinUid != null">
-                and join_uid = #{joinUid}
-            </if>
-            <if test="startTime != null">
-                and start_time = #{startTime}
-            </if>
-            <if test="expiredTime != null">
-                and expired_time = #{expiredTime}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="delFlg != null">
-                and del_flg = #{delFlg}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
+            <if test="activityId != null">
+                and jsar.activity_id = #{activityId}
             </if>
         </where>
+		order by jsah.update_time desc
+        <if test="offset != null and size != null">
+			limit #{offset}, #{size}
+		</if>
+
     </select>
 </mapper>

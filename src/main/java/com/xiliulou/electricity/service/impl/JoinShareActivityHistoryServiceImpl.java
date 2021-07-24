@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.JoinShareActivityHistoryMapper;
+import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -82,7 +83,7 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 	}
 
 	@Override
-	public R userList() {
+	public R userList(Integer activityId) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -90,9 +91,38 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
+		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery=new JsonShareActivityHistoryQuery();
+		jsonShareActivityHistoryQuery.setActivityId(activityId);
+		jsonShareActivityHistoryQuery.setUid(user.getUid());
 
-		List<JoinShareActivityHistory>  joinShareActivityHistoryList= joinShareActivityHistoryMapper.selectList(new LambdaQueryWrapper<JoinShareActivityHistory>()
-				.eq(JoinShareActivityHistory::getUid,user.getUid()));
+		List<JoinShareActivityHistory>  joinShareActivityHistoryList= joinShareActivityHistoryMapper.queryList(jsonShareActivityHistoryQuery);
+
+		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
+			return R.ok(joinShareActivityHistoryList);
+		}
+
+		List<JoinShareActivityHistoryVO>  joinShareActivityHistoryVOList=new ArrayList<>();
+
+		for (JoinShareActivityHistory joinShareActivityHistory:joinShareActivityHistoryList) {
+
+			JoinShareActivityHistoryVO joinShareActivityHistoryVO=new JoinShareActivityHistoryVO();
+			BeanUtil.copyProperties(joinShareActivityHistory,joinShareActivityHistoryVO);
+
+
+			User joinUser=userService.queryByUidFromCache(joinShareActivityHistory.getJoinUid());
+			if(Objects.nonNull(joinUser)){
+				joinShareActivityHistoryVO.setJoinPhone(joinUser.getPhone());
+			}
+
+			joinShareActivityHistoryVOList.add(joinShareActivityHistoryVO);
+		}
+
+		return R.ok(joinShareActivityHistoryVOList);
+	}
+
+	@Override
+	public R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery) {
+		List<JoinShareActivityHistory>  joinShareActivityHistoryList= joinShareActivityHistoryMapper.queryList(jsonShareActivityHistoryQuery);
 
 		if(ObjectUtil.isEmpty(joinShareActivityHistoryList)){
 			return R.ok(joinShareActivityHistoryList);
