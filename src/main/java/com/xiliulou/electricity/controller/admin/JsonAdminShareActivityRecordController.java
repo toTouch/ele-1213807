@@ -25,7 +25,7 @@ public class JsonAdminShareActivityRecordController {
 	@GetMapping(value = "/admin/hareActivityRecord/list")
 	public R queryList(@RequestParam(value = "size", required = false) Long size,
 			@RequestParam(value = "offset", required = false) Long offset,
-			@RequestParam(value = "uid", required = false) Integer uid) {
+			@RequestParam(value = "uid", required = false) Long uid) {
 		if (Objects.isNull(size)) {
 			size = 10L;
 		}
