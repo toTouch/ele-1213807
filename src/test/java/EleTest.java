@@ -36,7 +36,7 @@ public class EleTest {
 		RestTemplate restTemplate=new RestTemplate();
 		SharePicture sharePicture = new SharePicture();
 		sharePicture.setPage("pages/start/index");
-		sharePicture.setScene("12332231232123123123123123123123123123123123123123123123123123123123123");
+		sharePicture.setScene("id:1");
 		sharePicture.setAppId("wx76159ea6aa7a64bc");
 		sharePicture.setAppSecret("b44586ca1b4ff8def2b4c869cdd8ea6a");
 		Pair<Boolean, Object> getShareUrlPair = generateSharePicture(sharePicture,restTemplate);
@@ -65,15 +65,10 @@ public class EleTest {
 
 
 
-		//post请求得到返回数据（这里是封装过的，就是普通的java post请求）
-		byte[] data = restTemplate.postForEntity(url,JsonUtil.toJson(sharePictureQuery),ByteArrayOutputStream.class).getBody().toByteArray();
+		String response = sendPost(url,JsonUtil.toJson(sharePictureQuery));
 
+		return Pair.of(false, response);
 
-		if(data.length>1000) {
-			return Pair.of(true, new String(Base64.encodeBase64(data)));
-		}
-
-		return Pair.of(false, new String(data));
 
 	}
 
