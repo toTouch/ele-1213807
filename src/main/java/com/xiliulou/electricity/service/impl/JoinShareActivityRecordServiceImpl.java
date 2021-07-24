@@ -1,14 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper;
+import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
@@ -24,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 import lombok.extern.slf4j.Slf4j;
 
@@ -229,7 +233,16 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Override
 	public void handelJoinShareActivityExpired() {
-
+		//分页只修改200条
+		List<JoinShareActivityRecord> joinShareActivityRecordList = joinShareActivityRecordMapper.getJoinShareActivityExpired(System.currentTimeMillis(), 0, 200);
+		if (!DataUtil.collectionIsUsable(joinShareActivityRecordList)) {
+			return;
+		}
+		for (JoinShareActivityRecord joinShareActivityRecord : joinShareActivityRecordList) {
+			joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_FAIL);
+			joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+			joinShareActivityRecordMapper.updateById(joinShareActivityRecord);
+		}
 	}
 
 

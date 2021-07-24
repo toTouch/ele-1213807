@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.mapper.ShareActivityRecordMapper;
+import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -197,6 +198,11 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	@Override
 	public void reduceAvailableCountByUid(Long uid, Integer count) {
 		shareActivityRecordMapper.reduceAvailableCountByUid(uid,count);
+	}
+
+	@Override
+	public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
+		return R.ok(shareActivityRecordMapper.queryList(shareActivityRecordQuery));
 	}
 
 }

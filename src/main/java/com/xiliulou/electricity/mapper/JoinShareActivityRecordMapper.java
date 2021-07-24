@@ -1,7 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import java.util.List;
+
+import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -13,15 +16,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface JoinShareActivityRecordMapper  extends BaseMapper<JoinShareActivityRecord>{
 
-
-
-    /**
-     * 通过实体作为筛选条件查询
-     *
-     * @param joinShareActivityRecord 实例对象
-     * @return 对象列表
-     */
-    List<JoinShareActivityRecord> queryAll(JoinShareActivityRecord joinShareActivityRecord);
-
-
+	List<JoinShareActivityRecord> getJoinShareActivityExpired(long expiredTime, int offSet, int size);
 }

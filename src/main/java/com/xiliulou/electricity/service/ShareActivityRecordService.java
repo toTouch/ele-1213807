@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
+import com.xiliulou.electricity.query.ShareActivityRecordQuery;
+
 import java.util.List;
 
 /**
@@ -48,4 +50,6 @@ public interface ShareActivityRecordService {
 	void addCountByUid(Long uid);
 
 	void reduceAvailableCountByUid(Long uid, Integer count);
+
+	R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
 }

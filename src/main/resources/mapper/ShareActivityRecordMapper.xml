@@ -3,41 +3,19 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ShareActivityRecordMapper">
 
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.ShareActivityRecord">
-        select
-          id, activity_id, code, uid, count, del_flg, create_time, update_time, tenant_id
-        from t_share_activity_record
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="activityId != null">
-                and activity_id = #{activityId}
-            </if>
-            <if test="code != null and code != ''">
-                and code = #{code}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
-            </if>
-            <if test="count != null">
-                and count = #{count}
-            </if>
-            <if test="delFlg != null">
-                and del_flg = #{delFlg}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-        </where>
-    </select>
+	<!--通过实体作为筛选条件查询-->
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivityRecord">
+		select
+		id, activity_id, code, uid, count, del_flg, create_time, update_time, tenant_id
+		from t_share_activity_record
+		<where>
+			<if test="uid != null">
+				and uid = #{uid}
+			</if>
+		</where>
+		order by update_time desc
+		limit #{offset}, #{size}
+	</select>
 
 
 </mapper>

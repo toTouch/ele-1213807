@@ -16,8 +16,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,8 +23,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.URL;
 import java.net.URLConnection;
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
+
 
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表控制层
@@ -40,7 +37,7 @@ public class JsonUserJoinShareActivityRecordController {
 	/**
 	 * 服务对象
 	 */
-	@Resource
+	@Autowired
 	private JoinShareActivityRecordService joinShareActivityRecordService;
 
 	@Autowired

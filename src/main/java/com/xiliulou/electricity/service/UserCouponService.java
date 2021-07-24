@@ -22,7 +22,6 @@ public interface UserCouponService {
 
     void handelUserCouponExpired();
 
-
     R queryMyCoupon( List<Integer> statusList,List<Integer> typeList);
 
     R getShareCoupon(Integer activityId,Integer couponId);

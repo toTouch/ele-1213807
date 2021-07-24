@@ -2,43 +2,13 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.JoinShareActivityRecordMapper">
 
-    <!--通过实体作为筛选条件查询-->
-    <select id="queryAll" resultType="com.xiliulou.electricity.entity.JoinShareActivityRecord">
+	<!--通过实体作为筛选条件查询-->
+	<select id="getJoinShareActivityExpired" resultType="com.xiliulou.electricity.entity.JoinShareActivityRecord">
         select
           id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
         from t_join_share_activity_record
-        <where>
-            <if test="id != null">
-                and id = #{id}
-            </if>
-            <if test="uid != null">
-                and uid = #{uid}
-            </if>
-            <if test="joinUid != null">
-                and join_uid = #{joinUid}
-            </if>
-            <if test="startTime != null">
-                and start_time = #{startTime}
-            </if>
-            <if test="expiredTime != null">
-                and expired_time = #{expiredTime}
-            </if>
-            <if test="status != null">
-                and status = #{status}
-            </if>
-            <if test="delFlg != null">
-                and del_flg = #{delFlg}
-            </if>
-            <if test="createTime != null">
-                and create_time = #{createTime}
-            </if>
-            <if test="updateTime != null">
-                and update_time = #{updateTime}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-        </where>
+        where expired_time &lt;= #{expiredTime}
+        limit #{offset}, #{size}
     </select>
 
 </mapper>
