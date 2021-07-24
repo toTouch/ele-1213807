@@ -5,7 +5,7 @@
 	<!--通过实体作为筛选条件查询-->
 	<select id="getJoinShareActivityExpired" resultType="com.xiliulou.electricity.entity.JoinShareActivityRecord">
         select
-          id, uid, join_uid, start_time, expired_time, status, del_flg, create_time, update_time, tenant_id
+          id, uid, join_uid, start_time, expired_time, status,  create_time, update_time, tenant_id
         from t_join_share_activity_record
         where expired_time &lt;= #{expiredTime}
         limit #{offset}, #{size}
