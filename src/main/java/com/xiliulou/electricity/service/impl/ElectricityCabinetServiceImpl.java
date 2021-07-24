@@ -8,7 +8,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllExecutors;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -96,7 +96,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	@Autowired
 	RentBatteryOrderService rentBatteryOrderService;
 
-	ExecutorService executorService = XllExecutors.newFixedThreadPool(20);
+	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor",20,"ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 
 	/**
 	 * 通过ID查询单条数据从缓存

@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.handler;
 
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -19,7 +18,6 @@ import shaded.org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 
 
 /**
@@ -37,7 +35,6 @@ public class NormalEleCellHandlerIot extends AbstractIotMessageHandler {
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
 
-    ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {

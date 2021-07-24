@@ -2,17 +2,13 @@ package com.xiliulou.electricity.queue;
 
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllExecutors;
-import com.xiliulou.core.web.R;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
-import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
@@ -27,9 +23,7 @@ import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
-import com.xiliulou.iot.service.PubHardwareService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -52,8 +46,8 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class EleOperateQueueHandler {
 
-	ExecutorService executorService = XllExecutors.newFixedThreadPool(20);
-	ExecutorService startService = XllExecutors.newFixedThreadPool(1);
+	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleOperateQueueExecutor",20,"ELE_OPERATE_QUEUE_EXECUTOR");
+	ExecutorService startService = XllThreadPoolExecutors.newFixedThreadPool("eleOperateQueueStart",20,"ELE_OPERATE_QUEUE_START");
 	private volatile boolean shutdown = false;
 	private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
 

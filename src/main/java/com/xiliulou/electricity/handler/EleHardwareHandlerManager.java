@@ -2,7 +2,7 @@ package com.xiliulou.electricity.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllExecutors;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.HardwareCommand;
@@ -49,7 +49,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Autowired
     NormalEleOrderOperateHandlerIot normalEleOrderOperateHandlerIot;
 
-    ExecutorService executorService = XllExecutors.newFixedThreadPool(2);
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor",2,"ELE_HARDWARE_HANDLER_EXECUTOR");
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
