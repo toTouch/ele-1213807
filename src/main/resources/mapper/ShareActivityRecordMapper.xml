@@ -6,7 +6,7 @@
 	<!--通过实体作为筛选条件查询-->
 	<select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivityRecord">
 		select
-		id, activity_id, code, uid, count,  create_time, update_time, tenant_id,status
+		id, activity_id, code, uid, count,  create_time, update_time, tenant_id,status,available_count
 		from t_share_activity_record
 		<where>
 			<if test="uid != null">
