@@ -24,6 +24,9 @@ public interface ShareActivityRecordMapper  extends BaseMapper<ShareActivityReco
      */
     List<ShareActivityRecord> queryAll(ShareActivityRecord shareActivityRecord);
 
-    @Update("update t_share_activity_record set count=count+1 where uid =#{uid}")
+    @Update("update t_share_activity_record set count=count+1,available_count=available_count+1 where uid =#{uid}")
 	void addCountByUid(Long uid);
+
+	@Update("update t_share_activity_record set available_count=available_count-#{count} where uid =#{uid}")
+	void reduceAvailableCountByUid(Long uid, Integer count);
 }

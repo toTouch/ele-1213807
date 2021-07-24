@@ -279,10 +279,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		//邀请好友数
 		int count=0;
+		//可用邀请好友数
+		int availableCount=0;
 		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
 		if(Objects.nonNull(shareActivityRecord)){
 			count=shareActivityRecord.getCount();
+			availableCount=shareActivityRecord.getAvailableCount();
 		}
+
 
 
 		//
@@ -322,6 +326,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		//邀请好友数
 		activityVO.setCount(count);
+		//可用邀请好友数
+		activityVO.setAvailableCount(availableCount);
+
+
 		//领卷次数
 		activityVO.setCouponCount(couponCount);
 

@@ -43,6 +43,10 @@ public class ShareActivityRecord {
     */
     private Integer count;
     /**
+     * 可用邀请人数
+     */
+    private Integer availableCount;
+    /**
     * 创建时间
     */
     private Long createTime;

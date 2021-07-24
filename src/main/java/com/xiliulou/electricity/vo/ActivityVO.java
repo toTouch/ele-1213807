@@ -70,6 +70,12 @@ public class ActivityVO {
     private Integer couponCount;
 
 
+    /**
+     * 可用邀请人数
+     */
+    private Integer availableCount;
+
+
 
 
 

@@ -194,4 +194,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		shareActivityRecordMapper.addCountByUid(uid);
 	}
 
+	@Override
+	public void reduceAvailableCountByUid(Long uid, Integer count) {
+		shareActivityRecordMapper.reduceAvailableCountByUid(uid,count);
+	}
+
 }
