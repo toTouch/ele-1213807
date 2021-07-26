@@ -366,7 +366,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 
 		//邀请活动
-		ShareActivity shareActivity =shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
+		ShareActivity shareActivity =shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
+				.eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
 		if (Objects.isNull(shareActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
 			return R.ok();

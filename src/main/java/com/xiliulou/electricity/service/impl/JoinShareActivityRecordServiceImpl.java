@@ -22,9 +22,11 @@ import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -53,7 +55,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Autowired
 	UserService userService;
-
 
 	/**
 	 * 修改数据
@@ -105,23 +106,19 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		//查找分享的用户
 		User oldUser = userService.queryByUidFromCache(uid);
 		if (Objects.isNull(oldUser)) {
-			log.error("joinActivity  ERROR! not found oldUser ,uid :{}",uid);
+			log.error("joinActivity  ERROR! not found oldUser ,uid :{}", uid);
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-
-
-		//1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则 TODO
+		//1、自己点自己的链接，则返回自己该活动的参与人数及领劵规则
 		if (Objects.equals(uid, user.getUid())) {
 			return R.ok();
 		}
-
 
 		//2、别人点击链接登录
 
 		//2.1 判断此人是否首次购买月卡
 		Boolean result = checkUserIsCard(userInfo);
-
 
 		//已购买月卡,则直接返回首页
 		if (result) {
@@ -130,12 +127,12 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 		//未购买月卡则添加用户参与记录
 		//2.2 判断此人是否参与过活动
-		JoinShareActivityRecord oldJoinShareActivityRecord=joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>().
-				eq(JoinShareActivityRecord::getJoinUid,user.getUid()).eq(JoinShareActivityRecord::getTenantId,tenantId));
+		JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
+				.eq(JoinShareActivityRecord::getJoinUid, user.getUid()).eq(JoinShareActivityRecord::getTenantId, tenantId)
+				.eq(JoinShareActivityRecord::getActivityId, activityId));
 
-
-		if(Objects.nonNull(oldJoinShareActivityRecord)){
-			if(Objects.equals(oldJoinShareActivityRecord.getUid(),uid)){
+		if (Objects.nonNull(oldJoinShareActivityRecord)) {
+			if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
 				return R.ok();
 			}
 
@@ -143,27 +140,25 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			oldJoinShareActivityRecord.setUid(uid);
 			//过期时间可配置
 			oldJoinShareActivityRecord.setStartTime(System.currentTimeMillis());
-			oldJoinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
+			oldJoinShareActivityRecord.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
 			oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
 
-
 			//修改被替换掉的历史记录状态
-			JoinShareActivityHistory oldJoinShareActivityHistory=joinShareActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareActivityRecord.getId());
+			JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareActivityRecord.getId());
 			oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
 			oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
 
-
 			//新增邀请历史记录
-			JoinShareActivityHistory joinShareActivityHistory=new JoinShareActivityHistory();
+			JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
 			joinShareActivityHistory.setRecordId(oldJoinShareActivityRecord.getId());
 			joinShareActivityHistory.setUid(uid);
 			joinShareActivityHistory.setJoinUid(user.getUid());
 			joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
 			joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityHistory.setStartTime(System.currentTimeMillis());
-			joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
+			joinShareActivityHistory.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
 			joinShareActivityHistory.setTenantId(tenantId);
 			joinShareActivityHistory.setActivityId(oldJoinShareActivityRecord.getActivityId());
 			joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
@@ -171,27 +166,27 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			return R.ok();
 		}
 
-		JoinShareActivityRecord joinShareActivityRecord=new JoinShareActivityRecord();
+		JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
 		joinShareActivityRecord.setUid(uid);
 		joinShareActivityRecord.setJoinUid(user.getUid());
 		joinShareActivityRecord.setCreateTime(System.currentTimeMillis());
 		joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 		joinShareActivityRecord.setStartTime(System.currentTimeMillis());
-		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
+		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
 		joinShareActivityRecord.setTenantId(tenantId);
 		joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
 		joinShareActivityRecord.setActivityId(activityId);
 		joinShareActivityRecordMapper.insert(joinShareActivityRecord);
 
 		//新增邀请历史记录
-		JoinShareActivityHistory joinShareActivityHistory=new JoinShareActivityHistory();
+		JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
 		joinShareActivityHistory.setRecordId(joinShareActivityRecord.getId());
 		joinShareActivityHistory.setUid(uid);
 		joinShareActivityHistory.setJoinUid(user.getUid());
 		joinShareActivityHistory.setCreateTime(System.currentTimeMillis());
 		joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
 		joinShareActivityHistory.setStartTime(System.currentTimeMillis());
-		joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
+		joinShareActivityHistory.setExpiredTime(System.currentTimeMillis() + shareActivity.getHours() * 60 * 60 * 1000L);
 		joinShareActivityHistory.setTenantId(tenantId);
 		joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
 		joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
@@ -204,8 +199,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	@Override
 	public JoinShareActivityRecord queryByJoinUid(Long uid) {
 		return joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
-				.eq(JoinShareActivityRecord::getJoinUid,uid).gt(JoinShareActivityRecord::getExpiredTime,System.currentTimeMillis())
-				.eq(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT));
+				.eq(JoinShareActivityRecord::getJoinUid, uid).gt(JoinShareActivityRecord::getExpiredTime, System.currentTimeMillis())
+				.eq(JoinShareActivityRecord::getStatus, JoinShareActivityRecord.STATUS_INIT));
 	}
 
 	@Override
@@ -221,8 +216,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			joinShareActivityRecordMapper.updateById(joinShareActivityRecord);
 		}
 	}
-
-
 
 	private Boolean checkUserIsCard(UserInfo userInfo) {
 
