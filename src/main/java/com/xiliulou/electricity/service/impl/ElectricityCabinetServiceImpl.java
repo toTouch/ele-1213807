@@ -925,7 +925,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		Double battery = null;
 		if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(franchiseeUserInfo.getNowElectricityBatterySn());
-			if (Objects.nonNull(electricityBattery)&&Objects.nonNull(electricityBattery.getUid())) {
+			if(Objects.nonNull(electricityBattery)&&Objects.equals(electricityBattery.getUid(),user.getUid())) {
 				battery = electricityBattery.getPower();
 			}
 		}
