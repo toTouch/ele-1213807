@@ -254,7 +254,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 		}
 
 		//判断用户是否可以领取优惠券
-		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid());
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(),activityId);
 		if (Objects.isNull(shareActivityRecord)) {
 			return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
 		}
