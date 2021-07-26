@@ -57,7 +57,6 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
 	@Override
 	@Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
 	public void postProcessAfterWechatPay(WechatV3OrderCallBackQuery wechatV3OrderCallBackQuery) {
-		log.info("方法一");
 		WechatCallBackResouceData resource = wechatV3OrderCallBackQuery.getResource();
 		if (Objects.isNull(resource)) {
 			log.error("WECHAT ERROR! no wechat's info ! msg={}", wechatV3OrderCallBackQuery);
@@ -84,7 +83,6 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
 			return;
 		}
 
-		log.info("方法二");
 		if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
 			electricityTradeOrderService.notifyDepositOrder(callBackResource);
 		} else {

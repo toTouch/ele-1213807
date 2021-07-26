@@ -123,7 +123,6 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
-        log.info("方法三");
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState =callBackResource.getTradeState();
@@ -212,6 +211,7 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
             if(StringUtils.isNotEmpty(callBackResource.getAttach())){
+                log.info("callBackResource.getAttach() is -->{}",callBackResource.getAttach());
                 UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
                 if (Objects.nonNull(userCoupon)) {
                     //修改劵可用状态
