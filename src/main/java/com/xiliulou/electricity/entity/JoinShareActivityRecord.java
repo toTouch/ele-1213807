@@ -23,6 +23,10 @@ public class JoinShareActivityRecord {
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
+     * 活动id
+     */
+    private Integer activityId;
+    /**
     * 邀请用户uid
     */
     private Long uid;

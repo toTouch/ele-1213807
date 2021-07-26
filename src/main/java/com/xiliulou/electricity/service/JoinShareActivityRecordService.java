@@ -15,22 +15,6 @@ import java.util.List;
 public interface JoinShareActivityRecordService {
 
     /**
-     * 通过ID查询单条数据从数据库
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    JoinShareActivityRecord queryByIdFromDB(Long id);
-
-    /**
-     * 新增数据
-     *
-     * @param joinShareActivityRecord 实例对象
-     * @return 实例对象
-     */
-    JoinShareActivityRecord insert(JoinShareActivityRecord joinShareActivityRecord);
-
-    /**
      * 修改数据
      *
      * @param joinShareActivityRecord 实例对象

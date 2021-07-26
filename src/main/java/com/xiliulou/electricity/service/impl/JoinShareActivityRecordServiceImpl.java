@@ -54,29 +54,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	@Autowired
 	UserService userService;
 
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public JoinShareActivityRecord queryByIdFromDB(Long id) {
-		return this.joinShareActivityRecordMapper.selectById(id);
-	}
-
-	/**
-	 * 新增数据
-	 *
-	 * @param joinShareActivityRecord 实例对象
-	 * @return 实例对象
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public JoinShareActivityRecord insert(JoinShareActivityRecord joinShareActivityRecord) {
-		this.joinShareActivityRecordMapper.insert(joinShareActivityRecord);
-		return joinShareActivityRecord;
-	}
 
 	/**
 	 * 修改数据
@@ -188,6 +165,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			joinShareActivityHistory.setStartTime(System.currentTimeMillis());
 			joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 			joinShareActivityHistory.setTenantId(tenantId);
+			joinShareActivityHistory.setActivityId(oldJoinShareActivityRecord.getActivityId());
 			joinShareActivityHistoryService.insert(joinShareActivityHistory);
 			return R.ok();
 		}
@@ -201,6 +179,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		joinShareActivityRecord.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 		joinShareActivityRecord.setTenantId(tenantId);
 		joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_INIT);
+		joinShareActivityRecord.setActivityId(activityId);
 		joinShareActivityRecordMapper.insert(joinShareActivityRecord);
 
 		//新增邀请历史记录
@@ -214,6 +193,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 		joinShareActivityHistory.setTenantId(tenantId);
 		joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
+		joinShareActivityHistory.setActivityId(joinShareActivityRecord.getActivityId());
 		joinShareActivityHistoryService.insert(joinShareActivityHistory);
 
 		return R.ok();

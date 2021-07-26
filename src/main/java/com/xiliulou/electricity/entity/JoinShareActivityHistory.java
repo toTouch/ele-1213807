@@ -23,6 +23,10 @@ public class JoinShareActivityHistory {
 
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
+    /**
+     * 活动id
+     */
+    private Integer activityId;
 
     /**
      * recordId
