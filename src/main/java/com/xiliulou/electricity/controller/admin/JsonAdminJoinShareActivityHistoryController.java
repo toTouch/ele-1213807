@@ -2,7 +2,6 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
-import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
