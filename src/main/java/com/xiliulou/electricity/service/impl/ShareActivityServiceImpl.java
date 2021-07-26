@@ -300,7 +300,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 
 			//是否可以领取优惠券
-			if(shareActivityRule.getTriggerCount()<=count){
+			if(shareActivityRule.getTriggerCount()<=availableCount){
 				couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
 			}else {
 				couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
