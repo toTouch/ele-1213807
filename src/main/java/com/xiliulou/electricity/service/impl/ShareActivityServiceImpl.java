@@ -137,7 +137,8 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//查询该租户是否有邀请活动，有则不能添加
-		int count=shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>().eq(ShareActivity::getTenantId,tenantId));
+		int count=shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
+				.eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
         if(count>0){
 	        return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
         }
