@@ -30,11 +30,11 @@ import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
@@ -211,7 +211,6 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
             if(StringUtils.isNotEmpty(callBackResource.getAttach())){
-                log.info("callBackResource.getAttach() is -->{}",callBackResource.getAttach());
                 UserCoupon userCoupon = userCouponService.queryByIdFromDB(Integer.valueOf(callBackResource.getAttach()));
                 if (Objects.nonNull(userCoupon)) {
                     //修改劵可用状态
