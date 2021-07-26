@@ -19,10 +19,10 @@ public interface ShareActivityRecordMapper  extends BaseMapper<ShareActivityReco
 
 
     @Update("update t_share_activity_record set count=count+1,available_count=available_count+1 where uid =#{uid}")
-	void addCountByUid(Long uid);
+	void addCountByUid(@Param("uid") Long uid);
 
 	@Update("update t_share_activity_record set available_count=available_count-#{count} where uid =#{uid}")
-	void reduceAvailableCountByUid(Long uid, Integer count);
+	void reduceAvailableCountByUid(@Param("uid") Long uid, @Param("count") Integer count);
 
 	List<ShareActivityRecord> queryList(ShareActivityRecordQuery shareActivityRecordQuery);
 
