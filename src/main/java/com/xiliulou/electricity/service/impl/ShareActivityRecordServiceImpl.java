@@ -200,9 +200,9 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 	}
 
 	@Override
-	public ShareActivityRecord queryByUid(Long uid) {
+	public ShareActivityRecord queryByUid(Long uid,Integer activityId) {
 		return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
-				.eq(ShareActivityRecord::getUid, uid));
+				.eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId,activityId));
 	}
 
 	@Override

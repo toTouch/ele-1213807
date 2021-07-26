@@ -44,7 +44,7 @@ public interface ShareActivityRecordService {
 	R generateSharePicture(Integer activityId,String page);
 
 
-	ShareActivityRecord queryByUid(Long uid);
+	ShareActivityRecord queryByUid(Long uid,Integer activityId);
 
 
 	void addCountByUid(Long uid);

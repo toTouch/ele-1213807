@@ -283,7 +283,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		int count=0;
 		//可用邀请好友数
 		int availableCount=0;
-		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid());
+		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid(),activityVO.getId());
 		if(Objects.nonNull(shareActivityRecord)){
 			count=shareActivityRecord.getCount();
 			availableCount=shareActivityRecord.getAvailableCount();
