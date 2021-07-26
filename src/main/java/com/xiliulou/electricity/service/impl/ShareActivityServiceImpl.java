@@ -231,14 +231,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 				//修改邀请状态
 				JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
-				joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+				joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_OFF);
 				joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 				joinShareActivityRecord.setActivityId(shareActivityAddAndUpdateQuery.getId());
 				joinShareActivityRecordService.updateByActivityId(joinShareActivityRecord);
 
 				//修改历史记录状态
 				JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
-				joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+				joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_OFF);
 				joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
 				joinShareActivityHistory.setActivityId(shareActivityAddAndUpdateQuery.getId());
 				joinShareActivityHistoryService.updateByActivityId(joinShareActivityHistory);

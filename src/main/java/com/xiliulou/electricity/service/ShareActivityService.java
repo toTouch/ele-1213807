@@ -38,7 +38,6 @@ public interface ShareActivityService {
      */
     R update(ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery);
 
-
     R queryList(ShareActivityQuery shareActivityQuery);
 
     R queryInfo(Integer id);

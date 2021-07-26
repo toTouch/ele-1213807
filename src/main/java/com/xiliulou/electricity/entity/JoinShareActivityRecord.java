@@ -67,4 +67,7 @@ public class JoinShareActivityRecord {
     //已过期
     public static Integer STATUS_FAIL = 3;
 
+    //活动已下架
+    public static Integer STATUS_OFF = 5;
+
 }

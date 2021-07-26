@@ -74,5 +74,7 @@ public class JoinShareActivityHistory {
     public static Integer STATUS_FAIL = 3;
     //被替换
     public static Integer STATUS_REPLACE = 4;
+    //活动已下架
+    public static Integer STATUS_OFF = 5;
 
 }
