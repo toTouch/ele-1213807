@@ -635,6 +635,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					|| Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 
 				BigDecimal moneyCount = BigDecimal.valueOf(0);
+				log.info("moneyCount1 is -->{}",moneyCount);
 				//查月卡
 				if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 					Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
@@ -652,11 +653,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 					}
 					if (ObjectUtil.isNotEmpty(cardIdList)) {
 						moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, cardIdList, tenantId);
+						log.info("moneyCount2 is -->{}",moneyCount);
 					}
 				} else {
 					moneyCount = electricityMemberCardOrderService.homeOne(beginTime, endTime, null, tenantId);
+					log.info("moneyCount3 is -->{}",moneyCount);
 				}
 
+				log.info("moneyCount4 is -->{}",moneyCount);
 				homeOne.put("moneyCount", moneyCount.toString());
 			}
 		}, executorService).exceptionally(e -> {
