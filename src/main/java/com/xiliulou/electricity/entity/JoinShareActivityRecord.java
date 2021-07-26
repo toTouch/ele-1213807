@@ -43,7 +43,7 @@ public class JoinShareActivityRecord {
     */
     private Long expiredTime;
     /**
-    * 参与状态 1--初始化，2--已参与，3--已过期
+    * 参与状态 1--初始化，2--已参与，3--已过期  4--活动已下架
     */
     private Integer status;
     /**

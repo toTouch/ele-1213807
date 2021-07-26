@@ -6,6 +6,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.JoinShareActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
@@ -16,6 +18,8 @@ import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareActivityRuleQuery;
+import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRuleService;
 import com.xiliulou.electricity.service.ShareActivityService;
@@ -74,7 +78,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	private CouponService couponService;
 
-
 	@Autowired
 	ElectricityCabinetFileService electricityCabinetFileService;
 
@@ -91,6 +94,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Autowired
 	UserCouponService userCouponService;
 
+	@Autowired
+	JoinShareActivityRecordService joinShareActivityRecordService;
+
+	@Autowired
+	JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -137,11 +145,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//查询该租户是否有邀请活动，有则不能添加
-		int count=shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-				.eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
-        if(count>0){
-	        return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
-        }
+		int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
+				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+		if (count > 0) {
+			return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
+		}
 
 		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
@@ -153,7 +161,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		shareActivity.setUpdateTime(System.currentTimeMillis());
 		shareActivity.setTenantId(tenantId);
 
-		if(Objects.isNull(shareActivity.getType())){
+		if (Objects.isNull(shareActivity.getType())) {
 			shareActivity.setType(ShareActivity.SYSTEM);
 		}
 
@@ -201,11 +209,10 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-
 		//查询该租户是否有邀请活动，有则不能启用
-		if(Objects.equals(shareActivityAddAndUpdateQuery.getStatus(),ShareActivity.STATUS_ON)) {
+		if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_ON)) {
 			int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-					.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
+					.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 			if (count > 0) {
 				return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
 			}
@@ -219,6 +226,24 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			//更新缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + oldShareActivity.getId(), oldShareActivity);
 
+			//如果是下架活动，则参与邀请记录改为活动已下架
+			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_OFF)) {
+
+				//修改邀请状态
+				JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
+				joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+				joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+				joinShareActivityRecord.setActivityId(shareActivityAddAndUpdateQuery.getId());
+				joinShareActivityRecordService.updateByActivityId(joinShareActivityRecord);
+
+				//修改历史记录状态
+				JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
+				joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+				joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+				joinShareActivityHistory.setActivityId(shareActivityAddAndUpdateQuery.getId());
+				joinShareActivityHistoryService.updateByActivityId(joinShareActivityHistory);
+
+			}
 			return null;
 		});
 
@@ -258,7 +283,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 		List<CouponVO> couponVOList = new ArrayList<>();
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
-			CouponVO couponVO=new CouponVO();
+			CouponVO couponVO = new CouponVO();
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
 			Integer couponId = shareActivityRule.getCouponId();
 			//优惠券名称
@@ -272,65 +297,57 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		activityVO.setCouponVOList(couponVOList);
 	}
 
-	private void getUserCouponVOList(ActivityVO activityVO,TokenUser user) {
+	private void getUserCouponVOList(ActivityVO activityVO, TokenUser user) {
 		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityVO.getId());
 		if (ObjectUtil.isEmpty(shareActivityRuleList)) {
 			return;
 		}
 
-
 		//邀请好友数
-		int count=0;
+		int count = 0;
 		//可用邀请好友数
-		int availableCount=0;
-		ShareActivityRecord shareActivityRecord=shareActivityRecordService.queryByUid(user.getUid(),activityVO.getId());
-		if(Objects.nonNull(shareActivityRecord)){
-			count=shareActivityRecord.getCount();
-			availableCount=shareActivityRecord.getAvailableCount();
+		int availableCount = 0;
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), activityVO.getId());
+		if (Objects.nonNull(shareActivityRecord)) {
+			count = shareActivityRecord.getCount();
+			availableCount = shareActivityRecord.getAvailableCount();
 		}
-
-
 
 		//
 		List<CouponVO> couponVOList = new ArrayList<>();
-		int couponCount=0;
+		int couponCount = 0;
 		for (ShareActivityRule shareActivityRule : shareActivityRuleList) {
 
-			CouponVO couponVO=new CouponVO();
+			CouponVO couponVO = new CouponVO();
 			couponVO.setTriggerCount(shareActivityRule.getTriggerCount());
 			Integer couponId = shareActivityRule.getCouponId();
 
-
 			//是否可以领取优惠券
-			if(shareActivityRule.getTriggerCount()<=availableCount){
+			if (shareActivityRule.getTriggerCount() <= availableCount) {
 				couponVO.setIsGet(CouponVO.IS_NOT_RECEIVE);
-			}else {
+			} else {
 				couponVO.setIsGet(CouponVO.IS_CANNOT_RECEIVE);
 			}
-
 
 			//优惠券名称
 			Coupon coupon = couponService.queryByIdFromCache(couponId);
 			if (Objects.nonNull(coupon)) {
 
-
 				//是否领取该活动该优惠券
-				UserCoupon userCoupon=userCouponService.queryByActivityIdAndCouponId(activityVO.getId(),coupon.getId());
-				if(Objects.nonNull(userCoupon)){
+				UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(activityVO.getId(), coupon.getId());
+				if (Objects.nonNull(userCoupon)) {
 					couponVO.setIsGet(CouponVO.IS_RECEIVED);
-					couponCount=couponCount+1;
+					couponCount = couponCount + 1;
 				}
 				couponVO.setCoupon(coupon);
 			}
 			couponVOList.add(couponVO);
 		}
 
-
 		//邀请好友数
 		activityVO.setCount(count);
 		//可用邀请好友数
 		activityVO.setAvailableCount(availableCount);
-
 
 		//领卷次数
 		activityVO.setCouponCount(couponCount);
@@ -344,8 +361,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		return R.ok(count);
 	}
 
-
-
 	@Override
 	public R activityInfo() {
 		//用户
@@ -358,7 +373,6 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-
 		//用户是否可用
 		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -366,10 +380,9 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
-
 		//邀请活动
-		ShareActivity shareActivity =shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
-				.eq(ShareActivity::getTenantId,tenantId).eq(ShareActivity::getStatus,ShareActivity.STATUS_ON));
+		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
+				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
 		if (Objects.isNull(shareActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
 			return R.ok();
@@ -384,14 +397,12 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		ActivityVO activityVO = new ActivityVO();
 		BeanUtil.copyProperties(shareActivity, activityVO);
 
-
 		//小活动
-		getUserCouponVOList(activityVO,user);
+		getUserCouponVOList(activityVO, user);
 
 		return R.ok(activityVO);
 
 	}
-
 
 }
 

@@ -217,6 +217,11 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		}
 	}
 
+	@Override
+	public void updateByActivityId(JoinShareActivityRecord joinShareActivityRecord) {
+		joinShareActivityRecordMapper.updateByActivityId(joinShareActivityRecord);
+	}
+
 	private Boolean checkUserIsCard(UserInfo userInfo) {
 
 		//是否缴纳押金，是否绑定电池

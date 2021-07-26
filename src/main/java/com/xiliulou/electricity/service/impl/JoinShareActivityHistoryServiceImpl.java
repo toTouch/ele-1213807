@@ -147,4 +147,9 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		return R.ok(joinShareActivityHistoryVOList);
 	}
 
+	@Override
+	public void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory) {
+		joinShareActivityHistoryMapper.updateByActivityId(joinShareActivityHistory);
+	}
+
 }

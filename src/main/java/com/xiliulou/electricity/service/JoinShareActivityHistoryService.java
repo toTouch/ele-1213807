@@ -41,4 +41,6 @@ public interface JoinShareActivityHistoryService {
 	R userList(Integer activityId);
 
 	R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
+
+	void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory);
 }

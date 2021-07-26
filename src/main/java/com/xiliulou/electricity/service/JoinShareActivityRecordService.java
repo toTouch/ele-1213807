@@ -30,4 +30,5 @@ public interface JoinShareActivityRecordService {
 
 	void handelJoinShareActivityExpired();
 
+	void updateByActivityId(JoinShareActivityRecord joinShareActivityRecord);
 }
