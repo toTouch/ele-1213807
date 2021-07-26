@@ -166,6 +166,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			joinShareActivityHistory.setExpiredTime(System.currentTimeMillis()+shareActivity.getHours()*60*60*1000L);
 			joinShareActivityHistory.setTenantId(tenantId);
 			joinShareActivityHistory.setActivityId(oldJoinShareActivityRecord.getActivityId());
+			joinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
 			joinShareActivityHistoryService.insert(joinShareActivityHistory);
 			return R.ok();
 		}
