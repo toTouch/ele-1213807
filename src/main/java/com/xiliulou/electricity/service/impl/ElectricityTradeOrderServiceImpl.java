@@ -123,6 +123,7 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        log.info("方法三");
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState =callBackResource.getTradeState();
