@@ -132,7 +132,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 				.eq(JoinShareActivityRecord::getActivityId, activityId));
 
 		if (Objects.nonNull(oldJoinShareActivityRecord)) {
-			if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
+			if ((Objects.equals(oldJoinShareActivityRecord.getUid(), uid) && (Objects.equals(oldJoinShareActivityRecord.getStatus(), JoinShareActivityRecord.STATUS_INIT)
+					|| Objects.equals(oldJoinShareActivityRecord.getStatus(), JoinShareActivityRecord.STATUS_SUCCESS))) {
 				return R.ok();
 			}
 

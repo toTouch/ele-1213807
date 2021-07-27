@@ -18,12 +18,17 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Consts;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.conn.HttpHostConnectException;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
+import org.apache.poi.ss.formula.functions.T;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
@@ -36,7 +41,10 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -44,18 +52,17 @@ public class EleTest {
 
 	@Test
 	public void test1() {
-		RestTemplate restTemplate=new RestTemplate();
+		RestTemplate restTemplate = new RestTemplate();
 		SharePicture sharePicture = new SharePicture();
 		sharePicture.setPage("pages/start/index");
 		sharePicture.setScene("id:1");
 		sharePicture.setAppId("wx76159ea6aa7a64bc");
 		sharePicture.setAppSecret("b44586ca1b4ff8def2b4c869cdd8ea6a");
-		Pair<Boolean, Object> getShareUrlPair = generateSharePicture(sharePicture,restTemplate);
+		Pair<Boolean, Object> getShareUrlPair = generateSharePicture(sharePicture, restTemplate);
 		System.out.println(getShareUrlPair.getRight());
 	}
 
-
-	public Pair<Boolean, Object> generateSharePicture(SharePicture sharePicture,RestTemplate restTemplate) {
+	public Pair<Boolean, Object> generateSharePicture(SharePicture sharePicture, RestTemplate restTemplate) {
 
 		//获取AccessToken
 		Pair<Boolean, Object> getAccessTokenPair =
@@ -74,12 +81,9 @@ public class EleTest {
 		sharePictureQuery.setPage(sharePicture.getPage());
 		sharePictureQuery.setScene(sharePicture.getScene());
 
-
-
-		String response = sendPost(url,JsonUtil.toJson(sharePictureQuery));
+		String response = sendPost(url, JsonUtil.toJson(sharePictureQuery));
 
 		return Pair.of(false, response);
-
 
 	}
 
@@ -94,12 +98,11 @@ public class EleTest {
 			return Pair.of(false, "获取微信accessToken失败!");
 		}
 
-
 		return Pair.of(true, accessToken);
 	}
 
 	//post请求
-	public static String sendPost( String url,String param) {
+	public static String sendPost(String url, String param) {
 
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		cm.setMaxTotal(20);
@@ -107,9 +110,34 @@ public class EleTest {
 		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5 * 1000).setConnectionRequestTimeout(CONN_REQ_TIMEOUT).setSocketTimeout(SOCK_TIMEOUT).build();
 		CloseableHttpClient client = HttpClientBuilder.create().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).build();
 
+		try {
+			URIBuilder b = new URIBuilder(url);
+			URI uri = b.build();
+			HttpPost request = new HttpPost(uri);
 
+			try (CloseableHttpResponse response = client.execute(request)) {
+				if (response.getStatusLine().getStatusCode() != 200) {
+					EntityUtils.consume(response.getEntity());
+					if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500) {
+					} else {
 
-		PrintWriter out = null;
+					}
+					return response.getStatusLine().getReasonPhrase();
+				}
+				byte[] data = EntityUtils.toByteArray(response.getEntity());
+				if (data.length > 1000) {
+					return new String(Base64.encodeBase64(data));
+				}
+				return JsonUtil.fetchObject(new String(data), "/errmsg").toString();
+			} catch (Exception e) {
+				log.error("call url error! url={}", url, e);
+			}
+
+		} catch (Exception e) {
+			log.error("url={}", url, e);
+		}
+
+		/*PrintWriter out = null;
 		InputStream in = null;
 		String result = "";
 		try {
@@ -118,7 +146,7 @@ public class EleTest {
 			// 打开和URL之间的连接
 			URLConnection conn = realUrl.openConnection();
 			// 设置通用的请求属性
-			conn.setRequestProperty("accept", "*/*");
+			conn.setRequestProperty("accept", "*//*");
 			conn.setRequestProperty("connection", "Keep-Alive");
 			conn.setRequestProperty("user-agent",
 					"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1;SV1)");
@@ -156,7 +184,7 @@ public class EleTest {
 					}
 				}
 			}
-			if(data.length>1000) {
+			if (data.length > 1000) {
 				return new String(Base64.encodeBase64(data));
 			}
 			return JsonUtil.fetchObject(new String(data), "/errmsg").toString();
@@ -177,6 +205,6 @@ public class EleTest {
 				ex.printStackTrace();
 			}
 		}
-		return result;
+		return result;*/
 	}
 }
