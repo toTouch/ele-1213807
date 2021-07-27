@@ -23,7 +23,7 @@ public interface UserCouponMapper extends BaseMapper<UserCoupon>{
      */
     List<UserCoupon> queryList(@Param("query") UserCouponQuery userCouponQuery);
 
-    @Select(" select id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source, del_flg " +
-            "from t_user_coupon where deadline < #{currentTime} and status = 1 and del_flg = 0 limit #{offset},#{size}")
+    @Select(" select id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source " +
+            "from t_user_coupon where deadline < #{currentTime} and status = 1 and del_flag = 0 limit #{offset},#{size}")
     List<UserCoupon> getExpiredUserCoupon(@Param("currentTime") Long currentTime, @Param("offset") Integer offset, @Param("size") Integer size);
 }
