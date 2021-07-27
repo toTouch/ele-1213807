@@ -32,7 +32,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ActivityVO;
+import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.electricity.vo.CouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
@@ -267,16 +267,16 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
-		ActivityVO activityVO = new ActivityVO();
-		BeanUtil.copyProperties(shareActivity, activityVO);
+		ShareActivityVO shareActivityVO = new ShareActivityVO();
+		BeanUtil.copyProperties(shareActivity, shareActivityVO);
 
 		//小活动
-		getCouponVOList(activityVO);
-		return R.ok(activityVO);
+		getCouponVOList(shareActivityVO);
+		return R.ok(shareActivityVO);
 	}
 
-	private void getCouponVOList(ActivityVO activityVO) {
-		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityVO.getId());
+	private void getCouponVOList(ShareActivityVO shareActivityVO) {
+		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivityVO.getId());
 		if (ObjectUtil.isEmpty(shareActivityRuleList)) {
 			return;
 		}
@@ -294,11 +294,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			couponVOList.add(couponVO);
 		}
 
-		activityVO.setCouponVOList(couponVOList);
+		shareActivityVO.setCouponVOList(couponVOList);
 	}
 
-	private void getUserCouponVOList(ActivityVO activityVO, TokenUser user) {
-		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(activityVO.getId());
+	private void getUserCouponVOList(ShareActivityVO shareActivityVO, TokenUser user) {
+		List<ShareActivityRule> shareActivityRuleList = shareActivityRuleService.queryByActivity(shareActivityVO.getId());
 		if (ObjectUtil.isEmpty(shareActivityRuleList)) {
 			return;
 		}
@@ -307,7 +307,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		int count = 0;
 		//可用邀请好友数
 		int availableCount = 0;
-		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), activityVO.getId());
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), shareActivityVO.getId());
 		if (Objects.nonNull(shareActivityRecord)) {
 			count = shareActivityRecord.getCount();
 			availableCount = shareActivityRecord.getAvailableCount();
@@ -334,7 +334,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			if (Objects.nonNull(coupon)) {
 
 				//是否领取该活动该优惠券
-				UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(activityVO.getId(), coupon.getId());
+				UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), coupon.getId());
 				if (Objects.nonNull(userCoupon)) {
 					couponVO.setIsGet(CouponVO.IS_RECEIVED);
 					couponCount = couponCount + 1;
@@ -345,14 +345,14 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//邀请好友数
-		activityVO.setCount(count);
+		shareActivityVO.setCount(count);
 		//可用邀请好友数
-		activityVO.setAvailableCount(availableCount);
+		shareActivityVO.setAvailableCount(availableCount);
 
 		//领卷次数
-		activityVO.setCouponCount(couponCount);
+		shareActivityVO.setCouponCount(couponCount);
 
-		activityVO.setCouponVOList(couponVOList);
+		shareActivityVO.setCouponVOList(couponVOList);
 	}
 
 	@Override
@@ -394,13 +394,13 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			return R.fail("0041");
 		}
 
-		ActivityVO activityVO = new ActivityVO();
-		BeanUtil.copyProperties(shareActivity, activityVO);
+		ShareActivityVO shareActivityVO = new ShareActivityVO();
+		BeanUtil.copyProperties(shareActivity, shareActivityVO);
 
 		//小活动
-		getUserCouponVOList(activityVO, user);
+		getUserCouponVOList(shareActivityVO, user);
 
-		return R.ok(activityVO);
+		return R.ok(shareActivityVO);
 
 	}
 

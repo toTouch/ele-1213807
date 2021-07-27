@@ -11,7 +11,7 @@ import java.util.List;
  * @since 2021-04-14 09:27:12
  */
 @Data
-public class ActivityVO {
+public class ShareActivityVO {
 
     private Integer id;
     /**
@@ -54,6 +54,11 @@ public class ActivityVO {
      * 活动类型，分为 1--自营，2--代理
      */
     private Integer type;
+
+    /**
+     * 小时
+     */
+    private Integer hours;
 
     //优惠券列表
     private List<CouponVO> couponVOList;
