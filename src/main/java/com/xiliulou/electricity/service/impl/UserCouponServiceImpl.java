@@ -248,7 +248,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
-		UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, couponId);
+		UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, couponId,user.getUid());
 		if (Objects.nonNull(oldUserCoupon)) {
 			return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
 		}
