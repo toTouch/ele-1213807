@@ -128,7 +128,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
 				.eq(JoinShareActivityRecord::getJoinUid, user.getUid()).eq(JoinShareActivityRecord::getTenantId, tenantId)
 				.eq(JoinShareActivityRecord::getActivityId, activityId)
-		        .in(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT,JoinShareActivityRecord.STATUS_SUCCESS));
+		        .in(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT));
 
 		if (Objects.nonNull(oldJoinShareActivityRecord)) {
 			if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
