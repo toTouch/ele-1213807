@@ -7,7 +7,7 @@
         select
           id, uid, join_uid, start_time, expired_time, status,  create_time, update_time, tenant_id
         from t_join_share_activity_record
-        where expired_time &lt;= #{expiredTime}
+        where expired_time &lt;= #{expiredTime} and status =1
         limit #{offset}, #{size}
     </select>
 
