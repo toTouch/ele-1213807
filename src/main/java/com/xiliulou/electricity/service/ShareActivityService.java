@@ -46,4 +46,5 @@ public interface ShareActivityService {
 
     R activityInfo();
 
+    ShareActivity queryByStatus(Integer activityId);
 }

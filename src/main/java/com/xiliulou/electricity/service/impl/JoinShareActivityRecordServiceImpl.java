@@ -96,7 +96,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		}
 
 		//查找活动
-		ShareActivity shareActivity = shareActivityService.queryByIdFromCache(activityId);
+		ShareActivity shareActivity = shareActivityService.queryByStatus(activityId);
 		if (Objects.isNull(shareActivity)) {
 			log.error("joinActivity  ERROR! not found Activity ! ActivityId:{} ", activityId);
 			return R.fail("ELECTRICITY.0069", "未找到活动");

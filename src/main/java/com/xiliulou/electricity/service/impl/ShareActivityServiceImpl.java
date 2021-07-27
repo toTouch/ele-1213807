@@ -404,5 +404,11 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 
 	}
 
+	@Override
+	public ShareActivity queryByStatus(Integer activityId) {
+		return shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
+				.eq(ShareActivity::getId, activityId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));;
+	}
+
 }
 
