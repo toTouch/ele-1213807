@@ -26,6 +26,6 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
      */
     List<JoinShareActivityHistory> queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 
-	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where activity_id=#{activityId}")
+	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where activity_id=#{activityId} and status=1")
 	void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory);
 }
