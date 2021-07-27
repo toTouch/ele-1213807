@@ -44,6 +44,10 @@ public class ShareActivityRecordVO {
      */
     private String phone;
     /**
+     * 活动名称
+     */
+    private String name;
+    /**
     * 邀请人数
     */
     private Integer count;
