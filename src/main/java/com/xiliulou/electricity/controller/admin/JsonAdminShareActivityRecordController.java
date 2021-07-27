@@ -22,10 +22,11 @@ public class JsonAdminShareActivityRecordController {
 	private ShareActivityRecordService shareActivityRecordService;
 
 	//列表查询
-	@GetMapping(value = "/admin/hareActivityRecord/list")
+	@GetMapping(value = "/admin/shareActivityRecord/list")
 	public R queryList(@RequestParam(value = "size", required = false) Long size,
 			@RequestParam(value = "offset", required = false) Long offset,
-			@RequestParam(value = "uid", required = false) Long uid) {
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "name", required = false) String name) {
 		if (Objects.isNull(size)) {
 			size = 10L;
 		}
@@ -37,7 +38,8 @@ public class JsonAdminShareActivityRecordController {
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
 				.offset(offset)
 				.size(size)
-				.uid(uid).build();
+				.phone(phone)
+				.name(name).build();
 
 		return shareActivityRecordService.queryList(shareActivityRecordQuery);
 
@@ -45,11 +47,13 @@ public class JsonAdminShareActivityRecordController {
 
 
 	//列表查询
-	@GetMapping(value = "/admin/hareActivityRecord/queryCount")
-	public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
+	@GetMapping(value = "/admin/shareActivityRecord/queryCount")
+	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "name", required = false) String name) {
 
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
-				.uid(uid).build();
+				.phone(phone)
+				.name(name).build();
 
 		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
 

@@ -4,25 +4,37 @@
 
 
 	<!--通过实体作为筛选条件查询-->
-	<select id="queryList" resultType="com.xiliulou.electricity.entity.ShareActivityRecord">
+	<select id="queryList" resultType="com.xiliulou.electricity.vo.ShareActivityRecordVO">
 		select
-		id, activity_id, code, uid, count,  create_time, update_time, tenant_id,status,available_count
-		from t_share_activity_record
+		tsar.id as id, tsar.activity_id as activityId,  tsar.uid as uid, tsar.count as count,
+		tsar.create_time as createTime, tsar.update_time as updateTime,
+		tsar.tenant_id as tenantId,tsar.status as status,tsar.available_count as availableCount,
+		tui.phone as phone,tui.name as name,tsar.name as activityName
+		from t_share_activity_record as tsar
+		left join t_user_info as tui on tui.uid=tsar.uid
+		left join t_share_activity as tsa on tsar.activity_id=tsa.id
 		<where>
-			<if test="uid != null">
-				and uid = #{uid}
+			<if test="phone != null and phone != ''">
+				and tui.phone = #{phone}
+			</if>
+			<if test="name != null and name != ''">
+				and tui.name = #{name}
 			</if>
 		</where>
-		order by update_time desc
+		order by tsar.update_time desc
 		limit #{offset}, #{size}
 	</select>
 
 	<select id="queryCount" resultType="java.lang.Integer">
 		select count(1)
-		from t_share_activity_record
+		from t_share_activity_record as tsar
+		left join t_user_info as tui on tui.uid=tsar.uid
 		<where>
-			<if test="uid != null">
-				and uid = #{uid}
+			<if test="phone != null and phone != ''">
+				and tui.phone = #{phone}
+			</if>
+			<if test="name != null and name != ''">
+				and tui.name = #{name}
 			</if>
 		</where>
 	</select>

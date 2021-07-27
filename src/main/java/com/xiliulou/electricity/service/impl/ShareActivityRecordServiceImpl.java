@@ -217,30 +217,8 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 
 	@Override
 	public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
-		List<ShareActivityRecord> shareActivityRecordList= shareActivityRecordMapper.queryList(shareActivityRecordQuery);
-		if(ObjectUtil.isEmpty(shareActivityRecordList)) {
-			return R.ok(shareActivityRecordList);
-		}
 
-		List<ShareActivityRecordVO> shareActivityRecordVOList=new ArrayList<>();
-		for (ShareActivityRecord shareActivityRecord:shareActivityRecordList) {
-
-			ShareActivityRecordVO shareActivityRecordVO=new ShareActivityRecordVO();
-			BeanUtil.copyProperties(shareActivityRecord,shareActivityRecordVO);
-
-			ShareActivity shareActivity=shareActivityService.queryByIdFromCache(shareActivityRecord.getActivityId());
-			if(Objects.nonNull(shareActivity)){
-				shareActivityRecordVO.setActivityName(shareActivity.getName());
-			}
-
-			User user=userService.queryByUidFromCache(shareActivityRecord.getUid());
-			if(Objects.nonNull(user)){
-				shareActivityRecordVO.setPhone(user.getPhone());
-			}
-
-			shareActivityRecordVOList.add(shareActivityRecordVO);
-		}
-
+		List<ShareActivityRecordVO> shareActivityRecordVOList= shareActivityRecordMapper.queryList(shareActivityRecordQuery);
 		return R.ok(shareActivityRecordVOList);
 	}
 

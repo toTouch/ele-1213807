@@ -17,7 +17,8 @@ import lombok.NoArgsConstructor;
 public class ShareActivityRecordQuery {
     private Long size;
     private Long offset;
-    private Long uid;
+    private String phone;
+    private String name;
 
 
 
