@@ -119,7 +119,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		}
 
 		//限频
-		boolean result = redisService.setNx(ElectricityCabinetConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 15 * 1000L, false);
+		boolean result = redisService.setNx(ElectricityCabinetConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
 		if (!result) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
@@ -168,7 +168,6 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
 		//3、scene
 		String scene = "uid:"+user.getUid()+",id:"+activityId+",code:"+shareActivityRecord.getCode();
 
-		log.info("scene is -->{}",scene);
 
 
 		//修改分享状态

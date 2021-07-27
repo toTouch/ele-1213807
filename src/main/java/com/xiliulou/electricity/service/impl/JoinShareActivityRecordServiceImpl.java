@@ -78,7 +78,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R joinActivity(Integer activityId, Long uid) {
-		log.info("第二步");
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -124,7 +123,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		if (result) {
 			return R.ok();
 		}
-		log.info("第三步");
 		//未购买月卡则添加用户参与记录
 		//2.2 判断此人是否参与过活动
 		JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
@@ -136,7 +134,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
 				return R.ok();
 			}
-			log.info("第四步");
 			//切换邀请用户
 			oldJoinShareActivityRecord.setUid(uid);
 			//过期时间可配置
