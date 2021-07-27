@@ -51,10 +51,13 @@ public class JsonUserElectricityCabinetController extends BaseController {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
 
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
 				.distance(distance)
 				.lon(lon)
-				.lat(lat).build();
+				.lat(lat)
+				.tenantId(tenantId).build();
 
 		return electricityCabinetService.showInfoByDistance(electricityCabinetQuery);
 	}

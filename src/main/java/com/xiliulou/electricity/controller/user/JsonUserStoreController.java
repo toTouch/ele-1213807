@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -34,10 +35,13 @@ public class JsonUserStoreController {
             return R.fail("ELECTRICITY.0007","不合法的参数");
         }
 
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         StoreQuery storeQuery = StoreQuery.builder()
                 .distance(distance)
                 .lon(lon)
-                .lat(lat).build();
+                .lat(lat)
+                .tenantId(tenantId).build();
 
         return storeService.showInfoByDistance(storeQuery);
     }
