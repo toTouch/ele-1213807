@@ -129,7 +129,8 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		//2.2 判断此人是否参与过活动
 		JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
 				.eq(JoinShareActivityRecord::getJoinUid, user.getUid()).eq(JoinShareActivityRecord::getTenantId, tenantId)
-				.eq(JoinShareActivityRecord::getActivityId, activityId));
+				.eq(JoinShareActivityRecord::getActivityId, activityId)
+		        .in(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT,JoinShareActivityRecord.STATUS_SUCCESS));
 
 		if (Objects.nonNull(oldJoinShareActivityRecord)) {
 			if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
