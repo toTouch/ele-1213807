@@ -15,6 +15,15 @@ import com.xiliulou.pay.weixin.entity.SharePicture;
 import com.xiliulou.pay.weixin.entity.SharePictureQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.http.Consts;
+import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
+import org.apache.http.message.BasicNameValuePair;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.client.RestTemplate;
@@ -24,9 +33,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLConnection;
-
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class EleTest {
@@ -89,6 +100,15 @@ public class EleTest {
 
 	//post请求
 	public static String sendPost( String url,String param) {
+
+		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
+		cm.setMaxTotal(20);
+		cm.setDefaultMaxPerRoute(20);
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5 * 1000).setConnectionRequestTimeout(CONN_REQ_TIMEOUT).setSocketTimeout(SOCK_TIMEOUT).build();
+		CloseableHttpClient client = HttpClientBuilder.create().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).build();
+
+
+
 		PrintWriter out = null;
 		InputStream in = null;
 		String result = "";
