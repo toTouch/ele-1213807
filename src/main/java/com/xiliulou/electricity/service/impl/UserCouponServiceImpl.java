@@ -179,18 +179,18 @@ public class UserCouponServiceImpl implements UserCouponService {
 		userCouponQuery.setTypeList(typeList);
 		List<UserCoupon> userCouponList = userCouponMapper.queryList(userCouponQuery);
 
-		if(Objects.isNull(userCouponList)){
+		if (Objects.isNull(userCouponList)) {
 			return R.ok(userCouponList);
 		}
 
-		List<UserCouponVO> userCouponVOList=new ArrayList<>();
-		for (UserCoupon userCoupon:userCouponList) {
+		List<UserCouponVO> userCouponVOList = new ArrayList<>();
+		for (UserCoupon userCoupon : userCouponList) {
 
-			UserCouponVO userCouponVO=new UserCouponVO();
-			BeanUtil.copyProperties(userCoupon,userCouponVO);
+			UserCouponVO userCouponVO = new UserCouponVO();
+			BeanUtil.copyProperties(userCoupon, userCouponVO);
 
-			Coupon coupon=couponService.queryByIdFromCache(userCoupon.getCouponId());
-			if(Objects.nonNull(coupon)){
+			Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
+			if (Objects.nonNull(coupon)) {
 				userCouponVO.setAmount(coupon.getAmount());
 				userCouponVO.setDiscount(coupon.getDiscount());
 			}
@@ -248,13 +248,13 @@ public class UserCouponServiceImpl implements UserCouponService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
-		UserCoupon oldUserCoupon=queryByActivityIdAndCouponId(activityId,couponId);
-		if(Objects.nonNull(oldUserCoupon)){
+		UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, couponId);
+		if (Objects.nonNull(oldUserCoupon)) {
 			return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
 		}
 
 		//判断用户是否可以领取优惠券
-		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(),activityId);
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), activityId);
 		if (Objects.isNull(shareActivityRecord)) {
 			return R.fail("ELECTRICITY.00103", "该用户邀请好友不够，领劵失败");
 		}
@@ -291,7 +291,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 					userCouponMapper.insert(userCoupon);
 
 					//领劵完，可用邀请人数减少
-					shareActivityRecordService.reduceAvailableCountByUid(user.getUid(),shareActivityRule.getTriggerCount());
+					shareActivityRecordService.reduceAvailableCountByUid(user.getUid(), shareActivityRule.getTriggerCount());
 					return R.ok("领取成功");
 				}
 			}
@@ -307,9 +307,10 @@ public class UserCouponServiceImpl implements UserCouponService {
 	}
 
 	@Override
-	public UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId) {
+	public UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId, Long uid) {
 		return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>()
-				.eq(UserCoupon::getActivityId,activityId).eq(UserCoupon::getCouponId,couponId));
+				.eq(UserCoupon::getActivityId, activityId).eq(UserCoupon::getCouponId, couponId)
+				.eq(UserCoupon::getUid, uid));
 	}
 
 	@Override
