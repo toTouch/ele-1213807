@@ -128,7 +128,7 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 		JoinShareActivityRecord oldJoinShareActivityRecord = joinShareActivityRecordMapper.selectOne(new LambdaQueryWrapper<JoinShareActivityRecord>()
 				.eq(JoinShareActivityRecord::getJoinUid, user.getUid()).eq(JoinShareActivityRecord::getTenantId, tenantId)
 				.eq(JoinShareActivityRecord::getActivityId, activityId)
-		        .in(JoinShareActivityRecord::getStatus,JoinShareActivityRecord.STATUS_INIT));
+				.in(JoinShareActivityRecord::getStatus, JoinShareActivityRecord.STATUS_INIT));
 
 		if (Objects.nonNull(oldJoinShareActivityRecord)) {
 			if (Objects.equals(oldJoinShareActivityRecord.getUid(), uid)) {
@@ -142,11 +142,15 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
 
+
 			//修改被替换掉的历史记录状态
 			JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareActivityRecord.getId());
-			oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
-			oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-			joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+			if (Objects.nonNull(oldJoinShareActivityHistory)) {
+				oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
+				oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+				joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
+			}
+
 
 			//新增邀请历史记录
 			JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
