@@ -109,7 +109,7 @@
 	<select id="homeOneSuccess" resultType="java.lang.Integer">
 		select count(1)
 		from t_electricity_cabinet_order
-		where status=6
+		where order_seq=7.0
 		<if test="first != null">
 			and create_time &gt;=#{first}
 		</if>
