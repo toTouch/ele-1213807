@@ -391,7 +391,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		//未实名认证
 		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
 			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
-			return R.fail("0041");
+			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
 		ShareActivityVO shareActivityVO = new ShareActivityVO();
