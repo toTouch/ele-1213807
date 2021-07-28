@@ -317,4 +317,10 @@ public class UserCouponServiceImpl implements UserCouponService {
 	public void update(UserCoupon userCoupon) {
 		userCouponMapper.updateById(userCoupon);
 	}
+
+	@Override
+	public R queryCount(UserCouponQuery userCouponQuery) {
+		Integer count = userCouponMapper.queryCount(userCouponQuery);
+		return R.ok(count);
+	}
 }

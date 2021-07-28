@@ -35,6 +35,33 @@
             limit #{query.offset}, #{query.size}
         </if>
     </select>
+	<select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_user_coupon
+        <where>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and phone = #{query.phone}
+            </if>
+            <if test="query.couponId != null">
+                and coupon_id = #{query.couponId}
+            </if>
+            <if test="query.statusList!=null and query.statusList!=''">
+                and status in
+                <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.typeList!=null and query.typeList!=''">
+                and discount_type in
+                <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 
 </mapper>

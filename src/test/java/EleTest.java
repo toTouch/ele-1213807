@@ -16,6 +16,7 @@ import com.xiliulou.pay.weixin.entity.SharePictureQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.Consts;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -23,6 +24,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.HttpHostConnectException;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
@@ -102,29 +104,51 @@ public class EleTest {
 	}
 
 	//post请求
-	public static String sendPost(String url, String param) {
+	public static String sendPost(String url, String params) {
 
 		PoolingHttpClientConnectionManager cm = new PoolingHttpClientConnectionManager();
 		cm.setMaxTotal(20);
 		cm.setDefaultMaxPerRoute(20);
-		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5 * 1000).setConnectionRequestTimeout(CONN_REQ_TIMEOUT).setSocketTimeout(SOCK_TIMEOUT).build();
+		RequestConfig requestConfig = RequestConfig.custom().setConnectTimeout(5 * 1000).setConnectionRequestTimeout(10 * 1000).setSocketTimeout(10 * 1000).build();
 		CloseableHttpClient client = HttpClientBuilder.create().setConnectionManager(cm).setDefaultRequestConfig(requestConfig).build();
 
 		try {
 			URIBuilder b = new URIBuilder(url);
 			URI uri = b.build();
 			HttpPost request = new HttpPost(uri);
+			if (null != params) {
+				request.setEntity(new StringEntity(params));
+			}
 
 			try (CloseableHttpResponse response = client.execute(request)) {
 				if (response.getStatusLine().getStatusCode() != 200) {
 					EntityUtils.consume(response.getEntity());
-					if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500) {
-					} else {
-
-					}
+					if (response.getStatusLine().getStatusCode() >= 400 && response.getStatusLine().getStatusCode() < 500)
+						log.warn("url={}, status={}, reason={}", url, response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
+					else
+						log.error("url={}, status={}, reason={}", url, response.getStatusLine().getStatusCode(), response.getStatusLine().getReasonPhrase());
 					return response.getStatusLine().getReasonPhrase();
 				}
-				byte[] data = EntityUtils.toByteArray(response.getEntity());
+				InputStream in = response.getEntity().getContent();
+
+
+				// 读取图片字节数组
+				ByteArrayOutputStream swapStream = new ByteArrayOutputStream();
+				byte[] buff = new byte[100];
+				int rc = 0;
+				while ((rc = in.read(buff, 0, 100)) > 0) {
+					swapStream.write(buff, 0, rc);
+				}
+				byte[] data =  swapStream.toByteArray();
+
+				if (in != null) {
+					try {
+						in.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
+				}
+
 				if (data.length > 1000) {
 					return new String(Base64.encodeBase64(data));
 				}
@@ -136,6 +160,7 @@ public class EleTest {
 		} catch (Exception e) {
 			log.error("url={}", url, e);
 		}
+		return "";
 
 		/*PrintWriter out = null;
 		InputStream in = null;

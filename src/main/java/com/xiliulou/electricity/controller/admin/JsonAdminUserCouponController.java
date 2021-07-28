@@ -47,6 +47,20 @@ public class JsonAdminUserCouponController {
         return userCouponService.queryList(userCouponQuery);
     }
 
+    //用户优惠券列表查询
+    @GetMapping(value = "/admin/userCoupon/queryCount")
+    public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
+            @RequestParam(value = "uid", required = false) Long uid,
+            @RequestParam(value = "phone", required = false) String phone) {
+
+
+        UserCouponQuery userCouponQuery = UserCouponQuery.builder()
+                .couponId(couponId)
+                .uid(uid)
+                .phone(phone).build();
+        return userCouponService.queryCount(userCouponQuery);
+    }
+
     //批量发放优惠券
     @PostMapping(value = "/admin/userCoupon/batchRelease")
     public R batchRelease(@RequestParam("id") Integer id,@RequestParam("uid") String uid) {
