@@ -24,4 +24,9 @@ public class OwnMemberCardInfoVo {
     private Integer type;
     private String name;
 
+    /**
+     * 套餐id
+     */
+    private Integer cardId;
+
 }

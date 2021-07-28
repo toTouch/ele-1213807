@@ -6,6 +6,7 @@ import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -43,5 +44,17 @@ public class JsonUserElectricityCabinetMemberCardController {
 			offset = 0L;
 		}
 		return electricityMemberCardService.queryUserList(offset, size,productKey,deviceName);
+	}
+
+
+	/**
+	 * 月卡详情
+	 *
+	 * @param
+	 * @return
+	 */
+	@GetMapping(value = "/user/memberCard/{id}")
+	public R queryUserList(@PathVariable("id") Integer id) {
+		return R.ok(electricityMemberCardService.queryByCache(id));
 	}
 }

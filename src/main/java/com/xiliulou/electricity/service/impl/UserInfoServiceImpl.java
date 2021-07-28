@@ -214,6 +214,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		ownMemberCardInfoVo.setType(franchiseeUserInfo.getCardType());
 		ownMemberCardInfoVo.setName(franchiseeUserInfo.getCardName());
 		ownMemberCardInfoVo.setDays((long) Math.round((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
+		ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getCardId());
 		return R.ok(ownMemberCardInfoVo);
 	}
 
