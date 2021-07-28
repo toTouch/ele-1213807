@@ -300,7 +300,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 			}
 		}
 
-		return R.fail("ELECTRICITY.0085", "未找到优惠券");
+		return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
 
 	}
 
