@@ -28,7 +28,7 @@ public interface UserCouponService {
 
     UserCoupon queryByIdFromDB(Integer userCouponId);
 
-    UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId,Long uid);
+    UserCoupon queryByActivityIdAndCouponId(Integer activityId, Long activityRuleId, Integer couponId,Long uid);
 
 	void update(UserCoupon userCoupon);
 

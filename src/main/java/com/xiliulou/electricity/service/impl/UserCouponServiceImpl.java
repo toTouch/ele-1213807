@@ -248,10 +248,6 @@ public class UserCouponServiceImpl implements UserCouponService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
-		UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId, couponId,user.getUid());
-		if (Objects.nonNull(oldUserCoupon)) {
-			return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
-		}
 
 		//判断用户是否可以领取优惠券
 		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), activityId);
@@ -272,11 +268,18 @@ public class UserCouponServiceImpl implements UserCouponService {
 						return R.fail("ELECTRICITY.0085", "未找到优惠券");
 					}
 
+					UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId,shareActivityRule.getId(), couponId,user.getUid());
+					if (Objects.nonNull(oldUserCoupon)) {
+						return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
+					}
+
+
 					LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
 					UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
 							.name(coupon.getName())
 							.source(UserCoupon.TYPE_SOURCE_ADMIN_SEND)
 							.activityId(activityId)
+							.activityRuleId(shareActivityRule.getId())
 							.couponId(couponId)
 							.discountType(coupon.getDiscountType())
 							.status(UserCoupon.STATUS_UNUSED)
@@ -307,10 +310,10 @@ public class UserCouponServiceImpl implements UserCouponService {
 	}
 
 	@Override
-	public UserCoupon queryByActivityIdAndCouponId(Integer activityId, Integer couponId, Long uid) {
+	public UserCoupon queryByActivityIdAndCouponId(Integer activityId,Long activityRuleId, Integer couponId, Long uid) {
 		return userCouponMapper.selectOne(new LambdaQueryWrapper<UserCoupon>()
-				.eq(UserCoupon::getActivityId, activityId).eq(UserCoupon::getCouponId, couponId)
-				.eq(UserCoupon::getUid, uid));
+				.eq(UserCoupon::getActivityId, activityId).eq(UserCoupon::getActivityRuleId,activityRuleId)
+				.eq(UserCoupon::getCouponId, couponId).eq(UserCoupon::getUid, uid));
 	}
 
 	@Override

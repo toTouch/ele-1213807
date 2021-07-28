@@ -334,7 +334,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 			if (Objects.nonNull(coupon)) {
 
 				//是否领取该活动该优惠券
-				UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(), coupon.getId(),user.getUid());
+				UserCoupon userCoupon = userCouponService.queryByActivityIdAndCouponId(shareActivityVO.getId(),shareActivityRule.getId(), coupon.getId(),user.getUid());
 				if (Objects.nonNull(userCoupon)) {
 					couponVO.setIsGet(CouponVO.IS_RECEIVED);
 					couponCount = couponCount + 1;

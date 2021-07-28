@@ -34,6 +34,10 @@ public class UserCoupon {
      */
     private Integer activityId;
     /**
+     * 活动规则id
+     */
+    private Long activityRuleId;
+    /**
      * 优惠券id
      */
     private Integer couponId;
