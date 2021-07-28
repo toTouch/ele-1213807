@@ -270,7 +270,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
 					UserCoupon oldUserCoupon = queryByActivityIdAndCouponId(activityId,shareActivityRule.getId(), couponId,user.getUid());
 					if (Objects.nonNull(oldUserCoupon)) {
-						return R.fail("ELECTRICITY.00104", "已领过该张优惠券，请不要贪心哦");
+						continue;
 					}
 
 
