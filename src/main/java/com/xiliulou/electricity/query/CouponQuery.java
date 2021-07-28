@@ -33,4 +33,6 @@ public class CouponQuery {
      */
     private Integer applyType;
 
+    private Integer tenantId;
+
 }

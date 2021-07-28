@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ShareActivityRecordQuery;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -35,11 +36,15 @@ public class JsonAdminShareActivityRecordController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
 				.offset(offset)
 				.size(size)
 				.phone(phone)
-				.name(name).build();
+				.name(name)
+				.tenantId(tenantId).build();
 
 		return shareActivityRecordService.queryList(shareActivityRecordQuery);
 
@@ -51,9 +56,13 @@ public class JsonAdminShareActivityRecordController {
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "name", required = false) String name) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		ShareActivityRecordQuery shareActivityRecordQuery = ShareActivityRecordQuery.builder()
 				.phone(phone)
-				.name(name).build();
+				.name(name)
+				.tenantId(tenantId).build();
 
 		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
 

@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -63,6 +64,9 @@ public class JsonAdminCouponController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
 			log.error("ELECTRICITY  ERROR! not found user ");
@@ -83,7 +87,8 @@ public class JsonAdminCouponController {
 				.name(name)
 				.discountType(discountType)
 				.franchiseeId(franchiseeId)
-				.applyType(applyType).build();
+				.applyType(applyType)
+				.tenantId(tenantId).build();
 		return couponService.queryList(couponQuery);
 	}
 
@@ -95,6 +100,8 @@ public class JsonAdminCouponController {
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "applyType", required = false) Integer applyType) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -114,7 +121,8 @@ public class JsonAdminCouponController {
 				.name(name)
 				.discountType(discountType)
 				.franchiseeId(franchiseeId)
-				.applyType(applyType).build();
+				.applyType(applyType)
+				.tenantId(tenantId).build();
 		return couponService.queryCount(couponQuery);
 	}
 

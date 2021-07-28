@@ -26,5 +26,7 @@ public class ShareActivityQuery {
      */
     private Integer franchiseeId;
 
+    private Integer tenantId;
+
 
 }

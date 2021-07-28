@@ -20,6 +20,9 @@
 			<if test="name != null and name != ''">
 				and tui.name = #{name}
 			</if>
+			<if test="tenantId != null ">
+				and tsar.tenant_id = #{tenantId}
+			</if>
 		</where>
 		order by tsar.update_time desc
 		limit #{offset}, #{size}
@@ -35,6 +38,9 @@
 			</if>
 			<if test="name != null and name != ''">
 				and tui.name = #{name}
+			</if>
+			<if test="tenantId != null ">
+				and tsar.tenant_id = #{tenantId}
 			</if>
 		</where>
 	</select>

@@ -20,6 +20,8 @@ public class ShareActivityRecordQuery {
     private String phone;
     private String name;
 
+    private Integer tenantId;
+
 
 
 }

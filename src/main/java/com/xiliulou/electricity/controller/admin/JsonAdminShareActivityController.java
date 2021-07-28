@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.ShareActivityService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -69,6 +70,9 @@ public class JsonAdminShareActivityController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -91,7 +95,8 @@ public class JsonAdminShareActivityController {
                 .offset(offset)
                 .size(size)
                 .name(name)
-                .franchiseeId(franchiseeId).build();
+                .franchiseeId(franchiseeId)
+                .tenantId(tenantId).build();
 
 
 
@@ -111,6 +116,8 @@ public class JsonAdminShareActivityController {
                         @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
                         @RequestParam(value = "type", required = false) String type) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -131,7 +138,8 @@ public class JsonAdminShareActivityController {
 
         ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
                 .name(name)
-                .franchiseeId(franchiseeId).build();
+                .franchiseeId(franchiseeId)
+                .tenantId(tenantId).build();
 
         if (StringUtils.isNotEmpty(type)) {
             Integer[] types = (Integer[])

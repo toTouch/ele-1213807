@@ -22,6 +22,9 @@
             <if test="query.applyType!=null">
                 and apply_type =#{query.applyType}
             </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
+            </if>
         </where>
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
@@ -43,6 +46,9 @@
             </if>
             <if test="query.applyType!=null">
                 and apply_type =#{query.applyType}
+            </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
             </if>
         </where>
     </select>
