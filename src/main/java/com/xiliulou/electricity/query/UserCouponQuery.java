@@ -36,4 +36,6 @@ public class UserCouponQuery {
     private List<Integer> statusList;
 
     private List<Integer> typeList;
+
+    private Integer tenantId;
 }

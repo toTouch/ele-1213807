@@ -30,6 +30,9 @@
                     #{id}
                 </foreach>
             </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
+            </if>
         </where>
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
@@ -61,6 +64,9 @@
                 <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
+            </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
             </if>
         </where>
     </select>

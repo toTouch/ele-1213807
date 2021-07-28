@@ -4,6 +4,7 @@ import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.UserCouponService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -38,12 +39,16 @@ public class JsonAdminUserCouponController {
             offset = 0L;
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         UserCouponQuery userCouponQuery = UserCouponQuery.builder()
                 .offset(offset)
                 .size(size)
                 .couponId(couponId)
                 .uid(uid)
-                .phone(phone).build();
+                .phone(phone)
+                .tenantId(tenantId).build();
         return userCouponService.queryList(userCouponQuery);
     }
 
@@ -53,11 +58,14 @@ public class JsonAdminUserCouponController {
             @RequestParam(value = "uid", required = false) Long uid,
             @RequestParam(value = "phone", required = false) String phone) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         UserCouponQuery userCouponQuery = UserCouponQuery.builder()
                 .couponId(couponId)
                 .uid(uid)
-                .phone(phone).build();
+                .phone(phone)
+                .tenantId(tenantId).build();
         return userCouponService.queryCount(userCouponQuery);
     }
 
