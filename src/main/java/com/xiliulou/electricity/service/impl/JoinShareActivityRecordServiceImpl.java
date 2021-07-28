@@ -142,7 +142,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 			oldJoinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 			joinShareActivityRecordMapper.updateById(oldJoinShareActivityRecord);
 
-
 			//修改被替换掉的历史记录状态
 			JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareActivityRecord.getId());
 			if (Objects.nonNull(oldJoinShareActivityHistory)) {
@@ -150,7 +149,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 				oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
 				joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
 			}
-
 
 			//新增邀请历史记录
 			JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
@@ -207,16 +205,17 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	@Override
 	public void handelJoinShareActivityExpired() {
-		//分页只修改200条
-		List<JoinShareActivityRecord> joinShareActivityRecordList = joinShareActivityRecordMapper.getJoinShareActivityExpired(System.currentTimeMillis(), 0, 200);
-		if (!DataUtil.collectionIsUsable(joinShareActivityRecordList)) {
-			return;
-		}
-		for (JoinShareActivityRecord joinShareActivityRecord : joinShareActivityRecordList) {
-			joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_FAIL);
-			joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-			joinShareActivityRecordMapper.updateById(joinShareActivityRecord);
-		}
+		//
+		JoinShareActivityRecord joinShareActivityRecord = new JoinShareActivityRecord();
+		joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_FAIL);
+		joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+		joinShareActivityRecordMapper.updateExpired(joinShareActivityRecord);
+
+		JoinShareActivityHistory joinShareActivityHistory = new JoinShareActivityHistory();
+		joinShareActivityHistory.setStatus(JoinShareActivityRecord.STATUS_FAIL);
+		joinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+		joinShareActivityHistoryService.updateExpired(joinShareActivityHistory);
+
 	}
 
 	@Override

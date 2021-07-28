@@ -28,4 +28,7 @@ public interface JoinShareActivityHistoryMapper extends BaseMapper<JoinShareActi
 
 	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where activity_id=#{activityId} and status=1")
 	void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory);
+
+	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
+	void updateExpired(JoinShareActivityHistory joinShareActivityHistory);
 }

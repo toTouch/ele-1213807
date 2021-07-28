@@ -152,4 +152,10 @@ public class JoinShareActivityHistoryServiceImpl implements JoinShareActivityHis
 		joinShareActivityHistoryMapper.updateByActivityId(joinShareActivityHistory);
 	}
 
+	@Override
+	public void updateExpired(JoinShareActivityHistory joinShareActivityHistory) {
+		joinShareActivityHistoryMapper.updateExpired(joinShareActivityHistory);
+	}
+
+
 }

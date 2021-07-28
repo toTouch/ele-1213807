@@ -17,8 +17,11 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface JoinShareActivityRecordMapper  extends BaseMapper<JoinShareActivityRecord>{
 
-	List<JoinShareActivityRecord> getJoinShareActivityExpired( @Param("expiredTime") long expiredTime,@Param("offset")  int offset, @Param("size") int size);
+
 
 	@Update("update t_join_share_activity_record set status=#{status},update_time=#{updateTime} where activity_id=#{activityId} and status=1")
 	void updateByActivityId(JoinShareActivityRecord joinShareActivityRecord);
+
+	@Update("update t_join_share_activity_record set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
+	void updateExpired(JoinShareActivityRecord joinShareActivityRecord);
 }

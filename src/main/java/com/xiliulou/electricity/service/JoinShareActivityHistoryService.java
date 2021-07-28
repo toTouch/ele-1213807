@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 
+import java.util.List;
+
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)表服务接口
  *
@@ -43,4 +45,6 @@ public interface JoinShareActivityHistoryService {
 	R queryList(JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery);
 
 	void updateByActivityId(JoinShareActivityHistory joinShareActivityHistory);
+
+	void updateExpired(JoinShareActivityHistory joinShareActivityHistory);
 }
