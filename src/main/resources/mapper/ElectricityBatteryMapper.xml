@@ -37,8 +37,6 @@
         electricity_cabinet_id,uid
         FROM t_electricity_battery
         WHERE uid = #{uid} and del_flag = 0
-        order by update_time desc
-        limit 0,1
     </select>
 
 
