@@ -125,6 +125,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 				if(!Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
 					userInfo.setServiceStatus(franchiseeUserInfo.getServiceStatus());
 				}
+
+				if(Objects.nonNull(userInfoQuery.getServiceStatus())){
+					if(!Objects.equals(userInfo.getServiceStatus(),userInfoQuery.getServiceStatus())){
+						continue;
+					}
+				}
 			}
 			BeanUtil.copyProperties(userInfo,userInfoVO);
 
