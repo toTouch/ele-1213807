@@ -22,4 +22,6 @@ public class MemberCardOrderQuery {
     private Long offset;
 
     private Integer tenantId;
+
+    private Integer status;
 }

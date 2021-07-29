@@ -17,6 +17,9 @@
 		<if test="query.cardType != null">
 			and tel.member_card_type =#{query.cardType}
 		</if>
+		<if test="query.status != null">
+			and tel.status =#{query.status}
+		</if>
 		<if test="query.tenantId != null">
 			and tel.tenant_id = #{query.tenantId}
 		</if>
@@ -25,6 +28,32 @@
 		</if>
 		order by tel.create_time desc
 		limit #{query.offset}, #{query.size}
+	</select>
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select COUNT(1)
+		from t_electricity_member_card_order tel
+		LEFT JOIN t_user_info tui on tui.uid = tel.uid
+
+		WHERE 0= 0
+		<if test="query.phone != null">
+			and tui.phone =#{query.phone}
+		</if>
+		<if test="query.orderId != null">
+			and tel.order_id =#{query.orderId}
+		</if>
+		<if test="query.cardType != null">
+			and tel.member_card_type =#{query.cardType}
+		</if>
+		<if test="query.tenantId != null">
+			and tel.tenant_id = #{query.tenantId}
+		</if>
+		<if test="query.queryStartTime != null">
+			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+		</if>
+		<if test="query.status != null">
+			and tel.status =#{query.status}
+		</if>
 	</select>
 
 
@@ -92,27 +121,6 @@
 		order by date desc
 
 	</select>
-	<select id="queryCount" resultType="java.lang.Integer">
-		select COUNT(1)
-		from t_electricity_member_card_order tel
-		LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
-		WHERE 0= 0
-		<if test="query.phone != null">
-			and tui.phone =#{query.phone}
-		</if>
-		<if test="query.orderId != null">
-			and tel.order_id =#{query.orderId}
-		</if>
-		<if test="query.cardType != null">
-			and tel.member_card_type =#{query.cardType}
-		</if>
-		<if test="query.tenantId != null">
-			and tel.tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.queryStartTime != null">
-			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
-		</if>
-	</select>
 
 </mapper>
