@@ -339,7 +339,7 @@ public class EleOperateQueueHandler {
 				}
 				ElectricityBattery newElectricityBattery = new ElectricityBattery();
 				newElectricityBattery.setId(oldElectricityBattery.getId());
-				newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+				newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
 				newElectricityBattery.setUid(null);
 				newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 				electricityBatteryService.updateByOrder(newElectricityBattery);
@@ -439,7 +439,7 @@ public class EleOperateQueueHandler {
 			}
 			ElectricityBattery newElectricityBattery = new ElectricityBattery();
 			newElectricityBattery.setId(oldElectricityBattery.getId());
-			newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+			newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
 			newElectricityBattery.setUid(null);
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 			electricityBatteryService.updateByOrder(newElectricityBattery);
