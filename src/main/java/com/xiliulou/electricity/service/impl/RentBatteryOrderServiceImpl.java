@@ -39,6 +39,7 @@ import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
@@ -129,6 +130,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			log.error("rentBattery  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
@@ -296,7 +300,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 					.electricityCabinetId(electricityCabinet.getId())
 					.cellNo(Integer.valueOf(cellNo))
 					.createTime(System.currentTimeMillis())
-					.updateTime(System.currentTimeMillis()).build();
+					.updateTime(System.currentTimeMillis())
+					.tenantId(tenantId).build();
 			rentBatteryOrderMapper.insert(rentBatteryOrder);
 
 			//发送开门命令
