@@ -31,7 +31,7 @@ public class JsonUserElectricityCabinetBatteryController {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
 
-        return R.ok(electricityBatteryService.getSelfBattery(uid));
+        return R.ok(electricityBatteryService.queryByUid(uid));
     }
 
 }

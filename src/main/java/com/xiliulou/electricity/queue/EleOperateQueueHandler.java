@@ -329,6 +329,21 @@ public class EleOperateQueueHandler {
 			franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 			franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
+			//查看用户是否有以前绑定的电池
+			ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+			if(Objects.nonNull(oldElectricityBattery)){
+				if(Objects.equals(oldElectricityBattery.getSn(),electricityCabinetOrder.getNewElectricityBatterySn()){
+					//删除柜机被锁缓存
+					redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
+					return;
+				}
+				ElectricityBattery newElectricityBattery = new ElectricityBattery();
+				newElectricityBattery.setId(oldElectricityBattery.getId());
+				newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+				newElectricityBattery.setUid(null);
+				newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+				electricityBatteryService.updateByOrder(newElectricityBattery);
+			}
 			//电池改为在用
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
 			ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -338,6 +353,7 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 			electricityBatteryService.updateByOrder(newElectricityBattery);
+
 
 			//删除柜机被锁缓存
 			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
@@ -411,6 +427,23 @@ public class EleOperateQueueHandler {
 		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
 		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 		franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
+
+
+		//查看用户是否有以前绑定的电池
+		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(rentBatteryOrder.getUid());
+		if(Objects.nonNull(oldElectricityBattery)){
+			if(Objects.equals(oldElectricityBattery.getSn(),rentBatteryOrder.getElectricityBatterySn()){
+				//删除柜机被锁缓存
+				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
+				return;
+			}
+			ElectricityBattery newElectricityBattery = new ElectricityBattery();
+			newElectricityBattery.setId(oldElectricityBattery.getId());
+			newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+			newElectricityBattery.setUid(null);
+			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+			electricityBatteryService.updateByOrder(newElectricityBattery);
+		}
 
 		//电池改为在用
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());

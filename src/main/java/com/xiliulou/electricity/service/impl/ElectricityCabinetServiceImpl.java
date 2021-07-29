@@ -46,7 +46,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -926,7 +925,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//我的电池
 		Double battery = null;
-		ElectricityBattery electricityBattery=electricityBatteryService.getSelfBattery(user.getUid());
+		ElectricityBattery electricityBattery=electricityBatteryService.queryByUid(user.getUid());
 		if(Objects.nonNull(electricityBattery)){
 			battery=electricityBattery.getPower();
 		}
