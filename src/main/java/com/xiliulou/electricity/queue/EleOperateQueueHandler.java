@@ -332,7 +332,7 @@ public class EleOperateQueueHandler {
 			//查看用户是否有以前绑定的电池
 			ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
 			if(Objects.nonNull(oldElectricityBattery)){
-				if(Objects.equals(oldElectricityBattery.getSn(),electricityCabinetOrder.getNewElectricityBatterySn()){
+				if(Objects.equals(oldElectricityBattery.getSn(),electricityCabinetOrder.getNewElectricityBatterySn())){
 					//删除柜机被锁缓存
 					redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
 					return;
@@ -432,7 +432,7 @@ public class EleOperateQueueHandler {
 		//查看用户是否有以前绑定的电池
 		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(rentBatteryOrder.getUid());
 		if(Objects.nonNull(oldElectricityBattery)){
-			if(Objects.equals(oldElectricityBattery.getSn(),rentBatteryOrder.getElectricityBatterySn()){
+			if(Objects.equals(oldElectricityBattery.getSn(),rentBatteryOrder.getElectricityBatterySn())){
 				//删除柜机被锁缓存
 				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
 				return;
