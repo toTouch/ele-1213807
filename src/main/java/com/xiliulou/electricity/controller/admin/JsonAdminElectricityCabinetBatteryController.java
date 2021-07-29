@@ -83,6 +83,7 @@ public class JsonAdminElectricityCabinetBatteryController {
     public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
                                        @RequestParam(value = "status", required = false) Integer status,
+                                       @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                                        @RequestParam(value = "sn", required = false) String sn) {
 
         //租户
@@ -93,6 +94,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setChargeStatus(chargeStatus);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
@@ -104,6 +106,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      */
     @GetMapping(value = "/admin/battery/queryCount")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
             @RequestParam(value = "sn", required = false) String sn) {
 
         //租户
@@ -114,6 +117,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setStatus(status);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setChargeStatus(chargeStatus);
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }
 
@@ -129,7 +133,8 @@ public class JsonAdminElectricityCabinetBatteryController {
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset,
             @RequestParam(value = "size") Long size,
             @RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "sn", required = false) String sn) {
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -166,6 +171,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setChargeStatus(chargeStatus);
 
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
@@ -179,7 +185,8 @@ public class JsonAdminElectricityCabinetBatteryController {
      */
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
     public R queryCountByFranchisee(@RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "sn", required = false) String sn) {
+            @RequestParam(value = "sn", required = false) String sn,
+            @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -216,6 +223,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setChargeStatus(chargeStatus);
 
         return electricityBatteryService.queryCount(electricityBatteryQuery);
     }

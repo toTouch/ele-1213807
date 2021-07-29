@@ -30,5 +30,7 @@ public class ElectricityBatteryQuery {
 
     private Integer tenantId;
 
+    private Integer chargeStatus;
+
 
 }
