@@ -912,4 +912,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				RandomUtil.randomNumbers(4);
 	}
 
+
+
 }
