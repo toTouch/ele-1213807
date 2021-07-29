@@ -118,7 +118,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl()+ electricityTradeOrder.getTenantId());
 		wechatV3RefundQuery.setCurrency("CNY");
 		wechatV3RefundQuery.setRefundId(electricityTradeOrder.getTradeOrderNo() + "_re");
-		log.info("wechatV3RefundQuery is -->{}",wechatV3RefundQuery);
+		log.info("、 is -->{}",wechatV3RefundQuery);
 
 		return wechatV3JsapiService.refund(wechatV3RefundQuery);
 	}
