@@ -177,26 +177,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 		userCouponQuery.setStatusList(statusList);
 		userCouponQuery.setUid(uid);
 		userCouponQuery.setTypeList(typeList);
-		List<UserCoupon> userCouponList = userCouponMapper.queryList(userCouponQuery);
-
-		if (Objects.isNull(userCouponList)) {
-			return R.ok(userCouponList);
-		}
-
-		List<UserCouponVO> userCouponVOList = new ArrayList<>();
-		for (UserCoupon userCoupon : userCouponList) {
-
-			UserCouponVO userCouponVO = new UserCouponVO();
-			BeanUtil.copyProperties(userCoupon, userCouponVO);
-
-			Coupon coupon = couponService.queryByIdFromCache(userCoupon.getCouponId());
-			if (Objects.nonNull(coupon)) {
-				userCouponVO.setAmount(coupon.getAmount());
-				userCouponVO.setDiscount(coupon.getDiscount());
-			}
-
-			userCouponVOList.add(userCouponVO);
-		}
+		List<UserCouponVO> userCouponVOList = userCouponMapper.queryList(userCouponQuery);
 
 		return R.ok(userCouponVOList);
 
