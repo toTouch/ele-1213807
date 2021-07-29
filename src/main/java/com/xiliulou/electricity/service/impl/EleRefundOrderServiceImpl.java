@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -67,6 +68,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
 	WechatV3JsapiService wechatV3JsapiService;
+	@Autowired
+	WechatConfig wechatConfig;
 
 
 	/**
@@ -112,7 +115,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		wechatV3RefundQuery.setRefund(refundOrder.getRefundAmount().multiply(new BigDecimal(100)).intValue());
 		wechatV3RefundQuery.setReason("老子要退");
 		wechatV3RefundQuery.setOrderId(electricityTradeOrder.getTradeOrderNo());
-		wechatV3RefundQuery.setNotifyUrl("https://eclair.xiliulou.com/frp/qifaner/outer/wechat/refund/notified/" + electricityTradeOrder.getTenantId());
+		wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl()+ electricityTradeOrder.getTenantId());
 		wechatV3RefundQuery.setCurrency("CNY");
 		wechatV3RefundQuery.setRefundId(electricityTradeOrder.getTradeOrderNo() + "_re");
 

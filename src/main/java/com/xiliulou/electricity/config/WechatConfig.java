@@ -48,14 +48,19 @@ public class WechatConfig {
      */
     private String mchCertificatePrivateKeyPath;
 
+
+    /**
+     * 商户证书私钥文件目录
+     */
+    private String mchCertificateDirectory;
     /**
      * 支付回调,后缀必须有"/"
      */
     private String payCallBackUrl;
     /**
-     * 商户证书私钥文件目录
+     * 退款回调,后缀必须有"/"
      */
-    private String mchCertificateDirectory;
+    private String refundCallBackUrl;
 
 
 }
