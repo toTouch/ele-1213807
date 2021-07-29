@@ -4,36 +4,41 @@
 
 
     <!--查询指定行数据-->
-    <select id="queryList" resultType="com.xiliulou.electricity.entity.UserCoupon">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.UserCouponVO">
         select
-        id, name, uid, phone, coupon_id, deadline, order_id, create_time, update_time, status, source, del_flag,discount_type
-        from t_user_coupon
+        tuc.id as id, tuc.name as name, tuc.uid as uid, tuc.phone as phone, tuc.coupon_id as couponId,
+        tuc.deadline as deadline, tuc.order_id as orderId,tuc.create_time  as createTime,
+        tuc.update_time  as updateTime, tuc.status as status, tuc.source as source, tuc.del_flag as delFlag,
+        tuc.discount_type  as discountType,tc.amount AS amount,tc.discount AS discount
+        from t_user_coupon as tuc
+        left join t_coupon as tc on tuc.coupon_id=tc.id
         <where>
             <if test="query.uid != null">
-                and uid = #{query.uid}
+                and tuc.uid = #{query.uid}
             </if>
             <if test="query.phone != null and query.phone != ''">
-                and phone = #{query.phone}
+                and tuc.phone = #{query.phone}
             </if>
             <if test="query.couponId != null">
-                and coupon_id = #{query.couponId}
+                and tuc.coupon_id = #{query.couponId}
             </if>
             <if test="query.statusList!=null and query.statusList!=''">
-                and status in
+                and tuc.status in
                 <foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.typeList!=null and query.typeList!=''">
-                and discount_type in
+                and tuc.discount_type in
                 <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.tenantId != null ">
-                and tenant_id = #{query.tenantId}
+                and tuc.tenant_id = #{query.tenantId}
             </if>
         </where>
+        ORDER BY tuc.update_time DESC
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
         </if>

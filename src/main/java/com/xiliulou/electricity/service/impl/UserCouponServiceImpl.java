@@ -74,7 +74,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 
 	@Override
 	public R queryList(UserCouponQuery userCouponQuery) {
-		List<UserCoupon> userCouponList = userCouponMapper.queryList(userCouponQuery);
+		List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
 		return R.ok(userCouponList);
 	}
 
