@@ -281,13 +281,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		DbUtils.dbOperateSuccessThen(update, () -> {
 
 			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
+			redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
 
 			//，key变化 先删除老的，以免老的删不掉
 			redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + oldElectricityCabinet.getProductKey() + oldElectricityCabinet.getDeviceName() + oldElectricityCabinet.getTenantId());
 
-			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId(), electricityCabinet);
 
 			//添加快递柜格挡
 			if (!oldModelId.equals(electricityCabinet.getModelId())) {
