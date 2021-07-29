@@ -272,6 +272,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         return R.ok(baseMapper.listCountByFranchisee(status, type,tenantId,franchiseeId));
     }
 
+    @Override
+    public ElectricityMemberCard queryByStatus(Integer id) {
+        return baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId,id)
+                .eq(ElectricityMemberCard::getStatus,ElectricityMemberCard.STATUS_USEABLE));
+    }
+
     /**
      * 获取套餐
      *

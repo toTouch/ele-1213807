@@ -55,6 +55,6 @@ public class JsonUserElectricityCabinetMemberCardController {
 	 */
 	@GetMapping(value = "/user/memberCard/{id}")
 	public R queryUserList(@PathVariable("id") Integer id) {
-		return R.ok(electricityMemberCardService.queryByCache(id));
+		return R.ok(electricityMemberCardService.queryByStatus(id));
 	}
 }
