@@ -373,7 +373,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 		//生成退款订单
 		EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
-				.orderId(eleDepositOrder.getOrderId()+"_re")
+				.orderId(eleDepositOrder.getOrderId())
 				.refundOrderNo(orderId)
 				.payAmount(payAmount)
 				.refundAmount(payAmount)
