@@ -182,8 +182,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
-    public R getSelfBattery(Long uid) {
-        return R.ok(baseMapper.selectBatteryInfo(uid));
+    public ElectricityBattery getSelfBattery(Long uid) {
+        return baseMapper.selectBatteryInfo(uid);
     }
 
 

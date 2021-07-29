@@ -926,11 +926,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//我的电池
 		Double battery = null;
-		if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(franchiseeUserInfo.getNowElectricityBatterySn());
-			if(Objects.nonNull(electricityBattery)&&Objects.equals(electricityBattery.getUid(),user.getUid())) {
-				battery = electricityBattery.getPower();
-			}
+		ElectricityBattery electricityBattery=electricityBatteryService.getSelfBattery(user.getUid());
+		if(Objects.nonNull(electricityBattery)){
+			battery=electricityBattery.getPower();
 		}
 
 		//月卡剩余天数

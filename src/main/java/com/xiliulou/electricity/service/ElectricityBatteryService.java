@@ -28,8 +28,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
-
-    R getSelfBattery(Long uid);
+    ElectricityBattery getSelfBattery(Long uid);
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 
