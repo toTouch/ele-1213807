@@ -40,6 +40,36 @@
         limit #{query.offset}, #{query.size}
     </select>
 
+    <select id="queryCount" resultType="java.lang.Integer">
+        select COUNT(1)
+        from t_user_info
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
+        <if test="query.phone != null and query.phone != ''">
+            and phone = #{query.phone}
+        </if>
+        <if test="query.tenantId != null">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.serviceStatus != null and query.serviceStatus==1">
+            and service_status = #{query.serviceStatus}
+        </if>
+        <if test="query.serviceStatus != null and query.serviceStatus==2">
+            and service_status = #{query.serviceStatus}
+        </if>
+        <if test="query.authStatus == -1">
+            and auth_status is not null
+        </if>
+    </select>
+
 
     <select id="homeThree" resultType="java.util.HashMap">
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
@@ -67,32 +97,7 @@
     </select>
 
 
-	<select id="queryCount" resultType="java.lang.Integer">
-        select COUNT(1)
-        from t_user_info
-        where del_flag=0
-        <if test="query.name != null and query.name != ''">
-            and name = #{query.name}
-        </if>
-        <if test="query.phone != null and query.phone != ''">
-            and phone = #{query.phone}
-        </if>
-        <if test="query.tenantId != null">
-            and tenant_id = #{query.tenantId}
-        </if>
-        <if test="query.beginTime != null">
-            and create_time &gt;=#{query.beginTime}
-        </if>
-        <if test="query.endTime != null">
-            and create_time &lt;=#{query.endTime}
-        </if>
-        <if test="query.serviceStatus != null">
-            and service_status = #{query.serviceStatus}
-        </if>
-        <if test="query.authStatus == -1">
-            and auth_status is not null
-        </if>
-    </select>
+
 
 
 </mapper>
