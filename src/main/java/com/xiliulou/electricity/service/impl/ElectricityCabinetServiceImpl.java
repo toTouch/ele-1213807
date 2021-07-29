@@ -1496,13 +1496,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//查满仓空仓数
 		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
-		//查满仓空仓数
-		if (fullyElectricityBattery <= 0) {
-			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
-		}
-			/*if (usableElectricityBattery <= 0) {
-				return R.fail("ELECTRICITY.0050", "换电柜暂无可用满电电池");
-			}*/
+
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1518,6 +1512,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			if (noElectricityBattery <= 0) {
 				return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+			}
+		}else {
+			//查满仓空仓数
+			if (fullyElectricityBattery <= 0) {
+				return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 			}
 		}
 
