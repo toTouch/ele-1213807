@@ -130,6 +130,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 				if(Objects.nonNull(userInfoQuery.getServiceStatus())){
 					if(!Objects.equals(userInfo.getServiceStatus(),userInfoQuery.getServiceStatus())){
+						log.info("userInfo is -->{}",userInfo);
+						log.info("userInfoQuery.getServiceStatus() is -->{}",userInfoQuery.getServiceStatus());
 						continue;
 					}
 				}
