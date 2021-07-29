@@ -27,10 +27,10 @@
         <if test="query.endTime != null">
             and create_time &lt;=#{query.endTime}
         </if>
-        <if test="query.serviceStatus != null and query.serviceStatus=1">
+        <if test="query.serviceStatus != null and query.serviceStatus==1">
             and service_status = #{query.serviceStatus}
         </if>
-        <if test="query.serviceStatus != null and query.serviceStatus=2">
+        <if test="query.serviceStatus != null and query.serviceStatus==2">
             and service_status = #{query.serviceStatus}
         </if>
         <if test="query.authStatus == -1">
