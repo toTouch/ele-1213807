@@ -692,7 +692,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			if (Objects.isNull(rentBatteryOrder.getStatus())) {
 				excelVo.setStatus("");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_INIT)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)) {
 				excelVo.setStatus("初始化");
 			}
 			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)) {
@@ -734,10 +734,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
 				excelVo.setStatus("还电池检测超时");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
 				excelVo.setStatus("订单异常结束");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.STATUS_ORDER_CANCEL)) {
+			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL)) {
 				excelVo.setStatus("订单取消");
 			}
 
