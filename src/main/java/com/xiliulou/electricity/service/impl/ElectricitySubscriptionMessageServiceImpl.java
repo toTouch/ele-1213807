@@ -97,12 +97,6 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 			return R.failMsg("操作频繁!");
 		}
 
-		ElectricitySubscriptionMessage electricitySubscriptionMessageDb = baseMapper.selectOne(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
-				.eq(ElectricitySubscriptionMessage::getType, electricitySubscriptionMessage.getType())
-				.ne(ElectricitySubscriptionMessage::getId, electricitySubscriptionMessage.getId()));
-		if (Objects.nonNull(electricitySubscriptionMessageDb)) {
-			return R.failMsg("您已添加此订阅消息!");
-		}
 
 		electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
 		Integer raws = baseMapper.updateById(electricitySubscriptionMessage);

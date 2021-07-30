@@ -21,7 +21,6 @@ public interface TenantService {
      */
     R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery);
 
-
     R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery);
 
     R queryListTenant(TenantQuery tenantQuery);

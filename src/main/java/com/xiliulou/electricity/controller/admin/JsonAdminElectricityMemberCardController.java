@@ -101,7 +101,7 @@ public class JsonAdminElectricityMemberCardController {
      *
      * @return
      */
-    @GetMapping("admin/electricityMemberCard/listByFranchisee")
+    @GetMapping("/admin/electricityMemberCard/listByFranchisee")
     public R listByFranchisee(@RequestParam(value = "offset") Long offset,
             @RequestParam(value = "size") Long size,
             @RequestParam(value = "type", required = false) Integer type,
@@ -132,7 +132,7 @@ public class JsonAdminElectricityMemberCardController {
      *
      * @return
      */
-    @GetMapping("admin/electricityMemberCard/listCountByFranchisee")
+    @GetMapping("/admin/electricityMemberCard/listCountByFranchisee")
     public R listCountByFranchisee(@RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "status", required = false) Integer status) {
 
