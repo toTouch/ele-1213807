@@ -121,19 +121,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			UserInfoVO userInfoVO=new UserInfoVO();
 			FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
-			if(Objects.nonNull(franchiseeUserInfo)){
-				BeanUtil.copyProperties(franchiseeUserInfo,userInfoVO);
-				if(!Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
+			if(Objects.nonNull(franchiseeUserInfo)) {
+				BeanUtil.copyProperties(franchiseeUserInfo, userInfoVO);
+				if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
 					userInfo.setServiceStatus(franchiseeUserInfo.getServiceStatus());
-				}
-
-
-				if(Objects.nonNull(userInfoQuery.getServiceStatus())){
-					if(!Objects.equals(userInfo.getServiceStatus(),userInfoQuery.getServiceStatus())){
-						log.info("userInfo is -->{}",userInfo);
-						log.info("userInfoQuery.getServiceStatus() is -->{}",userInfoQuery.getServiceStatus());
-						continue;
-					}
 				}
 			}
 			BeanUtil.copyProperties(userInfo,userInfoVO);

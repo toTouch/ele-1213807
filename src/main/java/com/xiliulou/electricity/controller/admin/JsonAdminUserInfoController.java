@@ -38,7 +38,6 @@ public class JsonAdminUserInfoController {
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus) {
         if (Objects.isNull(size)) {
             size = 10L;
@@ -58,7 +57,6 @@ public class JsonAdminUserInfoController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .serviceStatus(serviceStatus)
                 .authStatus(authStatus)
                 .tenantId(tenantId).build();
 
@@ -71,7 +69,6 @@ public class JsonAdminUserInfoController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
             @RequestParam(value = "authStatus", required = false) Integer authStatus) {
 
         //租户
@@ -82,7 +79,6 @@ public class JsonAdminUserInfoController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .serviceStatus(serviceStatus)
                 .authStatus(authStatus)
                 .tenantId(tenantId).build();
 
@@ -126,7 +122,6 @@ public class JsonAdminUserInfoController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
             @RequestParam(value = "authStatus", required = false) Integer authStatus) {
         if (size < 0 || size > 50) {
             size = 50L;
@@ -146,7 +141,6 @@ public class JsonAdminUserInfoController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .serviceStatus(serviceStatus)
                 .authStatus(authStatus)
                 .tenantId(tenantId).build();
 
