@@ -213,16 +213,30 @@ public class EleOperateQueueHandler {
 				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 				franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
-				//电池改为在仓
+
+				//查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
+				ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+				if(Objects.nonNull(electricityBattery)){
+					if(!Objects.equals(electricityBattery.getSn(),newElectricityCabinetOrder.getOldElectricityBatterySn())){
+						ElectricityBattery newElectricityBattery = new ElectricityBattery();
+						newElectricityBattery.setId(electricityBattery.getId());
+						newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+						newElectricityBattery.setUid(null);
+						newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+						electricityBatteryService.updateByOrder(newElectricityBattery);
+					}
+				}
+
+				//放入电池改为在仓
 				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(newElectricityCabinetOrder.getOldElectricityBatterySn());
 				if(Objects.nonNull(oldElectricityBattery)) {
-					ElectricityBattery electricityBattery = new ElectricityBattery();
-					electricityBattery.setId(oldElectricityBattery.getId());
-					electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-					electricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-					electricityBattery.setUid(null);
-					electricityBattery.setUpdateTime(System.currentTimeMillis());
-					electricityBatteryService.updateByOrder(electricityBattery);
+					ElectricityBattery newElectricityBattery = new ElectricityBattery();
+					newElectricityBattery.setId(oldElectricityBattery.getId());
+					newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+					newElectricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
+					newElectricityBattery.setUid(null);
+					newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+					electricityBatteryService.updateByOrder(newElectricityBattery);
 				}
 
 				//分配新仓门
@@ -344,6 +358,8 @@ public class EleOperateQueueHandler {
 				newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 				electricityBatteryService.updateByOrder(newElectricityBattery);
 			}
+
+
 			//电池改为在用
 			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
 			ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -476,15 +492,30 @@ public class EleOperateQueueHandler {
 		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
 		franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
-		//电池改为在仓
-		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
-		ElectricityBattery newElectricityBattery = new ElectricityBattery();
-		newElectricityBattery.setId(electricityBattery.getId());
-		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-		newElectricityBattery.setElectricityCabinetId(rentBatteryOrder.getElectricityCabinetId());
-		newElectricityBattery.setUid(null);
-		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-		electricityBatteryService.updateByOrder(newElectricityBattery);
+		//查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
+		ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(rentBatteryOrder.getUid());
+		if(Objects.nonNull(electricityBattery)){
+			if(!Objects.equals(electricityBattery.getSn(),rentBatteryOrder.getElectricityBatterySn())){
+				ElectricityBattery newElectricityBattery = new ElectricityBattery();
+				newElectricityBattery.setId(electricityBattery.getId());
+				newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+				newElectricityBattery.setUid(null);
+				newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+				electricityBatteryService.updateByOrder(newElectricityBattery);
+			}
+		}
+
+		//放入电池改为在仓
+		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
+		if(Objects.nonNull(oldElectricityBattery)) {
+			ElectricityBattery newElectricityBattery = new ElectricityBattery();
+			newElectricityBattery.setId(oldElectricityBattery.getId());
+			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+			newElectricityBattery.setElectricityCabinetId(rentBatteryOrder.getElectricityCabinetId());
+			newElectricityBattery.setUid(null);
+			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+			electricityBatteryService.updateByOrder(newElectricityBattery);
+		}
 
 		//删除柜机被锁缓存
 		redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
