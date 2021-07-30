@@ -429,6 +429,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			excelVo.setId(index);
 			excelVo.setOrderId(electricityMemberCardOrderVO.getOrderId());
 			excelVo.setPhone(electricityMemberCardOrderVO.getPhone());
+			excelVo.setPayAmount(electricityMemberCardOrderVO.getPayAmount());
 
 			if (Objects.nonNull(electricityMemberCardOrderVO.getUpdateTime())) {
 				excelVo.setBeginningTime(simpleDateFormat.format(new Date(electricityMemberCardOrderVO.getUpdateTime())));
