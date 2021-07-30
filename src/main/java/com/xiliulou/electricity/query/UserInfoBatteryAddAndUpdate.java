@@ -17,17 +17,6 @@ public class UserInfoBatteryAddAndUpdate {
     @NotNull(message = "Id不能为空!", groups = {UpdateGroup.class})
     private Long id;
     /**
-    * 用户姓名
-    */
-    @NotEmpty(message = "用户姓名不能为空!", groups = {UpdateGroup.class})
-    private String name;
-
-    /**
-    * 身份证号
-    */
-    @NotEmpty(message = "身份证号不能为空!", groups = {UpdateGroup.class})
-    private String idNumber;
-    /**
     * 初始电池编号
     */
     @NotEmpty(message = "初始电池编号不能为空!", groups = {UpdateGroup.class})
