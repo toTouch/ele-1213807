@@ -449,6 +449,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 	@Override
 	public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {
+		eleDepositOrderQuery.setOffset(0L);
+		eleDepositOrderQuery.setSize(2000L);
 		List<EleDepositOrder> eleDepositOrderList = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
 		if (ObjectUtil.isEmpty(eleDepositOrderList)) {
 			throw new CustomBusinessException("查不到订单");

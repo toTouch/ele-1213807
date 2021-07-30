@@ -447,6 +447,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 	@Override
 	public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
+		electricityCabinetOrderQuery.setOffset(0L);
+		electricityCabinetOrderQuery.setSize(2000L);
 		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
 		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
 			throw new CustomBusinessException("查不到订单");

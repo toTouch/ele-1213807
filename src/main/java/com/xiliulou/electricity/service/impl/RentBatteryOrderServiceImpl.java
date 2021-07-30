@@ -653,6 +653,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	@Override
 	public void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response) {
+		rentBatteryOrderQuery.setOffset(0L);
+		rentBatteryOrderQuery.setSize(2000L);
 		List<RentBatteryOrder> rentBatteryOrderList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
 		if (ObjectUtil.isEmpty(rentBatteryOrderList)) {
 			throw new CustomBusinessException("查不到订单");
