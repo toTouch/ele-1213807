@@ -1633,7 +1633,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("未找到电池");
 		}
 
-		if(Objects.equals(electricityCabinet.getTenantId(),electricityBattery.getTenantId())){
+		if(!Objects.equals(electricityCabinet.getTenantId(),electricityBattery.getTenantId())){
 			log.error("checkBattery error! tenantId is not equal,tenantId1:{},tenantId2:{}", electricityCabinet.getTenantId(),electricityBattery.getTenantId());
 			return R.fail("电池与换电柜租户不匹配");
 		}
