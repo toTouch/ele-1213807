@@ -2,9 +2,14 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +30,8 @@ import java.util.Objects;
 public class JsonAdminElectricityMemberCardOrderController {
 	@Autowired
 	ElectricityMemberCardOrderService electricityMemberCardOrderService;
+	@Autowired
+	FranchiseeService franchiseeService;
 
 	/**
 	 * 分页
@@ -52,6 +59,24 @@ public class JsonAdminElectricityMemberCardOrderController {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		Integer franchiseeId=null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			//加盟商
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				return R.ok(0);
+			}
+			franchiseeId=franchisee.getId();
+		}
+
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
@@ -61,7 +86,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.offset(offset)
 				.size(size)
 				.tenantId(tenantId)
-				.status(status).build();
+				.status(status)
+				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
 	}
@@ -82,6 +108,24 @@ public class JsonAdminElectricityMemberCardOrderController {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		Integer franchiseeId=null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			//加盟商
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				return R.ok(0);
+			}
+			franchiseeId=franchisee.getId();
+		}
+
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
@@ -89,7 +133,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.queryStartTime(queryStartTime)
 				.queryEndTime(queryEndTime)
 				.tenantId(tenantId)
-				.status(status).build();
+				.status(status)
+				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
 	}
@@ -111,13 +156,32 @@ public class JsonAdminElectricityMemberCardOrderController {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			throw new CustomBusinessException("查不到订单");
+		}
+
+		Integer franchiseeId=null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			//加盟商
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				throw new CustomBusinessException("查不到订单");
+			}
+			franchiseeId=franchisee.getId();
+		}
+
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
 				.phone(phone)
 				.orderId(orderId)
 				.cardType(cardType)
 				.queryStartTime(queryStartTime)
 				.queryEndTime(queryEndTime)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.franchiseeId(franchiseeId).build();
 		electricityMemberCardOrderService.exportExcel(memberCardOrderQuery,response);
 	}
 

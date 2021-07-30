@@ -1,10 +1,15 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -29,6 +34,9 @@ public class JsonAdminEleDepositOrderController {
     @Autowired
     EleDepositOrderService eleDepositOrderService;
 
+    @Autowired
+    FranchiseeService franchiseeService;
+
     //列表查询
     @GetMapping(value = "/admin/eleDepositOrder/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
@@ -50,6 +58,25 @@ public class JsonAdminEleDepositOrderController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Integer franchiseeId=null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
+                return R.ok(0);
+            }
+            franchiseeId=franchisee.getId();
+        }
+
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -59,7 +86,8 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .franchiseeId(franchiseeId).build();
 
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
@@ -76,6 +104,24 @@ public class JsonAdminEleDepositOrderController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Integer franchiseeId=null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
+                return R.ok(0);
+            }
+            franchiseeId=franchisee.getId();
+        }
+
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)
@@ -83,7 +129,8 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .franchiseeId(franchiseeId).build();
 
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);
     }
@@ -105,6 +152,24 @@ public class JsonAdminEleDepositOrderController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            throw new CustomBusinessException("查不到订单");
+        }
+
+        Integer franchiseeId=null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
+                throw new CustomBusinessException("查不到订单");
+            }
+            franchiseeId=franchisee.getId();
+        }
+
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
@@ -113,7 +178,8 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .franchiseeId(franchiseeId).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
     }
 

@@ -24,4 +24,6 @@ public class MemberCardOrderQuery {
     private Integer tenantId;
 
     private Integer status;
+
+    private Integer franchiseeId;
 }

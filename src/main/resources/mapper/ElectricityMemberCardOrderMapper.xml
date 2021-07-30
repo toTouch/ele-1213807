@@ -26,6 +26,9 @@
 		<if test="query.queryStartTime != null">
 			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
 		</if>
+		<if test="query.franchiseeId != null">
+			and tel.franchisee_id = #{query.franchiseeId}
+		</if>
 		order by tel.create_time desc
 		limit #{query.offset}, #{query.size}
 	</select>
@@ -45,14 +48,17 @@
 		<if test="query.cardType != null">
 			and tel.member_card_type =#{query.cardType}
 		</if>
+		<if test="query.status != null">
+			and tel.status =#{query.status}
+		</if>
 		<if test="query.tenantId != null">
 			and tel.tenant_id = #{query.tenantId}
 		</if>
 		<if test="query.queryStartTime != null">
 			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
 		</if>
-		<if test="query.status != null">
-			and tel.status =#{query.status}
+		<if test="query.franchiseeId != null">
+			and tel.franchisee_id = #{query.franchiseeId}
 		</if>
 	</select>
 
