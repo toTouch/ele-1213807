@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -141,6 +142,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 		if (Objects.isNull(electricityBattery)) {
 			log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+			return false;
+		}
+
+		if(!Objects.equals(electricityCabinet.getTenantId(),electricityBattery.getTenantId())){
+			log.error("ele battery error! tenantId is not equal,tenantId1:{},tenantId2:{}", electricityCabinet.getTenantId(),electricityBattery.getTenantId());
 			return false;
 		}
 
