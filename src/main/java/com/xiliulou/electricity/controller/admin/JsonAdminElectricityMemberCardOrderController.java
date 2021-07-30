@@ -11,12 +11,14 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -72,7 +74,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 			//加盟商
 			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 			if (Objects.isNull(franchisee)) {
-				return R.ok(0);
+				return R.ok(new ArrayList<>());
 			}
 			franchiseeId=franchisee.getId();
 		}

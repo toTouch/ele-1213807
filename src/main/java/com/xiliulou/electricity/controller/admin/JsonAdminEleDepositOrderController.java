@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletResponse;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -72,7 +73,7 @@ public class JsonAdminEleDepositOrderController {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.isNull(franchisee)) {
-                return R.ok(0);
+                return R.ok(new ArrayList<>());
             }
             franchiseeId=franchisee.getId();
         }
