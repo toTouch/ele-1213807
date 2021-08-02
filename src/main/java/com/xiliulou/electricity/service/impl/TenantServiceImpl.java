@@ -31,6 +31,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import org.apache.commons.lang.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -234,7 +235,7 @@ public class TenantServiceImpl implements TenantService {
      * 生成新的租户code
      */
     private String genTenantCode() {
-        String code = RandomUtil.randomNumbers(6);
+        String code = RandomStringUtils.randomAlphabetic(6);
         if (tenantMapper.selectCount(Wrappers.<Tenant>lambdaQuery().eq(Tenant::getCode, code)) == 0) {
             return code;
         }
