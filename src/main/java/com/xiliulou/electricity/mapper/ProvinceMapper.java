@@ -14,7 +14,7 @@ import org.apache.ibatis.annotations.Select;
  */
 public interface ProvinceMapper  extends BaseMapper<Province>{
 
-    @Select(" select id, code, name from electricity.t_province")
+    @Select(" select id, code, name from t_province")
 	List<Province> queryAllCity();
 
 }
