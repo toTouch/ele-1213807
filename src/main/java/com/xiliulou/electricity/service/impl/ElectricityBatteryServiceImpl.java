@@ -127,7 +127,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
             if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)&&Objects.nonNull(electricityBattery.getElectricityCabinetId())){
                 ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
-                electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+                if(Objects.nonNull(electricityCabinet)) {
+                    electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+                }
             }
 
             electricityBatteryVOList.add(electricityBatteryVO);
