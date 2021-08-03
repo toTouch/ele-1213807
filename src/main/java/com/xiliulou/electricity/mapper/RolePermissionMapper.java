@@ -16,6 +16,6 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  */
 public interface RolePermissionMapper extends BaseMapper<RolePermission> {
 
-	@Delete("delete from electricity.t_role_permission where role_id = #{rid}")
+	@Delete("delete from t_role_permission where role_id = #{rid}")
 	int deleteByRoleId(@Param("rid")Long roleId);
 }
