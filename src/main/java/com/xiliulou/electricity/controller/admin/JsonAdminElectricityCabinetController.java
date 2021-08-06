@@ -387,6 +387,13 @@ public class JsonAdminElectricityCabinetController {
         return R.ok(map);
     }
 
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinet/{id}")
+    public R queryById(@PathVariable("id") Integer id) {
+        return electricityCabinetService.queryById(id);
+    }
+
+
 
 
 }

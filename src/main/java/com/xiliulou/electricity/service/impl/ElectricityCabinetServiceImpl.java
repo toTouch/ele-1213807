@@ -1640,4 +1640,67 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		return R.ok();
 	}
+
+	@Override
+	public R queryById(Integer id) {
+		ElectricityCabinet electricityCabinet=queryByIdFromCache(id);
+		ElectricityCabinetVO electricityCabinetVO=new ElectricityCabinetVO();
+		BeanUtil.copyProperties(electricityCabinet,electricityCabinetVO);
+		//营业时间
+		if (Objects.nonNull(electricityCabinetVO.getBusinessTime())) {
+			String businessTime = electricityCabinetVO.getBusinessTime();
+			if (Objects.equals(businessTime, ElectricityCabinetVO.ALL_DAY)) {
+				electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ALL_DAY);
+			} else {
+				electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.ILLEGAL_DATA);
+				int index = businessTime.indexOf("-");
+				if (!Objects.equals(index, -1) && index > 0) {
+					electricityCabinetVO.setBusinessTimeType(ElectricityCabinetVO.CUSTOMIZE_TIME);
+					Long beginTime = Long.valueOf(businessTime.substring(0, index));
+					Long endTime = Long.valueOf(businessTime.substring(index + 1));
+					electricityCabinetVO.setBeginTime(beginTime);
+					electricityCabinetVO.setEndTime(endTime);
+				}
+			}
+		}
+
+		//查找型号名称
+		ElectricityCabinetModel electricityCabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinetVO.getModelId());
+		if (Objects.nonNull(electricityCabinetModel)) {
+			electricityCabinetVO.setModelName(electricityCabinetModel.getName());
+		}
+
+		//查满仓空仓数
+		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinetVO.getId());
+		int electricityBatteryTotal = 0;
+		int noElectricityBattery = 0;
+		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
+		if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+
+			//空仓
+			noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+
+			//电池总数
+			electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+		}
+
+		boolean result = deviceIsOnline(electricityCabinetVO.getProductKey(), electricityCabinetVO.getDeviceName());
+		if (result) {
+			electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+		} else {
+			electricityCabinetVO.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+		}
+		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
+		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
+		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+
+		//是否锁住
+		int isLock = 0;
+		String LockResult = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinetVO.getId());
+		if (StringUtil.isNotEmpty(LockResult)) {
+			isLock = 1;
+		}
+		electricityCabinetVO.setIsLock(isLock);
+		return R.ok(electricityCabinetVO);
+	}
 }
