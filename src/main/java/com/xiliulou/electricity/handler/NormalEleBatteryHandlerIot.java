@@ -81,7 +81,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
 		//若上报时间小于上次上报时间则忽略此条上报
 		Long reportTime = eleBatteryVo.getReportTime();
-		if (Objects.nonNull(reportTime) && Objects.nonNull(oldElectricityCabinetBox.getReportTime())
+		if (Objects.nonNull(reportTime) &&Objects.nonNull(oldElectricityCabinetBox)
+				&&Objects.nonNull(oldElectricityCabinetBox.getReportTime())
 				&& oldElectricityCabinetBox.getReportTime() >= reportTime) {
 			return false;
 		}
