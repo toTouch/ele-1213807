@@ -111,4 +111,56 @@ public class JsonAdminElectricityCabinetBoxController {
 
 
 
+    //更改多个仓门可用状态
+    @PostMapping(value = "/admin/electricityCabinetBox/updateBoxesStatus")
+    public R updateBoxesStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
+        if (Objects.isNull(electricityCabinetBox.getId()) && Objects.isNull(electricityCabinetBox.getUsableStatus())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+
+
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
+        if (Objects.isNull(oldElectricityCabinetBox)) {
+            return R.fail("ELECTRICITY.0006", "未找到此仓门");
+        }
+
+
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //换电柜是否在线
+        boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        List<String> cellList = new ArrayList<>();
+        cellList.add(oldElectricityCabinetBox.getCellNo());
+        dataMap.put("cell_list", cellList);
+        dataMap.put("isForbidden", false);
+        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+            dataMap.put("isForbidden", true);
+        }
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+                .build();
+
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        return electricityCabinetBoxService.modify(electricityCabinetBox);
+    }
+
+
+
 }
