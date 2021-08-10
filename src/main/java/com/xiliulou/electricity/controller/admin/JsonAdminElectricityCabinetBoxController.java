@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -9,6 +10,9 @@ import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.UpdateBoxesQuery;
+import com.xiliulou.electricity.vo.UpdateBoxesStatusQuery;
+import com.xiliulou.electricity.vo.UpdateUsableStatusQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,14 +65,15 @@ public class JsonAdminElectricityCabinetBoxController {
 
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
-    public R updateUsableStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        if (Objects.isNull(electricityCabinetBox.getId()) && Objects.isNull(electricityCabinetBox.getUsableStatus())) {
+    public R updateUsableStatus(@RequestBody UpdateUsableStatusQuery updateUsableStatusQuery) {
+        if (Objects.isNull(updateUsableStatusQuery.getId())
+                || Objects.isNull(updateUsableStatusQuery.getUsableStatus())
+                || Objects.isNull(updateUsableStatusQuery.getElectricityCabinetId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
 
-
-        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateUsableStatusQuery.getId());
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
@@ -92,7 +97,7 @@ public class JsonAdminElectricityCabinetBoxController {
         cellList.add(oldElectricityCabinetBox.getCellNo());
         dataMap.put("cell_list", cellList);
         dataMap.put("isForbidden", false);
-        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+        if (Objects.equals(updateUsableStatusQuery.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
             dataMap.put("isForbidden", true);
         }
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -105,28 +110,24 @@ public class JsonAdminElectricityCabinetBoxController {
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        return electricityCabinetBoxService.modify(electricityCabinetBox);
+        oldElectricityCabinetBox.setUsableStatus(updateUsableStatusQuery.getUsableStatus());
+        oldElectricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        return electricityCabinetBoxService.modify(oldElectricityCabinetBox);
     }
 
 
 
     //更改多个仓门可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateBoxesStatus")
-    public R updateBoxesStatus(@RequestBody ElectricityCabinetBox electricityCabinetBox) {
-        if (Objects.isNull(electricityCabinetBox.getId()) && Objects.isNull(electricityCabinetBox.getUsableStatus())) {
+    public R updateBoxesStatus(@RequestBody UpdateBoxesStatusQuery updateBoxesStatusQuery) {
+
+        if (Objects.isNull(updateBoxesStatusQuery.getElectricityCabinetId())
+                || Objects.isNull(updateBoxesStatusQuery.getUsableStatus())
+                ||ObjectUtil.isEmpty(updateBoxesStatusQuery.getUpdateBoxesQueryList())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-
-
-        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(electricityCabinetBox.getId());
-        if (Objects.isNull(oldElectricityCabinetBox)) {
-            return R.fail("ELECTRICITY.0006", "未找到此仓门");
-        }
-
-
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(updateBoxesStatusQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
@@ -138,13 +139,31 @@ public class JsonAdminElectricityCabinetBoxController {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+
+        List<String> cellList = new ArrayList<>();
+        for (UpdateBoxesQuery updateBoxesQuery:updateBoxesStatusQuery.getUpdateBoxesQueryList()) {
+
+
+
+            ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateBoxesQuery.getId());
+            if (Objects.isNull(oldElectricityCabinetBox)) {
+                return R.fail("ELECTRICITY.0006", "未找到此仓门");
+            }
+
+
+            cellList.add(oldElectricityCabinetBox.getCellNo());
+
+            oldElectricityCabinetBox.setUsableStatus(updateBoxesStatusQuery.getUsableStatus());
+            oldElectricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetBoxService.modify(oldElectricityCabinetBox);
+        }
+
+
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        List<String> cellList = new ArrayList<>();
-        cellList.add(oldElectricityCabinetBox.getCellNo());
         dataMap.put("cell_list", cellList);
         dataMap.put("isForbidden", false);
-        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+        if (Objects.equals(updateBoxesStatusQuery.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
             dataMap.put("isForbidden", true);
         }
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -156,9 +175,7 @@ public class JsonAdminElectricityCabinetBoxController {
                 .build();
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        return electricityCabinetBoxService.modify(electricityCabinetBox);
+        return R.ok();
     }
 
 
