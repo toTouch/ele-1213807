@@ -13,6 +13,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.query.UserMoveQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -567,6 +568,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return null;
 		});
 		return R.ok();
+	}
+
+	@Override
+	public R userMove(UserMoveQuery userMoveQuery) {
+		return null;
 	}
 
 }

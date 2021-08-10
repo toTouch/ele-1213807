@@ -5,6 +5,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.query.UserMoveQuery;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -149,18 +150,22 @@ public class JsonAdminUserInfoController {
 
 
     //绑定电池
-    @Deprecated
     @PutMapping(value = "/admin/userInfo/bindBattery")
     public R webBindBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
         return userInfoService.webBindBattery(userInfoBatteryAddAndUpdate);
     }
 
     //解绑电池
-    @Deprecated
     @PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
     public R webUnBindBattery(@PathVariable("id") Long id) {
         return userInfoService.webUnBindBattery(id);
     }
 
+
+    //迁移用户数据
+    @PostMapping(value = "/admin/userInfo/userMove")
+    public R userMove(@RequestBody UserMoveQuery userMoveQuery) {
+        return userInfoService.userMove(userMoveQuery);
+    }
 
 }

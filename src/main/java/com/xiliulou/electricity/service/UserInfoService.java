@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.query.UserMoveQuery;
 
 import java.util.HashMap;
 import java.util.List;
@@ -74,4 +75,6 @@ public interface UserInfoService extends IService<UserInfo> {
     R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
     R webUnBindBattery(Long id);
+
+	R userMove(UserMoveQuery userMoveQuery);
 }
