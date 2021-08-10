@@ -50,7 +50,7 @@
 		from t_electricity_cabinet_order
 		<where>
 			<if test="query.orderId != null and query.orderId != ''">
-				and order_id = #{query.orderId}
+				and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
 			</if>
 			<if test="query.phone != null and query.phone != ''">
 				and phone = #{query.phone}
