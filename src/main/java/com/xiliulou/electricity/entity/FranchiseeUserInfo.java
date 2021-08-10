@@ -67,7 +67,7 @@ public class FranchiseeUserInfo {
     */
     private BigDecimal batteryDeposit;
     /**
-    * 租电池订单编号
+    * 押金订单编号
     */
     private String orderId;
     /**
