@@ -12,7 +12,7 @@
         from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and order_id = #{query.orderId}
+                and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
             </if>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
@@ -52,7 +52,7 @@
         from t_rent_battery_order
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and order_id = #{query.orderId}
+                and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
             </if>
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
