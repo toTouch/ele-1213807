@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo;
+package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
@@ -11,7 +11,15 @@ import java.util.List;
  * @since 2020-11-25 11:00:37
  */
 @Data
-public class UpdateBoxesStatusQuery {
+public class UpdateUsableStatusQuery {
+    /**
+     * 仓门Id
+     */
+    private Long id;
+    /**
+     * 仓门号
+     */
+    private String cellNo;
     /**
     * 所属换电柜柜Id
     */
@@ -20,9 +28,5 @@ public class UpdateBoxesStatusQuery {
     * 可用状态（0-可用，1-禁用）
     */
     private Integer usableStatus;
-
-
-    List<UpdateBoxesQuery> updateBoxesQueryList;
-
 
 }

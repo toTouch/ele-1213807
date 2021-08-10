@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.vo;
+package com.xiliulou.electricity.query;
 
 import lombok.Data;
 
