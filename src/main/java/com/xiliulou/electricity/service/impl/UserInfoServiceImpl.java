@@ -23,6 +23,7 @@ import com.xiliulou.electricity.vo.UserAuthInfoVo;
 import com.xiliulou.electricity.vo.UserInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -59,6 +60,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	EleUserAuthService eleUserAuthService;
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+	@Autowired
+	ElectricityMemberCardService electricityMemberCardService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -108,7 +111,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 	}
 
-
 	@Override
 	@DS("slave_1")
 	public R queryList(UserInfoQuery userInfoQuery) {
@@ -117,18 +119,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.ok(userInfoList);
 		}
 
-		List<UserInfoVO> userInfoVOList=new ArrayList<>();
-		for (UserInfo userInfo:userInfoList) {
-			UserInfoVO userInfoVO=new UserInfoVO();
-			FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		List<UserInfoVO> userInfoVOList = new ArrayList<>();
+		for (UserInfo userInfo : userInfoList) {
+			UserInfoVO userInfoVO = new UserInfoVO();
+			FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
-			if(Objects.nonNull(franchiseeUserInfo)) {
+			if (Objects.nonNull(franchiseeUserInfo)) {
 				BeanUtil.copyProperties(franchiseeUserInfo, userInfoVO);
 				if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
 					userInfo.setServiceStatus(franchiseeUserInfo.getServiceStatus());
 				}
 			}
-			BeanUtil.copyProperties(userInfo,userInfoVO);
+			BeanUtil.copyProperties(userInfo, userInfoVO);
 
 			userInfoVOList.add(userInfoVO);
 		}
@@ -139,7 +141,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 	@Override
 	@Transactional
-	public R updateStatus(Long id,Integer usableStatus) {
+	public R updateStatus(Long id, Integer usableStatus) {
 		UserInfo oldUserInfo = queryByIdFromDB(id);
 		if (Objects.isNull(oldUserInfo)) {
 			return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -152,25 +154,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return R.ok();
 	}
 
-
-
 	@Override
 	public UserInfo queryByUid(Long uid) {
 		return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
 	}
 
 	@Override
-	public Integer homeOne(Long first, Long now,Integer tenantId) {
-		return userInfoMapper.homeOne(first,now,tenantId);
+	public Integer homeOne(Long first, Long now, Integer tenantId) {
+		return userInfoMapper.homeOne(first, now, tenantId);
 	}
-
-
 
 	@Override
-	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay,Integer tenantId) {
-		return userInfoMapper.homeThree(startTimeMilliDay, endTimeMilliDay,tenantId);
+	public List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId) {
+		return userInfoMapper.homeThree(startTimeMilliDay, endTimeMilliDay, tenantId);
 	}
-
 
 	/**
 	 * 获取用户套餐信息
@@ -204,7 +201,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
-
 		if (Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || System.currentTimeMillis() >=
 				franchiseeUserInfo.getMemberCardExpireTime() || franchiseeUserInfo.getRemainingNumber() == 0) {
 			return R.ok();
@@ -219,7 +215,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getCardId());
 		return R.ok(ownMemberCardInfoVo);
 	}
-
 
 	@Override
 	public R queryUserInfo() {
@@ -256,14 +251,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		}
 
-
 		//判断是否缴纳押金
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
 				|| Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
 			log.error("returnBattery  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
-
 
 		//判断用户是否开通月卡
 		if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
@@ -306,7 +299,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		eleUserAuthService.updateByUid(oldUserInfo.getUid(), authStatus);
 		return R.ok();
 	}
-
 
 	@Override
 	@Transactional
@@ -362,10 +354,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return R.ok();
 	}
 
-
 	@Override
 	public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
-		List<UserInfo> userInfos =userInfoMapper.queryList(userInfoQuery);
+		List<UserInfo> userInfos = userInfoMapper.queryList(userInfoQuery);
 		if (!DataUtil.collectionIsUsable(userInfos)) {
 			return R.ok(Collections.emptyList());
 		}
@@ -418,7 +409,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
-
 		//是否缴纳押金，是否绑定电池
 		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
 
@@ -436,7 +426,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
-
 		//已绑定电池
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
@@ -449,7 +438,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
 			return R.fail("ELECTRICITY.0020", "未找到电池");
 		}
-
 
 		//绑定电池
 		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
@@ -504,7 +492,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
-
 		//是否缴纳押金，是否绑定电池
 		FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
 
@@ -515,7 +502,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		}
 
-
 		//判断是否缴纳押金
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
 				|| Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
@@ -523,8 +509,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
-
-		if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) ) {
+		if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			log.error("ELECTRICITY  ERROR! not  rent battery!  userInfo:{} ", oldUserInfo);
 			return R.fail("ELECTRICITY.0033", "用户未绑定电池");
 		}
@@ -536,7 +521,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		}
 
 		//解绑电池
-		FranchiseeUserInfo franchiseeUserInfo= new FranchiseeUserInfo();
+		FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
 		franchiseeUserInfo.setId(id);
 		franchiseeUserInfo.setNowElectricityBatterySn(null);
 		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
@@ -572,6 +557,162 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 	@Override
 	public R userMove(UserMoveQuery userMoveQuery) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		//根据手机号查询用户
+		User user = userService.queryByUserPhone(userMoveQuery.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+
+		if (Objects.isNull(user)) {
+			log.error("userMove  ERROR! not found user,phone:{} ", userMoveQuery.getPhone());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
+		}
+
+		if (userMoveQuery.getServiceStatus() > 0) {
+			if (Objects.isNull(userMoveQuery.getIdNumber())
+					|| Objects.isNull(userMoveQuery.getName())) {
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
+		}
+
+		Integer cardId = null;
+		String cardName = null;
+		Integer cardType = null;
+		Long memberCardExpireTime = null;
+		Long remainingNumber = null;
+		if (Objects.nonNull(userMoveQuery.getCardId())) {
+			if (Objects.isNull(userMoveQuery.getMemberCardExpireTime())
+					|| Objects.isNull(userMoveQuery.getRemainingNumber())) {
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
+			//查看套餐
+			ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userMoveQuery.getCardId());
+
+			if (Objects.isNull(electricityMemberCard)) {
+				log.error("userMove  ERROR! not found user,electricityMemberCardId:{} ", userMoveQuery.getCardId());
+				return R.fail("ELECTRICITY.0087", "未找到月卡套餐");
+			}
+
+			cardId = userMoveQuery.getCardId();
+			cardName = electricityMemberCard.getName();
+			cardType = electricityMemberCard.getType();
+			memberCardExpireTime = userMoveQuery.getMemberCardExpireTime();
+			remainingNumber = userMoveQuery.getRemainingNumber();
+		}
+
+		UserInfo userInfo = queryByUid(user.getUid());
+		if (Objects.isNull(userInfo)) {
+			UserInfo insertUserInfo = UserInfo.builder()
+					.uid(user.getUid())
+					.updateTime(System.currentTimeMillis())
+					.createTime(System.currentTimeMillis())
+					.phone(user.getPhone())
+					.userName(user.getName())
+					.name(userMoveQuery.getName())
+					.idNumber(userMoveQuery.getIdNumber())
+					.serviceStatus(UserInfo.STATUS_INIT)
+					.delFlag(User.DEL_NORMAL)
+					.usableStatus(UserInfo.USER_USABLE_STATUS)
+					.tenantId(tenantId)
+					.build();
+
+			if (userMoveQuery.getServiceStatus() > 0) {
+				insertUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+			}
+			Integer insert = insert(insertUserInfo);
+
+			Integer finalCardId = cardId;
+			String finalCardName = cardName;
+			Integer finalCardType = cardType;
+			Long finalMemberCardExpireTime = memberCardExpireTime;
+			Long finalRemainingNumber = remainingNumber;
+			DbUtils.dbOperateSuccessThen(insert, () -> {
+
+				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+				if (Objects.isNull(franchiseeUserInfo)) {
+					FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+							.userInfoId(insertUserInfo.getId())
+							.updateTime(System.currentTimeMillis())
+							.createTime(System.currentTimeMillis())
+							.serviceStatus(userMoveQuery.getServiceStatus())
+							.franchiseeId(userMoveQuery.getFranchiseeId())
+							.cardId(finalCardId)
+							.cardName(finalCardName)
+							.cardType(finalCardType)
+							.memberCardExpireTime(finalMemberCardExpireTime)
+							.remainingNumber(finalRemainingNumber)
+							.orderId("-1")
+							.delFlag(User.DEL_NORMAL)
+							.tenantId(tenantId)
+							.build();
+					franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+				} else {
+					franchiseeUserInfo.setFranchiseeId(userMoveQuery.getFranchiseeId());
+					franchiseeUserInfo.setCardId(finalCardId);
+					franchiseeUserInfo.setCardName(finalCardName);
+					franchiseeUserInfo.setCardType(finalCardType);
+					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
+					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
+					franchiseeUserInfo.setServiceStatus(userMoveQuery.getServiceStatus());
+					franchiseeUserInfo.setOrderId("-1");
+					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+					franchiseeUserInfoService.update(franchiseeUserInfo);
+				}
+				return null;
+			});
+		} else {
+			userInfo.setPhone(user.getPhone());
+			userInfo.setName(userMoveQuery.getName());
+			userInfo.setIdNumber(userMoveQuery.getIdNumber());
+			userInfo.setServiceStatus(UserInfo.STATUS_INIT);
+			userInfo.setUpdateTime(System.currentTimeMillis());
+			if (userMoveQuery.getServiceStatus() > 0) {
+				userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+			}
+			Integer update = update(userInfo);
+
+			Integer finalCardId = cardId;
+			String finalCardName = cardName;
+			Integer finalCardType = cardType;
+			Long finalMemberCardExpireTime = memberCardExpireTime;
+			Long finalRemainingNumber = remainingNumber;
+			DbUtils.dbOperateSuccessThen(update, () -> {
+
+				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+				if (Objects.isNull(franchiseeUserInfo)) {
+					FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+							.userInfoId(userInfo.getId())
+							.updateTime(System.currentTimeMillis())
+							.createTime(System.currentTimeMillis())
+							.serviceStatus(userMoveQuery.getServiceStatus())
+							.franchiseeId(userMoveQuery.getFranchiseeId())
+							.cardId(finalCardId)
+							.cardName(finalCardName)
+							.cardType(finalCardType)
+							.memberCardExpireTime(finalMemberCardExpireTime)
+							.remainingNumber(finalRemainingNumber)
+							.orderId("-1")
+							.delFlag(User.DEL_NORMAL)
+							.tenantId(tenantId)
+							.build();
+					franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+				} else {
+					franchiseeUserInfo.setFranchiseeId(userMoveQuery.getFranchiseeId());
+					franchiseeUserInfo.setCardId(finalCardId);
+					franchiseeUserInfo.setCardName(finalCardName);
+					franchiseeUserInfo.setCardType(finalCardType);
+					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
+					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
+					franchiseeUserInfo.setServiceStatus(userMoveQuery.getServiceStatus());
+					franchiseeUserInfo.setOrderId("-1");
+					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+					franchiseeUserInfoService.update(franchiseeUserInfo);
+				}
+				return null;
+			});
+		}
+
+		//记录一下数据迁移，迁移了哪些数据 TODO
+
 		return null;
 	}
 

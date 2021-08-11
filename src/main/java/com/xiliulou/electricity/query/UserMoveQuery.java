@@ -48,8 +48,4 @@ public class UserMoveQuery {
      * 租电池押金
      */
     private BigDecimal batteryDeposit;
-    /**
-     * 押金订单编号
-     */
-    private String orderId;
 }
