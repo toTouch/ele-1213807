@@ -667,89 +667,89 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	public void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response) {
 		rentBatteryOrderQuery.setOffset(0L);
 		rentBatteryOrderQuery.setSize(2000L);
-		List<RentBatteryOrder> rentBatteryOrderList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
-		if (ObjectUtil.isEmpty(rentBatteryOrderList)) {
+		List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
+		if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
 			throw new CustomBusinessException("查不到订单");
 		}
 
 		List<RentBatteryOrderExcelVO> rentBatteryOrderExcelVOS = new ArrayList();
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		int index = 0;
-		for (RentBatteryOrder rentBatteryOrder : rentBatteryOrderList) {
+		for (RentBatteryOrderVO rentBatteryOrderVO : rentBatteryOrderVOList) {
 			index++;
 			RentBatteryOrderExcelVO excelVo = new RentBatteryOrderExcelVO();
 			excelVo.setId(index);
-			excelVo.setOrderId(rentBatteryOrder.getOrderId());
-			excelVo.setPhone(rentBatteryOrder.getPhone());
-			excelVo.setName(rentBatteryOrder.getName());
-			excelVo.setCellNo(rentBatteryOrder.getCellNo());
-			excelVo.setElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-			excelVo.setBatteryDeposit(rentBatteryOrder.getBatteryDeposit());
+			excelVo.setOrderId(rentBatteryOrderVO.getOrderId());
+			excelVo.setPhone(rentBatteryOrderVO.getPhone());
+			excelVo.setName(rentBatteryOrderVO.getName());
+			excelVo.setCellNo(rentBatteryOrderVO.getCellNo());
+			excelVo.setElectricityBatterySn(rentBatteryOrderVO.getElectricityBatterySn());
+			excelVo.setBatteryDeposit(rentBatteryOrderVO.getBatteryDeposit());
 
-			if (Objects.nonNull(rentBatteryOrder.getCreateTime())) {
-				excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrder.getCreateTime())));
+			if (Objects.nonNull(rentBatteryOrderVO.getCreateTime())) {
+				excelVo.setCreatTime(simpleDateFormat.format(new Date(rentBatteryOrderVO.getCreateTime())));
 			}
 
-			if (Objects.isNull(rentBatteryOrder.getType())) {
+			if (Objects.isNull(rentBatteryOrderVO.getType())) {
 				excelVo.setType("");
 			}
-			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+			if (Objects.equals(rentBatteryOrderVO.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
 				excelVo.setType("租电池");
 			}
-			if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+			if (Objects.equals(rentBatteryOrderVO.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
 				excelVo.setType("还电池");
 			}
 
 			//订单状态
-			if (Objects.isNull(rentBatteryOrder.getStatus())) {
+			if (Objects.isNull(rentBatteryOrderVO.getStatus())) {
 				excelVo.setStatus("");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.INIT)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.INIT)) {
 				excelVo.setStatus("初始化");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RENT_INIT_CHECK)) {
 				excelVo.setStatus("租电池前置检测");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)) {
 				excelVo.setStatus("租电池格挡是空仓");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_SUCCESS)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RENT_OPEN_SUCCESS)) {
 				excelVo.setStatus("租电池开门成功");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RENT_OPEN_FAIL)) {
 				excelVo.setStatus("租电池开门失败");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS)) {
 				excelVo.setStatus("租电池成功取走");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)) {
 				excelVo.setStatus("租电池超时");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_INIT_CHECK)) {
 				excelVo.setStatus("还电池前置检测");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_BATTERY_EXISTS)) {
 				excelVo.setStatus("还电池仓内有电池");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_SUCCESS)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_OPEN_SUCCESS)) {
 				excelVo.setStatus("还电池开门成功");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_OPEN_FAIL)) {
 				excelVo.setStatus("还电池开门失败");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
 				excelVo.setStatus("还电池成功");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)) {
 				excelVo.setStatus("还电池检测失败");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
 				excelVo.setStatus("还电池检测超时");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.ORDER_EXCEPTION_CANCEL)) {
 				excelVo.setStatus("订单异常结束");
 			}
-			if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.ORDER_CANCEL)) {
+			if (Objects.equals(rentBatteryOrderVO.getStatus(), RentBatteryOrder.ORDER_CANCEL)) {
 				excelVo.setStatus("订单取消");
 			}
 
