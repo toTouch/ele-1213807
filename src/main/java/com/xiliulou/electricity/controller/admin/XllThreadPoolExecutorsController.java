@@ -3,12 +3,14 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author: Miss.Li
  * @Date: 2021/8/11 10:24
  * @Description:
  */
+@RestController
 public class XllThreadPoolExecutorsController {
 
 
