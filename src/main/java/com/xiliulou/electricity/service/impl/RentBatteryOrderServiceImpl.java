@@ -1,10 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
-import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -18,7 +16,6 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
@@ -43,8 +40,10 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.RentBatteryOrderExcelVO;
+import com.xiliulou.electricity.vo.RentBatteryOrderVO;
 import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
@@ -118,7 +117,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	@Override
 	public R queryList(RentBatteryOrderQuery rentBatteryOrderQuery) {
-		return R.ok(rentBatteryOrderMapper.queryList(rentBatteryOrderQuery));
+		List<RentBatteryOrderVO> rentBatteryOrderVOList = rentBatteryOrderMapper.queryList(rentBatteryOrderQuery);
+		if (ObjectUtil.isEmpty(rentBatteryOrderVOList)) {
+			return R.ok(new ArrayList<>());
+		}
+		if (ObjectUtil.isNotEmpty(rentBatteryOrderVOList)) {
+			rentBatteryOrderVOList.parallelStream().forEach(e -> {
+				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(e.getElectricityCabinetId());
+				if (Objects.nonNull(electricityCabinet)) {
+					e.setElectricityCabinetName(electricityCabinet.getName());
+				}
+			});
+		}
+
+		return R.ok(rentBatteryOrderVOList);
 	}
 
 	@Override
