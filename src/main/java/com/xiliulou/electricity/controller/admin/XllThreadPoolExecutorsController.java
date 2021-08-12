@@ -28,8 +28,8 @@ public class XllThreadPoolExecutorsController {
 
 	//
 	@GetMapping(value = "/admin/getRunningExe")
-	public R getRunningExe() {
-		return R.ok(XllThreadPoolExecutors.getRunningExe());
+	public R getRunningExe(@RequestParam(value = "name", required = false) String name) {
+		return R.ok(XllThreadPoolExecutors.getRunningExe(name));
 	}
 
 
