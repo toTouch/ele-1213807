@@ -198,5 +198,4 @@ public class ElectricityCabinetOrder {
     public static final Integer  PAYMENT_METHOD_YEAR_CARD = 2;
 
 
-
 }
