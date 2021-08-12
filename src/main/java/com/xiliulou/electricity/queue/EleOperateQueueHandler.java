@@ -232,7 +232,7 @@ public class EleOperateQueueHandler {
 				if(Objects.nonNull(oldElectricityBattery)) {
 					ElectricityBattery newElectricityBattery = new ElectricityBattery();
 					newElectricityBattery.setId(oldElectricityBattery.getId());
-					newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+					newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 					newElectricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
 					newElectricityBattery.setUid(null);
 					newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -273,7 +273,7 @@ public class EleOperateQueueHandler {
 				dataMap.put("cell_no", cellNo);
 				dataMap.put("order_id", electricityCabinetOrder.getOrderId());
 				dataMap.put("serial_number", newElectricityCabinetOrder.getNewElectricityBatterySn());
-				dataMap.put("status", electricityCabinetOrder.getStatus().toString());
+				dataMap.put("status", electricityCabinetOrder.getStatus());
 				dataMap.put("old_cell_no", electricityCabinetOrder.getOldCellNo());
 
 				HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -510,7 +510,7 @@ public class EleOperateQueueHandler {
 		if(Objects.nonNull(oldElectricityBattery)) {
 			ElectricityBattery newElectricityBattery = new ElectricityBattery();
 			newElectricityBattery.setId(oldElectricityBattery.getId());
-			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+			newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 			newElectricityBattery.setElectricityCabinetId(rentBatteryOrder.getElectricityCabinetId());
 			newElectricityBattery.setUid(null);
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
