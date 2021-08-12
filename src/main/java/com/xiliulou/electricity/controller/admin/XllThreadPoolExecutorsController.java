@@ -49,7 +49,7 @@ public class XllThreadPoolExecutorsController {
 
 
 	//
-	@PostMapping(value = "/admin/shutdownAllExe")
+	@PostMapping(value = "/admin/shutdownExeAndWait")
 	public R shutdownExeAndWait(@RequestParam("name") String name,@RequestParam("time") Long time) throws InterruptedException {
 		XllThreadPoolExecutors.shutdownExeAndWait(name,time, TimeUnit.MILLISECONDS);
 		return R.ok();
