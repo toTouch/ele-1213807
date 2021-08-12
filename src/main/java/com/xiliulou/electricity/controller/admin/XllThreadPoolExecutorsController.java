@@ -3,8 +3,12 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author: Miss.Li
@@ -33,6 +37,22 @@ public class XllThreadPoolExecutorsController {
 	@GetMapping(value = "/admin/getRunningExeByName")
 	public R getRunningExeByName(@RequestParam("name") String name) {
 		return R.ok(XllThreadPoolExecutors.getRunningExeByName(name));
+	}
+
+
+	//
+	@PostMapping(value = "/admin/shutdownAllExe")
+	public R shutdownAllExe() {
+		XllThreadPoolExecutors.shutdownAllExe();
+		return R.ok();
+	}
+
+
+	//
+	@PostMapping(value = "/admin/shutdownAllExe")
+	public R shutdownExeAndWait(@RequestParam("name") String name,@RequestParam("time") Long time) throws InterruptedException {
+		XllThreadPoolExecutors.shutdownExeAndWait(name,time, TimeUnit.MILLISECONDS);
+		return R.ok();
 	}
 
 }
