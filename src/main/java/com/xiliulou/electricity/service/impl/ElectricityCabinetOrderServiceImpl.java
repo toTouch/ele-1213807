@@ -486,7 +486,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 				excelVo.setPaymentMethod("年卡");
 			}
 
-
 			//订单状态
 			if (Objects.isNull(electricityCabinetOrderVO.getStatus())) {
 				excelVo.setStatus("");
