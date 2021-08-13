@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -16,6 +17,7 @@ import java.util.concurrent.TimeUnit;
  * @Description:
  */
 @RestController
+@Slf4j
 public class XllThreadPoolExecutorsController {
 
 
@@ -50,9 +52,22 @@ public class XllThreadPoolExecutorsController {
 
 	//
 	@PostMapping(value = "/admin/shutdownExeAndWait")
-	public R shutdownExeAndWait(@RequestParam("name") String name,@RequestParam("time") Long time) throws InterruptedException {
-		XllThreadPoolExecutors.shutdownExeAndWait(name,time, TimeUnit.MILLISECONDS);
+	public R shutdownExeAndWait(@RequestParam("name") String name,@RequestParam("time") Long time) {
+		try {
+			XllThreadPoolExecutors.shutdownExeAndWait(name,time, TimeUnit.MILLISECONDS);
+		} catch (InterruptedException e) {
+			log.error("删除线程异常",e);
+			return R.fail("删除线程出错");
+		}
 		return R.ok();
+	}
+
+
+
+	//
+	@PostMapping(value = "/admin/getRunningThreadByName")
+	public R shutdownExeAndWait(@RequestParam("name") String name) throws InterruptedException {
+		return R.ok(XllThreadPoolExecutors.getRunningThreadByName(name));
 	}
 
 }
