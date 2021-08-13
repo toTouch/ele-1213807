@@ -37,10 +37,10 @@ public class XllThreadPoolExecutorsController {
 	@GetMapping(value = "/admin/getRunningExe")
 	public R getRunningExe(@RequestParam(value = "name", required = false) String name) {
 		Map<String, XllThreadPoolExecutorService> result= XllThreadPoolExecutors.getRunningExe(name);
-		Map<String, XllThreadPoolExecutorServiceVO> map=new HashMap<>();
+
+		/*Map<String, XllThreadPoolExecutorServiceVO> map=new HashMap<>();
 		for(String key:result.keySet()){//keySet获取map集合key的集合  然后在遍历key即可
 			XllThreadPoolExecutorService xllThreadPoolExecutorService = result.get(key);//
-
 
 			XllThreadPoolExecutorServiceVO xllThreadPoolExecutorServiceVO=new XllThreadPoolExecutorServiceVO();
 			xllThreadPoolExecutorServiceVO.setQueueSize(xllThreadPoolExecutorService.getQueenSize());
@@ -53,12 +53,11 @@ public class XllThreadPoolExecutorsController {
 			xllThreadPoolExecutorServiceVO.setMaximumPoolSize(xllThreadPoolExecutorService.getMaximumPoolSize());
 			xllThreadPoolExecutorServiceVO.setLargestPoolSize(xllThreadPoolExecutorService.getLargestPoolSize());
 			xllThreadPoolExecutorServiceVO.setTaskCount(xllThreadPoolExecutorService.getTaskCount());
-
 			xllThreadPoolExecutorServiceVO.setCallerInfo(xllThreadPoolExecutorService.getCallerInfo());
 
 			map.put(key,xllThreadPoolExecutorServiceVO);
-		}
-		return R.ok(map);
+		}*/
+		return R.ok(result);
 	}
 
 
