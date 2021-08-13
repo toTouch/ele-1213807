@@ -92,7 +92,7 @@ public class EleOperateQueueHandler {
 					executorService.execute(() -> {
 						//线程池等待执行 3 ms
 						try {
-							Thread.sleep(30);
+							Thread.sleep(300000);
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						}
