@@ -42,6 +42,7 @@ public class XllThreadPoolExecutorsController {
 			XllThreadPoolExecutorService xllThreadPoolExecutorService = result.get(key);//
 			XllThreadPoolExecutorServiceVO xllThreadPoolExecutorServiceVO=new XllThreadPoolExecutorServiceVO();
 			BeanUtil.copyProperties(xllThreadPoolExecutorService,xllThreadPoolExecutorServiceVO);
+			xllThreadPoolExecutorServiceVO.setCallerInfo(xllThreadPoolExecutorService.getCallerInfo());
 			xllThreadPoolExecutorServiceVO.setQueueSize(xllThreadPoolExecutorService.getQueenSize());
 			map.put(key,xllThreadPoolExecutorServiceVO);
 		}

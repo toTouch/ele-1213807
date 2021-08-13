@@ -10,21 +10,21 @@ public class XllThreadPoolExecutorServiceVO {
 
     private  Boolean  shutdown;
 
-    private Integer getActiveCount;
+    private Integer activeCount;
 
-    private Long getCompletedTaskCount;
+    private Long completedTaskCount;
 
-    private Integer getCorePoolSize;
+    private Integer corePoolSize;
 
-    private Integer getPoolSize;
+    private Integer poolSize;
 
-    private Integer getMaximumPoolSize;
+    private Integer maximumPoolSize;
 
-    private Integer getLargestPoolSize;
+    private Integer largestPoolSize;
 
-    private Long getTaskCount;
+    private Long taskCount;
 
-    private Long getQueenSize;
+    private Long queenSize;
 
-    private callerInfoVO callerInfo;
+    private StackTraceElement callerInfo;
 }
