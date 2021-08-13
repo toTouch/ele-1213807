@@ -24,7 +24,5 @@ public class XllThreadPoolExecutorServiceVO {
 
     private Long taskCount;
 
-    private Long queenSize;
-
     private StackTraceElement callerInfo;
 }
