@@ -90,6 +90,12 @@ public class EleOperateQueueHandler {
 
 					EleOpenDTO finalOpenDTO = eleOpenDTO;
 					executorService.execute(() -> {
+						//线程池等待执行 3 ms
+						try {
+							Thread.sleep(30);
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						}
 						handleOrderAfterOperated(finalOpenDTO);
 					});
 
