@@ -65,7 +65,7 @@ public class XllThreadPoolExecutorsController {
 
 
 	//
-	@PostMapping(value = "/admin/getRunningThreadByName")
+	@GetMapping(value = "/admin/getRunningThreadByName")
 	public R shutdownExeAndWait(@RequestParam("name") String name) throws InterruptedException {
 		return R.ok(XllThreadPoolExecutors.getRunningThreadByName(name));
 	}
