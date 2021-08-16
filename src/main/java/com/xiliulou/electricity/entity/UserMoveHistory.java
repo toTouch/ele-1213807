@@ -48,7 +48,7 @@ public class UserMoveHistory {
     /**
     * 月卡剩余次数
     */
-    private Integer remainingNumber;
+    private Long remainingNumber;
     /**
     * 租电池押金
     */

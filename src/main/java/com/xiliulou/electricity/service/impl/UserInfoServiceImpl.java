@@ -580,7 +580,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		String cardName = null;
 		Integer cardType = null;
 		Long memberCardExpireTime = null;
-		Integer remainingNumber = null;
+		Long remainingNumber = null;
 		if (Objects.nonNull(userMoveHistory.getCardId())) {
 			if (Objects.isNull(userMoveHistory.getMemberCardExpireTime())
 					|| Objects.isNull(userMoveHistory.getRemainingNumber())) {
@@ -626,7 +626,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			String finalCardName = cardName;
 			Integer finalCardType = cardType;
 			Long finalMemberCardExpireTime = memberCardExpireTime;
-			Integer finalRemainingNumber = remainingNumber;
+			Long finalRemainingNumber = remainingNumber;
 			DbUtils.dbOperateSuccessThen(insert, () -> {
 
 				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -676,7 +676,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			String finalCardName = cardName;
 			Integer finalCardType = cardType;
 			Long finalMemberCardExpireTime = memberCardExpireTime;
-			Integer finalRemainingNumber = remainingNumber;
+			Long finalRemainingNumber = remainingNumber;
 			DbUtils.dbOperateSuccessThen(update, () -> {
 
 				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
