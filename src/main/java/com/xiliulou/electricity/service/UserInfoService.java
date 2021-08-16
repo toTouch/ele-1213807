@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserMoveQuery;
@@ -76,5 +77,5 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R webUnBindBattery(Long id);
 
-	R userMove(UserMoveQuery userMoveQuery);
+	R userMove(UserMoveHistory userMoveHistory);
 }

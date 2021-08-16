@@ -3,6 +3,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.query.UserMoveQuery;
@@ -164,8 +165,8 @@ public class JsonAdminUserInfoController {
 
     //迁移用户数据
     @PostMapping(value = "/admin/userInfo/userMove")
-    public R userMove(@RequestBody UserMoveQuery userMoveQuery) {
-        return userInfoService.userMove(userMoveQuery);
+    public R userMove(@RequestBody UserMoveHistory userMoveHistory) {
+        return userInfoService.userMove(userMoveHistory);
     }
 
 }

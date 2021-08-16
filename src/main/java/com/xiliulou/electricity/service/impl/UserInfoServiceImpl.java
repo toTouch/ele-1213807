@@ -62,6 +62,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
 	ElectricityMemberCardService electricityMemberCardService;
+	@Autowired
+	UserMoveHistoryService  userMoveHistoryService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -556,20 +558,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	}
 
 	@Override
-	public R userMove(UserMoveQuery userMoveQuery) {
+	public R userMove(UserMoveHistory userMoveHistory) {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 		//根据手机号查询用户
-		User user = userService.queryByUserPhone(userMoveQuery.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
+		User user = userService.queryByUserPhone(userMoveHistory.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, tenantId);
 
 		if (Objects.isNull(user)) {
-			log.error("userMove  ERROR! not found user,phone:{} ", userMoveQuery.getPhone());
+			log.error("userMove  ERROR! not found user,phone:{} ", userMoveHistory.getPhone());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
-		if (userMoveQuery.getServiceStatus() > 0) {
-			if (Objects.isNull(userMoveQuery.getIdNumber())
-					|| Objects.isNull(userMoveQuery.getName())) {
+		if (userMoveHistory.getServiceStatus() > 0) {
+			if (Objects.isNull(userMoveHistory.getIdNumber())
+					|| Objects.isNull(userMoveHistory.getName())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 		}
@@ -578,25 +580,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		String cardName = null;
 		Integer cardType = null;
 		Long memberCardExpireTime = null;
-		Long remainingNumber = null;
-		if (Objects.nonNull(userMoveQuery.getCardId())) {
-			if (Objects.isNull(userMoveQuery.getMemberCardExpireTime())
-					|| Objects.isNull(userMoveQuery.getRemainingNumber())) {
+		Integer remainingNumber = null;
+		if (Objects.nonNull(userMoveHistory.getCardId())) {
+			if (Objects.isNull(userMoveHistory.getMemberCardExpireTime())
+					|| Objects.isNull(userMoveHistory.getRemainingNumber())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 			//查看套餐
-			ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userMoveQuery.getCardId());
+			ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userMoveHistory.getCardId());
 
 			if (Objects.isNull(electricityMemberCard)) {
-				log.error("userMove  ERROR! not found user,electricityMemberCardId:{} ", userMoveQuery.getCardId());
+				log.error("userMove  ERROR! not found user,electricityMemberCardId:{} ", userMoveHistory.getCardId());
 				return R.fail("ELECTRICITY.0087", "未找到月卡套餐");
 			}
 
-			cardId = userMoveQuery.getCardId();
+			cardId = userMoveHistory.getCardId();
 			cardName = electricityMemberCard.getName();
 			cardType = electricityMemberCard.getType();
-			memberCardExpireTime = userMoveQuery.getMemberCardExpireTime();
-			remainingNumber = userMoveQuery.getRemainingNumber();
+			memberCardExpireTime = userMoveHistory.getMemberCardExpireTime();
+			remainingNumber = userMoveHistory.getRemainingNumber();
 		}
 
 		UserInfo userInfo = queryByUid(user.getUid());
@@ -607,15 +609,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 					.createTime(System.currentTimeMillis())
 					.phone(user.getPhone())
 					.userName(user.getName())
-					.name(userMoveQuery.getName())
-					.idNumber(userMoveQuery.getIdNumber())
+					.name(userMoveHistory.getName())
+					.idNumber(userMoveHistory.getIdNumber())
 					.serviceStatus(UserInfo.STATUS_INIT)
 					.delFlag(User.DEL_NORMAL)
 					.usableStatus(UserInfo.USER_USABLE_STATUS)
 					.tenantId(tenantId)
 					.build();
 
-			if (userMoveQuery.getServiceStatus() > 0) {
+			if (userMoveHistory.getServiceStatus() > 0) {
 				insertUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
 			}
 			Integer insert = insert(insertUserInfo);
@@ -624,7 +626,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			String finalCardName = cardName;
 			Integer finalCardType = cardType;
 			Long finalMemberCardExpireTime = memberCardExpireTime;
-			Long finalRemainingNumber = remainingNumber;
+			Integer finalRemainingNumber = remainingNumber;
 			DbUtils.dbOperateSuccessThen(insert, () -> {
 
 				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -633,8 +635,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 							.userInfoId(insertUserInfo.getId())
 							.updateTime(System.currentTimeMillis())
 							.createTime(System.currentTimeMillis())
-							.serviceStatus(userMoveQuery.getServiceStatus())
-							.franchiseeId(userMoveQuery.getFranchiseeId())
+							.serviceStatus(userMoveHistory.getServiceStatus())
+							.franchiseeId(userMoveHistory.getFranchiseeId())
 							.cardId(finalCardId)
 							.cardName(finalCardName)
 							.cardType(finalCardType)
@@ -646,13 +648,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 							.build();
 					franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
 				} else {
-					franchiseeUserInfo.setFranchiseeId(userMoveQuery.getFranchiseeId());
+					franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
 					franchiseeUserInfo.setCardId(finalCardId);
 					franchiseeUserInfo.setCardName(finalCardName);
 					franchiseeUserInfo.setCardType(finalCardType);
 					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
 					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
-					franchiseeUserInfo.setServiceStatus(userMoveQuery.getServiceStatus());
+					franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
 					franchiseeUserInfo.setOrderId("-1");
 					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 					franchiseeUserInfoService.update(franchiseeUserInfo);
@@ -661,11 +663,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			});
 		} else {
 			userInfo.setPhone(user.getPhone());
-			userInfo.setName(userMoveQuery.getName());
-			userInfo.setIdNumber(userMoveQuery.getIdNumber());
+			userInfo.setName(userMoveHistory.getName());
+			userInfo.setIdNumber(userMoveHistory.getIdNumber());
 			userInfo.setServiceStatus(UserInfo.STATUS_INIT);
 			userInfo.setUpdateTime(System.currentTimeMillis());
-			if (userMoveQuery.getServiceStatus() > 0) {
+			if (userMoveHistory.getServiceStatus() > 0) {
 				userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
 			}
 			Integer update = update(userInfo);
@@ -674,7 +676,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			String finalCardName = cardName;
 			Integer finalCardType = cardType;
 			Long finalMemberCardExpireTime = memberCardExpireTime;
-			Long finalRemainingNumber = remainingNumber;
+			Integer finalRemainingNumber = remainingNumber;
 			DbUtils.dbOperateSuccessThen(update, () -> {
 
 				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -683,8 +685,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 							.userInfoId(userInfo.getId())
 							.updateTime(System.currentTimeMillis())
 							.createTime(System.currentTimeMillis())
-							.serviceStatus(userMoveQuery.getServiceStatus())
-							.franchiseeId(userMoveQuery.getFranchiseeId())
+							.serviceStatus(userMoveHistory.getServiceStatus())
+							.franchiseeId(userMoveHistory.getFranchiseeId())
 							.cardId(finalCardId)
 							.cardName(finalCardName)
 							.cardType(finalCardType)
@@ -696,13 +698,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 							.build();
 					franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
 				} else {
-					franchiseeUserInfo.setFranchiseeId(userMoveQuery.getFranchiseeId());
+					franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
 					franchiseeUserInfo.setCardId(finalCardId);
 					franchiseeUserInfo.setCardName(finalCardName);
 					franchiseeUserInfo.setCardType(finalCardType);
 					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
 					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
-					franchiseeUserInfo.setServiceStatus(userMoveQuery.getServiceStatus());
+					franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
 					franchiseeUserInfo.setOrderId("-1");
 					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 					franchiseeUserInfoService.update(franchiseeUserInfo);
@@ -711,9 +713,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			});
 		}
 
-		//记录一下数据迁移，迁移了哪些数据 TODO
-
-		return null;
+		//记录一下数据迁移，迁移了哪些数据
+		userMoveHistory.setUid(user.getUid());
+		userMoveHistory.setCreateTime(System.currentTimeMillis());
+		userMoveHistory.setTenantId(user.getTenantId());
+		userMoveHistoryService.insert(userMoveHistory);
+		return R.ok();
 	}
 
 }
