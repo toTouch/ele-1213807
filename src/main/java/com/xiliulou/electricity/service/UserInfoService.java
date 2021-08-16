@@ -6,7 +6,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
-import com.xiliulou.electricity.query.UserMoveQuery;
 
 import java.util.HashMap;
 import java.util.List;
