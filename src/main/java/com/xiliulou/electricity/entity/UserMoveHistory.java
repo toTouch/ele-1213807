@@ -5,6 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
+import java.math.BigDecimal;
+
 /**
  * 用户迁移历史记录(UserMoveHistory)实体类
  *
@@ -52,7 +54,7 @@ public class UserMoveHistory {
     /**
     * 租电池押金
     */
-    private Double batteryDeposit;
+    private BigDecimal batteryDeposit;
     /**
     * 创建时间
     */

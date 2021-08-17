@@ -571,7 +571,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		if (userMoveHistory.getServiceStatus() <= 0 || Objects.isNull(userMoveHistory.getIdNumber())
 				|| Objects.isNull(userMoveHistory.getName())) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
 
+		if(userMoveHistory.getServiceStatus()>1&&Objects.isNull(userMoveHistory.getBatteryDeposit())){
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
 
 		Integer cardId = null;
@@ -654,6 +657,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
 					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
 					franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
+					franchiseeUserInfo.setBatteryDeposit(userMoveHistory.getBatteryDeposit());
 					franchiseeUserInfo.setOrderId("-1");
 					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 					franchiseeUserInfoService.update(franchiseeUserInfo);
@@ -692,6 +696,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 							.cardType(finalCardType)
 							.memberCardExpireTime(finalMemberCardExpireTime)
 							.remainingNumber(finalRemainingNumber)
+							.batteryDeposit(userMoveHistory.getBatteryDeposit())
 							.orderId("-1")
 							.delFlag(User.DEL_NORMAL)
 							.tenantId(tenantId)
