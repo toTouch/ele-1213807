@@ -302,17 +302,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0046", "未退还电池");
 		}
 
-		/*//用户状态异常
-		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)
-				&& Objects.isNull(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
-			log.error("returnDeposit  ERROR! userInfo is error!uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0052", "用户状态异常，请联系管理员");
-		}*/
 
 		//判断是否缴纳押金
 		if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
 				|| Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
 			log.error("returnDeposit  ERROR! not pay deposit! uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0042", "未缴纳押金");
+		}
+
+		if(Objects.equals(oldFranchiseeUserInfo.getOrderId(),"-1")){
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
@@ -543,6 +541,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	@Override
 	public R queryCount(EleDepositOrderQuery eleDepositOrderQuery) {
 		return R.ok(eleDepositOrderMapper.queryCount(eleDepositOrderQuery));
+	}
+
+	@Override
+	public void insert(EleDepositOrder eleDepositOrder) {
+		eleDepositOrderMapper.insert(eleDepositOrder);
 	}
 
 	public String generateOrderId(Long uid) {

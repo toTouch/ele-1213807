@@ -34,4 +34,6 @@ public interface EleDepositOrderService {
     R queryDeposit(String productKey,String deviceName);
 
 	R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
+
+	void insert(EleDepositOrder eleDepositOrder);
 }
