@@ -61,7 +61,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Autowired
 	ElectricityMemberCardService electricityMemberCardService;
 	@Autowired
-	UserMoveHistoryService  userMoveHistoryService;
+	UserMoveHistoryService userMoveHistoryService;
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -567,14 +567,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
-		Integer authStatus=0;
 
-		if (userMoveHistory.getServiceStatus() > 0) {
-			if (Objects.isNull(userMoveHistory.getIdNumber())
-					|| Objects.isNull(userMoveHistory.getName())) {
-				return R.fail("ELECTRICITY.0007", "不合法的参数");
-			}
-			authStatus=2;
+		if (userMoveHistory.getServiceStatus() <= 0 || Objects.isNull(userMoveHistory.getIdNumber())
+				|| Objects.isNull(userMoveHistory.getName())) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+
 		}
 
 		Integer cardId = null;
@@ -615,7 +612,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 					.serviceStatus(UserInfo.STATUS_INIT)
 					.delFlag(User.DEL_NORMAL)
 					.usableStatus(UserInfo.USER_USABLE_STATUS)
-					.authStatus(authStatus)
+					.authStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED)
 					.tenantId(tenantId)
 					.build();
 
@@ -668,7 +665,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			userInfo.setName(userMoveHistory.getName());
 			userInfo.setIdNumber(userMoveHistory.getIdNumber());
 			userInfo.setServiceStatus(UserInfo.STATUS_INIT);
-			userInfo.setAuthStatus(authStatus);
+			userInfo.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
 			userInfo.setUpdateTime(System.currentTimeMillis());
 			if (userMoveHistory.getServiceStatus() > 0) {
 				userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
