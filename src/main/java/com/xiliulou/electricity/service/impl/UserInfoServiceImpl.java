@@ -720,21 +720,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 				return null;
 			});
 		}
-		//生成订单
-		EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
-				.orderId("-1")
-				.uid(user.getUid())
-				.phone(userInfo.getPhone())
-				.name(userInfo.getName())
-				.payAmount(userMoveHistory.getBatteryDeposit())
-				.status(EleDepositOrder.STATUS_INIT)
-				.createTime(System.currentTimeMillis())
-				.updateTime(System.currentTimeMillis())
-				.tenantId(tenantId)
-				.franchiseeId(userMoveHistory.getFranchiseeId()).build();
+		if(userMoveHistory.getServiceStatus() > 1) {
+			//生成订单
+			EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+					.orderId("-1")
+					.uid(user.getUid())
+					.phone(userInfo.getPhone())
+					.name(userInfo.getName())
+					.payAmount(userMoveHistory.getBatteryDeposit())
+					.status(EleDepositOrder.STATUS_INIT)
+					.createTime(System.currentTimeMillis())
+					.updateTime(System.currentTimeMillis())
+					.tenantId(tenantId)
+					.franchiseeId(userMoveHistory.getFranchiseeId()).build();
 
-		eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-		eleDepositOrderService.insert(eleDepositOrder);
+			eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
+			eleDepositOrderService.insert(eleDepositOrder);
+		}
 
 		//记录一下数据迁移，迁移了哪些数据
 		userMoveHistory.setUid(user.getUid());
