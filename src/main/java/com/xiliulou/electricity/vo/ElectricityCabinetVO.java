@@ -20,6 +20,10 @@ public class ElectricityCabinetVO {
     */
     private String name;
     /**
+     * 平台名称
+     */
+    private String configName;
+    /**
      * 换电柜sn
      */
     private String sn;

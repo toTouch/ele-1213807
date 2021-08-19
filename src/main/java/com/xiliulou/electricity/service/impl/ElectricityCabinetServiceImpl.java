@@ -1081,7 +1081,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			name = electricityConfig.getName();
 		}
 
-		electricityCabinetVO.setName(name);
+		electricityCabinetVO.setConfigName(name);
 		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
 		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
 		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
