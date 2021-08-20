@@ -68,7 +68,7 @@ public class JsonOuterCallBackController {
 
         List<String> list = new ArrayList<>(1);
         list.add(key);
-        Object result = redisTemplate.execute(redisScript, list, 60, 10);
+        Object result = redisTemplate.execute(redisScript, list, 60L, 10L);
 
         if (ObjectUtil.equal(1L, result)) {
             return R.ok();
