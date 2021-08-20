@@ -17,6 +17,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -68,7 +71,7 @@ public class JsonOuterCallBackController {
 
         List<String> list = new ArrayList<>(1);
         list.add(key);
-        Object result = redisTemplate.execute(redisScript, list, "60", "10");
+        Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), "10");
 
         if (ObjectUtil.equal(1L, result)) {
             return R.ok();
