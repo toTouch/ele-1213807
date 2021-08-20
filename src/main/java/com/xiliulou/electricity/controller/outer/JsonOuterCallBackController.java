@@ -64,11 +64,11 @@ public class JsonOuterCallBackController {
     public R redisTest(){
         String key = "redis_test";
         RedisScript redisScript = RedisScript.of("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > tonumber(ARGV[2]) then return 0 end return 1",
-                Long.class);
+                String.class);
 
         List<String> list = new ArrayList<>(1);
         list.add(key);
-        Object result = redisTemplate.execute(redisScript, list, 60L, 10L);
+        Object result = redisTemplate.execute(redisScript, list, 60, 10);
 
         if (ObjectUtil.equal(1L, result)) {
             return R.ok();
