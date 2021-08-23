@@ -1,65 +1,55 @@
-import cn.hutool.http.HttpUtil;
-import com.alibaba.fastjson.JSONObject;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.pay.weixin.entity.SharePicture;
+
 import org.apache.commons.codec.binary.Base64;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
-import org.junit.Test;
-import org.springframework.web.client.RestTemplate;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.UnsupportedEncodingException;
 import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Arrays;
-import java.util.concurrent.ExecutorService;
+
 
 /**
  * @author: Miss.Li
  * @Date: 2021/8/23 13:34
  * @Description:
  */
-public class treadTest {
+public class TreadTest {
 
-	@Test
-	public void test1() {
-		Thread thread1 =new Thread(() -> {
-			System.out.println("线程1开始执行");
-			String result=post();
-			System.out.println("线程1执行中");
-			System.out.println(result);
-			System.out.println("线程1执行完毕");
-		});
-		Thread thread2 =new Thread(() -> {
-			System.out.println("线程2开始执行");
-			String result=post();
-			System.out.println("线程2执行中");
-			System.out.println(result);
-			System.out.println("线程2执行完毕");
-		});
-		Thread thread3 =new Thread(() -> {
-			System.out.println("线程3开始执行");
-			String result=post();
-			System.out.println("线程3执行中");
-			System.out.println(result);
-			System.out.println("线程3执行完毕");
-		});
 
-			thread1.start();
-			thread2.start();
-			thread3.start();
+	public static void main(String[] args) {
+		MyThread myThread = new MyThread();
+
+		Thread thread1 = new Thread(myThread,"1");
+		Thread thread2 = new Thread(myThread,"2");
+		Thread thread3 = new Thread(myThread,"3");
+
+		thread1.start();
+		thread2.start();
+		thread3.start();
+
 	}
 
-	public String post() {
+}
+
+class MyThread implements Runnable {
+
+	@Override
+	public void run() {
+		for (int i=0;i<500;i++) {
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			post();
+		}
+	}
+
+	public void post() {
 		//加密
 		Long sTime = System.currentTimeMillis();
 		String appId = "20212c29d393";
@@ -72,7 +62,6 @@ public class treadTest {
 			System.out.println(e);
 		}
 		String sign = Base64.encodeBase64URLSafeString(bytes);
-        String result=null;
 		//发送请求
 		try {
 			HttpClient client = new DefaultHttpClient();
@@ -88,16 +77,19 @@ public class treadTest {
 			InputStream in = httpResponse.getEntity().getContent();
 			BufferedReader br = new BufferedReader(new InputStreamReader(in, "utf-8"));
 			StringBuilder strber = new StringBuilder();
-			String line = null;
+			String line;
 			while ((line = br.readLine()) != null) {
 				strber.append(line + "\n");
 			}
 			in.close();
-			result=LocalTime.now() + ":" + strber.toString();
-			System.out.println(result);
+			System.out.println("------------------------------------------");
+			System.out.println(LocalTime.now());
+			System.out.println(strber.toString());
+			System.out.println("------------------------------------------");
 		} catch (Exception e) {
 			System.out.println(e);
 		}
-		return result;
 	}
 }
+
+
