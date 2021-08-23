@@ -7,6 +7,9 @@ import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
 import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import lombok.extern.slf4j.Slf4j;
+import net.sf.cglib.core.Local;
+import org.joda.time.Hours;
+import org.joda.time.Seconds;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -19,9 +22,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @program: XILIULOU
@@ -71,11 +77,14 @@ public class JsonOuterCallBackController {
 
         List<String> list = new ArrayList<>(1);
         list.add(key);
-        Object result = redisTemplate.execute(redisScript, list, String.valueOf(60000), "10");
+        TemporalUnit Seconds=ChronoUnit.SECONDS;
+        LocalTime time=LocalTime.now();
+        Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(time, Seconds.addTo(time,60))), "10");
 
         if (ObjectUtil.equal(1L, result)) {
             return R.ok();
         }
         return R.fail("失败");
     }
+
 }
