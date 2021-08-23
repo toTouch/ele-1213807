@@ -68,7 +68,7 @@ public class JsonOuterCallBackController {
         return WechatV3CallBackResult.success();
     }
 
-    //测试redis
+   /* //测试redis
     @GetMapping("/outer/redis/test")
     public R redisTest(){
         String key = "redis_test1";
@@ -77,12 +77,12 @@ public class JsonOuterCallBackController {
 
         List<String> list = new ArrayList<>(1);
         list.add(key);
-        /*TemporalUnit Seconds=ChronoUnit.SECONDS;
+        *//*TemporalUnit Seconds=ChronoUnit.SECONDS;
         LocalTime time=LocalTime.now();
-        Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(time, Seconds.addTo(time,60))), "10");*/
+        Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(time, Seconds.addTo(time,60))), "10");*//*
 
 
-        /*Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), 100);*/
+        *//*Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), 100);*//*
 
         Object result = redisTemplate.execute(redisScript, list, String.valueOf(60), "10");
 
@@ -90,6 +90,6 @@ public class JsonOuterCallBackController {
             return R.ok();
         }
         return R.fail("失败");
-    }
+    }*/
 
 }
