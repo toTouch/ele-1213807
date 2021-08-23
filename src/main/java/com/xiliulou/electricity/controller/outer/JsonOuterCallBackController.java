@@ -84,7 +84,7 @@ public class JsonOuterCallBackController {
 
         /*Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), 100);*/
 
-        Object result = redisTemplate.execute(redisScript, list, String.valueOf(60), 100);
+        Object result = redisTemplate.execute(redisScript, list, String.valueOf(60), 10);
 
         if (ObjectUtil.equal(1L, result)) {
             return R.ok();
