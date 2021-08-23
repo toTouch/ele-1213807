@@ -71,7 +71,7 @@ public class JsonOuterCallBackController {
     //测试redis
     @GetMapping("/outer/redis/test")
     public R redisTest(){
-        String key = "redis_test";
+        String key = "redis_test1";
         RedisScript redisScript = RedisScript.of("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > tonumber(ARGV[2]) then return 0 end return 1",
                 Long.class);
 
@@ -82,7 +82,9 @@ public class JsonOuterCallBackController {
         Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(time, Seconds.addTo(time,60))), "10");*/
 
 
-        Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), 10);
+        /*Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), 100);*/
+
+        Object result = redisTemplate.execute(redisScript, list, String.valueOf(60), 100);
 
         if (ObjectUtil.equal(1L, result)) {
             return R.ok();
