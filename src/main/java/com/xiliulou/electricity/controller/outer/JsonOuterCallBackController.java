@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.outer;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.pay.weixinv3.query.WechatV3OrderCallBackQuery;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundOrderCallBackQuery;
@@ -8,6 +9,7 @@ import com.xiliulou.pay.weixinv3.rsp.WechatV3CallBackResult;
 import com.xiliulou.pay.weixinv3.service.WechatV3PostProcessHandler;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.cglib.core.Local;
+import org.apache.commons.codec.binary.Base64;
 import org.joda.time.Hours;
 import org.joda.time.Seconds;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +22,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -67,29 +74,4 @@ public class JsonOuterCallBackController {
         wechatV3PostProcessHandler.postProcessAfterWechatRefund(wechatV3RefundOrderCallBackQuery);
         return WechatV3CallBackResult.success();
     }
-
-   /* //测试redis
-    @GetMapping("/outer/redis/test")
-    public R redisTest(){
-        String key = "redis_test1";
-        RedisScript redisScript = RedisScript.of("local times = redis.call('incr',KEYS[1]) if times == 1 then redis.call('expire',KEYS[1],ARGV[1]) end if times > tonumber(ARGV[2]) then return 0 end return 1",
-                Long.class);
-
-        List<String> list = new ArrayList<>(1);
-        list.add(key);
-        *//*TemporalUnit Seconds=ChronoUnit.SECONDS;
-        LocalTime time=LocalTime.now();
-        Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(time, Seconds.addTo(time,60))), "10");*//*
-
-
-        *//*Object result = redisTemplate.execute(redisScript, list, String.valueOf(ChronoUnit.SECONDS.between(LocalDateTime.now(), LocalDate.now().plusDays(1).atStartOfDay())), 100);*//*
-
-        Object result = redisTemplate.execute(redisScript, list, String.valueOf(60), "10");
-
-        if (ObjectUtil.equal(1L, result)) {
-            return R.ok();
-        }
-        return R.fail("失败");
-    }*/
-
 }
