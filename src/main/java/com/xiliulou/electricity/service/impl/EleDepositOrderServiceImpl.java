@@ -227,6 +227,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			//用户缴纳押金
 			FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
 			franchiseeUserInfoUpdate.setId(userInfo.getId());
+			franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
 			franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
 			franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
 			franchiseeUserInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
