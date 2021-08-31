@@ -359,6 +359,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					.payAmount(electricityMemberCardOrder.getPayAmount())
 					.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
 					.attach(String.valueOf(electricityMemberCardOrderQuery.getUserCouponId()))
+					.description("月卡收费")
 					.tenantId(tenantId).build();
 
 

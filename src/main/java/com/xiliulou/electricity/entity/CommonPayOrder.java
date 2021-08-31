@@ -25,6 +25,10 @@ public class CommonPayOrder {
     private String attach;
     //
     private Integer tenantId;
+    /**
+     * 商品描述
+     */
+    private String description;
 
 
 }

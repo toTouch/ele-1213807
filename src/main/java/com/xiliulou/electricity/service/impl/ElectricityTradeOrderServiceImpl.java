@@ -102,7 +102,7 @@ public class ElectricityTradeOrderServiceImpl extends
         wechatV3OrderQuery.setNotifyUrl(wechatConfig.getPayCallBackUrl()+electricityTradeOrder.getTenantId());
         wechatV3OrderQuery.setExpireTime(System.currentTimeMillis() + 3600000);
         wechatV3OrderQuery.setOpenId(openId);
-        wechatV3OrderQuery.setDescription("ele_order");
+        wechatV3OrderQuery.setDescription(commonOrder.getDescription());
         wechatV3OrderQuery.setCurrency("CNY");
         wechatV3OrderQuery.setAttach(commonOrder.getAttach());
         wechatV3OrderQuery.setAmount(commonOrder.getPayAmount().multiply(new BigDecimal(100)).intValue());

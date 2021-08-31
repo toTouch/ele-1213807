@@ -245,6 +245,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 					.payAmount(payAmount)
 					.orderType(ElectricityTradeOrder.ORDER_TYPE_DEPOSIT)
 					.attach(ElectricityTradeOrder.ATTACH_DEPOSIT)
+					.description("押金收费")
 					.tenantId(tenantId).build();
 
 
