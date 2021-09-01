@@ -67,8 +67,7 @@ public class JsonAdminElectricityCabinetBoxController {
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody UpdateUsableStatusQuery updateUsableStatusQuery) {
         if (Objects.isNull(updateUsableStatusQuery.getId())
-                || Objects.isNull(updateUsableStatusQuery.getUsableStatus())
-                || Objects.isNull(updateUsableStatusQuery.getElectricityCabinetId())) {
+                || Objects.isNull(updateUsableStatusQuery.getUsableStatus())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
