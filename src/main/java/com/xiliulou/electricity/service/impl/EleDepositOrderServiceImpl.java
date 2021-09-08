@@ -446,8 +446,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				return R.ok(map);
 			}else {
 				map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
-				//最后一次缴纳押金时间
-				map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
 				return R.ok(map);
 			}
 		}
