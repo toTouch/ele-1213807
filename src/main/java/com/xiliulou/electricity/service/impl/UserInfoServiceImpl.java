@@ -608,7 +608,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		} else {
 			if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-				return R.fail("ELECTRICITY.0019", "用户未实名认证");
+				return R.fail("ELECTRICITY.0041", "未实名认证");
 			}
 
 			Integer finalCardId = cardId;
