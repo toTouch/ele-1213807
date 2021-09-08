@@ -607,58 +607,51 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		} else {
-			userInfo.setPhone(user.getPhone());
-			userInfo.setServiceStatus(UserInfo.STATUS_INIT);
-			userInfo.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
-			userInfo.setUpdateTime(System.currentTimeMillis());
-			if (userMoveHistory.getServiceStatus() > 0) {
-				userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+			if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
+				return R.fail("ELECTRICITY.0019", "用户未实名认证");
 			}
-			Integer update = update(userInfo);
 
 			Integer finalCardId = cardId;
 			String finalCardName = cardName;
 			Integer finalCardType = cardType;
 			Long finalMemberCardExpireTime = memberCardExpireTime;
 			Long finalRemainingNumber = remainingNumber;
-			DbUtils.dbOperateSuccessThen(update, () -> {
 
-				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-				if (Objects.isNull(franchiseeUserInfo)) {
-					FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-							.userInfoId(userInfo.getId())
-							.updateTime(System.currentTimeMillis())
-							.createTime(System.currentTimeMillis())
-							.serviceStatus(userMoveHistory.getServiceStatus())
-							.franchiseeId(userMoveHistory.getFranchiseeId())
-							.cardId(finalCardId)
-							.cardName(finalCardName)
-							.cardType(finalCardType)
-							.memberCardExpireTime(finalMemberCardExpireTime)
-							.remainingNumber(finalRemainingNumber)
-							.batteryDeposit(userMoveHistory.getBatteryDeposit())
-							.orderId("-1")
-							.delFlag(User.DEL_NORMAL)
-							.tenantId(tenantId)
-							.build();
-					franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-				} else {
-					franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
-					franchiseeUserInfo.setCardId(finalCardId);
-					franchiseeUserInfo.setCardName(finalCardName);
-					franchiseeUserInfo.setCardType(finalCardType);
-					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
-					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
-					franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
-					franchiseeUserInfo.setBatteryDeposit(userMoveHistory.getBatteryDeposit());
-					franchiseeUserInfo.setOrderId("-1");
-					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-					franchiseeUserInfoService.update(franchiseeUserInfo);
-				}
-				return null;
-			});
+			FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+			if (Objects.isNull(franchiseeUserInfo)) {
+				FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+						.userInfoId(userInfo.getId())
+						.updateTime(System.currentTimeMillis())
+						.createTime(System.currentTimeMillis())
+						.serviceStatus(userMoveHistory.getServiceStatus())
+						.franchiseeId(userMoveHistory.getFranchiseeId())
+						.cardId(finalCardId)
+						.cardName(finalCardName)
+						.cardType(finalCardType)
+						.memberCardExpireTime(finalMemberCardExpireTime)
+						.remainingNumber(finalRemainingNumber)
+						.batteryDeposit(userMoveHistory.getBatteryDeposit())
+						.orderId("-1")
+						.delFlag(User.DEL_NORMAL)
+						.tenantId(tenantId)
+						.build();
+				franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+			} else {
+				franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
+				franchiseeUserInfo.setCardId(finalCardId);
+				franchiseeUserInfo.setCardName(finalCardName);
+				franchiseeUserInfo.setCardType(finalCardType);
+				franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
+				franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
+				franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
+				franchiseeUserInfo.setBatteryDeposit(userMoveHistory.getBatteryDeposit());
+				franchiseeUserInfo.setOrderId("-1");
+				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+				franchiseeUserInfoService.update(franchiseeUserInfo);
+			}
+
 		}
-		if(userMoveHistory.getServiceStatus() > 1) {
+		if (userMoveHistory.getServiceStatus() > 1) {
 			//生成订单
 			EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
 					.orderId("-1")
