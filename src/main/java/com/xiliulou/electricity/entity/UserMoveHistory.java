@@ -28,14 +28,6 @@ public class UserMoveHistory {
     */
     private String phone;
     /**
-    * 真实姓名
-    */
-    private String name;
-    /**
-    * 身份证号
-    */
-    private String idNumber;
-    /**
     * 服务状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
     */
     private Integer serviceStatus;

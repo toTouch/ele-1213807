@@ -569,8 +569,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
-		if (userMoveHistory.getServiceStatus() <= 0 || Objects.isNull(userMoveHistory.getIdNumber())
-				|| Objects.isNull(userMoveHistory.getName())) {
+		if (userMoveHistory.getServiceStatus() < 2) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
 		}
 
@@ -605,71 +604,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		UserInfo userInfo = queryByUid(user.getUid());
 		if (Objects.isNull(userInfo)) {
-			UserInfo insertUserInfo = UserInfo.builder()
-					.uid(user.getUid())
-					.updateTime(System.currentTimeMillis())
-					.createTime(System.currentTimeMillis())
-					.phone(user.getPhone())
-					.userName(user.getName())
-					.name(userMoveHistory.getName())
-					.idNumber(userMoveHistory.getIdNumber())
-					.serviceStatus(UserInfo.STATUS_INIT)
-					.delFlag(User.DEL_NORMAL)
-					.usableStatus(UserInfo.USER_USABLE_STATUS)
-					.authStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED)
-					.tenantId(tenantId)
-					.build();
-
-			if (userMoveHistory.getServiceStatus() > 0) {
-				insertUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-			}
-			Integer insert = insert(insertUserInfo);
-
-			Integer finalCardId = cardId;
-			String finalCardName = cardName;
-			Integer finalCardType = cardType;
-			Long finalMemberCardExpireTime = memberCardExpireTime;
-			Long finalRemainingNumber = remainingNumber;
-			DbUtils.dbOperateSuccessThen(insert, () -> {
-
-				FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-				if (Objects.isNull(franchiseeUserInfo)) {
-					FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-							.userInfoId(insertUserInfo.getId())
-							.updateTime(System.currentTimeMillis())
-							.createTime(System.currentTimeMillis())
-							.serviceStatus(userMoveHistory.getServiceStatus())
-							.franchiseeId(userMoveHistory.getFranchiseeId())
-							.cardId(finalCardId)
-							.cardName(finalCardName)
-							.cardType(finalCardType)
-							.memberCardExpireTime(finalMemberCardExpireTime)
-							.remainingNumber(finalRemainingNumber)
-					        .batteryDeposit(userMoveHistory.getBatteryDeposit())
-							.orderId("-1")
-							.delFlag(User.DEL_NORMAL)
-							.tenantId(tenantId)
-							.build();
-					franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-				} else {
-					franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
-					franchiseeUserInfo.setCardId(finalCardId);
-					franchiseeUserInfo.setCardName(finalCardName);
-					franchiseeUserInfo.setCardType(finalCardType);
-					franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
-					franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
-					franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
-					franchiseeUserInfo.setBatteryDeposit(userMoveHistory.getBatteryDeposit());
-					franchiseeUserInfo.setOrderId("-1");
-					franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-					franchiseeUserInfoService.update(franchiseeUserInfo);
-				}
-				return null;
-			});
+			log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
 		} else {
 			userInfo.setPhone(user.getPhone());
-			userInfo.setName(userMoveHistory.getName());
-			userInfo.setIdNumber(userMoveHistory.getIdNumber());
 			userInfo.setServiceStatus(UserInfo.STATUS_INIT);
 			userInfo.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
 			userInfo.setUpdateTime(System.currentTimeMillis());
