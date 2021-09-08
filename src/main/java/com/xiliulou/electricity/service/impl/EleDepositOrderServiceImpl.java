@@ -313,7 +313,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		if(Objects.equals(oldFranchiseeUserInfo.getOrderId(),"-1")){
-			return R.fail("ELECTRICITY.0042", "未缴纳押金");
+			return R.fail("ELECTRICITY.00108", "迁移用户，请线下退押");
 		}
 
 		//是否存在未完成的租电池订单
@@ -432,16 +432,24 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				|| Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
 				&& Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
 			//是否退款
-			Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
-			if (Objects.nonNull(refundStatus)) {
-				map.put("refundStatus", refundStatus.toString());
-			} else {
-				map.put("refundStatus", null);
+			if(!Objects.equals(franchiseeUserInfo.getOrderId(),"-1")) {
+
+				Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
+				if (Objects.nonNull(refundStatus)) {
+					map.put("refundStatus", refundStatus.toString());
+				} else {
+					map.put("refundStatus", null);
+				}
+				map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
+				//最后一次缴纳押金时间
+				map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
+				return R.ok(map);
+			}else {
+				map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
+				//最后一次缴纳押金时间
+				map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
+				return R.ok(map);
 			}
-			map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
-			//最后一次缴纳押金时间
-			map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
-			return R.ok(map);
 		}
 
 		return R.ok(null);
