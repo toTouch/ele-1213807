@@ -22,7 +22,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @SpringBootApplication(exclude = DruidDataSourceAutoConfigure.class)
 @EnableDiscoveryClient
-@EnableCircuitBreaker
+/*@EnableCircuitBreaker*/
 @EnableRedis
 @EnableIot
 @EnableStorage
