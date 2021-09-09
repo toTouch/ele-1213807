@@ -569,12 +569,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
-		if (userMoveHistory.getServiceStatus() < 2) {
-			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		UserInfo userInfo = queryByUid(user.getUid());
+		if (Objects.isNull(userInfo)) {
+			log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
-		if (userMoveHistory.getServiceStatus() > 1 && Objects.isNull(userMoveHistory.getBatteryDeposit())) {
-			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		if (userInfo.getServiceStatus() < 2) {
+			return R.fail("ELECTRICITY.0042", "未缴纳押金");
+		}
+
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("userMove  ERROR! not found franchiseeUserInfo,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
+		}
+
+		if(Objects.equals(franchiseeUserInfo.getFranchiseeId(),userMoveHistory.getFranchiseeId())){
+			return R.fail("ELECTRICITY.00108", "换电柜加盟商和用户加盟商不一致");
 		}
 
 		Integer cardId = null;
@@ -602,72 +614,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			remainingNumber = userMoveHistory.getRemainingNumber();
 		}
 
-		UserInfo userInfo = queryByUid(user.getUid());
-		if (Objects.isNull(userInfo)) {
-			log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0019", "未找到用户");
-		} else {
-			if (!Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_IS_AUTH)) {
-				return R.fail("ELECTRICITY.0041", "未实名认证");
-			}
+		Integer finalCardId = cardId;
+		String finalCardName = cardName;
+		Integer finalCardType = cardType;
+		Long finalMemberCardExpireTime = memberCardExpireTime;
+		Long finalRemainingNumber = remainingNumber;
 
-			Integer finalCardId = cardId;
-			String finalCardName = cardName;
-			Integer finalCardType = cardType;
-			Long finalMemberCardExpireTime = memberCardExpireTime;
-			Long finalRemainingNumber = remainingNumber;
 
-			FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-			if (Objects.isNull(franchiseeUserInfo)) {
-				FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-						.userInfoId(userInfo.getId())
-						.updateTime(System.currentTimeMillis())
-						.createTime(System.currentTimeMillis())
-						.serviceStatus(userMoveHistory.getServiceStatus())
-						.franchiseeId(userMoveHistory.getFranchiseeId())
-						.cardId(finalCardId)
-						.cardName(finalCardName)
-						.cardType(finalCardType)
-						.memberCardExpireTime(finalMemberCardExpireTime)
-						.remainingNumber(finalRemainingNumber)
-						.batteryDeposit(userMoveHistory.getBatteryDeposit())
-						.orderId("-1")
-						.delFlag(User.DEL_NORMAL)
-						.tenantId(tenantId)
-						.build();
-				franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-			} else {
-				franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
-				franchiseeUserInfo.setCardId(finalCardId);
-				franchiseeUserInfo.setCardName(finalCardName);
-				franchiseeUserInfo.setCardType(finalCardType);
-				franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
-				franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
-				franchiseeUserInfo.setServiceStatus(userMoveHistory.getServiceStatus());
-				franchiseeUserInfo.setBatteryDeposit(userMoveHistory.getBatteryDeposit());
-				franchiseeUserInfo.setOrderId("-1");
-				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-				franchiseeUserInfoService.update(franchiseeUserInfo);
-			}
-
-		}
-		if (userMoveHistory.getServiceStatus() > 1) {
-			//生成订单
-			EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
-					.orderId("-1")
-					.uid(user.getUid())
-					.phone(userInfo.getPhone())
-					.name(userInfo.getName())
-					.payAmount(userMoveHistory.getBatteryDeposit())
-					.status(EleDepositOrder.STATUS_INIT)
-					.createTime(System.currentTimeMillis())
-					.updateTime(System.currentTimeMillis())
-					.tenantId(tenantId)
-					.franchiseeId(userMoveHistory.getFranchiseeId()).build();
-
-			eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
-			eleDepositOrderService.insert(eleDepositOrder);
-		}
+		franchiseeUserInfo.setFranchiseeId(userMoveHistory.getFranchiseeId());
+		franchiseeUserInfo.setCardId(finalCardId);
+		franchiseeUserInfo.setCardName(finalCardName);
+		franchiseeUserInfo.setCardType(finalCardType);
+		franchiseeUserInfo.setMemberCardExpireTime(finalMemberCardExpireTime);
+		franchiseeUserInfo.setRemainingNumber(finalRemainingNumber);
+		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+		franchiseeUserInfoService.update(franchiseeUserInfo);
 
 		//记录一下数据迁移，迁移了哪些数据
 		userMoveHistory.setUid(user.getUid());
