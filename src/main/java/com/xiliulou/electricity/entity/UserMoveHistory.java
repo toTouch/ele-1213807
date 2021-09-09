@@ -28,10 +28,6 @@ public class UserMoveHistory {
     */
     private String phone;
     /**
-    * 服务状态 (0--初始化,1--已实名认证，2--已缴纳押金，3--已租电池)
-    */
-    private Integer serviceStatus;
-    /**
     * 套餐id
     */
     private Integer cardId;
@@ -44,10 +40,6 @@ public class UserMoveHistory {
     */
     private Long remainingNumber;
     /**
-    * 租电池押金
-    */
-    private BigDecimal batteryDeposit;
-    /**
     * 创建时间
     */
     private Long createTime;
@@ -55,7 +47,6 @@ public class UserMoveHistory {
     * 租户id
     */
     private Integer tenantId;
-
     /**
      * 加盟商id
      */
