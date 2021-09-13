@@ -23,7 +23,7 @@ public class Store {
     * 门店Id
     */
     @TableId(value = "id",type = IdType.AUTO)
-    private Integer id;
+    private Long id;
 
     /**
     * 门店名称
@@ -74,6 +74,16 @@ public class Store {
     private Long uid;
 
     private Integer franchiseeId;
+
+    /**
+     * 门店分润比例
+     * */
+    private Integer percent;
+
+    /**
+     *加盟商分润
+     * */
+    private Integer franchiseePercent;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

@@ -113,4 +113,13 @@ public interface ElectricityCabinetConstant {
     //邀请分享缓存
     String SHARE_ACTIVITY_UID = "share_activity__lock_uid:";
 
+    /**
+     * 加盟商金额缓存
+     */
+    String CACHE_AGENT_AMOUNT = "cache_agent_amount:";
+    /**
+     * 门店金额缓存
+     */
+    String CACHE_STORE_AMOUNT = "cache_store_amount:";
+
 }
