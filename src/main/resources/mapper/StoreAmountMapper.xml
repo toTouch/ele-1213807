@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.StoreAmountMapper">
 
 
-    <select id="accountList" resultType="com.xiliulou.electricity.entity.StoreAmount">
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.StoreAmount">
         select * from t_store_amount
         <where>
             1 = 1

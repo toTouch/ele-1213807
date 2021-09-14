@@ -9,7 +9,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * (StoreAmount)实体类
+ * (FranchiseeAmount)实体类
  *
  * @author lxc
  * @since 2021-09-13 20:09:25

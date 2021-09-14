@@ -24,7 +24,7 @@ public interface StoreAmountMapper extends BaseMapper<StoreAmount> {
 
     int updateIdEmpontent(@Param("old") StoreAmount storeAmount, @Param("fresh") StoreAmount updateStoreAmount);
 
-    List<StoreAmount> accountList(@Param("size") Integer size,
+    List<StoreAmount> queryList(@Param("size") Integer size,
                                  @Param("offset") Integer offset,
                                  @Param("startTime") Long startTime,
                                  @Param("endTime") Long endTime,
