@@ -67,7 +67,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Integer franchiseeId=null;
+        Long franchiseeId=null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -112,7 +112,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Integer franchiseeId=null;
+        Long franchiseeId=null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -160,7 +160,7 @@ public class JsonAdminEleDepositOrderController {
             throw new CustomBusinessException("查不到订单");
         }
 
-        Integer franchiseeId=null;
+        Long franchiseeId=null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
