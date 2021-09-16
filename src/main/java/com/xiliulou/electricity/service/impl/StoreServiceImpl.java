@@ -379,6 +379,18 @@ public class StoreServiceImpl implements StoreService {
 		return electricityCabinetService.queryCountByStoreId(store.getId());
 	}
 
+	@Override
+	public void updateById(Store store) {
+		int update = storeMapper.updateById(store);
+
+
+		DbUtils.dbOperateSuccessThen(update, () -> {
+			//更新缓存
+			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + store.getId());
+			return null;
+		});
+	}
+
 	public Long getTime(Long time) {
 		Date date1 = new Date(time);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

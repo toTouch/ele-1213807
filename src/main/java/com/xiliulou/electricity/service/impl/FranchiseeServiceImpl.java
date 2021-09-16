@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
@@ -309,15 +310,30 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 			//加盟商分账比列
 			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_FRANCHISEE)){
+				Franchisee franchisee=new Franchisee();
+				franchisee.setId(franchiseeSplitQuery.getId());
+				franchisee.setPercent(franchiseeSplitQuery.getPercent());
+				franchisee.setUpdateTime(System.currentTimeMillis());
+				int update = franchiseeMapper.updateById(franchisee);
+
+				DbUtils.dbOperateSuccessThen(update, () -> {
+					//修改缓存
+					redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + franchisee.getId());
+					return null;
+				});
 			}
 
 			//门店分账比列
 			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_STORE)){
-
+				Store store=new Store();
+				store.setId(franchiseeSplitQuery.getId());
+				store.setPercent(franchiseeSplitQuery.getPercent());
+				store.setUpdateTime(System.currentTimeMillis());
+				storeService.updateById(store);
 			}
 		}
 
-		return null;
+		return R.ok();
 	}
 
 }

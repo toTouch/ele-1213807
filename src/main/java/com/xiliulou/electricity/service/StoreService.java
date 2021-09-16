@@ -53,4 +53,6 @@ public interface StoreService {
 	Integer queryCountByFranchiseeId(Long id);
 
 	Integer queryByFanchisee(Long uid);
+
+	void updateById(Store store);
 }
