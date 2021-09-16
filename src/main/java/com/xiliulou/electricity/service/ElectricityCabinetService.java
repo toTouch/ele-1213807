@@ -74,7 +74,7 @@ public interface ElectricityCabinetService {
 
     R queryByDeviceOuter(String productKey, String deviceName);
 
-    R showInfoByStoreId(Integer storeId);
+    R showInfoByStoreId(Long storeId);
 
     R queryByOrder(String productKey, String deviceName);
 
@@ -84,7 +84,7 @@ public interface ElectricityCabinetService {
 
     R batteryReport(BatteryReportQuery batteryReportQuery);
 
-    List<ElectricityCabinet> queryByStoreId(Integer storeId);
+    List<ElectricityCabinet> queryByStoreId(Long storeId);
 
     R queryByDevice(String productKey, String deviceName);
 

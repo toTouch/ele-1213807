@@ -1090,7 +1090,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public R showInfoByStoreId(Integer storeId) {
+	public R showInfoByStoreId(Long storeId) {
 		List<ElectricityCabinet> electricityCabinetList = queryByStoreId(storeId);
 		if (ObjectUtil.isEmpty(electricityCabinetList)) {
 			return R.ok();
@@ -1170,7 +1170,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public List<ElectricityCabinet> queryByStoreId(Integer storeId) {
+	public List<ElectricityCabinet> queryByStoreId(Long storeId) {
 		return electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
 				.eq(ElectricityCabinet::getStoreId, storeId));
 
