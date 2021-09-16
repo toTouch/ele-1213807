@@ -86,7 +86,7 @@ public class StoreVO {
      */
     private String userName;
 
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     //全天
     public static final String ALL_DAY = "-1";
