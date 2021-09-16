@@ -27,7 +27,7 @@ public class Franchisee {
      * Id
      */
     @TableId(value = "id",type = IdType.AUTO)
-    private Integer id;
+    private  Long id;
     /**
      * 门店名称
      */

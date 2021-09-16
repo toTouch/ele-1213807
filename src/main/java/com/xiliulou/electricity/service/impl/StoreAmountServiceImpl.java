@@ -129,7 +129,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
 
         double shouldSplitPayAmount = BigDecimal.valueOf(payAmount).multiply(BigDecimal.valueOf(percent / 100.0)).doubleValue();
         if (shouldSplitPayAmount < 0.01) {
-            log.warn("LOCKER ORDER WARN,split store account is less 0.01,storeId={},payAmount={},percent={}", store.getId(), payAmount, percent);
+            log.warn("ELE ORDER WARN,split store account is less 0.01,storeId={},payAmount={},percent={}", store.getId(), payAmount, percent);
             return;
         }
 

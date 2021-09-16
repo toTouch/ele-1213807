@@ -26,7 +26,7 @@ public class FranchiseeSplitAccountHistory {
     /**
      * 商家id
      */
-    private Long agentId;
+    private Long franchiseeId;
 
     private Long createTime;
     /**
@@ -47,20 +47,6 @@ public class FranchiseeSplitAccountHistory {
      * 收益来源 1--月卡
      */
     private Integer type;
-
-    /**
-     * 每次支付的订单号
-     */
-    private String payOrderId;
-    /**
-     * 这次支付的总金额
-     */
-    private Double paySumAmount;
-
-    /**
-     * 这次分账的比例
-     */
-    private Integer splitRatio;
 
 
     public static final Integer TYPE_MEMBER = 1;

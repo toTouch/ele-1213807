@@ -10,4 +10,5 @@ import com.xiliulou.electricity.entity.FranchiseeAmount;
  */
 public interface FranchiseeAmountMapper extends BaseMapper<FranchiseeAmount> {
 
+	int deleteByFranchiseeId(Long id);
 }

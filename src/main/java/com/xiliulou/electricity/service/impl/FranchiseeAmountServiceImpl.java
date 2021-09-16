@@ -1,6 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.entity.SplitAccountFailRecord;
 import com.xiliulou.electricity.mapper.FranchiseeAmountMapper;
 import com.xiliulou.electricity.service.FranchiseeAmountService;
@@ -39,79 +44,58 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     @Autowired
     SplitAccountFailRecordService splitAccountFailRecordService;
 
-    /**
-     * 通过ID查询单条数据从DB
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public AgentAmount queryByAgentFromDB(Long id) {
-        return this.agentAmountMapper.queryByAgentId(id);
-    }
 
     /**
      * 通过ID查询单条数据从缓存
      *
-     * @param agentId 主键
+     * @param franchiseeId 主键
      * @return 实例对象
      */
     @Override
-    public AgentAmount queryByAgentIdFromCache(Long agentId) {
-        AgentAmount cacheAgent = redisService.getWithHash(LockerCabinetConstant.CACHE_AGENT_AMOUNT + agentId, AgentAmount.class);
-        if (Objects.nonNull(cacheAgent)) {
-            return cacheAgent;
+    public FranchiseeAmount queryByAgentIdFromCache(Long franchiseeId) {
+        FranchiseeAmount cacheFranchiseeAmount = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, FranchiseeAmount.class);
+        if (Objects.nonNull(cacheFranchiseeAmount)) {
+            return cacheFranchiseeAmount;
         }
 
-        AgentAmount agentAmount = queryByAgentFromDB(agentId);
-        if (Objects.isNull(agentAmount)) {
+        FranchiseeAmount franchiseeAmount = franchiseeAmountMapper.selectById(franchiseeId);
+        if (Objects.isNull(franchiseeAmount)) {
             return null;
         }
 
-        redisService.saveWithHash(LockerCabinetConstant.CACHE_AGENT_AMOUNT + agentId, agentAmount);
-        return agentAmount;
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, franchiseeAmount);
+        return franchiseeAmount;
     }
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<AgentAmount> queryAllByLimit(int offset, int limit) {
-        return this.agentAmountMapper.queryAllByLimit(offset, limit);
-    }
 
     /**
      * 新增数据
      *
-     * @param agentAmount 实例对象
+     * @param franchiseeAmount 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public AgentAmount insert(AgentAmount agentAmount) {
-        int result = this.agentAmountMapper.insertOne(agentAmount);
+    public FranchiseeAmount insert(FranchiseeAmount franchiseeAmount) {
+        int result = this.franchiseeAmountMapper.insert(franchiseeAmount);
         if (result > 0) {
-            redisService.saveWithHash(LockerCabinetConstant.CACHE_AGENT_AMOUNT + agentAmount.getAgentId(), agentAmount);
+            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeAmount.getFranchiseeId(), franchiseeAmount);
         }
-        return agentAmount;
+        return franchiseeAmount;
     }
 
     /**
      * 修改数据
      *
-     * @param agentAmount 实例对象
+     * @param franchiseeAmount 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer update(AgentAmount agentAmount) {
-        int update = this.agentAmountMapper.update(agentAmount);
+    public Integer update(FranchiseeAmount franchiseeAmount) {
+        int update = this.franchiseeAmountMapper.updateById(franchiseeAmount);
         if (update > 0) {
-            redisService.delete(LockerCabinetConstant.CACHE_AGENT_AMOUNT + agentAmount.getAgentId());
+            redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeAmount.getFranchiseeId());
 
         }
         return update;
@@ -127,9 +111,9 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteByAgentId(Long id) {
-        int i = this.agentAmountMapper.deleteByAgentId(id);
+        int i = this.franchiseeAmountMapper.deleteByFranchiseeId(id);
         if (i > 0) {
-            redisService.delete(LockerCabinetConstant.CACHE_AGENT_AMOUNT + id);
+            redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + id);
         }
         return i > 0;
     }
@@ -137,138 +121,39 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Klock(name = "handleAgentSplitAccount", keys = {"#agent.id"}, waitTime = 5, customLockTimeoutStrategy = "createAgentSplitAccountLockFail")
-    public void handleSplitAccount(AgentEntity agent, LockerOrderPayRecord payRecord, int agentPercent) {
-        AgentAmount agentAmount = queryByAgentIdFromCache(agent.getId());
-        if (Objects.isNull(agentAmount)) {
-            log.error("LOCKER ORDER ERROR! not found agentAmount! agentId={}", agent.getId());
+    public void handleSplitAccount(Franchisee franchisee, ElectricityTradeOrder payRecord,int percent) {
+        FranchiseeAmount franchiseeAmount = queryByAgentIdFromCache(franchisee.getId());
+        if (Objects.isNull(franchiseeAmount)) {
+            log.error("ELE ORDER ERROR! not found franchiseeAmount! franchiseeId={}", franchisee.getId());
             return;
         }
-        Double payAmount = payRecord.getPayAmount();
+        Double payAmount = Double.valueOf(String.valueOf(payRecord.getTotalFee()));
         if (payAmount < 0.01) {
-            log.warn("LOCKER ORDER WARN,payAmount is less 0.01,agentId={},payAmount={}", agent.getId(), payAmount);
+            log.warn("ELE ORDER WARN,payAmount is less 0.01,franchiseeId={},payAmount={}", franchisee.getId(), payAmount);
             return;
         }
 
-        double shouldSplitPayAmount = BigDecimal.valueOf(payAmount).multiply(BigDecimal.valueOf(agentPercent / 100.0)).setScale(2, BigDecimal.ROUND_FLOOR).doubleValue();
+        double shouldSplitPayAmount = BigDecimal.valueOf(payAmount).multiply(BigDecimal.valueOf(percent / 100.0)).doubleValue();
         if (shouldSplitPayAmount < 0.01) {
-            log.warn("LOCKER ORDER WARN,split agent account is less 0.01,agentId={},payAmount={},percent={}", agent.getId(), payAmount, agentPercent);
+            log.warn("ELE ORDER WARN,split store account is less 0.01,franchiseeId={},payAmount={},percent={}", franchisee.getId(), payAmount, percent);
             return;
         }
 
-        agentAmount.setBalance(BigDecimal.valueOf(agentAmount.getBalance()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
-        agentAmount.setTotalIncome(BigDecimal.valueOf(agentAmount.getTotalIncome()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
-        agentAmount.setUpdateTime(System.currentTimeMillis());
-        update(agentAmount);
+        franchiseeAmount.setBalance(BigDecimal.valueOf(franchiseeAmount.getBalance()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
+        franchiseeAmount.setTotalIncome(BigDecimal.valueOf(franchiseeAmount.getTotalIncome()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
+        franchiseeAmount.setUpdateTime(System.currentTimeMillis());
+        update(franchiseeAmount);
 
-        AgentSplitAccountHistory history = AgentSplitAccountHistory.builder()
+        FranchiseeSplitAccountHistory history = FranchiseeSplitAccountHistory.builder()
                 .createTime(System.currentTimeMillis())
-                .currentTotalIncome(agentAmount.getTotalIncome())
-                .oid(payRecord.getOid())
-                .agentId(agent.getId())
-                .splitRatio(agentPercent)
-                .type(AgentSplitAccountHistory.TYPE_ORDER)
-                .tenantId(payRecord.getTenantId())
-                .splitAmount(shouldSplitPayAmount)
-                .paySumAmount(payAmount)
-                .payOrderId(payRecord.getPayId())
-                .build();
-        agentSplitAccountHistoryService.insert(history);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Klock(name = "handleAgentSplitAccountByCombo", keys = {"#agent.id"}, waitTime = 5, customLockTimeoutStrategy = "createAgentSplitAccountByComboLockFail")
-    public void handleSplitAccountByCombo(AgentEntity agent, UserComboPayRecordEntity payRecord, int agentPercent) {
-        AgentAmount agentAmount = queryByAgentIdFromCache(agent.getId());
-        if (Objects.isNull(agentAmount)) {
-            log.error("COMBO ORDER ERROR! not found agentAmount! shopId={}", agent.getId());
-            return;
-        }
-        Double payAmount = payRecord.getPayMoney().doubleValue();
-        if (payAmount < 0.01) {
-            log.warn("COMBO ORDER WARN,payAmount is less 0.01,agentId={},payAmount={}", agent.getId(), payAmount);
-            return;
-        }
-
-        double shouldSplitPayAmount = BigDecimal.valueOf(payAmount).multiply(BigDecimal.valueOf(agentPercent / 100.0)).setScale(2, BigDecimal.ROUND_FLOOR).doubleValue();
-        if (shouldSplitPayAmount < 0.01) {
-            log.warn("COMBO ORDER WARN,split agent account is less 0.01,agentId={},payAmount={},percent={}", agent.getId(), payAmount, agentPercent);
-            return;
-        }
-
-        agentAmount.setBalance(BigDecimal.valueOf(agentAmount.getBalance()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
-        agentAmount.setTotalIncome(BigDecimal.valueOf(agentAmount.getTotalIncome()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
-        agentAmount.setUpdateTime(System.currentTimeMillis());
-        update(agentAmount);
-
-        AgentSplitAccountHistory history = AgentSplitAccountHistory.builder()
-                .createTime(System.currentTimeMillis())
-                .currentTotalIncome(agentAmount.getTotalIncome())
-                .oid(payRecord.getOid())
-                .agentId(agent.getId())
-                .paySumAmount(payRecord.getPayMoney().doubleValue())
-                .payOrderId(payRecord.getPayId())
-                .splitRatio(agentPercent)
-                .type(AgentSplitAccountHistory.TYPE_MEMBER)
+                .currentTotalIncome(franchiseeAmount.getTotalIncome())
+                .orderId(payRecord.getOrderNo())
+                .franchiseeId(franchisee.getId())
+                .type(FranchiseeSplitAccountHistory.TYPE_MEMBER)
                 .tenantId(payRecord.getTenantId())
                 .splitAmount(shouldSplitPayAmount)
                 .build();
-        agentSplitAccountHistoryService.insert(history);
+        franchiseeSplitAccountHistoryService.insert(history);
     }
 
-    @Override
-    public List<AgentAmount> accountList(Integer size, Integer offset, Long startTime, Long endTime, Long agentId) {
-        return this.agentAmountMapper.accountList(size, offset, startTime, endTime, agentId, TenantContextHolder.getTenantId());
-    }
-
-    @Override
-    public int updateIdempotent(AgentAmount agentAmount, AgentAmount updateAgentAmount) {
-        int result = agentAmountMapper.updateIdempontent(agentAmount, updateAgentAmount);
-        if (result > 0) {
-            redisService.delete(LockerCabinetConstant.CACHE_AGENT_AMOUNT + agentAmount.getAgentId());
-        }
-        return result;
-    }
-
-	@Override
-	public AgentAmount queryByUid(Long uid) {
-		return agentAmountMapper.selectOne(new LambdaQueryWrapper<AgentAmount>().eq(AgentAmount::getUid,uid));
-	}
-
-	@Override
-	public void updateReduceIncome(Long uid, double income) {
-		agentAmountMapper.updateReduceIncome(uid,income);
-	}
-
-	@Override
-	public void updateRollBackIncome(Long uid, double income) {
-		agentAmountMapper.updateRollBackIncome(uid,income);
-	}
-
-    private void createAgentSplitAccountLockFail(AgentEntity agent, LockerOrderPayRecord payAmount, int agentPercent) {
-        log.error("LOCKER ORDER ERROR! handleSplitAccount error! agentId={}", agent.getId());
-        SplitAccountFailRecord record = SplitAccountFailRecord.builder()
-                .accountId(agent.getId())
-                .payAmount(payAmount.getPayAmount())
-                .createTime(System.currentTimeMillis())
-                .type(SplitAccountFailRecord.TYPE_AGENT)
-                .percent(agentPercent)
-                .build();
-
-        splitAccountFailRecordService.insert(record);
-    }
-
-
-    private void createAgentSplitAccountByComboLockFail(AgentEntity agent, UserComboPayRecordEntity payAmount, int agentPercent) {
-        log.error("Combo ORDER ERROR! handleSplitAccount error! agentId={}", agent.getId());
-        SplitAccountFailRecord record = SplitAccountFailRecord.builder()
-                .accountId(agent.getId())
-                .payAmount(payAmount.getPayMoney().doubleValue())
-                .createTime(System.currentTimeMillis())
-                .type(SplitAccountFailRecord.TYPE_AGENT)
-                .percent(agentPercent)
-                .build();
-
-        splitAccountFailRecordService.insert(record);
-    }
 }

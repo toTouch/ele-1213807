@@ -116,7 +116,7 @@ public interface ElectricityCabinetConstant {
     /**
      * 加盟商金额缓存
      */
-    String CACHE_AGENT_AMOUNT = "cache_agent_amount:";
+    String CACHE_FRANCHISEE_AMOUNT = "cache_franchisee_amount:";
     /**
      * 门店金额缓存
      */
