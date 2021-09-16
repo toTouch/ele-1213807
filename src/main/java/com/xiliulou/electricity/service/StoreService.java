@@ -22,23 +22,23 @@ public interface StoreService {
      * @param id 主键
      * @return 实例对象
      */
-    Store queryByIdFromCache(Integer id);
+    Store queryByIdFromCache(Long id);
 
     R save(StoreAddAndUpdate storeAddAndUpdate);
 
     R edit(StoreAddAndUpdate storeAddAndUpdate);
 
-    R delete(Integer id);
+    R delete(Long id);
 
     R queryList(StoreQuery storeQuery);
 
-    R updateStatus(Integer id,Integer usableStatus);
+    R updateStatus(Long id,Integer usableStatus);
 
-    Integer homeOne(List<Integer> storeIdList,Integer tenantId);
+    Integer homeOne(List<Long> storeIdList,Integer tenantId);
 
     R showInfoByDistance(StoreQuery storeQuery);
 
-	List<Store> queryByFranchiseeId(Integer id);
+	List<Store> queryByFranchiseeId(Long id);
 
 	Store queryByUid(Long uid);
 
@@ -46,11 +46,11 @@ public interface StoreService {
 
 	R queryCountByFranchisee(StoreQuery storeQuery);
 
-	List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId);
+	List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId);
 
 	void deleteByUid(Long uid);
 
-	Integer queryCountByFranchiseeId(Integer id);
+	Integer queryCountByFranchiseeId(Long id);
 
 	Integer queryByFanchisee(Long uid);
 }

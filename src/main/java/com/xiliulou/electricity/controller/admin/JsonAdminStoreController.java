@@ -52,7 +52,7 @@ public class JsonAdminStoreController {
 
     //删除门店
     @DeleteMapping(value = "/admin/store/{id}")
-    public R delete(@PathVariable("id") Integer id) {
+    public R delete(@PathVariable("id") Long id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -68,7 +68,8 @@ public class JsonAdminStoreController {
                        @RequestParam(value = "address", required = false) String address,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
+                       @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (Objects.isNull(size)) {
             size = 10L;
         }
@@ -88,7 +89,8 @@ public class JsonAdminStoreController {
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .franchiseeId(franchiseeId).build();
 
 
         return storeService.queryList(storeQuery);
@@ -100,7 +102,8 @@ public class JsonAdminStoreController {
             @RequestParam(value = "address", required = false) String address,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
+            @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+            @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -111,7 +114,8 @@ public class JsonAdminStoreController {
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .franchiseeId(franchiseeId).build();
 
         return storeService.queryCount(storeQuery);
     }
@@ -166,7 +170,7 @@ public class JsonAdminStoreController {
             return R.ok(new ArrayList<>());
         }
         //2、再找加盟商绑定的门店
-        List<Integer> storeIdList=new ArrayList<>();
+        List<Long> storeIdList=new ArrayList<>();
         for (Store store:storeList) {
             storeIdList.add(store.getId());
         }
@@ -217,7 +221,7 @@ public class JsonAdminStoreController {
             return  R.ok(0);
         }
         //2、再找加盟商绑定的门店
-        List<Integer> storeIdList=new ArrayList<>();
+        List<Long> storeIdList=new ArrayList<>();
         for (Store store:storeList) {
             storeIdList.add(store.getId());
         }
@@ -233,7 +237,7 @@ public class JsonAdminStoreController {
 
     //禁启用门店
     @PutMapping(value = "/admin/store/updateStatus")
-    public R updateStatus(@RequestParam("id") Integer id,@RequestParam("usableStatus") Integer usableStatus) {
+    public R updateStatus(@RequestParam("id") Long id,@RequestParam("usableStatus") Integer usableStatus) {
         return storeService.updateStatus(id,usableStatus);
     }
 

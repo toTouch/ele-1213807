@@ -374,4 +374,5 @@ public class ElectricityTradeOrderServiceImpl extends
     public ElectricityTradeOrder selectTradeOrderByOrderId(String orderId) {
         return baseMapper.selectTradeOrderByOrderId(orderId);
     }
+
 }

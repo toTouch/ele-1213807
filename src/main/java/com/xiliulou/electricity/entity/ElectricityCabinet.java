@@ -103,7 +103,7 @@ public class ElectricityCabinet {
     private Integer tenantId;
 
     //门店id
-    private Integer storeId;
+    private Long storeId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

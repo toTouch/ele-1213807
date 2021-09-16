@@ -80,10 +80,6 @@ public class Store {
      * */
     private Integer percent;
 
-    /**
-     *加盟商分润
-     * */
-    private Integer franchiseePercent;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

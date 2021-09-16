@@ -675,7 +675,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
 					Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
 
-					List<Integer> storeIdList = new ArrayList<>();
+					List<Long> storeIdList = new ArrayList<>();
 					if (Objects.nonNull(franchisee)) {
 						List<Store> franchiseeBindList = storeService.queryByFranchiseeId(franchisee.getId());
 						if (ObjectUtil.isNotEmpty(franchiseeBindList)) {
@@ -857,7 +857,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 						return R.ok(homeThree);
 					}
 
-					List<Integer> storeIdList = new ArrayList<>();
+					List<Long> storeIdList = new ArrayList<>();
 					for (Store store : franchiseeBindList) {
 						storeIdList.add(store.getId());
 					}
@@ -1612,7 +1612,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public Integer queryCountByStoreId(Integer id) {
+	public Integer queryCountByStoreId(Long id) {
 		return electricityCabinetMapper.selectCount(new LambdaQueryWrapper<ElectricityCabinet>().eq(ElectricityCabinet::getStoreId, id).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL).last("limit 0,1"));
 	}
 

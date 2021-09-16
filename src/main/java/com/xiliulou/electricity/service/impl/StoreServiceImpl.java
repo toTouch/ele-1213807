@@ -64,7 +64,7 @@ public class StoreServiceImpl implements StoreService {
 	 * @return 实例对象
 	 */
 	@Override
-	public Store queryByIdFromCache(Integer id) {
+	public Store queryByIdFromCache(Long id) {
 		Store cacheStore = redisService.getWithHash(ElectricityCabinetConstant.CACHE_STORE + id, Store.class);
 		if (Objects.nonNull(cacheStore)) {
 			return cacheStore;
@@ -160,7 +160,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R delete(Integer id) {
+	public R delete(Long id) {
 
 		Store store = queryByIdFromCache(id);
 		if (Objects.isNull(store)) {
@@ -233,7 +233,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	@Transactional
-	public R updateStatus(Integer id, Integer usableStatus) {
+	public R updateStatus(Long id, Integer usableStatus) {
 
 		Store oldStore = queryByIdFromCache(id);
 		if (Objects.isNull(oldStore)) {
@@ -257,7 +257,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public Integer homeOne(List<Integer> storeIdList, Integer tenantId) {
+	public Integer homeOne(List<Long> storeIdList, Integer tenantId) {
 		return storeMapper.homeOne(storeIdList, tenantId);
 	}
 
@@ -321,7 +321,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public List<Store> queryByFranchiseeId(Integer id) {
+	public List<Store> queryByFranchiseeId(Long id) {
 		return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
 	}
 
@@ -341,7 +341,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId) {
+	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
 		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
 	}
 
@@ -364,7 +364,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public Integer queryCountByFranchiseeId(Integer id) {
+	public Integer queryCountByFranchiseeId(Long id) {
 		return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL).last("limit 0,1"));
 	}
 

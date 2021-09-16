@@ -15,6 +15,7 @@ import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSplitQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -29,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -283,6 +285,39 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		}
 
 		return 0;
+	}
+
+	@Override
+	@Transactional(rollbackFor = Exception.class)
+	public R setSplit(List<FranchiseeSplitQuery> franchiseeSplitQueryList) {
+		if(ObjectUtils.isEmpty(franchiseeSplitQueryList)){
+			return R.fail("SYSTEM.0002", "参数不合法");
+		}
+
+
+		int totalPercent=0;
+		for (FranchiseeSplitQuery franchiseeSplitQuery:franchiseeSplitQueryList) {
+			totalPercent=totalPercent+franchiseeSplitQuery.getPercent();
+		}
+		if(totalPercent>100){
+			return R.fail("SYSTEM.00109", "总分账比列超过100");
+		}
+
+
+		for (FranchiseeSplitQuery franchiseeSplitQuery:franchiseeSplitQueryList) {
+			totalPercent=totalPercent+franchiseeSplitQuery.getPercent();
+
+			//加盟商分账比列
+			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_FRANCHISEE)){
+			}
+
+			//门店分账比列
+			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_STORE)){
+
+			}
+		}
+
+		return null;
 	}
 
 }

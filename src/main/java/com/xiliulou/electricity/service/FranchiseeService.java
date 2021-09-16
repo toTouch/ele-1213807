@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSplitQuery;
 
 import java.util.List;
 
@@ -39,4 +40,6 @@ public interface FranchiseeService {
     void deleteByUid(Long uid);
 
 	Integer queryByFanchisee(Long uid);
+
+	R setSplit(List<FranchiseeSplitQuery> franchiseeSplitQueryList);
 }

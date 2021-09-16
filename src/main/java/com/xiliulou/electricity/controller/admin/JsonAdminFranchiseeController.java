@@ -3,9 +3,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSplitQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-
+import java.util.List;
 import java.util.Objects;
 
 
@@ -125,6 +125,12 @@ public class JsonAdminFranchiseeController {
         return franchiseeService.getElectricityBatteryList(id);
     }
 
+
+    //分账设置
+    @PostMapping(value = "/admin/franchisee/setSplit")
+    public R setSplit(List<FranchiseeSplitQuery> franchiseeSplitQueryList){
+        return franchiseeService.setSplit(franchiseeSplitQueryList);
+    }
 
 
 

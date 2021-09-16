@@ -92,7 +92,7 @@ public interface ElectricityCabinetService {
 
 	R queryCount(ElectricityCabinetQuery electricityCabinetQuery);
 
-	Integer queryCountByStoreId(Integer id);
+	Integer queryCountByStoreId(Long id);
 
     R checkBattery(String productKey, String deviceName, String batterySn);
 

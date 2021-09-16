@@ -19,7 +19,7 @@ public interface ElectricityMemberCardService {
 
 	R queryUserList(Long offset, Long size,String productKey, String deviceName);
 
-	List<ElectricityMemberCard> queryByFranchisee(Integer id);
+	List<ElectricityMemberCard> queryByFranchisee(Long id);
 
 	R queryCount(Integer status, Integer type, Integer tenantId);
 
