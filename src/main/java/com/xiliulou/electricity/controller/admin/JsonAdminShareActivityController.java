@@ -60,7 +60,7 @@ public class JsonAdminShareActivityController {
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "type", required = false) String type) {
         if (Objects.isNull(size)) {
             size = 10L;
@@ -113,7 +113,7 @@ public class JsonAdminShareActivityController {
     //列表查询
     @GetMapping(value = "/admin/shareActivity/count")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "type", required = false) String type) {
 
         //租户
