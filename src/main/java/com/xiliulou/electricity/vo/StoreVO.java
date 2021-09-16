@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class StoreVO {
 
-    private Integer id;
+    private Long id;
     /**
     * 门店名称
     */
