@@ -121,7 +121,7 @@ public class JsonAdminFranchiseeController {
 
     //查询电池
     @GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
-    public R getElectricityBatteryList(@PathVariable("id") Integer id){
+    public R getElectricityBatteryList(@PathVariable("id") Long id){
         return franchiseeService.getElectricityBatteryList(id);
     }
 

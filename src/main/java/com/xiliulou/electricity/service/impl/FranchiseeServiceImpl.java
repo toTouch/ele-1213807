@@ -236,7 +236,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	}
 
 	@Override
-	public R getElectricityBatteryList(Integer id) {
+	public R getElectricityBatteryList(Long id) {
 		return R.ok(franchiseeBindElectricityBatteryService.queryByFranchiseeId(id));
 	}
 
