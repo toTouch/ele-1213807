@@ -90,6 +90,10 @@ public class JsonAdminUserController extends BaseController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
+            tenantId=null;
+        }
+
         return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
     }
 
