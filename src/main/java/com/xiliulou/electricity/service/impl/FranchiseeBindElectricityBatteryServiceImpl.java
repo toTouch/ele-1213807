@@ -31,7 +31,7 @@ public class FranchiseeBindElectricityBatteryServiceImpl implements FranchiseeBi
     }
 
     @Override
-    public List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Integer id) {
+    public List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Long id) {
         return franchiseeBindElectricityBatteryMapper.selectList(new LambdaQueryWrapper<FranchiseeBindElectricityBattery>().eq(FranchiseeBindElectricityBattery::getFranchiseeId,id));
     }
 }
