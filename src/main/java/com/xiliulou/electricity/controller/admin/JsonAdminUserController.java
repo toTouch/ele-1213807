@@ -93,6 +93,7 @@ public class JsonAdminUserController extends BaseController {
         if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
             tenantId=null;
         }
+        log.info("tenantId is -->{}",tenantId);
 
         return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
     }
