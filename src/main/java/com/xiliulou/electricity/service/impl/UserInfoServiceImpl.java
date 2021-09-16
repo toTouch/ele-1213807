@@ -575,9 +575,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			return R.fail("ELECTRICITY.0019", "未找到用户");
 		}
 
-		if (userInfo.getServiceStatus() < 2) {
-			return R.fail("ELECTRICITY.0042", "未缴纳押金");
-		}
 
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 		if (Objects.isNull(franchiseeUserInfo)) {
@@ -587,6 +584,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 		if(Objects.equals(franchiseeUserInfo.getFranchiseeId(),userMoveHistory.getFranchiseeId())){
 			return R.fail("ELECTRICITY.00108", "换电柜加盟商和用户加盟商不一致");
+		}
+
+		if (franchiseeUserInfo.getServiceStatus() < 2) {
+			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
 		Integer cardId = null;
