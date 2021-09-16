@@ -23,9 +23,9 @@ public interface ElectricityMemberCardService {
 
 	R queryCount(Integer status, Integer type, Integer tenantId);
 
-	R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer franchiseeId);
+	R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
-	R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Integer franchiseeId);
+	R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
 	ElectricityMemberCard queryByStatus(Integer id);
 }

@@ -263,12 +263,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer franchiseeId) {
+    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
        return R.ok(baseMapper.listByFranchisee(offset, size, status, type,tenantId,franchiseeId));
     }
 
     @Override
-    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Integer franchiseeId) {
+    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         return R.ok(baseMapper.listCountByFranchisee(status, type,tenantId,franchiseeId));
     }
 
