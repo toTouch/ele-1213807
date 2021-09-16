@@ -53,7 +53,7 @@ public class JsonAdminCouponController {
 	public R queryList(@RequestParam(value = "size", required = false) Long size,
 			@RequestParam(value = "offset", required = false) Long offset,
 			@RequestParam(value = "discountType", required = false) Integer discountType,
-			@RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "applyType", required = false) Integer applyType) {
 		if (Objects.isNull(size)) {
@@ -96,7 +96,7 @@ public class JsonAdminCouponController {
 	//列表查询
 	@GetMapping(value = "/admin/coupon/count")
 	public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType,
-			@RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "applyType", required = false) Integer applyType) {
 
