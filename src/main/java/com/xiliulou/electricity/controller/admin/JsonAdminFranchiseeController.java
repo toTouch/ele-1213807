@@ -128,7 +128,7 @@ public class JsonAdminFranchiseeController {
 
     //分账设置
     @PostMapping(value = "/admin/franchisee/setSplit")
-    public R setSplit(List<FranchiseeSplitQuery> franchiseeSplitQueryList){
+    public R setSplit(@RequestBody List<FranchiseeSplitQuery> franchiseeSplitQueryList){
         return franchiseeService.setSplit(franchiseeSplitQueryList);
     }
 
