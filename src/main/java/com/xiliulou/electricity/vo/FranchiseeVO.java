@@ -57,5 +57,7 @@ public class FranchiseeVO {
 
     private BigDecimal batteryDeposit;
 
+    private Integer percent;
+
 
 }

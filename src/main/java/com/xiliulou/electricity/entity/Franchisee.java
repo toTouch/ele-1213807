@@ -60,7 +60,7 @@ public class Franchisee {
     private Integer tenantId;
 
     /**
-     * 门店分润比例
+     * 加盟商分润比例
      * */
     private Integer percent;
 
