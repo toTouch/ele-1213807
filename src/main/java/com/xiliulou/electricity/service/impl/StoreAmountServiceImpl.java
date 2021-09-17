@@ -147,6 +147,8 @@ public class StoreAmountServiceImpl implements StoreAmountService {
                 .storeId(store.getId())
                 .tenantId(payRecord.getTenantId())
                 .splitAmount(shouldSplitPayAmount)
+                .payAmount(payAmount)
+                .percent(percent)
                 .build();
         storeSplitAccountHistoryService.insert(history);
     }

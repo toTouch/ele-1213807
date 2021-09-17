@@ -150,6 +150,8 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
                 .type(FranchiseeSplitAccountHistory.TYPE_MEMBER)
                 .tenantId(payRecord.getTenantId())
                 .splitAmount(shouldSplitPayAmount)
+                .payAmount(payAmount)
+                .percent(percent)
                 .build();
         franchiseeSplitAccountHistoryService.insert(history);
     }

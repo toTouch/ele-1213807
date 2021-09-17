@@ -48,6 +48,15 @@ public class StoreSplitAccountHistory {
      */
     private Integer type;
 
+    /**
+     * 这次订单收益
+     */
+    private Double payAmount;
+    /**
+     * 应该分润比例
+     */
+    private Integer percent;
+
     public static final Integer TYPE_MEMBER = 1;
 
 }
