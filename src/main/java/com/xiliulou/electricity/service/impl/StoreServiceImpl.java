@@ -9,6 +9,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -56,6 +58,8 @@ public class StoreServiceImpl implements StoreService {
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
 	UserService userService;
+	@Autowired
+	FranchiseeService franchiseeService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -219,10 +223,20 @@ public class StoreServiceImpl implements StoreService {
 						}
 					}
 				}
+
+				//用户
 				if (Objects.nonNull(e.getUid())) {
 					User user = userService.queryByUidFromCache(e.getUid());
 					if (Objects.nonNull(user)) {
 						e.setUserName(user.getName());
+					}
+				}
+
+				//加盟商
+				if (Objects.nonNull(e.getFranchiseeId())) {
+					Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+					if (Objects.nonNull(franchisee)) {
+						e.setFranchiseeName(franchisee.getName());
 					}
 				}
 			});
