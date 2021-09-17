@@ -73,7 +73,7 @@ public class Store {
      */
     private Long uid;
 
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     /**
      * 门店分润比例
