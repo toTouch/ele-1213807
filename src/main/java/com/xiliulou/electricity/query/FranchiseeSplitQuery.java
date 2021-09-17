@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.query;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author: eclair
@@ -9,6 +11,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class FranchiseeSplitQuery {
 	private Long id;
 	private Integer percent;
