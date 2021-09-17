@@ -53,7 +53,7 @@ public class JsonAdminFranchiseeController {
 
     //删除加盟商
     @DeleteMapping(value = "/admin/franchisee/{id}")
-    public R delete(@PathVariable("id") Integer id) {
+    public R delete(@PathVariable("id") Long id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }

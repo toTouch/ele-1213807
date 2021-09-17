@@ -142,7 +142,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R delete(Integer id) {
+	public R delete(Long id) {
 
 		Franchisee franchisee = queryByIdFromCache(id);
 		if (Objects.isNull(franchisee)) {
@@ -179,7 +179,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	}
 
 	@Override
-	public Franchisee queryByIdFromCache(Integer id) {
+	public Franchisee queryByIdFromCache(Long id) {
 		Franchisee cacheFranchisee = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + id, Franchisee.class);
 		if (Objects.nonNull(cacheFranchisee)) {
 			return cacheFranchisee;

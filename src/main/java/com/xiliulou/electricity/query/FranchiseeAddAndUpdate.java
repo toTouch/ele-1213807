@@ -21,7 +21,7 @@ public class FranchiseeAddAndUpdate {
     * 加盟商Id
     */
     @NotNull(message = "加盟商Id不能为空!", groups = {UpdateGroup.class})
-    private Integer id;
+    private Long id;
     /**
     * 加盟商名称
     */

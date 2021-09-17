@@ -369,7 +369,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public Integer queryByFanchisee(Long uid) {
+	public Integer queryCountByFranchisee(Long uid) {
 		Store store=queryByUid(uid);
 
 		if(Objects.isNull(store)){

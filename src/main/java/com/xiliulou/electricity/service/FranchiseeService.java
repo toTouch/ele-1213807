@@ -23,9 +23,9 @@ public interface FranchiseeService {
 
     R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate);
 
-    R delete(Integer id);
+    R delete(Long id);
 
-    Franchisee queryByIdFromCache(Integer id);
+    Franchisee queryByIdFromCache(Long id);
 
     R queryList(FranchiseeQuery franchiseeQuery);
 

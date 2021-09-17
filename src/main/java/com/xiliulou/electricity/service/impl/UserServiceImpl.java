@@ -13,7 +13,6 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.Province;
-import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserRole;
@@ -39,7 +38,6 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
-import org.apache.xmlbeans.impl.xb.xsdschema.Public;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -51,7 +49,6 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -402,7 +399,7 @@ public class UserServiceImpl implements UserService {
 		//门店用户删除查看是否绑定换电柜
 		if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
 
-			Integer count = storeService.queryByFanchisee(user.getUid());
+			Integer count = storeService.queryCountByFranchisee(user.getUid());
 			if (count > 0) {
 				return Pair.of(false, "门店用户已绑定换电柜");
 			}
