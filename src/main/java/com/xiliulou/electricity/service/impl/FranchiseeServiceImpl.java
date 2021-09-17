@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
@@ -297,19 +298,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 
 		int totalPercent=0;
-		for (FranchiseeSplitQuery franchiseeSplitQuery:franchiseeSplitQueryList) {
-			totalPercent=totalPercent+franchiseeSplitQuery.getPercent();
-		}
-		if(totalPercent>100){
-			return R.fail("SYSTEM.00109", "总分账比列超过100");
-		}
+		Long franchiseeId=null;
 
 
 		for (FranchiseeSplitQuery franchiseeSplitQuery:franchiseeSplitQueryList) {
-			totalPercent=totalPercent+franchiseeSplitQuery.getPercent();
 
 			//加盟商分账比列
 			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_FRANCHISEE)){
+				totalPercent=franchiseeSplitQuery.getPercent();
+				franchiseeId=franchiseeSplitQuery.getId();
 				Franchisee franchisee=new Franchisee();
 				franchisee.setId(franchiseeSplitQuery.getId());
 				franchisee.setPercent(franchiseeSplitQuery.getPercent());
@@ -330,6 +327,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 				store.setPercent(franchiseeSplitQuery.getPercent());
 				store.setUpdateTime(System.currentTimeMillis());
 				storeService.updateById(store);
+			}
+		}
+
+
+		if(Objects.nonNull(franchiseeId)){
+			List<Store> storeList= storeService.queryByFranchiseeId(franchiseeId);
+			for (Store store:storeList) {
+				totalPercent=totalPercent+store.getPercent();
+			}
+			if(totalPercent>100){
+				throw new CustomBusinessException("总分账比列超过100");
 			}
 		}
 
