@@ -1,8 +1,5 @@
-import android.content.Context;
+/*
 
-import com.blankj.utilcode.util.StringUtils;
-import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.utils.SPUtil;
 
 public class BatteryModelService {
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
@@ -49,3 +46,4 @@ public class BatteryModelService {
         return (Integer) SPUtil.get(context, longKey, 0);
     }
 }
+*/
