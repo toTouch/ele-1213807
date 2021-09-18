@@ -121,21 +121,21 @@ public class StoreAmountServiceImpl implements StoreAmountService {
             log.error("ELE ORDER ERROR! not found storeAmount! storeId={}", store.getId());
             return;
         }
-        Double payAmount = Double.valueOf(String.valueOf(payRecord.getTotalFee()));
-        if (payAmount < 0.01) {
+        BigDecimal payAmount = payRecord.getTotalFee();
+        if (payAmount.doubleValue() < 0.01) {
             log.warn("ELE ORDER WARN,payAmount is less 0.01,storeId={},payAmount={}", store.getId(), payAmount);
             return;
         }
 
-        double shouldSplitPayAmount = BigDecimal.valueOf(payAmount).multiply(BigDecimal.valueOf(percent / 100.0)).doubleValue();
-        if (shouldSplitPayAmount < 0.01) {
+        BigDecimal shouldSplitPayAmount = payAmount.multiply(BigDecimal.valueOf(percent / 100.0));
+        if (shouldSplitPayAmount.doubleValue() < 0.01) {
             log.warn("ELE ORDER WARN,split store account is less 0.01,storeId={},payAmount={},percent={}", store.getId(), payAmount, percent);
             return;
         }
 
 
-        storeAmount.setBalance(BigDecimal.valueOf(storeAmount.getBalance()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
-        storeAmount.setTotalIncome(BigDecimal.valueOf(storeAmount.getTotalIncome()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
+        storeAmount.setBalance(storeAmount.getBalance().add(shouldSplitPayAmount));
+        storeAmount.setTotalIncome(storeAmount.getTotalIncome().add(shouldSplitPayAmount));
         storeAmount.setUpdateTime(System.currentTimeMillis());
         update(storeAmount);
 
