@@ -90,6 +90,8 @@ public class StoreVO {
 
     private Integer percent;
 
+    private String franchiseeName;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
