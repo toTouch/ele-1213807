@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * (FranchiseeAmount)实体类
  *
@@ -32,11 +34,11 @@ public class FranchiseeAmount {
 
     private Long updateTime;
 
-    private Double totalIncome;
+    private BigDecimal totalIncome;
 
-    private Double balance;
+    private BigDecimal balance;
 
-    private Double withdraw;
+    private BigDecimal withdraw;
 
     private Integer tenantId;
 

@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * (FranchiseeSplitAccountHistory)实体类
  *
@@ -32,11 +34,11 @@ public class FranchiseeSplitAccountHistory {
     /**
      * 分账金额
      */
-    private Double splitAmount;
+    private BigDecimal splitAmount;
     /**
      * 这次分账的当前收入
      */
-    private Double currentTotalIncome;
+    private BigDecimal currentTotalIncome;
     /**
      * 分账的订单id
      */
@@ -51,7 +53,7 @@ public class FranchiseeSplitAccountHistory {
     /**
      * 这次订单收益
      */
-    private Double payAmount;
+    private BigDecimal payAmount;
     /**
      * 应该分润比例
      */

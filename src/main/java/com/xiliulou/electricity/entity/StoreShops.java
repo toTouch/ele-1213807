@@ -11,40 +11,52 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * (StoreAmount)实体类
+ * 门店商品表(StoreShops)实体类
  *
- * @author lxc
- * @since 2021-09-13 20:09:25
+ * @author makejava
+ * @since 2020-12-07 14:59:37
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_store_amount")
-public class StoreAmount {
-
+@TableName("t_store_shops")
+public class StoreShops {
+    /**
+    * 门店商品表Id
+    */
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
 
-    private Long uid;
-
-    private Long storeId;
-
+    /**
+    * 门店商品表名称
+    */
+    private String name;
+    /**
+    * 0--正常 1--删除
+    */
+    private Object delFlag;
+    /**
+    * 创建时间
+    */
     private Long createTime;
-
+    /**
+    * 更新时间
+    */
     private Long updateTime;
 
-    private BigDecimal totalIncome;
+    private BigDecimal price;
 
-    private BigDecimal balance;
 
-    private BigDecimal withdraw;
+    private BigDecimal discountPrice;
+
 
     private Integer tenantId;
 
-    private Integer delFlag;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
 
 }
