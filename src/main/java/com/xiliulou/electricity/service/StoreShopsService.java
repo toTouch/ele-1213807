@@ -1,10 +1,9 @@
 package com.xiliulou.electricity.service;
 
 /**
- * 门店表(TStore)表服务接口
- *
- * @author makejava
- * @since 2020-12-07 14:59:37
+ * @author: Miss.Li
+ * @Date: 2021/9/18 17:31
+ * @Description:
  */
 public interface StoreShopsService {
 
