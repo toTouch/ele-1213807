@@ -125,20 +125,20 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
             log.error("ELE ORDER ERROR! not found franchiseeAmount! franchiseeId={}", franchisee.getId());
             return;
         }
-        Double payAmount = Double.valueOf(String.valueOf(payRecord.getTotalFee()));
-        if (payAmount < 0.01) {
+        BigDecimal payAmount = payRecord.getTotalFee();
+        if (payAmount.doubleValue() < 0.01) {
             log.warn("ELE ORDER WARN,payAmount is less 0.01,franchiseeId={},payAmount={}", franchisee.getId(), payAmount);
             return;
         }
 
-        double shouldSplitPayAmount = BigDecimal.valueOf(payAmount).multiply(BigDecimal.valueOf(percent / 100.0)).doubleValue();
-        if (shouldSplitPayAmount < 0.01) {
+        BigDecimal shouldSplitPayAmount = payAmount.multiply(BigDecimal.valueOf(percent / 100.0));
+        if (shouldSplitPayAmount.doubleValue() < 0.01) {
             log.warn("ELE ORDER WARN,split store account is less 0.01,franchiseeId={},payAmount={},percent={}", franchisee.getId(), payAmount, percent);
             return;
         }
 
-        franchiseeAmount.setBalance(BigDecimal.valueOf(franchiseeAmount.getBalance()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
-        franchiseeAmount.setTotalIncome(BigDecimal.valueOf(franchiseeAmount.getTotalIncome()).add(BigDecimal.valueOf(shouldSplitPayAmount)).doubleValue());
+        franchiseeAmount.setBalance(franchiseeAmount.getBalance().add(shouldSplitPayAmount));
+        franchiseeAmount.setTotalIncome(franchiseeAmount.getTotalIncome().add(shouldSplitPayAmount));
         franchiseeAmount.setUpdateTime(System.currentTimeMillis());
         update(franchiseeAmount);
 
