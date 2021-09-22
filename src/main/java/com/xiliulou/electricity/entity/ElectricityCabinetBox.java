@@ -85,7 +85,7 @@ public class ElectricityCabinetBox {
     /**
      * 仓门电池类型
      */
-    private Integer type;
+    private String batteryType;
 
 
     public static final Integer DEL_NORMAL = 0;

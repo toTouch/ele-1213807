@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -42,6 +43,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 	ElectricityCabinetBoxService electricityCabinetBoxService;
 	@Autowired
 	RedisService redisService;
+	public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
+	public static final String IRON_LITHIUM = "IRON_LITHIUM";
 
 	@Override
 	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -190,6 +193,17 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			}
 		}
 
+
+		//根据电池查询仓门类型
+		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
+			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
+			String batteryShortModel= BatteryConstant.acquireBatteryShortModel(batteryModel);
+			if(Objects.nonNull(batteryShortModel)) {
+				electricityCabinetBox.setBatteryType(batteryShortModel);
+			}
+		}
+
+
 		//修改仓门
 		electricityCabinetBox.setSn(electricityBattery.getSn());
 		electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
@@ -198,6 +212,39 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 		electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 		return true;
+	}
+
+
+	public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
+		if (com.alibaba.excel.util.StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
+			return "";
+		}
+
+		StringBuilder modelName = new StringBuilder("B_");
+		char[] batteryChars = batteryName.toCharArray();
+
+		//获取电压
+		String chargeV = split(batteryChars, 4, 7);
+		modelName.append(chargeV).append("V").append("_");
+
+		//获取材料体系
+		char material = batteryChars[2];
+		if (material == '1') {
+			modelName.append(IRON_LITHIUM).append("_");
+		} else {
+			modelName.append(TERNARY_LITHIUM).append("_");
+		}
+
+		modelName.append(split(batteryChars, 9, 11));
+		return modelName.toString();
+	}
+
+	private static String split(char[] strArray, int beginIndex, int endIndex) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = beginIndex; i < endIndex; i++) {
+			stringBuilder.append(strArray[i]);
+		}
+		return stringBuilder.toString();
 	}
 
 }
@@ -217,6 +264,8 @@ class EleBatteryVo {
 	private Long reportTime;
 
 	private Boolean existsBattery;
+
+	private Boolean isMultiBatteryModel;
 
 }
 
