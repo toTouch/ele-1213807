@@ -35,7 +35,7 @@ public class StoreShopsServiceImpl implements StoreShopsService {
 	public R delete(Long id) {
 		StoreShops storeShops=storeShopsMapper.selectById(id);
 		if(Objects.isNull(storeShops)){
-			return R.fail();
+			R.fail("ELECTRICITY.00109", "未找到门店商品");
 		}
 
 		storeShops.setId(id);
