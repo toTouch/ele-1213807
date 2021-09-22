@@ -63,6 +63,17 @@ public class ElectricityMemberCard {
      */
     private Integer delFlag;
 
+    /**
+     * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    /**
+     * 仓门电池类型
+     */
+    private String batteryType;
+
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

@@ -64,6 +64,15 @@ public class Franchisee {
      * */
     private Integer percent;
 
+    /**
+     * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    //新分型号押金
+    private String modelBatteryDeposit;
+
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
