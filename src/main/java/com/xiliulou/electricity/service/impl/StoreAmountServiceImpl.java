@@ -14,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
@@ -114,6 +115,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Klock(name = "handleStoreSplitAccount", keys = {"#store.id"}, waitTime = 5, customLockTimeoutStrategy = "createStoreSplitAccountLockFail")
     public void handleSplitAccount(Store store, ElectricityTradeOrder payRecord, int percent) {
         StoreAmount storeAmount = queryByStoreIdFromCache(store.getId());

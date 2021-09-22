@@ -28,6 +28,8 @@ public class StoreShops {
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
 
+    private Long storeId;
+
     /**
     * 门店商品表名称
     */
