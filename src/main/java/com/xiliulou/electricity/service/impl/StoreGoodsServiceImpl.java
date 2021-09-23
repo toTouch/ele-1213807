@@ -119,9 +119,11 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 			}
 
 			storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
+
+			storeGoodsVOList.add(storeGoodsVO);
 		}
 
-		return R.ok(storeGoodsList);
+		return R.ok(storeGoodsVOList);
 	}
 
 	@Override
