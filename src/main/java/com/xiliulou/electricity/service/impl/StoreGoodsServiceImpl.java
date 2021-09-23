@@ -62,7 +62,8 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 		storeGoods.setUpdateTime(System.currentTimeMillis());
 		storeGoods.setDelFlag(StoreGoods.DEL_NORMAL);
 		storeGoods.setTenantId(tenantId);
-		return R.ok(storeGoodsMapper.insert(storeGoods));
+		storeGoodsMapper.insert(storeGoods);
+		return R.ok(storeGoods.getId());
 	}
 
 	@Override
