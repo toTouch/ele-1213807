@@ -13,7 +13,6 @@ import java.math.BigDecimal;
  * @since 2020-11-26 16:00:45
  */
 @Data
-@Builder
 public class ModelBatteryDeposit {
 
     /**
