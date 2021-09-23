@@ -7,6 +7,7 @@ import com.xiliulou.electricity.mapper.StoreGoodsMapper;
 import com.xiliulou.electricity.query.StoreShopsQuery;
 import com.xiliulou.electricity.service.StoreGoodsService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -33,9 +34,13 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		storeGoods.setCreateTime(System.currentTimeMillis());
 		storeGoods.setUpdateTime(System.currentTimeMillis());
 		storeGoods.setDelFlag(StoreGoods.DEL_NORMAL);
+		storeGoods.setTenantId(tenantId);
 		return R.ok(storeGoodsMapper.insert(storeGoods));
 	}
 
