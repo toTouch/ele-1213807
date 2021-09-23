@@ -237,6 +237,6 @@ public class JsonAdminElectricityCabinetBatteryController {
      */
     @GetMapping(value = "/admin/battery/{id}")
     public R queryById(@PathVariable("id") Long id) {
-        return R.ok(electricityBatteryService.queryById(id));
+        return electricityBatteryService.queryById(id);
     }
 }

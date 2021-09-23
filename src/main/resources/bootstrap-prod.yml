@@ -21,3 +21,11 @@ logging:
   config: classpath:logback-spring-prod.xml
   level:
     com.xiliulou.electricity.mapper: debug
+
+management:
+  endpoints:
+    web:
+      base-path: /actuator
+      exposure:
+        include: "*"
+        exclude: httptrace
