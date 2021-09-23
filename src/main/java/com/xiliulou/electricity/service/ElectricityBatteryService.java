@@ -22,7 +22,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size);
 
-    ElectricityBattery queryById(Long electricityBatteryId);
+    R queryById(Long electricityBatteryId);
 
     R deleteElectricityBattery(Long id);
 

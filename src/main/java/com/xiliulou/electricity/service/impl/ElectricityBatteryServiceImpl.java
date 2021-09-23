@@ -140,8 +140,19 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public ElectricityBattery queryById(Long electricityBatteryId) {
-        return electricitybatterymapper.selectById(electricityBatteryId);
+    public R queryById(Long electricityBatteryId) {
+        ElectricityBattery electricityBattery=electricitybatterymapper.selectById(electricityBatteryId);
+
+        ElectricityBatteryVO electricityBatteryVO=new ElectricityBatteryVO();
+        BeanUtil.copyProperties(electricityBattery,electricityBatteryVO);
+
+        if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)&&Objects.nonNull(electricityBattery.getUid())){
+            UserInfo userInfo=userInfoService.queryByUid(electricityBattery.getUid());
+            if(Objects.nonNull(userInfo)) {
+                electricityBatteryVO.setUserName(userInfo.getName());
+            }
+        }
+        return R.ok(electricityBatteryVO);
     }
 
     /**
