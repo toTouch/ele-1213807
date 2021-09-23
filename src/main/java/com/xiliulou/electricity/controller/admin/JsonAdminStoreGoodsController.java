@@ -38,7 +38,7 @@ public class JsonAdminStoreGoodsController {
 
     //新增门店
     @PostMapping(value = "/admin/storeShops")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) StoreGoods storeGoods) {
+    public R insert(@RequestBody @Validated(value = CreateGroup.class) StoreGoods storeGoods) {
         return storeGoodsService.insert(storeGoods);
     }
 

@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreGoods;
 import com.xiliulou.electricity.mapper.StoreGoodsMapper;
 import com.xiliulou.electricity.query.StoreShopsQuery;
 import com.xiliulou.electricity.service.StoreGoodsService;
+import com.xiliulou.electricity.service.StoreService;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -21,13 +23,28 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 	@Resource
 	StoreGoodsMapper storeGoodsMapper;
 
+	@Resource
+	StoreService storeService;
+
 	@Override
 	public R insert(StoreGoods storeGoods) {
+		Store store=storeService.queryByIdFromCache(storeGoods.getStoreId());
+		if(Objects.isNull(store)){
+			return R.fail("ELECTRICITY.0018", "未找到门店");
+		}
+
 		return R.ok(storeGoodsMapper.insert(storeGoods));
 	}
 
 	@Override
 	public R update(StoreGoods storeGoods) {
+		if(Objects.nonNull(storeGoods.getStoreId())) {
+			Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
+			if (Objects.isNull(store)) {
+				return R.fail("ELECTRICITY.0018", "未找到门店");
+			}
+		}
+
 		return R.ok(storeGoodsMapper.updateById(storeGoods));
 	}
 

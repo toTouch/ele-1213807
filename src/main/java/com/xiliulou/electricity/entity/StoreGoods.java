@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,9 +27,10 @@ import java.math.BigDecimal;
 @TableName("t_store_goods")
 public class StoreGoods {
     /**
-    * 门店商品表Id
+    * 门店商品Id
     */
     @TableId(value = "id",type = IdType.AUTO)
+    @NotNull(message = "门店商品Id不能为空!", groups = {UpdateGroup.class})
     private Long id;
 
     @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
