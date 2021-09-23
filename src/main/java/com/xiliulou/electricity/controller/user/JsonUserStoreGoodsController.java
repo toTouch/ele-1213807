@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.admin;
+package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.StoreGoods;
@@ -28,7 +28,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminStoreGoodsController {
+public class JsonUserStoreGoodsController {
     /**
      * 服务对象
      */
@@ -36,30 +36,8 @@ public class JsonAdminStoreGoodsController {
     StoreGoodsService storeGoodsService;
 
 
-    //新增门店
-    @PostMapping(value = "/admin/storeShops")
-    public R insert(@RequestBody @Validated(value = CreateGroup.class) StoreGoods storeGoods) {
-        return storeGoodsService.insert(storeGoods);
-    }
-
-    //修改门店
-    @PutMapping(value = "/admin/storeShops")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) StoreGoods storeGoods) {
-        return storeGoodsService.update(storeGoods);
-    }
-
-    //删除门店
-    @DeleteMapping(value = "/admin/storeShops/{id}")
-    public R delete(@PathVariable("id") Long id) {
-        if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return storeGoodsService.delete(id);
-    }
-
-
     //列表查询
-    @GetMapping(value = "/admin/storeShops/list")
+    @GetMapping(value = "/user/storeShops/list")
     public R queryList(@RequestParam(value = "size", required = false) Long size,
                        @RequestParam(value = "offset", required = false) Long offset,
                        @RequestParam(value = "name", required = false) String name,
@@ -89,7 +67,7 @@ public class JsonAdminStoreGoodsController {
     }
 
     //列表查询
-    @GetMapping(value = "/admin/storeShops/queryCount")
+    @GetMapping(value = "/user/storeShops/queryCount")
     public R queryCount( @RequestParam(value = "name", required = false) String name,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
