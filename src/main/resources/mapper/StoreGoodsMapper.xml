@@ -9,7 +9,7 @@
 		select
 		id, name, price,discountPrice, del_flag,
 		create_time, update_time,tenant_id,store_id
-		from t_store_shops
+		from t_store_goods
 		where del_flag=0
 		<if test="query.name != null and query.name != ''">
 			and name = #{query.name}
@@ -29,7 +29,7 @@
 
 	<select id="queryCount" resultType="java.lang.Integer">
 		select COUNT(1)
-		from t_store_shops
+		from t_store_goods
 		where del_flag=0
 		<if test="query.name != null and query.name != ''">
 			and name = #{query.name}
