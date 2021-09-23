@@ -99,6 +99,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxVO.getSn());
 				if (Objects.nonNull(electricityBattery)) {
 					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+					electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
 				}
 				electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
 			}
