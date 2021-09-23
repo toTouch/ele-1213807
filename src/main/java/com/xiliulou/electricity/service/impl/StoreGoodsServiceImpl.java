@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreGoods;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -72,7 +74,13 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 
 	@Override
 	public R queryList(StoreShopsQuery storeShopsQuery) {
-		return R.ok(storeGoodsMapper.queryList(storeShopsQuery));
+		List<StoreGoods> storeGoodsList= storeGoodsMapper.queryList(storeShopsQuery);
+		if(ObjectUtil.isEmpty(storeGoodsList)){
+			return R.ok(storeGoodsList);
+		}
+		//图片显示
+
+		return R.ok(storeGoodsList);
 	}
 
 	@Override
