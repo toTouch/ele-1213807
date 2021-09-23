@@ -26,9 +26,9 @@ public class ElectricityCabinetFile {
     */
     private String name;
     /**
-    * 换电柜id
+    * id
     */
-    private Integer otherId;
+    private Long otherId;
     /**
     * 类型
     */
