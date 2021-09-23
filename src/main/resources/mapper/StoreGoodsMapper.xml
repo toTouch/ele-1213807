@@ -7,7 +7,7 @@
 	<select id="queryList"
 			resultType="com.xiliulou.electricity.entity.StoreGoods">
 		select
-		id, name, price,discountPrice, del_flag,
+		id, name, price,discount_price, del_flag,
 		create_time, update_time,tenant_id,store_id
 		from t_store_goods
 		where del_flag=0
