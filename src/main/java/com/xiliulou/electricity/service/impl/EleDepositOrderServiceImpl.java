@@ -7,6 +7,7 @@ import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.CommonPayOrder;
@@ -529,6 +530,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 
 		//根据类型分押金
+		if(Objects.equals(franchisee.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+			//封装型号押金
+			List modelBatteryDepositList= JsonUtil.fromJson(franchisee.getModelBatteryDeposit(),List.class);
+			return R.ok(modelBatteryDepositList);
+		}
 
 
 		return R.ok(franchisee.getBatteryDeposit());
