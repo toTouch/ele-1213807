@@ -2,16 +2,25 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreGoods;
 import com.xiliulou.electricity.mapper.StoreGoodsMapper;
 import com.xiliulou.electricity.query.StoreShopsQuery;
+import com.xiliulou.electricity.service.ElectricityCabinetFileService;
 import com.xiliulou.electricity.service.StoreGoodsService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.StoreGoodsVO;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -26,8 +35,18 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 	@Resource
 	StoreGoodsMapper storeGoodsMapper;
 
-	@Resource
+	@Autowired
 	StoreService storeService;
+
+	@Autowired
+	ElectricityCabinetFileService electricityCabinetFileService;
+
+	@Autowired
+	StorageConfig storageConfig;
+
+	@Qualifier("aliyunOssService")
+	@Autowired
+	StorageService storageService;
 
 	@Override
 	public R insert(StoreGoods storeGoods) {
@@ -78,7 +97,28 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 		if(ObjectUtil.isEmpty(storeGoodsList)){
 			return R.ok(storeGoodsList);
 		}
-		//图片显示
+
+
+		List<StoreGoodsVO> storeGoodsVOList=new ArrayList<>();
+		for (StoreGoods storeGoods:storeGoodsList) {
+			StoreGoodsVO storeGoodsVO=new StoreGoodsVO();
+			BeanUtils.copyProperties(storeGoods,storeGoodsVO);
+
+
+			//图片显示
+			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS,storageConfig.getIsUseOSS());
+			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
+				return R.ok();
+			}
+			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
+			for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
+				if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+					electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+				}
+				electricityCabinetFiles.add(electricityCabinetFile);
+			}
+		}
+
 
 		return R.ok(storeGoodsList);
 	}

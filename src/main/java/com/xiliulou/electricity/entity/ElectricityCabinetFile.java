@@ -68,6 +68,6 @@ public class ElectricityCabinetFile {
     public static final Integer TYPE_SHARE_ACTIVITY = 2;
 
     //门店商品图片
-    public static final Integer TYPE_STORE_SHOPS = 3;
+    public static final Integer TYPE_STORE_GOODS = 3;
 
 }

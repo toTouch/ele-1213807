@@ -32,7 +32,7 @@ public interface ElectricityCabinetFileService {
 
     R deleteById(Long id);
 
-    List<ElectricityCabinetFile> queryByDeviceInfo(Integer electricityCabinetId, Integer fileType,Integer  isUseOSS);
+    List<ElectricityCabinetFile> queryByDeviceInfo(Long otherId, Integer fileType,Integer  isUseOSS);
 
     void getMinioFile(String fileName, HttpServletResponse response);
 

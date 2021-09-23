@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -13,6 +14,7 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 门店商品表(StoreShops)实体类
@@ -50,6 +52,6 @@ public class StoreGoodsVO {
 
     private Integer tenantId;
 
-
+    List<ElectricityCabinetFile> electricityCabinetFiles;
 
 }
