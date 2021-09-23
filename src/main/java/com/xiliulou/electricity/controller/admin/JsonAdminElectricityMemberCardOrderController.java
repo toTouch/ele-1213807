@@ -41,8 +41,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@GetMapping("admin/electricityMemberCardOrder/page")
-	public R getElectricityMemberCardPage(@RequestParam(value = "offset") Long offset,
-			@RequestParam(value = "size") Long size,
+	public R getElectricityMemberCardPage(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
@@ -50,11 +50,11 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 
-		if (Objects.isNull(size)) {
+		if (size < 0 || size > 50) {
 			size = 10L;
 		}
 
-		if (Objects.isNull(offset) || offset < 0) {
+		if (offset < 0) {
 			offset = 0L;
 		}
 

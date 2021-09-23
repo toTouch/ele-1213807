@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -15,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Objects;
 
 /**
@@ -47,20 +49,19 @@ public class JsonAdminCouponController {
 		return couponService.update(coupon);
 	}
 
-
 	//列表查询
 	@GetMapping(value = "/admin/coupon/list")
-	public R queryList(@RequestParam(value = "size", required = false) Long size,
-			@RequestParam(value = "offset", required = false) Long offset,
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
 			@RequestParam(value = "discountType", required = false) Integer discountType,
 			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "applyType", required = false) Integer applyType) {
-		if (Objects.isNull(size)) {
+		if (size < 0 || size > 50) {
 			size = 10L;
 		}
 
-		if (Objects.isNull(offset) || offset < 0) {
+		if (offset < 0) {
 			offset = 0L;
 		}
 
@@ -91,7 +92,6 @@ public class JsonAdminCouponController {
 				.tenantId(tenantId).build();
 		return couponService.queryList(couponQuery);
 	}
-
 
 	//列表查询
 	@GetMapping(value = "/admin/coupon/count")

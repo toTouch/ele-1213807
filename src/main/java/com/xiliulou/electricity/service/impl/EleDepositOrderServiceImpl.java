@@ -527,6 +527,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
+
+		//根据类型分押金
+
+
 		return R.ok(franchisee.getBatteryDeposit());
 	}
 

@@ -29,82 +29,75 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminStoreGoodsController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    StoreGoodsService storeGoodsService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	StoreGoodsService storeGoodsService;
 
+	//新增门店
+	@PostMapping(value = "/admin/storeShops")
+	public R insert(@RequestBody @Validated(value = CreateGroup.class) StoreGoods storeGoods) {
+		return storeGoodsService.insert(storeGoods);
+	}
 
-    //新增门店
-    @PostMapping(value = "/admin/storeShops")
-    public R insert(@RequestBody @Validated(value = CreateGroup.class) StoreGoods storeGoods) {
-        return storeGoodsService.insert(storeGoods);
-    }
+	//修改门店
+	@PutMapping(value = "/admin/storeShops")
+	public R update(@RequestBody @Validated(value = UpdateGroup.class) StoreGoods storeGoods) {
+		return storeGoodsService.update(storeGoods);
+	}
 
-    //修改门店
-    @PutMapping(value = "/admin/storeShops")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) StoreGoods storeGoods) {
-        return storeGoodsService.update(storeGoods);
-    }
+	//删除门店
+	@DeleteMapping(value = "/admin/storeShops/{id}")
+	public R delete(@PathVariable("id") Long id) {
+		if (Objects.isNull(id)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		return storeGoodsService.delete(id);
+	}
 
-    //删除门店
-    @DeleteMapping(value = "/admin/storeShops/{id}")
-    public R delete(@PathVariable("id") Long id) {
-        if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return storeGoodsService.delete(id);
-    }
+	//列表查询
+	@GetMapping(value = "/admin/storeShops/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "storeId", required = false) Long storeId) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-    //列表查询
-    @GetMapping(value = "/admin/storeShops/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "storeId", required = false) Long storeId) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+		StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.storeId(storeId).build();
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		return storeGoodsService.queryList(storeShopsQuery);
+	}
 
+	//列表查询
+	@GetMapping(value = "/admin/storeShops/queryCount")
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "storeId", required = false) Long storeId) {
 
+		//
+		StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
+				.name(name)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.storeId(storeId).build();
 
-        StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .storeId(storeId).build();
-
-
-        return storeGoodsService.queryList(storeShopsQuery);
-    }
-
-    //列表查询
-    @GetMapping(value = "/admin/storeShops/queryCount")
-    public R queryCount( @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "storeId", required = false) Long storeId) {
-
-        //
-        StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
-                .name(name)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .storeId(storeId).build();
-
-        return storeGoodsService.queryCount(storeShopsQuery);
-    }
-
-
+		return storeGoodsService.queryCount(storeShopsQuery);
+	}
 
 }

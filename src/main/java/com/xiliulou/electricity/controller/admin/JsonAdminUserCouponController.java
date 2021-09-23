@@ -18,64 +18,63 @@ import java.util.Objects;
  */
 @RestController
 public class JsonAdminUserCouponController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    private UserCouponService userCouponService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	private UserCouponService userCouponService;
 
-    //用户优惠券列表查询
-    @GetMapping(value = "/admin/userCoupon/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "couponId", required = false) Integer couponId,
-                       @RequestParam(value = "uid", required = false) Long uid,
-                       @RequestParam(value = "phone", required = false) String phone) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+	//用户优惠券列表查询
+	@GetMapping(value = "/admin/userCoupon/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "couponId", required = false) Integer couponId,
+			@RequestParam(value = "uid", required = false) Long uid,
+			@RequestParam(value = "phone", required = false) String phone) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        UserCouponQuery userCouponQuery = UserCouponQuery.builder()
-                .offset(offset)
-                .size(size)
-                .couponId(couponId)
-                .uid(uid)
-                .phone(phone)
-                .tenantId(tenantId).build();
-        return userCouponService.queryList(userCouponQuery);
-    }
+		UserCouponQuery userCouponQuery = UserCouponQuery.builder()
+				.offset(offset)
+				.size(size)
+				.couponId(couponId)
+				.uid(uid)
+				.phone(phone)
+				.tenantId(tenantId).build();
+		return userCouponService.queryList(userCouponQuery);
+	}
 
-    //用户优惠券列表查询
-    @GetMapping(value = "/admin/userCoupon/queryCount")
-    public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
-            @RequestParam(value = "uid", required = false) Long uid,
-            @RequestParam(value = "phone", required = false) String phone) {
+	//用户优惠券列表查询
+	@GetMapping(value = "/admin/userCoupon/queryCount")
+	public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
+			@RequestParam(value = "uid", required = false) Long uid,
+			@RequestParam(value = "phone", required = false) String phone) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        UserCouponQuery userCouponQuery = UserCouponQuery.builder()
-                .couponId(couponId)
-                .uid(uid)
-                .phone(phone)
-                .tenantId(tenantId).build();
-        return userCouponService.queryCount(userCouponQuery);
-    }
+		UserCouponQuery userCouponQuery = UserCouponQuery.builder()
+				.couponId(couponId)
+				.uid(uid)
+				.phone(phone)
+				.tenantId(tenantId).build();
+		return userCouponService.queryCount(userCouponQuery);
+	}
 
-    //批量发放优惠券
-    @PostMapping(value = "/admin/userCoupon/batchRelease")
-    public R batchRelease(@RequestParam("id") Integer id,@RequestParam("uid") String uid) {
-        Long[] uids = (Long[])
-                JSONUtil.parseArray(uid).toArray(Long[].class);
-        return userCouponService.batchRelease(id,uids);
-    }
-
+	//批量发放优惠券
+	@PostMapping(value = "/admin/userCoupon/batchRelease")
+	public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
+		Long[] uids = (Long[])
+				JSONUtil.parseArray(uid).toArray(Long[].class);
+		return userCouponService.batchRelease(id, uids);
+	}
 
 }

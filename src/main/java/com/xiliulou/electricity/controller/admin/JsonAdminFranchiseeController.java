@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
@@ -23,7 +24,6 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 import java.util.Objects;
 
-
 /**
  * 门店表(TStore)表控制层
  *
@@ -33,109 +33,98 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminFranchiseeController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    FranchiseeService franchiseeService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	FranchiseeService franchiseeService;
 
-    //新增加盟商
-    @PostMapping(value = "/admin/franchisee")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        return franchiseeService.save(franchiseeAddAndUpdate);
-    }
+	//新增加盟商
+	@PostMapping(value = "/admin/franchisee")
+	public R save(@RequestBody @Validated(value = CreateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+		return franchiseeService.save(franchiseeAddAndUpdate);
+	}
 
-    //修改加盟商
-    @PutMapping(value = "/admin/franchisee")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
-        return franchiseeService.edit(franchiseeAddAndUpdate);
-    }
+	//修改加盟商
+	@PutMapping(value = "/admin/franchisee")
+	public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+		return franchiseeService.edit(franchiseeAddAndUpdate);
+	}
 
-    //删除加盟商
-    @DeleteMapping(value = "/admin/franchisee/{id}")
-    public R delete(@PathVariable("id") Long id) {
-        if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return franchiseeService.delete(id);
-    }
+	//删除加盟商
+	@DeleteMapping(value = "/admin/franchisee/{id}")
+	public R delete(@PathVariable("id") Long id) {
+		if (Objects.isNull(id)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		return franchiseeService.delete(id);
+	}
 
-    //列表查询
-    @GetMapping(value = "/admin/franchisee/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+	//列表查询
+	@GetMapping(value = "/admin/franchisee/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
+		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.tenantId(tenantId).build();
 
+		return franchiseeService.queryList(franchiseeQuery);
 
-        FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .tenantId(tenantId).build();
+	}
 
-        return franchiseeService.queryList(franchiseeQuery);
+	//列表查询
+	@GetMapping(value = "/admin/franchisee/queryCount")
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime) {
 
-    }
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-    //列表查询
-    @GetMapping(value = "/admin/franchisee/queryCount")
-    public R queryCount(@RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
+		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
+				.name(name)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.tenantId(tenantId).build();
 
+		return franchiseeService.queryCount(franchiseeQuery);
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+	}
 
+	//分配电池
+	@PostMapping(value = "/admin/franchisee/bindElectricityBattery")
+	public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery) {
+		return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
+	}
 
-        FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
-                .name(name)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .tenantId(tenantId).build();
+	//查询电池
+	@GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
+	public R getElectricityBatteryList(@PathVariable("id") Long id) {
+		return franchiseeService.getElectricityBatteryList(id);
+	}
 
-        return franchiseeService.queryCount(franchiseeQuery);
-
-    }
-
-    //分配电池
-    @PostMapping(value = "/admin/franchisee/bindElectricityBattery")
-    public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class) BindElectricityBatteryQuery bindElectricityBatteryQuery){
-        return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
-    }
-
-    //查询电池
-    @GetMapping(value = "/admin/franchisee/getElectricityBatteryList/{id}")
-    public R getElectricityBatteryList(@PathVariable("id") Long id){
-        return franchiseeService.getElectricityBatteryList(id);
-    }
-
-
-    //分账设置
-    @PostMapping(value = "/admin/franchisee/setSplit")
-    public R setSplit(@RequestBody List<FranchiseeSplitQuery> franchiseeSplitQueryList){
-        return franchiseeService.setSplit(franchiseeSplitQueryList);
-    }
-
-
-
-
-
-
+	//分账设置
+	@PostMapping(value = "/admin/franchisee/setSplit")
+	public R setSplit(@RequestBody List<FranchiseeSplitQuery> franchiseeSplitQueryList) {
+		return franchiseeService.setSplit(franchiseeSplitQueryList);
+	}
 
 }
