@@ -50,8 +50,8 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 
 	@Override
 	public R insert(StoreGoods storeGoods) {
-		Store store=storeService.queryByIdFromCache(storeGoods.getStoreId());
-		if(Objects.isNull(store)){
+		Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
+		if (Objects.isNull(store)) {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
@@ -67,7 +67,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 
 	@Override
 	public R update(StoreGoods storeGoods) {
-		if(Objects.nonNull(storeGoods.getStoreId())) {
+		if (Objects.nonNull(storeGoods.getStoreId())) {
 			Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
 			if (Objects.isNull(store)) {
 				return R.fail("ELECTRICITY.0018", "未找到门店");
@@ -81,7 +81,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 	@Override
 	public R delete(Long id) {
 		StoreGoods storeGoods = storeGoodsMapper.selectById(id);
-		if(Objects.isNull(storeGoods)){
+		if (Objects.isNull(storeGoods)) {
 			R.fail("ELECTRICITY.00109", "未找到门店商品");
 		}
 
@@ -93,32 +93,28 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 
 	@Override
 	public R queryList(StoreShopsQuery storeShopsQuery) {
-		List<StoreGoods> storeGoodsList= storeGoodsMapper.queryList(storeShopsQuery);
-		if(ObjectUtil.isEmpty(storeGoodsList)){
+		List<StoreGoods> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
+		if (ObjectUtil.isEmpty(storeGoodsList)) {
 			return R.ok(storeGoodsList);
 		}
 
-
-		List<StoreGoodsVO> storeGoodsVOList=new ArrayList<>();
-		for (StoreGoods storeGoods:storeGoodsList) {
-			StoreGoodsVO storeGoodsVO=new StoreGoodsVO();
-			BeanUtils.copyProperties(storeGoods,storeGoodsVO);
-
+		List<StoreGoodsVO> storeGoodsVOList = new ArrayList<>();
+		for (StoreGoods storeGoods : storeGoodsList) {
+			StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
+			BeanUtils.copyProperties(storeGoods, storeGoodsVO);
 
 			//图片显示
-			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS,storageConfig.getIsUseOSS());
-			if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
-				return R.ok();
-			}
-			List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-			for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-				if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-					electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
+			if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
+				List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
+				for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
+					if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+						electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+					}
+					electricityCabinetFiles.add(electricityCabinetFile);
 				}
-				electricityCabinetFiles.add(electricityCabinetFile);
+				storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
 			}
-
-			storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
 
 			storeGoodsVOList.add(storeGoodsVO);
 		}
