@@ -33,6 +33,9 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
+		storeGoods.setCreateTime(System.currentTimeMillis());
+		storeGoods.setUpdateTime(System.currentTimeMillis());
+		storeGoods.setDelFlag(StoreGoods.DEL_NORMAL);
 		return R.ok(storeGoodsMapper.insert(storeGoods));
 	}
 
@@ -45,6 +48,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 			}
 		}
 
+		storeGoods.setUpdateTime(System.currentTimeMillis());
 		return R.ok(storeGoodsMapper.updateById(storeGoods));
 	}
 
