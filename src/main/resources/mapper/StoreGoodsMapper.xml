@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
-<mapper namespace="com.xiliulou.electricity.mapper.StoreShopsMapper">
+<mapper namespace="com.xiliulou.electricity.mapper.StoreGoodsMapper">
 
 
 	<!--查询指定行数据-->
 	<select id="queryList"
-			resultType="com.xiliulou.electricity.entity.StoreShops">
+			resultType="com.xiliulou.electricity.entity.StoreGoods">
 		select
 		id, name, price,discountPrice, del_flag,
 		create_time, update_time,tenant_id,store_id
