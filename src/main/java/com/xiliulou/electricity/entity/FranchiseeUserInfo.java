@@ -85,6 +85,17 @@ public class FranchiseeUserInfo {
 
     //租户
     private Integer tenantId;
+
+    /**
+     * 加盟商类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    /**
+     * 电池类型
+     */
+    private String batteryType;
+
     //初始化
     public static final Integer STATUS_IS_INIT=1;
     //已缴纳押金

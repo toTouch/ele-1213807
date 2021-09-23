@@ -105,6 +105,9 @@
         <if test="query.tenantId != null ">
             and tenant_id = #{query.tenantId}
         </if>
+        <if test="query.name != null and query.name != ''">
+            and name = #{query.name}
+        </if>
         <if test="query.distance != null">
             having distance &lt; #{query.distance}
         </if>

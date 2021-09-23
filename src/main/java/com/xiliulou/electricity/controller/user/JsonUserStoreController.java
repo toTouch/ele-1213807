@@ -28,6 +28,7 @@ public class JsonUserStoreController {
     //列表查询
     @GetMapping(value = "/outer/store/showInfoByDistance")
     public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
+                                @RequestParam(value = "name", required = false) String name,
                                 @RequestParam("lon") Double lon,
                                 @RequestParam("lat") Double lat) {
 
@@ -41,7 +42,8 @@ public class JsonUserStoreController {
                 .distance(distance)
                 .lon(lon)
                 .lat(lat)
-                .tenantId(tenantId).build();
+                .tenantId(tenantId)
+                .name(name).build();
 
         return storeService.showInfoByDistance(storeQuery);
     }

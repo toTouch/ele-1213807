@@ -202,6 +202,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
+		//缴纳押金
+
 		BigDecimal payAmount = franchisee.getBatteryDeposit();
 		String orderId = generateOrderId(user.getUid());
 
@@ -231,6 +233,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
 			franchiseeUserInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
 			franchiseeUserInfoUpdate.setOrderId(orderId);
+			franchiseeUserInfoUpdate.setModelType(franchisee.getModelType());
 			franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 			return R.ok();
 		}
