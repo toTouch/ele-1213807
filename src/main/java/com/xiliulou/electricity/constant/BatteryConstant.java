@@ -7,7 +7,9 @@ public class BatteryConstant {
 
 	private static final LinkedHashMap<String, Float> BATTERY_V = new LinkedHashMap<>();
 	private static final LinkedHashMap<String, String> BATTERY_V_SHORT_V = new LinkedHashMap<>();
+
 	private static final LinkedHashMap<String, Integer> BATTERY = new LinkedHashMap<>();
+	private static final LinkedHashMap<Integer, String> BATTERY_SHORT = new LinkedHashMap<>();
 
 	/**
 	 * 三元锂
@@ -187,6 +189,24 @@ public class BatteryConstant {
 		BATTERY.put(B_60V_IRON_LITHIUM_20, 14);
 		BATTERY.put(B_72V_TERNARY_LITHIUM_20, 15);
 		BATTERY.put(B_72V_IRON_LITHIUM_24, 16);
+
+
+		BATTERY_SHORT.put(1,B_12V_TERNARY_LITHIUM_3);
+		BATTERY_SHORT.put(2,B_12V_IRON_LITHIUM_3);
+		BATTERY_SHORT.put(3,B_24V_TERNARY_LITHIUM_7);
+		BATTERY_SHORT.put(4,B_24V_IRON_LITHIUM_8);
+		BATTERY_SHORT.put(5,B_36V_TERNARY_LITHIUM_10);
+		BATTERY_SHORT.put(6,B_36V_IRON_LITHIUM_10);
+		BATTERY_SHORT.put(7,B_36V_IRON_LITHIUM_11);
+		BATTERY_SHORT.put(8,B_36V_IRON_LITHIUM_12);
+		BATTERY_SHORT.put(9,B_48V_TERNARY_LITHIUM_13);
+		BATTERY_SHORT.put(10,B_48V_TERNARY_LITHIUM_14);
+		BATTERY_SHORT.put(11,B_48V_IRON_LITHIUM_15);
+		BATTERY_SHORT.put(12,B_48V_IRON_LITHIUM_16);
+		BATTERY_SHORT.put(13,B_60V_TERNARY_LITHIUM_17);
+		BATTERY_SHORT.put(14,B_60V_IRON_LITHIUM_20);
+		BATTERY_SHORT.put(15,B_72V_TERNARY_LITHIUM_20);
+		BATTERY_SHORT.put(16,B_72V_IRON_LITHIUM_24);
 	}
 
 	public static Float queryChargeVByBatteryModel(String model) {
