@@ -70,7 +70,7 @@ public class ElectricityMemberCard {
     private Integer modelType;
 
     /**
-     * 仓门电池类型
+     * 电池类型套餐
      */
     private String batteryType;
 

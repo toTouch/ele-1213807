@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_store_shops")
+@TableName("t_store_goods")
 public class StoreShops {
     /**
     * 门店商品表Id
