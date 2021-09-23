@@ -57,7 +57,7 @@ public class StoreGoods {
     @NotNull(message = "价格不能为空!", groups = {CreateGroup.class})
     private BigDecimal price;
 
-    @NotNull(message = "优惠价格不能为空!", groups = {CreateGroup.class})
+
     private BigDecimal discountPrice;
 
 
