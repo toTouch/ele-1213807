@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeSplitQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -77,6 +79,26 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
+
+		//押金参数判断
+		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.OLD_MODEL_TYPE)){
+			if(Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())){
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
+		}
+
+		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+			if(ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())){
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
+
+			//封装型号押金
+			String modelBatteryDeposit= JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
+			franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
+
+		}
+
+
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
 		BeanUtil.copyProperties(franchiseeAddAndUpdate, adminUserQuery);
@@ -123,6 +145,24 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		Franchisee oldFranchisee = queryByIdFromCache(franchiseeAddAndUpdate.getId());
 		if (Objects.isNull(oldFranchisee)) {
 			return R.fail("ELECTRICITY.0038", "未找到加盟商");
+		}
+
+		//押金参数判断
+		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.OLD_MODEL_TYPE)){
+			if(Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())){
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
+		}
+
+		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+			if(ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())){
+				return R.fail("ELECTRICITY.0007", "不合法的参数");
+			}
+
+			//封装型号押金
+			String modelBatteryDeposit= JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
+			franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
+
 		}
 
 		BeanUtil.copyProperties(franchiseeAddAndUpdate, oldFranchisee);
@@ -202,11 +242,14 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		}
 		if (ObjectUtil.isNotEmpty(franchiseeVOList)) {
 			franchiseeVOList.parallelStream().forEach(e -> {
+
 				//获取城市名称
 				City city = cityService.queryByIdFromDB(e.getCid());
 				if (Objects.nonNull(city)) {
 					e.setCityName(city.getName());
 				}
+
+
 				//获取用户名称
 				if (Objects.nonNull(e.getUid())) {
 					User user = userService.queryByUidFromCache(e.getUid());
@@ -214,6 +257,17 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 						e.setUserName(user.getName());
 					}
 				}
+
+
+				//加盟商押金
+				if(Objects.equals(e.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+
+					//封装型号押金
+					List modelBatteryDepositList= JsonUtil.fromJson(e.getModelBatteryDeposit(),List.class);
+					e.setModelBatteryDepositList(modelBatteryDepositList);
+
+				}
+
 			});
 		}
 		franchiseeVOList.stream().sorted(Comparator.comparing(FranchiseeVO::getCreateTime).reversed()).collect(Collectors.toList());

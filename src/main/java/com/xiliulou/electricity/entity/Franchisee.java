@@ -76,4 +76,7 @@ public class Franchisee {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+    public static final Integer OLD_MODEL_TYPE = 1;
+    public static final Integer MEW_MODEL_TYPE = 2;
+
 }

@@ -63,5 +63,8 @@ public class FranchiseeAddAndUpdate {
     //新分型号押金
     private List<ModelBatteryDeposit> modelBatteryDepositList;
 
+    //新分型号押金
+    private String modelBatteryDeposit;
+
 
 }
