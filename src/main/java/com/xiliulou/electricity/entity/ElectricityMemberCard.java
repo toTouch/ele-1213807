@@ -64,8 +64,9 @@ public class ElectricityMemberCard {
     private Integer delFlag;
 
     /**
-     * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
+     * 加盟商套餐类型 1--老（不分型号） 2--新（分型号）
      * */
+    @NotNull(message = "加盟商套餐类型不能为空!")
     private Integer modelType;
 
     /**
