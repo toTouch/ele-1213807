@@ -222,14 +222,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			}
 
 			//型号押金
-			List modelBatteryDepositList= JsonUtil.fromJson(franchisee.getModelBatteryDeposit(),List.class);
+			List<ModelBatteryDeposit> modelBatteryDepositList= JsonUtil.fromJson(franchisee.getModelBatteryDeposit(),List.class);
 			if(ObjectUtil.isEmpty(modelBatteryDepositList)){
 				log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId{}", store.getFranchiseeId());
 				return R.fail("ELECTRICITY.00110", "未找到押金");
 			}
 
-			for (Object object:modelBatteryDepositList) {
-				ModelBatteryDeposit modelBatteryDeposit=(ModelBatteryDeposit)object;
+			for (ModelBatteryDeposit modelBatteryDeposit:modelBatteryDepositList) {
 				if(Objects.equals(modelBatteryDeposit.getModel(),model)){
 					payAmount=modelBatteryDeposit.getBatteryDeposit();
 					break;
