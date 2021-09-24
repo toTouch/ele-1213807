@@ -62,6 +62,16 @@ public class EleDepositOrder {
 
     private Long franchiseeId;
 
+    /**
+     * 加盟商类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    /**
+     * 电池类型
+     */
+    private String batteryType;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;

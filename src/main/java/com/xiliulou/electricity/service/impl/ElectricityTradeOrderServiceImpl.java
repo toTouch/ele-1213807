@@ -285,6 +285,7 @@ public class ElectricityTradeOrderServiceImpl extends
 		String tradeState = callBackResource.getTradeState();
 		String transactionId = callBackResource.getTransactionId();
 
+
 		//系统订单
 		ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
 		if (Objects.isNull(electricityTradeOrder)) {
@@ -295,6 +296,7 @@ public class ElectricityTradeOrderServiceImpl extends
 			log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO:{}", tradeOrderNo);
 			return Pair.of(false, "交易订单已处理");
 		}
+
 
 		//押金订单
 		EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
@@ -318,6 +320,7 @@ public class ElectricityTradeOrderServiceImpl extends
 		} else {
 			log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
 		}
+
 
 		//用户
 		UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
@@ -346,6 +349,12 @@ public class ElectricityTradeOrderServiceImpl extends
 			franchiseeUserInfoUpdate.setBatteryDeposit(eleDepositOrder.getPayAmount());
 			franchiseeUserInfoUpdate.setOrderId(eleDepositOrder.getOrderId());
 			franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+
+			franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
+
+			if(Objects.equals(eleDepositOrder.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+				franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
+			}
 			franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 		}
 

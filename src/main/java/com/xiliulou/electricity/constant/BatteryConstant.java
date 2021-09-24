@@ -225,5 +225,9 @@ public class BatteryConstant {
 	public static Integer acquireBattery(String longKey) {
 		return BATTERY.get(longKey);
 	}
+
+	public static String acquireBatteryShort(Integer longKey) {
+		return BATTERY_SHORT.get(longKey);
+	}
 }
 
