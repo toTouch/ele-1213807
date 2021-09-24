@@ -36,4 +36,6 @@ public interface EleDepositOrderService {
 	R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
 
 	void insert(EleDepositOrder eleDepositOrder);
+
+	R queryModelType(String productKey, String deviceName);
 }

@@ -74,5 +74,12 @@ public class JsonUserEleDepositOrderController {
 		return eleDepositOrderService.queryDeposit(productKey, deviceName);
 	}
 
+
+	//用户查询缴纳押金
+	@GetMapping(value = "/user/queryModelType")
+	public R queryModelType(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return eleDepositOrderService.queryModelType(productKey, deviceName);
+	}
+
 }
 
