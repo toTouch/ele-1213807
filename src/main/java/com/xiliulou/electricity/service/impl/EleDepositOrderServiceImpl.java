@@ -506,7 +506,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			throw new CustomBusinessException("查不到订单");
 		}
 
-		List<EleDepositOrderExcelVO> EleDepositOrderExcelVOS = new ArrayList();
+		List<EleDepositOrderExcelVO> eleDepositOrderExcelVOS = new ArrayList();
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		int index = 0;
 		for (EleDepositOrder eleDepositOrder : eleDepositOrderList) {
@@ -535,7 +535,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				excelVo.setStatus("支付失败");
 			}
 
-			EleDepositOrderExcelVOS.add(excelVo);
+			eleDepositOrderExcelVOS.add(excelVo);
 		}
 
 		String fileName = "换电订单报表.xlsx";
@@ -545,7 +545,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			response.setHeader("content-Type", "application/vnd.ms-excel");
 			// 下载文件的默认名称
 			response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
-			EasyExcel.write(outputStream, EleDepositOrderExcelVO.class).sheet("sheet").doWrite(EleDepositOrderExcelVOS);
+			EasyExcel.write(outputStream, EleDepositOrderExcelVO.class).sheet("sheet").doWrite(eleDepositOrderExcelVOS);
 			return;
 		} catch (IOException e) {
 			log.error("导出报表失败！", e);
