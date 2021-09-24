@@ -212,13 +212,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-		BigDecimal payAmount=null;
-
-
-		//老押金计算
-		if(Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)) {
-			payAmount = franchisee.getBatteryDeposit();
-		}
+		BigDecimal payAmount=franchisee.getBatteryDeposit();
 
 
 		//型号押金计算
