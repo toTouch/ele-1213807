@@ -212,7 +212,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-		BigDecimal payAmount=franchisee.getBatteryDeposit();
+		BigDecimal payAmount=null;
+
+
+		if(Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)) {
+			 payAmount = franchisee.getBatteryDeposit();
+		}
 
 
 		//型号押金计算
@@ -229,7 +234,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			}
 
 			for (Map map:modelBatteryDepositList) {
+				log.info("modelBatteryDepositList is -->{}",modelBatteryDepositList);
+				log.info("model is -->{}",map.get("model"));
 				if(Objects.equals(map.get("model"),model)){
+
 					payAmount=BigDecimal.valueOf((double)map.get("batteryDeposit"));
 					break;
 				}
