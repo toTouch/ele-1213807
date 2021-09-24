@@ -34,7 +34,7 @@
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%date [%thread] %-5level [%logger{50}] %file:%line - %msg%n</pattern>
+			<pattern>%date [%thread] %level [%logger{50}:%line] - %msg%n</pattern>
 		</encoder>
 	</appender>
 
@@ -47,7 +47,7 @@
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%date [%thread] %-5level [%logger{50}] %file:%line - %msg%n</pattern>
+			<pattern>%date [%thread] %level [%logger{50}:%line] - %msg%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>INFO</level>
@@ -62,7 +62,7 @@
 			<maxHistory>30</maxHistory>
 		</rollingPolicy>
 		<encoder>
-			<pattern>%date [%thread] %-5level [%logger{50}] %file:%line - %msg%n</pattern>
+			<pattern>%date [%thread] %level [%logger{50}:%line] - %msg%n</pattern>
 		</encoder>
 		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
 			<level>INFO</level>
@@ -82,7 +82,7 @@
 		<appender-ref ref="debug"/>
 	</logger>
 
-	<logger name="request" level="INFO">
+	<logger name="com.xiliulou.electricity.filter.RequestFilter" level="INFO" additivity="false">
 		<appender-ref ref="request"/>
 	</logger>
 	<!-- Level: FATAL 0  ERROR 3  WARN 4  INFO 6  DEBUG 7 -->
