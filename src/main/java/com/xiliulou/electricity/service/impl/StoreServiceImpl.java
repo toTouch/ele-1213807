@@ -10,7 +10,6 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
@@ -234,7 +233,7 @@ public class StoreServiceImpl implements StoreService {
 
 				//加盟商
 				if (Objects.nonNull(e.getFranchiseeId())) {
-					Franchisee franchisee = franchiseeService.queryByIdFromCache(e.getFranchiseeId());
+					Franchisee franchisee = franchiseeService.queryByIdFromDB(e.getFranchiseeId());
 					if (Objects.nonNull(franchisee)) {
 						e.setFranchiseeName(franchisee.getName());
 					}

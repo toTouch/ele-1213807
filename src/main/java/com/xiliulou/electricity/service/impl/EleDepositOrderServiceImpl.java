@@ -27,7 +27,6 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -51,7 +50,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
@@ -206,7 +204,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-		Franchisee franchisee = franchiseeService.queryByIdFromCache(store.getFranchiseeId());
+		Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
 		if (Objects.isNull(franchisee)) {
 			log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
@@ -234,8 +232,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			}
 
 			for (Map map:modelBatteryDepositList) {
-				log.info("modelBatteryDepositList is -->{}",modelBatteryDepositList);
-				log.info("model is -->{}",map.get("model"));
 				if(Objects.equals(map.get("model"),model)){
 
 					payAmount=BigDecimal.valueOf((double)map.get("batteryDeposit"));
@@ -585,7 +581,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-		Franchisee franchisee = franchiseeService.queryByIdFromCache(store.getFranchiseeId());
+		Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
 		if (Objects.isNull(franchisee)) {
 			log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
@@ -642,7 +638,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-		Franchisee franchisee = franchiseeService.queryByIdFromCache(store.getFranchiseeId());
+		Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
 		if (Objects.isNull(franchisee)) {
 			log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");

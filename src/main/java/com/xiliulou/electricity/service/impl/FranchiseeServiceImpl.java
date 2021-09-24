@@ -19,7 +19,6 @@ import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeSplitQuery;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -125,11 +124,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		franchisee.setCid(franchiseeAddAndUpdate.getCityId());
 		int insert = franchiseeMapper.insert(franchisee);
 
-		DbUtils.dbOperateSuccessThen(insert, () -> {
-			//新增缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + franchisee.getId(), franchisee);
-			return null;
-		});
 
 		if (insert > 0) {
 			return R.ok();
@@ -142,7 +136,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	@Transactional(rollbackFor = Exception.class)
 	public R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
 
-		Franchisee oldFranchisee = queryByIdFromCache(franchiseeAddAndUpdate.getId());
+		Franchisee oldFranchisee = queryByIdFromDB(franchiseeAddAndUpdate.getId());
 		if (Objects.isNull(oldFranchisee)) {
 			return R.fail("ELECTRICITY.0038", "未找到加盟商");
 		}
@@ -171,11 +165,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		newFranchisee.setUpdateTime(System.currentTimeMillis());
 		int update = franchiseeMapper.updateById(newFranchisee);
 
-		DbUtils.dbOperateSuccessThen(update, () -> {
-			//修改缓存
-			redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + newFranchisee.getId());
-			return null;
-		});
 
 		if (update > 0) {
 			return R.ok();
@@ -187,7 +176,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	@Transactional(rollbackFor = Exception.class)
 	public R delete(Long id) {
 
-		Franchisee franchisee = queryByIdFromCache(id);
+		Franchisee franchisee = queryByIdFromDB(id);
 		if (Objects.isNull(franchisee)) {
 			return R.fail("ELECTRICITY.0038", "未找到加盟商");
 		}
@@ -208,8 +197,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		int update = franchiseeMapper.updateById(franchisee);
 
 		DbUtils.dbOperateSuccessThen(update, () -> {
-			//修改缓存
-			redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + id);
 			//删除用户
 			userService.deleteInnerUser(franchisee.getUid());
 			return null;
@@ -222,17 +209,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	}
 
 	@Override
-	public Franchisee queryByIdFromCache(Long id) {
-		Franchisee cacheFranchisee = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + id, Franchisee.class);
-		if (Objects.nonNull(cacheFranchisee)) {
-			return cacheFranchisee;
-		}
-		Franchisee franchisee = franchiseeMapper.selectById(id);
-		if (Objects.isNull(franchisee)) {
-			return null;
-		}
-		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + id, franchisee);
-		return franchisee;
+	public Franchisee queryByIdFromDB(Long id) {
+		return franchiseeMapper.selectById(id);
 
 	}
 
@@ -316,13 +294,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 			franchisee.setUpdateTime(System.currentTimeMillis());
 			franchisee.setDelFlag(ElectricityCabinet.DEL_DEL);
 
-			int update = franchiseeMapper.updateById(franchisee);
+			franchiseeMapper.updateById(franchisee);
 
-			DbUtils.dbOperateSuccessThen(update, () -> {
-				//修改缓存
-				redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + franchisee.getId());
-				return null;
-			});
 		}
 	}
 
@@ -367,13 +340,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 				franchisee.setId(franchiseeSplitQuery.getId());
 				franchisee.setPercent(franchiseeSplitQuery.getPercent());
 				franchisee.setUpdateTime(System.currentTimeMillis());
-				int update = franchiseeMapper.updateById(franchisee);
+				franchiseeMapper.updateById(franchisee);
 
-				DbUtils.dbOperateSuccessThen(update, () -> {
-					//修改缓存
-					redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + franchisee.getId());
-					return null;
-				});
 			}
 
 			//门店分账比列

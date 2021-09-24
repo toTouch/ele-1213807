@@ -387,7 +387,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
 	private void handleSplitAccount(ElectricityTradeOrder electricityTradeOrder, ElectricityMemberCardOrder electricityMemberCardOrder) {
 		//加盟商分账
-		Franchisee franchisee = franchiseeService.queryByIdFromCache(electricityMemberCardOrder.getFranchiseeId());
+		Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityMemberCardOrder.getFranchiseeId());
 		if (Objects.isNull(franchisee)) {
 			log.error("ELE ORDER ERROR! franchisee not exists! franchiseeId={}", electricityMemberCardOrder.getFranchiseeId());
 			return;
