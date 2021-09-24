@@ -171,7 +171,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//修改缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE + oldFranchisee.getId(), oldFranchisee);
+			redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + oldFranchisee.getId());
 			return null;
 		});
 
