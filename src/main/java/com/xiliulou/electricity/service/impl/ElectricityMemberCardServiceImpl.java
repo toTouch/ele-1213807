@@ -248,8 +248,17 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
 
+        //多电池型号查询套餐
+        if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+            if(Objects.isNull(franchiseeUserInfo.getBatteryType())){
+                return R.ok();
+            }
+            return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),franchiseeUserInfo.getBatteryType()));
+        }
+
+
         //查找加盟商下的可用套餐
-        return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId()));
+        return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),null));
     }
 
     @Override
