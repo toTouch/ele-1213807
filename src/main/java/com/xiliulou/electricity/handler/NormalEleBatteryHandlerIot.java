@@ -158,6 +158,16 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 
 
+		//根据电池查询仓门类型
+		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
+			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
+			String batteryShortModel= BatteryConstant.acquireBatteryShortModel(batteryModel);
+			if(Objects.nonNull(batteryShortModel)) {
+				electricityCabinetBox.setBatteryType(batteryShortModel);
+				newElectricityBattery.setModel(batteryShortModel);
+			}
+		}
+
 		//修改电池
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -193,15 +203,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			}
 		}
 
-
-		//根据电池查询仓门类型
-		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
-			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
-			String batteryShortModel= BatteryConstant.acquireBatteryShortModel(batteryModel);
-			if(Objects.nonNull(batteryShortModel)) {
-				electricityCabinetBox.setBatteryType(batteryShortModel);
-			}
-		}
 
 
 		//修改仓门
