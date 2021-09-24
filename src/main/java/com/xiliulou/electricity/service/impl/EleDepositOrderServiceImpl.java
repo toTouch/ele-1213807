@@ -233,7 +233,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 			log.info("modelBatteryDepositList is -->{}",modelBatteryDepositList);
 			for (Map map:modelBatteryDepositList) {
-				if((int)(map.get("model"))-model<1){
+				if((double)(map.get("model"))-model<1&&(double)(map.get("model"))-model>=0){
 					payAmount=BigDecimal.valueOf((double)map.get("batteryDeposit"));
 					break;
 				}
