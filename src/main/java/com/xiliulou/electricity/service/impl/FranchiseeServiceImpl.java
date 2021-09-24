@@ -165,13 +165,15 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 		}
 
-		BeanUtil.copyProperties(franchiseeAddAndUpdate, oldFranchisee);
-		oldFranchisee.setUpdateTime(System.currentTimeMillis());
-		int update = franchiseeMapper.updateById(oldFranchisee);
+
+		Franchisee newFranchisee =new Franchisee();
+		BeanUtil.copyProperties(franchiseeAddAndUpdate, newFranchisee);
+		newFranchisee.setUpdateTime(System.currentTimeMillis());
+		int update = franchiseeMapper.updateById(newFranchisee);
 
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//修改缓存
-			redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + oldFranchisee.getId());
+			redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE + newFranchisee.getId());
 			return null;
 		});
 
