@@ -231,9 +231,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				return R.fail("ELECTRICITY.00110", "未找到押金");
 			}
 
+			log.info("modelBatteryDepositList is -->{}",modelBatteryDepositList);
 			for (Map map:modelBatteryDepositList) {
 				if(Objects.equals(map.get("model"),model)){
-
 					payAmount=BigDecimal.valueOf((double)map.get("batteryDeposit"));
 					break;
 				}
