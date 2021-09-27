@@ -423,12 +423,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		if ((Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
 				|| Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
 				&& Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
-			//是否退款
-			Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
-			if (Objects.nonNull(refundStatus)) {
-				map.put("refundStatus", refundStatus.toString());
-			} else {
+
+			if(Objects.equals(franchiseeUserInfo.getOrderId(),"-1")){
 				map.put("refundStatus", null);
+			}else {
+				//是否退款
+				Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
+				if (Objects.nonNull(refundStatus)) {
+					map.put("refundStatus", refundStatus.toString());
+				} else {
+					map.put("refundStatus", null);
+				}
 			}
 			map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
 			//最后一次缴纳押金时间
