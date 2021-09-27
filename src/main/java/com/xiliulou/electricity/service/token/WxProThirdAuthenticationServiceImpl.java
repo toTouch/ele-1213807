@@ -385,6 +385,12 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.status(UserOauthBind.STATUS_BIND)
 				.build();
 		userOauthBindService.insert(oauthBind);
+
+
+		//用户迁移数据则进行迁移
+
+
+
 		//添加到user_info表中
 		UserInfo insertUserInfo = UserInfo.builder()
 				.uid(insert.getUid())
