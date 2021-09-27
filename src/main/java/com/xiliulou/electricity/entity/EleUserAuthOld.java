@@ -54,8 +54,6 @@ public class EleUserAuthOld {
      */
     private Long updateTime;
 
-    //租户id
-    private Integer tenantId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
