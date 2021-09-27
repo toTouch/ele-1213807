@@ -308,6 +308,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
+		if(Objects.equals(oldFranchiseeUserInfo.getOrderId(),-1)){
+			return R.fail("ELECTRICITY.00109", "请线下退押");
+		}
+
 		//是否存在未完成的租电池订单
 		RentBatteryOrder rentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
 		if (Objects.nonNull(rentBatteryOrder1)) {
