@@ -10,13 +10,19 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.EleUserAuthOld;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.UserInfoOld;
 import com.xiliulou.electricity.entity.UserOauthBind;
+import com.xiliulou.electricity.service.EleUserAuthOldService;
+import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.UserInfoOldService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
@@ -26,7 +32,11 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
+import org.bouncycastle.math.ec.ScaleYPointMap;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -77,6 +87,15 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+
+	@Autowired
+	UserInfoOldService userInfoOldService;
+
+	@Autowired
+	EleUserAuthOldService eleUserAuthOldService;
+
+	@Autowired
+	EleUserAuthService eleUserAuthService;
 
 	@Override
 	public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
@@ -130,9 +149,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			log.info("TOKEN INFO! 解析微信手机号:{}", purePhoneNumber);
 
 			//先检查openId存在吗
-			Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid(),tenantId);
+			Pair<Boolean, UserOauthBind> existsOpenId = checkOpenIdExists(result.getOpenid(), tenantId);
 			//检查手机号是否存在
-			Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber,tenantId);
+			Pair<Boolean, User> existPhone = checkPhoneExists(purePhoneNumber, tenantId);
 
 			//如果两个都不存在，创建用户
 			if (!existPhone.getLeft() && !existsOpenId.getLeft()) {
@@ -162,24 +181,21 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 							.usableStatus(UserInfo.USER_USABLE_STATUS)
 							.tenantId(tenantId)
 							.build();
-					Integer insert = userInfoService.insert(insertUserInfo);
+					UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
-					DbUtils.dbOperateSuccessThen(insert, () -> {
+					Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
+					if (!existFranchiseeUserInfo.getLeft()) {
+						FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+								.userInfoId(userInfo.getId())
+								.updateTime(System.currentTimeMillis())
+								.createTime(System.currentTimeMillis())
+								.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+								.delFlag(User.DEL_NORMAL)
+								.tenantId(tenantId)
+								.build();
+						franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+					}
 
-						Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
-						if (!existFranchiseeUserInfo.getLeft()) {
-							FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-									.userInfoId(insertUserInfo.getId())
-									.updateTime(System.currentTimeMillis())
-									.createTime(System.currentTimeMillis())
-									.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-									.delFlag(User.DEL_NORMAL)
-									.tenantId(tenantId)
-									.build();
-							franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-						}
-						return null;
-					});
 				}
 				//相同登录
 				return createSecurityUser(existPhone.getRight(), existsOpenId.getRight());
@@ -229,24 +245,21 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 							.usableStatus(UserInfo.USER_USABLE_STATUS)
 							.tenantId(tenantId)
 							.build();
-					Integer insert = userInfoService.insert(insertUserInfo);
+					UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
-					DbUtils.dbOperateSuccessThen(insert, () -> {
+					Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
+					if (!existFranchiseeUserInfo.getLeft()) {
+						FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+								.userInfoId(userInfo.getId())
+								.updateTime(System.currentTimeMillis())
+								.createTime(System.currentTimeMillis())
+								.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+								.delFlag(User.DEL_NORMAL)
+								.tenantId(tenantId)
+								.build();
+						franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+					}
 
-						Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
-						if (!existFranchiseeUserInfo.getLeft()) {
-							FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-									.userInfoId(insertUserInfo.getId())
-									.updateTime(System.currentTimeMillis())
-									.createTime(System.currentTimeMillis())
-									.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-									.delFlag(User.DEL_NORMAL)
-									.tenantId(tenantId)
-									.build();
-							franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-						}
-						return null;
-					});
 				} else {
 					UserInfo updateUserInfo = existUserInfo.getRight();
 					if (!Objects.equals(purePhoneNumber, updateUserInfo.getPhone())) {
@@ -262,7 +275,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			//openid不存在的时候,手机号存在
 			if (!existsOpenId.getLeft() && existPhone.getLeft()) {
 
-				UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO,tenantId);
+				UserOauthBind userOauthBind = userOauthBindService.queryByUserPhone(existPhone.getRight().getPhone(), UserOauthBind.SOURCE_WX_PRO, tenantId);
 				if (Objects.nonNull(userOauthBind)) {
 					//这里uid必须相同
 					if (!Objects.equals(userOauthBind.getUid(), existPhone.getRight().getUid())) {
@@ -305,23 +318,21 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 							.usableStatus(UserInfo.USER_USABLE_STATUS)
 							.tenantId(tenantId)
 							.build();
-					Integer insert = userInfoService.insert(insertUserInfo);
-					DbUtils.dbOperateSuccessThen(insert, () -> {
+					UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
-						Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
-						if (!existFranchiseeUserInfo.getLeft()) {
-							FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-									.userInfoId(insertUserInfo.getId())
-									.updateTime(System.currentTimeMillis())
-									.createTime(System.currentTimeMillis())
-									.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-									.delFlag(User.DEL_NORMAL)
-									.tenantId(tenantId)
-									.build();
-							franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-						}
-						return null;
-					});
+					Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
+					if (!existFranchiseeUserInfo.getLeft()) {
+						FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+								.userInfoId(userInfo.getId())
+								.updateTime(System.currentTimeMillis())
+								.createTime(System.currentTimeMillis())
+								.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+								.delFlag(User.DEL_NORMAL)
+								.tenantId(tenantId)
+								.build();
+						franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
+					}
+
 				}
 				return createSecurityUser(existPhone.getRight(), userOauthBind);
 
@@ -349,7 +360,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 		Collection<? extends GrantedAuthority> authorities = AuthorityUtils
 				.createAuthorityList(dbAuthsSet.toArray(new String[0]));
 
-		return new SecurityUser(oauthBind.getThirdId(), user.getPhone(), user.getUid(), user.getUserType(), user.getLoginPwd(), user.isLock(), authorities,user.getTenantId());
+		return new SecurityUser(oauthBind.getThirdId(), user.getPhone(), user.getUid(), user.getUserType(), user.getLoginPwd(), user.isLock(), authorities, user.getTenantId());
 	}
 
 	private SecurityUser createUserAndOauthBind(WXMinProAuth2SessionResult result, WXMinProPhoneResultDTO wxMinProPhoneResultDTO) {
@@ -371,6 +382,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.delFlag(User.DEL_NORMAL)
 				.build();
 		User insert = userService.insert(insertUser);
+
 		UserOauthBind oauthBind = UserOauthBind.builder()
 				.createTime(System.currentTimeMillis())
 				.updateTime(System.currentTimeMillis())
@@ -386,11 +398,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.build();
 		userOauthBindService.insert(oauthBind);
 
-
-		//用户迁移数据则进行迁移
-
-
-
 		//添加到user_info表中
 		UserInfo insertUserInfo = UserInfo.builder()
 				.uid(insert.getUid())
@@ -403,36 +410,107 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.delFlag(User.DEL_NORMAL)
 				.usableStatus(UserInfo.USER_USABLE_STATUS)
 				.build();
-		Integer insert2 = userInfoService.insert(insertUserInfo);
+		UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
+		FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
+				.userInfoId(userInfo.getId())
+				.updateTime(System.currentTimeMillis())
+				.createTime(System.currentTimeMillis())
+				.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
+				.delFlag(User.DEL_NORMAL)
+				.tenantId(tenantId)
+				.build();
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
 
-		DbUtils.dbOperateSuccessThen(insert2, () -> {
+		//用户迁移数据则进行迁移
 
-			Pair<Boolean, FranchiseeUserInfo> existFranchiseeUserInfo = checkFranchiseeUserInfoExists(insertUserInfo.getId());
-			if (!existFranchiseeUserInfo.getLeft()) {
-				FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
-						.userInfoId(insertUserInfo.getId())
-						.updateTime(System.currentTimeMillis())
-						.createTime(System.currentTimeMillis())
-						.serviceStatus(FranchiseeUserInfo.STATUS_IS_INIT)
-						.delFlag(User.DEL_NORMAL)
-						.tenantId(tenantId)
-						.build();
-				franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
-			}
-			return null;
-		});
+		moveUser(insertUserInfo, franchiseeUserInfo);
+
 		return createSecurityUser(insertUser, oauthBind);
+	}
+
+	private void moveUser(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
+
+		UserInfoOld userInfoOld = userInfoOldService.queryByPhone(userInfo.getPhone());
+		if (Objects.isNull(userInfoOld)) {
+			return;
+		}
+
+		//未实名认证直接返回
+		if (userInfoOld.getServiceStatus() < 1) {
+			return;
+		}
+
+		//套餐查询复制
+		if (Objects.nonNull(userInfoOld.getCardId())) {
+			franchiseeUserInfo.setFranchiseeId(userInfoOld.getFranchiseeId());
+			franchiseeUserInfo.setCardId(userInfoOld.getCardId());
+			franchiseeUserInfo.setCardName(userInfoOld.getCardName());
+			franchiseeUserInfo.setCardType(userInfoOld.getCardType());
+			franchiseeUserInfo.setMemberCardExpireTime(userInfoOld.getCreateTime());
+			franchiseeUserInfo.setRemainingNumber(userInfoOld.getRemainingNumber());
+			franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+			franchiseeUserInfoService.update(franchiseeUserInfo);
+		}
+
+		//实名认证图片复制
+		List<EleUserAuthOld> eleUserAuthOldList=eleUserAuthOldService.queryByUid(userInfoOld.getUid());
+		if(ObjectUtils.isNotEmpty(eleUserAuthOldList)){
+			for (EleUserAuthOld eleUserAuthOld:eleUserAuthOldList) {
+				EleUserAuth eleUserAuth=new EleUserAuth();
+				BeanUtils.copyProperties(eleUserAuthOld,eleUserAuth);
+				eleUserAuth.setUid(userInfo.getUid());
+				eleUserAuth.setCreateTime(System.currentTimeMillis());
+				eleUserAuth.setUpdateTime(System.currentTimeMillis());
+				eleUserAuthService.insert(eleUserAuth);
+			}
+		}
+
+
+		//进行实名认证数据复制
+		userInfo.setUpdateTime(System.currentTimeMillis());
+		userInfo.setName(userInfoOld.getName());
+		userInfo.setIdNumber(userInfoOld.getIdNumber());
+		userInfo.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
+		userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+		userInfoService.update(userInfo);
+
+
+		//仅实名认证
+		if (userInfoOld.getServiceStatus() < 2) {
+			return;
+		}
+
+
+		//押金复制
+		franchiseeUserInfo.setBatteryDeposit(userInfoOld.getBatteryDeposit());
+		franchiseeUserInfo.setOrderId("-1");
+		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+
+
+		//仅缴纳押金
+		if(userInfoOld.getServiceStatus() < 3){
+			franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
+			franchiseeUserInfoService.update(franchiseeUserInfo);
+		}
+
+
+		//电池复制
+		franchiseeUserInfo.setInitElectricityBatterySn(userInfoOld.getInitElectricityBatterySn());
+		franchiseeUserInfo.setNowElectricityBatterySn(userInfoOld.getNowElectricityBatterySn());
+		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
+		franchiseeUserInfoService.update(franchiseeUserInfo);
+
 
 	}
 
-	private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber,Integer tenantId) {
-		User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO,tenantId);
+	private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber, Integer tenantId) {
+		User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);
 		return Objects.nonNull(user) ? Pair.of(true, user) : Pair.of(false, null);
 	}
 
-	private Pair<Boolean, UserOauthBind> checkOpenIdExists(String openid,Integer tenantId) {
-		UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(openid, UserOauthBind.SOURCE_WX_PRO,tenantId);
+	private Pair<Boolean, UserOauthBind> checkOpenIdExists(String openid, Integer tenantId) {
+		UserOauthBind userOauthBind = userOauthBindService.queryOauthByOpenIdAndSource(openid, UserOauthBind.SOURCE_WX_PRO, tenantId);
 		return Objects.nonNull(userOauthBind) ? Pair.of(true, userOauthBind) : Pair.of(false, null);
 	}
 

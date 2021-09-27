@@ -9,6 +9,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -96,8 +97,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public Integer insert(UserInfo userInfo) {
-		return userInfoMapper.insert(userInfo);
+	public UserInfo insert(UserInfo userInfo) {
+		userInfoMapper.insert(userInfo);
+		return userInfo;
 	}
 
 	/**

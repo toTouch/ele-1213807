@@ -74,8 +74,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public void insert(FranchiseeUserInfo insertFranchiseeUserInfo) {
+    public FranchiseeUserInfo insert(FranchiseeUserInfo insertFranchiseeUserInfo) {
         franchiseeUserInfoMapper.insert(insertFranchiseeUserInfo);
+        return insertFranchiseeUserInfo;
     }
 
     @Override
