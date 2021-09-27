@@ -493,6 +493,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 		if(userInfoOld.getServiceStatus() < 3){
 			franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
 			franchiseeUserInfoService.update(franchiseeUserInfo);
+			return;
 		}
 
 
