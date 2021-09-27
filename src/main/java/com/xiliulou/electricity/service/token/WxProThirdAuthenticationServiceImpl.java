@@ -432,6 +432,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 	private void moveUser(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
 
 		UserInfoOld userInfoOld = userInfoOldService.queryByPhone(userInfo.getPhone());
+		log.info("userInfoOld is-->{}",userInfoOld);
 		if (Objects.isNull(userInfoOld)) {
 			return;
 		}
