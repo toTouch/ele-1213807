@@ -308,7 +308,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
-		if(Objects.equals(oldFranchiseeUserInfo.getOrderId(),-1)){
+		if(Objects.equals(oldFranchiseeUserInfo.getOrderId(),"-1")){
 			return R.fail("ELECTRICITY.00109", "请线下退押");
 		}
 
@@ -428,7 +428,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				|| Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
 				&& Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
 
-			if(Objects.equals(franchiseeUserInfo.getOrderId(),-1)){
+			if(Objects.equals(franchiseeUserInfo.getOrderId(),"-1")){
 				map.put("refundStatus", null);
 				map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
 				map.put("time", null);
