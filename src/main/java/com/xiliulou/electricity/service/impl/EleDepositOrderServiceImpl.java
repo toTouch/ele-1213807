@@ -430,6 +430,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 			if(Objects.equals(franchiseeUserInfo.getOrderId(),-1)){
 				map.put("refundStatus", null);
+				map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
+				map.put("time", null);
 			}else {
 				//是否退款
 				Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
@@ -438,10 +440,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				} else {
 					map.put("refundStatus", null);
 				}
+
+				map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
+				//最后一次缴纳押金时间
+				map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
 			}
-			map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
-			//最后一次缴纳押金时间
-			map.put("time", this.queryByOrderId(franchiseeUserInfo.getOrderId()).getUpdateTime().toString());
 			return R.ok(map);
 
 		}
