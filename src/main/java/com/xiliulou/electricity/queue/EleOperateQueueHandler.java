@@ -240,7 +240,7 @@ public class EleOperateQueueHandler {
 				}
 
 				//分配新仓门
-				cellNo = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString());
+				cellNo = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null);
 				if (Objects.isNull(cellNo)) {
 					log.error("check Old Battery not find fully battery!orderId:{}", electricityCabinetOrder.getOrderId());
 					return;
