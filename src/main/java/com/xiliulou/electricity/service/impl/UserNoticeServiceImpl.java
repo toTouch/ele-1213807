@@ -26,6 +26,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Override
 	public Object queryUserNotice() {
+		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		UserNotice userNotice = userNoticeMapper.selectOne(new LambdaQueryWrapper<UserNotice>().eq(UserNotice::getTenantId, tenantId));
@@ -34,6 +35,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Override
 	public Triple<Boolean, String, Object> insert(UserNoticeQuery userNoticeQuery) {
+		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		UserNotice userNotice = new UserNotice();
