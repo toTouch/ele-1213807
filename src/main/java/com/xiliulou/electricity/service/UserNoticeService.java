@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.UserNoticeQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -11,7 +12,7 @@ import org.apache.commons.lang3.tuple.Triple;
  */
 public interface UserNoticeService {
 
-    Object queryUserNotice();
+    R queryUserNotice();
 
 
     Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery);

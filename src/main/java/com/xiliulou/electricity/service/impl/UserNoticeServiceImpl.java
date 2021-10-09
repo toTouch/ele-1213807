@@ -26,7 +26,7 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 	UserNoticeMapper userNoticeMapper;
 
 	@Override
-	public Object queryUserNotice() {
+	public R queryUserNotice() {
 		//tenant
 		Integer tenantId = TenantContextHolder.getTenantId();
 

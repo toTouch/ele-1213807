@@ -24,7 +24,7 @@ public class JsonAdminUserNoticeController extends BaseController {
     @GetMapping("/admin/userNotice")
     public R queryUserNotice() {
 
-        return R.ok(userNoticeService.queryUserNotice());
+        return userNoticeService.queryUserNotice();
     }
 
 
