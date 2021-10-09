@@ -24,9 +24,8 @@ public interface FaqMapper extends BaseMapper<Faq> {
      * @return 影响行数
      */
 
-    List<FaqService> queryList(@Param("size") Integer size, @Param("offset") Integer offset);
+    List<Faq> queryList(@Param("size") Integer size, @Param("offset") Integer offset, @Param("tenantId") Integer tenantId);
 
-    int deleteById(@Param("id") Integer id);
 
-    Integer queryCount();
+    Integer queryCount(@Param("tenantId") Integer tenantId);
 }

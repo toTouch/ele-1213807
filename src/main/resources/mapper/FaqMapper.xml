@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.FaqMapper">
+
+
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.Faq">
+		select
+		id, title, content, pic, create_time, update_time
+		from t_faq
+		order by create_time desc
+		<where>
+			<if test="tenantId != null ">
+				and tenant_id = #{tenantId}
+			</if>
+		</where>
+		limit #{offset},#{size}
+	</select>
+
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_faq
+		<where>
+			<if test="tenantId != null ">
+				and tenant_id = #{tenantId}
+			</if>
+		</where>
+	</select>
+</mapper>

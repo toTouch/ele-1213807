@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.Faq;
 import com.xiliulou.electricity.mapper.FaqMapper;
 import com.xiliulou.electricity.query.FaqQuery;
 import com.xiliulou.electricity.service.FaqService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
@@ -76,17 +77,26 @@ public class FaqServiceImpl implements FaqService {
 
     @Override
     public Triple<Boolean, String, Object> queryList(Integer size, Integer offset) {
-        return Triple.of(true, null, faqMapper.queryList(size, offset));
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return Triple.of(true, null, faqMapper.queryList(size, offset,tenantId));
     }
 
     @Override
     public Triple<Boolean, String, Object> addFaq(FaqQuery faqQuery) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         Faq build = Faq.builder()
                 .content(faqQuery.getContent())
                 .createTime(System.currentTimeMillis())
                 .title(faqQuery.getTitle())
                 .pic(faqQuery.getPic())
-                .updateTime(System.currentTimeMillis()).build();
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenantId).build();
         insert(build);
         return Triple.of(true, null, null);
     }
@@ -116,6 +126,10 @@ public class FaqServiceImpl implements FaqService {
 
     @Override
     public Triple<Boolean, String, Object> queryCount() {
-        return Triple.of(true, null, faqMapper.queryCount());
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return Triple.of(true, null, faqMapper.queryCount(tenantId));
     }
 }
