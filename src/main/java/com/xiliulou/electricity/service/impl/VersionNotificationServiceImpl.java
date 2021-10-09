@@ -11,9 +11,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -36,45 +34,10 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
      */
     @Override
     public VersionNotification queryByIdFromDB(Integer id) {
-        return this.versionNotificationMapper.queryById(id);
-    }
-
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public VersionNotification queryByIdFromCache(Integer id) {
-        return null;
+        return this.versionNotificationMapper.selectById(id);
     }
 
 
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    @Override
-    public List<VersionNotification> queryAllByLimit(int offset, int limit) {
-        return this.versionNotificationMapper.queryAllByLimit(offset, limit);
-    }
-
-    /**
-     * 新增数据
-     *
-     * @param versionNotification 实例对象
-     * @return 实例对象
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public VersionNotification insert(VersionNotification versionNotification) {
-        this.versionNotificationMapper.insertOne(versionNotification);
-        return versionNotification;
-    }
 
     /**
      * 修改数据
@@ -85,21 +48,10 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(VersionNotification versionNotification) {
-        return this.versionNotificationMapper.update(versionNotification);
+        return this.versionNotificationMapper.updateById(versionNotification);
 
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Integer id) {
-        return this.versionNotificationMapper.deleteById(id) > 0;
-    }
 
     @Override
     public Triple<Boolean, String, Object> updateNotification(VersionNotificationQuery versionNotificationQuery) {
