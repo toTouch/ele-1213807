@@ -30,11 +30,6 @@ public class JsonAdminUserNoticeController extends BaseController {
     }
 
 
-    @PostMapping("/admin/userNotice")
-    public R insert( @Validated(value = CreateGroup.class) @RequestBody  UserNoticeQuery userNoticeQuery) {
-        return returnTripleResult(userNoticeService.insert(userNoticeQuery));
-
-    }
 
     @PutMapping("/admin/userNotice")
     public R update(@Validated(value = UpdateGroup.class) @RequestBody  UserNoticeQuery userNoticeQuery) {

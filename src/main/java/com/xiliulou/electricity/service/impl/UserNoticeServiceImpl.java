@@ -11,6 +11,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.Objects;
 
 /**
  * @author: Miss.Li
@@ -33,29 +34,28 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 		return R.ok(userNotice);
 	}
 
-	@Override
-	public Triple<Boolean, String, Object> insert(UserNoticeQuery userNoticeQuery) {
-		//tenant
-		Integer tenantId = TenantContextHolder.getTenantId();
 
-		UserNotice userNotice = new UserNotice();
-		userNotice.setContent(userNoticeQuery.getContent());
-		userNotice.setCreateTime(System.currentTimeMillis());
-		userNotice.setUpdateTime(System.currentTimeMillis());
-		userNotice.setTenantId(tenantId);
-		userNoticeMapper.insert(userNotice);
-
-		return Triple.of(true, null, null);
-	}
 
 	@Override
 	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery) {
+		if (Objects.isNull(userNoticeQuery.getId())) {
+			//tenant
+			Integer tenantId = TenantContextHolder.getTenantId();
 
-		UserNotice userNotice = new UserNotice();
-		userNotice.setId(userNoticeQuery.getId());
-		userNotice.setContent(userNoticeQuery.getContent());
-		userNotice.setUpdateTime(System.currentTimeMillis());
-		userNoticeMapper.updateById(userNotice);
+			UserNotice userNotice = new UserNotice();
+			userNotice.setContent(userNoticeQuery.getContent());
+			userNotice.setCreateTime(System.currentTimeMillis());
+			userNotice.setUpdateTime(System.currentTimeMillis());
+			userNotice.setTenantId(tenantId);
+			userNoticeMapper.insert(userNotice);
+		} else {
+
+			UserNotice userNotice = new UserNotice();
+			userNotice.setId(userNoticeQuery.getId());
+			userNotice.setContent(userNoticeQuery.getContent());
+			userNotice.setUpdateTime(System.currentTimeMillis());
+			userNoticeMapper.updateById(userNotice);
+		}
 		return Triple.of(true, null, null);
 	}
 }

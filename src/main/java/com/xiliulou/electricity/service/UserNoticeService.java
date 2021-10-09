@@ -13,7 +13,6 @@ public interface UserNoticeService {
 
     Object queryUserNotice();
 
-    Triple<Boolean, String, Object> insert(UserNoticeQuery userNoticeQuery);
 
     Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery);
 
