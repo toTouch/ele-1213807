@@ -2,20 +2,15 @@ package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserNotice;
-import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.mapper.UserNoticeMapper;
 import com.xiliulou.electricity.query.UserNoticeQuery;
 import com.xiliulou.electricity.service.UserNoticeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.Objects;
 
 /**
  * @author: Miss.Li
