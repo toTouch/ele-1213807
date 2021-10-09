@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.MaintenanceRecordMapper">
+
+	<resultMap type="com.xiliulou.electricity.entity.MaintenanceRecord" id="MaintenanceRecordMap">
+		<result property="id" column="id" jdbcType="INTEGER"/>
+		<result property="status" column="status" jdbcType="VARCHAR"/>
+		<result property="remark" column="remark" jdbcType="VARCHAR"/>
+		<result property="type" column="type" jdbcType="VARCHAR"/>
+		<result property="createTime" column="create_time" jdbcType="INTEGER"/>
+		<result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+		<result property="pic" column="pic" jdbcType="VARCHAR"/>
+		<result property="uid" column="uid" jdbcType="INTEGER"/>
+		<result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
+		<result property="phone" column="phone" jdbcType="VARCHAR"/>
+		<result property="operateUid" column="operate_uid" jdbcType="INTEGER"/>
+		<result property="operateRemark" column="operate_remark" jdbcType="VARCHAR"/>
+	</resultMap>
+
+	<!--查询单个-->
+	<select id="queryById" resultMap="MaintenanceRecordMap">
+        select id,
+               status,
+               remark,
+               type,
+               create_time,
+               update_time,
+               pic,
+               uid,
+               phone,
+               operate_uid,
+               electricity_cabinet_id,
+               operate_remark
+        from t_maintenance_record
+        where id = #{id}
+    </select>
+
+	<!--查询指定行数据-->
+	<select id="queryAllByLimit" resultMap="MaintenanceRecordMap">
+        select id,
+               status,
+               remark,
+               type,
+               create_time,
+               update_time,
+               pic,
+               uid,
+               phone,
+               operate_uid,
+               electricity_cabinet_id,
+               operate_remark
+        from t_maintenance_record limit #{offset}, #{limit}
+    </select>
+
+	<!--通过实体作为筛选条件查询-->
+	<select id="queryAll" resultMap="MaintenanceRecordMap">
+		select
+		id, status, remark, type, create_time, update_time, pic, uid, phone, operate_uid
+		electricity_cabinet_id,operate_remark
+		from t_maintenance_record
+		<where>
+			<if test="id != null">
+				and id = #{id}
+			</if>
+			<if test="status != null and status != ''">
+				and status = #{status}
+			</if>
+			<if test="remark != null and remark != ''">
+				and remark = #{remark}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="createTime != null">
+				and create_time = #{createTime}
+			</if>
+			<if test="updateTime != null">
+				and update_time = #{updateTime}
+			</if>
+			<if test="pic != null and pic != ''">
+				and pic = #{pic}
+			</if>
+			<if test="uid != null">
+				and uid = #{uid}
+			</if>
+			<if test="phone != null and phone != ''">
+				and phone = #{phone}
+			</if>
+			<if test="operateUid != null">
+				and operate_uid = #{operateUid}
+			</if>
+			<if test="operateRemark != null and operateRemark != ''">
+				and operate_remark = #{operateRemark}
+			</if>
+		</where>
+	</select>
+
+
+	<!--通过主键修改数据-->
+	<update id="update">
+		update t_maintenance_record
+		<set>
+			<if test="status != null and status != ''">
+				status = #{status},
+			</if>
+			<if test="remark != null and remark != ''">
+				remark = #{remark},
+			</if>
+			<if test="type != null and type != ''">
+				type = #{type},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+			<if test="pic != null and pic != ''">
+				pic = #{pic},
+			</if>
+			<if test="uid != null">
+				uid = #{uid},
+			</if>
+			<if test="phone != null and phone != ''">
+				phone = #{phone},
+			</if>
+			<if test="operateUid != null">
+				operate_uid = #{operateUid},
+			</if>
+			<if test="operateRemark != null and operateRemark != ''">
+				operate_remark = #{operateRemark},
+			</if>
+		</set>
+		where id = #{id}
+	</update>
+
+	<!--通过主键删除-->
+	<delete id="deleteById">
+        delete
+        from t_maintenance_record
+        where id = #{id}
+    </delete>
+
+	<select id="queryList" resultMap="MaintenanceRecordMap">
+		select id,
+		status,
+		remark,
+		type,
+		create_time,
+		update_time,
+		pic,
+		uid,
+		phone,
+		operate_uid,
+		operate_remark,
+		electricity_cabinet_id
+		from t_maintenance_record
+		<where>
+			<if test="status != null and status != ''">
+				and status = #{status}
+			</if>
+			<if test="uid != null ">
+				and uid = #{uid}
+			</if>
+			<if test="phone != null and phone != ''">
+				and phone = #{phone}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="electricityCabinetId != null">
+				and electricity_cabinet_id = #{electricityCabinetId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+			<if test="endTime != null">
+				and create_time &lt;=#{endTime}
+			</if>
+		</where>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_maintenance_record
+		<where>
+			<if test="status != null and status != ''">
+				and status = #{status}
+			</if>
+			<if test="uid != null ">
+				and uid = #{uid}
+			</if>
+			<if test="phone != null and phone != ''">
+				and phone = #{phone}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="electricityCabinetId != null">
+				and electricity_cabinet_id = #{electricityCabinetId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+			<if test="endTime != null">
+				and create_time &lt;=#{endTime}
+			</if>
+		</where>
+	</select>
+</mapper>
