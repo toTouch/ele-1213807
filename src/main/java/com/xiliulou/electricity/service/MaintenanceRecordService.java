@@ -24,13 +24,6 @@ public interface MaintenanceRecordService {
      */
     MaintenanceRecord queryByIdFromDB(Long id);
 
-      /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    MaintenanceRecord queryByIdFromCache(Long id);
 
 
     /**
@@ -49,13 +42,6 @@ public interface MaintenanceRecordService {
      */
     Integer update(MaintenanceRecord maintenanceRecord);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteById(Long id);
 
     Triple<Boolean, String, Object> saveSubmitRecord(UserMaintenanceQuery userMaintenanceQuery);
 

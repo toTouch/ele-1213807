@@ -11,6 +11,7 @@ import com.xiliulou.electricity.query.UserMaintenanceQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceRecordService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.MaintenanceRecordVo;
 import com.xiliulou.security.bean.TokenUser;
@@ -64,20 +65,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
      */
     @Override
     public MaintenanceRecord queryByIdFromDB(Long id) {
-        return this.maintenanceRecordMapper.queryById(id);
+        return this.maintenanceRecordMapper.selectById(id);
     }
-
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    @Override
-    public MaintenanceRecord queryByIdFromCache(Long id) {
-        return null;
-    }
-
 
 
     /**
@@ -102,21 +91,11 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(MaintenanceRecord maintenanceRecord) {
-        return this.maintenanceRecordMapper.update(maintenanceRecord);
+        return this.maintenanceRecordMapper.updateById(maintenanceRecord);
 
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.maintenanceRecordMapper.deleteById(id) > 0;
-    }
+
 
     @Override
     public Triple<Boolean, String, Object> saveSubmitRecord(UserMaintenanceQuery userMaintenanceQuery) {
@@ -125,11 +104,15 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
             return Triple.of(false, "SYSTEM.0006", "用户不存在");
         }
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(userMaintenanceQuery.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             log.error("Maintenance Record error! not found electricityCabinet! uid={},cid={}", userInfo.getUid(), userMaintenanceQuery.getElectricityCabinetId());
             return Triple.of(false, "ELECTRICITY.0005", "未找到换电柜");
         }
+
 
         MaintenanceRecord build = MaintenanceRecord.builder()
                 .createTime(System.currentTimeMillis())
@@ -141,6 +124,7 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
                 .remark(userMaintenanceQuery.getRemark())
                 .type(userMaintenanceQuery.getType())
                 .status(MaintenanceRecord.STATUS_CREATED)
+                .tenantId(tenantId)
                 .build();
         insert(build);
         return Triple.of(true, null, null);

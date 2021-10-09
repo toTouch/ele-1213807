@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.MaintenanceRecordHandleQuery;
 import com.xiliulou.electricity.query.MaintenanceRecordListQuery;
 import com.xiliulou.electricity.service.MaintenanceRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,6 +32,9 @@ public class JsonAdminMaintenanceRecordController extends BaseController {
                      @RequestParam(value = "type", required = false) String type,
                      @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         if (size <= 0 || size >= 50) {
             size = 10;
         }
@@ -47,6 +51,7 @@ public class JsonAdminMaintenanceRecordController extends BaseController {
                 .status(status)
                 .type(type)
                 .electricityCabinetId(electricityCabinetId)
+                .tenantId(tenantId)
                 .build();
         return returnTripleResult(maintenanceRecordService.queryListForAdmin(query));
     }

@@ -21,4 +21,6 @@ public class MaintenanceRecordListQuery {
     private Long uid;
     private String phone;
     private Integer electricityCabinetId;
+
+    private Integer tenantId;
 }

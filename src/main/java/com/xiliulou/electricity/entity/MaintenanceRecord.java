@@ -63,6 +63,8 @@ public class MaintenanceRecord {
 
     private Integer electricityCabinetId;
 
+    private Integer tenantId;
+
 
     public static final String STATUS_CREATED = "CREATED";
     public static final String STATUS_PROCESSING = "PROCESSING";
