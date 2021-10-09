@@ -359,7 +359,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(),null);
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -432,7 +432,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(),null);
 
 				//查满仓空仓数
 				int electricityBatteryTotal = 0;
@@ -468,8 +468,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public Integer queryFullyElectricityBattery(Integer id) {
-		List<String> sns = electricityCabinetMapper.queryFullyElectricityBattery(id);
+	public Integer queryFullyElectricityBattery(Integer id,String batteryType) {
+		List<String> sns = electricityCabinetMapper.queryFullyElectricityBattery(id,batteryType);
 		Integer totalCount = sns.size();
 		return totalCount;
 	}
@@ -1058,7 +1058,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
+		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
 		int noElectricityBattery = 0;
@@ -1133,7 +1133,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId());
+				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(),null);
 				//查满仓空仓数
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
@@ -1327,7 +1327,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
+		Integer fullyElectricityBattery=0;
+		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType());
+		}else {
+			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
+		}
 		if (fullyElectricityBattery <= 0) {
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
@@ -1480,11 +1485,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
-		/*//是否有可用满电电池
-		Integer usableElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());*/
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId());
+		Integer fullyElectricityBattery=0;
+		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType());
+		}else {
+			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
+		}
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1668,7 +1676,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinetVO.getId());
+		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinetVO.getId(),null);
 		int electricityBatteryTotal = 0;
 		int noElectricityBattery = 0;
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());

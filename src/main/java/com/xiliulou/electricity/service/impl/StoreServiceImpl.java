@@ -320,7 +320,7 @@ public class StoreServiceImpl implements StoreService {
 						boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 						if (result) {
 							onlineElectricityCabinetCount = onlineElectricityCabinetCount + 1;
-							Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId());
+							Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId(),null);
 							fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
 						}
 					}
