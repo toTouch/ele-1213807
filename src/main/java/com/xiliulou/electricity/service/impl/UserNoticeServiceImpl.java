@@ -22,13 +22,13 @@ import javax.annotation.Resource;
 public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Resource
-	UserNoticeMapper  userNoticeMapper;
+	UserNoticeMapper userNoticeMapper;
 
 	@Override
 	public Object queryUserNotice() {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		UserNotice userNotice =userNoticeMapper.selectOne(new LambdaQueryWrapper<UserNotice>().eq(UserNotice::getTenantId,tenantId));
+		UserNotice userNotice = userNoticeMapper.selectOne(new LambdaQueryWrapper<UserNotice>().eq(UserNotice::getTenantId, tenantId));
 		return R.ok(userNotice);
 	}
 
@@ -48,7 +48,6 @@ public class UserNoticeServiceImpl implements UserNoticeService {
 
 	@Override
 	public Triple<Boolean, String, Object> update(UserNoticeQuery userNoticeQuery) {
-
 
 		UserNotice userNotice = new UserNotice();
 		userNotice.setId(userNoticeQuery.getId());
