@@ -63,7 +63,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         VersionNotification versionNotification = new VersionNotification();
         versionNotification.setId(1);
         versionNotification.setVersion(versionNotificationQuery.getVersion());
-        versionNotification.setContent(versionNotification.getContent());
+        versionNotification.setContent(versionNotificationQuery.getContent());
         update(versionNotification);
         return Triple.of(true, null, null);
     }
