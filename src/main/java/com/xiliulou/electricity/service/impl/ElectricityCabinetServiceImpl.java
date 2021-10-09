@@ -1333,6 +1333,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}else {
 			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
 		}
+
+
 		if (fullyElectricityBattery <= 0) {
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
