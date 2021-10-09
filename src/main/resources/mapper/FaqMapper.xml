@@ -7,12 +7,12 @@
 		select
 		id, title, content, pic, create_time, update_time
 		from t_faq
-		order by create_time desc
 		<where>
 			<if test="tenantId != null ">
 				and tenant_id = #{tenantId}
 			</if>
 		</where>
+		order by create_time desc
 		limit #{offset},#{size}
 	</select>
 
