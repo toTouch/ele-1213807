@@ -156,7 +156,7 @@ public class JsonAdminFranchiseeController {
 		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
 				.offset(offset)
 				.size(size)
-				.beginTime(startTime)
+				.startTime(startTime)
 				.endTime(endTime)
 				.tenantId(tenantId)
 				.franchiseeId(franchiseeId).build();
@@ -177,7 +177,7 @@ public class JsonAdminFranchiseeController {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
-				.beginTime(startTime)
+				.startTime(startTime)
 				.endTime(endTime)
 				.tenantId(tenantId)
 				.franchiseeId(franchiseeId).build();
