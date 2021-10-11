@@ -14,8 +14,10 @@ import com.xiliulou.electricity.service.FranchiseeAmountService;
 import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import com.xiliulou.electricity.service.SplitAccountFailRecordService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.FranchiseeAmountVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.klock.annotation.Klock;
@@ -166,5 +168,41 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     public void insert(FranchiseeAmount franchiseeAmount) {
         franchiseeAmountMapper.insert(franchiseeAmount);
     }
+
+    @Override
+    public R modifyBalance(Long franchiseeId, BigDecimal modifyBalance) {
+        FranchiseeAmount franchiseeAmount = queryByAgentIdFromCache(franchiseeId);
+        if (Objects.isNull(franchiseeAmount)) {
+            return R.fail("ELECTRICITY.00111", "金额不存在！");
+        }
+
+        if (modifyBalance.compareTo(franchiseeAmount.getBalance())<0) {
+            return R.fail("ELECTRICITY.00112", "修改余额不可以超过总余额！");
+        }
+
+        FranchiseeAmount updateFranchiseeAmount = new FranchiseeAmount();
+        updateFranchiseeAmount.setId(franchiseeAmount.getId());
+        updateFranchiseeAmount.setBalance(franchiseeAmount.getBalance().add(modifyBalance));
+        updateFranchiseeAmount.setUpdateTime(System.currentTimeMillis());
+
+        update(updateFranchiseeAmount);
+
+
+        FranchiseeSplitAccountHistory history =  FranchiseeSplitAccountHistory.builder()
+                .type(FranchiseeSplitAccountHistory.TYPE_MEMBER)
+                .franchiseeId(franchiseeId)
+                .createTime(System.currentTimeMillis())
+                .createTime(System.currentTimeMillis())
+                .tenantId(TenantContextHolder.getTenantId())
+                .currentTotalIncome(franchiseeAmount.getTotalIncome())
+                .orderId("-1")
+                .splitAmount(modifyBalance)
+                .build();
+        franchiseeSplitAccountHistoryService.insert(history);
+
+        return R.ok();
+    }
+
+
 
 }

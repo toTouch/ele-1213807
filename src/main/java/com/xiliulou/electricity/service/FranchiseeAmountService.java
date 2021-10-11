@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -43,4 +44,6 @@ public interface FranchiseeAmountService {
     R queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
 
     void insert(FranchiseeAmount franchiseeAmount);
+
+	R modifyBalance(Long franchiseeId, BigDecimal modifyBalance);
 }

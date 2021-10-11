@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -239,6 +240,18 @@ public class JsonAdminFranchiseeController {
 				.franchiseeId(franchiseeId).build();
 
 		return franchiseeSplitAccountHistoryService.queryCount(franchiseeAccountQuery);
+	}
+
+
+	//修改余额
+	@PostMapping("/admin/franchisee/modifyAccount")
+	public R modifyShopAccountAmount(@RequestParam("franchiseeId") Long franchiseeId,
+			@RequestParam("balance") BigDecimal modifyBalance) {
+		if (franchiseeId <= 0 || modifyBalance.compareTo(BigDecimal.valueOf(0.0)) >= 0) {
+			return R.fail("LOCKER.10005", "不合法的参数");
+		}
+
+		return franchiseeAmountService.modifyBalance(franchiseeId, modifyBalance);
 	}
 
 }
