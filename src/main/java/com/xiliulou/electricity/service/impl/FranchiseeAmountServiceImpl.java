@@ -189,7 +189,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
 
 
         FranchiseeSplitAccountHistory history =  FranchiseeSplitAccountHistory.builder()
-                .type(FranchiseeSplitAccountHistory.TYPE_MEMBER)
+                .type(FranchiseeSplitAccountHistory.TYPE_OPERATOR)
                 .franchiseeId(franchiseeId)
                 .createTime(System.currentTimeMillis())
                 .createTime(System.currentTimeMillis())

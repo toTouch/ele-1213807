@@ -61,4 +61,6 @@ public class FranchiseeSplitAccountHistory {
 
 
     public static final Integer TYPE_MEMBER = 1;
+
+    public static final Integer TYPE_OPERATOR = 2;
 }
