@@ -14,7 +14,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class StoreAccountQuery {
-	private Long beginTime;
+	private Long startTime;
 	private Long endTime;
 
 	private Long size;

@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
 import com.xiliulou.electricity.mapper.StoreSplitAccountHistoryMapper;
+import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.service.StoreSplitAccountHistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -37,12 +39,15 @@ public class StoreSplitAccountHistoryServiceImpl implements StoreSplitAccountHis
     }
 
     @Override
-    public Double querySumPayAmountByCondition(Long storeId, long startTime, long endTime) {
-        return this.storeSplitAccountHistoryMapper.querySumPayAmountByCondition(storeId, startTime, endTime);
+    public R queryList(StoreAccountQuery storeAccountQuery) {
+        List<StoreSplitAccountHistory> storeSplitAccountHistoryList=storeSplitAccountHistoryMapper.queryList(storeAccountQuery);
+        return R.ok(storeSplitAccountHistoryList);
     }
 
     @Override
-    public List<StoreSplitAccountHistory> queryListByCondition(Integer size, Integer offset, Long startTime, Long endTime, Long storeId, Integer tenantId) {
-        return this.storeSplitAccountHistoryMapper.queryListByCondition(size, offset, startTime, endTime,storeId,tenantId);
+    public R queryCount(StoreAccountQuery storeAccountQuery) {
+        return R.ok(storeSplitAccountHistoryMapper.queryCount(storeAccountQuery));
     }
+
+
 }

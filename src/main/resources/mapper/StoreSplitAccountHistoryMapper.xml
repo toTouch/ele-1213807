@@ -5,27 +5,35 @@
 
 
 
-    <select id="queryListByCondition" resultType="com.xiliulou.electricity.entity.StoreSplitAccountHistory">
-        select
-        h.id, h.shop_id, h.create_time, h.split_amount, h.current_total_income, h.oid, h.tenant_id,h.`type`,o.order_id
-        from t_shop_split_account_history h left join t_locker_order o
-        on h.oid = o.id
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.StoreSplitAccountHistory">
+        select * from t_store_split_account_history
         <where>
-            <if test="shopId != null">
-                and h.shop_id = #{shopId}
-            </if>
-            <if test="tenantId != null">
-                and h.tenant_id = #{tenantId}
+            <if test="storeId != null">
+                and store_id = #{storeId}
             </if>
             <if test="startTime != null">
-                and h.create_time &gt;= #{startTime}
+                and create_time &gt;= #{startTime}
             </if>
-
             <if test="endTime != null">
-                and h.create_time &lt;= #{endTime}
+                and create_time &lt;= #{endTime}
             </if>
         </where>
         order by create_time desc
         limit #{offset},#{size}
+    </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1) from t_store_split_account_history
+        <where>
+            <if test="storeId != null">
+                and store_id = #{storeId}
+            </if>
+            <if test="startTime != null">
+                and create_time &gt;= #{startTime}
+            </if>
+            <if test="endTime != null">
+                and create_time &lt;= #{endTime}
+            </if>
+        </where>
     </select>
 </mapper>

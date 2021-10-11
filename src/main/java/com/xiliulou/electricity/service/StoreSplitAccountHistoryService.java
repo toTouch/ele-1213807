@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
+import com.xiliulou.electricity.query.StoreAccountQuery;
 
 import java.util.List;
 
@@ -20,7 +22,7 @@ public interface StoreSplitAccountHistoryService {
     StoreSplitAccountHistory insert(StoreSplitAccountHistory storeSplitAccountHistory);
 
 
-    Double querySumPayAmountByCondition(Long storeId, long startTime, long endTime);
+    R queryList(StoreAccountQuery storeAccountQuery);
 
-    List<StoreSplitAccountHistory> queryListByCondition(Integer size, Integer offset, Long startTime, Long endTime, Long storeId, Integer tenantId);
+    R queryCount(StoreAccountQuery storeAccountQuery);
 }
