@@ -88,7 +88,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	@DS("slave_1")
 	public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
 
-		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
+		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
 		if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
 			return R.ok(electricityCabinetBoxVOList);
 		}
@@ -127,10 +127,11 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	}
 
 	@Override
-	public List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo) {
+	public List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType) {
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinet.getId())
 				.eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-				.ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
+				.ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).ne(Objects.nonNull(batteryType), ElectricityCabinetBox::getBatteryType, batteryType)
+				.eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
 
 		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = new ArrayList<>();
 		if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
@@ -143,21 +144,18 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 			if (Objects.nonNull(electricityBattery)) {
 				if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
 
-					/*//该电池是否绑定用户
-					Integer count = franchiseeUserInfoService.queryCountByBatterySn(electricityBattery.getSn());
-					if (count<1) {*/
-						ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
-						BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
-						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
-						electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
-					/*}*/
+					//该电池是否绑定用户
+					ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
+					BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
+					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+					electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+
 				}
 			}
 		}
 
 		return electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
 	}
-
 
 	@Override
 	public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId, String cellNo) {

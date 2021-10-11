@@ -872,16 +872,27 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + id, BigEleBatteryVo.class);
 
 		if (Objects.nonNull(bigEleBatteryVo)) {
-			String newCellNo = bigEleBatteryVo.getCellNo();
-			Double power = bigEleBatteryVo.getPower();
-			if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
-					&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
-				box = Integer.valueOf(newCellNo);
+			if(Objects.isNull(batteryType)) {
+				String newCellNo = bigEleBatteryVo.getCellNo();
+				Double power = bigEleBatteryVo.getPower();
+				if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
+						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
+					box = Integer.valueOf(newCellNo);
+				}
+			}else {
+				String newCellNo = bigEleBatteryVo.getCellNo();
+				Double power = bigEleBatteryVo.getPower();
+				String newBatteryType=bigEleBatteryVo.getBatteryType();
+				if (Objects.nonNull(newCellNo) && Objects.nonNull(power)&&Objects.equals(newBatteryType,batteryType)
+						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
+					box = Integer.valueOf(newCellNo);
+				}
 			}
 		}
 
+
 		if (Objects.isNull(box)) {
-			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo);
+			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo,batteryType);
 			if (!DataUtil.collectionIsUsable(usableBoxes)) {
 				return null;
 			}

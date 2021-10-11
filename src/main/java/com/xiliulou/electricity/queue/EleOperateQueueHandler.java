@@ -239,8 +239,15 @@ public class EleOperateQueueHandler {
 					electricityBatteryService.updateByOrder(newElectricityBattery);
 				}
 
-				//分配新仓门
-				cellNo = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null);
+
+
+				//分配电池 --只分配满电电池
+				if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+					 cellNo=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),franchiseeUserInfo.getBatteryType());
+				}else {
+					cellNo=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null);
+				}
+
 				if (Objects.isNull(cellNo)) {
 					log.error("check Old Battery not find fully battery!orderId:{}", electricityCabinetOrder.getOrderId());
 					return;
