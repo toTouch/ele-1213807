@@ -95,6 +95,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	@Autowired
 	RentBatteryOrderService rentBatteryOrderService;
 
+
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 
 	/**
@@ -1640,10 +1641,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("电池与换电柜租户不匹配");
 		}
 
-		//电池加盟商是否匹配
+		/*//电池加盟商是否匹配
 		if(isParseBattery){
-
-		}
+           //查电池所属加盟商
+			// 查换电柜所属加盟商
+		}*/
 
 		return R.ok();
 	}

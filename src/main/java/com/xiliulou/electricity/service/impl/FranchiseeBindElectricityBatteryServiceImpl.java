@@ -15,7 +15,7 @@ import java.util.List;
  * @author makejava
  * @since 2020-11-25 11:00:14
  */
-@Service("electricityBatteryBindService")
+@Service
 @Slf4j
 public class FranchiseeBindElectricityBatteryServiceImpl implements FranchiseeBindElectricityBatteryService {
     @Resource
