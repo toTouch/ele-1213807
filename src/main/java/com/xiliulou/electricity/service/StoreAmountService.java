@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.query.StoreAccountQuery;
 
+import java.math.BigDecimal;
+
 /**
  * (StoreAmount)表服务接口
  *
@@ -45,4 +47,6 @@ public interface StoreAmountService {
 	R queryList(StoreAccountQuery storeAccountQuery);
 
 	R queryCount(StoreAccountQuery storeAccountQuery);
+
+	R modifyBalance(Long storeId, BigDecimal modifyBalance);
 }

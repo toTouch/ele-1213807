@@ -4,18 +4,23 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreAmountMapper;
 import com.xiliulou.electricity.query.StoreAccountQuery;
+import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import com.xiliulou.electricity.service.SplitAccountFailRecordService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreSplitAccountHistoryService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.FranchiseeAmountVO;
 import com.xiliulou.electricity.vo.StoreAmountVO;
+import com.xiliulou.pay.weixinv3.dto.Amount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,6 +57,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
 
     @Autowired
     UserService userService;
+
 
 
     /**
@@ -173,6 +179,40 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     @Override
     public R queryCount(StoreAccountQuery storeAccountQuery) {
         return R.ok(storeAmountMapper.queryCount(storeAccountQuery));
+    }
+
+    @Override
+    public R modifyBalance(Long storeId, BigDecimal modifyBalance) {
+        StoreAmount storeAmount = queryByStoreIdFromCache(storeId);
+        if (Objects.isNull(storeAmount)) {
+            return R.fail("ELECTRICITY.00111", "金额不存在！");
+        }
+
+        if (modifyBalance.compareTo(storeAmount.getBalance())<0) {
+            return R.fail("ELECTRICITY.00112", "修改余额不可以超过总余额！");
+        }
+
+        StoreAmount updateStoreAmount = new StoreAmount();
+        updateStoreAmount.setId(storeAmount.getId());
+        updateStoreAmount.setBalance(storeAmount.getBalance().add(modifyBalance));
+        updateStoreAmount.setUpdateTime(System.currentTimeMillis());
+
+        update(updateStoreAmount);
+
+
+        StoreSplitAccountHistory history =  StoreSplitAccountHistory.builder()
+                .type(StoreSplitAccountHistory.TYPE_OPERATOR)
+                .storeId(storeId)
+                .createTime(System.currentTimeMillis())
+                .createTime(System.currentTimeMillis())
+                .tenantId(TenantContextHolder.getTenantId())
+                .currentTotalIncome(storeAmount.getTotalIncome())
+                .orderId("-1")
+                .splitAmount(modifyBalance)
+                .build();
+        storeSplitAccountHistoryService.insert(history);
+
+        return R.ok();
     }
 
 }

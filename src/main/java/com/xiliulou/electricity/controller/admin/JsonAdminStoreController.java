@@ -22,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -339,6 +340,17 @@ public class JsonAdminStoreController {
 				.storeId(storeId).build();
 
 		return storeSplitAccountHistoryService.queryCount(storeAccountQuery);
+	}
+
+	//修改余额
+	@PostMapping("/admin/store/modifyAccount")
+	public R modifyShopAccountAmount(@RequestParam("storeId") Long storeId,
+			@RequestParam("balance") BigDecimal modifyBalance) {
+		if (storeId <= 0 || modifyBalance.compareTo(BigDecimal.valueOf(0.0)) >= 0) {
+			return R.fail("LOCKER.10005", "不合法的参数");
+		}
+
+		return storeAmountService.modifyBalance(storeId, modifyBalance);
 	}
 
 

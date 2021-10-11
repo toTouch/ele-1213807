@@ -17,7 +17,6 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.FranchiseeAmountVO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.klock.annotation.Klock;
@@ -64,7 +63,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
      * @return 实例对象
      */
     @Override
-    public FranchiseeAmount queryByAgentIdFromCache(Long franchiseeId) {
+    public FranchiseeAmount queryByFranchiseeIdFromCache(Long franchiseeId) {
         FranchiseeAmount cacheFranchiseeAmount = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, FranchiseeAmount.class);
         if (Objects.nonNull(cacheFranchiseeAmount)) {
             return cacheFranchiseeAmount;
@@ -105,7 +104,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Klock(name = "handleAgentSplitAccount", keys = {"#agent.id"}, waitTime = 5, customLockTimeoutStrategy = "createAgentSplitAccountLockFail")
     public void handleSplitAccount(Franchisee franchisee, ElectricityTradeOrder payRecord,int percent) {
-        FranchiseeAmount franchiseeAmount = queryByAgentIdFromCache(franchisee.getId());
+        FranchiseeAmount franchiseeAmount = queryByFranchiseeIdFromCache(franchisee.getId());
         if (Objects.isNull(franchiseeAmount)) {
             log.error("ELE ORDER ERROR! not found franchiseeAmount! franchiseeId={}", franchisee.getId());
             return;
@@ -171,7 +170,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
 
     @Override
     public R modifyBalance(Long franchiseeId, BigDecimal modifyBalance) {
-        FranchiseeAmount franchiseeAmount = queryByAgentIdFromCache(franchiseeId);
+        FranchiseeAmount franchiseeAmount = queryByFranchiseeIdFromCache(franchiseeId);
         if (Objects.isNull(franchiseeAmount)) {
             return R.fail("ELECTRICITY.00111", "金额不存在！");
         }

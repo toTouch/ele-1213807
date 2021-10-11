@@ -24,7 +24,7 @@ public interface FranchiseeAmountService {
      * @param id 主键
      * @return 实例对象
      */
-    FranchiseeAmount queryByAgentIdFromCache(Long id);
+    FranchiseeAmount queryByFranchiseeIdFromCache(Long id);
 
 
 
