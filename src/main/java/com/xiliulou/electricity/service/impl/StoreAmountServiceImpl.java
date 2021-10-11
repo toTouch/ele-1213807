@@ -1,16 +1,23 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreAmountMapper;
+import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.service.SplitAccountFailRecordService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreSplitAccountHistoryService;
+import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.vo.FranchiseeAmountVO;
+import com.xiliulou.electricity.vo.StoreAmountVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.klock.annotation.Klock;
 import org.springframework.stereotype.Service;
@@ -19,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -40,6 +49,9 @@ public class StoreAmountServiceImpl implements StoreAmountService {
 
     @Autowired
     SplitAccountFailRecordService splitAccountFailRecordService;
+
+    @Autowired
+    UserService userService;
 
 
     /**
@@ -98,21 +110,6 @@ public class StoreAmountServiceImpl implements StoreAmountService {
 
     }
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteByStoreId(Long id) {
-        int i = this.storeAmountMapper.deleteByStoreId(id);
-        if (i > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + id);
-        }
-        return i > 0;
-    }
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
@@ -155,5 +152,27 @@ public class StoreAmountServiceImpl implements StoreAmountService {
         storeSplitAccountHistoryService.insert(history);
     }
 
+    @Override
+    public R queryList(StoreAccountQuery storeAccountQuery) {
+        List<StoreAmount> storeAmountList=storeAmountMapper.queryList(storeAccountQuery);
+        ArrayList<StoreAmountVO> list = new ArrayList<>();
+        storeAmountList.forEach(item -> {
+            StoreAmountVO storeAmountVO = new StoreAmountVO();
+            BeanUtils.copyProperties(item, storeAmountVO);
+            if (Objects.nonNull(item.getUid())) {
+                User user = userService.queryByUidFromCache(item.getUid());
+                if (Objects.nonNull(user)) {
+                    storeAmountVO.setUserName(user.getName());
+                }
+            }
+            list.add(storeAmountVO);
+        });
+        return R.ok(list);
+    }
+
+    @Override
+    public R queryCount(StoreAccountQuery storeAccountQuery) {
+        return R.ok(storeAmountMapper.queryCount(storeAccountQuery));
+    }
 
 }

@@ -3,59 +3,60 @@
 <mapper namespace="com.xiliulou.electricity.mapper.StoreAmountMapper">
 
 
-    <select id="queryList" resultType="com.xiliulou.electricity.entity.StoreAmount">
-        select * from t_store_amount
-        <where>
-            1 = 1
-            <if test="storeIds != null and storeIds.size()>0  ">
-                and shop_id in
-                <foreach collection="storeIds" item="id" index="index" open="(" close=")" separator=",">
-                    #{id}
-                </foreach>
-            </if>
-            <if test="startTime != null">
-                and create_time &gt;= #{startTime}
-            </if>
-            <if test="endTime != null">
-                and create_time &lt;= #{endTime}
-            </if>
-            <if test="tenantId != null">
-                and tenant_id = #{tenantId}
-            </if>
-            and del_flag = 0
-            order by create_time desc
-            limit #{offset}, #{size}
-        </where>
-    </select>
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.StoreAmount">
+		select * from t_store_amount
+		where del_flag = 0
+		<if test="storeId != null">
+			and store_id =#{storeId}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= #{endTime}
+		</if>
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
 
 
+	<select id="queryCount" resultType="java.lang.Integer">
+		select COUNT(1) from t_store_amount
+		where del_flag = 0
+		<if test="storeId != null">
+			and store_id =#{storeId}
+		</if>
+		<if test="startTime != null">
+			and create_time &gt;= #{startTime}
+		</if>
+		<if test="endTime != null">
+			and create_time &lt;= #{endTime}
+		</if>
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+	</select>
 
-    <!--通过主键删除-->
-    <delete id="deleteByStoreId">
-        update t_store_amount
-        set del_flag    = 1,
-            update_time = (unix_timestamp(now()) * 1000)
-        where shop_id = #{id}
-    </delete>
 
-
-    <!--通过主键修改数据-->
-    <update id="updateIdEmpontent">
-        update t_store_amount
-        <set>
-            <if test="fresh.balance != null">
-                balance = #{fresh.balance},
-            </if>
-            <if test="fresh.updateTime != null">
-                update_time = #{fresh.updateTime},
-            </if>
-        </set>
-        where id = #{old.id}
-        <if test="old.balance != null">
-            and balance= #{old.balance}
-        </if>
-    </update>
-
+	<!--通过主键修改数据-->
+	<update id="updateIdEmpontent">
+		update t_store_amount
+		<set>
+			<if test="fresh.balance != null">
+				balance = #{fresh.balance},
+			</if>
+			<if test="fresh.updateTime != null">
+				update_time = #{fresh.updateTime},
+			</if>
+		</set>
+		where id = #{old.id}
+		<if test="old.balance != null">
+			and balance= #{old.balance}
+		</if>
+	</update>
 
 
 </mapper>

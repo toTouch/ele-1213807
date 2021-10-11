@@ -4,9 +4,12 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.query.FranchiseeAccountQuery;
+import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -39,6 +42,9 @@ public class JsonAdminStoreController {
 
 	@Autowired
 	FranchiseeService franchiseeService;
+
+	@Autowired
+	StoreAmountService storeAmountService;
 
 	//新增门店
 	@PostMapping(value = "/admin/store")
@@ -236,5 +242,58 @@ public class JsonAdminStoreController {
 	public R updateStatus(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
 		return storeService.updateStatus(id, usableStatus);
 	}
+
+
+	/**
+	 * 门店用户金额列表
+	 */
+	@GetMapping("/admin/store/getAccountList")
+	public R getSplitList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "storeId", required = false) Long storeId,
+			@RequestParam(value = "startTime", required = false) Long startTime,
+			@RequestParam(value = "endTime", required = false) Long endTime){
+		if (size < 0 || size > 50) {
+			size = 50L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
+				.offset(offset)
+				.size(size)
+				.beginTime(startTime)
+				.endTime(endTime)
+				.tenantId(tenantId)
+				.storeId(storeId).build();
+
+		return storeAmountService.queryList(storeAccountQuery);
+	}
+
+
+	/**
+	 * 门店用户金额列表数量
+	 */
+	@GetMapping("/admin/store/getAccountCount")
+	public R getSplitCount(@RequestParam(value = "storeId", required = false) Long storeId,
+			@RequestParam(value = "startTime", required = false) Long startTime,
+			@RequestParam(value = "endTime", required = false) Long endTime){
+
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
+				.beginTime(startTime)
+				.endTime(endTime)
+				.tenantId(tenantId)
+				.storeId(storeId).build();
+
+		return storeAmountService.queryCount(storeAccountQuery);
+	}
+
 
 }

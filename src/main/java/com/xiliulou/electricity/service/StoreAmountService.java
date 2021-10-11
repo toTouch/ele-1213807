@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
-
+import com.xiliulou.electricity.query.StoreAccountQuery;
 
 /**
  * (StoreAmount)表服务接口
@@ -38,14 +39,10 @@ public interface StoreAmountService {
      */
     Integer update(StoreAmount storeAmount);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteByStoreId(Long id);
 
 	void handleSplitAccount(Store store, ElectricityTradeOrder payAmount, int percent);
 
+	R queryList(StoreAccountQuery storeAccountQuery);
+
+	R queryCount(StoreAccountQuery storeAccountQuery);
 }
