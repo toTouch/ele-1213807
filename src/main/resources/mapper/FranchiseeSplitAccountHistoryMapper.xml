@@ -21,7 +21,7 @@
     </select>
 
     <select id="queryCount" resultType="java.lang.Integer">
-        select count(1) from t_store_split_account_history
+        select count(1) from t_franchisee_split_account_history
         <where>
             <if test="franchiseeId != null">
                 and franchisee_id = #{franchiseeId}
