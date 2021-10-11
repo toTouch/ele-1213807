@@ -478,6 +478,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 		}
 
+		map.put("batteryType", franchiseeUserInfo.getBatteryType().toString());
+
 		if ((Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
 				|| Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
 				&& Objects.nonNull(franchiseeUserInfo.getBatteryDeposit()) && Objects.nonNull(franchiseeUserInfo.getOrderId())) {
