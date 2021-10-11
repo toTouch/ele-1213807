@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FranchiseeSplitQuery {
+public class FranchiseeSetSplitQuery {
 	private Long id;
 	private Integer percent;
 	//1--加盟商  2--门店

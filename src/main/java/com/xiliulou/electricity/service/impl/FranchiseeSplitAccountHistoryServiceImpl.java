@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.mapper.FranchiseeSplitAccountHistoryMapper;
+import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -33,6 +35,16 @@ public class FranchiseeSplitAccountHistoryServiceImpl implements FranchiseeSplit
     public FranchiseeSplitAccountHistory insert(FranchiseeSplitAccountHistory franchiseeSplitAccountHistory) {
         this.franchiseeSplitAccountHistoryMapper.insert(franchiseeSplitAccountHistory);
         return franchiseeSplitAccountHistory;
+    }
+
+    @Override
+    public R queryList(FranchiseeAccountQuery franchiseeAccountQuery) {
+        return R.ok(franchiseeSplitAccountHistoryMapper.queryList(franchiseeAccountQuery));
+    }
+
+    @Override
+    public R queryCount(FranchiseeAccountQuery franchiseeAccountQuery) {
+        return R.ok(franchiseeSplitAccountHistoryMapper.queryCount(franchiseeAccountQuery));
     }
 
 }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
+import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 
 /**
  * (FranchiseeSplitAccountHistory)表服务接口
@@ -18,4 +20,7 @@ public interface FranchiseeSplitAccountHistoryService {
      */
     FranchiseeSplitAccountHistory insert(FranchiseeSplitAccountHistory franchiseeSplitAccountHistory);
 
+    R queryList(FranchiseeAccountQuery franchiseeAccountQuery);
+
+    R queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
 }

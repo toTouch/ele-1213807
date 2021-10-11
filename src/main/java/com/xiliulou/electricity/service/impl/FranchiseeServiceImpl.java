@@ -7,7 +7,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.City;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -18,7 +17,7 @@ import com.xiliulou.electricity.mapper.FranchiseeMapper;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.query.FranchiseeSplitQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.CityService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -320,8 +319,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R setSplit(List<FranchiseeSplitQuery> franchiseeSplitQueryList) {
-		if(ObjectUtils.isEmpty(franchiseeSplitQueryList)){
+	public R setSplit(List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList) {
+		if(ObjectUtils.isEmpty(franchiseeSetSplitQueryList)){
 			return R.fail("SYSTEM.0002", "参数不合法");
 		}
 
@@ -330,25 +329,25 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		Long franchiseeId=null;
 
 
-		for (FranchiseeSplitQuery franchiseeSplitQuery:franchiseeSplitQueryList) {
+		for (FranchiseeSetSplitQuery franchiseeSetSplitQuery : franchiseeSetSplitQueryList) {
 
 			//加盟商分账比列
-			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_FRANCHISEE)){
-				totalPercent=franchiseeSplitQuery.getPercent();
-				franchiseeId=franchiseeSplitQuery.getId();
+			if(Objects.equals(franchiseeSetSplitQuery.getType(), FranchiseeSetSplitQuery.TYPE_FRANCHISEE)){
+				totalPercent= franchiseeSetSplitQuery.getPercent();
+				franchiseeId= franchiseeSetSplitQuery.getId();
 				Franchisee franchisee=new Franchisee();
-				franchisee.setId(franchiseeSplitQuery.getId());
-				franchisee.setPercent(franchiseeSplitQuery.getPercent());
+				franchisee.setId(franchiseeSetSplitQuery.getId());
+				franchisee.setPercent(franchiseeSetSplitQuery.getPercent());
 				franchisee.setUpdateTime(System.currentTimeMillis());
 				franchiseeMapper.updateById(franchisee);
 
 			}
 
 			//门店分账比列
-			if(Objects.equals(franchiseeSplitQuery.getType(),FranchiseeSplitQuery.TYPE_STORE)){
+			if(Objects.equals(franchiseeSetSplitQuery.getType(), FranchiseeSetSplitQuery.TYPE_STORE)){
 				Store store=new Store();
-				store.setId(franchiseeSplitQuery.getId());
-				store.setPercent(franchiseeSplitQuery.getPercent());
+				store.setId(franchiseeSetSplitQuery.getId());
+				store.setPercent(franchiseeSetSplitQuery.getPercent());
 				store.setUpdateTime(System.currentTimeMillis());
 				storeService.updateById(store);
 			}

@@ -2,6 +2,10 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.query.FranchiseeAccountQuery;
+
+import java.util.List;
+
 /**
  * (FranchiseeAmount)表数据库访问层
  *
@@ -10,5 +14,8 @@ import com.xiliulou.electricity.entity.FranchiseeAmount;
  */
 public interface FranchiseeAmountMapper extends BaseMapper<FranchiseeAmount> {
 
-	int deleteByFranchiseeId(Long id);
+
+	List<FranchiseeAmount> queryList(FranchiseeAccountQuery franchiseeAccountQuery);
+
+	Integer queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
 }

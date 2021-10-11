@@ -4,10 +4,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
-import com.xiliulou.electricity.query.FranchiseeSplitQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 
 import java.util.List;
 
@@ -41,5 +40,5 @@ public interface FranchiseeService {
 
 	Integer queryByFanchisee(Long uid);
 
-	R setSplit(List<FranchiseeSplitQuery> franchiseeSplitQueryList);
+	R setSplit(List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList);
 }
