@@ -23,4 +23,6 @@ public class MaintenanceRecordListQuery {
     private Integer electricityCabinetId;
 
     private Integer tenantId;
+
+    private List<Integer> eleIdList;
 }

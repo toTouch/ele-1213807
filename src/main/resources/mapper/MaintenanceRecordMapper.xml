@@ -43,6 +43,12 @@
 			<if test="endTime != null">
 				and create_time &lt;=#{endTime}
 			</if>
+			<if test="eleIdList!=null and eleIdList!=''">
+				and electricity_cabinet_id in
+				<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
 		</where>
 		order by create_time desc
 		limit #{offset}, #{size}
@@ -76,6 +82,12 @@
 			</if>
 			<if test="endTime != null">
 				and create_time &lt;=#{endTime}
+			</if>
+			<if test="eleIdList!=null and eleIdList!=''">
+				and electricity_cabinet_id in
+				<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
 			</if>
 		</where>
 	</select>
