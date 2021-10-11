@@ -10,7 +10,9 @@ import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -19,6 +21,7 @@ import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -26,12 +29,14 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.pay.weixinv3.dto.Amount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -59,6 +64,8 @@ public class StoreServiceImpl implements StoreService {
 	UserService userService;
 	@Autowired
 	FranchiseeService franchiseeService;
+	@Autowired
+	StoreAmountService storeAmountService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -122,6 +129,21 @@ public class StoreServiceImpl implements StoreService {
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//新增缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
+
+			//新增门店账户
+			StoreAmount storeAmount = StoreAmount.builder()
+					.storeId(store.getId())
+					.delFlag(StoreAmount.DEL_NORMAL)
+					.createTime(System.currentTimeMillis())
+					.updateTime(System.currentTimeMillis())
+					.uid(uid)
+					.balance(BigDecimal.valueOf(0.0))
+					.totalIncome(BigDecimal.valueOf(0.0))
+					.withdraw(BigDecimal.valueOf(0.0))
+					.tenantId(tenantId)
+					.build();
+			storeAmountService.insert(storeAmount);
+
 			return null;
 		});
 

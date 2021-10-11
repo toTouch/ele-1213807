@@ -162,4 +162,9 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         return R.ok(franchiseeAmountMapper.queryCount(franchiseeAccountQuery));
     }
 
+    @Override
+    public void insert(FranchiseeAmount franchiseeAmount) {
+        franchiseeAmountMapper.insert(franchiseeAmount);
+    }
+
 }

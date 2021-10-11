@@ -8,6 +8,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.City;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -19,6 +20,7 @@ import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.service.CityService;
+import com.xiliulou.electricity.service.FranchiseeAmountService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
@@ -35,6 +37,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -73,6 +76,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
 	@Autowired
 	StoreService storeService;
+
+	@Autowired
+	FranchiseeAmountService franchiseeAmountService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -122,6 +128,21 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		franchisee.setUid(uid);
 		franchisee.setCid(franchiseeAddAndUpdate.getCityId());
 		int insert = franchiseeMapper.insert(franchisee);
+
+
+		//新增加盟商账户
+		FranchiseeAmount franchiseeAmount = FranchiseeAmount.builder()
+				.franchiseeId(franchisee.getId())
+				.delFlag(FranchiseeAmount.DEL_NORMAL)
+				.createTime(System.currentTimeMillis())
+				.updateTime(System.currentTimeMillis())
+				.uid(uid)
+				.balance(BigDecimal.valueOf(0.0))
+				.totalIncome(BigDecimal.valueOf(0.0))
+				.withdraw(BigDecimal.valueOf(0.0))
+				.tenantId(tenantId)
+				.build();
+		franchiseeAmountService.insert(franchiseeAmount);
 
 
 		if (insert > 0) {

@@ -41,4 +41,6 @@ public interface FranchiseeAmountService {
     R queryList(FranchiseeAccountQuery franchiseeAccountQuery);
 
     R queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
+
+    void insert(FranchiseeAmount franchiseeAmount);
 }
