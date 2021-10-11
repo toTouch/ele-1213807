@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.service.FranchiseeAmountService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
@@ -43,6 +44,9 @@ public class JsonAdminFranchiseeController {
 
 	@Autowired
 	FranchiseeAmountService franchiseeAmountService;
+
+	@Autowired
+	FranchiseeSplitAccountHistoryService franchiseeSplitAccountHistoryService;
 
 	//新增加盟商
 	@PostMapping(value = "/admin/franchisee")
@@ -138,7 +142,7 @@ public class JsonAdminFranchiseeController {
 	 * 加盟商用户金额列表
 	 */
 	@GetMapping("/admin/franchisee/getAccountList")
-	public R getSplitList(@RequestParam("size") Long size,
+	public R getAccountList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
 			@RequestParam(value = "startTime", required = false) Long startTime,
@@ -169,7 +173,7 @@ public class JsonAdminFranchiseeController {
 	 * 加盟商用户金额列表数量
 	 */
 	@GetMapping("/admin/franchisee/getAccountCount")
-	public R getSplitCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+	public R getAccountCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
 			@RequestParam(value = "startTime", required = false) Long startTime,
 			@RequestParam(value = "endTime", required = false) Long endTime){
 
@@ -183,6 +187,58 @@ public class JsonAdminFranchiseeController {
 				.franchiseeId(franchiseeId).build();
 
 		return franchiseeAmountService.queryCount(franchiseeAccountQuery);
+	}
+
+
+	/**
+	 * 加盟商分账金额列表
+	 */
+	@GetMapping("/admin/franchisee/getAccountHistoryList")
+	public R getAccountHistoryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+			@RequestParam(value = "startTime", required = false) Long startTime,
+			@RequestParam(value = "endTime", required = false) Long endTime){
+		if (size < 0 || size > 50) {
+			size = 50L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
+				.offset(offset)
+				.size(size)
+				.startTime(startTime)
+				.endTime(endTime)
+				.tenantId(tenantId)
+				.franchiseeId(franchiseeId).build();
+
+		return franchiseeSplitAccountHistoryService.queryList(franchiseeAccountQuery);
+	}
+
+
+	/**
+	 * 加盟商用户金额列表数量
+	 */
+	@GetMapping("/admin/franchisee/getAccountHistoryCount")
+	public R getAccountHistoryCount(@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+			@RequestParam(value = "startTime", required = false) Long startTime,
+			@RequestParam(value = "endTime", required = false) Long endTime){
+
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
+				.startTime(startTime)
+				.endTime(endTime)
+				.tenantId(tenantId)
+				.franchiseeId(franchiseeId).build();
+
+		return franchiseeSplitAccountHistoryService.queryCount(franchiseeAccountQuery);
 	}
 
 }

@@ -4,6 +4,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 
+import java.util.List;
+
 /**
  * (FranchiseeSplitAccountHistory)表数据库访问层
  *
@@ -12,7 +14,7 @@ import com.xiliulou.electricity.query.FranchiseeAccountQuery;
  */
 public interface FranchiseeSplitAccountHistoryMapper extends BaseMapper<FranchiseeSplitAccountHistory> {
 
-	Object queryList(FranchiseeAccountQuery franchiseeAccountQuery);
+	List<FranchiseeSplitAccountHistory> queryList(FranchiseeAccountQuery franchiseeAccountQuery);
 
-	Object queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
+	Integer queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
 }
