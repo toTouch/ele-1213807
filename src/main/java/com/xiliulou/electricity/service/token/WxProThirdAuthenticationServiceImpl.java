@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.EleUserAuthOld;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.OldCard;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoOld;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.service.EleUserAuthOldService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.OldCardService;
 import com.xiliulou.electricity.service.UserInfoOldService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
@@ -96,6 +98,9 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	@Autowired
 	EleUserAuthService eleUserAuthService;
+
+	@Autowired
+	OldCardService oldCardService;
 
 	@Override
 	public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
@@ -444,14 +449,17 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 		//套餐查询复制
 		if (Objects.nonNull(userInfoOld.getCardId())) {
-			franchiseeUserInfo.setFranchiseeId(userInfoOld.getFranchiseeId());
-			franchiseeUserInfo.setCardId(userInfoOld.getCardId());
-			franchiseeUserInfo.setCardName(userInfoOld.getCardName());
-			franchiseeUserInfo.setCardType(userInfoOld.getCardType());
-			franchiseeUserInfo.setMemberCardExpireTime(userInfoOld.getCreateTime());
-			franchiseeUserInfo.setRemainingNumber(userInfoOld.getRemainingNumber());
-			franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-			franchiseeUserInfoService.update(franchiseeUserInfo);
+			OldCard oldCard=oldCardService.queryByOldCard(userInfoOld.getCardId());
+			if(Objects.nonNull(oldCard)) {
+				franchiseeUserInfo.setFranchiseeId(userInfoOld.getFranchiseeId());
+				franchiseeUserInfo.setCardId(oldCard.getNewCard());
+				franchiseeUserInfo.setCardName(userInfoOld.getCardName());
+				franchiseeUserInfo.setCardType(userInfoOld.getCardType());
+				franchiseeUserInfo.setMemberCardExpireTime(userInfoOld.getCreateTime());
+				franchiseeUserInfo.setRemainingNumber(userInfoOld.getRemainingNumber());
+				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+				franchiseeUserInfoService.update(franchiseeUserInfo);
+			}
 		}
 
 		//实名认证图片复制

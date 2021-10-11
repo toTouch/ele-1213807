@@ -66,6 +66,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 	@Autowired
 	EleDepositOrderService eleDepositOrderService;
 
+
 	/**
 	 * 通过ID查询单条数据从DB
 	 *
