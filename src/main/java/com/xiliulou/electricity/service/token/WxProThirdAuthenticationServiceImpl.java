@@ -471,6 +471,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				eleUserAuth.setUid(userInfo.getUid());
 				eleUserAuth.setCreateTime(System.currentTimeMillis());
 				eleUserAuth.setUpdateTime(System.currentTimeMillis());
+				eleUserAuth.setTenantId(userInfo.getTenantId());
 				eleUserAuthService.insert(eleUserAuth);
 			}
 		}
