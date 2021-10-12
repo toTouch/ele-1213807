@@ -27,6 +27,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -175,7 +176,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         List<ElectricityMemberCard> electricityMemberCards=new ArrayList<>();
         for (ElectricityMemberCard electricityMemberCard:electricityMemberCardList) {
-            if(Objects.nonNull(electricityMemberCard.getBatteryType())) {
+            if(StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
                 electricityMemberCard.setBatteryType(BatteryConstant.acquireBattery(electricityMemberCard.getBatteryType()).toString());
             }
             electricityMemberCards.add(electricityMemberCard);
