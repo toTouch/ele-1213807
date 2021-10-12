@@ -467,7 +467,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 		String batteryType = franchiseeUserInfo.getBatteryType();
 		if (Objects.nonNull(batteryType)) {
-			map.put("batteryType", batteryType);
+			map.put("batteryType", BatteryConstant.acquireBattery(batteryType).toString());
 		}else {
 			map.put("batteryType", null);
 		}
