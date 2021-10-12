@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -25,9 +26,11 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -165,7 +168,19 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     @DS("slave_1")
     public R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId) {
-        return R.ok(baseMapper.queryList(offset, size, status, type,tenantId));
+        List<ElectricityMemberCard> electricityMemberCardList= baseMapper.queryList(offset, size, status, type,tenantId);
+        if(ObjectUtil.isEmpty(electricityMemberCardList)){
+            return R.ok(electricityMemberCardList);
+        }
+
+        List<ElectricityMemberCard> electricityMemberCards=new ArrayList<>();
+        for (ElectricityMemberCard electricityMemberCard:electricityMemberCardList) {
+            if(Objects.nonNull(electricityMemberCard.getBatteryType())) {
+                electricityMemberCard.setBatteryType(BatteryConstant.acquireBattery(electricityMemberCard.getBatteryType()).toString());
+            }
+            electricityMemberCards.add(electricityMemberCard);
+        }
+        return R.ok(electricityMemberCards);
     }
 
     @Override
