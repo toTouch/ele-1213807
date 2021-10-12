@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.controller.user;
+package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
@@ -16,11 +16,11 @@ import org.springframework.web.bind.annotation.RestController;
  * @date : 2021/9/26 4:45 下午
  */
 @RestController
-public class JsonUserNoticeController extends BaseController {
+public class JsonOuterNoticeController extends BaseController {
     @Autowired
     UserNoticeService userNoticeService;
 
-    @GetMapping("/user/userNotice")
+    @GetMapping("/outer/userNotice")
     public R queryUserNotice() {
 
         return userNoticeService.queryUserNotice();
