@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
@@ -83,6 +84,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
         electricityMemberCard.setTenantId(tenantId);
         electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
+        if(Objects.nonNull(electricityMemberCard.getBatteryType())) {
+            electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
+        }
 
         Integer insert=baseMapper.insert(electricityMemberCard);
         DbUtils.dbOperateSuccessThen(insert, () -> {
