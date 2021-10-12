@@ -2,11 +2,12 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -15,7 +16,6 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
-import io.netty.util.internal.StringUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,6 +42,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 	ElectricityCabinetBoxService electricityCabinetBoxService;
 	@Autowired
 	RedisService redisService;
+	@Autowired
+	BatteryOtherPropertiesService batteryOtherPropertiesService;
 
 	@Override
 	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -175,6 +177,15 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
+
+		//电池上报是否有其他信息
+		if(Objects.nonNull(eleBatteryVo.getHasOtherAttr())&&eleBatteryVo.getHasOtherAttr()){
+			BatteryOtherProperties batteryOtherProperties=eleBatteryVo.getBatteryOtherProperties();
+			batteryOtherProperties.setBatteryName(batteryName);
+			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+		}
+
+
 		//比较最大电量，保证仓门电池是最大电量的电池
 		Double nowPower = eleBatteryVo.getPower();
 		BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
@@ -217,6 +228,10 @@ class EleBatteryVo {
 	private Long reportTime;
 
 	private Boolean existsBattery;
+
+	private Boolean hasOtherAttr;
+
+	private BatteryOtherProperties batteryOtherProperties;
 
 }
 
