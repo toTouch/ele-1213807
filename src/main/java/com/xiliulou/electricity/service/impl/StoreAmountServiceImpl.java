@@ -4,8 +4,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
+import com.xiliulou.electricity.entity.SplitAccountFailRecord;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
@@ -213,6 +215,19 @@ public class StoreAmountServiceImpl implements StoreAmountService {
         storeSplitAccountHistoryService.insert(history);
 
         return R.ok();
+    }
+
+    private void createStoreSplitAccountLockFail(Store store, ElectricityTradeOrder payRecord, int percent) {
+        log.error("ELE ORDER ERROR! handleSplitAccount error! storeId={}", store.getId());
+        SplitAccountFailRecord record = SplitAccountFailRecord.builder()
+                .accountId(store.getId())
+                .payAmount(payRecord.getTotalFee().doubleValue())
+                .createTime(System.currentTimeMillis())
+                .type(SplitAccountFailRecord.TYPE_STORE)
+                .percent(percent)
+                .build();
+
+        splitAccountFailRecordService.insert(record);
     }
 
 }

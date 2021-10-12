@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
+import com.xiliulou.electricity.entity.SplitAccountFailRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.FranchiseeAmountMapper;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
@@ -102,7 +103,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
 
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
-    @Klock(name = "handleAgentSplitAccount", keys = {"#agent.id"}, waitTime = 5, customLockTimeoutStrategy = "createAgentSplitAccountLockFail")
+    @Klock(name = "handleSplitAccount", keys = {"#franchisee.id"}, waitTime = 5, customLockTimeoutStrategy = "createFranchiseeSplitAccountLockFail")
     public void handleSplitAccount(Franchisee franchisee, ElectricityTradeOrder payRecord,int percent) {
         FranchiseeAmount franchiseeAmount = queryByFranchiseeIdFromCache(franchisee.getId());
         if (Objects.isNull(franchiseeAmount)) {
@@ -200,6 +201,19 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         franchiseeSplitAccountHistoryService.insert(history);
 
         return R.ok();
+    }
+
+    private void createFranchiseeSplitAccountLockFail(Franchisee franchisee, ElectricityTradeOrder payRecord, int percent) {
+        log.error("ELE ORDER ERROR! handleSplitAccount error! franchiseeId={}", franchisee.getId());
+        SplitAccountFailRecord record = SplitAccountFailRecord.builder()
+                .accountId(franchisee.getId())
+                .payAmount(payRecord.getTotalFee().doubleValue())
+                .createTime(System.currentTimeMillis())
+                .type(SplitAccountFailRecord.TYPE_FRANCHISEE)
+                .percent(percent)
+                .build();
+
+        splitAccountFailRecordService.insert(record);
     }
 
 
