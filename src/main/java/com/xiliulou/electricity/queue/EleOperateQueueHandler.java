@@ -206,12 +206,17 @@ public class EleOperateQueueHandler {
 					return;
 				}
 
+				FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+				if(Objects.isNull(oldFranchiseeUserInfo)){
+					return;
+				}
+
 				//用户解绑旧电池 旧电池到底是哪块，不确定
 				FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-				franchiseeUserInfo.setUserInfoId(userInfo.getId());
+				franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
 				franchiseeUserInfo.setNowElectricityBatterySn(null);
 				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-				franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
+				franchiseeUserInfoService.update(franchiseeUserInfo);
 
 
 				//查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
@@ -240,9 +245,8 @@ public class EleOperateQueueHandler {
 				}
 
 
-
 				//分配电池 --只分配满电电池
-				if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+				if(Objects.equals(oldFranchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
 					 cellNo=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),franchiseeUserInfo.getBatteryType());
 				}else {
 					cellNo=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null);
