@@ -226,7 +226,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		char[] batteryChars = batteryName.toCharArray();
 
 		//获取电压
-		String chargeV = split(batteryChars, 4, 7);
+		String chargeV = split(batteryChars, 4, 6);
 		modelName.append(chargeV).append("V").append("_");
 
 		//获取材料体系
