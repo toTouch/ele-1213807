@@ -501,8 +501,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cellNo", cellNo);
 			dataMap.put("orderId", orderId);
-			dataMap.put("model_type", franchiseeUserInfo.getModelType());
-			dataMap.put("battery_type", franchiseeUserInfo.getBatteryType());
+
+			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+				dataMap.put("model_type", false);
+			}else {
+				dataMap.put("model_type", true);
+				dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+			}
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
 					.sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
