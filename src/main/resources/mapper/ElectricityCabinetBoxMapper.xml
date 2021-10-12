@@ -34,7 +34,8 @@
 		<if test="status!= null ">
 			status = #{status},
 		</if>
-		update_time = #{updateTime}
+		update_time = #{updateTime},
+		battery_type = #{batteryType}
 		where cell_no = #{cellNo}
 		and electricity_cabinet_id = #{electricityCabinetId}
 		and del_flag=0
