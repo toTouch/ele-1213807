@@ -111,7 +111,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R payDeposit(String productKey, String deviceName,Integer model, HttpServletRequest request) {
+	public R payDeposit(String productKey, String deviceName, Integer model, HttpServletRequest request) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -122,13 +122,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-
 		//限频
 		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
 		if (!getLockSuccess) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}
-
 
 		//支付相关
 		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
@@ -144,14 +142,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.failMsg("未找到用户的第三方授权信息!");
 		}
 
-
 		//换电柜
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
-
 
 		//判断是否实名认证
 		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
@@ -167,10 +163,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0041", "未实名认证");
 		}
 
-
 		//是否缴纳押金，是否绑定电池
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
 
 		//未找到用户
 		if (Objects.isNull(franchiseeUserInfo)) {
@@ -184,7 +178,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0049", "已缴纳押金");
 		}
 
-
 		//计算押金
 		//查找换电柜门店
 		if (Objects.isNull(electricityCabinet.getStoreId())) {
@@ -196,7 +189,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			log.error("payDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
-
 
 		//查找门店加盟商
 		if (Objects.isNull(store.getFranchiseeId())) {
@@ -210,45 +202,41 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-		BigDecimal payAmount=null;
+		BigDecimal payAmount = null;
 
-
-		if(Objects.equals(franchisee.getModelType(),Franchisee.OLD_MODEL_TYPE)) {
-			 payAmount = franchisee.getBatteryDeposit();
+		if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+			payAmount = franchisee.getBatteryDeposit();
 		}
 
-
 		//型号押金计算
-		if(Objects.equals(franchisee.getModelType(),Franchisee.MEW_MODEL_TYPE)){
-			if(Objects.isNull(model)){
+		if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+			if (Objects.isNull(model)) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 
 			//型号押金
-			List<Map> modelBatteryDepositList= JsonUtil.fromJson(franchisee.getModelBatteryDeposit(),List.class);
-			if(ObjectUtil.isEmpty(modelBatteryDepositList)){
+			List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+			if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
 				log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId{}", store.getFranchiseeId());
 				return R.fail("ELECTRICITY.00110", "未找到押金");
 			}
 
-			log.info("modelBatteryDepositList is -->{}",modelBatteryDepositList);
-			for (Map map:modelBatteryDepositList) {
-				if((double)(map.get("model"))-model<1&&(double)(map.get("model"))-model>=0){
-					payAmount=BigDecimal.valueOf((double)map.get("batteryDeposit"));
+			log.info("modelBatteryDepositList is -->{}", modelBatteryDepositList);
+			for (Map map : modelBatteryDepositList) {
+				if ((double) (map.get("model")) - model < 1 && (double) (map.get("model")) - model >= 0) {
+					payAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
 					break;
 				}
 			}
 
 		}
 
-		if(Objects.isNull(payAmount)){
+		if (Objects.isNull(payAmount)) {
 			log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{}", store.getFranchiseeId());
 			return R.fail("ELECTRICITY.00110", "未找到押金");
 		}
 
-
 		String orderId = generateOrderId(user.getUid());
-
 
 		//生成订单
 		EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
@@ -264,8 +252,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				.franchiseeId(franchisee.getId())
 				.modelType(franchisee.getModelType()).build();
 
-
-		if(Objects.equals(franchisee.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+		if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
 			eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(model));
 		}
 
@@ -284,7 +271,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			franchiseeUserInfoUpdate.setOrderId(orderId);
 			franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
 
-			if(Objects.equals(eleDepositOrder.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+			if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
 				franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
 			}
 
@@ -478,7 +465,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 		}
 
-		map.put("batteryType", franchiseeUserInfo.getBatteryType().toString());
+		String batteryType = franchiseeUserInfo.getBatteryType();
+		if (Objects.nonNull(batteryType)) {
+			map.put("batteryType", batteryType);
+		}
 
 		if ((Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)
 				|| Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY))
@@ -563,7 +553,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-
 		//查询押金
 		//查找换电柜门店
 		if (Objects.isNull(electricityCabinet.getStoreId())) {
@@ -575,7 +564,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			log.error("queryDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
-
 
 		//查找门店加盟商
 		if (Objects.isNull(store.getFranchiseeId())) {
@@ -589,14 +577,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
-
 		//根据类型分押金
-		if(Objects.equals(franchisee.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+		if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
 			//型号押金
-			List modelBatteryDepositList= JsonUtil.fromJson(franchisee.getModelBatteryDeposit(),List.class);
+			List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
 			return R.ok(modelBatteryDepositList);
 		}
-
 
 		return R.ok(franchisee.getBatteryDeposit());
 	}
@@ -620,7 +606,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-
 		//查询押金
 		//查找换电柜门店
 		if (Objects.isNull(electricityCabinet.getStoreId())) {
@@ -632,7 +617,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			log.error("queryDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
-
 
 		//查找门店加盟商
 		if (Objects.isNull(store.getFranchiseeId())) {
