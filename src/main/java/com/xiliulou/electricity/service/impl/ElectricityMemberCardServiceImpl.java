@@ -88,7 +88,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
         electricityMemberCard.setTenantId(tenantId);
         electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
-        if(Objects.nonNull(electricityMemberCard.getBatteryType())) {
+        if(StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
             electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
         }
 
@@ -118,6 +118,10 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 electricityMemberCard.setMaxUseCount(ElectricityMemberCard.UN_LIMITED_COUNT);
             }
+        }
+
+        if(StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
+            electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
         }
 
         Integer update=baseMapper.updateById(electricityMemberCard);
