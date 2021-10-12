@@ -286,9 +286,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //分配电池 --只分配满电电池
 		String cellNo=null;
 		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-			findUsableBatteryCellNo(electricityCabinet.getId(), null,franchiseeUserInfo.getBatteryType());
+			cellNo=findUsableBatteryCellNo(electricityCabinet.getId(), null,franchiseeUserInfo.getBatteryType());
 		}else {
-			findUsableBatteryCellNo(electricityCabinet.getId(), null,null);
+			cellNo=findUsableBatteryCellNo(electricityCabinet.getId(), null,null);
 		}
 
 
