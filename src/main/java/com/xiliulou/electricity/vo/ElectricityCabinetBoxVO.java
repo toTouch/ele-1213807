@@ -73,8 +73,11 @@ public class ElectricityCabinetBoxVO {
      */
     private Integer chargeStatus;
 
-    //电池编号
-    private String model;
+
+    /**
+     * 仓门电池类型
+     */
+    private String batteryType;
 
 
 }
