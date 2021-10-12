@@ -18,10 +18,10 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);
 
-	@Update("update t_franchisee_user_info set remaining_number=remaining_number-1 where remaining_number>0 and del_flag=0")
+	@Update("update t_franchisee_user_info set remaining_number=remaining_number-1 where id=#{id} and remaining_number>0 and del_flag=0")
 	Integer minCount(Long id);
 
-	@Update("update t_franchisee_user_info set remaining_number=remaining_number+1 where del_flag=0")
+	@Update("update t_franchisee_user_info set remaining_number=remaining_number+1 where id=#{id} and del_flag=0")
 	Integer plusCount(Long id);
 
 	void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
