@@ -300,7 +300,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cell_no", cellNo);
 			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-			dataMap.put("status", electricityCabinetOrder.getStatus().toString());
+			dataMap.put("status", electricityCabinetOrder.getStatus());
+			dataMap.put("model_type", franchiseeUserInfo.getModelType());
+			dataMap.put("battery_type", franchiseeUserInfo.getBatteryType());
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
 					.sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())

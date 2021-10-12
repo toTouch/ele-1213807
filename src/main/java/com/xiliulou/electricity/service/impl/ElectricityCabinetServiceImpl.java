@@ -1647,6 +1647,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			// 查换电柜所属加盟商
 		}*/
 
+		//检查电池和用户是否匹配
+
 		return R.ok();
 	}
 
