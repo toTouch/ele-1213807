@@ -87,14 +87,12 @@ public class StoreAddAndUpdate {
     /**
      * 省编号
      */
-    @NotNull(message = "省编号不能为空!", groups = {CreateGroup.class})
     private Integer provinceId;
 
 
     /**
      * 加盟商Id
      */
-    @NotNull(message = "加盟商Id不能为空!", groups = {CreateGroup.class})
     private Integer franchiseeId;
 
 

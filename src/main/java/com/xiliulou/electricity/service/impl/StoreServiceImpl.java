@@ -90,6 +90,11 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
+
+		//前端处理不了，后台写死
+		storeAddAndUpdate.setCityId(283);
+		storeAddAndUpdate.setProvinceId(27);
+
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
 		BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
