@@ -46,7 +46,12 @@
 		order_id = #{orderId},
 		franchisee_id = #{franchiseeId},
 		model_type = #{modelType},
-		battery_type = #{batteryType}
+		battery_type = #{batteryType},
+		card_id = #{cardId},
+		card_name = #{cardName},
+		card_type = #{CardType},
+		member_card_expire_time = #{memberCardExpireTime},
+		remaining_number = #{remainingNumber}
 		where id = #{id} and del_flag=0
 	</update>
 
