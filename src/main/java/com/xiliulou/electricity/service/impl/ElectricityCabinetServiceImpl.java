@@ -1641,11 +1641,26 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			return R.fail("电池与换电柜租户不匹配");
 		}
 
-		/*//电池加盟商是否匹配
+		//电池加盟商是否匹配
 		if(isParseBattery){
            //查电池所属加盟商
+			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+			if(Objects.isNull(franchiseeBindElectricityBattery)){
+				log.error("checkBattery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
+				return R.fail("电池未绑定加盟商");
+			}
 			// 查换电柜所属加盟商
-		}*/
+			Store store=storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+			if(Objects.isNull(store)){
+				log.error("checkBattery error! not find store,storeId:{}", electricityCabinet.getStoreId());
+				return R.fail("找不到换电柜门店");
+			}
+
+			if(Objects.equals(store.getFranchiseeId(),franchiseeBindElectricityBattery.getFranchiseeId())){
+				log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(),franchiseeBindElectricityBattery.getFranchiseeId());
+				return R.fail("电池加盟商与电柜加盟商不匹配");
+			}
+		}
 
 		//检查电池和用户是否匹配
 

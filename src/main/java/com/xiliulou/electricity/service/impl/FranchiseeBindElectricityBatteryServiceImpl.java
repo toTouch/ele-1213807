@@ -42,4 +42,10 @@ public class FranchiseeBindElectricityBatteryServiceImpl implements FranchiseeBi
 		return franchiseeBindElectricityBatteryMapper.selectCount(new LambdaQueryWrapper<FranchiseeBindElectricityBattery>()
 				.eq(FranchiseeBindElectricityBattery::getElectricityBatteryId, electricityBatteryId));
 	}
+
+	@Override
+	public FranchiseeBindElectricityBattery queryByBatteryId(Long id) {
+		return franchiseeBindElectricityBatteryMapper.selectOne(new LambdaQueryWrapper<FranchiseeBindElectricityBattery>()
+				.eq(FranchiseeBindElectricityBattery::getElectricityBatteryId, id));
+	}
 }

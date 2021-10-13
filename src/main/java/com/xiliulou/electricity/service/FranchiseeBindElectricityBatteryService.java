@@ -18,4 +18,6 @@ public interface FranchiseeBindElectricityBatteryService {
     List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Long id);
 
 	Integer queryCountByBattery(Long electricityBatteryId);
+
+	FranchiseeBindElectricityBattery queryByBatteryId(Long id);
 }
