@@ -33,10 +33,10 @@
             and tui.auth_status is not null
         </if>
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
-            and tui.service_status &gt;=#{query.serviceStatus}
+            and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
-            and tfui.service_status &gt;=#{query.serviceStatus}
+            and tfui.service_status =#{query.serviceStatus}
         </if>
         order by tui.create_time desc
         limit #{query.offset}, #{query.size}
@@ -66,10 +66,10 @@
             and tui.auth_status is not null
         </if>
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
-            and tui.service_status &gt;=#{query.serviceStatus}
+            and tui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
-            and tfui.service_status &gt;=#{query.serviceStatus}
+            and tfui.service_status =#{query.serviceStatus}
         </if>
     </select>
 
