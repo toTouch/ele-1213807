@@ -35,6 +35,9 @@
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
+        <if test="query.serviceStatus == 1">
+            and tfui.service_status =#{query.serviceStatus}
+        </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
         </if>
@@ -67,6 +70,9 @@
         </if>
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
+        </if>
+        <if test="query.serviceStatus == 1">
+            and tfui.service_status =#{query.serviceStatus}
         </if>
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
