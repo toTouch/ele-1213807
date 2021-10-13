@@ -13,7 +13,7 @@
         tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
         from t_user_info as tui
         left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
-        where del_flag=0
+        where tui.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tui.name = #{query.name}
         </if>
@@ -31,6 +31,12 @@
         </if>
         <if test="query.authStatus == -1">
             and tui.auth_status is not null
+        </if>
+        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+            and tui.service_status &gt;=#{query.serviceStatus}
+        </if>
+        <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
+            and tfui.service_status &gt;=#{query.serviceStatus}
         </if>
         order by tui.create_time desc
         limit #{query.offset}, #{query.size}
