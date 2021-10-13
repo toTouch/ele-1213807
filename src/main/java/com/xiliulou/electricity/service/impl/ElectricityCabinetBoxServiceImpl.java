@@ -130,7 +130,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	public List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType) {
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinet.getId())
 				.eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-				.ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(Objects.nonNull(batteryType), ElectricityCabinetBox::getBatteryType, batteryType)
+				.ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getBatteryType, batteryType)
 				.eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
 
 		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = new ArrayList<>();
