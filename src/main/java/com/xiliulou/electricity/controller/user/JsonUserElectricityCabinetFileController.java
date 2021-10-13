@@ -46,7 +46,7 @@ public class JsonUserElectricityCabinetFileController {
      */
 
     @GetMapping("/user/electricityCabinetFileService/getFile")
-    public R getFile( @RequestParam(value = "electricityCabinetId", required = false) Long otherId,
+    public R getFile( @RequestParam(value = "otherId", required = false) Long otherId,
                       @RequestParam("fileType") Integer fileType) {
         List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(otherId, fileType,storageConfig.getIsUseOSS());
         if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
