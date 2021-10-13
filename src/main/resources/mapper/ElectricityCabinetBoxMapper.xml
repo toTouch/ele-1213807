@@ -29,7 +29,7 @@
 		where del_flag=0 AND electricity_cabinet_id=#{id}
 		and status=0 and usable_status=0
 		<if test="cellNo != null ">
-			and cell_no = #{cellNo}
+			and cell_no != #{cellNo}
 		</if>
 		<if test="batteryType != null ">
 			and battery_type = #{batteryType}
