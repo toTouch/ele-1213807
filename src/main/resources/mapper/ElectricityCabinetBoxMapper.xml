@@ -32,10 +32,10 @@
 			and cell_no = #{cellNo}
 		</if>
 		<if test="batteryType != null ">
-			and ecb.battery_type = #{batteryType}
+			and battery_type = #{batteryType}
 		</if>
 		<if test="batteryType == null ">
-			and ecb.battery_type is null
+			and battery_type is null
 		</if>
 	</select>
 
