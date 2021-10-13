@@ -118,7 +118,7 @@
         select eb.sn from  t_electricity_cabinet as ec
         left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
         left join t_electricity_battery as eb on ecb.sn is not null and ecb.sn=eb.sn
-        where eb.power&gt;=fully_charged  and ec.id = #{id} and ecb.usable_status =0
+        where eb.power&gt;=ec.fully_charged  and ec.id = #{id} and ecb.usable_status =0
         and ecb.battery_type = #{batteryType}
     </select>
 
