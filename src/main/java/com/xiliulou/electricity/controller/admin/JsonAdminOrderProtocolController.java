@@ -28,7 +28,7 @@ public class JsonAdminOrderProtocolController extends BaseController {
 
 
 
-    @PutMapping("/admin/depositProtocol")
+    @PutMapping("/admin/orderProtocol")
     public R update(@Validated @RequestBody OrderProtocolQuery orderProtocolQuery) {
         return returnTripleResult(orderProtocolService.update(orderProtocolQuery));
 

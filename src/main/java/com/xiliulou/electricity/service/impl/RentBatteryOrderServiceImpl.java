@@ -178,12 +178,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0035", "换电柜不在线");
 		}
 
-		//换电柜是否出现异常被锁住
+		/*//换电柜是否出现异常被锁住
 		String isLock = redisService.get(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
 		if (StringUtils.isNotEmpty(isLock)) {
 			log.error("rentBattery  ERROR!  electricityCabinet is lock ！electricityCabinet{}", electricityCabinet);
 			return R.fail("ELECTRICITY.0063", "换电柜出现异常，暂时不能下单");
-		}
+		}*/
 
 		//换电柜营业时间
 		boolean isBusiness = this.isBusiness(electricityCabinet);
@@ -197,6 +197,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
 
+		//TODO
 		//查找换电柜门店
 		if (Objects.isNull(electricityCabinet.getStoreId())) {
 			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
@@ -282,15 +283,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿租电池");
 		}
 
-
-        //分配电池 --只分配满电电池
-		String cellNo=null;
-		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-			cellNo=findUsableBatteryCellNo(electricityCabinet.getId(), null,franchiseeUserInfo.getBatteryType());
-		}else {
-			cellNo=findUsableBatteryCellNo(electricityCabinet.getId(), null,null);
+		//分配电池 --只分配满电电池
+		String cellNo = null;
+		if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType());
+		} else {
+			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, null);
 		}
-
 
 		try {
 			if (Objects.isNull(cellNo)) {
@@ -502,9 +501,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			dataMap.put("cellNo", cellNo);
 			dataMap.put("orderId", orderId);
 
-			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+			if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
 				dataMap.put("model_type", false);
-			}else {
+			} else {
 				dataMap.put("model_type", true);
 				dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
 			}
@@ -797,11 +796,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		String status = rentBatteryOrder.getStatus();
 
 		//开门中
-		if (rentBatteryOrder.getOrderSeq()<RentBatteryOrder.STATUS_OPEN_SUCCESS
+		if (rentBatteryOrder.getOrderSeq() < RentBatteryOrder.STATUS_OPEN_SUCCESS
 				|| rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_OPEN_FAIL)) {
 			status = rentBatteryOrder.getCellNo() + "号仓门开门中";
 		}
-
 
 		//开门成功
 		if (Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RENT_OPEN_SUCCESS)
@@ -812,32 +810,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		//订单状态
 		map.put("status", status);
 
-
 		//页面图片显示
-		Integer picture=0;
+		Integer picture = 0;
 
 		//rent
-		if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)){
-			picture=2;
+		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+			picture = 2;
 		}
-
 
 		//return
-		if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
-			picture=1;
+		if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+			picture = 1;
 		}
-
 
 		//error
-		if(rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL)
-				||rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+		if (rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL)
+				|| rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
 
-			picture=3;
+			picture = 3;
 		}
 
-        //订单状态
-		map.put("picture",picture);
-
+		//订单状态
+		map.put("picture", picture);
 
 		//是否出错 0--未出错 1--出错
 		Integer type = 0;
@@ -861,13 +855,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 		map.put("type", type);
 		map.put("isTry", isTry);
-		log.info("map is -->{}",map);
+		log.info("map is -->{}", map);
 		return R.ok(map);
 	}
 
 	//分配满仓
 	@Override
-	public String findUsableBatteryCellNo(Integer id, String cellNo,String batteryType) {
+	public String findUsableBatteryCellNo(Integer id, String cellNo, String batteryType) {
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("findNewUsableCellNo is error!not found electricityCabinet! electricityCabinetId:{}", id);
@@ -879,27 +873,27 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + id, BigEleBatteryVo.class);
 
 		if (Objects.nonNull(bigEleBatteryVo)) {
-			if(Objects.isNull(batteryType)) {
+			if (Objects.isNull(batteryType)) {
 				String newCellNo = bigEleBatteryVo.getCellNo();
 				Double power = bigEleBatteryVo.getPower();
-				if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
+				String newBatteryType = bigEleBatteryVo.getBatteryType();
+				if (Objects.nonNull(newCellNo) && Objects.nonNull(power) && Objects.isNull(newBatteryType)
 						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
 					box = Integer.valueOf(newCellNo);
 				}
-			}else {
+			} else {
 				String newCellNo = bigEleBatteryVo.getCellNo();
 				Double power = bigEleBatteryVo.getPower();
-				String newBatteryType=bigEleBatteryVo.getBatteryType();
-				if (Objects.nonNull(newCellNo) && Objects.nonNull(power)&&Objects.equals(newBatteryType,batteryType)
+				String newBatteryType = bigEleBatteryVo.getBatteryType();
+				if (Objects.nonNull(newCellNo) && Objects.nonNull(power) && Objects.equals(newBatteryType, batteryType)
 						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
 					box = Integer.valueOf(newCellNo);
 				}
 			}
 		}
 
-
 		if (Objects.isNull(box)) {
-			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo,batteryType);
+			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo, batteryType);
 			if (!DataUtil.collectionIsUsable(usableBoxes)) {
 				return null;
 			}
@@ -907,11 +901,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			box = Integer.valueOf(usableBoxes.get(0).getCellNo());
 		}
 
-		if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
+		/*if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
 			return box.toString();
-		}
+		}*/
 
-		return null;
+		return box.toString();
 	}
 
 	@Override
@@ -959,7 +953,5 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		return String.valueOf(System.currentTimeMillis()).substring(2) + uid + cellNo +
 				RandomUtil.randomNumbers(4);
 	}
-
-
 
 }

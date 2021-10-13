@@ -144,7 +144,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 			if (Objects.nonNull(electricityBattery)) {
 				if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
 
-					//该电池是否绑定用户
+					//
 					ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
 					BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
 					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
