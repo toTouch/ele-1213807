@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.mapper.FranchiseeBindElectricityBatteryMapper;
@@ -18,20 +19,27 @@ import java.util.List;
 @Service
 @Slf4j
 public class FranchiseeBindElectricityBatteryServiceImpl implements FranchiseeBindElectricityBatteryService {
-    @Resource
-    FranchiseeBindElectricityBatteryMapper franchiseeBindElectricityBatteryMapper;
-    @Override
-    public void deleteByFranchiseeId(Integer franchiseeId) {
-        franchiseeBindElectricityBatteryMapper.deleteByFranchiseeId(franchiseeId);
-    }
+	@Resource
+	FranchiseeBindElectricityBatteryMapper franchiseeBindElectricityBatteryMapper;
 
-    @Override
-    public void insert(FranchiseeBindElectricityBattery franchiseeBindElectricityBattery) {
-        franchiseeBindElectricityBatteryMapper.insert(franchiseeBindElectricityBattery);
-    }
+	@Override
+	public void deleteByFranchiseeId(Integer franchiseeId) {
+		franchiseeBindElectricityBatteryMapper.deleteByFranchiseeId(franchiseeId);
+	}
 
-    @Override
-    public List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Long id) {
-        return franchiseeBindElectricityBatteryMapper.selectList(new LambdaQueryWrapper<FranchiseeBindElectricityBattery>().eq(FranchiseeBindElectricityBattery::getFranchiseeId,id));
-    }
+	@Override
+	public void insert(FranchiseeBindElectricityBattery franchiseeBindElectricityBattery) {
+		franchiseeBindElectricityBatteryMapper.insert(franchiseeBindElectricityBattery);
+	}
+
+	@Override
+	public List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Long id) {
+		return franchiseeBindElectricityBatteryMapper.selectList(new LambdaQueryWrapper<FranchiseeBindElectricityBattery>().eq(FranchiseeBindElectricityBattery::getFranchiseeId, id));
+	}
+
+	@Override
+	public Integer queryCountByBattery(Long electricityBatteryId) {
+		return franchiseeBindElectricityBatteryMapper.selectCount(new LambdaQueryWrapper<FranchiseeBindElectricityBattery>()
+				.eq(FranchiseeBindElectricityBattery::getElectricityBatteryId, electricityBatteryId));
+	}
 }

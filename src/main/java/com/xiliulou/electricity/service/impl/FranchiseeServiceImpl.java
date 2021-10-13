@@ -275,6 +275,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	}
 
 	@Override
+	@Transactional
 	public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
 		//先删除
 		franchiseeBindElectricityBatteryService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
@@ -283,6 +284,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		}
 		//再新增
 		for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
+			//判断电池是否绑定加盟商
+			Integer count=franchiseeBindElectricityBatteryService.queryCountByBattery(electricityBatteryId);
+
+			if (count > 0) {
+				return R.fail("SYSTEM.00113", "绑定失败，电池已绑定其他加盟商");
+			}
 			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
 			franchiseeBindElectricityBattery.setFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
 			franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBatteryId);
