@@ -403,13 +403,47 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			return R.fail("ELECTRICITY.0035", "换电柜不在线");
 		}
 
+		//校验用户
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		if (Objects.isNull(userInfo)) {
+			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+			log.error("order  ERROR! not found user,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0019", "未找到用户");
+		}
+
+		//用户是否可用
+		if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+			log.error("order  ERROR! user is unUsable! uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0024", "用户已被禁用");
+		}
+
+
+		//是否缴纳押金，是否绑定电池
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+		//未找到用户
+		if (Objects.isNull(franchiseeUserInfo)) {
+			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+
+		}
+
 		//旧电池开门
 		if (Objects.equals(openDoorQuery.getOpenType(), OpenDoorQuery.OLD_OPEN_TYPE)) {
 			//发送命令
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
 			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-			dataMap.put("status", electricityCabinetOrder.getStatus().toString());
+			dataMap.put("status", electricityCabinetOrder.getStatus());
+
+			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+				dataMap.put("model_type", false);
+			}else {
+				dataMap.put("model_type", true);
+				dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+			}
 
 			HardwareCommandQuery comm = HardwareCommandQuery.builder()
 					.sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
