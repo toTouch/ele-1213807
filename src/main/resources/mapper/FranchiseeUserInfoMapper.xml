@@ -49,7 +49,7 @@
 		battery_type = #{batteryType},
 		card_id = #{cardId},
 		card_name = #{cardName},
-		card_type = #{CardType},
+		card_type = #{cardType},
 		member_card_expire_time = #{memberCardExpireTime},
 		remaining_number = #{remainingNumber}
 		where id = #{id} and del_flag=0
