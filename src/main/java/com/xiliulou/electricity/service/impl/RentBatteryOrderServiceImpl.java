@@ -876,16 +876,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			if (Objects.isNull(batteryType)) {
 				String newCellNo = bigEleBatteryVo.getCellNo();
 				Double power = bigEleBatteryVo.getPower();
-				String newBatteryType = bigEleBatteryVo.getBatteryType();
-				if (Objects.nonNull(newCellNo) && Objects.nonNull(power) && Objects.isNull(newBatteryType)
-						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
-					box = Integer.valueOf(newCellNo);
-				}
-			} else {
-				String newCellNo = bigEleBatteryVo.getCellNo();
-				Double power = bigEleBatteryVo.getPower();
-				String newBatteryType = bigEleBatteryVo.getBatteryType();
-				if (Objects.nonNull(newCellNo) && Objects.nonNull(power) && Objects.equals(newBatteryType, batteryType)
+				if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
 						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
 					box = Integer.valueOf(newCellNo);
 				}
@@ -901,9 +892,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			box = Integer.valueOf(usableBoxes.get(0).getCellNo());
 		}
 
-		/*if (redisService.setNx(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + id + "_" + box.toString(), "1", 300 * 1000L, false)) {
-			return box.toString();
-		}*/
 
 		return box.toString();
 	}

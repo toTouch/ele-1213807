@@ -189,18 +189,21 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
+
 		//比较最大电量，保证仓门电池是最大电量的电池
-		Double nowPower = eleBatteryVo.getPower();
-		BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
-		newBigEleBatteryVo.setCellNo(cellNo);
-		if (Objects.isNull(bigEleBatteryVo)) {
-			newBigEleBatteryVo.setPower(nowPower);
-			redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY+electricityCabinet.getId().toString(), newBigEleBatteryVo);
-		} else {
-			Double oldPower = bigEleBatteryVo.getPower();
-			if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
+		if(!eleBatteryVo.getIsMultiBatteryModel()) {
+			Double nowPower = eleBatteryVo.getPower();
+			BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
+			newBigEleBatteryVo.setCellNo(cellNo);
+			if (Objects.isNull(bigEleBatteryVo)) {
 				newBigEleBatteryVo.setPower(nowPower);
-				redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY+electricityCabinet.getId().toString(), newBigEleBatteryVo);
+				redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+			} else {
+				Double oldPower = bigEleBatteryVo.getPower();
+				if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
+					newBigEleBatteryVo.setPower(nowPower);
+					redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+				}
 			}
 		}
 

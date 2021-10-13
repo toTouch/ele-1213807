@@ -16,8 +16,5 @@ public class BigEleBatteryVo {
 	 */
 	private String cellNo;
 
-	/**
-	 * 类型
-	 */
-	private String batteryType;
+
 }
