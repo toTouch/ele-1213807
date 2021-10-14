@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
@@ -123,13 +124,13 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Klock(name = "handleStoreSplitAccount", keys = {"#store.id"}, waitTime = 5, customLockTimeoutStrategy = "createStoreSplitAccountLockFail")
-    public void handleSplitAccount(Store store, ElectricityTradeOrder payRecord, int percent) {
+    public void handleSplitAccount(Store store, ElectricityMemberCardOrder electricityMemberCardOrder, int percent) {
         StoreAmount storeAmount = queryByStoreIdFromCache(store.getId());
         if (Objects.isNull(storeAmount)) {
             log.error("ELE ORDER ERROR! not found storeAmount! storeId={}", store.getId());
             return;
         }
-        BigDecimal payAmount = payRecord.getTotalFee();
+        BigDecimal payAmount = electricityMemberCardOrder.getPayAmount();
         if (payAmount.doubleValue() < 0.01) {
             log.warn("ELE ORDER WARN,payAmount is less 0.01,storeId={},payAmount={}", store.getId(), payAmount);
             return;
@@ -151,9 +152,9 @@ public class StoreAmountServiceImpl implements StoreAmountService {
                 .createTime(System.currentTimeMillis())
                 .currentTotalIncome(storeAmount.getTotalIncome())
                 .type(StoreSplitAccountHistory.TYPE_MEMBER)
-                .orderId(payRecord.getOrderNo())
+                .orderId(electricityMemberCardOrder.getOrderId())
                 .storeId(store.getId())
-                .tenantId(payRecord.getTenantId())
+                .tenantId(electricityMemberCardOrder.getTenantId())
                 .splitAmount(shouldSplitPayAmount)
                 .payAmount(payAmount)
                 .percent(percent)

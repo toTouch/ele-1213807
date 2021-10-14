@@ -255,7 +255,7 @@ public class ElectricityTradeOrderServiceImpl extends
 			}
 
 			//月卡分账
-			handleSplitAccount(electricityTradeOrder,electricityMemberCardOrder);
+			handleSplitAccount(electricityMemberCardOrder);
 
 		}
 
@@ -385,7 +385,7 @@ public class ElectricityTradeOrderServiceImpl extends
 		return baseMapper.selectTradeOrderByOrderId(orderId);
 	}
 
-	private void handleSplitAccount(ElectricityTradeOrder electricityTradeOrder, ElectricityMemberCardOrder electricityMemberCardOrder) {
+	private void handleSplitAccount(ElectricityMemberCardOrder electricityMemberCardOrder) {
 		//加盟商分账
 		Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityMemberCardOrder.getFranchiseeId());
 		if (Objects.isNull(franchisee)) {
@@ -397,7 +397,7 @@ public class ElectricityTradeOrderServiceImpl extends
 		if (percent1 < 0 || percent1 > 100) {
 			log.error("ELE ORDER ERROR! franchisee split percent is illegal! franchiseeId={},percent={}", franchisee.getId(), percent1);
 		} else {
-			franchiseeAmountService.handleSplitAccount(franchisee, electricityTradeOrder, percent1);
+			franchiseeAmountService.handleSplitAccount(franchisee,electricityMemberCardOrder, percent1);
 		}
 
 		//门店分账
@@ -412,7 +412,7 @@ public class ElectricityTradeOrderServiceImpl extends
 			if (percent2 < 0 || percent2 > 100) {
 				log.error("ELE ORDER ERROR! store split percent is illegal! storeId={},percent={}", store.getId(), percent2);
 			} else {
-				storeAmountService.handleSplitAccount(store, electricityTradeOrder, percent2);
+				storeAmountService.handleSplitAccount(store,electricityMemberCardOrder, percent2);
 			}
 		}
 	}

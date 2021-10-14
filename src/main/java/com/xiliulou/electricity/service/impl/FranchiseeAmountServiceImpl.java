@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
@@ -105,13 +106,14 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     @Override
     @Transactional(rollbackFor = Exception.class, propagation = Propagation.REQUIRES_NEW)
     @Klock(name = "handleSplitAccount", keys = {"#franchisee.id"}, waitTime = 5, customLockTimeoutStrategy = "createFranchiseeSplitAccountLockFail")
-    public void handleSplitAccount(Franchisee franchisee, ElectricityTradeOrder payRecord,int percent) {
+    public void handleSplitAccount(Franchisee franchisee, ElectricityMemberCardOrder electricityMemberCardOrder,int percent) {
+        log.info("payRecord ");
         FranchiseeAmount franchiseeAmount = queryByFranchiseeIdFromCache(franchisee.getId());
         if (Objects.isNull(franchiseeAmount)) {
             log.error("ELE ORDER ERROR! not found franchiseeAmount! franchiseeId={}", franchisee.getId());
             return;
         }
-        BigDecimal payAmount = payRecord.getTotalFee();
+        BigDecimal payAmount = electricityMemberCardOrder.getPayAmount();
         if (payAmount.doubleValue() < 0.01) {
             log.warn("ELE ORDER WARN,payAmount is less 0.01,franchiseeId={},payAmount={}", franchisee.getId(), payAmount);
             return;
@@ -131,10 +133,10 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         FranchiseeSplitAccountHistory history = FranchiseeSplitAccountHistory.builder()
                 .createTime(System.currentTimeMillis())
                 .currentTotalIncome(franchiseeAmount.getTotalIncome())
-                .orderId(payRecord.getOrderNo())
+                .orderId(electricityMemberCardOrder.getOrderId())
                 .franchiseeId(franchisee.getId())
                 .type(FranchiseeSplitAccountHistory.TYPE_MEMBER)
-                .tenantId(payRecord.getTenantId())
+                .tenantId(electricityMemberCardOrder.getTenantId())
                 .splitAmount(shouldSplitPayAmount)
                 .payAmount(payAmount)
                 .percent(percent)

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
@@ -37,7 +38,7 @@ public interface FranchiseeAmountService {
     Integer update(FranchiseeAmount franchiseeAmount);
 
 
-	void handleSplitAccount(Franchisee franchisee, ElectricityTradeOrder payAmount, int agentPercent);
+	void handleSplitAccount(Franchisee franchisee, ElectricityMemberCardOrder electricityMemberCardOrder, int agentPercent);
 
     R queryList(FranchiseeAccountQuery franchiseeAccountQuery);
 
