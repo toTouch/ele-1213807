@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -70,7 +71,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
             return cacheFranchiseeAmount;
         }
 
-        FranchiseeAmount franchiseeAmount = franchiseeAmountMapper.selectById(franchiseeId);
+        FranchiseeAmount franchiseeAmount = franchiseeAmountMapper.selectOne(new LambdaQueryWrapper<FranchiseeAmount>().eq(FranchiseeAmount::getFranchiseeId,franchiseeId));
         if (Objects.isNull(franchiseeAmount)) {
             return null;
         }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -75,7 +76,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
             return cacheStoreAmount;
         }
 
-        StoreAmount storeAmount = storeAmountMapper.selectById(id);
+        StoreAmount storeAmount = storeAmountMapper.selectOne(new LambdaQueryWrapper<StoreAmount>().eq(StoreAmount::getStoreId,id));
         if (Objects.isNull(storeAmount)) {
             return null;
         }
