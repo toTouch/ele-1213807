@@ -219,6 +219,11 @@ public class StoreAmountServiceImpl implements StoreAmountService {
         return R.ok();
     }
 
+    @Override
+    public void deleteByStoreId(Long id) {
+        storeAmountMapper.deleteByStoreId(id);
+    }
+
     private void createStoreSplitAccountLockFail(Store store, ElectricityTradeOrder payRecord, int percent) {
         log.error("ELE ORDER ERROR! handleSplitAccount error! storeId={}", store.getId());
         SplitAccountFailRecord record = SplitAccountFailRecord.builder()

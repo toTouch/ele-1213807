@@ -212,7 +212,10 @@ public class StoreServiceImpl implements StoreService {
 			//删除缓存
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
 			//删除用户
-			 userService.deleteInnerUser(store.getUid());
+			userService.deleteInnerUser(store.getUid());
+
+			//删除门店账号
+			storeAmountService.deleteByStoreId(id);
 			return null;
 		});
 

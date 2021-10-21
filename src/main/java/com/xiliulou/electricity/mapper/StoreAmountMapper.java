@@ -21,4 +21,6 @@ public interface StoreAmountMapper extends BaseMapper<StoreAmount> {
     List<StoreAmount> queryList(StoreAccountQuery storeAccountQuery);
 
     Integer queryCount(StoreAccountQuery storeAccountQuery);
+
+	void deleteByStoreId(Long id);
 }

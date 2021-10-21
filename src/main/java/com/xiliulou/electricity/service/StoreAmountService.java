@@ -50,4 +50,6 @@ public interface StoreAmountService {
 	R queryCount(StoreAccountQuery storeAccountQuery);
 
 	R modifyBalance(Long storeId, BigDecimal modifyBalance);
+
+	void deleteByStoreId(Long id);
 }
