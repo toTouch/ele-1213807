@@ -206,6 +206,11 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         return R.ok();
     }
 
+    @Override
+    public void deleteByFranchiseeId(Long id) {
+        franchiseeAmountMapper.deleteByFranchiseeId(id);
+    }
+
     private void createFranchiseeSplitAccountLockFail(Franchisee franchisee, ElectricityTradeOrder payRecord, int percent) {
         log.error("ELE ORDER ERROR! handleSplitAccount error! franchiseeId={}", franchisee.getId());
         SplitAccountFailRecord record = SplitAccountFailRecord.builder()

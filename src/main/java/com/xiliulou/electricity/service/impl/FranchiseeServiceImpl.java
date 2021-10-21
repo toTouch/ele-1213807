@@ -80,6 +80,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	@Autowired
 	FranchiseeAmountService franchiseeAmountService;
 
+
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
@@ -219,6 +220,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//删除用户
 			userService.deleteInnerUser(franchisee.getUid());
+
+			//删除加盟商账号
+			franchiseeAmountService.deleteByFranchiseeId(id);
+
 			return null;
 		});
 

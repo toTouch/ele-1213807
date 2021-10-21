@@ -47,4 +47,6 @@ public interface FranchiseeAmountService {
     void insert(FranchiseeAmount franchiseeAmount);
 
 	R modifyBalance(Long franchiseeId, BigDecimal modifyBalance);
+
+	void deleteByFranchiseeId(Long id);
 }

@@ -18,4 +18,6 @@ public interface FranchiseeAmountMapper extends BaseMapper<FranchiseeAmount> {
 	List<FranchiseeAmount> queryList(FranchiseeAccountQuery franchiseeAccountQuery);
 
 	Integer queryCount(FranchiseeAccountQuery franchiseeAccountQuery);
+
+	void deleteByFranchiseeId(Long id);
 }
