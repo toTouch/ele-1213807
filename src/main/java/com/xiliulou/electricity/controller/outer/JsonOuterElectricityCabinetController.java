@@ -156,7 +156,7 @@ public class JsonOuterElectricityCabinetController {
      */
     @GetMapping(value = "/outer/checkBattery")
     public R checkBattery(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName,
-            @RequestParam("batterySn") String batterySn,@RequestParam("isParseBattery") Boolean isParseBattery) {
+            @RequestParam("batterySn") String batterySn,@RequestParam(value = "isParseBattery", required = false) Boolean isParseBattery) {
         return electricityCabinetService.checkBattery(productKey,deviceName,batterySn,isParseBattery);
     }
 

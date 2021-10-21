@@ -1642,7 +1642,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//电池加盟商是否匹配
-		if(isParseBattery){
+		if(Objects.nonNull(isParseBattery)&&isParseBattery){
            //查电池所属加盟商
 			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
 			if(Objects.isNull(franchiseeBindElectricityBattery)){
