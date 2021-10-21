@@ -137,7 +137,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 			userInfoVOList.add(userInfoVO);
 		}
 
-		userInfoVOList.stream().sorted(Comparator.comparing(UserInfoVO::getMemberCardExpireTime)).collect(Collectors.toList());
 		return R.ok(userInfoVOList);
 	}
 
