@@ -195,7 +195,6 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
                 .type(FranchiseeSplitAccountHistory.TYPE_OPERATOR)
                 .franchiseeId(franchiseeId)
                 .createTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId())
                 .currentTotalIncome(franchiseeAmount.getTotalIncome())
                 .orderId("-1")
