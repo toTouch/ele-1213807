@@ -49,7 +49,7 @@
 
 	<update id="deleteByFranchiseeId">
 		update t_franchisee_amount
-		set del_flag = 0
+		set del_flag = 1
 		<where>
 		 <if test="id != null">
 		   and franchisee_id = #{id}
