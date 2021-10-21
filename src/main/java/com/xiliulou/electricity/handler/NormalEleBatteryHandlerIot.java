@@ -191,7 +191,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
 
 		//比较最大电量，保证仓门电池是最大电量的电池
-		if(!eleBatteryVo.getIsMultiBatteryModel()) {
+		if(Objects.isNull(eleBatteryVo.getIsMultiBatteryModel())||!eleBatteryVo.getIsMultiBatteryModel()) {
 			Double nowPower = eleBatteryVo.getPower();
 			BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
 			newBigEleBatteryVo.setCellNo(cellNo);
