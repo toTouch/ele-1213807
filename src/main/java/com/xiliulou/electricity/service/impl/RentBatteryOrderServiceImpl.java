@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
@@ -16,6 +17,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
@@ -32,6 +34,7 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.StoreService;
@@ -48,6 +51,7 @@ import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,11 +66,13 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 租电池记录(TRentBatteryOrder)表服务实现类
@@ -101,6 +107,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
 	StoreService storeService;
+	@Autowired
+	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 
 	/**
 	 * 新增数据
@@ -882,7 +890,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	//分配满仓
 	@Override
-	public String findUsableBatteryCellNo(Integer id, String cellNo, String batteryType,Long franchiseeId) {
+	public Triple<Boolean, String, Object> findUsableBatteryCellNo(Integer id, String cellNo, String batteryType,Long franchiseeId) {
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("findNewUsableCellNo is error!not found electricityCabinet! electricityCabinetId:{}", id);
@@ -905,15 +913,53 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		if (Objects.isNull(box)) {
-			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo, batteryType);
-			if (!DataUtil.collectionIsUsable(usableBoxes)) {
-				return null;
+
+			List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet,cellNo,batteryType);
+
+			if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
+				return Triple.of(false, "0", "换电柜暂无满电电池");
 			}
+
+
+			List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = new ArrayList<>();
+
+			Integer count=0;
+			for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
+				//是否满电
+				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
+				if (Objects.nonNull(electricityBattery)) {
+					if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
+
+						ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
+						BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
+						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+						count++;
+
+						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(item);
+						if(Objects.nonNull(franchiseeBindElectricityBattery)){
+							electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+						}
+
+					}
+				}
+			}
+
+			if(count<1){
+				return Triple.of(false, "0", "换电柜暂无满电电池");
+			}
+
+			if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
+				return Triple.of(false, "0", "加盟商未绑定满电电池");
+			}
+
+
+			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
+
 
 			box = Integer.valueOf(usableBoxes.get(0).getCellNo());
 		}
 
-		return box.toString();
+		return Triple.of(true, box.toString(), null);
 	}
 
 	@Override
