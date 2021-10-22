@@ -32,6 +32,8 @@ import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -94,6 +96,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
 	RentBatteryOrderService rentBatteryOrderService;
+
 
 
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
@@ -470,9 +473,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 	@Override
 	public Integer queryFullyElectricityBattery(Integer id,String batteryType) {
-		List<String> sns = electricityCabinetMapper.queryFullyElectricityBattery(id,batteryType);
-		Integer totalCount = sns.size();
+		List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id,batteryType);
+		Integer totalCount = ids.size();
 		return totalCount;
+	}
+
+
+
+	public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id,String batteryType,Long franchiseeId) {
+		List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id,batteryType);
+
+		if(ObjectUtils.isEmpty(ids)){
+			return Triple.of(false, "0", "换电柜暂无满电电池");
+		}
+
+		Integer count=0;
+		for (Long item:ids) {
+			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(item);
+		    if(Objects.nonNull(franchiseeBindElectricityBattery)){
+			    count++;
+		    }
+		}
+
+		if(count<1){
+			return Triple.of(false, "0", "加盟商未绑定满电电池");
+		}
+
+
+		return Triple.of(true, count.toString(), null);
 	}
 
 	@Override
@@ -1328,17 +1356,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery=0;
+		Triple<Boolean, String, Object> tripleResult;
 		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType());
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
 		}else {
-			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),null,franchiseeUserInfo.getFranchiseeId());
 		}
 
 
-		if (fullyElectricityBattery <= 0) {
+		if(Objects.isNull(tripleResult)){
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
+
+		if(tripleResult.getLeft()){
+			return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
+		}
+
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1356,7 +1389,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
 		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
-		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+		electricityCabinetVO.setFullyElectricityBattery(Integer.valueOf(tripleResult.getMiddle()));
 		return R.ok(electricityCabinetVO);
 	}
 
@@ -1489,13 +1522,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 
-		//查满仓空仓数
-		Integer fullyElectricityBattery=0;
-		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType());
-		}else {
-			fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
-		}
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1507,21 +1533,40 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			//电池总数
 			electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
 		}
+
+		Triple<Boolean, String, Object> tripleResult;
+		//查满仓空仓数
+		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
+		}else {
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),null,franchiseeUserInfo.getFranchiseeId());
+		}
+
 		//已租电池则还电池
 		if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
 			if (noElectricityBattery <= 0) {
 				return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
 			}
 		} else {
-			//查满仓空仓数
-			if (fullyElectricityBattery <= 0) {
+
+			if(Objects.isNull(tripleResult)){
 				return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 			}
+
+			if(tripleResult.getLeft()){
+				return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
+			}
+
 		}
 
 		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
 		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
-		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+
+		if(Objects.nonNull(tripleResult)) {
+			electricityCabinetVO.setFullyElectricityBattery(Integer.valueOf(tripleResult.getMiddle()));
+		}else {
+			electricityCabinetVO.setFullyElectricityBattery(0);
+		}
 		return R.ok(electricityCabinetVO);
 	}
 
