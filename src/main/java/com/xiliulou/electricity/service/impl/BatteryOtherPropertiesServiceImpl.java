@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.mapper.BatteryOtherPropertiesMapper;
 import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
@@ -38,5 +39,11 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 		}
 
 
+	}
+
+	@Override
+	public R queryBySn(String sn) {
+		return R.ok(batteryOtherPropertiesMapper.selectOne(new LambdaQueryWrapper<BatteryOtherProperties>()
+				.eq(BatteryOtherProperties::getBatteryName,sn)));
 	}
 }

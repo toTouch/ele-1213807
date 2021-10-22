@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 
 /**
@@ -11,4 +12,6 @@ import com.xiliulou.electricity.entity.BatteryOtherProperties;
 public interface BatteryOtherPropertiesService {
 
     void insertOrUpdate(BatteryOtherProperties batteryOtherProperties);
+
+    R queryBySn(String sn);
 }
