@@ -70,4 +70,9 @@ public class BatteryOtherProperties {
 
     private String batteryName;
 
+    /**
+     * 0--正常 1--删除
+     */
+    private Integer delFlag;
+
 }
