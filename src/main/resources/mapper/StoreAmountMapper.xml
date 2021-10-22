@@ -18,6 +18,12 @@
 		<if test="tenantId != null">
 			and tenant_id = #{tenantId}
 		</if>
+		<if test="storeIdList!=null and storeIdList!=''">
+			and store_id in
+			<foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
 	</select>
@@ -37,6 +43,12 @@
 		</if>
 		<if test="tenantId != null">
 			and tenant_id = #{tenantId}
+		</if>
+		<if test="storeIdList!=null and storeIdList!=''">
+			and store_id in
+			<foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
 		</if>
 	</select>
 

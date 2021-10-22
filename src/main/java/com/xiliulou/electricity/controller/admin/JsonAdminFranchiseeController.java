@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
@@ -10,8 +13,10 @@ import com.xiliulou.electricity.service.FranchiseeAmountService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -158,6 +163,22 @@ public class JsonAdminFranchiseeController {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//1、先找到加盟商
+		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+		if (ObjectUtil.isEmpty(franchisee)) {
+			return R.ok(0);
+		}
+
+		franchiseeId=franchisee.getId();
+
+
+
 		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
 				.offset(offset)
 				.size(size)
@@ -180,6 +201,22 @@ public class JsonAdminFranchiseeController {
 
 
 		Integer tenantId = TenantContextHolder.getTenantId();
+
+
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//1、先找到加盟商
+		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+		if (ObjectUtil.isEmpty(franchisee)) {
+			return R.ok(0);
+		}
+
+		franchiseeId=franchisee.getId();
+
 
 		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
 				.startTime(startTime)

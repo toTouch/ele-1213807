@@ -268,13 +268,41 @@ public class JsonAdminStoreController {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//1、先找到加盟商
+		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+		if (ObjectUtil.isEmpty(franchisee)) {
+			return R.ok(0);
+		}
+
+		List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+
+		if (ObjectUtil.isEmpty(storeList)) {
+			return R.ok(0);
+		}
+		//2、再找加盟商绑定的门店
+		List<Long> storeIdList = new ArrayList<>();
+		for (Store store : storeList) {
+			storeIdList.add(store.getId());
+		}
+		if (ObjectUtil.isEmpty(storeIdList)) {
+			return R.ok(0);
+		}
+
+
 		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
 				.offset(offset)
 				.size(size)
 				.startTime(startTime)
 				.endTime(endTime)
 				.tenantId(tenantId)
-				.storeId(storeId).build();
+				.storeId(storeId)
+				.storeIdList(storeIdList).build();
 
 		return storeAmountService.queryList(storeAccountQuery);
 	}
@@ -291,11 +319,39 @@ public class JsonAdminStoreController {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//1、先找到加盟商
+		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+		if (ObjectUtil.isEmpty(franchisee)) {
+			return R.ok(0);
+		}
+
+		List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+
+		if (ObjectUtil.isEmpty(storeList)) {
+			return R.ok(0);
+		}
+		//2、再找加盟商绑定的门店
+		List<Long> storeIdList = new ArrayList<>();
+		for (Store store : storeList) {
+			storeIdList.add(store.getId());
+		}
+		if (ObjectUtil.isEmpty(storeIdList)) {
+			return R.ok(0);
+		}
+
+
 		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
 				.startTime(startTime)
 				.endTime(endTime)
 				.tenantId(tenantId)
-				.storeId(storeId).build();
+				.storeId(storeId)
+				.storeIdList(storeIdList).build();
 
 		return storeAmountService.queryCount(storeAccountQuery);
 	}

@@ -4,6 +4,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2020/6/15 10:02
@@ -23,5 +25,7 @@ public class StoreAccountQuery {
 	private Integer tenantId;
 
 	private Long storeId;
+
+	private List<Long> storeIdList;
 
 }
