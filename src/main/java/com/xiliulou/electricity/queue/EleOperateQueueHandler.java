@@ -3,6 +3,7 @@ package com.xiliulou.electricity.queue;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -25,6 +26,7 @@ import com.xiliulou.electricity.service.RentBatteryOrderService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
@@ -246,11 +248,22 @@ public class EleOperateQueueHandler {
 
 
 				//分配电池 --只分配满电电池
+				Triple<Boolean, String, Object> tripleResult;
 				if(Objects.equals(oldFranchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-					 cellNo=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),oldFranchiseeUserInfo.getBatteryType());
+					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),oldFranchiseeUserInfo.getBatteryType(),oldFranchiseeUserInfo.getFranchiseeId());
 				}else {
-					cellNo=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null);
+					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null,oldFranchiseeUserInfo.getFranchiseeId());
 				}
+
+				if(Objects.isNull(tripleResult)){
+					return;
+				}
+
+				if(tripleResult.getLeft()){
+					return ;
+				}
+
+				cellNo=tripleResult.getMiddle();
 
 				if (Objects.isNull(cellNo)) {
 					log.error("check Old Battery not find fully battery!orderId:{}", electricityCabinetOrder.getOrderId());

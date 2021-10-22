@@ -306,12 +306,22 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		}
 
 		//分配电池 --只分配满电电池
-		String cellNo = null;
+		Triple<Boolean, String, Object> tripleResult;
 		if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
+			tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
 		} else {
-			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, null,franchiseeUserInfo.getFranchiseeId());
+			tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, null,franchiseeUserInfo.getFranchiseeId());
 		}
+
+		if(Objects.isNull(tripleResult)){
+			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
+		}
+
+		if(tripleResult.getLeft()){
+			return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
+		}
+
+		String cellNo=tripleResult.getMiddle();
 
 		if (Objects.isNull(cellNo)) {
 			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
@@ -935,7 +945,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
 						count++;
 
-						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(item);
+						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
 						if(Objects.nonNull(franchiseeBindElectricityBattery)){
 							electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
 						}
