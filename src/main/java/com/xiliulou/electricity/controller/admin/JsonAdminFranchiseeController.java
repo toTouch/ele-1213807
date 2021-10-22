@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
@@ -169,14 +170,20 @@ public class JsonAdminFranchiseeController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//1、先找到加盟商
-		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-		if (ObjectUtil.isEmpty(franchisee)) {
-			return R.ok(0);
+		Franchisee franchisee=null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+
+			//找到加盟商
+			franchisee = franchiseeService.queryByUid(user.getUid());
+			if (ObjectUtil.isEmpty(franchisee)) {
+				return R.ok(0);
+			}
 		}
 
-		franchiseeId=franchisee.getId();
-
+		if(Objects.nonNull(franchisee)){
+			franchiseeId=franchisee.getId();
+		}
 
 
 		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
@@ -209,13 +216,21 @@ public class JsonAdminFranchiseeController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//1、先找到加盟商
-		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-		if (ObjectUtil.isEmpty(franchisee)) {
-			return R.ok(0);
+
+		Franchisee franchisee=null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+
+			//找到加盟商
+			franchisee = franchiseeService.queryByUid(user.getUid());
+			if (ObjectUtil.isEmpty(franchisee)) {
+				return R.ok(0);
+			}
 		}
 
-		franchiseeId=franchisee.getId();
+		if(Objects.nonNull(franchisee)){
+			franchiseeId=franchisee.getId();
+		}
 
 
 		FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()

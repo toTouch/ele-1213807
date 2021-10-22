@@ -4,6 +4,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
@@ -248,7 +249,6 @@ public class JsonAdminStoreController {
 		return storeService.updateStatus(id, usableStatus);
 	}
 
-
 	/**
 	 * 门店用户金额列表
 	 */
@@ -257,7 +257,7 @@ public class JsonAdminStoreController {
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "storeId", required = false) Long storeId,
 			@RequestParam(value = "startTime", required = false) Long startTime,
-			@RequestParam(value = "endTime", required = false) Long endTime){
+			@RequestParam(value = "endTime", required = false) Long endTime) {
 		if (size < 0 || size > 50) {
 			size = 50L;
 		}
@@ -274,26 +274,44 @@ public class JsonAdminStoreController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//1、先找到加盟商
-		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-		if (ObjectUtil.isEmpty(franchisee)) {
-			return R.ok(0);
-		}
+		List<Long> storeIdList = null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 
-		List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+			//加盟商查询
+			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+				//1、先找到加盟商
+				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+				if (ObjectUtil.isEmpty(franchisee)) {
+					return R.ok(0);
+				}
 
-		if (ObjectUtil.isEmpty(storeList)) {
-			return R.ok(0);
-		}
-		//2、再找加盟商绑定的门店
-		List<Long> storeIdList = new ArrayList<>();
-		for (Store store : storeList) {
-			storeIdList.add(store.getId());
-		}
-		if (ObjectUtil.isEmpty(storeIdList)) {
-			return R.ok(0);
-		}
+				List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
 
+				if (ObjectUtil.isEmpty(storeList)) {
+					return R.ok(0);
+				}
+				//2、再找加盟商绑定的门店
+				storeIdList = new ArrayList<>();
+				for (Store store : storeList) {
+					storeIdList.add(store.getId());
+				}
+				if (ObjectUtil.isEmpty(storeIdList)) {
+					return R.ok(0);
+				}
+			}
+
+
+			//门店查询
+			if(Objects.equals(user.getType(), User.TYPE_USER_STORE)){
+				Store store=storeService.queryByUid(user.getUid());
+				if (ObjectUtil.isEmpty(store)) {
+					return R.ok(0);
+				}
+				storeIdList = new ArrayList<>();
+				storeIdList.add(store.getId());
+			}
+		}
 
 		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
 				.offset(offset)
@@ -307,15 +325,13 @@ public class JsonAdminStoreController {
 		return storeAmountService.queryList(storeAccountQuery);
 	}
 
-
 	/**
 	 * 门店用户金额列表数量
 	 */
 	@GetMapping("/admin/store/getAccountCount")
 	public R getAccountCount(@RequestParam(value = "storeId", required = false) Long storeId,
 			@RequestParam(value = "startTime", required = false) Long startTime,
-			@RequestParam(value = "endTime", required = false) Long endTime){
-
+			@RequestParam(value = "endTime", required = false) Long endTime) {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -325,26 +341,44 @@ public class JsonAdminStoreController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		//1、先找到加盟商
-		Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-		if (ObjectUtil.isEmpty(franchisee)) {
-			return R.ok(0);
-		}
+		List<Long> storeIdList = null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 
-		List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+			//加盟商查询
+			if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+				//1、先找到加盟商
+				Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+				if (ObjectUtil.isEmpty(franchisee)) {
+					return R.ok(0);
+				}
 
-		if (ObjectUtil.isEmpty(storeList)) {
-			return R.ok(0);
-		}
-		//2、再找加盟商绑定的门店
-		List<Long> storeIdList = new ArrayList<>();
-		for (Store store : storeList) {
-			storeIdList.add(store.getId());
-		}
-		if (ObjectUtil.isEmpty(storeIdList)) {
-			return R.ok(0);
-		}
+				List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
 
+				if (ObjectUtil.isEmpty(storeList)) {
+					return R.ok(0);
+				}
+				//2、再找加盟商绑定的门店
+				storeIdList = new ArrayList<>();
+				for (Store store : storeList) {
+					storeIdList.add(store.getId());
+				}
+				if (ObjectUtil.isEmpty(storeIdList)) {
+					return R.ok(0);
+				}
+			}
+
+
+			//门店查询
+			if(Objects.equals(user.getType(), User.TYPE_USER_STORE)){
+				Store store=storeService.queryByUid(user.getUid());
+				if (ObjectUtil.isEmpty(store)) {
+					return R.ok(0);
+				}
+				storeIdList = new ArrayList<>();
+				storeIdList.add(store.getId());
+			}
+		}
 
 		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
 				.startTime(startTime)
@@ -355,7 +389,6 @@ public class JsonAdminStoreController {
 
 		return storeAmountService.queryCount(storeAccountQuery);
 	}
-
 
 	@GetMapping("/admin/store/getAccountHistoryList")
 	public R getAccountHistoryList(@RequestParam("size") Long size,
@@ -381,14 +414,12 @@ public class JsonAdminStoreController {
 		return storeSplitAccountHistoryService.queryList(storeAccountQuery);
 	}
 
-
 	@GetMapping("/admin/store/getAccountHistoryCount")
 	public R getAccountHistoryCount(
 			@RequestParam(value = "storeId", required = false) Long storeId,
 			@RequestParam(value = "startTime", required = false) Long startTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
 			@RequestParam(value = "oid", required = false) Long oid) {
-
 
 		StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
 				.startTime(startTime)
@@ -408,6 +439,5 @@ public class JsonAdminStoreController {
 
 		return storeAmountService.modifyBalance(storeId, modifyBalance);
 	}
-
 
 }
