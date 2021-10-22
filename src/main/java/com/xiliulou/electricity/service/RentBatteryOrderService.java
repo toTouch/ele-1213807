@@ -44,7 +44,8 @@ public interface RentBatteryOrderService {
 
 	R queryNewStatus(String orderId);
 
-    String findUsableBatteryCellNo(Integer id, String cellNo,String batteryType);
+    String findUsableBatteryCellNo(Integer id, String cellNo,String batteryType,Long franchiseeId);
 
     R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery);
+
 }

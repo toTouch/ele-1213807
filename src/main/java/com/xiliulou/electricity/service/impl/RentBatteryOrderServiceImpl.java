@@ -300,9 +300,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		//分配电池 --只分配满电电池
 		String cellNo = null;
 		if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType());
+			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
 		} else {
-			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, null);
+			cellNo = findUsableBatteryCellNo(electricityCabinet.getId(), null, null,franchiseeUserInfo.getFranchiseeId());
 		}
 
 		if (Objects.isNull(cellNo)) {
@@ -882,7 +882,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	//分配满仓
 	@Override
-	public String findUsableBatteryCellNo(Integer id, String cellNo, String batteryType) {
+	public String findUsableBatteryCellNo(Integer id, String cellNo, String batteryType,Long franchiseeId) {
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("findNewUsableCellNo is error!not found electricityCabinet! electricityCabinetId:{}", id);
