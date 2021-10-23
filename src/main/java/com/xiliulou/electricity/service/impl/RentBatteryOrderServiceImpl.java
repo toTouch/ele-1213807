@@ -923,7 +923,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 						if (Objects.nonNull(electricityBattery)) {
 
 							//3、查加盟商是否绑定电池
-							FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+							FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(),franchiseeId);
 							if (Objects.nonNull(franchiseeBindElectricityBattery)) {
 								box = Integer.valueOf(newCellNo);
 							}
@@ -957,7 +957,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
 						count++;
 
-						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(),franchiseeId);
 						if (Objects.nonNull(franchiseeBindElectricityBattery)) {
 							electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
 						}
