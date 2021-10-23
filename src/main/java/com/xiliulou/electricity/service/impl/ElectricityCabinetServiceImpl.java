@@ -489,7 +489,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		Integer count=0;
 		for (Long item:ids) {
-			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(item);
+			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item,franchiseeId);
 		    if(Objects.nonNull(franchiseeBindElectricityBattery)){
 			    count++;
 		    }
