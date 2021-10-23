@@ -192,7 +192,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
             return R.fail("ELECTRICITY.00111", "金额不存在！");
         }
 
-        if (modifyBalance.compareTo(storeAmount.getBalance())<0) {
+        if (modifyBalance.compareTo(storeAmount.getBalance())>=0) {
             return R.fail("ELECTRICITY.00112", "修改余额不可以超过总余额！");
         }
 
