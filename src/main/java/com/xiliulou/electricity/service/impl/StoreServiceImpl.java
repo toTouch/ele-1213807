@@ -11,6 +11,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.User;
@@ -21,6 +22,7 @@ import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
@@ -66,6 +68,8 @@ public class StoreServiceImpl implements StoreService {
 	FranchiseeService franchiseeService;
 	@Autowired
 	StoreAmountService storeAmountService;
+	@Autowired
+	RoleService roleService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -95,10 +99,24 @@ public class StoreServiceImpl implements StoreService {
 		storeAddAndUpdate.setCityId(283);
 		storeAddAndUpdate.setProvinceId(27);
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
 		BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
+
 		adminUserQuery.setUserType(User.TYPE_USER_STORE);
+		if (!Objects.equals(tenantId, 1)) {
+			//普通租户新增加盟商
+			//1、查普通租户加盟商角色
+			Long roleId = roleService.queryByName(Role.ROLE_STORE_USER_NAME, tenantId);
+			if (Objects.nonNull(roleId)) {
+				adminUserQuery.setUserType(Integer.valueOf(roleId.toString())-1);
+			}
+
+		}
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
 		adminUserQuery.setPhone(storeAddAndUpdate.getServicePhone());
@@ -109,8 +127,7 @@ public class StoreServiceImpl implements StoreService {
 		}
 
 		Long uid = (Long) result.getData();
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+
 
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);

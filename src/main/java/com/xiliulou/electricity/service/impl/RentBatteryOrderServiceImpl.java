@@ -317,7 +317,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
 
-		if(tripleResult.getLeft()){
+		if(!tripleResult.getLeft()){
 			return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
 		}
 

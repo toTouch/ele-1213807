@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.FranchiseeMapper;
@@ -24,6 +25,7 @@ import com.xiliulou.electricity.service.FranchiseeAmountService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -80,34 +82,50 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	@Autowired
 	FranchiseeAmountService franchiseeAmountService;
 
+	@Autowired
+	RoleService roleService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R save(FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
 
 		//押金参数判断
-		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.OLD_MODEL_TYPE)){
-			if(Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())){
+		if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+			if (Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 		}
 
-		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.MEW_MODEL_TYPE)){
-			if(ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())){
+		if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+			if (ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 
 			//封装型号押金
-			String modelBatteryDeposit= JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
+			String modelBatteryDeposit = JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
 			franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
 
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
 		BeanUtil.copyProperties(franchiseeAddAndUpdate, adminUserQuery);
+
+		//admin用户新增加盟商
 		adminUserQuery.setUserType(User.TYPE_USER_FRANCHISEE);
+		if (!Objects.equals(tenantId, 1)) {
+			//普通租户新增加盟商
+			//1、查普通租户加盟商角色
+			Long roleId = roleService.queryByName(Role.ROLE_FRANCHISEE_USER_NAME, tenantId);
+			if (Objects.nonNull(roleId)) {
+				adminUserQuery.setUserType(Integer.valueOf(roleId.toString())-1);
+			}
+
+		}
+
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
 
@@ -117,8 +135,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		}
 
 		Long uid = (Long) result.getData();
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
 		Franchisee franchisee = new Franchisee();
 		BeanUtil.copyProperties(franchiseeAddAndUpdate, franchisee);
@@ -129,7 +145,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		franchisee.setUid(uid);
 		franchisee.setCid(franchiseeAddAndUpdate.getCityId());
 		int insert = franchiseeMapper.insert(franchisee);
-
 
 		//新增加盟商账户
 		FranchiseeAmount franchiseeAmount = FranchiseeAmount.builder()
@@ -144,7 +159,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 				.tenantId(tenantId)
 				.build();
 		franchiseeAmountService.insert(franchiseeAmount);
-
 
 		if (insert > 0) {
 			return R.ok();
@@ -163,29 +177,27 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		}
 
 		//押金参数判断
-		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.OLD_MODEL_TYPE)){
-			if(Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())){
+		if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+			if (Objects.isNull(franchiseeAddAndUpdate.getBatteryDeposit())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 		}
 
-		if(Objects.equals(franchiseeAddAndUpdate.getModelType(),Franchisee.MEW_MODEL_TYPE)){
-			if(ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())){
+		if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+			if (ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
 				return R.fail("ELECTRICITY.0007", "不合法的参数");
 			}
 
 			//封装型号押金
-			String modelBatteryDeposit= JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
+			String modelBatteryDeposit = JsonUtil.toJson(franchiseeAddAndUpdate.getModelBatteryDepositList());
 			franchiseeAddAndUpdate.setModelBatteryDeposit(modelBatteryDeposit);
 
 		}
 
-
-		Franchisee newFranchisee =new Franchisee();
+		Franchisee newFranchisee = new Franchisee();
 		BeanUtil.copyProperties(franchiseeAddAndUpdate, newFranchisee);
 		newFranchisee.setUpdateTime(System.currentTimeMillis());
 		int update = franchiseeMapper.updateById(newFranchisee);
-
 
 		if (update > 0) {
 			return R.ok();
@@ -254,7 +266,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 					e.setCityName(city.getName());
 				}
 
-
 				//获取用户名称
 				if (Objects.nonNull(e.getUid())) {
 					User user = userService.queryByUidFromCache(e.getUid());
@@ -263,12 +274,11 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 					}
 				}
 
-
 				//加盟商押金
-				if(Objects.equals(e.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+				if (Objects.equals(e.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
 
 					//封装型号押金
-					List modelBatteryDepositList= JsonUtil.fromJson(e.getModelBatteryDeposit(),List.class);
+					List modelBatteryDepositList = JsonUtil.fromJson(e.getModelBatteryDeposit(), List.class);
 					e.setModelBatteryDepositList(modelBatteryDepositList);
 
 				}
@@ -290,7 +300,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		//再新增
 		for (Long electricityBatteryId : bindElectricityBatteryQuery.getElectricityBatteryIdList()) {
 			//判断电池是否绑定加盟商
-			Integer count=franchiseeBindElectricityBatteryService.queryCountByBattery(electricityBatteryId);
+			Integer count = franchiseeBindElectricityBatteryService.queryCountByBattery(electricityBatteryId);
 
 			if (count > 0) {
 				return R.fail("SYSTEM.00113", "绑定失败，电池已绑定其他加盟商");
@@ -353,22 +363,20 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R setSplit(List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList) {
-		if(ObjectUtils.isEmpty(franchiseeSetSplitQueryList)){
+		if (ObjectUtils.isEmpty(franchiseeSetSplitQueryList)) {
 			return R.fail("SYSTEM.0002", "参数不合法");
 		}
 
-
-		int totalPercent=0;
-		Long franchiseeId=null;
-
+		int totalPercent = 0;
+		Long franchiseeId = null;
 
 		for (FranchiseeSetSplitQuery franchiseeSetSplitQuery : franchiseeSetSplitQueryList) {
 
 			//加盟商分账比列
-			if(Objects.equals(franchiseeSetSplitQuery.getType(), FranchiseeSetSplitQuery.TYPE_FRANCHISEE)){
-				totalPercent= franchiseeSetSplitQuery.getPercent();
-				franchiseeId= franchiseeSetSplitQuery.getId();
-				Franchisee franchisee=new Franchisee();
+			if (Objects.equals(franchiseeSetSplitQuery.getType(), FranchiseeSetSplitQuery.TYPE_FRANCHISEE)) {
+				totalPercent = franchiseeSetSplitQuery.getPercent();
+				franchiseeId = franchiseeSetSplitQuery.getId();
+				Franchisee franchisee = new Franchisee();
 				franchisee.setId(franchiseeSetSplitQuery.getId());
 				franchisee.setPercent(franchiseeSetSplitQuery.getPercent());
 				franchisee.setUpdateTime(System.currentTimeMillis());
@@ -377,8 +385,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 			}
 
 			//门店分账比列
-			if(Objects.equals(franchiseeSetSplitQuery.getType(), FranchiseeSetSplitQuery.TYPE_STORE)){
-				Store store=new Store();
+			if (Objects.equals(franchiseeSetSplitQuery.getType(), FranchiseeSetSplitQuery.TYPE_STORE)) {
+				Store store = new Store();
 				store.setId(franchiseeSetSplitQuery.getId());
 				store.setPercent(franchiseeSetSplitQuery.getPercent());
 				store.setUpdateTime(System.currentTimeMillis());
@@ -386,13 +394,12 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 			}
 		}
 
-
-		if(Objects.nonNull(franchiseeId)){
-			List<Store> storeList= storeService.queryByFranchiseeId(franchiseeId);
-			for (Store store:storeList) {
-				totalPercent=totalPercent+store.getPercent();
+		if (Objects.nonNull(franchiseeId)) {
+			List<Store> storeList = storeService.queryByFranchiseeId(franchiseeId);
+			for (Store store : storeList) {
+				totalPercent = totalPercent + store.getPercent();
 			}
-			if(totalPercent>100){
+			if (totalPercent > 100) {
 				throw new CustomBusinessException("总分账比列超过100");
 			}
 		}
