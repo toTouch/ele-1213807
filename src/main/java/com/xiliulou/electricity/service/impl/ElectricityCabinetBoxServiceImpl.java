@@ -133,7 +133,6 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 
 	@Override
 	public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType) {
-
 		return electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(),cellNo,batteryType);
 	}
 

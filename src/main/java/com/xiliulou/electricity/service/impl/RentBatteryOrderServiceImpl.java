@@ -205,14 +205,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
 		}
 
-
 		//查找换电柜门店
 		if (Objects.isNull(electricityCabinet.getStoreId())) {
 			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
 			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
 			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
 		}
-
 
 		Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
 		if (Objects.isNull(store)) {
@@ -308,20 +306,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 		//分配电池 --只分配满电电池
 		Triple<Boolean, String, Object> tripleResult;
 		if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-			tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
+			tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
 		} else {
-			tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, null,franchiseeUserInfo.getFranchiseeId());
+			tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, null, franchiseeUserInfo.getFranchiseeId());
 		}
 
-		if(Objects.isNull(tripleResult)){
+		if (Objects.isNull(tripleResult)) {
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
 
-		if(!tripleResult.getLeft()){
+		if (!tripleResult.getLeft()) {
 			return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
 		}
 
-		String cellNo=tripleResult.getMiddle();
+		String cellNo = tripleResult.getMiddle();
 
 		if (Objects.isNull(cellNo)) {
 			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
@@ -370,7 +368,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				.command(HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR).build();
 		eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 		return R.ok(orderId);
-
 
 	}
 
@@ -444,7 +441,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
 			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
 		}
-
 
 		Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
 		if (Objects.isNull(store)) {
@@ -900,7 +896,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 	//分配满仓
 	@Override
-	public Triple<Boolean, String, Object> findUsableBatteryCellNo(Integer id, String cellNo, String batteryType,Long franchiseeId) {
+	public Triple<Boolean, String, Object> findUsableBatteryCellNo(Integer id, String cellNo, String batteryType, Long franchiseeId) {
 		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
 		if (Objects.isNull(electricityCabinet)) {
 			log.error("findNewUsableCellNo is error!not found electricityCabinet! electricityCabinetId:{}", id);
@@ -917,23 +913,39 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				Double power = bigEleBatteryVo.getPower();
 				if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
 						&& !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
-					box = Integer.valueOf(newCellNo);
+
+					//1、查仓门
+					ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(id,bigEleBatteryVo.getCellNo());
+					if (Objects.nonNull(electricityCabinetBox)&&Objects.nonNull(electricityCabinetBox.getSn())) {
+
+						//2、查电池
+						ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
+						if (Objects.nonNull(electricityBattery)) {
+
+							//3、查加盟商是否绑定电池
+							FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+							if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+								box = Integer.valueOf(newCellNo);
+							}
+						}
+
+					}
+
 				}
 			}
 		}
 
 		if (Objects.isNull(box)) {
 
-			List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet,cellNo,batteryType);
+			List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo, batteryType);
 
 			if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
 				return Triple.of(false, "0", "换电柜暂无满电电池");
 			}
 
-
 			List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = new ArrayList<>();
 
-			Integer count=0;
+			Integer count = 0;
 			for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
 				//是否满电
 				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
@@ -945,8 +957,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
 						count++;
 
-						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
-						if(Objects.nonNull(franchiseeBindElectricityBattery)){
+						FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+						if (Objects.nonNull(franchiseeBindElectricityBattery)) {
 							electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
 						}
 
@@ -954,7 +966,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				}
 			}
 
-			if(count<1){
+			if (count < 1) {
 				return Triple.of(false, "0", "换电柜暂无满电电池");
 			}
 
@@ -962,9 +974,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 				return Triple.of(false, "0", "加盟商未绑定满电电池");
 			}
 
-
 			List<ElectricityCabinetBoxVO> usableBoxes = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
-
 
 			box = Integer.valueOf(usableBoxes.get(0).getCellNo());
 		}
