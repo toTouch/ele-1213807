@@ -259,7 +259,7 @@ public class EleOperateQueueHandler {
 					return;
 				}
 
-				if(tripleResult.getLeft()){
+				if(!tripleResult.getLeft()){
 					return ;
 				}
 
