@@ -94,5 +94,8 @@ public class ElectricityBatteryVO {
     //所属用户
     private String userName;
 
+    //是否绑定加盟商
+    private Boolean isBind;
+
 
 }

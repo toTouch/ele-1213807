@@ -8,11 +8,13 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -42,6 +44,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     UserInfoService userInfoService;
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 
     /**
      * 保存电池
@@ -131,6 +135,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
                 if(Objects.nonNull(electricityCabinet)) {
                     electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+                }
+            }
+
+
+            //用于电池绑定问题
+            electricityBatteryVO.setIsBind(false);
+
+            if(Objects.nonNull(electricityBatteryQuery.getFranchiseeId())){
+                List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList=franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
+                if(ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)){
+                    for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery:franchiseeBindElectricityBatteryList) {
+                        if(Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(),electricityBattery.getId())){
+                            electricityBatteryVO.setIsBind(true);
+                        }
+                    }
                 }
             }
 

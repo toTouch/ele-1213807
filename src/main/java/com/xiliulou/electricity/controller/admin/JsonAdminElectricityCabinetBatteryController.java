@@ -84,7 +84,8 @@ public class JsonAdminElectricityCabinetBatteryController {
                                        @RequestParam(value = "size") Long size,
                                        @RequestParam(value = "status", required = false) Integer status,
                                        @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
-                                       @RequestParam(value = "sn", required = false) String sn) {
+                                       @RequestParam(value = "sn", required = false) String sn,
+                                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -95,6 +96,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setTenantId(tenantId);
         electricityBatteryQuery.setChargeStatus(chargeStatus);
+        electricityBatteryQuery.setFranchiseeId(franchiseeId);
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
