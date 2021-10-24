@@ -582,6 +582,11 @@ public class UserServiceImpl implements UserService {
 
 		//默认值
 		Long roleId = adminUserQuery.getUserType().longValue() + 1;
+		if(Objects.nonNull(adminUserQuery.getRoleId())){
+			roleId=adminUserQuery.getRoleId();
+		}
+
+
 		//运营商
 		if (Objects.equals(adminUserQuery.getUserType(), User.TYPE_USER_OPERATE)) {
 			Long role = roleService.queryByName("OPERATE_USER", tenantId);

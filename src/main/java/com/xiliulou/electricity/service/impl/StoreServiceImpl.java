@@ -113,7 +113,7 @@ public class StoreServiceImpl implements StoreService {
 			//1、查普通租户加盟商角色
 			Long roleId = roleService.queryByName(Role.ROLE_STORE_USER_NAME, tenantId);
 			if (Objects.nonNull(roleId)) {
-				adminUserQuery.setUserType(Integer.valueOf(roleId.toString())-1);
+				adminUserQuery.setRoleId(roleId);
 			}
 
 		}
