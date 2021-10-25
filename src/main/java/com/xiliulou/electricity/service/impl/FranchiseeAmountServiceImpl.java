@@ -173,6 +173,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     }
 
     @Override
+    @Transactional
     public R modifyBalance(Long franchiseeId, BigDecimal modifyBalance) {
         FranchiseeAmount franchiseeAmount = queryByFranchiseeIdFromCache(franchiseeId);
         if (Objects.isNull(franchiseeAmount)) {

@@ -186,6 +186,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     }
 
     @Override
+    @Transactional
     public R modifyBalance(Long storeId, BigDecimal modifyBalance) {
         StoreAmount storeAmount = queryByStoreIdFromCache(storeId);
         if (Objects.isNull(storeAmount)) {
