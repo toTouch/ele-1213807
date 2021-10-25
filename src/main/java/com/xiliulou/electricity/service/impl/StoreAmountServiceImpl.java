@@ -201,6 +201,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
         updateStoreAmount.setId(storeAmount.getId());
         updateStoreAmount.setBalance(storeAmount.getBalance().add(modifyBalance));
         updateStoreAmount.setUpdateTime(System.currentTimeMillis());
+        updateStoreAmount.setStoreId(storeId);
 
         update(updateStoreAmount);
 

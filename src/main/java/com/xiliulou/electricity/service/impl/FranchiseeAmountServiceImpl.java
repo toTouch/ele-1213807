@@ -188,6 +188,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         updateFranchiseeAmount.setId(franchiseeAmount.getId());
         updateFranchiseeAmount.setBalance(franchiseeAmount.getBalance().add(modifyBalance));
         updateFranchiseeAmount.setUpdateTime(System.currentTimeMillis());
+        updateFranchiseeAmount.setFranchiseeId(franchiseeId);
 
         update(updateFranchiseeAmount);
 
