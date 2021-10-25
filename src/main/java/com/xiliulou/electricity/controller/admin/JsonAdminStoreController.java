@@ -5,7 +5,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;

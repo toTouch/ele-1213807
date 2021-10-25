@@ -209,7 +209,6 @@ public class StoreAmountServiceImpl implements StoreAmountService {
                 .type(StoreSplitAccountHistory.TYPE_OPERATOR)
                 .storeId(storeId)
                 .createTime(System.currentTimeMillis())
-                .createTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId())
                 .currentTotalIncome(storeAmount.getTotalIncome())
                 .orderId("-1")
