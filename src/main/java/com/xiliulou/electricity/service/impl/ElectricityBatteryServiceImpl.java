@@ -22,6 +22,7 @@ import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,209 +37,201 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatteryMapper, ElectricityBattery> implements ElectricityBatteryService {
-    @Resource
-    private ElectricityBatteryMapper electricitybatterymapper;
-    @Autowired
-    StoreService storeService;
-    @Autowired
-    UserInfoService userInfoService;
-    @Autowired
-    ElectricityCabinetService electricityCabinetService;
-    @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+	@Resource
+	private ElectricityBatteryMapper electricitybatterymapper;
+	@Autowired
+	StoreService storeService;
+	@Autowired
+	UserInfoService userInfoService;
+	@Autowired
+	ElectricityCabinetService electricityCabinetService;
+	@Autowired
+	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 
-    /**
-     * 保存电池
-     *
-     * @param
-     * @return
-     */
-    @Override
-    public R saveElectricityBattery(ElectricityBattery electricityBattery) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+	/**
+	 * 保存电池
+	 *
+	 * @param
+	 * @return
+	 */
+	@Override
+	public R saveElectricityBattery(ElectricityBattery electricityBattery) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        Integer count=electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn,electricityBattery.getSn())
-                .eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
-        if(count>0){
-            return R.fail("该电池已被其他租户使用!");
-        }
-        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-        electricityBattery.setCreateTime(System.currentTimeMillis());
-        electricityBattery.setUpdateTime(System.currentTimeMillis());
-        electricityBattery.setTenantId(tenantId);
-        return R.ok(electricitybatterymapper.insert(electricityBattery));
-    }
+		Integer count = electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, electricityBattery.getSn())
+				.eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL));
+		if (count > 0) {
+			return R.fail("该电池已被其他租户使用!");
+		}
+		electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+		electricityBattery.setCreateTime(System.currentTimeMillis());
+		electricityBattery.setUpdateTime(System.currentTimeMillis());
+		electricityBattery.setTenantId(tenantId);
+		return R.ok(electricitybatterymapper.insert(electricityBattery));
+	}
 
-    /**
-     * 修改电池
-     *
-     * @param electricityBattery
-     * @return
-     */
-    @Override
-    public R update(ElectricityBattery electricityBattery) {
-        ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectById(electricityBattery.getId());
-        if (Objects.isNull(electricityBatteryDb)) {
-            log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
-            return R.fail("电池不存在!");
-        }
-        Integer count=electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn,electricityBattery.getSn())
-                .eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL).ne(ElectricityBattery::getId,electricityBattery.getId()));
-        if(count>0){
-            return R.fail("电池编号已绑定其他电池!");
-        }
-        electricityBattery.setUpdateTime(System.currentTimeMillis());
-        Integer rows = electricitybatterymapper.updateById(electricityBattery);
-        if (rows > 0) {
-            return R.ok();
-        } else {
-            return R.fail("修改失败!");
+	/**
+	 * 修改电池
+	 *
+	 * @param electricityBattery
+	 * @return
+	 */
+	@Override
+	public R update(ElectricityBattery electricityBattery) {
+		ElectricityBattery electricityBatteryDb = electricitybatterymapper.selectById(electricityBattery.getId());
+		if (Objects.isNull(electricityBatteryDb)) {
+			log.error("UPDATE ELECTRICITY_BATTERY  ERROR, NOT FOUND ELECTRICITY_BATTERY BY ID:{}", electricityBattery.getId());
+			return R.fail("电池不存在!");
+		}
+		Integer count = electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, electricityBattery.getSn())
+				.eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL).ne(ElectricityBattery::getId, electricityBattery.getId()));
+		if (count > 0) {
+			return R.fail("电池编号已绑定其他电池!");
+		}
+		electricityBattery.setUpdateTime(System.currentTimeMillis());
+		Integer rows = electricitybatterymapper.updateById(electricityBattery);
+		if (rows > 0) {
+			return R.ok();
+		} else {
+			return R.fail("修改失败!");
 
-        }
-    }
+		}
+	}
 
-    /**
-     * 电池分页
-     *
-     * @param electricityBatteryQuery
-     * @param
-     * @return
-     */
-    @Override
-    @DS("slave_1")
-    public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
+	/**
+	 * 电池分页
+	 *
+	 * @param electricityBatteryQuery
+	 * @param
+	 * @return
+	 */
+	@Override
+	@DS("slave_1")
+	public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
 
-        List<ElectricityBattery> electricityBatteryList=electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
+		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
 
-        if(ObjectUtil.isEmpty(electricityBatteryList)){
-            return R.ok(electricityBatteryList);
-        }
+		if (ObjectUtil.isEmpty(electricityBatteryList)) {
+			return R.ok(electricityBatteryList);
+		}
 
-        List<ElectricityBatteryVO> electricityBatteryVOList=new ArrayList<>();
+		List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
 
-        for (ElectricityBattery electricityBattery: electricityBatteryList) {
+		List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+		if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
+			franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
+		}
 
+		for (ElectricityBattery electricityBattery : electricityBatteryList) {
 
-            ElectricityBatteryVO electricityBatteryVO=new ElectricityBatteryVO();
-            BeanUtil.copyProperties(electricityBattery,electricityBatteryVO);
+			ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+			BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 
+			if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
+				UserInfo userInfo = userInfoService.queryByUid(electricityBattery.getUid());
+				if (Objects.nonNull(userInfo)) {
+					electricityBatteryVO.setUserName(userInfo.getName());
+				}
+			}
 
-            if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)&&Objects.nonNull(electricityBattery.getUid())){
-                UserInfo userInfo=userInfoService.queryByUid(electricityBattery.getUid());
-                if(Objects.nonNull(userInfo)) {
-                    electricityBatteryVO.setUserName(userInfo.getName());
-                }
-            }
+			if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS) && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
+				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
+				if (Objects.nonNull(electricityCabinet)) {
+					electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+				}
+			}
 
-            if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)&&Objects.nonNull(electricityBattery.getElectricityCabinetId())){
-                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
-                if(Objects.nonNull(electricityCabinet)) {
-                    electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
-                }
-            }
+			//用于电池绑定问题
+			electricityBatteryVO.setIsBind(false);
 
+			if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
+				for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
+					if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
+						electricityBatteryVO.setIsBind(true);
+					}
+				}
+			}
 
-            //用于电池绑定问题
-            electricityBatteryVO.setIsBind(false);
+			electricityBatteryVOList.add(electricityBatteryVO);
+		}
+		return R.ok(electricityBatteryVOList);
+	}
 
-            if(Objects.nonNull(electricityBatteryQuery.getFranchiseeId())){
-                List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList=franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-                if(ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)){
-                    for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery:franchiseeBindElectricityBatteryList) {
-                        if(Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(),electricityBattery.getId())){
-                            electricityBatteryVO.setIsBind(true);
-                        }
-                    }
-                }
-            }
+	@Override
+	public R queryById(Long electricityBatteryId) {
+		ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId);
 
-            electricityBatteryVOList.add(electricityBatteryVO);
-        }
-        return R.ok(electricityBatteryVOList);
-    }
+		ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+		BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 
-    @Override
-    public R queryById(Long electricityBatteryId) {
-        ElectricityBattery electricityBattery=electricitybatterymapper.selectById(electricityBatteryId);
+		if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
+			UserInfo userInfo = userInfoService.queryByUid(electricityBattery.getUid());
+			if (Objects.nonNull(userInfo)) {
+				electricityBatteryVO.setUserName(userInfo.getName());
+			}
+		}
+		return R.ok(electricityBatteryVO);
+	}
 
-        ElectricityBatteryVO electricityBatteryVO=new ElectricityBatteryVO();
-        BeanUtil.copyProperties(electricityBattery,electricityBatteryVO);
+	/**
+	 * 删除电池
+	 *
+	 * @param id
+	 * @return
+	 */
+	@Override
+	public R deleteElectricityBattery(Long id) {
+		ElectricityBattery electricityBattery = electricitybatterymapper.selectById(id);
+		if (Objects.isNull(electricityBattery)) {
+			log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,NOT FOUND ELECTRICITYBATTERY ID:{}", id);
+			return R.failMsg("未找到电池!");
+		}
 
-        if(Objects.equals(electricityBattery.getStatus(),ElectricityBattery.LEASE_STATUS)&&Objects.nonNull(electricityBattery.getUid())){
-            UserInfo userInfo=userInfoService.queryByUid(electricityBattery.getUid());
-            if(Objects.nonNull(userInfo)) {
-                electricityBatteryVO.setUserName(userInfo.getName());
-            }
-        }
-        return R.ok(electricityBatteryVO);
-    }
+		if (ObjectUtil.equal(ElectricityBattery.LEASE_STATUS, electricityBattery.getStatus())) {
+			log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,THIS ELECTRICITY_BATTERY IS USING:{}", id);
+			return R.failMsg("电池正在租用中,无法删除!");
+		}
 
-    /**
-     * 删除电池
-     *
-     * @param id
-     * @return
-     */
-    @Override
-    public R deleteElectricityBattery(Long id) {
-        ElectricityBattery electricityBattery = electricitybatterymapper.selectById(id);
-        if (Objects.isNull(electricityBattery)) {
-            log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,NOT FOUND ELECTRICITYBATTERY ID:{}", id);
-            return R.failMsg("未找到电池!");
-        }
+		int raws = electricitybatterymapper.deleteById(id);
+		if (raws > 0) {
+			return R.ok();
+		} else {
+			return R.failMsg("删除失败!");
+		}
+	}
 
-        if (ObjectUtil.equal(ElectricityBattery.LEASE_STATUS, electricityBattery.getStatus())) {
-            log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,THIS ELECTRICITY_BATTERY IS USING:{}", id);
-            return R.failMsg("电池正在租用中,无法删除!");
-        }
+	@Override
+	public ElectricityBattery queryByBindSn(String initElectricityBatterySn) {
+		return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>()
+				.eq(ElectricityBattery::getSn, initElectricityBatterySn));
+	}
 
-        int raws = electricitybatterymapper.deleteById(id);
-        if (raws > 0) {
-            return R.ok();
-        } else {
-            return R.failMsg("删除失败!");
-        }
-    }
+	/**
+	 * 获取个人电池
+	 *
+	 * @param uid
+	 * @return
+	 */
+	@Override
+	public ElectricityBattery queryByUid(Long uid) {
+		return baseMapper.selectBatteryInfo(uid);
+	}
 
+	@Override
+	public ElectricityBattery queryBySn(String oldElectricityBatterySn) {
+		return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().
+				eq(ElectricityBattery::getSn, oldElectricityBatterySn));
+	}
 
-    @Override
-    public ElectricityBattery queryByBindSn(String initElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>()
-                .eq(ElectricityBattery::getSn, initElectricityBatterySn));
-    }
+	@Override
+	public Integer updateByOrder(ElectricityBattery electricityBattery) {
+		return electricitybatterymapper.updateByOrder(electricityBattery);
+	}
 
-
-    /**
-     * 获取个人电池
-     *
-     * @param uid
-     * @return
-     */
-    @Override
-    public ElectricityBattery queryByUid(Long uid) {
-        return baseMapper.selectBatteryInfo(uid);
-    }
-
-
-    @Override
-    public ElectricityBattery queryBySn(String oldElectricityBatterySn) {
-        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().
-                eq(ElectricityBattery::getSn, oldElectricityBatterySn));
-    }
-
-
-
-
-
-    @Override
-    public Integer updateByOrder(ElectricityBattery electricityBattery) {
-        return electricitybatterymapper.updateByOrder(electricityBattery);
-    }
-
-    @Override
-    public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
-        return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
-    }
+	@Override
+	public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
+		return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
+	}
 
 }
