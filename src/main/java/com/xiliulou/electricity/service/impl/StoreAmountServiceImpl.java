@@ -114,7 +114,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     public Integer update(StoreAmount storeAmount) {
         int result = this.storeAmountMapper.updateById(storeAmount);
         if (result > 0) {
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + storeAmount.getStoreId(), storeAmount);
+            redisService.delete(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + storeAmount.getStoreId());
         }
         return result;
 
