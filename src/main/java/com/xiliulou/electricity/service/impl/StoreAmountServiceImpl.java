@@ -214,6 +214,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
                 .orderId("-1")
                 .splitAmount(modifyBalance)
                 .payAmount(BigDecimal.valueOf(0.00))
+                .percent(-1)
                 .build();
         storeSplitAccountHistoryService.insert(history);
 

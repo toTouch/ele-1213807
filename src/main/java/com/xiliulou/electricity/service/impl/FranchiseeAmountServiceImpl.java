@@ -200,6 +200,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
                 .orderId("-1")
                 .splitAmount(modifyBalance)
                 .payAmount(BigDecimal.valueOf(0.00))
+                .percent(-1)
                 .build();
         franchiseeSplitAccountHistoryService.insert(history);
 
