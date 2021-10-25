@@ -97,8 +97,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	@Autowired
 	RentBatteryOrderService rentBatteryOrderService;
 
-
-
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 
 	/**
@@ -363,7 +361,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(),null);
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -436,7 +434,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(),null);
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
 
 				//查满仓空仓数
 				int electricityBatteryTotal = 0;
@@ -472,33 +470,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	}
 
 	@Override
-	public Integer queryFullyElectricityBattery(Integer id,String batteryType) {
-		List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id,batteryType);
+	public Integer queryFullyElectricityBattery(Integer id, String batteryType) {
+		List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
 		Integer totalCount = ids.size();
 		return totalCount;
 	}
 
+	public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id, String batteryType, Long franchiseeId) {
+		List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
 
-
-	public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id,String batteryType,Long franchiseeId) {
-		List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id,batteryType);
-
-		if(ObjectUtils.isEmpty(ids)){
+		if (ObjectUtils.isEmpty(ids)) {
 			return Triple.of(false, "0", "换电柜暂无满电电池");
 		}
 
-		Integer count=0;
-		for (Long item:ids) {
-			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item,franchiseeId);
-		    if(Objects.nonNull(franchiseeBindElectricityBattery)){
-			    count++;
-		    }
+		Integer count = 0;
+		for (Long item : ids) {
+			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
+			if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+				count++;
+			}
 		}
 
-		if(count<1){
+		if (count < 1) {
 			return Triple.of(false, "0", "加盟商未绑定满电电池");
 		}
-
 
 		return Triple.of(true, count.toString(), null);
 	}
@@ -1087,7 +1082,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
 		//查满仓空仓数
-		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(),null);
+		int fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinet.getId(), null);
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
 		int noElectricityBattery = 0;
@@ -1162,7 +1157,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(),null);
+				int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
 				//查满仓空仓数
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
@@ -1357,21 +1352,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		//查满仓空仓数
 		Triple<Boolean, String, Object> tripleResult;
-		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
-		}else {
-			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),null,franchiseeUserInfo.getFranchiseeId());
+		if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+		} else {
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
 		}
 
-
-		if(Objects.isNull(tripleResult)){
+		if (Objects.isNull(tripleResult)) {
 			return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 		}
 
-		if(!tripleResult.getLeft()){
+		if (!tripleResult.getLeft()) {
 			return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
 		}
-
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1511,17 +1504,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			log.error("rentBattery  ERROR! not found memberCard ! uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0022", "未开通月卡");
 		}
-		Long now = System.currentTimeMillis();
-		if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-			log.error("rentBattery  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0023", "月卡已过期");
+		if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+			Long now = System.currentTimeMillis();
+			if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
+				log.error("rentBattery  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+				return R.fail("ELECTRICITY.0023", "月卡已过期");
+			}
 		}
 
 		//组装数据
 		ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
 		BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
-
-
 
 		//查满仓空仓数
 		int electricityBatteryTotal = 0;
@@ -1536,10 +1529,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 		Triple<Boolean, String, Object> tripleResult;
 		//查满仓空仓数
-		if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),franchiseeUserInfo.getBatteryType(),franchiseeUserInfo.getFranchiseeId());
-		}else {
-			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(),null,franchiseeUserInfo.getFranchiseeId());
+		if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+		} else {
+			tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
 		}
 
 		//已租电池则还电池
@@ -1549,11 +1542,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			}
 		} else {
 
-			if(Objects.isNull(tripleResult)){
+			if (Objects.isNull(tripleResult)) {
 				return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
 			}
 
-			if(!tripleResult.getLeft()){
+			if (!tripleResult.getLeft()) {
 				return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
 			}
 
@@ -1562,9 +1555,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
 		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
 
-		if(Objects.nonNull(tripleResult)) {
+		if (Objects.nonNull(tripleResult)) {
 			electricityCabinetVO.setFullyElectricityBattery(Integer.valueOf(tripleResult.getMiddle()));
-		}else {
+		} else {
 			electricityCabinetVO.setFullyElectricityBattery(0);
 		}
 		return R.ok(electricityCabinetVO);
@@ -1687,22 +1680,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//电池加盟商是否匹配
-		if(Objects.nonNull(isParseBattery)&&isParseBattery){
-           //查电池所属加盟商
-			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery=franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
-			if(Objects.isNull(franchiseeBindElectricityBattery)){
+		if (Objects.nonNull(isParseBattery) && isParseBattery) {
+			//查电池所属加盟商
+			FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+			if (Objects.isNull(franchiseeBindElectricityBattery)) {
 				log.error("checkBattery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
 				return R.fail("电池未绑定加盟商");
 			}
 			// 查换电柜所属加盟商
-			Store store=storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-			if(Objects.isNull(store)){
+			Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+			if (Objects.isNull(store)) {
 				log.error("checkBattery error! not find store,storeId:{}", electricityCabinet.getStoreId());
 				return R.fail("找不到换电柜门店");
 			}
 
-			if(Objects.equals(store.getFranchiseeId(),franchiseeBindElectricityBattery.getFranchiseeId())){
-				log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(),franchiseeBindElectricityBattery.getFranchiseeId());
+			if (Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId())) {
+				log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
 				return R.fail("电池加盟商与电柜加盟商不匹配");
 			}
 		}
@@ -1742,7 +1735,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 
 		//查满仓空仓数
-		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinetVO.getId(),null);
+		Integer fullyElectricityBattery = queryFullyElectricityBattery(electricityCabinetVO.getId(), null);
 		int electricityBatteryTotal = 0;
 		int noElectricityBattery = 0;
 		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetVO.getId());
