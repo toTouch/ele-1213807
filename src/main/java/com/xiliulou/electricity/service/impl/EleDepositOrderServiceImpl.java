@@ -354,7 +354,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		if(Objects.equals(oldFranchiseeUserInfo.getOrderId(),"-1")){
-			return R.fail("ELECTRICITY.00109", "请线下退押");
+			return R.fail("ELECTRICITY.00115", "请线下退押");
 		}
 
 		//是否存在未完成的租电池订单
