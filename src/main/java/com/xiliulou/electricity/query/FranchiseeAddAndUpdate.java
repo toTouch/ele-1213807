@@ -8,6 +8,7 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 门店表(TStore)实体类
@@ -21,7 +22,7 @@ public class FranchiseeAddAndUpdate {
     * 加盟商Id
     */
     @NotNull(message = "加盟商Id不能为空!", groups = {UpdateGroup.class})
-    private Integer id;
+    private Long id;
     /**
     * 加盟商名称
     */
@@ -30,24 +31,15 @@ public class FranchiseeAddAndUpdate {
     /**
      * 租电池押金
      */
-    @NotNull(message = "租电池押金不能为空!", groups = {CreateGroup.class})
     private BigDecimal batteryDeposit;
+
+
     @NotBlank(message = "密码不能为空", groups = {CreateGroup.class})
     private String password;
+
+
     @NotEmpty(message = "手机号的不能为空", groups = {CreateGroup.class})
     private String phone;
-    /**
-    * 0--正常 1--删除
-    */
-    private Object delFlag;
-    /**
-    * 创建时间
-    */
-    private Long createTime;
-    /**
-    * 更新时间
-    */
-    private Long updateTime;
 
     /**
      * 城市编号
@@ -61,6 +53,18 @@ public class FranchiseeAddAndUpdate {
     @NotNull(message = "省编号不能为空!", groups = {CreateGroup.class})
     private Integer provinceId;
 
+
+    /**
+     * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
+     * */
+    @NotNull(message = "加盟商押金类型不能为空!", groups = {CreateGroup.class})
+    private Integer modelType;
+
+    //新分型号押金
+    private List<ModelBatteryDeposit> modelBatteryDepositList;
+
+    //新分型号押金
+    private String modelBatteryDeposit;
 
 
 }

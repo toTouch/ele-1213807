@@ -68,6 +68,16 @@ public class ElectricityCabinetBoxVO {
      * 电池电量
      */
     private Double power;
+    /**
+     * 0--空闲 1--正在开机 2--充电中 3--充满电 4--限额充电 -1 未充电
+     */
+    private Integer chargeStatus;
+
+
+    /**
+     * 仓门电池类型
+     */
+    private String batteryType;
 
 
 }

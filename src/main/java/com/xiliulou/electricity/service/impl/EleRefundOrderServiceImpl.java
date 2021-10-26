@@ -187,7 +187,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 			franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 			franchiseeUserInfo.setBatteryDeposit(null);
 			franchiseeUserInfo.setOrderId(null);
-			franchiseeUserInfoService.update(franchiseeUserInfo);
+			franchiseeUserInfo.setFranchiseeId(null);
+			franchiseeUserInfo.setModelType(null);
+			franchiseeUserInfo.setBatteryType(null);
+			franchiseeUserInfo.setCardId(null);
+			franchiseeUserInfo.setCardName(null);
+			franchiseeUserInfo.setCardType(null);
+			franchiseeUserInfo.setMemberCardExpireTime(null);
+			franchiseeUserInfo.setRemainingNumber(null);
+			franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
 		}
 
 		EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();

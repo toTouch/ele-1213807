@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -42,6 +43,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 	ElectricityCabinetBoxService electricityCabinetBoxService;
 	@Autowired
 	RedisService redisService;
+	public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
+	public static final String IRON_LITHIUM = "IRON_LITHIUM";
 
 	@Override
 	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -79,6 +82,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
 		ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
 		ElectricityBattery newElectricityBattery = new ElectricityBattery();
+
+		electricityCabinetBox.setBatteryType(null);
 
 
 		//若上报时间小于上次上报时间则忽略此条上报
@@ -155,6 +160,15 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 
 
+		//根据电池查询仓门类型
+		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
+			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
+			if(Objects.nonNull(batteryModel)) {
+				electricityCabinetBox.setBatteryType(batteryModel);
+				newElectricityBattery.setModel(batteryModel);
+			}
+		}
+
 		//修改电池
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -175,20 +189,25 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
+
 		//比较最大电量，保证仓门电池是最大电量的电池
-		Double nowPower = eleBatteryVo.getPower();
-		BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
-		newBigEleBatteryVo.setCellNo(cellNo);
-		if (Objects.isNull(bigEleBatteryVo)) {
-			newBigEleBatteryVo.setPower(nowPower);
-			redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY+electricityCabinet.getId().toString(), newBigEleBatteryVo);
-		} else {
-			Double oldPower = bigEleBatteryVo.getPower();
-			if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
+		if(Objects.isNull(eleBatteryVo.getIsMultiBatteryModel())||!eleBatteryVo.getIsMultiBatteryModel()) {
+			Double nowPower = eleBatteryVo.getPower();
+			BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
+			newBigEleBatteryVo.setCellNo(cellNo);
+			if (Objects.isNull(bigEleBatteryVo)) {
 				newBigEleBatteryVo.setPower(nowPower);
-				redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY+electricityCabinet.getId().toString(), newBigEleBatteryVo);
+				redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+			} else {
+				Double oldPower = bigEleBatteryVo.getPower();
+				if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
+					newBigEleBatteryVo.setPower(nowPower);
+					redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+				}
 			}
 		}
+
+
 
 		//修改仓门
 		electricityCabinetBox.setSn(electricityBattery.getSn());
@@ -198,6 +217,39 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
 		electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 		return true;
+	}
+
+
+	public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
+		if (com.alibaba.excel.util.StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
+			return "";
+		}
+
+		StringBuilder modelName = new StringBuilder("B_");
+		char[] batteryChars = batteryName.toCharArray();
+
+		//获取电压
+		String chargeV = split(batteryChars, 4, 6);
+		modelName.append(chargeV).append("V").append("_");
+
+		//获取材料体系
+		char material = batteryChars[2];
+		if (material == '1') {
+			modelName.append(IRON_LITHIUM).append("_");
+		} else {
+			modelName.append(TERNARY_LITHIUM).append("_");
+		}
+
+		modelName.append(split(batteryChars, 9, 11));
+		return modelName.toString();
+	}
+
+	private static String split(char[] strArray, int beginIndex, int endIndex) {
+		StringBuilder stringBuilder = new StringBuilder();
+		for (int i = beginIndex; i < endIndex; i++) {
+			stringBuilder.append(strArray[i]);
+		}
+		return stringBuilder.toString();
 	}
 
 }
@@ -217,6 +269,8 @@ class EleBatteryVo {
 	private Long reportTime;
 
 	private Boolean existsBattery;
+
+	private Boolean isMultiBatteryModel;
 
 }
 

@@ -19,7 +19,7 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryByOrderId(String orderNo);
 
-    R payDeposit(String productKey,String deviceName,HttpServletRequest request);
+    R payDeposit(String productKey,String deviceName,Integer model,HttpServletRequest request);
 
     R returnDeposit(HttpServletRequest request);
 
@@ -36,4 +36,6 @@ public interface EleDepositOrderService {
 	R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
 
 	void insert(EleDepositOrder eleDepositOrder);
+
+	R queryModelType(String productKey, String deviceName);
 }

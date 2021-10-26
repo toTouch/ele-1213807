@@ -40,19 +40,19 @@ public class JsonAdminEleDepositOrderController {
 
     //列表查询
     @GetMapping(value = "/admin/eleDepositOrder/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
+    public R queryList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
-        if (Objects.isNull(size)) {
+        if (size < 0 || size > 50) {
             size = 10L;
         }
 
-        if (Objects.isNull(offset) || offset < 0) {
+        if (offset < 0) {
             offset = 0L;
         }
 
@@ -67,7 +67,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Integer franchiseeId=null;
+        Long franchiseeId=null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -112,7 +112,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Integer franchiseeId=null;
+        Long franchiseeId=null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -160,7 +160,7 @@ public class JsonAdminEleDepositOrderController {
             throw new CustomBusinessException("查不到订单");
         }
 
-        Integer franchiseeId=null;
+        Long franchiseeId=null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商

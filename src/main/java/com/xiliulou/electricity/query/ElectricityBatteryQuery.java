@@ -32,5 +32,7 @@ public class ElectricityBatteryQuery {
 
     private Integer chargeStatus;
 
+    private Long franchiseeId;
+
 
 }

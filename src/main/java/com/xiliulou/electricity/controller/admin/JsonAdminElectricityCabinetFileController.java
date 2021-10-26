@@ -35,14 +35,12 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminElectricityCabinetFileController {
-	/**
-	 * 服务对象
-	 */
-
 	@Autowired
 	ElectricityCabinetFileService electricityCabinetFileService;
+
 	@Autowired
 	StorageConfig storageConfig;
+
 	@Qualifier("aliyunOssService")
 	@Autowired
 	StorageService storageService;
@@ -138,9 +136,9 @@ public class JsonAdminElectricityCabinetFileController {
 	 */
 
 	@GetMapping("/admin/electricityCabinetFileService/getFile")
-	public R getFile(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+	public R getFile(@RequestParam(value = "otherId", required = false) Long otherId,
 			@RequestParam("fileType") Integer fileType) {
-		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId, fileType, storageConfig.getIsUseOSS());
+		List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(otherId, fileType, storageConfig.getIsUseOSS());
 		if (ObjectUtil.isEmpty(electricityCabinetFileList)) {
 			return R.ok();
 		}

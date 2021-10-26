@@ -6,8 +6,6 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.dto.EleOpenDTO.EleOpenDTOBuilder;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
-import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -20,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.stereotype.Service;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 /**

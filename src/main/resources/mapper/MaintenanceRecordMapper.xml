@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.MaintenanceRecordMapper">
+
+
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.MaintenanceRecord">
+		select id,
+		status,
+		remark,
+		type,
+		create_time,
+		update_time,
+		pic,
+		uid,
+		phone,
+		operate_uid,
+		operate_remark,
+		electricity_cabinet_id,
+		tenant_id
+		from t_maintenance_record
+		<where>
+			<if test="status != null and status != ''">
+				and status = #{status}
+			</if>
+			<if test="uid != null ">
+				and uid = #{uid}
+			</if>
+			<if test="tenantId != null ">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="phone != null and phone != ''">
+				and phone = #{phone}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="electricityCabinetId != null">
+				and electricity_cabinet_id = #{electricityCabinetId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+			<if test="endTime != null">
+				and create_time &lt;=#{endTime}
+			</if>
+			<if test="eleIdList!=null and eleIdList!=''">
+				and electricity_cabinet_id in
+				<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
+
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_maintenance_record
+		<where>
+			<if test="status != null and status != ''">
+				and status = #{status}
+			</if>
+			<if test="uid != null ">
+				and uid = #{uid}
+			</if>
+			<if test="tenantId != null ">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="phone != null and phone != ''">
+				and phone = #{phone}
+			</if>
+			<if test="type != null and type != ''">
+				and type = #{type}
+			</if>
+			<if test="electricityCabinetId != null">
+				and electricity_cabinet_id = #{electricityCabinetId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+			<if test="endTime != null">
+				and create_time &lt;=#{endTime}
+			</if>
+			<if test="eleIdList!=null and eleIdList!=''">
+				and electricity_cabinet_id in
+				<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+	</select>
+</mapper>

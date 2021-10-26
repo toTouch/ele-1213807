@@ -27,7 +27,7 @@ public class Franchisee {
      * Id
      */
     @TableId(value = "id",type = IdType.AUTO)
-    private Integer id;
+    private  Long id;
     /**
      * 门店名称
      */
@@ -59,7 +59,24 @@ public class Franchisee {
 
     private Integer tenantId;
 
+    /**
+     * 加盟商分润比例
+     * */
+    private Integer percent;
+
+    /**
+     * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    //新分型号押金
+    private String modelBatteryDeposit;
+
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final Integer OLD_MODEL_TYPE = 1;
+    public static final Integer MEW_MODEL_TYPE = 2;
 
 }

@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Objects;
 
 /**
@@ -24,15 +25,15 @@ public class JsonAdminShareActivityRecordController {
 
 	//列表查询
 	@GetMapping(value = "/admin/shareActivityRecord/list")
-	public R queryList(@RequestParam(value = "size", required = false) Long size,
-			@RequestParam(value = "offset", required = false) Long offset,
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "name", required = false) String name) {
-		if (Objects.isNull(size)) {
+		if (size < 0 || size > 50) {
 			size = 10L;
 		}
 
-		if (Objects.isNull(offset) || offset < 0) {
+		if (offset < 0) {
 			offset = 0L;
 		}
 
@@ -50,7 +51,6 @@ public class JsonAdminShareActivityRecordController {
 
 	}
 
-
 	//列表查询
 	@GetMapping(value = "/admin/shareActivityRecord/queryCount")
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
@@ -67,7 +67,6 @@ public class JsonAdminShareActivityRecordController {
 		return shareActivityRecordService.queryCount(shareActivityRecordQuery);
 
 	}
-
 
 }
 

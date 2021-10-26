@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -44,7 +45,8 @@ public interface RentBatteryOrderService {
 
 	R queryNewStatus(String orderId);
 
-    String findUsableBatteryCellNo(Integer id, String cellNo);
+    Triple<Boolean, String, Object> findUsableBatteryCellNo(Integer id, String cellNo,String batteryType,Long franchiseeId);
 
     R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery);
+
 }

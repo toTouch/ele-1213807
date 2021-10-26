@@ -45,4 +45,6 @@ public class AdminUserQuery {
 	private Integer cityId;
 
 	private Integer provinceId;
+
+	private Long roleId;
 }

@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
@@ -24,9 +26,12 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -83,6 +88,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         electricityMemberCard.setStatus(ElectricityMemberCard.STATUS_UN_USEABLE);
         electricityMemberCard.setTenantId(tenantId);
         electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
+        if(StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
+            electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
+        }
 
         Integer insert=baseMapper.insert(electricityMemberCard);
         DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -110,6 +118,10 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 electricityMemberCard.setMaxUseCount(ElectricityMemberCard.UN_LIMITED_COUNT);
             }
+        }
+
+        if(StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
+            electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
         }
 
         Integer update=baseMapper.updateById(electricityMemberCard);
@@ -161,7 +173,19 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     @DS("slave_1")
     public R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId) {
-        return R.ok(baseMapper.queryList(offset, size, status, type,tenantId));
+        List<ElectricityMemberCard> electricityMemberCardList= baseMapper.queryList(offset, size, status, type,tenantId);
+        if(ObjectUtil.isEmpty(electricityMemberCardList)){
+            return R.ok(electricityMemberCardList);
+        }
+
+        List<ElectricityMemberCard> electricityMemberCards=new ArrayList<>();
+        for (ElectricityMemberCard electricityMemberCard:electricityMemberCardList) {
+            if(StringUtils.isNotEmpty(electricityMemberCard.getBatteryType())) {
+                electricityMemberCard.setBatteryType(BatteryConstant.acquireBattery(electricityMemberCard.getBatteryType()).toString());
+            }
+            electricityMemberCards.add(electricityMemberCard);
+        }
+        return R.ok(electricityMemberCards);
     }
 
     @Override
@@ -248,12 +272,21 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
 
+        //多电池型号查询套餐
+        if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
+            if(Objects.isNull(franchiseeUserInfo.getBatteryType())){
+                return R.ok();
+            }
+            return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),franchiseeUserInfo.getBatteryType()));
+        }
+
+
         //查找加盟商下的可用套餐
-        return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId()));
+        return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),null));
     }
 
     @Override
-    public List<ElectricityMemberCard> queryByFranchisee(Integer id) {
+    public List<ElectricityMemberCard> queryByFranchisee(Long id) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId,id));
     }
 
@@ -263,12 +296,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer franchiseeId) {
+    public R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
        return R.ok(baseMapper.listByFranchisee(offset, size, status, type,tenantId,franchiseeId));
     }
 
     @Override
-    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Integer franchiseeId) {
+    public R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         return R.ok(baseMapper.listCountByFranchisee(status, type,tenantId,franchiseeId));
     }
 

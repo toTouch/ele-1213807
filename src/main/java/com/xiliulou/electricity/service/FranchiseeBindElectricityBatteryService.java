@@ -15,5 +15,11 @@ public interface FranchiseeBindElectricityBatteryService {
 
     void insert(FranchiseeBindElectricityBattery franchiseeBindElectricityBattery);
 
-    List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Integer id);
+    List<FranchiseeBindElectricityBattery> queryByFranchiseeId(Long id);
+
+	Integer queryCountByBattery(Long electricityBatteryId);
+
+	FranchiseeBindElectricityBattery queryByBatteryId(Long id);
+
+	FranchiseeBindElectricityBattery queryByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
 }

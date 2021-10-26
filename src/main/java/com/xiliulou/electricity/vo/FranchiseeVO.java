@@ -3,13 +3,16 @@ package com.xiliulou.electricity.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.validator.CreateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
-
+import java.util.List;
 
 /**
  * (Franchisee)实体类
@@ -56,6 +59,19 @@ public class FranchiseeVO {
     private String userName;
 
     private BigDecimal batteryDeposit;
+
+    private Integer percent;
+
+    /**
+     * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    //新分型号押金
+    private List<ModelBatteryDeposit> modelBatteryDepositList;
+
+    //新分型号押金
+    private String modelBatteryDeposit;
 
 
 }

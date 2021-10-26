@@ -64,7 +64,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 
 	//列表查询
 	@GetMapping(value = "/user/electricityCabinet/showInfoByStoreId/{storeId}")
-	public R showInfoByStoreId(@PathVariable("storeId") Integer storeId) {
+	public R showInfoByStoreId(@PathVariable("storeId") Long storeId) {
 
 		if (Objects.isNull(storeId)) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");

@@ -26,9 +26,9 @@ public class ElectricityCabinetFile {
     */
     private String name;
     /**
-    * 换电柜id
+    * id
     */
-    private Integer otherId;
+    private Long otherId;
     /**
     * 类型
     */
@@ -65,6 +65,12 @@ public class ElectricityCabinetFile {
     public static final Integer TYPE_ELECTRICITY_CABINET = 1;
 
     //邀请活动图片
-    public static final Integer TYPE_SHARE_ACTIVITY = 1;
+    public static final Integer TYPE_SHARE_ACTIVITY = 2;
+
+    //门店商品图片
+    public static final Integer TYPE_STORE_GOODS = 3;
+
+    //门店图片
+    public static final Integer TYPE_STORE = 4;
 
 }

@@ -36,5 +36,7 @@ public interface FranchiseeUserInfoService {
 
 	FranchiseeUserInfo insert(FranchiseeUserInfo insertFranchiseeUserInfo);
 
-	Integer queryCountByFranchiseeId(Integer id);
+	Integer queryCountByFranchiseeId(Long id);
+
+	void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
 }

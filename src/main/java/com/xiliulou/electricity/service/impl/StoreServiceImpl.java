@@ -9,8 +9,11 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
+import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.StoreAmount;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
@@ -18,6 +21,9 @@ import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -25,12 +31,14 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
+import com.xiliulou.pay.weixinv3.dto.Amount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -56,6 +64,12 @@ public class StoreServiceImpl implements StoreService {
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
 	UserService userService;
+	@Autowired
+	FranchiseeService franchiseeService;
+	@Autowired
+	StoreAmountService storeAmountService;
+	@Autowired
+	RoleService roleService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -64,7 +78,7 @@ public class StoreServiceImpl implements StoreService {
 	 * @return 实例对象
 	 */
 	@Override
-	public Store queryByIdFromCache(Integer id) {
+	public Store queryByIdFromCache(Long id) {
 		Store cacheStore = redisService.getWithHash(ElectricityCabinetConstant.CACHE_STORE + id, Store.class);
 		if (Objects.nonNull(cacheStore)) {
 			return cacheStore;
@@ -80,10 +94,29 @@ public class StoreServiceImpl implements StoreService {
 	@Override
 	@Transactional(rollbackFor = Exception.class)
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
+
+		//前端处理不了，后台写死
+		storeAddAndUpdate.setCityId(283);
+		storeAddAndUpdate.setProvinceId(27);
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
 		//新增加盟商新增用户
 		AdminUserQuery adminUserQuery = new AdminUserQuery();
 		BeanUtil.copyProperties(storeAddAndUpdate, adminUserQuery);
+
 		adminUserQuery.setUserType(User.TYPE_USER_STORE);
+		if (!Objects.equals(tenantId, 1)) {
+			//普通租户新增加盟商
+			//1、查普通租户加盟商角色
+			Long roleId = roleService.queryByName(Role.ROLE_STORE_USER_NAME, tenantId);
+			if (Objects.nonNull(roleId)) {
+				adminUserQuery.setRoleId(roleId);
+			}
+
+		}
 		adminUserQuery.setLang(User.DEFAULT_LANG);
 		adminUserQuery.setGender(User.GENDER_FEMALE);
 		adminUserQuery.setPhone(storeAddAndUpdate.getServicePhone());
@@ -94,8 +127,7 @@ public class StoreServiceImpl implements StoreService {
 		}
 
 		Long uid = (Long) result.getData();
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+
 
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
@@ -119,6 +151,21 @@ public class StoreServiceImpl implements StoreService {
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//新增缓存
 			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE + store.getId(), store);
+
+			//新增门店账户
+			StoreAmount storeAmount = StoreAmount.builder()
+					.storeId(store.getId())
+					.delFlag(StoreAmount.DEL_NORMAL)
+					.createTime(System.currentTimeMillis())
+					.updateTime(System.currentTimeMillis())
+					.uid(uid)
+					.balance(BigDecimal.valueOf(0.0))
+					.totalIncome(BigDecimal.valueOf(0.0))
+					.withdraw(BigDecimal.valueOf(0.0))
+					.tenantId(tenantId)
+					.build();
+			storeAmountService.insert(storeAmount);
+
 			return null;
 		});
 
@@ -160,7 +207,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R delete(Integer id) {
+	public R delete(Long id) {
 
 		Store store = queryByIdFromCache(id);
 		if (Objects.isNull(store)) {
@@ -182,7 +229,10 @@ public class StoreServiceImpl implements StoreService {
 			//删除缓存
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + id);
 			//删除用户
-			 userService.deleteInnerUser(store.getUid());
+			userService.deleteInnerUser(store.getUid());
+
+			//删除门店账号
+			storeAmountService.deleteByStoreId(id);
 			return null;
 		});
 
@@ -219,10 +269,20 @@ public class StoreServiceImpl implements StoreService {
 						}
 					}
 				}
+
+				//用户
 				if (Objects.nonNull(e.getUid())) {
 					User user = userService.queryByUidFromCache(e.getUid());
 					if (Objects.nonNull(user)) {
 						e.setUserName(user.getName());
+					}
+				}
+
+				//加盟商
+				if (Objects.nonNull(e.getFranchiseeId())) {
+					Franchisee franchisee = franchiseeService.queryByIdFromDB(e.getFranchiseeId());
+					if (Objects.nonNull(franchisee)) {
+						e.setFranchiseeName(franchisee.getName());
 					}
 				}
 			});
@@ -233,7 +293,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	@Transactional
-	public R updateStatus(Integer id, Integer usableStatus) {
+	public R updateStatus(Long id, Integer usableStatus) {
 
 		Store oldStore = queryByIdFromCache(id);
 		if (Objects.isNull(oldStore)) {
@@ -257,7 +317,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public Integer homeOne(List<Integer> storeIdList, Integer tenantId) {
+	public Integer homeOne(List<Long> storeIdList, Integer tenantId) {
 		return storeMapper.homeOne(storeIdList, tenantId);
 	}
 
@@ -307,7 +367,7 @@ public class StoreServiceImpl implements StoreService {
 						boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 						if (result) {
 							onlineElectricityCabinetCount = onlineElectricityCabinetCount + 1;
-							Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId());
+							Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId(),null);
 							fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
 						}
 					}
@@ -321,7 +381,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public List<Store> queryByFranchiseeId(Integer id) {
+	public List<Store> queryByFranchiseeId(Long id) {
 		return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
 	}
 
@@ -341,7 +401,7 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> storeIdList, Integer tenantId) {
+	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
 		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
 	}
 
@@ -364,12 +424,12 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public Integer queryCountByFranchiseeId(Integer id) {
+	public Integer queryCountByFranchiseeId(Long id) {
 		return storeMapper.selectCount(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL).last("limit 0,1"));
 	}
 
 	@Override
-	public Integer queryByFanchisee(Long uid) {
+	public Integer queryCountByFranchisee(Long uid) {
 		Store store=queryByUid(uid);
 
 		if(Objects.isNull(store)){
@@ -377,6 +437,18 @@ public class StoreServiceImpl implements StoreService {
 		}
 
 		return electricityCabinetService.queryCountByStoreId(store.getId());
+	}
+
+	@Override
+	public void updateById(Store store) {
+		int update = storeMapper.updateById(store);
+
+
+		DbUtils.dbOperateSuccessThen(update, () -> {
+			//更新缓存
+			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + store.getId());
+			return null;
+		});
 	}
 
 	public Long getTime(Long time) {

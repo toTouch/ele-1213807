@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
 import java.util.Objects;
 
 /**
@@ -30,16 +31,16 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 
 	//换电柜历史记录查询
 	@GetMapping("/admin/electricityCabinetOrderOperHistory/list")
-	public R queryList(@RequestParam(value = "size", required = false) Long size,
-			@RequestParam(value = "offset", required = false) Long offset,
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
 			@RequestParam("orderId") String orderId,
 			@RequestParam("type") Integer type) {
 
-		if (Objects.isNull(size)) {
+		if (size < 0 || size > 50) {
 			size = 10L;
 		}
 
-		if (Objects.isNull(offset) || offset < 0) {
+		if (offset < 0) {
 			offset = 0L;
 		}
 
@@ -55,7 +56,6 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 	@GetMapping("/admin/electricityCabinetOrderOperHistory/queryCount")
 	public R queryCount(@RequestParam("orderId") String orderId,
 			@RequestParam("type") Integer type) {
-
 
 		ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery = ElectricityCabinetOrderOperHistoryQuery.builder()
 				.orderId(orderId)

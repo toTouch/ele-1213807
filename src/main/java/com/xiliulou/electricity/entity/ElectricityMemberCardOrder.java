@@ -49,7 +49,7 @@ public class ElectricityMemberCardOrder {
     //租户id
     private Integer tenantId;
 
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;

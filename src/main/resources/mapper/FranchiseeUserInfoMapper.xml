@@ -13,6 +13,8 @@
 		update_time = #{updateTime}
 		where id = #{id} and del_flag=0
 	</update>
+
+
 	<update id="updateRefund">
 		update t_franchisee_user_info
         set service_status = #{serviceStatus},
@@ -21,6 +23,8 @@
             update_time = #{updateTime}
         where id = #{id} and del_flag=0
 	</update>
+
+
 	<update id="updateByUserInfoId">
 		update t_franchisee_user_info
 		set now_electricity_battery_sn = #{nowElectricityBatterySn},
@@ -32,6 +36,23 @@
 		</if>
 		update_time = #{updateTime}
 		where user_info_id = #{userInfoId} and del_flag=0
+	</update>
+
+	<update id="updateByOrder">
+		update t_franchisee_user_info
+		set service_status = #{serviceStatus},
+		update_time = #{updateTime},
+		battery_deposit = #{batteryDeposit},
+		order_id = #{orderId},
+		franchisee_id = #{franchiseeId},
+		model_type = #{modelType},
+		battery_type = #{batteryType},
+		card_id = #{cardId},
+		card_name = #{cardName},
+		card_type = #{cardType},
+		member_card_expire_time = #{memberCardExpireTime},
+		remaining_number = #{remainingNumber}
+		where id = #{id} and del_flag=0
 	</update>
 
 </mapper>

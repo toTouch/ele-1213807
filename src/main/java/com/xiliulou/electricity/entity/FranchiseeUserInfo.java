@@ -33,7 +33,7 @@ public class FranchiseeUserInfo {
     /**
     * 加盟商id
     */
-    private Integer franchiseeId;
+    private Long franchiseeId;
     /**
     * 套餐id
     */
@@ -85,6 +85,17 @@ public class FranchiseeUserInfo {
 
     //租户
     private Integer tenantId;
+
+    /**
+     * 加盟商类型 1--老（不分型号） 2--新（分型号）
+     * */
+    private Integer modelType;
+
+    /**
+     * 电池类型
+     */
+    private String batteryType;
+
     //初始化
     public static final Integer STATUS_IS_INIT=1;
     //已缴纳押金
@@ -94,5 +105,9 @@ public class FranchiseeUserInfo {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+
+    public static final Integer OLD_MODEL_TYPE = 1;
+    public static final Integer MEW_MODEL_TYPE = 2;
 
 }

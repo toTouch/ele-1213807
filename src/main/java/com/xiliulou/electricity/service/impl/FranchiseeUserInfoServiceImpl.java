@@ -80,8 +80,13 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public Integer queryCountByFranchiseeId(Integer id) {
+    public Integer queryCountByFranchiseeId(Long id) {
         return franchiseeUserInfoMapper.selectCount(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId,id).last("limit 0,1"));
+    }
+
+    @Override
+    public void updateByOrder(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateByOrder(franchiseeUserInfo);
     }
 
 }

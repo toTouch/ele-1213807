@@ -82,6 +82,11 @@ public class ElectricityCabinetBox {
     //租户id
     private Integer tenantId;
 
+    /**
+     * 仓门电池类型
+     */
+    private String batteryType;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

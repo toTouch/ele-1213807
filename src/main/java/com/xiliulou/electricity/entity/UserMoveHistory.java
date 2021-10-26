@@ -50,7 +50,7 @@ public class UserMoveHistory {
     /**
      * 加盟商id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
 
 }

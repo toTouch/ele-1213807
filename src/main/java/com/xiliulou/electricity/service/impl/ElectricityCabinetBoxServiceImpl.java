@@ -9,16 +9,20 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import org.apache.commons.lang3.ObjectUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -49,6 +53,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	UserInfoService userInfoService;
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+
 
 	/**
 	 * 通过ID查询单条数据从DB
@@ -88,7 +93,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	@DS("slave_1")
 	public R queryList(ElectricityCabinetBoxQuery electricityCabinetBoxQuery) {
 
-		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList=electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
+		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = electricityCabinetBoxMapper.queryList(electricityCabinetBoxQuery);
 		if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
 			return R.ok(electricityCabinetBoxVOList);
 		}
@@ -99,6 +104,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 				ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxVO.getSn());
 				if (Objects.nonNull(electricityBattery)) {
 					electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+					electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
 				}
 				electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
 			}
@@ -126,37 +132,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
 	}
 
 	@Override
-	public List<ElectricityCabinetBoxVO> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo) {
-		List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, electricityCabinet.getId())
-				.eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
-				.ne(Objects.nonNull(cellNo), ElectricityCabinetBox::getCellNo, cellNo).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
-
-		List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = new ArrayList<>();
-		if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
-			return electricityCabinetBoxVOList;
-		}
-
-		for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
-			//是否满电
-			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
-			if (Objects.nonNull(electricityBattery)) {
-				if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
-
-					/*//该电池是否绑定用户
-					Integer count = franchiseeUserInfoService.queryCountByBatterySn(electricityBattery.getSn());
-					if (count<1) {*/
-						ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
-						BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
-						electricityCabinetBoxVO.setPower(electricityBattery.getPower());
-						electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
-					/*}*/
-				}
-			}
-		}
-
-		return electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getPower).reversed()).collect(Collectors.toList());
+	public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType) {
+		return electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(),cellNo,batteryType);
 	}
-
 
 	@Override
 	public ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId, String cellNo) {
