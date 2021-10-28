@@ -43,7 +43,7 @@ public class EleRefundOrder {
     */
     private BigDecimal refundAmount;
     /**
-    * 退款状态:0--订单生成,1-退款中,2-退款成功,-1-退款失败
+    * 退款状态
     */
     private Integer status;
     /**
