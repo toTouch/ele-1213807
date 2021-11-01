@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.query;
+import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import lombok.Data;
 
 @Data
@@ -19,5 +20,9 @@ public class BatteryReportQuery {
      * 地址纬度
      */
     private Double latitude;
+
+    private Boolean hasOtherAttr;
+
+    private BatteryOtherProperties batteryOtherProperties;
 
 }

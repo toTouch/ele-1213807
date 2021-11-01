@@ -75,4 +75,53 @@ public class BatteryOtherProperties {
      */
     private Integer delFlag;
 
+    /**
+     * 	gsm小区信息 01104001
+     */
+    private String gsmType;
+
+    /**
+     * 	gsm信号强度 01106001
+     */
+    private Integer gsmSignalStrength;
+    /**
+     * 	电池状态 01108001
+     */
+    private Integer batteryStatus;
+    /**
+     * 	速度信息 01109001
+     */
+    private Integer speed;
+    /**
+     * 	行驶里程 01110001
+     */
+    private Integer tripMiles;
+    /**
+     * 	总电压 01111001
+     */
+    private Integer sumV;
+    /**
+     * 	总电流 01112001
+     */
+    private Integer sumA;
+
+    /**
+     * 	功率温度值  01118001
+     */
+    private Integer powerTemp;
+
+    /**
+     * 	总放电 01124001
+     */
+    private Integer sumDischarge;
+    /**
+     * 	总充电 01125001
+     */
+    private Integer sumCharge;
+    /**
+     * 	预计放电时间 01126001
+     */
+    private Integer expDischargeTime;
+
+
 }
