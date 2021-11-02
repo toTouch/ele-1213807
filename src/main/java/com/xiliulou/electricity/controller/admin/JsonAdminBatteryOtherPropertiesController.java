@@ -11,12 +11,14 @@ import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 /**
  * @author: Miss.Li
  * @Date: 2021/10/22 09:22
  * @Description:
  */
+@RestController
 public class JsonAdminBatteryOtherPropertiesController {
 
 	@Autowired
