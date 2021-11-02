@@ -455,7 +455,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				franchiseeUserInfo.setCardId(oldCard.getNewCard());
 				franchiseeUserInfo.setCardName(userInfoOld.getCardName());
 				franchiseeUserInfo.setCardType(userInfoOld.getCardType());
-				franchiseeUserInfo.setMemberCardExpireTime(userInfoOld.getCreateTime());
+				franchiseeUserInfo.setMemberCardExpireTime(userInfoOld.getMemberCardExpireTime());
 				franchiseeUserInfo.setRemainingNumber(userInfoOld.getRemainingNumber());
 				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 				franchiseeUserInfoService.update(franchiseeUserInfo);

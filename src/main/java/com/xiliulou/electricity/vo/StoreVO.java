@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 public class StoreVO {
 
-    private Integer id;
+    private Long id;
     /**
     * 门店名称
     */
@@ -86,7 +86,11 @@ public class StoreVO {
      */
     private String userName;
 
-    private Integer franchiseeId;
+    private Long franchiseeId;
+
+    private Integer percent;
+
+    private String franchiseeName;
 
     //全天
     public static final String ALL_DAY = "-1";

@@ -110,7 +110,7 @@ public class UserInfoOld {
     /**
      * 加盟商id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

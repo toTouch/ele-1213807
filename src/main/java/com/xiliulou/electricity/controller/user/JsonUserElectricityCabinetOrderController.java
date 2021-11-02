@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Objects;
 
-
 /**
  * 订单表(TElectricityCabinetOrder)表控制层
  *
@@ -26,86 +25,84 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserElectricityCabinetOrderController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    ElectricityCabinetOrderService electricityCabinetOrderService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	ElectricityCabinetOrderService electricityCabinetOrderService;
 
-    //换电柜下单
-    @PostMapping("/user/electricityCabinetOrder/order")
-    public R order(@RequestBody @Validated(value = CreateGroup.class)  OrderQuery orderQuery) {
-        return electricityCabinetOrderService.order(orderQuery);
-    }
+	//换电柜下单
+	@PostMapping("/user/electricityCabinetOrder/order")
+	public R order(@RequestBody @Validated(value = CreateGroup.class) OrderQuery orderQuery) {
+		return electricityCabinetOrderService.order(orderQuery);
+	}
 
-    //换电柜再次开门
-    @PostMapping("/user/electricityCabinetOrder/openDoor")
-    public R openDoor(@RequestBody OpenDoorQuery openDoorQuery) {
-        return electricityCabinetOrderService.openDoor(openDoorQuery);
-    }
+	//换电柜再次开门
+	@PostMapping("/user/electricityCabinetOrder/openDoor")
+	public R openDoor(@RequestBody OpenDoorQuery openDoorQuery) {
+		return electricityCabinetOrderService.openDoor(openDoorQuery);
+	}
 
-    //换电柜订单查询
-    @GetMapping("/user/electricityCabinetOrder/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+	//换电柜订单查询
+	@GetMapping("/user/electricityCabinetOrder/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime) {
 
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-                .offset(offset)
-                .size(size)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .uid(user.getUid())
-                .tenantId(tenantId).build();
-        return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
-    }
+		ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+				.offset(offset)
+				.size(size)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.uid(user.getUid())
+				.tenantId(tenantId).build();
+		return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+	}
 
-    //换电柜订单量
-    @GetMapping("/user/electricityCabinetOrder/count")
-    public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
-                        @RequestParam(value = "endTime", required = false) Long endTime) {
+	//换电柜订单量
+	@GetMapping("/user/electricityCabinetOrder/count")
+	public R queryCount(@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime) {
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .uid(user.getUid())
-                .tenantId(tenantId).build();
-        return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
-    }
+		ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.uid(user.getUid())
+				.tenantId(tenantId).build();
+		return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
+	}
 
-
-    //查订单状态（新）
-    @GetMapping("/user/electricityCabinetOrder/queryNewStatus")
-    public R queryNewStatus(@RequestParam("orderId") String orderId) {
-        return electricityCabinetOrderService.queryNewStatus(orderId);
-    }
-
+	//查订单状态（新）
+	@GetMapping("/user/electricityCabinetOrder/queryNewStatus")
+	public R queryNewStatus(@RequestParam("orderId") String orderId) {
+		return electricityCabinetOrderService.queryNewStatus(orderId);
+	}
 
 }

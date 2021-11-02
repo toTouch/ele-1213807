@@ -32,131 +32,121 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminShareActivityController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    private ShareActivityService shareActivityService;
-    @Autowired
-    FranchiseeService franchiseeService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	private ShareActivityService shareActivityService;
+	@Autowired
+	FranchiseeService franchiseeService;
 
+	//新增
+	@PostMapping(value = "/admin/shareActivity")
+	public R save(@RequestBody @Validated(value = CreateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+		return shareActivityService.insert(shareActivityAddAndUpdateQuery);
+	}
 
-    //新增
-    @PostMapping(value = "/admin/shareActivity")
-    public R save(@RequestBody @Validated(value = CreateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-        return shareActivityService.insert(shareActivityAddAndUpdateQuery);
-    }
+	//修改--暂时无此功能
+	@PutMapping(value = "/admin/shareActivity")
+	public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
+		return shareActivityService.update(shareActivityAddAndUpdateQuery);
+	}
 
-    //修改--暂时无此功能
-    @PutMapping(value = "/admin/shareActivity")
-    public R update(@RequestBody @Validated(value = UpdateGroup.class) ShareActivityAddAndUpdateQuery shareActivityAddAndUpdateQuery) {
-        return shareActivityService.update(shareActivityAddAndUpdateQuery);
-    }
+	//列表查询
+	@GetMapping(value = "/admin/shareActivity/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+			@RequestParam(value = "type", required = false) String type) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
+		if (offset < 0) {
+			offset = 0L;
+		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-    //列表查询
-    @GetMapping(value = "/admin/shareActivity/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
-                       @RequestParam(value = "type", required = false) String type) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				return R.ok();
+			}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+			franchiseeId = franchisee.getId();
+		}
 
+		ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.franchiseeId(franchiseeId)
+				.tenantId(tenantId).build();
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+		if (StringUtils.isNotEmpty(type)) {
+			Integer[] types = (Integer[])
+					JSONUtil.parseArray(type).toArray(Integer[].class);
 
-        if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
-                return R.ok();
-            }
+			List<Integer> typeList = Arrays.asList(types);
+			shareActivityQuery.setTypeList(typeList);
+		}
+		return shareActivityService.queryList(shareActivityQuery);
+	}
 
-            franchiseeId=franchisee.getId();
-        }
+	//列表查询
+	@GetMapping(value = "/admin/shareActivity/count")
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+			@RequestParam(value = "type", required = false) String type) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
-        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .franchiseeId(franchiseeId)
-                .tenantId(tenantId).build();
+		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.isNull(franchisee)) {
+				return R.ok();
+			}
 
+			franchiseeId = franchisee.getId();
+		}
 
+		ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
+				.name(name)
+				.franchiseeId(franchiseeId)
+				.tenantId(tenantId).build();
 
-        if (StringUtils.isNotEmpty(type)) {
-            Integer[] types = (Integer[])
-                    JSONUtil.parseArray(type).toArray(Integer[].class);
+		if (StringUtils.isNotEmpty(type)) {
+			Integer[] types = (Integer[])
+					JSONUtil.parseArray(type).toArray(Integer[].class);
 
-            List<Integer> typeList = Arrays.asList(types);
-            shareActivityQuery.setTypeList(typeList);
-        }
-        return shareActivityService.queryList(shareActivityQuery);
-    }
+			List<Integer> typeList = Arrays.asList(types);
+			shareActivityQuery.setTypeList(typeList);
+		}
+		return shareActivityService.queryCount(shareActivityQuery);
+	}
 
-    //列表查询
-    @GetMapping(value = "/admin/shareActivity/count")
-    public R queryCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "franchiseeId", required = false) Integer franchiseeId,
-                        @RequestParam(value = "type", required = false) String type) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-
-        if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
-                return R.ok();
-            }
-
-            franchiseeId=franchisee.getId();
-        }
-
-
-        ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
-                .name(name)
-                .franchiseeId(franchiseeId)
-                .tenantId(tenantId).build();
-
-        if (StringUtils.isNotEmpty(type)) {
-            Integer[] types = (Integer[])
-                    JSONUtil.parseArray(type).toArray(Integer[].class);
-
-            List<Integer> typeList = Arrays.asList(types);
-            shareActivityQuery.setTypeList(typeList);
-        }
-        return shareActivityService.queryCount(shareActivityQuery);
-    }
-
-    //根据id查询活动详情
-    @GetMapping(value = "/admin/shareActivity/queryInfo/{id}")
-    public R queryInfo(@PathVariable("id") Integer id) {
-        if (Objects.isNull(id)) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
-        return shareActivityService.queryInfo(id);
-    }
+	//根据id查询活动详情
+	@GetMapping(value = "/admin/shareActivity/queryInfo/{id}")
+	public R queryInfo(@PathVariable("id") Integer id) {
+		if (Objects.isNull(id)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		return shareActivityService.queryInfo(id);
+	}
 }

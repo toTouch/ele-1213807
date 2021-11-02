@@ -4,9 +4,9 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
-import com.xiliulou.electricity.query.BindFranchiseeQuery;
 import com.xiliulou.electricity.query.FranchiseeAddAndUpdate;
 import com.xiliulou.electricity.query.FranchiseeQuery;
+import com.xiliulou.electricity.query.FranchiseeSetSplitQuery;
 
 import java.util.List;
 
@@ -22,15 +22,15 @@ public interface FranchiseeService {
 
     R edit(FranchiseeAddAndUpdate franchiseeAddAndUpdate);
 
-    R delete(Integer id);
+    R delete(Long id);
 
-    Franchisee queryByIdFromCache(Integer id);
+    Franchisee queryByIdFromDB(Long id);
 
     R queryList(FranchiseeQuery franchiseeQuery);
 
     R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery);
 
-    R getElectricityBatteryList(Integer id);
+    R getElectricityBatteryList(Long id);
 
     Franchisee queryByUid(Long uid);
 
@@ -39,4 +39,6 @@ public interface FranchiseeService {
     void deleteByUid(Long uid);
 
 	Integer queryByFanchisee(Long uid);
+
+	R setSplit(List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList);
 }

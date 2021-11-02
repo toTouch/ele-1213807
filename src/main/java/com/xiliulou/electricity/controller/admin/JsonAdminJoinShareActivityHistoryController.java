@@ -32,16 +32,16 @@ public class JsonAdminJoinShareActivityHistoryController {
 	 * 用户参与记录admin
 	 */
 	@GetMapping(value = "/admin/joinShareActivityHistory/list")
-	public R joinActivity(@RequestParam(value = "size", required = false) Long size,
-			@RequestParam(value = "offset", required = false) Long offset,
+	public R joinActivity(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
 			@RequestParam( "uid") Long uid,
 			@RequestParam( "activityId") Integer activityId) {
 
-		if (Objects.isNull(size)) {
+		if (size < 0 || size > 50) {
 			size = 10L;
 		}
 
-		if (Objects.isNull(offset) || offset < 0) {
+		if (offset < 0) {
 			offset = 0L;
 		}
 

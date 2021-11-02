@@ -36,7 +36,7 @@ public class TypeUserFranchiseeServiceImpl implements UserTypeService {
             return null;
         }
         //2、再找加盟商绑定的门店
-        List<Integer> storeIdList=new ArrayList<>();
+        List<Long> storeIdList=new ArrayList<>();
         for (Store store:storeList) {
             storeIdList.add(store.getId());
         }
@@ -46,7 +46,7 @@ public class TypeUserFranchiseeServiceImpl implements UserTypeService {
 
         //3、再找门店绑定的柜子
         List<Integer> eleIdList=new ArrayList<>();
-        for (Integer storeId:storeIdList) {
+        for (Long storeId:storeIdList) {
             List<ElectricityCabinet> electricityCabinetList=electricityCabinetService.queryByStoreId(storeId);
 
             if(ObjectUtil.isNotEmpty(electricityCabinetList)){

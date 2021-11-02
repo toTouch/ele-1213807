@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.user;
+
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.service.EleDepositOrderService;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.service.UserService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
 
@@ -20,55 +22,64 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserEleDepositOrderController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    EleDepositOrderService eleDepositOrderService;
-    @Autowired
-    FranchiseeService franchiseeService;
-    @Autowired
-    UserService userService;
-    @Autowired
-    UserInfoService userInfoService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	EleDepositOrderService eleDepositOrderService;
+	@Autowired
+	FranchiseeService franchiseeService;
+	@Autowired
+	UserService userService;
+	@Autowired
+	UserInfoService userInfoService;
 
-    //缴纳押金
-    @PostMapping("/user/payDeposit")
-    public R payDeposit(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName,HttpServletRequest request) {
-        return eleDepositOrderService.payDeposit(productKey,deviceName,request);
-    }
+	//缴纳押金
+	@PostMapping("/user/payDeposit")
+	public R payDeposit(@RequestParam("productKey") String productKey,
+			@RequestParam("deviceName") String deviceName,
+			@RequestParam(value = "model", required = false) Integer model,
+			HttpServletRequest request) {
+		return eleDepositOrderService.payDeposit(productKey, deviceName,model, request);
+	}
 
-    //退还押金
-    @PostMapping("/user/returnDeposit")
-    public R returnDeposit(HttpServletRequest request) {
-        return eleDepositOrderService.returnDeposit(request); }
+	//退还押金
+	@PostMapping("/user/returnDeposit")
+	public R returnDeposit(HttpServletRequest request) {
+		return eleDepositOrderService.returnDeposit(request);
+	}
+
+	//查询缴纳押金状态
+	@PostMapping("/user/eleDepositOrder/queryStatus")
+	public R queryStatus(@RequestParam("orderId") String orderId) {
+		EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderId);
+		if (Objects.isNull(eleDepositOrder)) {
+			log.error("ELECTRICITY  ERROR! not " +
+					"" +
+					" order,orderId{} ", orderId);
+			return R.fail("ELECTRICITY.0015", "未找到订单");
+		}
+		return R.ok(eleDepositOrder.getStatus());
+	}
+
+	//用户查询缴纳押金
+	@GetMapping(value = "/user/queryUserDeposit")
+	public R queryUserDeposit() {
+		return eleDepositOrderService.queryUserDeposit();
+	}
+
+	//用户查询押金
+	@GetMapping(value = "/user/queryDeposit")
+	public R queryDeposit(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return eleDepositOrderService.queryDeposit(productKey, deviceName);
+	}
 
 
-    //查询缴纳押金状态
-    @PostMapping("/user/eleDepositOrder/queryStatus")
-    public R queryStatus(@RequestParam("orderId") String orderId) {
-        EleDepositOrder eleDepositOrder=eleDepositOrderService.queryByOrderId(orderId);
-        if(Objects.isNull(eleDepositOrder)){
-            log.error("ELECTRICITY  ERROR! not " +
-                    "" +
-                    " order,orderId{} ", orderId);
-            return R.fail("ELECTRICITY.0015", "未找到订单");
-        }
-        return R.ok(eleDepositOrder.getStatus());
-    }
-
-    //用户查询缴纳押金
-    @GetMapping(value = "/user/queryUserDeposit")
-    public R queryUserDeposit(){
-        return eleDepositOrderService.queryUserDeposit();
-    }
-
-
-    //用户查询押金
-    @GetMapping(value = "/user/queryDeposit")
-    public R queryDeposit(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName){
-        return eleDepositOrderService.queryDeposit(productKey,deviceName);
-    }
+	//用户查询缴纳押金
+	@GetMapping(value = "/user/queryModelType")
+	public R queryModelType(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+		return eleDepositOrderService.queryModelType(productKey, deviceName);
+	}
 
 }
 

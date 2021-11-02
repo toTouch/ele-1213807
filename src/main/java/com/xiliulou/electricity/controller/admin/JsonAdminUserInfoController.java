@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Objects;
 
 /**
@@ -22,150 +24,147 @@ import java.util.Objects;
  */
 @RestController
 public class JsonAdminUserInfoController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    UserInfoService userInfoService;
-    @Autowired
-    RedisService redisService;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	UserInfoService userInfoService;
+	@Autowired
+	RedisService redisService;
 
+	//列表查询
+	@GetMapping(value = "/admin/userInfo/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "authStatus", required = false) Integer authStatus,
+			@RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
-    //列表查询
-    @GetMapping(value = "/admin/userInfo/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "authStatus", required = false) Integer authStatus) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.authStatus(authStatus)
+				.serviceStatus(serviceStatus)
+				.tenantId(tenantId).build();
 
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .authStatus(authStatus)
-                .tenantId(tenantId).build();
+		return userInfoService.queryList(userInfoQuery);
+	}
 
-        return userInfoService.queryList(userInfoQuery);
-    }
+	//列表查询
+	@GetMapping(value = "/admin/userInfo/queryCount")
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "authStatus", required = false) Integer authStatus,
+			@RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
 
-    //列表查询
-    @GetMapping(value = "/admin/userInfo/queryCount")
-    public R queryCount(@RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "authStatus", required = false) Integer authStatus) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.authStatus(authStatus)
+				.serviceStatus(serviceStatus)
+				.tenantId(tenantId).build();
 
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .authStatus(authStatus)
-                .tenantId(tenantId).build();
+		return userInfoService.queryCount(userInfoQuery);
+	}
 
-        return userInfoService.queryCount(userInfoQuery);
-    }
+	//禁/启用
+	@PutMapping(value = "/admin/userInfo/updateStatus")
+	public R updateStatus(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
+		return userInfoService.updateStatus(id, usableStatus);
+	}
 
-    //禁/启用
-    @PutMapping(value = "/admin/userInfo/updateStatus")
-    public R updateStatus(@RequestParam("id") Long id,@RequestParam("usableStatus") Integer usableStatus) {
-        return userInfoService.updateStatus(id,usableStatus);
-    }
+	//后台审核实名认证
+	@PostMapping(value = "/admin/userInfo/verifyAuth")
+	public R verifyAuth(@RequestParam("id") Long id, @RequestParam("authStatus") Integer authStatus) {
+		return userInfoService.verifyAuth(id, authStatus);
+	}
 
+	//编辑实名认证
+	@PutMapping(value = "/admin/userInfo")
+	public R updateAuth(@RequestBody UserInfo userInfo) {
+		return userInfoService.updateAuth(userInfo);
+	}
 
+	//订单周期删缓存
+	@PostMapping(value = "/admin/userInfo/deleteOrderCache")
+	public R deleteOrderCache(@RequestParam("uid") Long uid) {
+		redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
+		return R.ok();
+	}
 
-    //后台审核实名认证
-    @PostMapping(value = "/admin/userInfo/verifyAuth")
-    public R verifyAuth(@RequestParam("id") Long id,@RequestParam("authStatus") Integer authStatus) {
-        return userInfoService.verifyAuth(id,authStatus);
-    }
+	//列表查询
+	@GetMapping(value = "/admin/userInfo/list/v2")
+	public R queryListV2(@RequestParam(value = "size") Long size,
+			@RequestParam(value = "offset") Long offset,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "authStatus", required = false) Integer authStatus) {
+		if (size < 0 || size > 50) {
+			size = 50L;
+		}
 
-    //编辑实名认证
-    @PutMapping(value = "/admin/userInfo")
-    public R updateAuth(@RequestBody UserInfo userInfo) {
-        return userInfoService.updateAuth(userInfo);
-    }
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-    //订单周期删缓存
-    @PostMapping (value = "/admin/userInfo/deleteOrderCache")
-    public R deleteOrderCache(@RequestParam("uid") Long uid) {
-        redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
-        return R.ok();
-    }
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
+		UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.authStatus(authStatus)
+				.tenantId(tenantId).build();
 
+		return userInfoService.queryUserAuthInfo(userInfoQuery);
+	}
 
-    //列表查询
-    @GetMapping(value = "/admin/userInfo/list/v2")
-    public R queryListV2(@RequestParam(value = "size") Long size,
-            @RequestParam(value = "offset") Long offset,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "authStatus", required = false) Integer authStatus) {
-        if (size < 0 || size > 50) {
-            size = 50L;
-        }
+	//绑定电池
+	@PutMapping(value = "/admin/userInfo/bindBattery")
+	public R webBindBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
+		return userInfoService.webBindBattery(userInfoBatteryAddAndUpdate);
+	}
 
-        if (offset < 0) {
-            offset = 0L;
-        }
+	//解绑电池
+	@PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
+	public R webUnBindBattery(@PathVariable("id") Long id) {
+		return userInfoService.webUnBindBattery(id);
+	}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .authStatus(authStatus)
-                .tenantId(tenantId).build();
-
-        return userInfoService.queryUserAuthInfo(userInfoQuery);
-    }
-
-
-    //绑定电池
-    @PutMapping(value = "/admin/userInfo/bindBattery")
-    public R webBindBattery(@RequestBody @Validated(value = UpdateGroup.class) UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
-        return userInfoService.webBindBattery(userInfoBatteryAddAndUpdate);
-    }
-
-    //解绑电池
-    @PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
-    public R webUnBindBattery(@PathVariable("id") Long id) {
-        return userInfoService.webUnBindBattery(id);
-    }
-
-
-    //迁移用户数据
-    @PostMapping(value = "/admin/userInfo/userMove")
-    public R userMove(@RequestBody UserMoveHistory userMoveHistory) {
-        return userInfoService.userMove(userMoveHistory);
-    }
+	//迁移用户数据
+	@PostMapping(value = "/admin/userInfo/userMove")
+	public R userMove(@RequestBody UserMoveHistory userMoveHistory) {
+		return userInfoService.userMove(userMoveHistory);
+	}
 
 }

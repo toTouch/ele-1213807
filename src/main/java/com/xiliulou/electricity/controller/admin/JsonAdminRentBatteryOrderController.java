@@ -33,179 +33,178 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminRentBatteryOrderController {
-    /**
-     * 服务对象
-     */
-    @Autowired
-    private RentBatteryOrderService rentBatteryOrderService;
-    @Autowired
-    UserTypeFactory userTypeFactory;
+	/**
+	 * 服务对象
+	 */
+	@Autowired
+	private RentBatteryOrderService rentBatteryOrderService;
+	@Autowired
+	UserTypeFactory userTypeFactory;
 
-    //列表查询
-    @GetMapping(value = "/admin/rentBatteryOrder/list")
-    public R queryList(@RequestParam(value = "size", required = false) Long size,
-                       @RequestParam(value = "offset", required = false) Long offset,
-                       @RequestParam(value = "status", required = false) String status,
-                       @RequestParam(value = "type", required = false) Integer type,
-                       @RequestParam(value = "name", required = false) String name,
-                       @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "orderId", required = false) String orderId) {
-        if (Objects.isNull(size)) {
-            size = 10L;
-        }
+	//列表查询
+	@GetMapping(value = "/admin/rentBatteryOrder/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "type", required = false) Integer type,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "orderId", required = false) String orderId) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
 
-        if (Objects.isNull(offset) || offset < 0) {
-            offset = 0L;
-        }
+		if (offset < 0) {
+			offset = 0L;
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户区分
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if(Objects.isNull(eleIdList)){
-                return R.ok(new ArrayList<>());
-            }
-        }
+		List<Integer> eleIdList = null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+			if (Objects.isNull(userTypeService)) {
+				log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+				return R.fail("ELECTRICITY.0066", "用户权限不足");
+			}
+			eleIdList = userTypeService.getEleIdListByUserType(user);
+			if (Objects.isNull(eleIdList)) {
+				return R.ok(new ArrayList<>());
+			}
+		}
 
-        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
-                .offset(offset)
-                .size(size)
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .status(status)
-                .orderId(orderId)
-                .type(type)
-                .eleIdList(eleIdList)
-                .tenantId(tenantId).build();
+		RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.status(status)
+				.orderId(orderId)
+				.type(type)
+				.eleIdList(eleIdList)
+				.tenantId(tenantId).build();
 
-        return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
-    }
+		return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
+	}
 
-    //列表查询
-    @GetMapping(value = "/admin/rentBatteryOrder/queryCount")
-    public R queryCount(@RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "orderId", required = false) String orderId) {
+	//列表查询
+	@GetMapping(value = "/admin/rentBatteryOrder/queryCount")
+	public R queryCount(@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "type", required = false) Integer type,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "orderId", required = false) String orderId) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户区分
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if(Objects.isNull(eleIdList)){
-                return R.ok();
-            }
-        }
+		List<Integer> eleIdList = null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+			if (Objects.isNull(userTypeService)) {
+				log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+				return R.fail("ELECTRICITY.0066", "用户权限不足");
+			}
+			eleIdList = userTypeService.getEleIdListByUserType(user);
+			if (Objects.isNull(eleIdList)) {
+				return R.ok();
+			}
+		}
 
-        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .status(status)
-                .orderId(orderId)
-                .type(type)
-                .eleIdList(eleIdList)
-                .tenantId(tenantId).build();
+		RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.status(status)
+				.orderId(orderId)
+				.type(type)
+				.eleIdList(eleIdList)
+				.tenantId(tenantId).build();
 
-        return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
-    }
+		return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
+	}
 
-    //租电池订单导出报表
-    @GetMapping("/admin/rentBatteryOrder/exportExcel")
-    public void exportExcel(@RequestParam(value = "status", required = false) String status,
-            @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "orderId", required = false) String orderId ,HttpServletResponse response) {
+	//租电池订单导出报表
+	@GetMapping("/admin/rentBatteryOrder/exportExcel")
+	public void exportExcel(@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "type", required = false) Integer type,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "orderId", required = false) String orderId, HttpServletResponse response) {
 
-        Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
-        if (days > 33) {
-            throw new CustomBusinessException("搜索日期不能大于33天");
-        }
+		Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
+		if (days > 33) {
+			throw new CustomBusinessException("搜索日期不能大于33天");
+		}
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
-        //用户区分
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            throw new CustomBusinessException("查不到订单");
-        }
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			throw new CustomBusinessException("查不到订单");
+		}
 
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                throw new CustomBusinessException("查不到订单");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if(Objects.isNull(eleIdList)){
-                throw new CustomBusinessException("查不到订单");
-            }
-        }
+		List<Integer> eleIdList = null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+			if (Objects.isNull(userTypeService)) {
+				log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+				throw new CustomBusinessException("查不到订单");
+			}
+			eleIdList = userTypeService.getEleIdListByUserType(user);
+			if (Objects.isNull(eleIdList)) {
+				throw new CustomBusinessException("查不到订单");
+			}
+		}
 
-        RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
-                .name(name)
-                .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .status(status)
-                .orderId(orderId)
-                .type(type)
-                .eleIdList(eleIdList)
-                .tenantId(tenantId).build();
+		RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.status(status)
+				.orderId(orderId)
+				.type(type)
+				.eleIdList(eleIdList)
+				.tenantId(tenantId).build();
 
-        rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
-    }
+		rentBatteryOrderService.exportExcel(rentBatteryOrderQuery, response);
+	}
 
-
-    //结束异常订单
-    @PostMapping(value = "/admin/rentBatteryOrder/endOrder")
-    public R endOrder(@RequestParam("orderId") String orderId) {
-        return rentBatteryOrderService.endOrder(orderId);
-    }
+	//结束异常订单
+	@PostMapping(value = "/admin/rentBatteryOrder/endOrder")
+	public R endOrder(@RequestParam("orderId") String orderId) {
+		return rentBatteryOrderService.endOrder(orderId);
+	}
 
 }

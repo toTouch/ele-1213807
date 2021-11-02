@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashMap;
 import java.util.List;
@@ -46,7 +47,7 @@ public interface ElectricityCabinetService {
 
     R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery);
 
-    Integer queryFullyElectricityBattery(Integer id);
+    Integer queryFullyElectricityBattery(Integer id,String batteryType);
 
     boolean deviceIsOnline(String productKey, String deviceName);
 
@@ -74,7 +75,7 @@ public interface ElectricityCabinetService {
 
     R queryByDeviceOuter(String productKey, String deviceName);
 
-    R showInfoByStoreId(Integer storeId);
+    R showInfoByStoreId(Long storeId);
 
     R queryByOrder(String productKey, String deviceName);
 
@@ -84,7 +85,7 @@ public interface ElectricityCabinetService {
 
     R batteryReport(BatteryReportQuery batteryReportQuery);
 
-    List<ElectricityCabinet> queryByStoreId(Integer storeId);
+    List<ElectricityCabinet> queryByStoreId(Long storeId);
 
     R queryByDevice(String productKey, String deviceName);
 
@@ -92,9 +93,9 @@ public interface ElectricityCabinetService {
 
 	R queryCount(ElectricityCabinetQuery electricityCabinetQuery);
 
-	Integer queryCountByStoreId(Integer id);
+	Integer queryCountByStoreId(Long id);
 
-    R checkBattery(String productKey, String deviceName, String batterySn);
+    R checkBattery(String productKey, String deviceName, String batterySn,Boolean isParseBattery);
 
 	R queryById(Integer id);
 }

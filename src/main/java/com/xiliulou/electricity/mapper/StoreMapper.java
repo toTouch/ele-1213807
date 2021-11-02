@@ -30,7 +30,7 @@ public interface StoreMapper extends BaseMapper<Store> {
 
     List<StoreVO> showInfoByDistance(@Param("query") StoreQuery storeQuery);
 
-    Integer homeOne(@Param("storeIdList") List<Integer> storeIdList,@Param("tenantId") Integer tenantId);
+    Integer homeOne(@Param("storeIdList") List<Long> storeIdList,@Param("tenantId") Integer tenantId);
 
-	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("storeIdList") List<Integer> storeIdList ,@Param("tenantId")Integer tenantId);
+	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("storeIdList") List<Long> storeIdList ,@Param("tenantId")Integer tenantId);
 }

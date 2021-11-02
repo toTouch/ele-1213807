@@ -49,6 +49,12 @@ public class Role {
 	public static final Integer ROLE_OPERATE_USER = 2;
 	public static final Integer ROLE_FRANCHISEE_USER = 3;
 	public static final Integer ROLE_STORE_USER = 4;
-	public static final Integer ROLE_CABINET_USER = 5;
+
+
+	public static final String ROLE_ADMIN_NAME = "SUPER_ADMIN";
+	public static final String ROLE_OPERATE_USER_NAME = "OPERATE_USER";
+	public static final String ROLE_FRANCHISEE_USER_NAME = "FRANCHISEE_USER";
+	public static final String ROLE_STORE_USER_NAME = "STORE_USER";
+
 
 }

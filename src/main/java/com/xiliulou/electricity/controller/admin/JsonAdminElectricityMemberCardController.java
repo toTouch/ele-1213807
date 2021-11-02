@@ -159,7 +159,7 @@ public class JsonAdminElectricityMemberCardController {
 
     //查询换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
-    public R getElectricityBatteryList(@PathVariable("id") Integer id){
+    public R getElectricityBatteryList(@PathVariable("id") Long id){
         return R.ok(electricityMemberCardService.queryByFranchisee(id));
     }
 

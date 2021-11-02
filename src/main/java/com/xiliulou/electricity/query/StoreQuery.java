@@ -32,8 +32,10 @@ public class StoreQuery {
 	 */
 	private String address;
 
-	private List<Integer> storeIdList;
+	private List<Long> storeIdList;
 
 	private Integer tenantId;
+
+	private Long franchiseeId;
 
 }

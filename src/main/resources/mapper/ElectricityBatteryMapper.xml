@@ -83,6 +83,9 @@
 		<if test="power != null">
 			power =#{power},
 		</if>
+		<if test="model != null">
+			model =#{model},
+		</if>
 		electricity_cabinet_id=#{electricityCabinetId},
 		uid=#{uid},status=#{status},
 		update_time=#{updateTime}
