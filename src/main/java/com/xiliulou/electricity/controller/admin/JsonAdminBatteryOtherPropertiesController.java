@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
  * @Date: 2021/10/22 09:22
  * @Description:
  */
-public class BatteryOtherPropertiesController {
+public class JsonAdminBatteryOtherPropertiesController {
 
 	@Autowired
 	BatteryOtherPropertiesService batteryOtherPropertiesService;
