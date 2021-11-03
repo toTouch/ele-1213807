@@ -23,8 +23,8 @@ public class JsonAdminBatteryAttrController {
 	//
 	@GetMapping(value = "/admin/battery/attr/list")
 	public R attrList(@RequestParam("sn") String sn,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime) {
+			@RequestParam("beginTime") Long beginTime,
+			@RequestParam("endTime") Long endTime) {
 
 
 		String sql = "select * from t_battery_attr where devId=? and creatTime>=? and creatTime<=?";
