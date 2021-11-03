@@ -48,7 +48,7 @@ public class BatteryOtherProperties {
     /**
      * 电芯电压
      */
-    private List<Double> batteryCoreVList = new ArrayList<>();
+    private String batteryCoreVList;
     /**
      * 电池健康状态，分为7部分，二进制
      */
