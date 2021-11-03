@@ -28,6 +28,14 @@ public class JsonAdminBatteryAttrController {
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
 
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
 		String sql = "select * from t_battery_attr where devId=? and creatTime>=? and creatTime<=? limit ?,?";
 		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, beginTime, endTime, offset, size));
 	}
@@ -39,6 +47,14 @@ public class JsonAdminBatteryAttrController {
 			@RequestParam("sn") String sn,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
+
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
 
 		String sql = "select * from t_battery_warn where devId=? and creatTime>=? and creatTime<=? limit ?,?";
 		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn, beginTime, endTime, offset, size));
