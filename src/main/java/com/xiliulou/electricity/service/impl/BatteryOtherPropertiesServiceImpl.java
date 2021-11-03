@@ -53,6 +53,6 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 		BatteryOtherPropertiesQuery batteryOtherPropertiesQuery=new BatteryOtherPropertiesQuery();
 		BeanUtils.copyProperties(batteryOtherProperties,batteryOtherPropertiesQuery);
 		batteryOtherPropertiesQuery.setBatteryCoreVList(JsonUtil.fromJson(batteryOtherProperties.getBatteryCoreVList(),List.class));
-		return R.ok();
+		return R.ok(batteryOtherPropertiesQuery);
 	}
 }
