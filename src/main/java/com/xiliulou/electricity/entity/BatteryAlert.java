@@ -36,7 +36,7 @@ public class BatteryAlert {
 	/**
 	 * 	告警标识
 	 */
-	private Integer alarmFlag;
+	private Long alarmFlag;
 	/**
 	 * 	type
 	 */
