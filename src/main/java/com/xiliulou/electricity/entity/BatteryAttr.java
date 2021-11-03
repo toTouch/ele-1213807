@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
+import java.util.List;
 
 /**
  * @author: Miss.Li
@@ -87,5 +88,5 @@ public class BatteryAttr {
 	/**
 	 * 	上报时间
 	 */
-	private Timestamp createTime;
+	private Long createTime;
 }
