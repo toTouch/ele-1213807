@@ -28,7 +28,7 @@ public class BatteryAlert {
 	/**
 	 * 	上报时间
 	 */
-	private String createTime;
+	private Long createTime;
 	/**
 	 * 	告警时间
 	 */
