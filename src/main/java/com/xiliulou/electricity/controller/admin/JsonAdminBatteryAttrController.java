@@ -38,7 +38,7 @@ public class JsonAdminBatteryAttrController {
 
 	//
 	@GetMapping(value = "/admin/battery/alert/list")
-	public R alertList(@RequestParam("size") Long offset,
+	public R alertList(@RequestParam("offset") Long offset,
 			@RequestParam("size") Long size,
 			@RequestParam("sn") String sn) {
 
