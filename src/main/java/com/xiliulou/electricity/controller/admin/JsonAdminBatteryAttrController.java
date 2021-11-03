@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryAlert;
 import com.xiliulou.electricity.entity.BatteryAttr;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -37,6 +38,6 @@ public class JsonAdminBatteryAttrController {
 			@RequestParam(value = "sn", required = false) String sn) {
 
 		String sql = "select * from t_battery_warn where devId=? limit ?,?";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, offset, size));
+		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn, offset, size));
 	}
 }
