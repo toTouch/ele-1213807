@@ -20,12 +20,23 @@ public class JsonAdminBatteryAttrController {
 	ClickHouseService clickHouseService;
 
 	//
-	@GetMapping(value = "/admin/batteryAttr/list")
-	public R list(@RequestParam("size") Long offset,
+	@GetMapping(value = "/admin/battery/attr/list")
+	public R attrList(@RequestParam("size") Long offset,
 			@RequestParam("size") Long size,
 			@RequestParam("sn") String sn) {
 
 		String sql = "select * from t_battery_attr where devId=? limit ?,?";
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, offset, size));
+	}
+
+
+	//
+	@GetMapping(value = "/admin/battery/alert/list")
+	public R alertList(@RequestParam("size") Long offset,
+			@RequestParam("size") Long size,
+			@RequestParam("sn") String sn) {
+
+		String sql = "select * from t_battery_warn where devId=? limit ?,?";
 		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, offset, size));
 	}
 }
