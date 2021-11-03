@@ -166,10 +166,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		//根据电池查询仓门类型
 		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
 			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
-			if(Objects.nonNull(batteryModel)) {
-				electricityCabinetBox.setBatteryType(batteryModel);
-				newElectricityBattery.setModel(batteryModel);
-			}
+			electricityCabinetBox.setBatteryType(batteryModel);
+			newElectricityBattery.setModel(batteryModel);
 		}
 
 		//修改电池
