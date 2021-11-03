@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 
 /**
@@ -19,6 +20,8 @@ import java.time.format.DateTimeFormatter;
  */
 @RestController
 public class JsonAdminBatteryAttrController {
+
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
 	@Autowired
 	ClickHouseService clickHouseService;
@@ -31,10 +34,15 @@ public class JsonAdminBatteryAttrController {
 			@RequestParam("beginTime") Long beginTime,
 			@RequestParam("endTime") Long endTime) {
 
+		LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+		LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+		String begin = formatter.format(beginLocalDateTime);
+		String end = formatter.format(endLocalDateTime);
 
-		String sql = "select * from t_battery_attr where devId=?";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn));
+		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=?";
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end));
 	}
+
 
 	//
 	@GetMapping(value = "/admin/battery/alert/list")
@@ -53,4 +61,5 @@ public class JsonAdminBatteryAttrController {
 		String sql = "select * from t_battery_warn where devId=?  limit ?,?";
 		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn,  offset, size));
 	}
+
 }
