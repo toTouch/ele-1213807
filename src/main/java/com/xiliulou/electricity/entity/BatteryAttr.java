@@ -2,6 +2,9 @@ package com.xiliulou.electricity.entity;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+import java.sql.Timestamp;
+
 /**
  * @author: Miss.Li
  * @Date: 2021/10/29 13:58
@@ -20,69 +23,69 @@ public class BatteryAttr {
 	/**
 	 * 	经度 01102001
 	 */
-	private Double longitude;
+	private BigDecimal longitude;
 	/**
 	 * 	纬度 01103001
 	 */
-	private Double latitude;
+	private BigDecimal latitude;
 	/**
 	 * 	gsm信号强度 01106001
 	 */
-	private Integer gsmSignalStrength;
+	private Long gsmSignalStrength;
 	/**
 	 * 	电池状态 01108001
 	 */
-	private Integer batteryStatus;
+	private Long batteryStatus;
 	/**
 	 * 	速度信息 01109001
 	 */
-	private Integer speed;
+	private Long speed;
 	/**
 	 * 	行驶里程 01110001
 	 */
-	private Integer tripMiles;
+	private Long tripMiles;
 	/**
 	 * 	总电压 01111001
 	 */
-	private Integer sumV;
+	private Long sumV;
 	/**
 	 * 	总电流 01112001
 	 */
-	private Integer sumA;
+	private Long sumA;
 	/**
 	 * 	soc 电池电量 01113001
 	 */
-	private Integer soc;
+	private Long soc;
 	/**
 	 * 	剩余容量  01115001
 	 */
-	private Integer remainCapacity;
+	private Long remainCapacity;
 	/**
 	 * 	功率温度值  01118001
 	 */
-	private Integer powerTemp;
+	private Long powerTemp;
 	/**
 	 * 	电芯温度值  01119001
 	 */
-	private Integer batteryCoreTemp;
+	private Long batteryCoreTemp;
 	/**
 	 * 	环境温度  01120001
 	 */
-	private Integer envTemp;
+	private Long envTemp;
 	/**
 	 * 	总放电 01124001
 	 */
-	private Integer sumDischarge;
+	private Long sumDischarge;
 	/**
 	 * 	总充电 01125001
 	 */
-	private Integer sumCharge;
+	private Long sumCharge;
 	/**
 	 * 	预计放电时间 01126001
 	 */
-	private Integer expDischargeTime;
+	private Long expDischargeTime;
 	/**
 	 * 	上报时间
 	 */
-	private String createTime;
+	private Timestamp createTime;
 }
