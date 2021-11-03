@@ -30,11 +30,11 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 
 		if(Objects.nonNull(oldBatteryOtherProperties)){
 			batteryOtherProperties.setId(oldBatteryOtherProperties.getId());
-			batteryOtherProperties.setUpdateTime(batteryOtherProperties.getCreateTime());
+			batteryOtherProperties.setUpdateTime(System.currentTimeMillis());
 			batteryOtherPropertiesMapper.updateById(batteryOtherProperties);
 		}else {
-			batteryOtherProperties.setCreateTime(batteryOtherProperties.getCreateTime());
-			batteryOtherProperties.setUpdateTime(batteryOtherProperties.getCreateTime());
+			batteryOtherProperties.setCreateTime(System.currentTimeMillis());
+			batteryOtherProperties.setUpdateTime(System.currentTimeMillis());
 			batteryOtherPropertiesMapper.insert(batteryOtherProperties);
 		}
 
