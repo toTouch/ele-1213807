@@ -2,12 +2,14 @@ package com.xiliulou.electricity.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@TableName("t_battery_other_properties")
 public class BatteryOtherProperties {
 
     @TableId(value = "id",type = IdType.AUTO)
