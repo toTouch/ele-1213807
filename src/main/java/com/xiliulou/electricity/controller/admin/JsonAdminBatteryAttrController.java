@@ -22,31 +22,20 @@ public class JsonAdminBatteryAttrController {
 
 	//
 	@GetMapping(value = "/admin/battery/attr/list")
-	public R attrList(@RequestParam("size") Long offset,
-			@RequestParam("size") Long size,
-			@RequestParam("sn") String sn,
+	public R attrList(@RequestParam("sn") String sn,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
 
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
 
-		if (offset < 0) {
-			offset = 0L;
-		}
-
-		String sql = "select * from t_battery_attr where devId=? and creatTime>=? and creatTime<=? limit ?,?";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, beginTime, endTime, offset, size));
+		String sql = "select * from t_battery_attr where devId=? and creatTime>=? and creatTime<=?";
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, beginTime, endTime));
 	}
 
 	//
 	@GetMapping(value = "/admin/battery/alert/list")
 	public R alertList(@RequestParam("size") Long offset,
 			@RequestParam("size") Long size,
-			@RequestParam("sn") String sn,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime) {
+			@RequestParam("sn") String sn) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -56,7 +45,7 @@ public class JsonAdminBatteryAttrController {
 			offset = 0L;
 		}
 
-		String sql = "select * from t_battery_warn where devId=? and creatTime>=? and creatTime<=? limit ?,?";
-		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn, beginTime, endTime, offset, size));
+		String sql = "select * from t_battery_warn where devId=?  limit ?,?";
+		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn,  offset, size));
 	}
 }
