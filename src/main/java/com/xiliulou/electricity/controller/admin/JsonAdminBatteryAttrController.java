@@ -9,6 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 /**
  * @author: Miss.Li
  * @Date: 2021/11/2 10:01
@@ -20,6 +23,8 @@ public class JsonAdminBatteryAttrController {
 	@Autowired
 	ClickHouseService clickHouseService;
 
+
+
 	//
 	@GetMapping(value = "/admin/battery/attr/list")
 	public R attrList(@RequestParam("sn") String sn,
@@ -27,8 +32,8 @@ public class JsonAdminBatteryAttrController {
 			@RequestParam("endTime") Long endTime) {
 
 
-		String sql = "select * from t_battery_attr where devId=? and creatTime>=? and creatTime<=?";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, beginTime, endTime));
+		String sql = "select * from t_battery_attr where devId=?";
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn));
 	}
 
 	//
