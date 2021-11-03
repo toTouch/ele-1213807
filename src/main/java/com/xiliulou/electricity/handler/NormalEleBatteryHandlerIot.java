@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
+import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
@@ -20,6 +21,7 @@ import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
@@ -193,8 +195,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
 		//电池上报是否有其他信息
 		if(Objects.nonNull(eleBatteryVo.getHasOtherAttr())&&eleBatteryVo.getHasOtherAttr()){
-			BatteryOtherProperties batteryOtherProperties=eleBatteryVo.getBatteryOtherProperties();
+			BatteryOtherPropertiesQuery batteryOtherPropertiesQuery=eleBatteryVo.getBatteryOtherProperties();
+			BatteryOtherProperties batteryOtherProperties=new BatteryOtherProperties();
+			BeanUtils.copyProperties(batteryOtherPropertiesQuery,batteryOtherProperties);
 			batteryOtherProperties.setBatteryName(batteryName);
+			batteryOtherProperties.setBatteryCoreVList(JsonUtil.toJson(batteryOtherPropertiesQuery.getBatteryCoreVList()));
 			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
 		}
 
@@ -283,7 +288,7 @@ class EleBatteryVo {
 
 	private Boolean hasOtherAttr;
 
-	private BatteryOtherProperties batteryOtherProperties;
+	private BatteryOtherPropertiesQuery batteryOtherProperties;
 
 }
 
