@@ -205,11 +205,13 @@ public class EleOperateQueueHandler {
 			try {//查找用户
 				UserInfo userInfo = userInfoService.queryByUid(electricityCabinetOrder.getUid());
 				if (Objects.isNull(userInfo)) {
+					log.error("userInfo is null!orderId:{}", electricityCabinetOrder.getOrderId());
 					return;
 				}
 
 				FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 				if(Objects.isNull(oldFranchiseeUserInfo)){
+					log.error("franchiseeUserInfo is null!orderId:{}", electricityCabinetOrder.getOrderId());
 					return;
 				}
 
@@ -256,17 +258,19 @@ public class EleOperateQueueHandler {
 				}
 
 				if(Objects.isNull(tripleResult)){
+					log.error("check Old Battery not find fully battery1!orderId:{}", electricityCabinetOrder.getOrderId());
 					return;
 				}
 
 				if(!tripleResult.getLeft()){
+					log.error("check Old Battery not find fully battery2!orderId:{}", electricityCabinetOrder.getOrderId());
 					return ;
 				}
 
 				cellNo=tripleResult.getMiddle();
 
 				if (Objects.isNull(cellNo)) {
-					log.error("check Old Battery not find fully battery!orderId:{}", electricityCabinetOrder.getOrderId());
+					log.error("check Old Battery not find fully battery3!orderId:{}", electricityCabinetOrder.getOrderId());
 					return;
 				}
 
