@@ -36,7 +36,9 @@ public class JsonAdminBatteryAttrController {
 	public R attrList(@RequestParam("sn") String sn,
 			@RequestParam("beginTime") Long beginTime,
 			@RequestParam("endTime") Long endTime,
-			@RequestParam(value = "gsmType", required = false) String gsmType) {
+			@RequestParam(value = "gsmType", required = false) String gsmType,
+			@RequestParam(value = "offset", required = false) Long offset,
+			@RequestParam(value = "size", required = false) Long size) {
 
 		LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
 		LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
@@ -45,14 +47,22 @@ public class JsonAdminBatteryAttrController {
 
 
 		if(StringUtil.isEmpty(gsmType)){
-			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=?";
-			return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end));
+			if(Objects.nonNull(offset)||Objects.nonNull(size)){
+				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=?  limit ?,?";
+				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,offset,size));
+			}
+
+		}
+
+		if(Objects.nonNull(offset)||Objects.nonNull(size)){
+			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? limit ?,?";
+			return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,offset,size));
 		}
 
 
 		//给加的搜索，没什么意义
 		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=?";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,gsmType));
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,gsmType,offset,size));
 	}
 
 
