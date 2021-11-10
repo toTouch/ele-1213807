@@ -75,7 +75,7 @@ public class EleApiServiceImpl implements ApiService {
             return handleResult;
         } catch (Exception e) {
             log.error("ELE API ERROR! call api error! appId={}", apiRequestQuery.getAppId(), e);
-        }
+    }
         return Triple.of(false, "AUTH.1001", "系统错误");
     }
 }
