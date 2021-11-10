@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.handler.eleapi;
 
-import com.xiliulou.electricity.query.ApiRequestQuery;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
 /**

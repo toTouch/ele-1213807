@@ -1,8 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
@@ -25,14 +23,16 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     List<ElectricityCabinetBoxVO> queryList(@Param("query") ElectricityCabinetBoxQuery electricityCabinetBoxQuery);
 
 
-
     void batchDeleteBoxByElectricityCabinetId(@Param("id") Integer id, @Param("updateTime") Long updateTime);
 
 
+    int modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
 
-	void modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
+    void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
 
-	void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
+    List<ElectricityCabinetBox> queryElectricityBatteryBox(@Param("id") Integer id, @Param("cellNo") String cellNo, @Param("batteryType") String batteryType);
 
-	List<ElectricityCabinetBox> queryElectricityBatteryBox(@Param("id") Integer id, @Param("cellNo") String cellNo, @Param("batteryType") String batteryType);
+    List<ElectricityCabinetBox> queryUsableBatteryCellNo(@Param("eid") Integer id, @Param("type") String batteryType, @Param("fullV") Double fullyCharged);
+
+    List<ElectricityCabinetBox> queryUsableEmptyCellNo(@Param("eid") Integer eid);
 }

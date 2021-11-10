@@ -1,7 +1,8 @@
-package com.xiliulou.electricity.handler.eleapi.impl;
+package com.xiliulou.electricity.handler.eleapi;
 
 import com.xiliulou.electricity.handler.eleapi.EleApiHandler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import java.util.Map;
  * @Date: 2021/11/5 14:04
  * @Description:
  */
+@Service
 public class EleApiHandlerManager {
 
 	@Autowired

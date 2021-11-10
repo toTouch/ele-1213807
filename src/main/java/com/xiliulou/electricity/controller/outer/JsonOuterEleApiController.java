@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.outer;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.ApiRequestQuery;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.ApiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
