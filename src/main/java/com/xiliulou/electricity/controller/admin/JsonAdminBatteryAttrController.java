@@ -48,20 +48,20 @@ public class JsonAdminBatteryAttrController {
 
 		if(StringUtil.isEmpty(gsmType)){
 			if(Objects.nonNull(offset)||Objects.nonNull(size)){
-				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=?  limit ?,?";
+				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc limit ?,?";
 				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,offset,size));
 			}
 
 		}
 
 		if(Objects.nonNull(offset)||Objects.nonNull(size)){
-			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? limit ?,?";
+			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc limit ?,?";
 			return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,offset,size));
 		}
 
 
 		//给加的搜索，没什么意义
-		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=?";
+		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc";
 		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,gsmType,offset,size));
 	}
 
@@ -80,7 +80,7 @@ public class JsonAdminBatteryAttrController {
 			offset = 0L;
 		}
 
-		String sql = "select * from t_battery_warn where devId=?  limit ?,?";
+		String sql = "select * from t_battery_warn where devId=?  limit ?,? order by  createTime desc";
 		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn,  offset, size));
 	}
 
