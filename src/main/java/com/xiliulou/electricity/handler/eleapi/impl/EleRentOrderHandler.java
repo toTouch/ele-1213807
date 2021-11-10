@@ -54,7 +54,7 @@ public class EleRentOrderHandler implements EleApiHandler {
     @Override
     public Triple<Boolean, String, Object> handleCommand(ApiRequestQuery apiRequestQuery) {
         RentQuery rentQuery = JsonUtil.fromJson(apiRequestQuery.getData(), RentQuery.class);
-        if (StrUtil.isEmpty(rentQuery.getOrderId())) {
+        if (Objects.isNull(rentQuery) || StrUtil.isEmpty(rentQuery.getOrderId())) {
             log.error("ELE RENT ORDER ERROR! no orderId! requestId={}", apiRequestQuery.getRequestId());
             return Triple.of(false, "AUTH.1002", "orderId不存在");
         }

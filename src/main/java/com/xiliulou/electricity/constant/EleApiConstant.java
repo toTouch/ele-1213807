@@ -7,10 +7,16 @@ package com.xiliulou.electricity.constant;
  */
 public interface EleApiConstant {
 
-	String RENT_ORDER = "RENT_ORDER";
+    String RENT_ORDER = "RENT_ORDER";
 
-	String RETURN_ORDER = "RETURN_ORDER";
+    String RENT_ORDER_QUERY = "RENT_ORDER_QUERY";
 
-	String EXCHANGE_ORDER = "EXCHANGE_ORDER";
+    String RETURN_ORDER = "RETURN_ORDER";
+
+    String RETURN_ORDER_QUERY = "RETURN_ORDER_QUERY";
+
+    String EXCHANGE_ORDER = "EXCHANGE_ORDER";
+
+    String EXCHANGE_ORDER_QUERY = "EXCHANGE_ORDER_QUERY";
 
 }
