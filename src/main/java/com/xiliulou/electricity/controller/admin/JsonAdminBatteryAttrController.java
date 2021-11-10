@@ -62,7 +62,7 @@ public class JsonAdminBatteryAttrController {
 
 		//给加的搜索，没什么意义
 		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,gsmType,offset,size));
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,gsmType));
 	}
 
 
