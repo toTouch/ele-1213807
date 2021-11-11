@@ -3,12 +3,18 @@ package com.xiliulou.electricity.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ApiExchangeOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ThirdCallBackUrl;
 import com.xiliulou.electricity.service.ApiExchangeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ThirdCallBackUrlService;
+import com.xiliulou.electricity.service.retrofilt.api.ApiExchangeOrderRetrofitService;
+import com.xiliulou.electricity.service.retrofilt.api.RetrofitThirdApiService;
+import com.xiliulou.electricity.web.query.ApiExchangeOrderCallQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -18,6 +24,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -41,6 +50,11 @@ public class NormalApiExchangeHandlerIot extends AbstractIotMessageHandler {
 
     @Autowired
     ApiExchangeOrderService apiExchangeOrderService;
+
+    @Autowired
+    RetrofitThirdApiService retrofitThirdApiService;
+    @Autowired
+    ThirdCallBackUrlService thirdCallBackUrlService;
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -118,8 +132,35 @@ public class NormalApiExchangeHandlerIot extends AbstractIotMessageHandler {
         }
 
         apiExchangeOrderService.update(apiExchangeOrder);
-        // TODO: 2021/11/10 call
+
+        ApiExchangeOrderCallQuery apiExchangeOrderCallQuery = new ApiExchangeOrderCallQuery() ;
+        apiExchangeOrderCallQuery.setDeviceName(receiverMessage.getDeviceName());
+        apiExchangeOrderCallQuery.setProductKey(receiverMessage.getProductKey());
+        apiExchangeOrderCallQuery.setIsException(apiExchangeOrderRsp.getIsException());
+        apiExchangeOrderCallQuery.setMsg(apiExchangeOrderRsp.getMsg());
+        apiExchangeOrderCallQuery.setOrderId(apiExchangeOrderRsp.getOrderId());
+        apiExchangeOrderCallQuery.setRequestId(receiverMessage.getSessionId());
+        apiExchangeOrderCallQuery.setReturnBatteryName(apiExchangeOrderRsp.getPlaceBatteryName());
+        apiExchangeOrderCallQuery.setTakeBatteryName(apiExchangeOrderRsp.getTakeBatteryName());
+        apiExchangeOrderCallQuery.setPlaceCellNo(apiExchangeOrderRsp.getPlaceCellNo());
+        apiExchangeOrderCallQuery.setTakeCellNo(apiExchangeOrderRsp.getTakeCellNo());
+        apiExchangeOrderCallQuery.setStatus(apiExchangeOrderRsp.getOrderStatus());
+        apiExchangeOrderCallQuery.setTimestamp(System.currentTimeMillis());
+
+        Call<R> rCall = retrofitThirdApiService.getRetrofitService(ApiExchangeOrderRetrofitService.class).apiCall(apiExchangeOrderCallQuery, apiExchangeOrder.getTenantId(), ThirdCallBackUrl.EXCHANGE_URL);
+        rCall.enqueue(new Callback<R>() {
+            @Override
+            public void onResponse(Call<R> call, Response<R> response) {
+                log.info("ELE API INFO! sessionId={} call rsp={}", receiverMessage.getSessionId(), response.body());
+            }
+
+            @Override
+            public void onFailure(Call<R> call, Throwable throwable) {
+                log.error("ELE API ERROR! sessionId={} call error!", receiverMessage.getSessionId(), throwable);
+            }
+        });
         return true;
+
     }
 
 }

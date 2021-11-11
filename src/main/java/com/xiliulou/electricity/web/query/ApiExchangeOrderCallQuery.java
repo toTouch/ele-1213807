@@ -7,7 +7,7 @@ import lombok.Data;
  * @date : 2021/11/11 8:35 上午
  */
 @Data
-public class ApiReturnOrderRspQuery {
+public class ApiExchangeOrderCallQuery {
     /**
      * 设备的产品名
      */
@@ -39,12 +39,19 @@ public class ApiReturnOrderRspQuery {
     /**
      * 换电放入仓门号
      */
-    private Integer cellNo;
+    private Integer placeCellNo;
     /**
      * 换电放入电池编号
      */
     private String returnBatteryName;
-
+    /**
+     * 换电取走仓门号
+     */
+    private Integer takeCellNo;
+    /**
+     * 换电取走电池编号
+     */
+    private String takeBatteryName;
     /**
      * 异常信息，isException为true时有
      */

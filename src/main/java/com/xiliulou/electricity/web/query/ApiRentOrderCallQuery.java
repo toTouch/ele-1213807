@@ -7,7 +7,7 @@ import lombok.Data;
  * @date : 2021/11/11 8:35 上午
  */
 @Data
-public class ApiRentOrderRspQuery {
+public class ApiRentOrderCallQuery {
     /**
      * 设备的产品名
      */

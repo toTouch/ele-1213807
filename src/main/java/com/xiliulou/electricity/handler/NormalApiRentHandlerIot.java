@@ -2,12 +2,20 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ApiRentOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ThirdCallBackUrl;
 import com.xiliulou.electricity.service.ApiRentOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ThirdCallBackUrlService;
+import com.xiliulou.electricity.service.retrofilt.api.ApiExchangeOrderRetrofitService;
+import com.xiliulou.electricity.service.retrofilt.api.ApiRentOrderRetrofitService;
+import com.xiliulou.electricity.service.retrofilt.api.RetrofitThirdApiService;
+import com.xiliulou.electricity.web.query.ApiRentOrderCallQuery;
+import com.xiliulou.electricity.web.query.ApiReturnOrderCallQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -17,6 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -38,6 +49,11 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
     ApiRentOrderService apiRentOrderService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+
+    @Autowired
+    RetrofitThirdApiService retrofitThirdApiService;
+    @Autowired
+    ThirdCallBackUrlService thirdCallBackUrlService;
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -103,7 +119,30 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
         apiRentOrderService.update(apiRentOrder);
         // TODO: 2021/11/10 调用api
 
+        ApiRentOrderCallQuery apiRentOrderCallQuery = new ApiRentOrderCallQuery();
+        apiRentOrderCallQuery.setIsException(apiRentBatteryOrderRsp.getIsException());
+        apiRentOrderCallQuery.setMsg(apiRentBatteryOrderRsp.getMsg());
+        apiRentOrderCallQuery.setOrderId(apiRentBatteryOrderRsp.getOrderId());
+        apiRentOrderCallQuery.setDeviceName(receiverMessage.getDeviceName());
+        apiRentOrderCallQuery.setCellNo(apiRentOrder.getCellNo());
+        apiRentOrderCallQuery.setProductKey(receiverMessage.getProductKey());
+        apiRentOrderCallQuery.setStatus(apiRentBatteryOrderRsp.getOrderStatus());
+        apiRentOrderCallQuery.setTimestamp(System.currentTimeMillis());
+        apiRentOrderCallQuery.setRequestId(receiverMessage.getSessionId());
 
+
+        Call<R> rCall = retrofitThirdApiService.getRetrofitService(ApiRentOrderRetrofitService.class).apiCall(apiRentOrderCallQuery, apiRentOrder.getTenantId(), ThirdCallBackUrl.RENT_URL);
+        rCall.enqueue(new Callback<R>() {
+            @Override
+            public void onResponse(Call<R> call, Response<R> response) {
+                log.info("ELE API INFO! sessionId={} call rsp={}", receiverMessage.getSessionId(), response.body());
+            }
+
+            @Override
+            public void onFailure(Call<R> call, Throwable throwable) {
+                log.error("ELE API ERROR! sessionId={} call error!", receiverMessage.getSessionId(), throwable);
+            }
+        });
         return true;
     }
 

@@ -3,14 +3,20 @@ package com.xiliulou.electricity.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ApiReturnOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ThirdCallBackUrl;
 import com.xiliulou.electricity.service.ApiReturnOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ThirdCallBackUrlService;
+import com.xiliulou.electricity.service.retrofilt.api.ApiRentOrderRetrofitService;
+import com.xiliulou.electricity.service.retrofilt.api.ApiReturnOrderRetrofitService;
 import com.xiliulou.electricity.service.retrofilt.api.RetrofitThirdApiService;
+import com.xiliulou.electricity.web.query.ApiRentOrderCallQuery;
+import com.xiliulou.electricity.web.query.ApiReturnOrderCallQuery;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -20,6 +26,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -112,6 +121,31 @@ public class NormalApiReturnHandlerIot extends AbstractIotMessageHandler {
         apiReturnOrderService.update(apiReturnOrder);
         // TODO: 2021/11/10 调用api
 
+
+        ApiReturnOrderCallQuery apiReturnOrderCallQuery = new ApiReturnOrderCallQuery();
+        apiReturnOrderCallQuery.setIsException(apiReturnBatteryOrderRsp.getIsException());
+        apiReturnOrderCallQuery.setMsg(apiReturnBatteryOrderRsp.getMsg());
+        apiReturnOrderCallQuery.setOrderId(apiReturnBatteryOrderRsp.getOrderId());
+        apiReturnOrderCallQuery.setDeviceName(receiverMessage.getDeviceName());
+        apiReturnOrderCallQuery.setCellNo(apiReturnOrder.getCellNo());
+        apiReturnOrderCallQuery.setProductKey(receiverMessage.getProductKey());
+        apiReturnOrderCallQuery.setStatus(apiReturnBatteryOrderRsp.getOrderStatus());
+        apiReturnOrderCallQuery.setTimestamp(System.currentTimeMillis());
+        apiReturnOrderCallQuery.setRequestId(receiverMessage.getSessionId());
+
+
+        Call<R> rCall = retrofitThirdApiService.getRetrofitService(ApiReturnOrderRetrofitService.class).apiCall(apiReturnOrderCallQuery, apiReturnOrder.getTenantId(), ThirdCallBackUrl.RETURN_URL);
+        rCall.enqueue(new Callback<R>() {
+            @Override
+            public void onResponse(Call<R> call, Response<R> response) {
+                log.info("ELE API INFO! sessionId={} call rsp={}", receiverMessage.getSessionId(), response.body());
+            }
+
+            @Override
+            public void onFailure(Call<R> call, Throwable throwable) {
+                log.error("ELE API ERROR! sessionId={} call error!", receiverMessage.getSessionId(), throwable);
+            }
+        });
         return true;
     }
 
