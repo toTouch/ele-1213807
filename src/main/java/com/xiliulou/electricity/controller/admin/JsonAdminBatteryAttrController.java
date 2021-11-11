@@ -83,7 +83,7 @@ public class JsonAdminBatteryAttrController {
 			offset = 0L;
 		}
 
-		String sql = "select * from t_battery_warn where devId=?  limit ?,? order by  createTime desc";
+		String sql = "select * from t_battery_warn where devId=? order by  createTime desc limit ?,? ";
 		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn,  offset, size));
 	}
 
