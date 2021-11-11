@@ -1,30 +1,11 @@
 package com.xiliulou.electricity.entity;
 
 
-    
-
-
-
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-
-                        import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
  * (ApiOrderOperHistory)实体类
@@ -61,5 +42,15 @@ public class ApiOrderOperHistory {
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    /**
+     * 租电池和还电池订单类型
+     */
+    public static final Integer ORDER_TYPE_RENT_BACK = 1;
+    /**
+     * 换电池订单类型
+     */
+    public static final Integer ORDER_TYPE_EXCHANGE = 2;
+
 
 }

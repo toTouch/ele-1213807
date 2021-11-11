@@ -88,4 +88,14 @@
         delete from t_api_order_oper_history where id = #{id}
     </delete>
 
+    <select id="queryByOrderId" resultMap="ApiOrderOperHistoryMap">
+          select
+          order_id, create_time, msg
+           from t_api_order_oper_history
+           <where>
+               order_id =#{orderId}
+                and type = #{type}
+           </where>
+    </select>
+
 </mapper>

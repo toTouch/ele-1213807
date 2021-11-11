@@ -93,4 +93,9 @@ public class ApiOrderOperHistoryServiceImpl implements ApiOrderOperHistoryServic
     public Boolean deleteById(Long id) {
         return this.apiOrderOperHistoryMapper.deleteById(id) > 0;
     }
+
+    @Override
+    public List<ApiOrderOperHistory> queryByOrderId(String orderId, Integer orderTypeExchange) {
+        return this.apiOrderOperHistoryMapper.queryByOrderId(orderId,orderTypeExchange);
+    }
 }

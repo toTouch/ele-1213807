@@ -60,4 +60,5 @@ public interface ApiOrderOperHistoryService {
      */
     Boolean deleteById(Long id);
 
+    List<ApiOrderOperHistory> queryByOrderId(String orderId, Integer orderTypeExchange);
 }

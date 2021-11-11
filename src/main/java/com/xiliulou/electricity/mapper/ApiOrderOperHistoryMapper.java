@@ -63,4 +63,5 @@ public interface ApiOrderOperHistoryMapper  extends BaseMapper<ApiOrderOperHisto
      */
     int deleteById(Long id);
 
+    List<ApiOrderOperHistory> queryByOrderId(@Param("orderId") String orderId, @Param("type") Integer orderTypeExchange);
 }
