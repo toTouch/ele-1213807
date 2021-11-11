@@ -1,32 +1,11 @@
 package com.xiliulou.electricity.entity;
 
 
-    
-
-
-
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-                                    
-                                            
-                                            
-                                            
-                                            
-                                            
-                                            
-                    
-
-                            import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
  * (ThirdCallBackUrl)实体类
@@ -40,9 +19,9 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @Builder
 @TableName("t_third_call_back_url")
 public class ThirdCallBackUrl {
-    
+
     private Integer id;
-    
+
     private Integer tenantId;
     /**
     * 换电url
@@ -56,12 +35,17 @@ public class ThirdCallBackUrl {
     * 租电池url
     */
     private String rentUrl;
-    
+
     private Long createTime;
-    
+
     private Long updateTime;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
+
+    public static final int RENT_URL = 1;
+    public static final int EXCHANGE_URL = 2;
+    public static final int RETURN_URL = 3;
+
 
 }

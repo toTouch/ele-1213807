@@ -9,6 +9,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ApiReturnOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.ThirdCallBackUrlService;
+import com.xiliulou.electricity.service.retrofilt.api.RetrofitThirdApiService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
@@ -40,6 +42,11 @@ public class NormalApiReturnHandlerIot extends AbstractIotMessageHandler {
     ApiReturnOrderService apiReturnOrderService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+
+    @Autowired
+    RetrofitThirdApiService retrofitThirdApiService;
+    @Autowired
+    ThirdCallBackUrlService thirdCallBackUrlService;
 
 
     @Override
