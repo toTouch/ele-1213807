@@ -47,25 +47,25 @@ public class EleExchangeOrderQueryHandler implements EleApiHandler {
         }
 
         ApiExchangeOrder apiExchangeOrder = apiExchangeOrderService.queryByOrderId(apiOrderQuery.getOrderId(), TenantContextHolder.getTenantId());
-        if(Objects.isNull(apiExchangeOrder)) {
-            return Triple.of(false ,"API.10004","查无此单");
+        if (Objects.isNull(apiExchangeOrder)) {
+            return Triple.of(false, "API.10004", "查无此单");
         }
 
         ApiExchangeOrderVo apiExchangeOrderVo = new ApiExchangeOrderVo();
-        BeanUtils.copyProperties(apiExchangeOrder,apiExchangeOrderVo);
+        BeanUtils.copyProperties(apiExchangeOrder, apiExchangeOrderVo);
 
         ElectricityCabinet electricityCabinet = Optional.ofNullable(cabinetService.queryByIdFromCache(apiExchangeOrder.getEid())).orElse(new ElectricityCabinet());
         apiExchangeOrderVo.setDeviceName(electricityCabinet.getDeviceName());
         apiExchangeOrderVo.setProductKey(electricityCabinet.getProductKey());
         apiExchangeOrderVo.setCabinetName(electricityCabinet.getName());
 
-        if(Objects.isNull(apiOrderQuery.getNeedOperateRecord()) || !apiOrderQuery.getNeedOperateRecord()) {
-            return Triple.of(true,null,apiExchangeOrder);
+        if (Objects.isNull(apiOrderQuery.getNeedOperateRecord()) || !apiOrderQuery.getNeedOperateRecord()) {
+            return Triple.of(true, null, apiExchangeOrder);
         }
 
         List<ApiOrderOperHistory> history = apiOrderOperHistoryService.queryByOrderId(apiExchangeOrder.getOrderId(), ApiOrderOperHistory.ORDER_TYPE_EXCHANGE);
         apiExchangeOrderVo.setOperateRecords(history);
 
-        return Triple.of(true,null,apiExchangeOrder);
+        return Triple.of(true, null, apiExchangeOrder);
     }
 }
