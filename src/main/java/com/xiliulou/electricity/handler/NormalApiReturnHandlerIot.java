@@ -119,7 +119,12 @@ public class NormalApiReturnHandlerIot extends AbstractIotMessageHandler {
 
         }
         apiReturnOrderService.update(apiReturnOrder);
-        // TODO: 2021/11/10 调用api
+
+        ThirdCallBackUrl thirdCallBackUrl = thirdCallBackUrlService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(thirdCallBackUrl) || StrUtil.isEmpty(thirdCallBackUrl.getReturnUrl())) {
+            log.warn("CUPBOARD WARN! tenantId={} hasn't callback!", electricityCabinet.getTenantId());
+            return true;
+        }
 
 
         ApiReturnOrderCallQuery apiReturnOrderCallQuery = new ApiReturnOrderCallQuery();

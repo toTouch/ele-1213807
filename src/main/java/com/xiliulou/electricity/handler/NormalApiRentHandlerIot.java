@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -117,7 +118,12 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
 
         }
         apiRentOrderService.update(apiRentOrder);
-        // TODO: 2021/11/10 调用api
+
+        ThirdCallBackUrl thirdCallBackUrl = thirdCallBackUrlService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(thirdCallBackUrl) || StrUtil.isEmpty(thirdCallBackUrl.getRentUrl())) {
+            log.warn("CUPBOARD WARN! tenantId={} hasn't callback!", electricityCabinet.getTenantId());
+            return true;
+        }
 
         ApiRentOrderCallQuery apiRentOrderCallQuery = new ApiRentOrderCallQuery();
         apiRentOrderCallQuery.setIsException(apiRentBatteryOrderRsp.getIsException());

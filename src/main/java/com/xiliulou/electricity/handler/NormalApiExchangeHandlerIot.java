@@ -133,6 +133,13 @@ public class NormalApiExchangeHandlerIot extends AbstractIotMessageHandler {
 
         apiExchangeOrderService.update(apiExchangeOrder);
 
+        ThirdCallBackUrl thirdCallBackUrl = thirdCallBackUrlService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(thirdCallBackUrl) || StrUtil.isEmpty(thirdCallBackUrl.getExchangeUrl())) {
+            log.warn("CUPBOARD WARN! tenantId={} hasn't callback!", electricityCabinet.getTenantId());
+            return true;
+        }
+
+
         ApiExchangeOrderCallQuery apiExchangeOrderCallQuery = new ApiExchangeOrderCallQuery() ;
         apiExchangeOrderCallQuery.setDeviceName(receiverMessage.getDeviceName());
         apiExchangeOrderCallQuery.setProductKey(receiverMessage.getProductKey());
