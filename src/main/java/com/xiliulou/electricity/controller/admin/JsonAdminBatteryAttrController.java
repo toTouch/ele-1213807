@@ -51,7 +51,6 @@ public class JsonAdminBatteryAttrController {
 				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime  ";
 				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end));
 			}
-
 		}
 
 		if (Objects.nonNull(offset) || Objects.nonNull(size)) {

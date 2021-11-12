@@ -15,36 +15,36 @@ public class BatteryOtherProperties {
     @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     //电池的标称电压
-    private double batteryV;
+    private Double batteryV;
     /**
      * 电芯的数量
      */
-    private int batteryCoreNum;
+    private Integer batteryCoreNum;
     /**
      * 电池的剩余容量
      */
-    private double batteryRemainCapacity;
+    private Double batteryRemainCapacity;
     /**
      * 电池健康状态
      */
-    private double soh;
+    private Double soh;
     /**
      * 电池充电电流
      */
-    private double batteryChargeA;
+    private Double batteryChargeA;
     /**
      * 环境温度
      */
-    private double envTemp;
+    private Double envTemp;
     /**
      * 电芯温度
      */
-    private double batteryCoreTemp;
+    private Double batteryCoreTemp;
 
     /**
      * 板卡温度
      */
-    private double hardwareTemp;
+    private Double hardwareTemp;
     /**
      * 电芯电压
      */
