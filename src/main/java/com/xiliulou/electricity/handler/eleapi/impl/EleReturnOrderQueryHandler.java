@@ -67,7 +67,7 @@ public class EleReturnOrderQueryHandler implements EleApiHandler {
             return Triple.of(true, null, apiRentOrderVo);
         }
 
-        List<ApiOrderOperHistory> history = apiOrderOperHistoryService.queryByOrderId(apiRentOrderVo.getOrderId(), ApiOrderOperHistory.ORDER_TYPE_EXCHANGE);
+        List<ApiOrderOperHistory> history = apiOrderOperHistoryService.queryByOrderId(apiRentOrderVo.getOrderId(), ApiOrderOperHistory.ORDER_TYPE_RENT_BACK);
         apiRentOrderVo.setOperateRecords(history);
 
         return Triple.of(true, null, apiRentOrderVo);
