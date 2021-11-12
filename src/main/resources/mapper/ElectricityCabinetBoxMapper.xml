@@ -127,7 +127,7 @@
             and del_flag = 0
             and status = 1
         </where>
-        order by cellNo desc
+        order by cell_no desc
     </select>
 
 </mapper>
