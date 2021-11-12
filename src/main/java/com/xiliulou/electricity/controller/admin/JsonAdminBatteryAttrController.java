@@ -29,8 +29,6 @@ public class JsonAdminBatteryAttrController {
 	@Autowired
 	ClickHouseService clickHouseService;
 
-
-
 	//
 	@GetMapping(value = "/admin/battery/attr/list")
 	public R attrList(@RequestParam("sn") String sn,
@@ -45,33 +43,32 @@ public class JsonAdminBatteryAttrController {
 		String begin = formatter.format(beginLocalDateTime);
 		String end = formatter.format(endLocalDateTime);
 
-
-		if(StringUtil.isEmpty(gsmType)){
-			if(Objects.nonNull(offset)||Objects.nonNull(size)){
+		if (StringUtil.isEmpty(gsmType)) {
+			if (Objects.nonNull(offset) || Objects.nonNull(size)) {
 				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc limit ?,?";
-				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,offset,size));
-			}else{
+				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end, offset, size));
+			} else {
 				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc ";
-				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end));
+				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end));
 			}
 
 		}
 
-		if(Objects.nonNull(offset)||Objects.nonNull(size)){
+		if (Objects.nonNull(offset) || Objects.nonNull(size)) {
 			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc limit ?,?";
-			return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,offset,size));
+			return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end, offset, size));
 		}
-
 
 		//给加的搜索，没什么意义
 		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc";
-		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn,begin,end,gsmType));
+		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end, gsmType));
 	}
-
 
 	//
 	@GetMapping(value = "/admin/battery/alert/list")
 	public R alertList(@RequestParam("offset") Long offset,
+			@RequestParam("beginTime") Long beginTime,
+			@RequestParam("endTime") Long endTime,
 			@RequestParam("size") Long size,
 			@RequestParam("sn") String sn) {
 
@@ -83,8 +80,13 @@ public class JsonAdminBatteryAttrController {
 			offset = 0L;
 		}
 
-		String sql = "select * from t_battery_warn where devId=? order by  createTime desc limit ?,? ";
-		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn,  offset, size));
+		LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+		LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+		String begin = formatter.format(beginLocalDateTime);
+		String end = formatter.format(endLocalDateTime);
+
+		String sql = "select * from t_battery_warn where devId=? and createTime>=? AND createTime<=? order by  createTime desc limit ?,? ";
+		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn, begin, end, offset, size));
 	}
 
 }
