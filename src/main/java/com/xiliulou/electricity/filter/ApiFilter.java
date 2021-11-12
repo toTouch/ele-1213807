@@ -56,11 +56,11 @@ public abstract class ApiFilter implements Filter {
                 return;
             }
 
-            Pair<Boolean, String> checkParamsResult = checkRequestParamsIsLegal(apiRequestQuery);
-            if (!checkParamsResult.getLeft()) {
-                ResponseUtil.out(response, R.fail("AUTH.1002", checkParamsResult.getRight()));
-                return;
-            }
+//            Pair<Boolean, String> checkParamsResult = checkRequestParamsIsLegal(apiRequestQuery);
+//            if (!checkParamsResult.getLeft()) {
+//                ResponseUtil.out(response, R.fail("AUTH.1002", checkParamsResult.getRight()));
+//                return;
+//            }
 
             TenantAppInfo tenantAppInfo = getTenantAppInfo(apiRequestQuery.getAppId());
 
@@ -75,11 +75,11 @@ public abstract class ApiFilter implements Filter {
                 return;
             }
 
-            String signature = SignUtils.getSignature(apiRequestQuery, tenantAppInfo.getAppsecert());
-            if (!apiRequestQuery.getSign().equals(signature)) {
-                ResponseUtil.out(response, R.fail("AUTH.1004", "签名失败!"));
-                return;
-            }
+//            String signature = SignUtils.getSignature(apiRequestQuery, tenantAppInfo.getAppsecert());
+//            if (!apiRequestQuery.getSign().equals(signature)) {
+//                ResponseUtil.out(response, R.fail("AUTH.1004", "签名失败!"));
+//                return;
+//            }
 
             TenantContextHolder.setTenantId(tenantAppInfo.getTenantId());
             filterChain.doFilter(servletRequest, servletResponse);

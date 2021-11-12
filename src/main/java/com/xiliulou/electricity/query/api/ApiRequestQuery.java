@@ -14,7 +14,6 @@ public class ApiRequestQuery {
      */
     private String version;
     /**
-     * 请求时间
      */
     private Long requestTime;
     /**
