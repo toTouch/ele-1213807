@@ -44,7 +44,7 @@ public class BatteryAttr {
 	/**
 	 * 	行驶里程 01110001
 	 */
-	private Long tripMiles;
+	private BigDecimal tripMiles;
 	/**
 	 * 	总电压 01111001
 	 */
