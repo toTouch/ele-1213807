@@ -116,6 +116,7 @@ public class EleExchangeOrderHandler implements EleApiHandler {
                 .orderId(exchangeQuery.getOrderId())
                 .eid(electricityCabinet.getId())
                 .status(ApiExchangeOrder.STATUS_INIT)
+                .orderSeq(0.0)
                 .tenantId(TenantContextHolder.getTenantId())
                 .updateTime(System.currentTimeMillis())
                 .putBatterySn(box.getSn())

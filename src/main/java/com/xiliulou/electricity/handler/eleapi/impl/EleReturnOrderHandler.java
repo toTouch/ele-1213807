@@ -97,9 +97,10 @@ public class EleReturnOrderHandler implements EleApiHandler {
         }
 
         ApiReturnOrder order = ApiReturnOrder.builder()
-                .batterySn(apiReturnOrder.getBatterySn())
-                .batteryType(apiReturnOrder.getBatteryType())
-                .orderId(apiReturnOrder.getOrderId())
+                .orderSeq(0.0)
+                .batterySn(rentQuery.getReturnBatteryName())
+                .batteryType(rentQuery.getType())
+                .orderId(rentQuery.getOrderId())
                 .cellNo(usableEmptyCellResult.getRight())
                 .createTime(System.currentTimeMillis())
                 .tenantId(TenantContextHolder.getTenantId())

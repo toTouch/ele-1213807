@@ -98,6 +98,7 @@ public class EleRentOrderHandler implements EleApiHandler {
 
         ApiRentOrder order = ApiRentOrder.builder()
                 .batterySn(box.getSn())
+                .orderSeq(0.0)
                 .batteryType(box.getBatteryType())
                 .cellNo(Integer.parseInt(box.getCellNo()))
                 .orderId(rentQuery.getOrderId())
