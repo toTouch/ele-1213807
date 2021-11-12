@@ -119,9 +119,9 @@ public class EleExchangeOrderHandler implements EleApiHandler {
                 .orderSeq(0.0)
                 .tenantId(TenantContextHolder.getTenantId())
                 .updateTime(System.currentTimeMillis())
-                .putBatterySn(box.getSn())
-                .putCellNo(Integer.parseInt(box.getCellNo()))
-                .takeCellNo(usableEmptyCellNo.getRight())
+                .putBatterySn(exchangeQuery.getReturnBatteryName())
+                .putCellNo(usableEmptyCellNo.getRight())
+                .takeCellNo(Integer.parseInt(box.getCellNo()))
                 .build();
         apiExchangeOrderService.insert(order);
 
