@@ -109,7 +109,7 @@ public class NormalApiExchangeHandlerIot extends AbstractIotMessageHandler {
             apiExchangeOrder.setPutBatterySn(apiExchangeOrderRsp.getPlaceBatteryName());
             Optional.ofNullable(electricityBatteryService.queryBySn(apiExchangeOrderRsp.getPlaceBatteryName())).map(e -> {
                 e.setUpdateTime(System.currentTimeMillis());
-                e.setStatus(ElectricityBattery.STOCK_STATUS);
+                e.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
                 electricityBatteryService.update(e);
                 return e;
             });
