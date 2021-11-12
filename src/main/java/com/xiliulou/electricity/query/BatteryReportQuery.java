@@ -23,6 +23,6 @@ public class BatteryReportQuery {
 
     private Boolean hasOtherAttr;
 
-    private BatteryOtherProperties batteryOtherProperties;
+    private BatteryOtherProperties batteryAttr;
 
 }

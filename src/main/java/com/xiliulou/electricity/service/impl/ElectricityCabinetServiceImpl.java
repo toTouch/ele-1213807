@@ -1605,12 +1605,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		electricityBatteryService.update(newElectricityBattery);
 
 		//电池上报是否有其他信息
-		if(Objects.nonNull(batteryReportQuery.getHasOtherAttr())&&batteryReportQuery.getHasOtherAttr()){
-			BatteryOtherProperties batteryOtherProperties=batteryReportQuery.getBatteryOtherProperties();
+		if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
+			BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
 			batteryOtherProperties.setBatteryName(batteryName);
 			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
 		}
-
 
 		return R.ok();
 	}
