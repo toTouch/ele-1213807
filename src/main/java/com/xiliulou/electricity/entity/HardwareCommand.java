@@ -123,7 +123,7 @@ public class HardwareCommand {
      * api租电
      */
     public static final String API_RENT_ORDER = "api_rent_battery";
-    public static final String API_RENT_ORDER_RSP = "api_return_battery_rsp";
+    public static final String API_RENT_ORDER_RSP = "api_rent_battery_rsp";
     /**
      * api还电
      */
