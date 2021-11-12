@@ -22,7 +22,7 @@ public class TenantAppInfo {
 
     private Integer id;
     /**
-     * 应用类型 MT-美团，CUPBOARD-餐柜api
+     * 应用类型
      */
     private String type;
     /**
@@ -47,9 +47,8 @@ public class TenantAppInfo {
     public static final Integer TYPE_NORMAL = 0;
     public static final Integer TYPE_STOP = 1;
 
-    public static final String MT_TYPE = "MT";
+    public static final String EXCHANGE_NORMAL = "EXCHANGE";
 
-    public static final String CUPBOARD_TYPE = "CUPBOARD";
 
 
 }

@@ -110,7 +110,7 @@ public class TenantAppInfoServiceImpl implements TenantAppInfoService {
 
     @Override
     public Triple<Boolean, String, Object> saveApp(AppInfoQuery appInfoQuery) {
-        if (!appInfoQuery.getType().equals(TenantAppInfo.MT_TYPE) && !appInfoQuery.getType().equals(TenantAppInfo.CUPBOARD_TYPE)) {
+        if (!appInfoQuery.getType().equals(TenantAppInfo.EXCHANGE_NORMAL)) {
             return Triple.of(false, "SYSTEM.0002", "参数不合法");
         }
 
@@ -169,7 +169,7 @@ public class TenantAppInfoServiceImpl implements TenantAppInfoService {
             return Triple.of(false, "SYSTEM.0002", "不合法的参数");
         }
 
-        if (!appType.equals(TenantAppInfo.MT_TYPE) && !appType.equals(TenantAppInfo.CUPBOARD_TYPE)) {
+        if (!appType.equals(TenantAppInfo.EXCHANGE_NORMAL)) {
             return Triple.of(false, "SYSTEM.0002", "参数不合法");
         }
 
