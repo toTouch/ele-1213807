@@ -39,7 +39,7 @@ public interface RentBatteryOrderService {
 
     R endOrder(String orderId);
 
-    RentBatteryOrder queryByUidAndType(Long uid, Integer type);
+    RentBatteryOrder queryByUidAndType(Long uid);
 
 	void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response);
 

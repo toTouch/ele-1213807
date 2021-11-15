@@ -123,15 +123,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //是否存在未完成的租电池订单
-        RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
-        if (Objects.nonNull(rentBatteryOrder1)) {
-            return R.fail((Object) rentBatteryOrder1.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
-        }
-
-        //是否存在未完成的还电池订单
-        RentBatteryOrder rentBatteryOrder2 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
-        if (Objects.nonNull(rentBatteryOrder2)) {
-            return R.fail((Object) rentBatteryOrder2.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+        RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
+        if (Objects.nonNull(oldRentBatteryOrder)) {
+            if(Objects.equals(oldRentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)) {
+                return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+            }else if(Objects.equals(oldRentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+                return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+            }
         }
 
         //是否存在未完成的换电订单
@@ -353,15 +351,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //是否存在未完成的租电池订单
-        RentBatteryOrder rentBatteryOrder1 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
-        if (Objects.nonNull(rentBatteryOrder1)) {
-            return R.fail((Object) rentBatteryOrder1.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
-        }
-
-        //是否存在未完成的还电池订单
-        RentBatteryOrder rentBatteryOrder2 = queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
-        if (Objects.nonNull(rentBatteryOrder2)) {
-            return R.fail((Object) rentBatteryOrder1.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+        RentBatteryOrder oldRentBatteryOrder = queryByUidAndType(user.getUid());
+        if (Objects.nonNull(oldRentBatteryOrder)) {
+            if(Objects.equals(oldRentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)) {
+                return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+            }else if(Objects.equals(oldRentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+                return R.fail((Object) oldRentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+            }
         }
 
         //是否存在未完成的换电订单
@@ -674,8 +670,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     }
 
     @Override
-    public RentBatteryOrder queryByUidAndType(Long uid, Integer type) {
-        return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid).eq(RentBatteryOrder::getType, type)
+    public RentBatteryOrder queryByUidAndType(Long uid) {
+        return rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getUid, uid)
                 .notIn(RentBatteryOrder::getStatus, RentBatteryOrder.RENT_BATTERY_TAKE_SUCCESS, RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS, RentBatteryOrder.ORDER_EXCEPTION_CANCEL, RentBatteryOrder.ORDER_CANCEL)
                 .orderByDesc(RentBatteryOrder::getCreateTime).last("limit 0,1"));
     }
