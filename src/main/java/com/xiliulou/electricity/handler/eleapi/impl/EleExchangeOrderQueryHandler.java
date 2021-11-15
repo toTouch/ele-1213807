@@ -66,6 +66,6 @@ public class EleExchangeOrderQueryHandler implements EleApiHandler {
         List<ApiOrderOperHistory> history = apiOrderOperHistoryService.queryByOrderId(apiExchangeOrder.getOrderId(), ApiOrderOperHistory.ORDER_TYPE_EXCHANGE);
         apiExchangeOrderVo.setOperateRecords(history);
 
-        return Triple.of(true, null, apiExchangeOrder);
+        return Triple.of(true, null, apiExchangeOrderVo);
     }
 }
