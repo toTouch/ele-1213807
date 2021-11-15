@@ -1690,7 +1690,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.fail("找不到换电柜门店");
             }
 
-            if (Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId())) {
+            if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId())) {
                 log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
                 return R.fail("电池加盟商与电柜加盟商不匹配");
             }

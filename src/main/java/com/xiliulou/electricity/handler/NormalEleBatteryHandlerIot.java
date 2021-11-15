@@ -2,13 +2,18 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -40,6 +45,14 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+
+    @Autowired
+    StoreService storeService;
+
+
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     public static final String IRON_LITHIUM = "IRON_LITHIUM";
 
@@ -211,9 +224,32 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
         //修改仓门
         electricityCabinetBox.setSn(electricityBattery.getSn());
+        electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+
+
+        //查电池所属加盟商
+        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+        if (Objects.isNull(franchiseeBindElectricityBattery)) {
+            log.error("ele battery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
+            return false;
+        }
+        // 查换电柜所属加盟商
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("ele battery error! not find store,storeId:{}", electricityCabinet.getStoreId());
+            return false;
+        }
+
+        if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId())) {
+            log.error("ele battery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
+            electricityCabinetBox.setSn("UNKNOW"+electricityBattery.getSn());
+            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+        }
+
+
+
         electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetBox.setCellNo(cellNo);
-        electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
         return true;
