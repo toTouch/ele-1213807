@@ -25,6 +25,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -272,9 +273,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //分配电池 --只分配满电电池
         Triple<Boolean, String, Object> tripleResult;
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-            tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+            tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
         } else {
-            tripleResult = findUsableBatteryCellNo(electricityCabinet.getId(), null, null, franchiseeUserInfo.getFranchiseeId());
+            tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, franchiseeUserInfo.getFranchiseeId());
         }
 
         if (Objects.isNull(tripleResult)) {
@@ -469,12 +470,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //分配开门格挡
-        String cellNo = electricityCabinetOrderService.findUsableCellNo(electricityCabinet.getId());
+        Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+
+        if (Objects.isNull(usableEmptyCellNo.getLeft())) {
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+        }
+
+        String cellNo=usableEmptyCellNo.getRight().toString();
+
         try {
-            if (Objects.isNull(cellNo)) {
-                redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
-                return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
-            }
 
             String orderId = generateOrderId(user.getUid(), cellNo);
 
@@ -860,16 +865,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     //分配满仓
     @Override
-    public Triple<Boolean, String, Object> findUsableBatteryCellNo(Integer id, String cellNo, String batteryType, Long franchiseeId) {
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(id);
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("findNewUsableCellNo is error!not found electricityCabinet! electricityCabinetId:{}", id);
-            return null;
-        }
+    public Triple<Boolean, String, Object> findUsableBatteryCellNo(ElectricityCabinet electricityCabinet, String cellNo, String batteryType, Long franchiseeId) {
+
 
         Integer box = null;
         //先查询缓存
-        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + id, BigEleBatteryVo.class);
+        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId(), BigEleBatteryVo.class);
 
         if (Objects.nonNull(bigEleBatteryVo)) {
             if (Objects.isNull(batteryType)) {
@@ -879,7 +880,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         && !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
 
                     //1、查仓门
-                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(id, bigEleBatteryVo.getCellNo());
+                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), bigEleBatteryVo.getCellNo());
                     if (Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getSn())) {
 
                         //2、查电池

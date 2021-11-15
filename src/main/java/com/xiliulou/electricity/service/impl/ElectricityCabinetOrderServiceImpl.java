@@ -28,6 +28,7 @@ import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -275,12 +276,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		//分配开门格挡
-		String cellNo = findUsableCellNo(electricityCabinet.getId());
+		Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+
+		if (Objects.isNull(usableEmptyCellNo.getLeft())) {
+			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+			return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+		}
+
+		String cellNo=usableEmptyCellNo.getRight().toString();
 		try {
-			if (Objects.isNull(cellNo)) {
-				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
-				return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
-			}
 			if (franchiseeUserInfo.getRemainingNumber() != -1) {
 				//扣除月卡
 				Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
@@ -290,6 +294,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 					return R.fail("ELECTRICITY.0023", "月卡已过期");
 				}
 			}
+
 
 			//3.根据用户查询旧电池
 			ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()

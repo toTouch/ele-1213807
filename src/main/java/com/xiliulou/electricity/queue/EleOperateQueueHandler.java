@@ -231,13 +231,18 @@ public class EleOperateQueueHandler {
                     electricityBatteryService.updateByOrder(newElectricityBattery);
                 }
 
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+                if (Objects.isNull(electricityCabinet)) {
+                    log.error("handelInitExchangeOrder is error!not found electricityCabinet! electricityCabinetId:{}", electricityCabinetOrder.getElectricityCabinetId());
+                    return;
+                }
 
                 //分配电池 --只分配满电电池
                 Triple<Boolean, String, Object> tripleResult;
                 if (Objects.equals(oldFranchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(), oldFranchiseeUserInfo.getBatteryType(), oldFranchiseeUserInfo.getFranchiseeId());
+                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), oldFranchiseeUserInfo.getBatteryType(), oldFranchiseeUserInfo.getFranchiseeId());
                 } else {
-                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(), null, oldFranchiseeUserInfo.getFranchiseeId());
+                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), null, oldFranchiseeUserInfo.getFranchiseeId());
                 }
 
                 if (Objects.isNull(tripleResult)) {
@@ -277,8 +282,7 @@ public class EleOperateQueueHandler {
                 innerElectricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
                 electricityCabinetOrderService.update(innerElectricityCabinetOrder);
 
-                //新电池开门
-                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+
                 //发送命令
                 HashMap<String, Object> dataMap = Maps.newHashMap();
                 dataMap.put("cell_no", cellNo);
