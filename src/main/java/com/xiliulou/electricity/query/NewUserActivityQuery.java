@@ -21,11 +21,6 @@ public class NewUserActivityQuery {
     private Long offset;
     private String name;
     private List<Integer> typeList;
-    /**
-     * 加盟商Id
-     */
-    private Long franchiseeId;
-
     private Integer tenantId;
 
 
