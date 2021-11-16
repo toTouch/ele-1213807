@@ -19,7 +19,7 @@ public class BatteryOtherProperties {
     /**
      * 电芯的数量
      */
-    private Integer batteryCoreNum;
+    private Long batteryCoreNum;
     /**
      * 电池的剩余容量
      */
