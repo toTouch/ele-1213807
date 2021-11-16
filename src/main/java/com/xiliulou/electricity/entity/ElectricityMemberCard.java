@@ -74,6 +74,17 @@ public class ElectricityMemberCard {
      */
     private String batteryType;
 
+    /**
+     * 是否绑定活动
+     */
+    private Boolean isBindActivity;
+
+
+    /**
+     * 活动id
+     */
+    private Integer activityId;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
