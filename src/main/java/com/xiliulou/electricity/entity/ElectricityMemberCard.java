@@ -77,6 +77,7 @@ public class ElectricityMemberCard {
     /**
      * 是否绑定活动
      */
+    @NotNull(message = "是否绑定活动不能为空!")
     private Boolean isBindActivity;
 
 
