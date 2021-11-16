@@ -9,11 +9,13 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
@@ -60,7 +62,7 @@ import java.util.Objects;
 @Slf4j
 public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Resource
-	private ShareActivityMapper shareActivityMapper;
+	NewUserActivityMapper newUserActivityMapper;
 
 	@Autowired
 	RedisService redisService;
@@ -146,14 +148,14 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		//查询该租户是否有邀请活动，有则不能添加
-		int count = shareActivityMapper.selectCount(new LambdaQueryWrapper<ShareActivity>()
-				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+		//查询该租户是否有新人活动，有则不能添加
+		int count = newUserActivityMapper.selectCount(new LambdaQueryWrapper<NewUserActivity>()
+				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (count > 0) {
 			return R.fail("ELECTRICITY.00102", "该租户已有启用中的邀请活动，请勿重复添加");
 		}
 
-		List<ShareActivityRuleQuery> shareActivityRuleQueryList = shareActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
+		List<ShareActivityRuleQuery> shareActivityRuleQueryList = newUserActivityAddAndUpdateQuery.getShareActivityRuleQueryList();
 
 		ShareActivity shareActivity = new ShareActivity();
 		BeanUtil.copyProperties(shareActivityAddAndUpdateQuery, shareActivity);

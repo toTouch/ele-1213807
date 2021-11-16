@@ -48,7 +48,7 @@ public class NewUserActivity {
      */
     private Integer endTime;
     /**
-     * 励类型，1--次数，2--优惠券
+     * 奖励类型，1--次数，2--优惠券
      */
     private Integer discountType;
 
