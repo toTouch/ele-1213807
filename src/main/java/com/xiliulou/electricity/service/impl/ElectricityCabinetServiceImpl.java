@@ -34,6 +34,7 @@ import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -96,6 +97,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
 	RentBatteryOrderService rentBatteryOrderService;
+	@Autowired
+	BatteryOtherPropertiesService batteryOtherPropertiesService;
 
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 
@@ -361,7 +364,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				}
 
 				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
 				int electricityBatteryTotal = 0;
 				int noElectricityBattery = 0;
 				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
@@ -1600,6 +1603,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		}
 		electricityBattery.setUpdateTime(System.currentTimeMillis());
 		electricityBatteryService.update(newElectricityBattery);
+
+		//电池上报是否有其他信息
+		if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
+			BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
+			batteryOtherProperties.setBatteryName(batteryName);
+			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+		}
+
 		return R.ok();
 	}
 

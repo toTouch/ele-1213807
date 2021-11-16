@@ -91,9 +91,14 @@
             <version>1.5.1</version>
         </dependency>
 
+		<dependency>
+			<groupId>com.xiliulou</groupId>
+			<artifactId>xiliulou-common-clickhouse</artifactId>
+            <version>${xiliulou.version}</version>
+		</dependency>
 
 
-    </dependencies>
+	</dependencies>
     <build>
         <plugins>
             <plugin>

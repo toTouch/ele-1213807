@@ -2,6 +2,7 @@ package com.xiliulou.electricity;
 
 import com.alibaba.druid.spring.boot.autoconfigure.DruidDataSourceAutoConfigure;
 import com.xiliulou.cache.redis.EnableRedis;
+import com.xiliulou.clickhouse.EnableCH;
 import com.xiliulou.core.http.resttemplate.EnableXllRestTemplate;
 import com.xiliulou.core.sms.EnableSms;
 import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
@@ -32,6 +33,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnablePay(isOpenWechatV3 = true)
 @EnableXllXxlJob
 @EnableSms
+@EnableCH
 public class ElectricityCabinetApplication {
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);

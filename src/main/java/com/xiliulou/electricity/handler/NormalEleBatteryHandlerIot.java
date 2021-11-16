@@ -5,9 +5,12 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.BatteryOtherProperties;
+import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -16,9 +19,9 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
-import io.netty.util.internal.StringUtil;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
@@ -45,6 +48,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 	RedisService redisService;
 	public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
 	public static final String IRON_LITHIUM = "IRON_LITHIUM";
+	@Autowired
+	BatteryOtherPropertiesService batteryOtherPropertiesService;
 
 	@Override
 	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -163,10 +168,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		//根据电池查询仓门类型
 		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
 			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
-			if(Objects.nonNull(batteryModel)) {
-				electricityCabinetBox.setBatteryType(batteryModel);
-				newElectricityBattery.setModel(batteryModel);
-			}
+			electricityCabinetBox.setBatteryType(batteryModel);
+			newElectricityBattery.setModel(batteryModel);
 		}
 
 		//修改电池
@@ -188,6 +191,17 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
 		}
 		electricityBatteryService.updateByOrder(newElectricityBattery);
+
+
+		//电池上报是否有其他信息
+		if(Objects.nonNull(eleBatteryVo.getHasOtherAttr())&&eleBatteryVo.getHasOtherAttr()){
+			BatteryOtherPropertiesQuery batteryOtherPropertiesQuery=eleBatteryVo.getBatteryOtherProperties();
+			BatteryOtherProperties batteryOtherProperties=new BatteryOtherProperties();
+			BeanUtils.copyProperties(batteryOtherPropertiesQuery,batteryOtherProperties);
+			batteryOtherProperties.setBatteryName(batteryName);
+			batteryOtherProperties.setBatteryCoreVList(JsonUtil.toJson(batteryOtherPropertiesQuery.getBatteryCoreVList()));
+			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+		}
 
 
 		//比较最大电量，保证仓门电池是最大电量的电池
@@ -271,6 +285,10 @@ class EleBatteryVo {
 	private Boolean existsBattery;
 
 	private Boolean isMultiBatteryModel;
+
+	private Boolean hasOtherAttr;
+
+	private BatteryOtherPropertiesQuery batteryOtherProperties;
 
 }
 
