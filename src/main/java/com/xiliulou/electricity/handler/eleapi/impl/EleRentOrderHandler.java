@@ -7,10 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.EleApiConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.ApiRentOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.HardwareCommand;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.handler.eleapi.EleApiHandler;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
@@ -66,7 +63,7 @@ public class EleRentOrderHandler implements EleApiHandler {
 
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(rentQuery.getProductKey(), rentQuery.getDeviceName());
         if (Objects.isNull(electricityCabinet) || !TenantContextHolder.getTenantId().equals(electricityCabinet.getTenantId())) {
-            log.error("ELE RENT ORDER ERROR! not found eleCabinet! requestId={},p={},d={}", apiRequestQuery.getRequestId(), rentQuery.getProductKey(), rentQuery.getDeviceName());
+            log.error("ELE RENT ORDER ERROR! not found eleCabinet! requestId={},p={},d={} ct={},lt={}", apiRequestQuery.getRequestId(), rentQuery.getProductKey(), rentQuery.getDeviceName(),electricityCabinet.getTenantId(), TenantContextHolder.getTenantId());
             return Triple.of(false, "API.00002", "柜机不存在");
         }
 
