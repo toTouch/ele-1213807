@@ -89,4 +89,9 @@ public class BatteryAttr {
 	 * 	上报时间
 	 */
 	private Long createTime;
+
+	/**
+	 * 距离
+	 */
+	private Double distance;
 }
