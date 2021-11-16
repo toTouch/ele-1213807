@@ -48,6 +48,26 @@ public class NewUserActivity {
      */
     private Integer endTime;
     /**
+     * 励类型，1--次数，2--优惠券
+     */
+    private Integer discountType;
+
+    /**
+     * 换电次数
+     */
+    private Integer count;
+
+    /**
+     * 有效天数
+     */
+    private Integer days;
+
+    /**
+     * 优惠券id
+     */
+    private Integer couponId;
+
+    /**
     * 活动说明
     */
     private String description;
@@ -64,20 +84,6 @@ public class NewUserActivity {
     */
     private Long updateTime;
 
-    /**
-     * 优惠类型，1--次数，2--优惠券
-     */
-    private Integer discountType;
-
-    /**
-     * 换电次数
-     */
-    private Integer count;
-
-    /**
-     * 有效天数
-     */
-    private Integer days;
 
     /**
      * 加盟商Id
