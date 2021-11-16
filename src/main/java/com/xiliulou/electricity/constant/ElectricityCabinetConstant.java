@@ -130,6 +130,9 @@ public interface ElectricityCabinetConstant {
 
 
 
-    //新人活动缓存
+    //新用户活动缓存
     String NEW_USER_ACTIVITY_CACHE = "new_user_activity_cache:";
+
+    //老用户活动缓存
+    String OLD_USER_ACTIVITY_CACHE = "old_user_activity_cache:";
 }
