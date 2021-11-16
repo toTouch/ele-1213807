@@ -95,6 +95,15 @@ public class NewUserActivity {
      */
     private Integer tenantId;
 
+    /**
+     * 创建人uid
+     */
+    private Long uid;
+    /**
+     * 创建人用户名
+     */
+    private String userName;
+
 
 
     public static final Integer DEL_NORMAL = 0;

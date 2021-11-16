@@ -106,7 +106,7 @@ public interface ElectricityCabinetConstant {
     //优惠券缓存
     String COUPON_CACHE = "coupon_cache:";
 
-    //活动缓存
+    //邀请活动缓存
     String SHARE_ACTIVITY_CACHE = "share_activity_cache:";
 
 
@@ -127,4 +127,9 @@ public interface ElectricityCabinetConstant {
     String CACHE_APP_INFO = "cache_app_info:";
     String CACHE_THIRD_CALL_BACK_URL = "cache_third_call_back_url:";
     String CACHE_TENANT_ID_OPERATE = "cache_tenant_id_operate:";
+
+
+
+    //新人活动缓存
+    String NEW_USER_ACTIVITY_CACHE = "new_user_activity_cache:";
 }

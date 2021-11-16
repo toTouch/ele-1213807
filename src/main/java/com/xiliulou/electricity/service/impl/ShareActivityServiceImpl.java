@@ -224,7 +224,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		int update = shareActivityMapper.updateById(oldShareActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + oldShareActivity.getId(), oldShareActivity);
+			redisService.delete(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + oldShareActivity.getId());
 
 			//如果是下架活动，则参与邀请记录改为活动已下架
 			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_OFF)) {
