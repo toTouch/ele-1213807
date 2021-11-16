@@ -93,5 +93,5 @@ public class BatteryAttr {
 	/**
 	 * 距离
 	 */
-	private Double distance;
+	private BigDecimal distance;
 }
