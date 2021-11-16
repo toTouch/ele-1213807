@@ -171,8 +171,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	@Override
 	public R queryCount(NewUserActivityQuery newUserActivityQuery) {
-		Integer count = newUserActivityMapper.queryCount(newUserActivityQuery);
-		return R.ok(count);
+		return R.ok(newUserActivityMapper.queryCount(newUserActivityQuery));
 	}
 
 
