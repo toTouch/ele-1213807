@@ -118,4 +118,10 @@ public class OldUserActivity {
     public static final Integer STATUS_OFF = 2;
 
 
+    //1--次数
+    public static final Integer TYPE_COUNT = 1;
+    //2--优惠券
+    public static final Integer TYPE_COUPON = 2;
+
+
 }

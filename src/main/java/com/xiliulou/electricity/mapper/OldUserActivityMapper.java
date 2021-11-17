@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
 import org.apache.ibatis.annotations.Param;
 

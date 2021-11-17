@@ -1,10 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
-import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
 

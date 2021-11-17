@@ -5,21 +5,20 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.mapper.OldUserActivityMapper;
-import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
-import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
-import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.api.OldUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -42,6 +41,9 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
 	@Autowired
 	RedisService redisService;
+
+	@Autowired
+	CouponService couponService;
 
 
 	/**
@@ -104,7 +106,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		oldUserActivity.setTenantId(tenantId);
 
 		if (Objects.isNull(oldUserActivity.getType())) {
-			oldUserActivity.setType(NewUserActivity.SYSTEM);
+			oldUserActivity.setType(OldUserActivity.SYSTEM);
 		}
 
 		int insert = oldUserActivityMapper.insert(oldUserActivity);
@@ -189,7 +191,32 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
+		if(Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON)){
+			if(Objects.isNull(oldUserActivity.getCouponId())){
+				return R.ok(oldUserActivity);
+			}
+
+
+			Coupon coupon=couponService.queryByIdFromCache(oldUserActivity.getCouponId());
+			if(Objects.isNull(coupon)){
+				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", oldUserActivity.getCouponId());
+				return R.ok(oldUserActivity);
+			}
+
+			OldUserActivityVO oldUserActivityVO=new OldUserActivityVO();
+			BeanUtils.copyProperties(oldUserActivity,oldUserActivityVO);
+			oldUserActivityVO.setCouponName(coupon.getName());
+			oldUserActivityVO.setCouponStatus(coupon.getStatus());
+			oldUserActivityVO.setCouponDays(coupon.getDays());
+			oldUserActivityVO.setAmount(coupon.getAmount());
+			oldUserActivityVO.setCouponDescription(coupon.getDescription());
+
+			return R.ok(oldUserActivityVO);
+
+		}
+
 		return R.ok(oldUserActivity);
+
 	}
 
 

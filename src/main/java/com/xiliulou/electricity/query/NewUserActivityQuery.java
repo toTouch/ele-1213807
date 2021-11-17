@@ -20,7 +20,6 @@ public class NewUserActivityQuery {
     private Long size;
     private Long offset;
     private String name;
-    private List<Integer> typeList;
     private Integer tenantId;
 
 

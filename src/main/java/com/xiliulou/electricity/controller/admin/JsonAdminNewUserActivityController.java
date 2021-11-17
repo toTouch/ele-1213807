@@ -14,6 +14,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,12 +49,18 @@ public class JsonAdminNewUserActivityController {
 	}
 
 
+	//编辑（暂时只支持上下架）
+	@PutMapping(value = "/admin/newUserActivity")
+	public R update(@RequestBody @Validated(value = CreateGroup.class) NewUserActivityAddAndUpdateQuery newUserActivityAddAndUpdateQuery) {
+		return newUserActivityService.update(newUserActivityAddAndUpdateQuery);
+	}
+
+
 	//列表查询
 	@GetMapping(value = "/admin/newUserActivity/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "type", required = false) String type) {
+			@RequestParam(value = "name", required = false) String name) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -72,20 +79,14 @@ public class JsonAdminNewUserActivityController {
 				.name(name)
 				.tenantId(tenantId).build();
 
-		if (StringUtils.isNotEmpty(type)) {
-			Integer[] types = (Integer[])
-					JSONUtil.parseArray(type).toArray(Integer[].class);
 
-			List<Integer> typeList = Arrays.asList(types);
-			newUserActivityQuery.setTypeList(typeList);
-		}
 		return newUserActivityService.queryList(newUserActivityQuery);
 	}
 
+
 	//列表查询
 	@GetMapping(value = "/admin/newUserActivity/count")
-	public R queryCount(@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "type", required = false) String type) {
+	public R queryCount(@RequestParam(value = "name", required = false) String name) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -95,15 +96,9 @@ public class JsonAdminNewUserActivityController {
 				.name(name)
 				.tenantId(tenantId).build();
 
-		if (StringUtils.isNotEmpty(type)) {
-			Integer[] types = (Integer[])
-					JSONUtil.parseArray(type).toArray(Integer[].class);
-
-			List<Integer> typeList = Arrays.asList(types);
-			newUserActivityQuery.setTypeList(typeList);
-		}
 		return newUserActivityService.queryCount(newUserActivityQuery);
 	}
+
 
 	//根据id查询活动详情
 	@GetMapping(value = "/admin/newUserActivity/queryInfo/{id}")

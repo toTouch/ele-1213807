@@ -5,16 +5,21 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
+import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.NewUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +42,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	@Autowired
 	RedisService redisService;
+
+	@Autowired
+	CouponService couponService;
 
 
 	/**
@@ -181,6 +189,30 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		if (Objects.isNull(newUserActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! ActivityId:{} ", id);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+
+		if(Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)){
+			if(Objects.isNull(newUserActivity.getCouponId())){
+				return R.ok(newUserActivity);
+			}
+
+
+			Coupon coupon=couponService.queryByIdFromCache(newUserActivity.getCouponId());
+			if(Objects.isNull(coupon)){
+				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
+				return R.ok(newUserActivity);
+			}
+
+			NewUserActivityVO newUserActivityVO=new NewUserActivityVO();
+			BeanUtils.copyProperties(newUserActivity,newUserActivityVO);
+			newUserActivityVO.setCouponName(coupon.getName());
+			newUserActivityVO.setCouponStatus(coupon.getStatus());
+			newUserActivityVO.setCouponDays(coupon.getDays());
+			newUserActivityVO.setAmount(coupon.getAmount());
+			newUserActivityVO.setCouponDescription(coupon.getDescription());
+
+			return R.ok(newUserActivityVO);
+
 		}
 
 		return R.ok(newUserActivity);

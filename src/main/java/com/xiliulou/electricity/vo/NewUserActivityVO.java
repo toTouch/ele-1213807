@@ -1,12 +1,18 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import javax.validation.constraints.NotEmpty;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 /**
  * 活动表(NewUserActivity)实体类
@@ -17,11 +23,8 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-@TableName("t_new_user_activity")
-public class NewUserActivity {
+public class NewUserActivityVO {
 
-    @TableId(value = "id",type = IdType.AUTO)
     private Integer id;
     /**
     * 活动名称
@@ -105,27 +108,26 @@ public class NewUserActivity {
     private String userName;
 
 
+    /**
+     * 优惠券名称
+     */
+    private String couponName;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
-    //自营
-    public static final Integer SYSTEM = 1;
-    //代理
-    public static final Integer FRANCHISEE = 2;
-
-
-
-    //上架
-    public static final Integer STATUS_ON = 1;
-    //下架
-    public static final Integer STATUS_OFF = 2;
-
-
-    //1--次数
-    public static final Integer TYPE_COUNT = 1;
-    //2--优惠券
-    public static final Integer TYPE_COUPON = 2;
-
+    /**
+     * 优惠券状态，分为 1--上架，2--下架
+     */
+    private Integer couponStatus;
+    /**
+     * 优惠金额
+     */
+    private BigDecimal amount;
+    /**
+     * 有效天数
+     */
+    private Integer couponDays;
+    /**
+     * 优惠券描述
+     */
+    private String couponDescription;
 
 }
