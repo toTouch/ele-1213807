@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * 活动表(ShareMoneyActivity)实体类
  *
@@ -76,10 +78,9 @@ public class ShareMoneyActivity {
     private Integer hours;
 
     /**
-     * 优惠类型，1--减免券，2--打折券，3-天数
+     * 金额
      */
-    private Integer discountType;
-
+    private BigDecimal money;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareMoneyActivityMapper">
+
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.ShareMoneyActivity">
+        select
+        id, name, type, status,  description, del_flag, create_time,
+        update_time, uid,user_name,franchisee_id,hours
+        from t_share_money_activity
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and name = #{query.name}
+            </if>
+            <if test="query.typeList!=null and query.typeList!=''">
+                and type in
+                <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id =#{query.franchiseeId}
+            </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
+            </if>
+        </where>
+        order by update_time desc
+        <if test="query.offset != null and query.size != null">
+            limit #{query.offset}, #{query.size}
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_share_money_activity
+        <where>
+            <if test="query.name != null and query.name != ''">
+                and name = #{query.name}
+            </if>
+            <if test="query.typeList!=null and query.typeList!=''">
+                and type in
+                <foreach collection="query.typeList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="query.franchiseeId!=null">
+                and franchisee_id =#{query.franchiseeId}
+            </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>

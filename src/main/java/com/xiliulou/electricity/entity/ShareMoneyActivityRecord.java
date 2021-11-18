@@ -9,20 +9,18 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * 加盟商活动绑定表(ShareMoneyActivityRule)实体类
+ * 发起邀请活动记录(ShareMoneyActivityRecord)实体类
  *
- * @author makejava
- * @since 2021-04-23 16:43:23
+ * @author Eclair
+ * @since 2021-07-14 09:45:04
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_share_money_activity_rule")
-public class ShareMoneyActivityRule {
-    /**
-    * 主键Id
-    */
+@TableName("t_share_money_activity_record")
+public class ShareMoneyActivityRecord {
+
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
@@ -30,17 +28,25 @@ public class ShareMoneyActivityRule {
     */
     private Integer activityId;
     /**
-     * 触发人数
+    * 加密code
+    */
+    private String code;
+    /**
+     * 分享状态 1--初始化，2--已分享，3--分享失败
      */
-    private Integer triggerCount;
+    private Integer status;
     /**
-    * 优惠券id
+    * 用户uid
     */
-    private Integer couponId;
+    private Long uid;
     /**
-    * 0--正常 1--删除
+    * 邀请人数
     */
-    private Integer delFlag;
+    private Integer count;
+    /**
+     * 可用邀请人数
+     */
+    private Integer availableCount;
     /**
     * 创建时间
     */
@@ -49,13 +55,17 @@ public class ShareMoneyActivityRule {
     * 修改时间
     */
     private Long updateTime;
-
     /**
-     * 租户
-     */
+    * 租户id
+    */
     private Integer tenantId;
 
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
+
+    //初始化
+    public static Integer STATUS_INIT = 1;
+    //分享成功
+    public static Integer STATUS_SUCCESS = 2;
+    //分享失败
+    public static Integer STATUS_FAIL = 3;
 
 }

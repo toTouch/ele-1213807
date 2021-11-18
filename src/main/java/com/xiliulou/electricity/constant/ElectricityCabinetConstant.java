@@ -135,4 +135,7 @@ public interface ElectricityCabinetConstant {
 
     //老用户活动缓存
     String OLD_USER_ACTIVITY_CACHE = "old_user_activity_cache:";
+
+    //邀请返现活动缓存
+    String SHARE_MONEY_ACTIVITY_CACHE = "share_money_activity_cache:";
 }
