@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper">
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory">
+        select
+        jsah.id as id, jsah.uid as uid, jsah.join_uid as joinUid, jsah.start_time as startTime,
+         jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
+         jsah.update_time as updateTime, jsah.tenant_id  as tenantId
+        from t_join_share_money_activity_history as jsah
+        <where>
+            <if test="uid != null">
+                and jsah.uid = #{uid}
+            </if>
+            <if test="activityId != null">
+                and jsah.activity_id = #{activityId}
+            </if>
+        </where>
+		order by jsah.update_time desc
+        <if test="offset != null and size != null">
+			limit #{offset}, #{size}
+		</if>
+
+    </select>
+</mapper>
