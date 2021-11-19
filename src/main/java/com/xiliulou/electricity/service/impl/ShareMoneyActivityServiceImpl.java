@@ -38,7 +38,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2021-04-14 09:27:12
  */
-@Service("shareActivityService")
+@Service("shareMoneyActivityService")
 @Slf4j
 public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService {
 	@Resource
@@ -56,9 +56,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 	@Autowired
 	UserService userService;
 
-
-	@Autowired
-	private CouponService couponService;
 
 
 
