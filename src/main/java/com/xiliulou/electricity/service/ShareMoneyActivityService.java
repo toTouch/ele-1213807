@@ -46,5 +46,7 @@ public interface ShareMoneyActivityService {
 
     R queryInfo(Integer id);
 
+    ShareMoneyActivity queryByStatus(Integer activityId);
+
 
 }

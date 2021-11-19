@@ -221,7 +221,11 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 	}
 
 
-
+	@Override
+	public ShareMoneyActivity queryByStatus(Integer activityId) {
+		return shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
+				.eq(ShareMoneyActivity::getId, activityId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+	}
 
 
 
