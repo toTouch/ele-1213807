@@ -38,7 +38,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2021-07-14 09:45:04
  */
-@Service("shareActivityRecordService")
+@Service("shareMoneyActivityRecordService")
 @Slf4j
 public class ShareMoneyActivityRecordServiceImpl{
 
