@@ -29,7 +29,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2021-07-14 09:44:36
  */
-@Service("joinShareActivityHistoryService")
+@Service("joinShareMoneyActivityHistoryService")
 @Slf4j
 public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyActivityHistoryService {
 	@Resource
