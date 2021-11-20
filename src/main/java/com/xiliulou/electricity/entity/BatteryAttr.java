@@ -40,7 +40,7 @@ public class BatteryAttr {
 	/**
 	 * 	速度信息 01109001
 	 */
-	private Long speed;
+	private BigDecimal speed;
 	/**
 	 * 	行驶里程 01110001
 	 */
@@ -64,15 +64,15 @@ public class BatteryAttr {
 	/**
 	 * 	功率温度值  01118001
 	 */
-	private Long powerTemp;
+	private BigDecimal powerTemp;
 	/**
 	 * 	电芯温度值  01119001
 	 */
-	private Long batteryCoreTemp;
+	private BigDecimal batteryCoreTemp;
 	/**
 	 * 	环境温度  01120001
 	 */
-	private Long envTemp;
+	private BigDecimal envTemp;
 	/**
 	 * 	总放电 01124001
 	 */
