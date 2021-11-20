@@ -110,7 +110,7 @@ public class BatteryOtherProperties {
     /**
      * 	功率温度值  01118001
      */
-    private Long powerTemp;
+    private Double powerTemp;
 
     /**
      * 	总放电 01124001
