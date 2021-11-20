@@ -93,7 +93,7 @@ public class BatteryOtherProperties {
     /**
      * 	速度信息 01109001
      */
-    private Long speed;
+    private Double speed;
     /**
      * 	行驶里程 01110001
      */
