@@ -74,6 +74,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	ShareActivityRecordService shareActivityRecordService;
 	@Autowired
 	JoinShareActivityHistoryService joinShareActivityHistoryService;
+	@Autowired
+	JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+	@Autowired
+	ShareMoneyActivityRecordService shareMoneyActivityRecordService;
+	@Autowired
+	JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 
 	/**
 	 * 创建月卡订单
@@ -345,6 +351,27 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 					//给邀请人增加邀请成功人数
 					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+				}
+
+
+				//是否有人返现邀请
+				JoinShareMoneyActivityRecord joinShareMoneyActivityRecord =joinShareMoneyActivityRecordService.queryByJoinUid(user.getUid());
+				if(Objects.nonNull(joinShareMoneyActivityRecord)){
+					//修改邀请状态
+					joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
+					joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+					joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
+
+					//修改历史记录状态
+					JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory=joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+					if(Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
+						oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
+						oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+						joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
+					}
+
+					//给邀请人增加邀请成功人数
+					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid());
 				}
 			}
 

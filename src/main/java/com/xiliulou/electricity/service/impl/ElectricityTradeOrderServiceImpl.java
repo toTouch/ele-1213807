@@ -12,6 +12,8 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
+import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -25,7 +27,10 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserCouponService;
@@ -89,6 +94,12 @@ public class ElectricityTradeOrderServiceImpl extends
 	FranchiseeAmountService franchiseeAmountService;
 	@Autowired
 	StoreAmountService storeAmountService;
+	@Autowired
+	JoinShareMoneyActivityRecordService joinShareMoneyActivityRecordService;
+	@Autowired
+	ShareMoneyActivityRecordService shareMoneyActivityRecordService;
+	@Autowired
+	JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 
 	@Override
 	public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -250,6 +261,26 @@ public class ElectricityTradeOrderServiceImpl extends
 
 					//给邀请人增加邀请成功人数
 					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+				}
+
+				//是否有人返现邀请
+				JoinShareMoneyActivityRecord joinShareMoneyActivityRecord =joinShareMoneyActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
+				if(Objects.nonNull(joinShareMoneyActivityRecord)){
+					//修改邀请状态
+					joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
+					joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+					joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
+
+					//修改历史记录状态
+					JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory=joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+					if(Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
+						oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
+						oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+						joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
+					}
+
+					//给邀请人增加邀请成功人数
+					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid());
 				}
 
 			}
