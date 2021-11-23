@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.OldUserActivity">
         select
         id, name, type, status, time_type,begin_time,end_time,discount_type, count,coupon_id,
-        description, del_flag, create_time,update_time, uid,user_name,franchisee_id
+        description, del_fla, create_time,update_time, uid,user_name,franchisee_id
         from t_old_user_activity
         <where>
             <if test="query.name != null and query.name != ''">
