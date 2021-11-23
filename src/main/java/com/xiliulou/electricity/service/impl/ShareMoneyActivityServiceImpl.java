@@ -10,15 +10,8 @@ import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -47,29 +40,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 	@Autowired
 	RedisService redisService;
 
-	@Autowired
-	UserInfoService userInfoService;
-
-	@Autowired
-	FranchiseeService franchiseeService;
-
-	@Autowired
-	UserService userService;
-
-
-
-
-	@Autowired
-	ShareActivityRecordService shareActivityRecordService;
-
-	@Autowired
-	UserCouponService userCouponService;
-
-	@Autowired
-	JoinShareActivityRecordService joinShareActivityRecordService;
-
-	@Autowired
-	JoinShareActivityHistoryService joinShareActivityHistoryService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -193,15 +163,15 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 	}
 
 	@Override
-	public R queryList(ShareActivityQuery shareActivityQuery) {
-		List<ShareMoneyActivity> shareMoneyActivityList = shareMoneyActivityMapper.queryList(shareActivityQuery);
+	public R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery) {
+		List<ShareMoneyActivity> shareMoneyActivityList = shareMoneyActivityMapper.queryList(shareMoneyActivityQuery);
 		return R.ok(shareMoneyActivityList);
 	}
 
 
 	@Override
-	public R queryCount(ShareActivityQuery shareActivityQuery) {
-		Integer count = shareMoneyActivityMapper.queryCount(shareActivityQuery);
+	public R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery) {
+		Integer count = shareMoneyActivityMapper.queryCount(shareMoneyActivityQuery);
 		return R.ok(count);
 	}
 

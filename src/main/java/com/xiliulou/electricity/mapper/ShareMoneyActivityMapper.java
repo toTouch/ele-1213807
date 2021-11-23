@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.query.ShareActivityQuery;
+import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -23,10 +24,10 @@ public interface ShareMoneyActivityMapper extends BaseMapper<ShareMoneyActivity>
      * 查询指定行数据
      *
      */
-    List<ShareMoneyActivity> queryList(@Param("query") ShareActivityQuery shareActivityQuery);
+    List<ShareMoneyActivity> queryList(@Param("query") ShareMoneyActivityQuery shareMoneyActivityQuery);
 
 
-    Integer queryCount(@Param("query") ShareActivityQuery shareActivityQuery);
+    Integer queryCount(@Param("query") ShareMoneyActivityQuery shareMoneyActivityQuery);
 
     @Select("select  id, name, type, status,  description, del_flg, create_time,\n" +
             "        update_time, uid,user_name\n" +

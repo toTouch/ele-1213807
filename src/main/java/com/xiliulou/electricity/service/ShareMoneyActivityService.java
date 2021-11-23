@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.query.ShareActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
+import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 
 /**
  * 活动表(Activity)表服务接口
@@ -40,9 +41,9 @@ public interface ShareMoneyActivityService {
      */
     R update(ShareMoneyActivityAddAndUpdateQuery shareMoneyActivityAddAndUpdateQuery);
 
-    R queryList(ShareActivityQuery shareActivityQuery);
+    R queryList(ShareMoneyActivityQuery shareMoneyActivityQuery);
 
-    R queryCount(ShareActivityQuery shareActivityQuery);
+    R queryCount(ShareMoneyActivityQuery shareMoneyActivityQuery);
 
     R queryInfo(Integer id);
 
