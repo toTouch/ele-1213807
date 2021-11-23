@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FranchiseeAccountQuery {
+public class UserAmountHistoryQuery {
 	private Long startTime;
 	private Long endTime;
 
@@ -22,5 +22,6 @@ public class FranchiseeAccountQuery {
 
 	private Integer tenantId;
 
+	private Long franchiseeId;
 
 }
