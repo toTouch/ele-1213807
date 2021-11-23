@@ -1,9 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.entity.UserAmountHistory;
-import com.xiliulou.electricity.query.FranchiseeAccountQuery;
 import com.xiliulou.electricity.query.UserAmountHistoryQuery;
 
 import java.util.List;

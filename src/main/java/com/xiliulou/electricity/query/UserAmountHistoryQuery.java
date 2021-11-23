@@ -22,6 +22,5 @@ public class UserAmountHistoryQuery {
 
 	private Integer tenantId;
 
-	private Long franchiseeId;
 
 }
