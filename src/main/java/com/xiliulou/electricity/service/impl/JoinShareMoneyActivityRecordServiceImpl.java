@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
@@ -68,11 +66,6 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 
 	}
 
-	@Override
-	public R checkScene(String scene) {
-		String[] split = scene.split(",");
-		return R.ok();
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -145,7 +138,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			//修改被替换掉的历史记录状态
 			JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(oldJoinShareMoneyActivityRecord.getId());
 			if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-				oldJoinShareMoneyActivityHistory.setStatus(JoinShareActivityHistory.STATUS_REPLACE);
+				oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_REPLACE);
 				oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
 				joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
 			}
@@ -161,7 +154,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			joinShareMoneyActivityHistory.setExpiredTime(System.currentTimeMillis() + shareMoneyActivity.getHours() * 60 * 60 * 1000L);
 			joinShareMoneyActivityHistory.setTenantId(tenantId);
 			joinShareMoneyActivityHistory.setActivityId(oldJoinShareMoneyActivityRecord.getActivityId());
-			joinShareMoneyActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
+			joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
 			joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
 			return R.ok();
 		}
@@ -188,7 +181,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		joinShareMoneyActivityHistory.setStartTime(System.currentTimeMillis());
 		joinShareMoneyActivityHistory.setExpiredTime(System.currentTimeMillis() + shareMoneyActivity.getHours() * 60 * 60 * 1000L);
 		joinShareMoneyActivityHistory.setTenantId(tenantId);
-		joinShareMoneyActivityHistory.setStatus(JoinShareActivityHistory.STATUS_INIT);
+		joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_INIT);
 		joinShareMoneyActivityHistory.setActivityId(joinShareMoneyActivityRecord.getActivityId());
 		joinShareMoneyActivityHistoryService.insert(joinShareMoneyActivityHistory);
 
@@ -207,12 +200,12 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	public void handelJoinShareActivityExpired() {
 		//
 		JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
-		joinShareMoneyActivityRecord.setStatus(JoinShareActivityRecord.STATUS_FAIL);
+		joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_FAIL);
 		joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
 		joinShareMoneyActivityRecordMapper.updateExpired(joinShareMoneyActivityRecord);
 
 		JoinShareMoneyActivityHistory joinShareMoneyActivityHistory = new JoinShareMoneyActivityHistory();
-		joinShareMoneyActivityHistory.setStatus(JoinShareActivityRecord.STATUS_FAIL);
+		joinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityRecord.STATUS_FAIL);
 		joinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
 		joinShareMoneyActivityHistoryService.updateExpired(joinShareMoneyActivityHistory);
 

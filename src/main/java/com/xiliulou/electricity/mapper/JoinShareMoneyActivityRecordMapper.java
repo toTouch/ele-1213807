@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 import org.apache.ibatis.annotations.Update;
 

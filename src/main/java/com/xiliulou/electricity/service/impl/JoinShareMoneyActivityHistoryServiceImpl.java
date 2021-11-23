@@ -120,6 +120,7 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 		return R.ok(joinShareMoneyActivityHistoryVOList);
 	}
 
+
 	@Override
 	public R queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
 		List<JoinShareMoneyActivityHistory>  joinShareMoneyActivityHistoryList= joinShareMoneyActivityHistoryMapper.queryList(jsonShareMoneyActivityHistoryQuery);

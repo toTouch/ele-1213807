@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
 
 /**
@@ -20,7 +19,6 @@ public interface JoinShareMoneyActivityRecordService {
      */
     Integer update(JoinShareMoneyActivityRecord joinShareMoneyActivityRecord);
 
-	R checkScene(String scene);
 
     R joinActivity(Integer activityId, Long uid);
 
