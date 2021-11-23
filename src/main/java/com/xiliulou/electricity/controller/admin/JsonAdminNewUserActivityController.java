@@ -3,7 +3,6 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
-import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
