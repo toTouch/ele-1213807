@@ -22,5 +22,6 @@ public class FranchiseeAccountQuery {
 
 	private Integer tenantId;
 
+	private Long franchiseeId;
 
 }
