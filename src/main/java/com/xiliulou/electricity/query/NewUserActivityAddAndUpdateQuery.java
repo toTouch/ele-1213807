@@ -55,11 +55,11 @@ public class NewUserActivityAddAndUpdateQuery {
     /**
      * 活动开始时间
      */
-    private Integer beginTime;
+    private Long beginTime;
     /**
      * 活动结束时间
      */
-    private Integer endTime;
+    private Long endTime;
     /**
     * 活动状态，分为 1--上架，2--下架
     */
