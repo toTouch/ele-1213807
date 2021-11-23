@@ -372,6 +372,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 					//给邀请人增加邀请成功人数
 					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid());
+
+					//返现 TODO
 				}
 			}
 
