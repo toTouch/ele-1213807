@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
@@ -18,10 +17,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import shaded.org.apache.commons.lang3.StringUtils;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.Objects;
 
 /**
