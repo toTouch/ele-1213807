@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -44,7 +45,7 @@ public class JsonAdminNewUserActivityController {
 
 	//编辑（暂时只支持上下架）
 	@PutMapping(value = "/admin/newUserActivity")
-	public R update(@RequestBody @Validated(value = CreateGroup.class) NewUserActivityAddAndUpdateQuery newUserActivityAddAndUpdateQuery) {
+	public R update(@RequestBody @Validated(value = UpdateGroup.class) NewUserActivityAddAndUpdateQuery newUserActivityAddAndUpdateQuery) {
 		return newUserActivityService.update(newUserActivityAddAndUpdateQuery);
 	}
 
