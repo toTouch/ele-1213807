@@ -40,13 +40,9 @@ public class ShareMoneyActivityRecord {
     */
     private Long uid;
     /**
-    * 邀请人数
+    * 邀请总人数
     */
     private Integer count;
-    /**
-     * 可用邀请人数
-     */
-    private Integer availableCount;
     /**
     * 创建时间
     */

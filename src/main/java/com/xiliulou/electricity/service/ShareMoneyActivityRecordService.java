@@ -1,8 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.query.ShareActivityRecordQuery;
+import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
+import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
 
 /**
  * 发起邀请活动记录(ShareActivityRecord)表服务接口
@@ -19,37 +19,36 @@ public interface ShareMoneyActivityRecordService {
      * @param id 主键
      * @return 实例对象
      */
-    ShareActivityRecord queryByIdFromDB(Long id);
+      ShareMoneyActivityRecord queryByIdFromDB(Long id);
 
 
     /**
      * 新增数据
      *
-     * @param shareActivityRecord 实例对象
+     * @param shareMoneyActivityRecord 实例对象
      * @return 实例对象
      */
-    ShareActivityRecord insert(ShareActivityRecord shareActivityRecord);
+    ShareMoneyActivityRecord insert(ShareMoneyActivityRecord shareMoneyActivityRecord);
 
     /**
      * 修改数据
      *
-     * @param shareActivityRecord 实例对象
+     * @param shareMoneyActivityRecord 实例对象
      * @return 实例对象
      */
-    Integer update(ShareActivityRecord shareActivityRecord);
+    Integer update(ShareMoneyActivityRecord shareMoneyActivityRecord);
 
 
 	R generateSharePicture(Integer activityId,String page);
 
 
-	ShareActivityRecord queryByUid(Long uid,Integer activityId);
+	ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId);
 
 
 	void addCountByUid(Long uid);
 
-	void reduceAvailableCountByUid(Long uid, Integer count);
 
-	R queryList(ShareActivityRecordQuery shareActivityRecordQuery);
+	R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
 
-	R queryCount(ShareActivityRecordQuery shareActivityRecordQuery);
+	R queryCount(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);
 }

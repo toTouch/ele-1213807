@@ -13,7 +13,6 @@ import lombok.Data;
 @Data
 public class ShareMoneyActivityRecordVO {
 
-    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 活动id
