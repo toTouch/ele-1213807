@@ -4,7 +4,6 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.mapper.FranchiseeSplitAccountHistoryMapper;
 import com.xiliulou.electricity.query.FranchiseeAccountQuery;
-import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
