@@ -37,21 +37,21 @@ public class JsonAdminOldUserActivityController {
 
 
 	//新增
-	@PostMapping(value = "/admin/newUserActivity")
+	@PostMapping(value = "/admin/oldUserActivity")
 	public R save(@RequestBody @Validated(value = CreateGroup.class) OldUserActivityAddAndUpdateQuery oldUserActivityAddAndUpdateQuery) {
 		return oldUserActivityService.insert(oldUserActivityAddAndUpdateQuery);
 	}
 
 
 	//编辑（暂时只支持上下架）
-	@PutMapping(value = "/admin/newUserActivity")
+	@PutMapping(value = "/admin/oldUserActivity")
 	public R update(@RequestBody @Validated(value = CreateGroup.class) OldUserActivityAddAndUpdateQuery oldUserActivityAddAndUpdateQuery) {
 		return oldUserActivityService.update(oldUserActivityAddAndUpdateQuery);
 	}
 
 
 	//列表查询
-	@GetMapping(value = "/admin/newUserActivity/list")
+	@GetMapping(value = "/admin/oldUserActivity/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "name", required = false) String name) {
@@ -79,7 +79,7 @@ public class JsonAdminOldUserActivityController {
 
 
 	//列表查询
-	@GetMapping(value = "/admin/newUserActivity/count")
+	@GetMapping(value = "/admin/oldUserActivity/count")
 	public R queryCount(@RequestParam(value = "name", required = false) String name) {
 
 		//租户
@@ -95,7 +95,7 @@ public class JsonAdminOldUserActivityController {
 
 
 	//根据id查询活动详情
-	@GetMapping(value = "/admin/newUserActivity/queryInfo/{id}")
+	@GetMapping(value = "/admin/oldUserActivity/queryInfo/{id}")
 	public R queryInfo(@PathVariable("id") Integer id) {
 		if (Objects.isNull(id)) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
