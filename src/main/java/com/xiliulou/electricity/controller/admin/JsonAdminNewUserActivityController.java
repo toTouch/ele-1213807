@@ -35,8 +35,6 @@ public class JsonAdminNewUserActivityController {
 	@Autowired
 	private NewUserActivityService newUserActivityService;
 
-	@Autowired
-	FranchiseeService franchiseeService;
 
 	//新增
 	@PostMapping(value = "/admin/newUserActivity")
