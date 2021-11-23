@@ -99,6 +99,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
 
 		OldUserActivity oldUserActivity = new OldUserActivity();
+		BeanUtils.copyProperties(oldUserActivityAddAndUpdateQuery,oldUserActivity);
 		oldUserActivity.setUid(user.getUid());
 		oldUserActivity.setUserName(user.getUsername());
 		oldUserActivity.setCreateTime(System.currentTimeMillis());

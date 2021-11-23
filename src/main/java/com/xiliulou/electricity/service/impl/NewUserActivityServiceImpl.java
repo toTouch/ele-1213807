@@ -100,6 +100,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 
 		NewUserActivity newUserActivity = new NewUserActivity();
+		BeanUtils.copyProperties(newUserActivityAddAndUpdateQuery,newUserActivity);
 		newUserActivity.setUid(user.getUid());
 		newUserActivity.setUserName(user.getUsername());
 		newUserActivity.setCreateTime(System.currentTimeMillis());
