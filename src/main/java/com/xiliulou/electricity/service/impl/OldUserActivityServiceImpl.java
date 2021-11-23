@@ -33,7 +33,7 @@ import java.util.Objects;
  * @author makejava
  * @since 2021-04-14 09:27:12
  */
-@Service("shareActivityService")
+@Service("oldUserActivityService")
 @Slf4j
 public class OldUserActivityServiceImpl implements OldUserActivityService {
 	@Resource
