@@ -2,7 +2,6 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.Coupon;
@@ -129,6 +128,11 @@ public class CouponServiceImpl implements CouponService {
         coupon.setCreateTime(System.currentTimeMillis());
         coupon.setUpdateTime(System.currentTimeMillis());
         coupon.setTenantId(tenantId);
+
+        if(Objects.isNull(coupon.getStatus())){
+            coupon.setStatus(Coupon.STATUS_OFF);
+        }
+
 
 
         //先默认为自营活动 以后需要前端传值 TODO
