@@ -92,12 +92,12 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		//查询该租户是否有新人活动，有则不能添加
+		/*//查询该租户是否有新人活动，有则不能添加
 		int count = oldUserActivityMapper.selectCount(new LambdaQueryWrapper<OldUserActivity>()
 				.eq(OldUserActivity::getTenantId, tenantId).eq(OldUserActivity::getStatus, OldUserActivity.STATUS_ON));
 		if (count > 0) {
 			return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
-		}
+		}*/
 
 
 		OldUserActivity oldUserActivity = new OldUserActivity();
@@ -141,17 +141,15 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
-		//查询该租户是否有邀请活动，有则不能启用
+		/*//查询该租户是否有邀请活动，有则不能启用
 		if (Objects.equals(oldUserActivityAddAndUpdateQuery.getStatus(), OldUserActivity.STATUS_ON)) {
 			int count = oldUserActivityMapper.selectCount(new LambdaQueryWrapper<OldUserActivity>()
 					.eq(OldUserActivity::getTenantId, tenantId).eq(OldUserActivity::getStatus, OldUserActivity.STATUS_ON));
 			if (count > 0) {
 				return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
 			}
-		}
+		}*/
 
 
 		OldUserActivity oldUserActivity=new OldUserActivity();

@@ -94,7 +94,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 		//查询该租户是否有新人活动，有则不能添加
 		int count = newUserActivityMapper.selectCount(new LambdaQueryWrapper<NewUserActivity>()
-				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
+				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_OFF));
 		if (count > 0) {
 			return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
 		}
