@@ -41,7 +41,9 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 /**
@@ -61,8 +63,6 @@ public class TenantServiceImpl implements TenantService {
     @Resource
     private UserService userService;
 
-    @Autowired
-    private CustomPasswordEncoder customPasswordEncoder;
 
     @Autowired
     RoleService roleService;
@@ -157,13 +157,32 @@ public class TenantServiceImpl implements TenantService {
 
 
         //5.角色赋予权限
-        ArrayList<RolePermission> rolePermissionList = new ArrayList<>();
-        permissionConfig.getOperator().forEach(item -> {
+        List<RolePermission> operateRolePermission = permissionConfig.getOperator().parallelStream().map(item -> {
             RolePermission operatorRP = new RolePermission();
             operatorRP.setPId(item);
             operatorRP.setRoleId(operateRole.getId());
-            rolePermissionList.add(operatorRP);
-        });
+            return operatorRP;
+        }).collect(Collectors.toList());
+
+        ArrayList<RolePermission> rolePermissionList = new ArrayList<>(operateRolePermission);
+
+        List<RolePermission> franchiseeRolePermission = permissionConfig.getAlliance().parallelStream().map(item -> {
+            RolePermission allianceRP = new RolePermission();
+            allianceRP.setPId(item);
+            allianceRP.setRoleId(franchiseeRole.getId());
+            return allianceRP;
+        }).collect(Collectors.toList());
+        rolePermissionList.addAll(franchiseeRolePermission);
+
+        List<RolePermission> storeRolePermission = permissionConfig.getShop().parallelStream().map(item -> {
+            RolePermission shopRP = new RolePermission();
+            shopRP.setPId(item);
+            shopRP.setRoleId(storeRole.getId());
+            return shopRP;
+        }).collect(Collectors.toList());
+        rolePermissionList.addAll(storeRolePermission);
+
+
         permissionConfig.getAlliance().forEach(item -> {
             RolePermission allianceRP = new RolePermission();
             allianceRP.setPId(item);
@@ -175,6 +194,8 @@ public class TenantServiceImpl implements TenantService {
             shopRP.setPId(item);
             shopRP.setRoleId(storeRole.getId());
         });
+
+
         rolePermissionList.parallelStream().forEach(e -> {
             rolePermissionService.insert(e);
         });
