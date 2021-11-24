@@ -20,8 +20,9 @@ public class OldUserActivityQuery {
     private Long size;
     private Long offset;
     private String name;
-    private List<Integer> typeList;
     private Integer tenantId;
+    private String discountType;
+
 
 
 }

@@ -54,7 +54,8 @@ public class JsonAdminOldUserActivityController {
 	@GetMapping(value = "/admin/oldUserActivity/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam(value = "name", required = false) String name) {
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "discountType", required = false) String discountType) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -71,7 +72,8 @@ public class JsonAdminOldUserActivityController {
 				.offset(offset)
 				.size(size)
 				.name(name)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.discountType(discountType).build();
 
 
 		return oldUserActivityService.queryList(oldUserActivityQuery);
