@@ -3,6 +3,7 @@ package com.xiliulou.electricity.vo;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
@@ -107,27 +108,8 @@ public class NewUserActivityVO {
      */
     private String userName;
 
+    private Coupon coupon;
 
-    /**
-     * 优惠券名称
-     */
-    private String couponName;
 
-    /**
-     * 优惠券状态，分为 1--上架，2--下架
-     */
-    private Integer couponStatus;
-    /**
-     * 优惠金额
-     */
-    private BigDecimal amount;
-    /**
-     * 有效天数
-     */
-    private Integer couponDays;
-    /**
-     * 优惠券描述
-     */
-    private String couponDescription;
 
 }

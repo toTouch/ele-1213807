@@ -192,11 +192,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 					continue;
 				}
 
-				newUserActivityVO.setCouponName(coupon.getName());
-				newUserActivityVO.setCouponStatus(coupon.getStatus());
-				newUserActivityVO.setCouponDays(coupon.getDays());
-				newUserActivityVO.setAmount(coupon.getAmount());
-				newUserActivityVO.setCouponDescription(coupon.getDescription());
+				newUserActivityVO.setCoupon(coupon);
 			}
 			newUserActivityVOList.add(newUserActivityVO);
 
@@ -231,11 +227,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
 			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
-			newUserActivityVO.setCouponName(coupon.getName());
-			newUserActivityVO.setCouponStatus(coupon.getStatus());
-			newUserActivityVO.setCouponDays(coupon.getDays());
-			newUserActivityVO.setAmount(coupon.getAmount());
-			newUserActivityVO.setCouponDescription(coupon.getDescription());
+			newUserActivityVO.setCoupon(coupon);
 
 			return R.ok(newUserActivityVO);
 
