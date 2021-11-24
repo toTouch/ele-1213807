@@ -39,7 +39,6 @@ public class CouponServiceImpl implements CouponService {
     RedisService redisService;
 
 
-
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -88,19 +87,19 @@ public class CouponServiceImpl implements CouponService {
 
 
         //判断参数
-        if(Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
             coupon.setType(Coupon.TYPE_FRANCHISEE);
-            if(Objects.isNull(coupon.getFranchiseeId())){
+            if (Objects.isNull(coupon.getFranchiseeId())) {
                 log.error("Coupon  ERROR! not found FranchiseeId ");
                 return R.fail("ELECTRICITY.0094", "加盟商不能为空");
             }
-        }else {
-          if(Objects.equals(coupon.getType(),Coupon.TYPE_FRANCHISEE))  {
-              if(Objects.isNull(coupon.getFranchiseeId())){
-                  log.error("Coupon  ERROR! not found FranchiseeId ");
-                  return R.fail("ELECTRICITY.0094", "加盟商不能为空");
-              }
-          }
+        } else {
+            if (Objects.equals(coupon.getType(), Coupon.TYPE_FRANCHISEE)) {
+                if (Objects.isNull(coupon.getFranchiseeId())) {
+                    log.error("Coupon  ERROR! not found FranchiseeId ");
+                    return R.fail("ELECTRICITY.0094", "加盟商不能为空");
+                }
+            }
         }
 
 
@@ -132,7 +131,7 @@ public class CouponServiceImpl implements CouponService {
 
 
         //先默认为自营活动 以后需要前端传值 TODO
-        if(Objects.isNull(coupon.getType())){
+        if (Objects.isNull(coupon.getType())) {
             coupon.setType(Coupon.TYPE_SYSTEM);
         }
 
@@ -182,13 +181,10 @@ public class CouponServiceImpl implements CouponService {
     }
 
 
-
     @Override
     public R queryList(CouponQuery couponQuery) {
         return R.ok(couponMapper.queryList(couponQuery));
     }
-
-
 
 
     @Override

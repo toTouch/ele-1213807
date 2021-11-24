@@ -26,6 +26,10 @@ public class ElectricityCabinetOrderVO {
     */
     private Long uid;
     /**
+     * 换电人名称
+     */
+    private String uName;
+    /**
     * 支付金额
     */
     private Double payAmount;

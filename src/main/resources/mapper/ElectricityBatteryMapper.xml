@@ -22,12 +22,18 @@
 		<if test="query.tenantId != null">
 			and tenant_id = #{query.tenantId}
 		</if>
+		<if test="query.electricityCabinetId != null">
+			and electricity_cabinet_id =  #{query.electricityCabinetId}
+		</if>
 		<if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
 			and id in
 			<foreach collection="query.electricityBatteryIdList" item="id" index="index" open="(" close=")"
 					 separator=",">
 				#{id}
 			</foreach>
+		</if>
+		<if test="query.franchiseeId != null">
+			and id in (select electricity_battery_id from t_franchisee_bind_electricity_battery where franchisee_id = #{query.franchiseeId})
 		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
@@ -37,6 +43,7 @@
 		select COUNT(1)
 		from t_electricity_battery
 		where del_flag = 0 and tenant_id = #{query.tenantId}
+
 		<if test="query.sn != null and query.sn !=''">
 			and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
 		</if>
@@ -49,12 +56,18 @@
 		<if test="query.tenantId != null">
 			and tenant_id = #{query.tenantId}
 		</if>
+		<if test="query.electricityCabinetId != null">
+			and electricity_cabinet_id =  #{query.electricityCabinetId}
+		</if>
 		<if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
 			and id in
 			<foreach collection="query.electricityBatteryIdList" item="id" index="index" open="(" close=")"
 					 separator=",">
 				#{id}
 			</foreach>
+		</if>
+		<if test="query.franchiseeId != null">
+			and id in (select electricity_battery_id from t_franchisee_bind_electricity_battery where franchisee_id = #{query.franchiseeId})
 		</if>
 	</select>
 
