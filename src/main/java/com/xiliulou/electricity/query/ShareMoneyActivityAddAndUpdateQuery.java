@@ -6,7 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.util.List;
+import java.math.BigDecimal;
 
 /**
  * 活动表(Activity)实体类
@@ -24,17 +24,17 @@ public class ShareMoneyActivityAddAndUpdateQuery {
     */
     @NotEmpty(message = "活动名称不能为空!", groups = {CreateGroup.class})
     private String name;
-    /**
-     * 优惠类型，1--减免券，2--打折券，3-天数
-     */
-    @NotNull(message = "优惠类型不能为空!", groups = {CreateGroup.class})
-    private Integer discountType;
 
     /**
      * 有效时间
      */
     @NotNull(message = "有效时间不能为空!", groups = {CreateGroup.class})
     private Integer hours;
+    /**
+     * 金额
+     */
+    @NotNull(message = "金额不能为空!", groups = {CreateGroup.class})
+    private BigDecimal money;
     /**
     * 活动状态，分为 1--上架，2--下架
     */
