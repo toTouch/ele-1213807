@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo.api;
 
+import com.xiliulou.electricity.entity.Coupon;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -96,26 +97,8 @@ public class OldUserActivityVO {
     private String userName;
 
 
-    /**
-     * 优惠券名称
-     */
-    private String couponName;
+    private Coupon coupon;
 
-    /**
-     * 优惠券状态，分为 1--上架，2--下架
-     */
-    private Integer couponStatus;
-    /**
-     * 优惠金额
-     */
-    private BigDecimal amount;
-    /**
-     * 有效天数
-     */
-    private Integer couponDays;
-    /**
-     * 优惠券描述
-     */
-    private String couponDescription;
+
 
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -24,6 +25,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -173,7 +175,33 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 	@Override
 	public R queryList(OldUserActivityQuery oldUserActivityQuery) {
 		List<OldUserActivity> oldUserActivityList = oldUserActivityMapper.queryList(oldUserActivityQuery);
-		return R.ok(oldUserActivityList);
+		if(ObjectUtil.isEmpty(oldUserActivityList)){
+			return R.ok(oldUserActivityList);
+		}
+
+		List<OldUserActivityVO> oldUserActivityVOList = new ArrayList<>();
+		for (OldUserActivity oldUserActivity : oldUserActivityList) {
+			OldUserActivityVO oldUserActivityVO=new OldUserActivityVO();
+			BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
+
+			if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON)) {
+				if (Objects.isNull(oldUserActivity.getCouponId())) {
+					continue;
+				}
+
+				Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
+				if (Objects.isNull(coupon)) {
+					log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", oldUserActivity.getCouponId());
+					continue;
+				}
+
+				oldUserActivityVO.setCoupon(coupon);
+			}
+			oldUserActivityVOList.add(oldUserActivityVO);
+
+		}
+		return R.ok(oldUserActivityVOList);
+
 	}
 
 
@@ -206,11 +234,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
 			OldUserActivityVO oldUserActivityVO=new OldUserActivityVO();
 			BeanUtils.copyProperties(oldUserActivity,oldUserActivityVO);
-			oldUserActivityVO.setCouponName(coupon.getName());
-			oldUserActivityVO.setCouponStatus(coupon.getStatus());
-			oldUserActivityVO.setCouponDays(coupon.getDays());
-			oldUserActivityVO.setAmount(coupon.getAmount());
-			oldUserActivityVO.setCouponDescription(coupon.getDescription());
+			oldUserActivityVO.setCoupon(coupon);
 
 			return R.ok(oldUserActivityVO);
 
