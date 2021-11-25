@@ -75,10 +75,10 @@ public class ElectricityMemberCard {
     private String batteryType;
 
     /**
-     * 是否绑定活动
+     * 是否绑定活动 0--绑定  1--未绑定
      */
     @NotNull(message = "是否绑定活动不能为空!")
-    private Boolean isBindActivity;
+    private Integer isBindActivity;
 
 
     /**
