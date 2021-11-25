@@ -55,9 +55,7 @@ public class JsonAdminShareMoneyActivityController {
 	@GetMapping(value = "/admin/shareMoneyActivity/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "type", required = false) String type) {
+			@RequestParam(value = "name", required = false) String name) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -74,7 +72,6 @@ public class JsonAdminShareMoneyActivityController {
 				.offset(offset)
 				.size(size)
 				.name(name)
-				.franchiseeId(franchiseeId)
 				.tenantId(tenantId).build();
 
 		return shareMoneyActivityService.queryList(shareMoneyActivityQuery);
@@ -83,9 +80,7 @@ public class JsonAdminShareMoneyActivityController {
 
 	//列表查询
 	@GetMapping(value = "/admin/shareMoneyActivity/count")
-	public R queryCount(@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "type", required = false) String type) {
+	public R queryCount(@RequestParam(value = "name", required = false) String name) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -93,7 +88,6 @@ public class JsonAdminShareMoneyActivityController {
 
 		ShareMoneyActivityQuery shareMoneyActivityQuery = ShareMoneyActivityQuery.builder()
 				.name(name)
-				.franchiseeId(franchiseeId)
 				.tenantId(tenantId).build();
 
 		return shareMoneyActivityService.queryCount(shareMoneyActivityQuery);

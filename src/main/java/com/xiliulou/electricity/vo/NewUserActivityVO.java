@@ -78,7 +78,7 @@ public class NewUserActivityVO {
     /**
     * 0--正常 1--删除
     */
-    private Integer delFlag;
+    private Integer delFlg;
     /**
     * 创建时间
     */
