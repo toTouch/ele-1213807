@@ -48,5 +48,5 @@ public interface NewUserActivityService {
 
     R queryInfo(Integer id);
 
-
+    R queryNewUserActivity();
 }

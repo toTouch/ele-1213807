@@ -236,5 +236,36 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		return R.ok(newUserActivity);
 	}
 
+	@Override
+	public R queryNewUserActivity() {
+		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
+				.eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
+		if (Objects.isNull(newUserActivity)) {
+			log.error("queryInfo Activity  ERROR! not found Activity ! ");
+			return R.fail("ELECTRICITY.0069", "未找到活动");
+		}
+
+		if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
+			if (Objects.isNull(newUserActivity.getCouponId())) {
+				return R.ok(newUserActivity);
+			}
+
+			Coupon coupon = couponService.queryByIdFromCache(newUserActivity.getCouponId());
+			if (Objects.isNull(coupon)) {
+				log.error("queryInfo Activity  ERROR! not found coupon ! couponId:{} ", newUserActivity.getCouponId());
+				return R.ok(newUserActivity);
+			}
+
+			NewUserActivityVO newUserActivityVO = new NewUserActivityVO();
+			BeanUtils.copyProperties(newUserActivity, newUserActivityVO);
+			newUserActivityVO.setCoupon(coupon);
+
+			return R.ok(newUserActivityVO);
+
+		}
+
+		return R.ok(newUserActivity);
+	}
+
 }
 
