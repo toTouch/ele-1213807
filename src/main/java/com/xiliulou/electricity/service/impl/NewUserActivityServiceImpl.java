@@ -246,7 +246,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (Objects.isNull(newUserActivity)) {
-			log.error("queryInfo Activity  ERROR! not found Activity ! ");
+			log.error("queryInfo Activity  ERROR! not found Activity !  tenantId:{} ", tenantId);
 			return R.fail("ELECTRICITY.0069", "未找到活动");
 		}
 
