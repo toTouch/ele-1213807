@@ -6,15 +6,21 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ShareActivity;
+import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ShareActivityVO;
+import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +45,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
 	@Autowired
 	RedisService redisService;
+
+	@Autowired
+	UserInfoService userInfoService;
+
+	@Autowired
+	ShareActivityRecordService shareActivityRecordService;
 
 
 	/**
@@ -194,7 +206,53 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 				.eq(ShareMoneyActivity::getId, activityId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
 	}
 
+	@Override
+	public R activityInfo() {
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("order  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		//用户是否可用
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0024", "用户已被禁用");
+		}
+
+		//邀请活动
+		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
+				.eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+		if (Objects.isNull(shareMoneyActivity)) {
+			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+			return R.ok();
+		}
+
+		//未实名认证
+		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0041", "未实名认证");
+		}
+
+		ShareMoneyActivityVO shareMoneyActivityVO = new ShareMoneyActivityVO();
+		BeanUtil.copyProperties(shareMoneyActivity, shareMoneyActivityVO);
+
+		//邀请好友数
+		int count = 0;
+		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), shareMoneyActivityVO.getId());
+		if (Objects.nonNull(shareActivityRecord)) {
+			count = shareActivityRecord.getCount();
+		}
+
+		shareMoneyActivityVO.setCount(count);
+
+		return R.ok(shareMoneyActivityVO);
+	}
 
 }
 

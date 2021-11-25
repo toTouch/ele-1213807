@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
@@ -238,8 +239,12 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	@Override
 	public R queryNewUserActivity() {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
 		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
-				.eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
+				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (Objects.isNull(newUserActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity ! ");
 			return R.fail("ELECTRICITY.0069", "未找到活动");
