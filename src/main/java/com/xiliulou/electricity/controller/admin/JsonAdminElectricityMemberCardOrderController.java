@@ -43,6 +43,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	@GetMapping("admin/electricityMemberCardOrder/page")
 	public R getElectricityMemberCardPage(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
+		    @RequestParam(value = "franchiseeId", required = false) Long fId,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
@@ -68,7 +69,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		Long franchiseeId=null;
+		Long franchiseeId = null;
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 			//加盟商
@@ -77,6 +78,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 				return R.ok(new ArrayList<>());
 			}
 			franchiseeId=franchisee.getId();
+		} else {
+			franchiseeId = fId;
 		}
 
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()

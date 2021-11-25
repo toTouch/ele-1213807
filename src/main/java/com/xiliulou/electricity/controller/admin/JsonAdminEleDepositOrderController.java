@@ -42,6 +42,7 @@ public class JsonAdminEleDepositOrderController {
     @GetMapping(value = "/admin/eleDepositOrder/list")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
+                       @RequestParam("franchiseeId") Long fId,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
@@ -76,6 +77,8 @@ public class JsonAdminEleDepositOrderController {
                 return R.ok(new ArrayList<>());
             }
             franchiseeId=franchisee.getId();
+        } else {
+            franchiseeId = fId;
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
