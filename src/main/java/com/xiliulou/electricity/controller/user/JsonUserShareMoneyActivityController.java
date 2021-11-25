@@ -30,4 +30,11 @@ public class JsonUserShareMoneyActivityController {
     public R queryInfo() {
         return shareMoneyActivityService.activityInfo();
     }
+
+
+    //查询是否有活动
+    @GetMapping(value = "/user/shareMoneyActivity/checkActivity")
+    public R checkActivity() {
+        return shareMoneyActivityService.checkActivity();
+    }
 }

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
 import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
@@ -28,7 +29,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -51,6 +54,9 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
 	@Autowired
 	ShareActivityRecordService shareActivityRecordService;
+
+	@Resource
+	ShareActivityMapper shareActivityMapper;
 
 
 	/**
@@ -225,6 +231,12 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
 		}
 
+		//未实名认证
+		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0041", "未实名认证");
+		}
+
 		//邀请活动
 		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
 				.eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
@@ -233,11 +245,6 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 			return R.ok();
 		}
 
-		//未实名认证
-		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
-			return R.fail("ELECTRICITY.0041", "未实名认证");
-		}
 
 		ShareMoneyActivityVO shareMoneyActivityVO = new ShareMoneyActivityVO();
 		BeanUtil.copyProperties(shareMoneyActivity, shareMoneyActivityVO);
@@ -252,6 +259,54 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 		shareMoneyActivityVO.setCount(count);
 
 		return R.ok(shareMoneyActivityVO);
+	}
+
+	@Override
+	public R checkActivity() {
+
+		Map<String,Integer> map=new HashMap<>();
+		map.put("shareMoneyActivity",0);
+		map.put("shareActivity",0);
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("order  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		//用户是否可用
+		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0024", "用户已被禁用");
+		}
+
+		//未实名认证
+		if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+			log.error("order  ERROR! user not auth!  uid:{} ", user.getUid());
+			return R.fail("ELECTRICITY.0041", "未实名认证");
+		}
+
+
+		//邀请返现活动
+		ShareMoneyActivity shareMoneyActivity = shareMoneyActivityMapper.selectOne(new LambdaQueryWrapper<ShareMoneyActivity>()
+				.eq(ShareMoneyActivity::getTenantId, tenantId).eq(ShareMoneyActivity::getStatus, ShareMoneyActivity.STATUS_ON));
+		if (Objects.isNull(shareMoneyActivity)) {
+			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+			map.put("shareMoneyActivity",1);
+		}
+
+		//邀请活动
+		ShareActivity shareActivity = shareActivityMapper.selectOne(new LambdaQueryWrapper<ShareActivity>()
+				.eq(ShareActivity::getTenantId, tenantId).eq(ShareActivity::getStatus, ShareActivity.STATUS_ON));
+		if (Objects.isNull(shareActivity)) {
+			log.error("queryInfo Activity  ERROR! not found Activity ! tenantId:{} ", tenantId);
+			map.put("shareActivity",1);
+		}
+		return R.ok(map);
 	}
 
 }
