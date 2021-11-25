@@ -247,7 +247,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
 		if (Objects.isNull(newUserActivity)) {
 			log.error("queryInfo Activity  ERROR! not found Activity !  tenantId:{} ", tenantId);
-			return R.fail("ELECTRICITY.0069", "未找到活动");
+			return R.ok();
 		}
 
 		if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
