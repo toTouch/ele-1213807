@@ -165,7 +165,7 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 				.eq(ShareMoneyActivityRecord::getUid, user.getUid()).eq(ShareMoneyActivityRecord::getActivityId, activityId));
 
 		//3、scene
-		String scene = "uid:"+user.getUid()+",id:"+activityId+",code:"+shareMoneyActivityRecord.getCode()+",type:1";
+		String scene = "uid:"+user.getUid()+",id:"+activityId+",code:"+shareMoneyActivityRecord.getCode()+",type:2";
 
 
 		//修改分享状态
