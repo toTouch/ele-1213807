@@ -2,6 +2,8 @@ package com.xiliulou.electricity.vo;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 /**
  * 参与邀请活动记录(JoinShareActivityRecord)实体类
  *
@@ -53,6 +55,11 @@ public class JoinShareMoneyActivityHistoryVO {
     * 租户id
     */
     private Integer tenantId;
+
+    /**
+     * 返现金额
+     */
+    private BigDecimal money;
 
 
     //初始化

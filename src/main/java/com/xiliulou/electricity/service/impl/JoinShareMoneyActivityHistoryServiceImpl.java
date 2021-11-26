@@ -5,10 +5,12 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.JoinShareMoneyActivityHistoryMapper;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.JoinShareMoneyActivityHistoryVO;
@@ -37,6 +39,9 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 
 	@Autowired
 	UserService userService;
+
+	@Autowired
+	ShareMoneyActivityService shareMoneyActivityService;
 
 
 	/**
@@ -112,6 +117,12 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 			User joinUser=userService.queryByUidFromCache(joinShareMoneyActivityHistory.getJoinUid());
 			if(Objects.nonNull(joinUser)){
 				joinShareMoneyActivityHistoryVO.setJoinPhone(joinUser.getPhone());
+			}
+
+			ShareMoneyActivity shareMoneyActivity= shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityHistory.getActivityId());
+
+			if(Objects.nonNull(shareMoneyActivity)){
+				joinShareMoneyActivityHistoryVO.setMoney(shareMoneyActivity.getMoney());
 			}
 
 			joinShareMoneyActivityHistoryVOList.add(joinShareMoneyActivityHistoryVO);
