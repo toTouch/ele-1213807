@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
 
 import java.util.List;
@@ -20,24 +21,7 @@ public interface UserAmountService {
      */
     UserAmount queryByAgentFromDB(Long id);
 
-    /**
-     * 通过ID查询单条数据从缓存
-     *
-     * @param id 主键
-     * @return 实例对象
-     */
-    UserAmount queryByAgentIdFromCache(Long id);
 
-
-
-    /**
-     * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit  查询条数
-     * @return 对象列表
-     */
-    List<UserAmount> queryAllByLimit(int offset, int limit);
 
     /**
      * 新增数据
@@ -55,22 +39,7 @@ public interface UserAmountService {
      */
     Integer update(UserAmount userAmount);
 
-    /**
-     * 通过主键删除数据
-     *
-     * @param id 主键
-     * @return 是否成功
-     */
-    Boolean deleteByAgentId(Long id);
 
+    R queryByUid();
 
-    List<UserAmount> accountList(Integer size, Integer offset, Long startTime, Long endTime, Long agentId);
-
-    int updateIdempotent(UserAmount userAmount, UserAmount updateUserAmount);
-
-    UserAmount queryByUid(Long uid);
-
-    void updateReduceIncome(Long agentId,Long uid, double income);
-
-    void updateRollBackIncome(Long agentId,Long uid, double income);
 }
