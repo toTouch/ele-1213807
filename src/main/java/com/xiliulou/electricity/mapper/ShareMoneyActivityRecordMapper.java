@@ -7,6 +7,7 @@ import com.xiliulou.electricity.vo.ShareMoneyActivityRecordVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Update;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -18,8 +19,8 @@ import java.util.List;
 public interface ShareMoneyActivityRecordMapper extends BaseMapper<ShareMoneyActivityRecord>{
 
 
-    @Update("update t_share_money_activity_record set count=count+1 where uid =#{uid}")
-	void addCountByUid(@Param("uid") Long uid);
+    @Update("update t_share_money_activity_record set count=count+1,money=money+#{money} where uid =#{uid}")
+	void addCountByUid(@Param("uid") Long uid, @Param("money")BigDecimal money);
 
 
 	List<ShareMoneyActivityRecordVO> queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);

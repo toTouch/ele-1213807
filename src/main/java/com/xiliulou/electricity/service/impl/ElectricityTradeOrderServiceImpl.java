@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -31,6 +32,7 @@ import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserCouponService;
@@ -100,6 +102,8 @@ public class ElectricityTradeOrderServiceImpl extends
 	ShareMoneyActivityRecordService shareMoneyActivityRecordService;
 	@Autowired
 	JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
+	@Autowired
+	ShareMoneyActivityService shareMoneyActivityService;
 
 	@Override
 	public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -279,8 +283,12 @@ public class ElectricityTradeOrderServiceImpl extends
 						joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
 					}
 
-					//给邀请人增加邀请成功人数
-					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid());
+					ShareMoneyActivity shareMoneyActivity= shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
+
+					if(Objects.nonNull(shareMoneyActivity)){
+						//给邀请人增加邀请成功人数
+						shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney());
+					}
 
 					//返现 TODO
 				}

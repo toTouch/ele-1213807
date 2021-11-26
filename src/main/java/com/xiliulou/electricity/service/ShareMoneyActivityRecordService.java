@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
 
+import java.math.BigDecimal;
+
 /**
  * 发起邀请活动记录(ShareActivityRecord)表服务接口
  *
@@ -45,7 +47,7 @@ public interface ShareMoneyActivityRecordService {
 	ShareMoneyActivityRecord queryByUid(Long uid,Integer activityId);
 
 
-	void addCountByUid(Long uid);
+	void addCountByUid(Long uid, BigDecimal money);
 
 
 	R queryList(ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery);

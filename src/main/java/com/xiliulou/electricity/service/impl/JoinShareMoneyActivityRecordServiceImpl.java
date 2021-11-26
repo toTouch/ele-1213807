@@ -106,7 +106,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 			return R.ok();
 		}
 
-		//2、别人点击链接登录
+	/*	//2、别人点击链接登录
 
 		//2.1 判断此人是否首次购买月卡
 		Boolean result = checkUserIsCard(userInfo);
@@ -114,7 +114,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		//已购买月卡,则直接返回首页
 		if (result) {
 			return R.fail("ELECTRICITY.00107", "您已购买过月卡");
-		}
+		}*/
 
 		//未购买月卡则添加用户参与记录
 		//2.2 判断此人是否参与过活动

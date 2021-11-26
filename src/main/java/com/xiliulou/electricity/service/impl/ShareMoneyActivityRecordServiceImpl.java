@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
@@ -203,8 +204,8 @@ public class ShareMoneyActivityRecordServiceImpl implements ShareMoneyActivityRe
 	}
 
 	@Override
-	public void addCountByUid(Long uid) {
-		shareMoneyActivityRecordMapper.addCountByUid(uid);
+	public void addCountByUid(Long uid, BigDecimal money) {
+		shareMoneyActivityRecordMapper.addCountByUid(uid,money);
 	}
 
 
