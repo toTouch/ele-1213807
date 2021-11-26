@@ -38,7 +38,7 @@ public class JsonUserShareMoneyActivityRecordController {
      *
      *
      */
-    @PostMapping(value = "/user/shareActivityRecord/generateShareUrl")
+    @PostMapping(value = "/user/shareMoneyActivityRecord/generateShareUrl")
     public R generateShareUrl(@RequestParam(value = "activityId") Integer activityId) {
         return null;
     }
