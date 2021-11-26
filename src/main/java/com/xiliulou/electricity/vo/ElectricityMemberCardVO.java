@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -16,24 +16,22 @@ import java.math.BigDecimal;
  * @create: 2020-12-01 15:10
  **/
 @Data
-@TableName("t_electricity_member_card")
-public class ElectricityMemberCard {
+public class ElectricityMemberCardVO {
 
-    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
      * 套餐名称
      */
-    @NotEmpty(message = "套餐名称不能为空!")
+
     private String name;
     //类型
-    @NotNull(message = "套餐类型不能为空!")
+
     private Integer type;
     //原价
-    @NotNull(message = "套餐原价不能为空!")
+
     private BigDecimal price;
     //优惠价
-    @NotNull(message = "套餐活动价格不能为空!")
+
     private BigDecimal holidayPrice;
     //有效天数
     private Integer validDays;
@@ -41,7 +39,7 @@ public class ElectricityMemberCard {
     //最大使用次数
     private Long maxUseCount;
     //是否限制使用次数  0:不限制,1:限制
-    @NotNull(message = "是否限制使用次数不能为空!")
+
     private Integer limitCount;
 
     //状态
@@ -55,7 +53,7 @@ public class ElectricityMemberCard {
     /**
      * franchiseeId
      */
-    @NotNull(message = "加盟商Id不能为空!")
+
     private Integer franchiseeId;
 
     /**
@@ -66,7 +64,7 @@ public class ElectricityMemberCard {
     /**
      * 加盟商套餐类型 1--老（不分型号） 2--新（分型号）
      * */
-    @NotNull(message = "加盟商套餐类型不能为空!")
+
     private Integer modelType;
 
     /**
@@ -77,7 +75,7 @@ public class ElectricityMemberCard {
     /**
      * 是否绑定活动 0--绑定  1--未绑定
      */
-    @NotNull(message = "是否绑定活动不能为空!")
+
     private Integer isBindActivity;
 
 
@@ -86,25 +84,8 @@ public class ElectricityMemberCard {
      */
     private Integer activityId;
 
-
-    public static final Integer DEL_NORMAL = 0;
-    public static final Integer DEL_DEL = 1;
-
-    //禁用状态
-    public static final Integer STATUS_UN_USEABLE = 1;
-    //可用状态
-    public static final Integer STATUS_USEABLE = 0;
-
-    public static final Integer TYPE_MONTH = 0;
-    public static final Integer TYPE_QUARTERLY = 1;
-    public static final Integer TYPE_YEAR = 2;
-    //无限制使用次数
-    public static final Long UN_LIMITED_COUNT = -1L;
+    private OldUserActivityVO  oldUserActivityVO;
 
 
-    public static final Integer UN_LIMITED_COUNT_TYPE = 0;
-
-    public static final Integer BIND_ACTIVITY = 0;
-    public static final Integer UNBIND_ACTIVITY = 1;
 
 }

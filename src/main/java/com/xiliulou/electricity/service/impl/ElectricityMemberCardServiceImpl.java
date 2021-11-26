@@ -8,26 +8,33 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
+import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
+import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -65,6 +72,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
     @Autowired
     StoreService storeService;
+
+    @Autowired
+    OldUserActivityService oldUserActivityService;
+
+    @Autowired
+    CouponService couponService;
 
     /**
      * 新增卡包
@@ -280,9 +293,48 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),franchiseeUserInfo.getBatteryType()));
         }
 
+        List<ElectricityMemberCard> electricityMemberCardList= baseMapper.queryUserList(offset,size,store.getFranchiseeId(),null);
 
-        //查找加盟商下的可用套餐
-        return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),null));
+        if(ObjectUtil.isEmpty(electricityMemberCardList)){
+            return R.ok(electricityMemberCardList);
+        }
+
+        List<ElectricityMemberCardVO> electricityMemberCardVOList=new ArrayList<>();
+        for (ElectricityMemberCard electricityMemberCard:electricityMemberCardList) {
+            ElectricityMemberCardVO electricityMemberCardVO=new ElectricityMemberCardVO();
+            BeanUtils.copyProperties(electricityMemberCard,electricityMemberCardVO);
+
+
+            if(Objects.equals(electricityMemberCard.getIsBindActivity(),ElectricityMemberCard.BIND_ACTIVITY)&&Objects.nonNull(electricityMemberCard.getActivityId())){
+                OldUserActivity oldUserActivity=oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
+                if(Objects.nonNull(oldUserActivity)){
+
+
+                    OldUserActivityVO oldUserActivityVO=new OldUserActivityVO();
+                    BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
+
+                    if(Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON)&&Objects.nonNull(oldUserActivity.getCouponId())) {
+
+
+                        Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
+                        if (Objects.nonNull(coupon)) {
+                            oldUserActivityVO.setCoupon(coupon);
+                        }
+
+
+                        oldUserActivityVO.setCoupon(coupon);
+                    }
+                    electricityMemberCardVO.setOldUserActivityVO(oldUserActivityVO);
+                }
+            }
+
+
+
+            electricityMemberCardVOList.add(electricityMemberCardVO);
+        }
+
+
+        return R.ok(electricityMemberCardVOList);
     }
 
     @Override

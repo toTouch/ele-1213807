@@ -1,11 +1,9 @@
-package com.xiliulou.electricity.vo.api;
+package com.xiliulou.electricity.vo;
 
 import com.xiliulou.electricity.entity.Coupon;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import java.math.BigDecimal;
 
 /**
  * 活动表(NewUserActivity)实体类
@@ -66,7 +64,7 @@ public class OldUserActivityVO {
     /**
     * 0--正常 1--删除
     */
-    private Integer delFlag;
+    private Integer delFlg;
     /**
     * 创建时间
     */
@@ -95,7 +93,6 @@ public class OldUserActivityVO {
      * 创建人用户名
      */
     private String userName;
-
 
     private Coupon coupon;
 
