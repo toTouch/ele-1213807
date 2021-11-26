@@ -28,7 +28,7 @@ public class JsonUserAmountController {
 
 
 	/**
-	 * 用户邀请记录
+	 * 用户余额
 	 */
 	@GetMapping(value = "/user/userAmount/queryBalance")
 	public R queryBalance() {
