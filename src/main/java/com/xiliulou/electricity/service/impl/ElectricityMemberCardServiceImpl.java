@@ -284,16 +284,17 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
-
+        List<ElectricityMemberCard> electricityMemberCardList=new ArrayList<>();
         //多电池型号查询套餐
         if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
             if(Objects.isNull(franchiseeUserInfo.getBatteryType())){
                 return R.ok();
             }
-            return R.ok(baseMapper.queryUserList(offset,size,store.getFranchiseeId(),franchiseeUserInfo.getBatteryType()));
+            electricityMemberCardList=baseMapper.queryUserList(offset,size,store.getFranchiseeId(),franchiseeUserInfo.getBatteryType());
+        }else {
+            electricityMemberCardList= baseMapper.queryUserList(offset,size,store.getFranchiseeId(),null);
         }
 
-        List<ElectricityMemberCard> electricityMemberCardList= baseMapper.queryUserList(offset,size,store.getFranchiseeId(),null);
 
         if(ObjectUtil.isEmpty(electricityMemberCardList)){
             return R.ok(electricityMemberCardList);
