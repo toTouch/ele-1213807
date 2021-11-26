@@ -57,6 +57,10 @@ public class JoinShareMoneyActivityHistoryVO {
     private Integer tenantId;
 
     /**
+     * 活动id
+     */
+    private Integer activityId;
+    /**
      * 返现金额
      */
     private BigDecimal money;

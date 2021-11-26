@@ -7,7 +7,7 @@
         select
         jsah.id as id, jsah.uid as uid, jsah.join_uid as joinUid, jsah.start_time as startTime,
          jsah.expired_time as expiredTime,jsah.status as status,  jsah.create_time as createTime,
-         jsah.update_time as updateTime, jsah.tenant_id  as tenantId
+         jsah.update_time as updateTime, jsah.tenant_id  as tenantId, jsah.activity_id as activityId
         from t_join_share_money_activity_history as jsah
         <where>
             <if test="uid != null">
