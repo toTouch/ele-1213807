@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * (UserAmount)实体类
  *
@@ -27,15 +29,15 @@ public class UserAmount {
 
     private Long updateTime;
 
-    private Double totalIncome;
+    private BigDecimal totalIncome;
 
-    private Double balance;
+    private BigDecimal balance;
 
-    private Double withdraw;
+    private BigDecimal withdraw;
 
     private Integer tenantId;
 
-    private Integer delFlag;
+    private Integer delFlg;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
