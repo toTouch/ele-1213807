@@ -8,6 +8,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
+
 /**
  * 发起邀请活动记录(ShareMoneyActivityRecord)实体类
  *
@@ -43,6 +45,10 @@ public class ShareMoneyActivityRecord {
     * 邀请总人数
     */
     private Integer count;
+    /**
+     * 返现总金额
+     */
+    private BigDecimal money;
     /**
     * 创建时间
     */
