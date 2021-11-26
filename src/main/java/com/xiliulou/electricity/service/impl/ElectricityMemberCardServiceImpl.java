@@ -321,8 +321,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
                             oldUserActivityVO.setCoupon(coupon);
                         }
 
-
-                        oldUserActivityVO.setCoupon(coupon);
                     }
                     electricityMemberCardVO.setOldUserActivityVO(oldUserActivityVO);
                 }
