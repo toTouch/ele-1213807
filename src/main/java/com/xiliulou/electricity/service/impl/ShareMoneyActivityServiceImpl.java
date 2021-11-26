@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
+import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -29,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,7 +56,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 	UserInfoService userInfoService;
 
 	@Autowired
-	ShareActivityRecordService shareActivityRecordService;
+	ShareMoneyActivityRecordService shareMoneyActivityRecordService;
 
 	@Resource
 	ShareActivityMapper shareActivityMapper;
@@ -251,12 +254,15 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 
 		//邀请好友数
 		int count = 0;
-		ShareActivityRecord shareActivityRecord = shareActivityRecordService.queryByUid(user.getUid(), shareMoneyActivityVO.getId());
-		if (Objects.nonNull(shareActivityRecord)) {
-			count = shareActivityRecord.getCount();
+		BigDecimal totalMoney=BigDecimal.ZERO;
+		ShareMoneyActivityRecord shareMoneyActivityRecord = shareMoneyActivityRecordService.queryByUid(user.getUid(), shareMoneyActivityVO.getId());
+		if (Objects.nonNull(shareMoneyActivityRecord)) {
+			count = shareMoneyActivityRecord.getCount();
+			totalMoney=shareMoneyActivityRecord.getMoney();
 		}
 
 		shareMoneyActivityVO.setCount(count);
+		shareMoneyActivityVO.setTotalMoney(totalMoney);
 
 		return R.ok(shareMoneyActivityVO);
 	}

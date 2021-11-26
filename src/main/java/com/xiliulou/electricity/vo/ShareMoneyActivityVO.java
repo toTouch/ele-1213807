@@ -74,6 +74,11 @@ public class ShareMoneyActivityVO {
     //邀请人数
     private Integer count;
 
+    /**
+     * 总金额
+     */
+    private BigDecimal totalMoney;
+
 
 
 
