@@ -6,11 +6,11 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.UserAmountHistory">
         select * from t_user_amount_history
         <where>
-            <if test="startTime != null">
-                and create_time &gt;= #{startTime}
+            <if test="uid != null ">
+                and uid = #{uid}
             </if>
-            <if test="endTime != null">
-                and create_time &lt;= #{endTime}
+            <if test="tenantId != null ">
+                and tenant_id = #{tenantId}
             </if>
         </where>
         order by create_time desc
