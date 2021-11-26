@@ -30,8 +30,8 @@ public class JsonUserAmountController {
 	/**
 	 * 用户邀请记录
 	 */
-	@GetMapping(value = "/user/userAmount/list")
-	public R joinActivity() {
+	@GetMapping(value = "/user/userAmount/queryBalance")
+	public R queryBalance() {
 		return userAmountService.queryByUid();
 	}
 
