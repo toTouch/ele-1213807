@@ -12,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -23,7 +22,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonUserUserAmountHistoryController {
+public class JsonUserAmountHistoryController {
 	/**
 	 * 服务对象
 	 */

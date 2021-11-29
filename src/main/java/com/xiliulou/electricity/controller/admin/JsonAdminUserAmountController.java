@@ -35,7 +35,7 @@ public class JsonAdminUserAmountController {
 	@GetMapping(value = "/admin/userAmount/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam("phone") String phone) {
+			@RequestParam(value = "phone", required = false) String phone) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
