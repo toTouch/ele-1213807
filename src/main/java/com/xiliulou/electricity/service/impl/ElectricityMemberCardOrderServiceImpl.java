@@ -82,7 +82,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 	@Autowired
 	ShareMoneyActivityService shareMoneyActivityService;
-
+	@Autowired
+	OldUserActivityService oldUserActivityService;
 
 	/**
 	 * 创建月卡订单
@@ -111,42 +112,37 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			return R.failMsg("未配置支付参数!");
 		}
 
-		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(),tenantId);
+		UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
 
 		if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
 			return R.failMsg("未找到用户的第三方授权信息!");
 		}
 
-
 		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(),electricityMemberCardOrderQuery.getDeviceName());
+		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
 		if (Objects.isNull(electricityCabinet)) {
-			log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", electricityMemberCardOrderQuery.getProductKey(),electricityMemberCardOrderQuery.getDeviceName());
+			log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
 			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
-
-
 		//3、查出套餐
 		//查找换电柜门店
-		if(Objects.isNull(electricityCabinet.getStoreId())){
+		if (Objects.isNull(electricityCabinet.getStoreId())) {
 			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
 			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
 		}
-		Store store=storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-		if(Objects.isNull(store)){
+		Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+		if (Objects.isNull(store)) {
 			log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
 			return R.fail("ELECTRICITY.0018", "未找到门店");
 		}
 
-
 		//查找门店加盟商
-		if(Objects.isNull(store.getFranchiseeId())){
+		if (Objects.isNull(store.getFranchiseeId())) {
 			log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
-
 
 		//用户
 		UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
@@ -186,11 +182,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		}
 
 		//判断该换电柜加盟商和用户加盟商是否一致
-		if(!Objects.equals(store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId())){
-			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(),store.getFranchiseeId(),franchiseeUserInfo.getFranchiseeId());
+		if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
+			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
 			return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
 		}
-
 
 		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
 		if (Objects.isNull(electricityMemberCard)) {
@@ -201,7 +196,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", electricityMemberCardOrderQuery.getMemberId());
 			return R.fail("ELECTRICITY.0088", "月卡已禁用!");
 		}
-
 
 		//查找计算优惠券
 		//满减折扣劵
@@ -232,7 +226,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				return R.fail("ELECTRICITY.0085", "未找到优惠券");
 			}
 
-
 			//使用满减劵
 			if (Objects.equals(userCoupon.getDiscountType(), UserCoupon.FULL_REDUCTION)) {
 
@@ -254,14 +247,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			payAmount = BigDecimal.valueOf(0);
 		}
 
-
-
 		Long now = System.currentTimeMillis();
 		Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
 		//同一个套餐可以续费
 		if (Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
-			if(now<franchiseeUserInfo.getMemberCardExpireTime()) {
+			if (now < franchiseeUserInfo.getMemberCardExpireTime()) {
 				now = franchiseeUserInfo.getMemberCardExpireTime();
 			}
 			//TODO 使用次数暂时叠加
@@ -278,7 +269,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
 			}
 		}
-
 
 		ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
 		electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
@@ -297,9 +287,29 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setFranchiseeId(store.getFranchiseeId());
 		baseMapper.insert(electricityMemberCardOrder);
 
-
 		//支付零元
 		if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
+
+			//月卡是否绑定活动
+			if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
+				OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
+
+				if (Objects.nonNull(oldUserActivity)) {
+
+					//次数
+					if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT) && Objects.nonNull(oldUserActivity.getCount())) {
+						remainingNumber = remainingNumber + oldUserActivity.getCount();
+					}
+
+					//优惠券
+					if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
+						//发放优惠券
+						Long[] uids = new Long[1];
+						uids[0] = electricityMemberCardOrder.getUid();
+						userCouponService.batchRelease(oldUserActivity.getCouponId(), uids);
+					}
+				}
+			}
 
 			//用户
 			FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
@@ -314,14 +324,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
 			franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
-
 			//月卡订单
 			ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
 			electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
 			electricityMemberCardOrderUpdate.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
 			electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
 			baseMapper.updateById(electricityMemberCardOrderUpdate);
-
 
 			if (Objects.nonNull(electricityMemberCardOrderQuery.getUserCouponId())) {
 				//修改劵可用状态
@@ -331,57 +339,54 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				userCouponService.update(userCoupon);
 			}
 
-
 			//被邀请新买月卡用户
 			//是否是新用户
 			/*if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
 					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {*/
-				//是否有人邀请
-				JoinShareActivityRecord joinShareActivityRecord =joinShareActivityRecordService.queryByJoinUid(user.getUid());
-				if(Objects.nonNull(joinShareActivityRecord)){
-					//修改邀请状态
-					joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-					joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-					joinShareActivityRecordService.update(joinShareActivityRecord);
+			//是否有人邀请
+			JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(user.getUid());
+			if (Objects.nonNull(joinShareActivityRecord)) {
+				//修改邀请状态
+				joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+				joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+				joinShareActivityRecordService.update(joinShareActivityRecord);
 
-					//修改历史记录状态
-					JoinShareActivityHistory oldJoinShareActivityHistory=joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
-					if(Objects.nonNull(oldJoinShareActivityHistory)) {
-						oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-						oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-						joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
-					}
-
-					//给邀请人增加邀请成功人数
-					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+				//修改历史记录状态
+				JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+				if (Objects.nonNull(oldJoinShareActivityHistory)) {
+					oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+					oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+					joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
 				}
 
+				//给邀请人增加邀请成功人数
+				shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+			}
 
-				//是否有人返现邀请
-				JoinShareMoneyActivityRecord joinShareMoneyActivityRecord =joinShareMoneyActivityRecordService.queryByJoinUid(user.getUid());
-				if(Objects.nonNull(joinShareMoneyActivityRecord)){
-					//修改邀请状态
-					joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
-					joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-					joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
+			//是否有人返现邀请
+			JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = joinShareMoneyActivityRecordService.queryByJoinUid(user.getUid());
+			if (Objects.nonNull(joinShareMoneyActivityRecord)) {
+				//修改邀请状态
+				joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
+				joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+				joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
 
-					//修改历史记录状态
-					JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory=joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
-					if(Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-						oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
-						oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-						joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
-					}
+				//修改历史记录状态
+				JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+				if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
+					oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
+					oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+					joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
+				}
 
-					ShareMoneyActivity shareMoneyActivity= shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
+				ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
 
-					if(Objects.nonNull(shareMoneyActivity)){
-						//给邀请人增加邀请成功人数
-						shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney());
-					}
+				if (Objects.nonNull(shareMoneyActivity)) {
+					//给邀请人增加邀请成功人数
+					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+				}
 
-
-					//返现 TODO
+				//返现 TODO
 
 				/*}*/
 			}
@@ -400,7 +405,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					.description("月卡收费")
 					.tenantId(tenantId).build();
 
-
 			WechatJsapiOrderResultDTO resultDTO =
 					electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
 			return R.ok(resultDTO);
@@ -412,13 +416,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	}
 
 	@Override
-	public BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList,Integer tenantId) {
-		return baseMapper.homeOne(first, now, cardIdList,tenantId);
+	public BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId) {
+		return baseMapper.homeOne(first, now, cardIdList, tenantId);
 	}
 
 	@Override
-	public List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList,Integer tenantId) {
-		return baseMapper.homeTwo(startTimeMilliDay, endTimeMilliDay, cardIdList,tenantId);
+	public List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId) {
+		return baseMapper.homeTwo(startTimeMilliDay, endTimeMilliDay, cardIdList, tenantId);
 	}
 
 	@Override
@@ -443,7 +447,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		return R.ok(baseMapper.getMemberCardOrderCount(uid, startTime, endTime));
 	}
 
-
 	@Override
 	@DS("slave_1")
 	public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
@@ -454,7 +457,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	public void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response) {
 		memberCardOrderQuery.setOffset(0L);
 		memberCardOrderQuery.setSize(2000L);
-		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList =baseMapper.queryList(memberCardOrderQuery);
+		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList = baseMapper.queryList(memberCardOrderQuery);
 		if (ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
 			throw new CustomBusinessException("查不到订单");
 		}

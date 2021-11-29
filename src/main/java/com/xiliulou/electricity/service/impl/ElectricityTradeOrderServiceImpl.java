@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.CommonPayOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
@@ -14,6 +15,7 @@ import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
+import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.UserCoupon;
@@ -21,6 +23,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
 import com.xiliulou.electricity.service.FranchiseeAmountService;
@@ -30,6 +33,7 @@ import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareActivityRecordService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
+import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
@@ -104,6 +108,10 @@ public class ElectricityTradeOrderServiceImpl extends
 	JoinShareMoneyActivityHistoryService joinShareMoneyActivityHistoryService;
 	@Autowired
 	ShareMoneyActivityService shareMoneyActivityService;
+	@Autowired
+	ElectricityMemberCardService electricityMemberCardService;
+	@Autowired
+	OldUserActivityService oldUserActivityService;
 
 	@Override
 	public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -211,6 +219,34 @@ public class ElectricityTradeOrderServiceImpl extends
 
 		//用户月卡
 		if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+
+			//查看月卡是否绑定活动
+			ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrder.getMemberCardId());
+
+			if (Objects.nonNull(electricityMemberCard)) {
+
+				//月卡是否绑定活动
+				if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
+					OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCard.getActivityId());
+
+					if (Objects.nonNull(oldUserActivity)) {
+
+						//次数
+						if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT)&&Objects.nonNull(oldUserActivity.getCount())) {
+							remainingNumber=remainingNumber+oldUserActivity.getCount();
+						}
+
+						//优惠券
+						if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON)&&Objects.nonNull(oldUserActivity.getCouponId())) {
+							//发放优惠券
+							Long[] uids=new Long[1];
+							uids[0]=electricityMemberCardOrder.getUid();
+							userCouponService.batchRelease(oldUserActivity.getCouponId(),uids);
+						}
+					}
+				}
+			}
+
 			FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
 			franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
 			if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
@@ -247,50 +283,50 @@ public class ElectricityTradeOrderServiceImpl extends
 			//是否是新用户
 			/*if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
 					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {*/
-				//是否有人邀请
-				JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
-				if (Objects.nonNull(joinShareActivityRecord)) {
-					//修改邀请状态
-					joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
-					joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
-					joinShareActivityRecordService.update(joinShareActivityRecord);
+			//是否有人邀请
+			JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
+			if (Objects.nonNull(joinShareActivityRecord)) {
+				//修改邀请状态
+				joinShareActivityRecord.setStatus(JoinShareActivityRecord.STATUS_SUCCESS);
+				joinShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+				joinShareActivityRecordService.update(joinShareActivityRecord);
 
-					//修改历史记录状态
-					JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
-					if (Objects.nonNull(oldJoinShareActivityHistory)) {
-						oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
-						oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
-						joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
-					}
-
-					//给邀请人增加邀请成功人数
-					shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+				//修改历史记录状态
+				JoinShareActivityHistory oldJoinShareActivityHistory = joinShareActivityHistoryService.queryByRecordIdAndStatus(joinShareActivityRecord.getId());
+				if (Objects.nonNull(oldJoinShareActivityHistory)) {
+					oldJoinShareActivityHistory.setStatus(JoinShareActivityHistory.STATUS_SUCCESS);
+					oldJoinShareActivityHistory.setUpdateTime(System.currentTimeMillis());
+					joinShareActivityHistoryService.update(oldJoinShareActivityHistory);
 				}
 
-				//是否有人返现邀请
-				JoinShareMoneyActivityRecord joinShareMoneyActivityRecord =joinShareMoneyActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
-				if(Objects.nonNull(joinShareMoneyActivityRecord)){
-					//修改邀请状态
-					joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
-					joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
-					joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
+				//给邀请人增加邀请成功人数
+				shareActivityRecordService.addCountByUid(joinShareActivityRecord.getUid());
+			}
 
-					//修改历史记录状态
-					JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory=joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
-					if(Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
-						oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
-						oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
-						joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
-					}
+			//是否有人返现邀请
+			JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = joinShareMoneyActivityRecordService.queryByJoinUid(electricityMemberCardOrder.getUid());
+			if (Objects.nonNull(joinShareMoneyActivityRecord)) {
+				//修改邀请状态
+				joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_SUCCESS);
+				joinShareMoneyActivityRecord.setUpdateTime(System.currentTimeMillis());
+				joinShareMoneyActivityRecordService.update(joinShareMoneyActivityRecord);
 
-					ShareMoneyActivity shareMoneyActivity= shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
+				//修改历史记录状态
+				JoinShareMoneyActivityHistory oldJoinShareMoneyActivityHistory = joinShareMoneyActivityHistoryService.queryByRecordIdAndStatus(joinShareMoneyActivityRecord.getId());
+				if (Objects.nonNull(oldJoinShareMoneyActivityHistory)) {
+					oldJoinShareMoneyActivityHistory.setStatus(JoinShareMoneyActivityHistory.STATUS_SUCCESS);
+					oldJoinShareMoneyActivityHistory.setUpdateTime(System.currentTimeMillis());
+					joinShareMoneyActivityHistoryService.update(oldJoinShareMoneyActivityHistory);
+				}
 
-					if(Objects.nonNull(shareMoneyActivity)){
-						//给邀请人增加邀请成功人数
-						shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney());
-					}
+				ShareMoneyActivity shareMoneyActivity = shareMoneyActivityService.queryByIdFromCache(joinShareMoneyActivityRecord.getActivityId());
 
-					//返现 TODO
+				if (Objects.nonNull(shareMoneyActivity)) {
+					//给邀请人增加邀请成功人数
+					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+				}
+
+				//返现 TODO
 				/*}*/
 
 			}
@@ -326,7 +362,6 @@ public class ElectricityTradeOrderServiceImpl extends
 		String tradeState = callBackResource.getTradeState();
 		String transactionId = callBackResource.getTransactionId();
 
-
 		//系统订单
 		ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
 		if (Objects.isNull(electricityTradeOrder)) {
@@ -337,7 +372,6 @@ public class ElectricityTradeOrderServiceImpl extends
 			log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO:{}", tradeOrderNo);
 			return Pair.of(false, "交易订单已处理");
 		}
-
 
 		//押金订单
 		EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(electricityTradeOrder.getOrderNo());
@@ -361,7 +395,6 @@ public class ElectricityTradeOrderServiceImpl extends
 		} else {
 			log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
 		}
-
 
 		//用户
 		UserInfo userInfo = userInfoService.selectUserByUid(eleDepositOrder.getUid());
@@ -393,7 +426,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
 			franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
 
-			if(Objects.equals(eleDepositOrder.getModelType(),Franchisee.MEW_MODEL_TYPE)){
+			if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
 				franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
 			}
 			franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
@@ -438,7 +471,7 @@ public class ElectricityTradeOrderServiceImpl extends
 		if (percent1 < 0 || percent1 > 100) {
 			log.error("ELE ORDER ERROR! franchisee split percent is illegal! franchiseeId={},percent={}", franchisee.getId(), percent1);
 		} else {
-			franchiseeAmountService.handleSplitAccount(franchisee,electricityMemberCardOrder, percent1);
+			franchiseeAmountService.handleSplitAccount(franchisee, electricityMemberCardOrder, percent1);
 		}
 
 		//门店分账
@@ -453,7 +486,7 @@ public class ElectricityTradeOrderServiceImpl extends
 			if (percent2 < 0 || percent2 > 100) {
 				log.error("ELE ORDER ERROR! store split percent is illegal! storeId={},percent={}", store.getId(), percent2);
 			} else {
-				storeAmountService.handleSplitAccount(store,electricityMemberCardOrder, percent2);
+				storeAmountService.handleSplitAccount(store, electricityMemberCardOrder, percent2);
 			}
 		}
 	}
