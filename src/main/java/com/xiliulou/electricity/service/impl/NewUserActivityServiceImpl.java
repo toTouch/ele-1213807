@@ -272,5 +272,15 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		return R.ok(newUserActivity);
 	}
 
+	@Override
+	public NewUserActivity queryActivity() {
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
+				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
+
+		return newUserActivity;
+	}
+
 }
 

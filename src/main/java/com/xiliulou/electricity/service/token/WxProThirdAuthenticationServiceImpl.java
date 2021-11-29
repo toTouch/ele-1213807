@@ -14,7 +14,9 @@ import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.EleUserAuthOld;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.OldCard;
+import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoOld;
@@ -23,7 +25,9 @@ import com.xiliulou.electricity.service.EleUserAuthOldService;
 import com.xiliulou.electricity.service.EleUserAuthService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.NewUserActivityService;
 import com.xiliulou.electricity.service.OldCardService;
+import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoOldService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
@@ -101,6 +105,12 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 	@Autowired
 	OldCardService oldCardService;
+
+	@Autowired
+	NewUserActivityService newUserActivityService;
+
+	@Autowired
+	UserCouponService userCouponService;
 
 	@Override
 	public SecurityUser registerUserAndLoadUser(HashMap<String, Object> authMap) {
@@ -417,6 +427,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.build();
 		UserInfo userInfo = userInfoService.insert(insertUserInfo);
 
+
 		FranchiseeUserInfo insertFranchiseeUserInfo = FranchiseeUserInfo.builder()
 				.userInfoId(userInfo.getId())
 				.updateTime(System.currentTimeMillis())
@@ -425,11 +436,37 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				.delFlag(User.DEL_NORMAL)
 				.tenantId(tenantId)
 				.build();
+
+
+		//参加新用户活动
+		NewUserActivity newUserActivity=newUserActivityService.queryActivity();
+		if(Objects.nonNull(newUserActivity)){
+
+
+			//次数
+			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUNT)
+					&& Objects.nonNull(newUserActivity.getCount())&&Objects.nonNull(newUserActivity.getDays())) {
+				insertFranchiseeUserInfo.setRemainingNumber(newUserActivity.getCount().longValue());
+				insertFranchiseeUserInfo.setMemberCardExpireTime(newUserActivity.getDays()* (24 * 60 * 60 * 1000L));
+			}
+
+
+			//优惠券
+			if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON) && Objects.nonNull(newUserActivity.getCouponId())) {
+				//发放优惠券
+				Long[] uids = new Long[1];
+				uids[0] = insert.getUid();
+				userCouponService.batchRelease(newUserActivity.getCouponId(), uids);
+			}
+		}
+
+
 		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.insert(insertFranchiseeUserInfo);
 
 		//用户迁移数据则进行迁移
 
 		moveUser(insertUserInfo, franchiseeUserInfo);
+
 
 		return createSecurityUser(insertUser, oauthBind);
 	}
