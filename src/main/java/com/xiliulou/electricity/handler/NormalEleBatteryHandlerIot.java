@@ -240,7 +240,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             return false;
         }
 
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId())) {
+        if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
             log.error("ele battery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
             electricityCabinetBox.setSn("UNKNOW"+electricityBattery.getSn());
             electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
