@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
+import com.xiliulou.electricity.query.UserAmountQuery;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -44,4 +45,8 @@ public interface UserAmountService {
     R queryByUid();
 
     void handleAmount(Long uid, BigDecimal money,Integer tenantId);
+
+    R queryList(UserAmountQuery userAmountQuery);
+
+    R queryCount(UserAmountQuery userAmountQuery);
 }

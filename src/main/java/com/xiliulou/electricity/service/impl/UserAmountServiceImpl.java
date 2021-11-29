@@ -5,10 +5,12 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.mapper.UserAmountMapper;
+import com.xiliulou.electricity.query.UserAmountQuery;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.UserAmountVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -98,5 +101,17 @@ public class UserAmountServiceImpl implements UserAmountService {
 		userAmountHistory.setCreateTime(System.currentTimeMillis());
 		userAmountHistory.setTenantId(userAmount.getTenantId());
 		userAmountHistoryService.insert(userAmountHistory);
+	}
+
+	@Override
+	public R queryList(UserAmountQuery userAmountQuery) {
+		List<UserAmountVO> userAmountVOList=userAmountMapper.queryList(userAmountQuery);
+		return R.ok(userAmountVOList);
+	}
+
+	@Override
+	public R queryCount(UserAmountQuery userAmountQuery) {
+		Integer count=userAmountMapper.queryCount(userAmountQuery);
+		return R.ok(count);
 	}
 }
