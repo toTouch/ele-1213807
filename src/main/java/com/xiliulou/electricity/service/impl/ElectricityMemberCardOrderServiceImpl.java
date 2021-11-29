@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.annotation.Resource;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -84,6 +85,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	ShareMoneyActivityService shareMoneyActivityService;
 	@Autowired
 	OldUserActivityService oldUserActivityService;
+	@Autowired
+	UserAmountService userAmountService;
 
 	/**
 	 * 创建月卡订单
@@ -386,7 +389,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
 				}
 
-				//返现 TODO
+				//返现
+				userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney(),electricityMemberCardOrder.getTenantId());
 
 				/*}*/
 			}

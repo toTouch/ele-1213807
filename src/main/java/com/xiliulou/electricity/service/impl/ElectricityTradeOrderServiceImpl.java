@@ -111,7 +111,7 @@ public class ElectricityTradeOrderServiceImpl extends
 	ElectricityMemberCardService electricityMemberCardService;
 	@Autowired
 	OldUserActivityService oldUserActivityService;
-	@Resource
+	@Autowired
 	UserAmountService userAmountService;
 
 	@Override
@@ -326,7 +326,7 @@ public class ElectricityTradeOrderServiceImpl extends
 					//给邀请人增加邀请成功人数
 					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
 
-					//返现 TODO
+					//返现
 					userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney(),electricityMemberCardOrder.getTenantId());
 
 				}
