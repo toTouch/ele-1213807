@@ -26,6 +26,8 @@ public class UserAmountHistory {
     @TableId(value = "id",type = IdType.AUTO)
     private Long id;
 
+    private Long uid;
+
     /**
      * 收益来源 1--邀人返现
      */

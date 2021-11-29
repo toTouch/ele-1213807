@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -16,10 +17,10 @@ public interface UserAmountService {
     /**
      * 通过ID查询单条数据从数据库
      *
-     * @param id 主键
+     * @param uid 主键
      * @return 实例对象
      */
-    UserAmount queryByAgentFromDB(Long id);
+    UserAmount queryByUid(Long uid);
 
 
 
@@ -42,4 +43,5 @@ public interface UserAmountService {
 
     R queryByUid();
 
+    void handleAmount(Long uid, BigDecimal money,Integer tenantId);
 }

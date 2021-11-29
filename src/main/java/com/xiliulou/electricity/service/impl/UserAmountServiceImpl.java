@@ -3,14 +3,19 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserAmount;
+import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.mapper.UserAmountMapper;
+import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -26,20 +31,25 @@ public class UserAmountServiceImpl implements UserAmountService {
 	@Resource
 	UserAmountMapper userAmountMapper;
 
+	@Autowired
+	UserAmountHistoryService userAmountHistoryService;
 
 	@Override
-	public UserAmount queryByAgentFromDB(Long id) {
-		return null;
+	public UserAmount queryByUid(Long uid) {
+		return userAmountMapper.selectOne(new LambdaQueryWrapper<UserAmount>().eq(UserAmount::getUid, uid)
+				.eq(UserAmount::getDelFlg, UserAmount.DEL_NORMAL));
 	}
 
 	@Override
 	public UserAmount insert(UserAmount userAmount) {
-		return null;
+		userAmountMapper.insert(userAmount);
+		return userAmount;
 	}
 
 	@Override
 	public Integer update(UserAmount userAmount) {
-		return null;
+		Integer update=userAmountMapper.updateById(userAmount);
+		return update;
 	}
 
 	@Override
@@ -52,7 +62,41 @@ public class UserAmountServiceImpl implements UserAmountService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		UserAmount userAmount=userAmountMapper.selectOne(new LambdaQueryWrapper<UserAmount>().eq(UserAmount::getUid,user.getUid()));
+		UserAmount userAmount = userAmountMapper.selectOne(new LambdaQueryWrapper<UserAmount>().eq(UserAmount::getUid, user.getUid()));
 		return R.ok(userAmount);
+	}
+
+	@Override
+	public void handleAmount(Long uid, BigDecimal money,Integer tenantId) {
+
+
+		UserAmount userAmount=queryByUid(uid);
+		if(Objects.isNull(userAmount)){
+			userAmount=new UserAmount();
+			userAmount.setUid(uid);
+			userAmount.setBalance(money);
+			userAmount.setTotalIncome(money);
+			userAmount.setTenantId(tenantId);
+			userAmount.setCreateTime(System.currentTimeMillis());
+			userAmount.setUpdateTime(System.currentTimeMillis());
+			insert(userAmount);
+
+
+		}else {
+
+			userAmount.setBalance(userAmount.getBalance().add(money));
+			userAmount.setTotalIncome(userAmount.getTotalIncome().add(money));
+			userAmount.setUpdateTime(System.currentTimeMillis());
+			update(userAmount);
+		}
+
+		//新增余额流水
+		UserAmountHistory userAmountHistory=new UserAmountHistory();
+		userAmountHistory.setType(UserAmountHistory.TYPE_SHARE_ACTIVITY);
+		userAmountHistory.setUid(uid);
+		userAmountHistory.setAmount(money);
+		userAmountHistory.setCreateTime(System.currentTimeMillis());
+		userAmountHistory.setTenantId(userAmount.getTenantId());
+		userAmountHistoryService.insert(userAmountHistory);
 	}
 }

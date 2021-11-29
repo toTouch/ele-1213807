@@ -39,6 +39,7 @@ import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
@@ -70,8 +71,6 @@ import java.util.Objects;
 public class ElectricityTradeOrderServiceImpl extends
 		ServiceImpl<ElectricityTradeOrderMapper, ElectricityTradeOrder> implements ElectricityTradeOrderService {
 
-	@Autowired
-	ElectricityPayParamsService electricityPayParamsService;
 	@Resource
 	ElectricityMemberCardOrderMapper electricityMemberCardOrderMapper;
 	@Autowired
@@ -112,6 +111,8 @@ public class ElectricityTradeOrderServiceImpl extends
 	ElectricityMemberCardService electricityMemberCardService;
 	@Autowired
 	OldUserActivityService oldUserActivityService;
+	@Resource
+	UserAmountService userAmountService;
 
 	@Override
 	public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -324,9 +325,12 @@ public class ElectricityTradeOrderServiceImpl extends
 				if (Objects.nonNull(shareMoneyActivity)) {
 					//给邀请人增加邀请成功人数
 					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
+
+					//返现 TODO
+					userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney(),electricityMemberCardOrder.getTenantId());
+
 				}
 
-				//返现 TODO
 				/*}*/
 
 			}
