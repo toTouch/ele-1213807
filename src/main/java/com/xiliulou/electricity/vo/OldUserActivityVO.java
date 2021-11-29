@@ -36,11 +36,11 @@ public class OldUserActivityVO {
     /**
      * 活动开始时间
      */
-    private Integer beginTime;
+    private Long beginTime;
     /**
      * 活动结束时间
      */
-    private Integer endTime;
+    private Long endTime;
     /**
      * 奖励类型，1--次数，2--优惠券
      */
