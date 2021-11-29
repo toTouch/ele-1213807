@@ -10,11 +10,13 @@ import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.NewUserActivityQuery;
 import com.xiliulou.electricity.service.CouponService;
 import com.xiliulou.electricity.service.NewUserActivityService;
+import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -48,6 +50,9 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 	@Autowired
 	CouponService couponService;
+
+	@Autowired
+	UserService userService;
 
 	/**
 	 * 通过ID查询单条数据从缓存
@@ -242,6 +247,27 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+		//用户
+		Long uid = SecurityUtils.getUid();
+		if (Objects.isNull(uid)) {
+			log.error("queryNewUserActivity  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+
+		//查询用户注册时间，超过一分钟非注册登录则不弹出
+		User user=userService.queryByUidFromCache(uid);
+		if (Objects.isNull(user)) {
+			log.error("queryNewUserActivity  ERROR! not found user ! uid:{}",uid);
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+
+		if(user.getCreateTime()+60*1000L<System.currentTimeMillis()){
+			log.error("USER NOT NEW USER ! uid:{}",uid);
+			return R.ok();
+		}
+
 
 		NewUserActivity newUserActivity = newUserActivityMapper.selectOne(new LambdaQueryWrapper<NewUserActivity>()
 				.eq(NewUserActivity::getTenantId, tenantId).eq(NewUserActivity::getStatus, NewUserActivity.STATUS_ON));
@@ -249,6 +275,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 			log.error("queryInfo Activity  ERROR! not found Activity !  tenantId:{} ", tenantId);
 			return R.ok();
 		}
+
 
 		if (Objects.equals(newUserActivity.getDiscountType(), NewUserActivity.TYPE_COUPON)) {
 			if (Objects.isNull(newUserActivity.getCouponId())) {
