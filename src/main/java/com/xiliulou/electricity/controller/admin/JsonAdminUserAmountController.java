@@ -61,7 +61,7 @@ public class JsonAdminUserAmountController {
 	 * 用户余额列表
 	 */
 	@GetMapping(value = "/admin/userAmount/queryCount")
-	public R queryCount(@RequestParam("phone") String phone) {
+	public R queryCount(@RequestParam(value = "phone", required = false) String phone) {
 
 
 		//租户
