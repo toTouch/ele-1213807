@@ -35,7 +35,7 @@ public class JsonUserAmountHistoryController {
 	 * 用户邀请记录
 	 */
 	@GetMapping(value = "/user/userAmountHistory/list")
-	public R joinActivity(@RequestParam("size") Long size,
+	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset) {
 		if (size < 0 || size > 50) {
 			size = 10L;

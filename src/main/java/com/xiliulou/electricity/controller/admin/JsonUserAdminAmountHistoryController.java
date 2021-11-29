@@ -32,7 +32,7 @@ public class JsonUserAdminAmountHistoryController {
 	 * 用户邀请记录
 	 */
 	@GetMapping(value = "/admin/userAmountHistory/list")
-	public R joinActivity(@RequestParam("size") Long size,
+	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "uid", required = false) Long uid) {
 		if (size < 0 || size > 50) {
@@ -53,6 +53,23 @@ public class JsonUserAdminAmountHistoryController {
 				.tenantId(tenantId)
 				.uid(uid).build();
 		return userAmountHistoryService.queryList(userAmountHistoryQuery);
+	}
+
+
+	/**
+	 * 用户邀请记录
+	 */
+	@GetMapping(value = "/admin/userAmountHistory/queryCount")
+	public R queryCount(@RequestParam(value = "uid", required = false) Long uid) {
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
+		UserAmountHistoryQuery userAmountHistoryQuery = UserAmountHistoryQuery.builder()
+				.tenantId(tenantId)
+				.uid(uid).build();
+		return userAmountHistoryService.queryCount(userAmountHistoryQuery);
 	}
 
 }
