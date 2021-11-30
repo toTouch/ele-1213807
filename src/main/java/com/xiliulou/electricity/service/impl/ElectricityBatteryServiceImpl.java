@@ -74,6 +74,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	FranchiseeService franchiseeService;
 	@Autowired
 	ElectricityPayParamsService electricityPayParamsService;
+	@Autowired
+	TemplateConfigService templateConfigService;
 
 
 	/**
@@ -298,6 +300,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 				WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
 				if (Objects.isNull(wechatTemplateAdminNotification)) {
+					log.error("WECHAT_TEMPLATE_ADMIN_NOTIFICATION IS NULL ERROR! tenantId={}", tenantId);
 					return;
 				}
 
@@ -307,12 +310,20 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				ElectricityPayParams ele = mapper.selectOne(wrapper);
 
 				if (Objects.isNull(ele)) {
+					log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
+					return;
+				}
+
+				TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
+
+				if(Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())){
+					log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
 					return;
 				}
 
 				String openStr = wechatTemplateAdminNotification.getOpenIds();
 				List<String> openIds = JSON.parseArray(openStr, String.class);
-				AppTemplateQuery appTemplateQuery = createAppTemplateQuery(batteryList, tenantId, ele.getMerchantMinProAppId(), ele.getMerchantMinProAppSecert());
+				AppTemplateQuery appTemplateQuery = createAppTemplateQuery(batteryList, tenantId, ele.getMerchantMinProAppId(), ele.getMerchantMinProAppSecert(), templateConfigEntity.getBatteryOuttimeTemplate());
 
 				if (CollectionUtils.isNotEmpty(openIds)) {
 					for (String openId : openIds) {
@@ -327,12 +338,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 
 
-	private AppTemplateQuery createAppTemplateQuery(List<ElectricityBattery> batteryList, Integer tenantId, String appId, String appSecret){
+	private AppTemplateQuery createAppTemplateQuery(List<ElectricityBattery> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate){
 		AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
 		appTemplateQuery.setAppId(appId);
 		appTemplateQuery.setSecret(appSecret);
 		//appTemplateQuery.setTouser(openId);
-		appTemplateQuery.setTemplateId(wechatTemplateAdminNotificationConfig.getTemplateId());
+		appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
 		appTemplateQuery.setFormId(RandomUtil.randomString(20));
 		//TODO 这块写个页面 调用 user/battery/outTime/Info
 		appTemplateQuery.setPage("xxxxx?tenantId"+tenantId);
