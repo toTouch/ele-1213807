@@ -126,4 +126,8 @@ public interface ElectricityCabinetConstant {
      */
     String CACHE_ADMIN_NOTIFICATION = "cache_admin_notification:";
     String CACHE_ADMIN_ALREADY_NOTIFICATION = "cache_admin_already_notification:";
+    /**
+     * 租户模板通知缓存
+     */
+    String CACHE_TEMPLATE_CONFIG = "cache_template_config:";
 }
