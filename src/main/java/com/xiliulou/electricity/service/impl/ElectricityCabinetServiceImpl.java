@@ -35,6 +35,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -60,42 +61,44 @@ import java.util.stream.Collectors;
 @Service("electricityCabinetService")
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
-    @Resource
-    private ElectricityCabinetMapper electricityCabinetMapper;
-    @Autowired
-    ElectricityCabinetModelService electricityCabinetModelService;
-    @Autowired
-    RedisService redisService;
-    @Autowired
-    ElectricityCabinetBoxService electricityCabinetBoxService;
-    @Autowired
-    ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    UserInfoService userInfoService;
-    @Autowired
-    ElectricityMemberCardOrderService electricityMemberCardOrderService;
-    @Autowired
-    ElectricityCabinetOrderService electricityCabinetOrderService;
-    @Autowired
-    StoreService storeService;
-    @Autowired
-    PubHardwareService pubHardwareService;
-    @Autowired
-    EleHardwareHandlerManager eleHardwareHandlerManager;
-    @Autowired
-    ElectricityConfigService electricityConfigService;
-    @Autowired
-    UserTypeFactory userTypeFactory;
-    @Autowired
-    FranchiseeService franchiseeService;
-    @Autowired
-    ElectricityMemberCardService electricityMemberCardService;
-    @Autowired
-    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-    @Autowired
-    FranchiseeUserInfoService franchiseeUserInfoService;
-    @Autowired
-    RentBatteryOrderService rentBatteryOrderService;
+	@Resource
+	private ElectricityCabinetMapper electricityCabinetMapper;
+	@Autowired
+	ElectricityCabinetModelService electricityCabinetModelService;
+	@Autowired
+	RedisService redisService;
+	@Autowired
+	ElectricityCabinetBoxService electricityCabinetBoxService;
+	@Autowired
+	ElectricityBatteryService electricityBatteryService;
+	@Autowired
+	UserInfoService userInfoService;
+	@Autowired
+	ElectricityMemberCardOrderService electricityMemberCardOrderService;
+	@Autowired
+	ElectricityCabinetOrderService electricityCabinetOrderService;
+	@Autowired
+	StoreService storeService;
+	@Autowired
+	PubHardwareService pubHardwareService;
+	@Autowired
+	EleHardwareHandlerManager eleHardwareHandlerManager;
+	@Autowired
+	ElectricityConfigService electricityConfigService;
+	@Autowired
+	UserTypeFactory userTypeFactory;
+	@Autowired
+	FranchiseeService franchiseeService;
+	@Autowired
+	ElectricityMemberCardService electricityMemberCardService;
+	@Autowired
+	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+	@Autowired
+	FranchiseeUserInfoService franchiseeUserInfoService;
+	@Autowired
+	RentBatteryOrderService rentBatteryOrderService;
+	@Autowired
+	BatteryOtherPropertiesService batteryOtherPropertiesService;
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 
@@ -360,12 +363,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     e.setModelName(electricityCabinetModel.getName());
                 }
 
-                //查满仓空仓数
-                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
-                int electricityBatteryTotal = 0;
-                int noElectricityBattery = 0;
-                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
-                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+				//查满仓空仓数
+				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
+				int electricityBatteryTotal = 0;
+				int noElectricityBattery = 0;
+				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+				if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
                     //空仓
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
@@ -1579,25 +1582,33 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok();
         }
 
-        //修改电池
-        ElectricityBattery newElectricityBattery = new ElectricityBattery();
-        newElectricityBattery.setId(electricityBattery.getId());
-        Double power = batteryReportQuery.getPower();
-        if (Objects.nonNull(power)) {
-            newElectricityBattery.setPower(power);
-        }
-        Double latitude = batteryReportQuery.getLatitude();
-        if (Objects.nonNull(latitude)) {
-            newElectricityBattery.setLatitude(latitude);
-        }
-        Double longitude = batteryReportQuery.getLongitude();
-        if (Objects.nonNull(longitude)) {
-            newElectricityBattery.setLongitude(longitude);
-        }
-        electricityBattery.setUpdateTime(System.currentTimeMillis());
-        electricityBatteryService.update(newElectricityBattery);
-        return R.ok();
-    }
+		//修改电池
+		ElectricityBattery newElectricityBattery = new ElectricityBattery();
+		newElectricityBattery.setId(electricityBattery.getId());
+		Double power = batteryReportQuery.getPower();
+		if (Objects.nonNull(power)) {
+			newElectricityBattery.setPower(power);
+		}
+		Double latitude = batteryReportQuery.getLatitude();
+		if (Objects.nonNull(latitude)) {
+			newElectricityBattery.setLatitude(latitude);
+		}
+		Double longitude = batteryReportQuery.getLongitude();
+		if (Objects.nonNull(longitude)) {
+			newElectricityBattery.setLongitude(longitude);
+		}
+		electricityBattery.setUpdateTime(System.currentTimeMillis());
+		electricityBatteryService.update(newElectricityBattery);
+
+		//电池上报是否有其他信息
+		if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
+			BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
+			batteryOtherProperties.setBatteryName(batteryName);
+			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+		}
+
+		return R.ok();
+	}
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);

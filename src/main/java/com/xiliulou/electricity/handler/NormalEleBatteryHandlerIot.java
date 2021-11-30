@@ -4,11 +4,14 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.BatteryOtherProperties;
+import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -21,6 +24,7 @@ import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -37,14 +41,14 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
-    @Autowired
-    ElectricityCabinetService electricityCabinetService;
-    @Autowired
-    ElectricityBatteryService electricityBatteryService;
-    @Autowired
-    ElectricityCabinetBoxService electricityCabinetBoxService;
-    @Autowired
-    RedisService redisService;
+	@Autowired
+	ElectricityCabinetService electricityCabinetService;
+	@Autowired
+	ElectricityBatteryService electricityBatteryService;
+	@Autowired
+	ElectricityCabinetBoxService electricityCabinetBoxService;
+	@Autowired
+	RedisService redisService;
 
     @Autowired
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
@@ -52,9 +56,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
     @Autowired
     StoreService storeService;
 
+    @Autowired
+    BatteryOtherPropertiesService batteryOtherPropertiesService;
 
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
-    public static final String IRON_LITHIUM = "IRON_LITHIUM";
+	public static final String IRON_LITHIUM = "IRON_LITHIUM";
+
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -175,12 +182,12 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         }
 
 
-        //根据电池查询仓门类型
-        if (Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel()) && eleBatteryVo.getIsMultiBatteryModel()) {
-            String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
-            electricityCabinetBox.setBatteryType(batteryModel);
-            newElectricityBattery.setModel(batteryModel);
-        }
+		//根据电池查询仓门类型
+		if(Objects.nonNull(eleBatteryVo.getIsMultiBatteryModel())&&eleBatteryVo.getIsMultiBatteryModel()) {
+			String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
+			electricityCabinetBox.setBatteryType(batteryModel);
+			newElectricityBattery.setModel(batteryModel);
+		}
 
         //修改电池
         newElectricityBattery.setId(electricityBattery.getId());
@@ -204,22 +211,33 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         electricityBatteryService.updateByOrder(newElectricityBattery);
 
 
-        //比较最大电量，保证仓门电池是最大电量的电池
-        if (Objects.isNull(eleBatteryVo.getIsMultiBatteryModel()) || !eleBatteryVo.getIsMultiBatteryModel()) {
-            Double nowPower = eleBatteryVo.getPower();
-            BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
-            newBigEleBatteryVo.setCellNo(cellNo);
-            if (Objects.isNull(bigEleBatteryVo)) {
-                newBigEleBatteryVo.setPower(nowPower);
-                redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
-            } else {
-                Double oldPower = bigEleBatteryVo.getPower();
-                if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
-                    newBigEleBatteryVo.setPower(nowPower);
-                    redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
-                }
-            }
-        }
+		//电池上报是否有其他信息
+		if(Objects.nonNull(eleBatteryVo.getHasOtherAttr())&&eleBatteryVo.getHasOtherAttr()){
+			BatteryOtherPropertiesQuery batteryOtherPropertiesQuery=eleBatteryVo.getBatteryOtherProperties();
+			BatteryOtherProperties batteryOtherProperties=new BatteryOtherProperties();
+			BeanUtils.copyProperties(batteryOtherPropertiesQuery,batteryOtherProperties);
+			batteryOtherProperties.setBatteryName(batteryName);
+			batteryOtherProperties.setBatteryCoreVList(JsonUtil.toJson(batteryOtherPropertiesQuery.getBatteryCoreVList()));
+			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+		}
+
+
+		//比较最大电量，保证仓门电池是最大电量的电池
+		if(Objects.isNull(eleBatteryVo.getIsMultiBatteryModel())||!eleBatteryVo.getIsMultiBatteryModel()) {
+			Double nowPower = eleBatteryVo.getPower();
+			BigEleBatteryVo newBigEleBatteryVo = new BigEleBatteryVo();
+			newBigEleBatteryVo.setCellNo(cellNo);
+			if (Objects.isNull(bigEleBatteryVo)) {
+				newBigEleBatteryVo.setPower(nowPower);
+				redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+			} else {
+				Double oldPower = bigEleBatteryVo.getPower();
+				if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
+					newBigEleBatteryVo.setPower(nowPower);
+					redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+				}
+			}
+		}
 
 
         //修改仓门
@@ -307,6 +325,10 @@ class EleBatteryVo {
     private Boolean existsBattery;
 
     private Boolean isMultiBatteryModel;
+
+	private Boolean hasOtherAttr;
+
+	private BatteryOtherPropertiesQuery batteryOtherProperties;
 
 }
 

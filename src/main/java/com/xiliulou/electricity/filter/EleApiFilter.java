@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 @Component()
 @Order(101)
 public class EleApiFilter extends ApiFilter{
-	static final String CUPBOARD_URL = "/outer/api/ele";
+	static final String CUPBOARD_URL = "/outer/api/**";
 	@Autowired
 	TenantAppInfoService tenantAppInfoService;
 

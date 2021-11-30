@@ -23,26 +23,21 @@ public class ApiReturnOrderVo {
      * 柜机productkey
      */
     private String productKey;
+
     /**
-     * 放入的电池编号
+     * 归还的电池编号
      */
-    private String putBatterySn;
-    /**
-     * 取走的电池编号
-     */
-    private String takeBatterySn;
+    private String batterySn;
+
     /**
      * 电池类型
      */
     private String batteryType;
     /**
-     * 放入电池的仓门
+     * 柜门号
      */
-    private Integer putCellNo;
-    /**
-     * 取走的电池编号
-     */
-    private Integer takeCellNo;
+    private Integer cellNo;
+
     /**
      * 订单状态
      */
