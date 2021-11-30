@@ -20,11 +20,11 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1) from t_franchisee_split_account_history
         <where>
-            <if test="startTime != null">
-                and create_time &gt;= #{startTime}
+            <if test="uid != null ">
+                and uid = #{uid}
             </if>
-            <if test="endTime != null">
-                and create_time &lt;= #{endTime}
+            <if test="tenantId != null ">
+                and tenant_id = #{tenantId}
             </if>
         </where>
     </select>
