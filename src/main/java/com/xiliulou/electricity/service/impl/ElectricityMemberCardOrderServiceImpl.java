@@ -344,8 +344,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 			//被邀请新买月卡用户
 			//是否是新用户
-			/*if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {*/
+			if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+					|| Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
 			//是否有人邀请
 			JoinShareActivityRecord joinShareActivityRecord = joinShareActivityRecordService.queryByJoinUid(user.getUid());
 			if (Objects.nonNull(joinShareActivityRecord)) {
@@ -392,7 +392,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 				//返现
 				userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney(),electricityMemberCardOrder.getTenantId());
 
-				/*}*/
+				}
 			}
 
 			return R.ok();
