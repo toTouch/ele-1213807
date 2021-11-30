@@ -112,23 +112,6 @@ public class TenantServiceImpl implements TenantService {
         tenantMapper.insert(tenant);
 
 
-
-        AdminUserQuery adminUserQuery=new AdminUserQuery();
-        adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
-        adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
-        adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
-        adminUserQuery.setGender(User.GENDER_MALE);
-        adminUserQuery.setUserType(User.TYPE_USER_OPERATE);
-        adminUserQuery.setLang(User.DEFAULT_LANG);
-        adminUserQuery.setCityId(null);
-        adminUserQuery.setProvinceId(null);
-        TenantContextHolder.setTenantId(tenant.getId());
-        R result= userService.addInnerUser(adminUserQuery);
-        if(result.getCode()==1){
-            return result;
-        }
-
-
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
         operateRole.setName(ElectricityCabinetConstant.OPERATE_NAME);
@@ -156,6 +139,24 @@ public class TenantServiceImpl implements TenantService {
         });
 
 
+        //新增用户
+        AdminUserQuery adminUserQuery=new AdminUserQuery();
+        adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
+        adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
+        adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
+        adminUserQuery.setGender(User.GENDER_MALE);
+        adminUserQuery.setUserType(User.TYPE_USER_OPERATE);
+        adminUserQuery.setLang(User.DEFAULT_LANG);
+        adminUserQuery.setCityId(null);
+        adminUserQuery.setProvinceId(null);
+        TenantContextHolder.setTenantId(tenant.getId());
+        R result= userService.addInnerUser(adminUserQuery);
+        if(result.getCode()==1){
+            return result;
+        }
+
+
+
         //5.角色赋予权限
         List<RolePermission> operateRolePermission = permissionConfig.getOperator().parallelStream().map(item -> {
             RolePermission operatorRP = new RolePermission();
@@ -181,19 +182,6 @@ public class TenantServiceImpl implements TenantService {
             return shopRP;
         }).collect(Collectors.toList());
         rolePermissionList.addAll(storeRolePermission);
-
-
-        permissionConfig.getAlliance().forEach(item -> {
-            RolePermission allianceRP = new RolePermission();
-            allianceRP.setPId(item);
-            allianceRP.setRoleId(franchiseeRole.getId());
-            rolePermissionList.add(allianceRP);
-        });
-        permissionConfig.getShop().forEach(item -> {
-            RolePermission shopRP = new RolePermission();
-            shopRP.setPId(item);
-            shopRP.setRoleId(storeRole.getId());
-        });
 
 
         rolePermissionList.parallelStream().forEach(e -> {
