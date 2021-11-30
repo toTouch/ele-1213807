@@ -58,6 +58,8 @@ public class ElectricityBattery {
 
     private Long updateTime;
 
+    private Long borrowExpireTime;
+
     private Integer delFlag;
 
 

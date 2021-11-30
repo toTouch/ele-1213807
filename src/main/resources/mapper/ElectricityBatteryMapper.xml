@@ -82,6 +82,13 @@
 
 
 
+	<select id="queryBorrowExpireBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+        select id, sn, voltage, capacity,status, create_time, update_time,tenant_id,
+        electricity_cabinet_id,uid,borrow_expire_time
+        FROM t_electricity_battery
+        WHERE borrow_expire_time &lt; #{curTime} and del_flag = 0 and status in(2,3,4) limit #{offset}, #{size}
+    </select>
+
 
 
 	<update id="updateByOrder">

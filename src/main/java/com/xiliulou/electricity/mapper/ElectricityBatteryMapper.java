@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -27,4 +28,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 	Integer updateByOrder(ElectricityBattery electricityBattery);
 
 
+    List<ElectricityBattery>queryBorrowExpireBattery(@Param("curTime")long curTime, @Param("offset")Integer offset, @Param("size")Integer size);
 }
