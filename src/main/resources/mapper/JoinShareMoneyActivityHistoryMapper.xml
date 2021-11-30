@@ -23,4 +23,17 @@
 		</if>
 
     </select>
+
+	<select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_join_share_money_activity_history as jsah
+        <where>
+            <if test="uid != null">
+                and jsah.uid = #{uid}
+            </if>
+            <if test="activityId != null">
+                and jsah.activity_id = #{activityId}
+            </if>
+        </where>
+    </select>
 </mapper>

@@ -33,7 +33,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
 	 * 用户参与记录admin
 	 */
 	@GetMapping(value = "/admin/joinShareMoneyActivityHistory/list")
-	public R joinActivity(@RequestParam("size") Long size,
+	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam( "uid") Long uid,
 			@RequestParam( "activityId") Integer activityId) {
@@ -52,6 +52,22 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
 				.uid(uid)
 				.activityId(activityId).build();
 		return joinShareMoneyActivityHistoryService.queryList(jsonShareMoneyActivityHistoryQuery);
+	}
+
+
+	/**
+	 * 用户参与记录admin
+	 */
+	@GetMapping(value = "/admin/joinShareMoneyActivityHistory/queryCount")
+	public R queryCount(@RequestParam( "uid") Long uid,
+			@RequestParam( "activityId") Integer activityId) {
+
+
+
+		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
+				.uid(uid)
+				.activityId(activityId).build();
+		return joinShareMoneyActivityHistoryService.queryCount(jsonShareMoneyActivityHistoryQuery);
 	}
 
 }

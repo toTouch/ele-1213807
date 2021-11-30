@@ -42,7 +42,10 @@ public interface JoinShareMoneyActivityHistoryService {
 
 	R queryList(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 
+	R queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
+
 	void updateByActivityId(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
 
 	void updateExpired(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
+
 }

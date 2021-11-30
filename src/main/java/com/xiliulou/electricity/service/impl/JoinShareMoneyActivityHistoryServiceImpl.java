@@ -160,6 +160,12 @@ public class JoinShareMoneyActivityHistoryServiceImpl implements JoinShareMoneyA
 	}
 
 	@Override
+	public R queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery) {
+		Integer count=joinShareMoneyActivityHistoryMapper.queryCount(jsonShareMoneyActivityHistoryQuery);
+		return R.ok(count);
+	}
+
+	@Override
 	public void updateByActivityId(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory) {
 		joinShareMoneyActivityHistoryMapper.updateByActivityId(joinShareMoneyActivityHistory);
 	}
