@@ -122,4 +122,9 @@ public interface ElectricityCabinetConstant {
      */
     String CACHE_STORE_AMOUNT = "cache_store_amount:";
 
+    String CACHE_APP_INFO_LIMIT = "cache_app_info_limit:";
+    String CACHE_APP_INFO_BASE = "cache_app_info_base:";
+    String CACHE_APP_INFO = "cache_app_info:";
+    String CACHE_THIRD_CALL_BACK_URL = "cache_third_call_back_url:";
+    String CACHE_TENANT_ID_OPERATE = "cache_tenant_id_operate:";
 }

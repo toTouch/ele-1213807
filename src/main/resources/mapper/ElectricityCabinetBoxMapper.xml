@@ -2,96 +2,132 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper">
 
-	<!--查询指定行数据-->
-	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
-		select
-		id, electricity_cabinet_id, cell_no, sn, usable_status,
-		status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-		update_time, del_flag,tenant_id,temperature,battery_type
-		from t_electricity_cabinet_box
-		where del_flag=0
-		<if test="query.electricityCabinetId != null">
-			and electricity_cabinet_id = #{query.electricityCabinetId}
-		</if>
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-		order by -cell_no DESC
-		limit #{query.offset}, #{query.size}
-	</select>
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetBoxVO">
+        select
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
+        update_time, del_flag,tenant_id,temperature,battery_type
+        from t_electricity_cabinet_box
+        where del_flag=0
+        <if test="query.electricityCabinetId != null">
+            and electricity_cabinet_id = #{query.electricityCabinetId}
+        </if>
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        order by -cell_no DESC
+        limit #{query.offset}, #{query.size}
+    </select>
 
-	<select id="queryElectricityBatteryBox" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
-		select
-		id, electricity_cabinet_id, cell_no, sn, usable_status,
-		status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-		update_time, del_flag,tenant_id,temperature,battery_type
-		from t_electricity_cabinet_box
-		where del_flag=0 AND electricity_cabinet_id=#{id}
-		and status=0 and usable_status=0
-		<if test="cellNo != null ">
-			and cell_no != #{cellNo}
-		</if>
-		<if test="batteryType != null ">
-			and battery_type = #{batteryType}
-		</if>
-		<if test="batteryType == null ">
-			and battery_type is null
-		</if>
-	</select>
+    <select id="queryElectricityBatteryBox" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
+        update_time, del_flag,tenant_id,temperature,battery_type
+        from t_electricity_cabinet_box
+        where del_flag=0 AND electricity_cabinet_id=#{id}
+        and status=0 and usable_status=0
+        <if test="cellNo != null ">
+            and cell_no != #{cellNo}
+        </if>
+        <if test="batteryType != null ">
+            and battery_type = #{batteryType}
+        </if>
+        <if test="batteryType == null ">
+            and battery_type is null
+        </if>
+    </select>
 
 
-	<update id="batchDeleteBoxByElectricityCabinetId">
+    <update id="batchDeleteBoxByElectricityCabinetId">
         update t_electricity_cabinet_box
-        set del_flag = 1, update_time = #{updateTime}
+        set del_flag    = 1,
+            update_time = #{updateTime}
         where electricity_cabinet_id = #{id}
     </update>
 
 
-	<update id="modifyByCellNo">
-		update t_electricity_cabinet_box
-		set sn = #{sn},
-		<if test="status!= null ">
-			status = #{status},
-		</if>
-		update_time = #{updateTime},
-		battery_type = #{batteryType}
-		where cell_no = #{cellNo}
-		and electricity_cabinet_id = #{electricityCabinetId}
-		and del_flag=0
-	</update>
+    <update id="modifyByCellNo">
+        update t_electricity_cabinet_box
+        set sn = #{sn},
+        <if test="status!= null ">
+            status = #{status},
+        </if>
+        update_time = #{updateTime},
+        battery_type = #{batteryType},
+        power = #{power}
+        where cell_no = #{cellNo}
+        and electricity_cabinet_id = #{electricityCabinetId}
+        and del_flag=0
+    </update>
 
 
-	<update id="modifyCellByCellNo">
-		update t_electricity_cabinet_box
-		<set>
-			<if test="usableStatus!= null ">
-				usable_status = #{usableStatus},
-			</if>
-			<if test="status!= null ">
-				status = #{status},
-			</if>
-			<if test="isLock!= null ">
-				is_lock = #{isLock},
-			</if>
-			<if test="isFan!= null ">
-				is_fan = #{isFan},
-			</if>
-			<if test="temperature!= null ">
-				temperature = #{temperature},
-			</if>
-			<if test="isHeat!= null ">
-				is_fan = #{isHeat},
-			</if>
-			<if test="isLight!= null ">
-				is_light = #{isLight},
-			</if>
-			<if test="updateTime!= null ">
-				update_time = #{updateTime}
-			</if>
-		</set>
-		where cell_no = #{cellNo}
-		and electricity_cabinet_id = #{electricityCabinetId}
-		and del_flag=0
-	</update>
+    <update id="modifyCellByCellNo">
+        update t_electricity_cabinet_box
+        <set>
+            <if test="usableStatus!= null ">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="status!= null ">
+                status = #{status},
+            </if>
+            <if test="isLock!= null ">
+                is_lock = #{isLock},
+            </if>
+            <if test="isFan!= null ">
+                is_fan = #{isFan},
+            </if>
+            <if test="temperature!= null ">
+                temperature = #{temperature},
+            </if>
+            <if test="isHeat!= null ">
+                is_fan = #{isHeat},
+            </if>
+            <if test="isLight!= null ">
+                is_light = #{isLight},
+            </if>
+            <if test="updateTime!= null ">
+                update_time = #{updateTime}
+            </if>
+        </set>
+        where cell_no = #{cellNo}
+        and electricity_cabinet_id = #{electricityCabinetId}
+        and del_flag=0
+    </update>
+
+    <select id="queryUsableBatteryCellNo" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
+        update_time, del_flag,tenant_id,temperature,battery_type,power
+        from t_electricity_cabinet_box
+        <where>
+            electricity_cabinet_id = #{eid}
+            and usable_status = 0
+            and del_flag = 0
+            and status = 0
+            and power &gt;= #{fullV}
+            <if test="type != null">
+                battery_type = #{type}
+            </if>
+        </where>
+        order by power desc
+    </select>
+
+    <select id="queryUsableEmptyCellNo" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
+        select
+        id, electricity_cabinet_id, cell_no, sn, usable_status,
+        status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
+        update_time, del_flag,tenant_id,temperature,battery_type,power
+        from t_electricity_cabinet_box
+        <where>
+            electricity_cabinet_id = #{eid}
+            and usable_status = 0
+            and del_flag = 0
+            and status = 1
+        </where>
+        order by cell_no desc
+    </select>
 
 </mapper>

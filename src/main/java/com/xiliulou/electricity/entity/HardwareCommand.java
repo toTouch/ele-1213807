@@ -12,162 +12,185 @@ import java.util.Map;
 public class HardwareCommand {
 
 
-	//业务操作
-	//订单开旧门
-	public static final String ELE_COMMAND_ORDER_OPEN_OLD_DOOR = "order_open_old_door";
-	//订单开新门
-	public static final String ELE_COMMAND_ORDER_OPEN_NEW_DOOR = "order_open_new_door";
-	//租电池开门
-	public static final String ELE_COMMAND_RENT_OPEN_DOOR = "rent_open_door";
-	//还电池开门
-	public static final String ELE_COMMAND_RETURN_OPEN_DOOR = "return_open_door";
-	//物理操作
-	public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
-	public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
-	public static final String ELE_COMMAND_CELL_ALL_OPEN_DOOR = "cell_all_open_door";
-	//开灯命令
-	public static final String ELE_COMMAND_CELL_OPEN_LIGHT = "cell_open_light";
-	public static final String ELE_COMMAND_CELL_CLOSE_LIGHT = "cell_close_light";
-	public static final String ELE_COMMAND_CORE_OPEN_LIGHT = "core_open_light";
-	public static final String ELE_COMMAND_CORE_CLOSE_LIGHT = "core_close_light";
-	//加热命令
-	public static final String ELE_COMMAND_CELL_OPEN_HEAT = "cell_open_heat";
-	public static final String ELE_COMMAND_CELL_CLOSE_HEAT = "cell_close_heat";
-	//风扇命令
-	public static final String ELE_COMMAND_CELL_OPEN_FAN = "cell_open_fan";
-	public static final String ELE_COMMAND_CELL_CLOSE_FAN = "cell_close_fan";
-	public static final String ELE_COMMAND_CORE_OPEN_FAN = "core_open_fan";
-	public static final String ELE_COMMAND_CORE_CLOSE_FAN = "core_close_fan";
-	//充电命令
-	public static final String ELE_COMMAND_CELL_CHARGE_OPEN = "cell_charge_open";
-	public static final String ELE_COMMAND_CELL_CHARGE_CLOSE = "cell_charge_close";
-	public static final String ELE_COMMAND_CELL_SET_VOLTAGE = "cell_set_voltage";
-	public static final String ELE_COMMAND_CELL_SET_CURRENT = "cell_set_current";
-	//禁用可用命令
-	public static final String ELE_COMMAND_CELL_UPDATE = "cell_update";
-	//物理操作回调结果
-	public static final String ELE_COMMAND_OPERATE = "operate_result";
+    //业务操作
+    //订单开旧门
+    public static final String ELE_COMMAND_ORDER_OPEN_OLD_DOOR = "order_open_old_door";
+    //订单开新门
+    public static final String ELE_COMMAND_ORDER_OPEN_NEW_DOOR = "order_open_new_door";
+    //租电池开门
+    public static final String ELE_COMMAND_RENT_OPEN_DOOR = "rent_open_door";
+    //还电池开门
+    public static final String ELE_COMMAND_RETURN_OPEN_DOOR = "return_open_door";
+    //物理操作
+    public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
+    public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
+    public static final String ELE_COMMAND_CELL_ALL_OPEN_DOOR = "cell_all_open_door";
+    //开灯命令
+    public static final String ELE_COMMAND_CELL_OPEN_LIGHT = "cell_open_light";
+    public static final String ELE_COMMAND_CELL_CLOSE_LIGHT = "cell_close_light";
+    public static final String ELE_COMMAND_CORE_OPEN_LIGHT = "core_open_light";
+    public static final String ELE_COMMAND_CORE_CLOSE_LIGHT = "core_close_light";
+    //加热命令
+    public static final String ELE_COMMAND_CELL_OPEN_HEAT = "cell_open_heat";
+    public static final String ELE_COMMAND_CELL_CLOSE_HEAT = "cell_close_heat";
+    //风扇命令
+    public static final String ELE_COMMAND_CELL_OPEN_FAN = "cell_open_fan";
+    public static final String ELE_COMMAND_CELL_CLOSE_FAN = "cell_close_fan";
+    public static final String ELE_COMMAND_CORE_OPEN_FAN = "core_open_fan";
+    public static final String ELE_COMMAND_CORE_CLOSE_FAN = "core_close_fan";
+    //充电命令
+    public static final String ELE_COMMAND_CELL_CHARGE_OPEN = "cell_charge_open";
+    public static final String ELE_COMMAND_CELL_CHARGE_CLOSE = "cell_charge_close";
+    public static final String ELE_COMMAND_CELL_SET_VOLTAGE = "cell_set_voltage";
+    public static final String ELE_COMMAND_CELL_SET_CURRENT = "cell_set_current";
+    //禁用可用命令
+    public static final String ELE_COMMAND_CELL_UPDATE = "cell_update";
+    //物理操作回调结果
+    public static final String ELE_COMMAND_OPERATE = "operate_result";
 
-	//业务操作
-	//旧门开门 order_old_door_open_rsp
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_open_old_door_rsp";
-	//旧门检测 order_old_door_check_battery_rsp
-	public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check_battery_rsp";
-	//新门开门 order_new_door_open_rsp
-	public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_open_new_door_rsp";
-	//新门检测 order_new_door_check_battery_rsp
-	public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check_battery_rsp";
-
-
-	//新命令
-	//旧电池
-	public static final String ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP = "init_exchange_order_rsp";
-	//新电池
-	public static final String ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP = "complete_exchange_order_rsp";
-	//租电池
-	public static final String ELE_COMMAND_RENT_ORDER_RSP = "rent_order_rsp";
-	//还电池
-	public static final String ELE_COMMAND_RETURN_ORDER_RSP = "return_order_rsp";
+    //业务操作
+    //旧门开门 order_old_door_open_rsp
+    public static final String ELE_COMMAND_ORDER_OLD_DOOR_OPEN = "order_open_old_door_rsp";
+    //旧门检测 order_old_door_check_battery_rsp
+    public static final String ELE_COMMAND_ORDER_OLD_DOOR_CHECK = "order_old_door_check_battery_rsp";
+    //新门开门 order_new_door_open_rsp
+    public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_open_new_door_rsp";
+    //新门检测 order_new_door_check_battery_rsp
+    public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check_battery_rsp";
 
 
+    //新命令
+    //旧电池
+    public static final String ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP = "init_exchange_order_rsp";
+    //新电池
+    public static final String ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP = "complete_exchange_order_rsp";
+    //租电池
+    public static final String ELE_COMMAND_RENT_ORDER_RSP = "rent_order_rsp";
+    //还电池
+    public static final String ELE_COMMAND_RETURN_ORDER_RSP = "return_order_rsp";
 
-	//物理操作
-	//仓门上报 cell_report_info
-	public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
-	//电池上报 cell_battery_report_info
-	public static final String ELE_COMMAND_BATTERY_REPORT_INFO = "battery_report_info";
-	//电柜版本上报
-	public static final String EXCHANGE_CABINET = "exchange_cabinet";
-	//配柜子
-	public static final String ELE_COMMAND_CELL_CONFIG = "cell_config";
-	//远程更新
-	public static final String ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION = "cupboard_update_application";
 
-	public static final String ELE_COMMAND_POWER_CONSUMPTION = "power_consumption";
+    //物理操作
+    //仓门上报 cell_report_info
+    public static final String ELE_COMMAND_CELL_REPORT_INFO = "cell_report_info";
+    //电池上报 cell_battery_report_info
+    public static final String ELE_COMMAND_BATTERY_REPORT_INFO = "battery_report_info";
+    //电柜版本上报
+    public static final String EXCHANGE_CABINET = "exchange_cabinet";
+    //配柜子
+    public static final String ELE_COMMAND_CELL_CONFIG = "cell_config";
+    //远程更新
+    public static final String ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION = "cupboard_update_application";
 
-	public static final String ELE_COMMAND_POWER_CONSUMPTION_RSP = "power_consumption_rsp";
+    public static final String ELE_COMMAND_POWER_CONSUMPTION = "power_consumption";
 
-	public static final String ELE_COMMAND_CUPBOARD_REQUEST_LOG = "cupboard_request_log";
+    public static final String ELE_COMMAND_POWER_CONSUMPTION_RSP = "power_consumption_rsp";
 
-	public static final String ELE_COMMAND_OTHER_CONFIG = "other_config";
+    public static final String ELE_COMMAND_CUPBOARD_REQUEST_LOG = "cupboard_request_log";
 
-	//重新上报电池
-	public static final String ELE_COMMAND_BATTERY_SYNC_INFO = "battery_sync_info";
+    public static final String ELE_COMMAND_OTHER_CONFIG = "other_config";
 
-	//租电池开门通知
-	public static final String ELE_COMMAND_RENT_OPEN_DOOR_RSP = "rent_open_door_rsp";
-	//租电池检测
-	public static final String ELE_COMMAND_RENT_CHECK_BATTERY_RSP = "rent_check_battery_rsp";
-	//还电池开门通知
-	public static final String ELE_COMMAND_RETURN_OPEN_DOOR_RSP = "return_open_door_rsp";
-	//还电池检测
-	public static final String ELE_COMMAND_RETURN_CHECK_BATTERY_RSP = "return_check_battery_rsp";
+    //重新上报电池
+    public static final String ELE_COMMAND_BATTERY_SYNC_INFO = "battery_sync_info";
 
-	//重启app
-	public static final String ELE_COMMAND_CUPBOARD_RESTART = "cupboard_restart";
+    //租电池开门通知
+    public static final String ELE_COMMAND_RENT_OPEN_DOOR_RSP = "rent_open_door_rsp";
+    //租电池检测
+    public static final String ELE_COMMAND_RENT_CHECK_BATTERY_RSP = "rent_check_battery_rsp";
+    //还电池开门通知
+    public static final String ELE_COMMAND_RETURN_OPEN_DOOR_RSP = "return_open_door_rsp";
+    //还电池检测
+    public static final String ELE_COMMAND_RETURN_CHECK_BATTERY_RSP = "return_check_battery_rsp";
 
-	//上报异常
-	public static final String ELE_COMMAND_WARN_MSG_RSP = "warn_msg_rsp";
+    //重启app
+    public static final String ELE_COMMAND_CUPBOARD_RESTART = "cupboard_restart";
 
-	//解锁换电柜
-	public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
+    //上报异常
+    public static final String ELE_COMMAND_WARN_MSG_RSP = "warn_msg_rsp";
 
-	//读其他配置，下发命令
-	public static final String ELE_COMMAND_OTHER_CONFIG_READ = "other_config_read";
+    //解锁换电柜
+    public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
 
-	//上报其他配置
-	public static final String ELE_COMMAND_OTHER_CONFIG_RSP = "other_config_rsp";
+    //读其他配置，下发命令
+    public static final String ELE_COMMAND_OTHER_CONFIG_READ = "other_config_read";
 
-	//开启循环检测电池和格挡
-	public static final String ELE_COMMAND_START_OPEN_CHECK_CELL = "start_open_check_cell";
+    //上报其他配置
+    public static final String ELE_COMMAND_OTHER_CONFIG_RSP = "other_config_rsp";
 
-	public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
+    //开启循环检测电池和格挡
+    public static final String ELE_COMMAND_START_OPEN_CHECK_CELL = "start_open_check_cell";
+    /**
+     * api租电
+     */
+    public static final String API_RENT_ORDER = "api_rent_battery";
+    public static final String API_RENT_ORDER_RSP = "api_rent_battery_rsp";
+    /**
+     * api还电
+     */
+    public static final String API_RETURN_ORDER = "api_return_battery";
+    public static final String API_RETURN_ORDER_RSP = "api_return_battery_rsp";
+    /**
+     * api换电
+     */
+    public static final String API_EXCHANGE_ORDER = "api_exchange_battery";
+    public static final String API_EXCHANGE_ORDER_RSP = "api_exchange_battery_rsp";
 
-	static {
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_OLD_DOOR, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_NEW_DOOR, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_DOOR, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_LIGHT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CLOSE_LIGHT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_LIGHT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_CLOSE_LIGHT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_HEAT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CLOSE_HEAT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_FAN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CLOSE_FAN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_FAN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_CLOSE_FAN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CHARGE_OPEN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CHARGE_CLOSE, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_VOLTAGE, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_CURRENT, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_UPDATE, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_OPERATE, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_OPEN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_CHECK, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_OPEN, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_CHECK, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_REPORT_INFO, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_REPORT_INFO, "OK");
-		ELE_COMMAND_MAPS.put(EXCHANGE_CABINET, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_ALL_OPEN_DOOR, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CONFIG, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_REQUEST_LOG, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_SYNC_INFO, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_RESTART, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_WARN_MSG_RSP, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_UNLOCK_CABINET, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_RSP, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_START_OPEN_CHECK_CELL, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_RENT_ORDER_RSP, "OK");
-		ELE_COMMAND_MAPS.put(ELE_COMMAND_RETURN_ORDER_RSP, "OK");
-	}
+    /**
+     * api操作记录
+     */
+    public static final String API_ORDER_OPER_HISTORY = "api_exchange_order_operate_record";
+
+
+    public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
+
+    static {
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_OLD_DOOR, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_NEW_DOOR, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_DOOR, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_LIGHT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CLOSE_LIGHT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_LIGHT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_CLOSE_LIGHT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_HEAT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CLOSE_HEAT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_FAN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CLOSE_FAN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_OPEN_FAN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CORE_CLOSE_FAN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CHARGE_OPEN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CHARGE_CLOSE, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_VOLTAGE, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_SET_CURRENT, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_UPDATE, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_OPERATE, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_OPEN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OLD_DOOR_CHECK, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_OPEN, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_NEW_DOOR_CHECK, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_REPORT_INFO, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_REPORT_INFO, "OK");
+        ELE_COMMAND_MAPS.put(EXCHANGE_CABINET, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_ALL_OPEN_DOOR, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_POWER_CONSUMPTION_RSP, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_CONFIG, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_UPDATE_APPLICATION, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_REQUEST_LOG, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_BATTERY_SYNC_INFO, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_CUPBOARD_RESTART, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_WARN_MSG_RSP, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_UNLOCK_CABINET, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_READ, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_OTHER_CONFIG_RSP, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_START_OPEN_CHECK_CELL, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_RENT_ORDER_RSP, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_RETURN_ORDER_RSP, "OK");
+        ELE_COMMAND_MAPS.put(API_EXCHANGE_ORDER, "OK");
+        ELE_COMMAND_MAPS.put(API_RENT_ORDER, "OK");
+        ELE_COMMAND_MAPS.put(API_RETURN_ORDER, "OK");
+    }
 }
