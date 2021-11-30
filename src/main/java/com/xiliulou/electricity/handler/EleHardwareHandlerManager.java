@@ -49,7 +49,14 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Autowired
     NormalEleOrderOperateHandlerIot normalEleOrderOperateHandlerIot;
 
-    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor",2,"ELE_HARDWARE_HANDLER_EXECUTOR");
+    @Autowired
+    NormalApiRentHandlerIot normalApiRentHandlerIot;
+    @Autowired
+    NormalApiExchangeHandlerIot normalApiExchangeHandlerIot;
+    @Autowired
+    NormalApiReturnHandlerIot normalApiReturnHandlerIot;
+
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
         if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
@@ -64,9 +71,10 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_BATTERY_SYNC_INFO)
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CUPBOARD_RESTART)
                 || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_UNLOCK_CABINET))
-                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG_READ))){
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.API_EXCHANGE_ORDER))
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG_READ))) {
             return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
-        } else{
+        } else {
             log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
             return Pair.of(false, "");
         }
@@ -95,7 +103,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 newElectricityCabinet.setOnlineStatus(status);
                 if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                     redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                    redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName()+electricityCabinet.getTenantId());
+                    redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
                 }
                 log.error("type is null,{}", receiverMessage.getOriginContent());
             });
@@ -104,6 +112,12 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         }
         if (receiverMessage.getType().contains("order_operate")) {
             return normalEleOrderOperateHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.API_RETURN_ORDER_RSP)) {
+            return normalApiReturnHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.API_EXCHANGE_ORDER_RSP)) {
+            return normalApiExchangeHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.API_RENT_ORDER_RSP)) {
+            return normalApiRentHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (receiverMessage.getType().contains("order")) {
             return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (receiverMessage.getType().contains("operate")) {

@@ -2,11 +2,12 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import org.apache.commons.lang3.tuple.Triple;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.List;
@@ -21,7 +22,7 @@ import java.util.Map;
  */
 public interface ElectricityCabinetService {
 
-      /**
+    /**
      * 通过ID查询单条数据从缓存
      *
      * @param id 主键
@@ -47,19 +48,19 @@ public interface ElectricityCabinetService {
 
     R showInfoByDistance(ElectricityCabinetQuery electricityCabinetQuery);
 
-    Integer queryFullyElectricityBattery(Integer id,String batteryType);
+    Integer queryFullyElectricityBattery(Integer id, String batteryType);
 
     boolean deviceIsOnline(String productKey, String deviceName);
 
     Integer queryByModelId(Integer id);
 
-    R updateStatus(Integer id,Integer usableStatus);
+    R updateStatus(Integer id, Integer usableStatus);
 
-    R homeOne(Long beginTime,Long endTime);
+    R homeOne(Long beginTime, Long endTime);
 
-    R homeTwo(Long beginTime,Long endTime);
+    R homeTwo(Long beginTime, Long endTime);
 
-     R homeThree(Long beginTime,Long endTime,Integer type);
+    R homeThree(Long beginTime, Long endTime, Integer type);
 
     List<HashMap<String, String>> homeThreeInner(Long startTimeMilliDay, Long endTimeMilliDay, List<Integer> eleIdList, Integer tenantId);
 
@@ -81,7 +82,7 @@ public interface ElectricityCabinetService {
 
     R queryByRentBattery(String productKey, String deviceName);
 
-    List<Map<String,Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList,Integer tenantId);
+    List<Map<String, Object>> queryNameList(Long size, Long offset, List<Integer> eleIdList, Integer tenantId);
 
     R batteryReport(BatteryReportQuery batteryReportQuery);
 
@@ -91,11 +92,17 @@ public interface ElectricityCabinetService {
 
     boolean isBusiness(ElectricityCabinet electricityCabinet);
 
-	R queryCount(ElectricityCabinetQuery electricityCabinetQuery);
+    R queryCount(ElectricityCabinetQuery electricityCabinetQuery);
 
-	Integer queryCountByStoreId(Long id);
+    Integer queryCountByStoreId(Long id);
 
-    R checkBattery(String productKey, String deviceName, String batterySn,Boolean isParseBattery);
+    R checkBattery(String productKey, String deviceName, String batterySn, Boolean isParseBattery);
 
-	R queryById(Integer id);
+    R queryById(Integer id);
+
+    Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
+
+    void unlockElectricityCabinet(Integer eid);
+
+    Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
 }
