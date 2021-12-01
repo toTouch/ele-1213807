@@ -23,7 +23,7 @@
 			and b.tenant_id = #{query.tenantId}
 		</if>
 		<if test="query.electricityCabinetName != null">
-			and b.electricity_cabinet_name =  #{query.electricityCabinetName}
+			and b.electricity_cabinet_name =  #{query.electricityCabinetName} and status = 0
 		</if>
 		<if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
 			and b.id in
@@ -57,7 +57,7 @@
 			and b.tenant_id = #{query.tenantId}
 		</if>
 		<if test="query.electricityCabinetName != null">
-			and b.electricity_cabinet_name =  #{query.electricityCabinetName}
+			and b.electricity_cabinet_name =  #{query.electricityCabinetName} and status = 0
 		</if>
 		<if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
 			and b.id in
