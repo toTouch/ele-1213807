@@ -242,14 +242,18 @@ public class EleOperateQueueHandler {
 				//放入电池改为在仓
 				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(newElectricityCabinetOrder.getOldElectricityBatterySn());
 				if(Objects.nonNull(oldElectricityBattery)) {
-					ElectricityBattery newElectricityBattery = new ElectricityBattery();
-					newElectricityBattery.setId(oldElectricityBattery.getId());
-					newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-					newElectricityBattery.setElectricityCabinetId(electricityCabinetOrder.getElectricityCabinetId());
-					newElectricityBattery.setUid(null);
-					newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                    newElectricityBattery.setBorrowExpireTime(null);
-					electricityBatteryService.updateByOrder(newElectricityBattery);
+					ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+					if(Objects.nonNull(electricityCabinet)){
+						ElectricityBattery newElectricityBattery = new ElectricityBattery();
+						newElectricityBattery.setId(oldElectricityBattery.getId());
+						newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+						newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+						newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+						newElectricityBattery.setUid(null);
+						newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+						newElectricityBattery.setBorrowExpireTime(null);
+						electricityBatteryService.updateByOrder(newElectricityBattery);
+					}
 				}
 
 
@@ -398,6 +402,7 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setId(electricityBattery.getId());
 			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 			newElectricityBattery.setElectricityCabinetId(null);
+			newElectricityBattery.setElectricityCabinetName(null);
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateAdminNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis() );
@@ -500,6 +505,7 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(null);
+		newElectricityBattery.setElectricityCabinetName(null);
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateAdminNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis());
@@ -542,14 +548,19 @@ public class EleOperateQueueHandler {
 		//放入电池改为在仓
 		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
 		if(Objects.nonNull(oldElectricityBattery)) {
-			ElectricityBattery newElectricityBattery = new ElectricityBattery();
-			newElectricityBattery.setId(oldElectricityBattery.getId());
-			newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-			newElectricityBattery.setElectricityCabinetId(rentBatteryOrder.getElectricityCabinetId());
-			newElectricityBattery.setUid(null);
-			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            newElectricityBattery.setBorrowExpireTime(null);
-			electricityBatteryService.updateByOrder(newElectricityBattery);
+			ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
+			if(Objects.nonNull(electricityCabinet)){
+				ElectricityBattery newElectricityBattery = new ElectricityBattery();
+				newElectricityBattery.setId(oldElectricityBattery.getId());
+				newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+				newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+				newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+				newElectricityBattery.setUid(null);
+				newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+				newElectricityBattery.setBorrowExpireTime(null);
+				electricityBatteryService.updateByOrder(newElectricityBattery);
+			}
+
 		}
 
 		//删除柜机被锁缓存

@@ -88,7 +88,7 @@ public class ElectricityBattery {
      * 所属换电柜柜Id
      */
     private Integer electricityCabinetId;
-
+    private String  electricityCabinetName;
 
     //所属用户id
     private Long uid;
