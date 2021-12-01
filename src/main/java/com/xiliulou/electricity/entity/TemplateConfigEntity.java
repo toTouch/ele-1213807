@@ -21,7 +21,7 @@ public class TemplateConfigEntity implements Serializable {
      */
     private String batteryOuttimeTemplate ;
     /**
-     * 超时模板
+     * 低电量模板
      */
     private String electricQuantityRemindTemplate ;
     /**

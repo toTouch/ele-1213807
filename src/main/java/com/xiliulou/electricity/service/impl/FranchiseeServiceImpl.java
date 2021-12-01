@@ -407,4 +407,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		return R.ok();
 	}
 
+	@Override
+	public Franchisee queryByElectricityBatteryId(Long id) {
+		return franchiseeMapper.queryByElectricityBatteryId(id);
+	}
+
 }

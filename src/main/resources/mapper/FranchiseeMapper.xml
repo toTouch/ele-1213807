@@ -47,5 +47,13 @@
         order by create_time desc
     </select>
 
-
+    <select id="queryByElectricityBatteryId"
+            resultType="com.xiliulou.electricity.entity.Franchisee">
+        select
+        id, cid, name, uid, del_flag,
+        create_time, update_time, battery_deposit,tenant_id,percent,
+        model_type,model_battery_deposit
+        from t_franchisee f left join t_franchisee_bind_electricity_battery fb on f.id = fb.franchisee_id
+        where del_flag=0, electricity_battery_id=#{id}
+    </select>
 </mapper>

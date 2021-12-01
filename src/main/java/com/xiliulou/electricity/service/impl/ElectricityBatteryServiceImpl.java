@@ -137,7 +137,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	@DS("slave_1")
 	public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-
 		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
 
 		if (ObjectUtil.isEmpty(electricityBatteryList)) {
@@ -168,6 +167,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				if (Objects.nonNull(electricityCabinet)) {
 					electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
 				}
+			}
+
+			Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
+			if(Objects.nonNull(franchisee)){
+				electricityBatteryVO.setFranchiseeName(franchisee.getName());
 			}
 
 			//用于电池绑定问题

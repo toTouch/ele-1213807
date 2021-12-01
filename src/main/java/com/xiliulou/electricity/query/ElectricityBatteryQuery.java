@@ -34,5 +34,6 @@ public class ElectricityBatteryQuery {
 
     private Long franchiseeId;
 
-    private Integer electricityCabinetId;
+    private String electricityCabinetName;
+    private String franchiseeName;
 }
