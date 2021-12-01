@@ -63,8 +63,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Autowired
 	RedisService redisService;
 	@Autowired
-	WechatTemplateAdminNotificationConfig wechatTemplateAdminNotificationConfig;
-	@Autowired
 	UserService userService;
 	@Autowired
 	WechatTemplateAdminNotificationService wechatTemplateAdminNotificationService;
