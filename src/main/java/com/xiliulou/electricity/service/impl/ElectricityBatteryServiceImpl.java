@@ -412,6 +412,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				if (CollectionUtils.isNotEmpty(openIds)) {
 					for (String openId : openIds) {
 						appTemplateQuery.setTouser(openId);
+						appTemplateQuery.setFormId(RandomUtil.randomString(20));
 						weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
 					}
 				}
@@ -428,7 +429,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		appTemplateQuery.setSecret(appSecret);
 		//appTemplateQuery.setTouser(openId);
 		appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
-		appTemplateQuery.setFormId(RandomUtil.randomString(20));
 		//TODO 这块写个页面 调用 user/battery/outTime/Info
 		appTemplateQuery.setPage("/pages/protocol/paypro?tenantId"+tenantId);
 		//发送内容
@@ -442,10 +442,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		Map<String, Object> data = new HashMap<>(2);
 		Map<String, String> keyword1 = new HashMap<>(1);
 		keyword1.put("value", sdf.format(new Date(System.currentTimeMillis())));
-		data.put("keyword1", keyword1);
+		data.put("time1", keyword1);
 		Map<String, String> keyword2 = new HashMap<>(1);
 		keyword2.put("value", String.valueOf(batteryList.size()));
-		data.put("keyword2", keyword2);
+		data.put("number2", keyword2);
 
 		return data;
 	}
