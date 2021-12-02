@@ -437,11 +437,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	}
 
 	private Map<String, Object> createData(List<ElectricityBatteryVO> batteryList){
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh时mm分ss秒");
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd号 HH:mm");
 
 		Map<String, Object> data = new HashMap<>(2);
 
-		data.put("time1", sdf.format(new Date(System.currentTimeMillis())));
+		data.put("time1", dateFormat.format(new Date()));
 
 		data.put("number2",String.valueOf(batteryList.size()));
 
