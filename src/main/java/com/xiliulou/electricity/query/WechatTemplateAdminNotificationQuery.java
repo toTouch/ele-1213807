@@ -3,6 +3,7 @@ package com.xiliulou.electricity.query;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author Hardy
@@ -14,5 +15,5 @@ public class WechatTemplateAdminNotificationQuery {
     private Long id;
 
     @NotNull(message = "openId不能为空")
-    private String openIds;
+    private List<String> openIds;
 }

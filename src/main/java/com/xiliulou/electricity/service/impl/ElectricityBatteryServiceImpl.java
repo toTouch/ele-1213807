@@ -359,7 +359,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	public void handlerBatteryNotInCabinetWarning() {
 
-		Integer offset = 0;
+		/*Integer offset = 0;
 		Integer size = 300;
 		while (true) {
 			List<ElectricityBatteryVO> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
@@ -378,9 +378,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
 				if (!isOutTime) {
 					return;
-				}
+				}*/
+                Integer tenantId = 32;
+                List<ElectricityBatteryVO> batteryList = new ArrayList<>();
 
-				WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
+                WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
 				if (Objects.isNull(wechatTemplateAdminNotification)) {
 					log.error("WECHAT_TEMPLATE_ADMIN_NOTIFICATION IS NULL ERROR! tenantId={}", tenantId);
 					return;
@@ -413,9 +415,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 						weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
 					}
 				}
-			});
+			/*});
 			offset += size;
-		}
+		}*/
 	}
 
 
@@ -428,7 +430,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
 		appTemplateQuery.setFormId(RandomUtil.randomString(20));
 		//TODO 这块写个页面 调用 user/battery/outTime/Info
-		appTemplateQuery.setPage("xxxxx?tenantId"+tenantId);
+		appTemplateQuery.setPage("/pages/protocol/paypro?tenantId"+tenantId);
 		//发送内容
 		appTemplateQuery.setData(createData(batteryList));
 		return appTemplateQuery;
