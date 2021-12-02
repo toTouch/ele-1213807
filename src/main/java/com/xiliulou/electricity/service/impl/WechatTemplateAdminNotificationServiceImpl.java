@@ -129,14 +129,16 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         if(Objects.nonNull(queryByTenantId)){
             return R.fail("不可重复添加");
         }
-
-        List<String> list = JSON.parseArray(wechatTemplateAdminNotificationQuery.getOpenIds(), String.class);
+        List<String> list = wechatTemplateAdminNotificationQuery.getOpenIds();
+        if(list == null){
+            return R.fail("请配置openid");
+        }
         if(list.size() > 4){
             return R.fail("最多只能添加四位管理员");
         }
 
         WechatTemplateAdminNotification wechatTemplateAdminNotification = new WechatTemplateAdminNotification();
-        wechatTemplateAdminNotification.setOpenIds(wechatTemplateAdminNotificationQuery.getOpenIds());
+        wechatTemplateAdminNotification.setOpenIds(JSON.toJSONString(list));
         wechatTemplateAdminNotification.setTenantId(tenantId);
         wechatTemplateAdminNotification.setCreateTime(System.currentTimeMillis());
         wechatTemplateAdminNotification.setUpdateTime(System.currentTimeMillis());
@@ -155,14 +157,14 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
             return R.fail("没有查询到相关信息，请先添加");
         }
 
-        List<String> list = JSON.parseArray(wechatTemplateAdminNotificationQuery.getOpenIds(), String.class);
+        List<String> list = wechatTemplateAdminNotificationQuery.getOpenIds();
         if(list.size() > 4){
             return R.fail("最多只能添加四位管理员");
         }
 
         WechatTemplateAdminNotification wechatTemplateAdminNotification = new WechatTemplateAdminNotification();
         wechatTemplateAdminNotification.setId(wechatTemplateAdminNotificationQuery.getId());
-        wechatTemplateAdminNotification.setOpenIds(wechatTemplateAdminNotificationQuery.getOpenIds());
+        wechatTemplateAdminNotification.setOpenIds(JSON.toJSONString(list));
         wechatTemplateAdminNotification.setUpdateTime(System.currentTimeMillis());
         this.update(wechatTemplateAdminNotification);
 
