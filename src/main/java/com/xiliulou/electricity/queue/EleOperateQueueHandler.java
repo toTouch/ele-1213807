@@ -302,6 +302,9 @@ public class EleOperateQueueHandler {
                 log.error("e", e);
             } finally {
                 redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
+
+                //清除柜机锁定缓存
+                redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
             }
 
         }
