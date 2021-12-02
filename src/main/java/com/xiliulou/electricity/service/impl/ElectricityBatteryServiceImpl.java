@@ -440,12 +440,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh时mm分ss秒");
 
 		Map<String, Object> data = new HashMap<>(2);
-		//Map<String, String> keyword1 = new HashMap<>(1);
-		//keyword1.put("value", sdf.format(new Date(System.currentTimeMillis())));
+
 		data.put("time1", sdf.format(new Date(System.currentTimeMillis())));
-		//Map<String, String> keyword2 = new HashMap<>(1);
-		//keyword2.put("value", String.valueOf(batteryList.size()));
-		data.put("number2", "0");
+
+		data.put("number2",String.valueOf(batteryList.size()));
 
 		return data;
 	}
