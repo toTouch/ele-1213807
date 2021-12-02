@@ -130,4 +130,8 @@ public interface ElectricityCabinetConstant {
      * 租户模板通知缓存
      */
     String CACHE_TEMPLATE_CONFIG = "cache_template_config:";
+    /**
+     * 低电量通知用户缓存
+     */
+    String CACHE_LOW_BATTERY_NOTIFICATION = "cache_low_battery_notification:";
 }

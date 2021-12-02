@@ -39,4 +39,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void handlerBatteryNotInCabinetWarning();
 
     R batteryOutTimeInfo(Long uid);
+
+    void handlerLowBatteryReminder();
 }

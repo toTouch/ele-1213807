@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.controller.user;
 
+import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -18,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -116,7 +120,15 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	public R getServicePhone() {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-		return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId));
+		String phone = redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId);
+		if(StrUtil.isBlank(phone)){
+			List<User> userList = userService.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
+			if(CollectionUtils.isNotEmpty(userList)){
+				phone = userList.get(0).getPhone();
+			}
+
+		}
+		return R.ok(phone);
 	}
 
 	@PostMapping("/user/address")

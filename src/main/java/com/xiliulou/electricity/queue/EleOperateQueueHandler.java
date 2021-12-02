@@ -4,7 +4,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.config.WechatTemplateAdminNotificationConfig;
+import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -77,7 +77,7 @@ public class EleOperateQueueHandler {
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
 	@Autowired
-	WechatTemplateAdminNotificationConfig wechatTemplateAdminNotificationConfig;
+	WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
 
 	@EventListener({WebServerInitializedEvent.class})
 	public void startHandleElectricityCabinetOperate() {
@@ -405,7 +405,7 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setElectricityCabinetName(null);
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateAdminNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis() );
+            newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis() );
 			electricityBatteryService.updateByOrder(newElectricityBattery);
 
 
@@ -508,7 +508,7 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setElectricityCabinetName(null);
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateAdminNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis());
+        newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis());
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//删除柜机被锁缓存

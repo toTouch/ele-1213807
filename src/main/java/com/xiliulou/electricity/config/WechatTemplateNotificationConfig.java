@@ -11,20 +11,24 @@ import org.springframework.context.annotation.Configuration;
  * @mood
  */
 @Configuration
-@ConfigurationProperties("wechattemplateadminnotification")
+@ConfigurationProperties("wechattemplatenotification")
 @Data
 @RefreshScope
-public class WechatTemplateAdminNotificationConfig {
+public class WechatTemplateNotificationConfig {
     /**
-     * 频率(分钟)
+     * 电池超时提醒频率(分钟)
      */
-    private String frequency;
+    private String batteryTimeoutFrequency;
     /**
      * 过期时间(小时)
      */
     private String expirationTime;
     /**
-     * 模板Id
+     * 低电量提醒频率（分钟）
      */
-    private String templateId;
+    private String lowBatteryFrequency;
+    /**
+     * 提醒电量(百分比 63.00)
+     */
+    private String batteryLevel;
 }

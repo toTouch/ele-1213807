@@ -82,14 +82,25 @@
 
 
 
-	<select id="queryBorrowExpireBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select id, sn, voltage, capacity,status, create_time, update_time,tenant_id,
-        electricity_cabinet_id,uid,borrow_expire_time
-        FROM t_electricity_battery
+	<select id="queryBorrowExpireBattery" resultMap="queryBorrowExpireBatteryMap">
+        select b.sn, b.electricity_cabinet_name, b.borrow_expire_time, u.name, u.phone, b.status, b.tenant_id
+        FROM t_electricity_battery b left join t_user_info u on b.uid = u.uid
         WHERE borrow_expire_time &lt; #{curTime} and del_flag = 0 and status in(2,3,4) limit #{offset}, #{size}
     </select>
+	<resultMap id="queryBorrowExpireBatteryMap" type="com.xiliulou.electricity.vo.BorrowExpireBatteryVo">
+		<result column="sn" property="sn"></result>
+		<result column="electricity_cabinet_name" property="electricityCabinetName"></result>
+		<result column="borrow_expire_time" property="borrowExpireTime"></result>
+		<result column="name" property="name"></result>
+		<result column="phone" property="phone"></result>
+		<result column="status" property="status"></result>
+		<result column="tenant_id" property="tenantId"></result>
+	</resultMap>
 
 
+	<select id="queryLowBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select sn, tenant_id, uid , power from t_electricity_battery where power &lt; #{batteryLevel} and report_type = 1 and status = 2 limit #{offset}, #{size}
+    </select>
 
 	<update id="updateByOrder">
 		update t_electricity_battery

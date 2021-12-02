@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -28,5 +29,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 	Integer updateByOrder(ElectricityBattery electricityBattery);
 
 
-    List<ElectricityBattery>queryBorrowExpireBattery(@Param("curTime")long curTime, @Param("offset")Integer offset, @Param("size")Integer size);
+    List<ElectricityBatteryVO>queryBorrowExpireBattery(@Param("curTime")long curTime, @Param("offset")Integer offset, @Param("size")Integer size);
+
+    @Select("select count(1) from t_electricity_battery where power < #{batteryLevel} and report_type = 1 and status = 2")
+    Long queryLowBatteryCount(@Param("batteryLevel")String batteryLevel);
+
+    List<ElectricityBattery> queryLowBattery(Integer offset, Integer size, String batteryLevel);
 }

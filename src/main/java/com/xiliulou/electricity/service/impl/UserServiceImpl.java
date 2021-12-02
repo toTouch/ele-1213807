@@ -6,6 +6,7 @@ import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -269,6 +270,11 @@ public class UserServiceImpl implements UserService {
 		AES aes = new AES(Mode.CBC, Padding.ZeroPadding, new SecretKeySpec(encodeKey.getBytes(), "AES"),
 				new IvParameterSpec(encodeKey.getBytes()));
 		return new String(aes.decrypt(Base64.decode(encryptPassword.getBytes(StandardCharsets.UTF_8))), StandardCharsets.UTF_8);
+	}
+
+	@Override
+	public List<User> queryByTenantIdAndType(Integer tenantId, Integer userType) {
+		return this.userMapper.selectList(new QueryWrapper<User>().eq("tenant_id", tenantId).eq("user_type", userType));
 	}
 
 	@Override

@@ -19,7 +19,7 @@ import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.config.WechatTemplateAdminNotificationConfig;
+import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
@@ -59,7 +59,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Autowired
 	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 	@Autowired
-	WechatTemplateAdminNotificationConfig wechatTemplateAdminNotificationConfig;
+	WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
 	@Autowired
 	RedisService redisService;
 	@Autowired
@@ -74,7 +74,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	ElectricityPayParamsService electricityPayParamsService;
 	@Autowired
 	TemplateConfigService templateConfigService;
-
+	@Autowired
+	UserOauthBindService userOauthBindService;
 
 	/**
 	 * 保存电池
@@ -277,23 +278,102 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	}
 
 	@Override
+	public void handlerLowBatteryReminder() {
+		Integer size = 300;
+		Integer offset = 0;
+
+		String batteryLevel = wechatTemplateNotificationConfig.getBatteryLevel();
+		Long lowBatteryFrequency = Long.parseLong(wechatTemplateNotificationConfig.getLowBatteryFrequency()) * 6000;
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh时mm分ss秒");
+
+		//Long lowBatteryCount = electricitybatterymapper.queryLowBatteryCount(batteryLevel);
+		while(true){
+			List<ElectricityBattery> borrowExpireBatteryList = electricitybatterymapper.queryLowBattery(offset, size, batteryLevel);
+
+			if(CollectionUtils.isEmpty(borrowExpireBatteryList)){
+				return;
+			}
+
+			for(ElectricityBattery electricityBattery : borrowExpireBatteryList){
+				Long uid = electricityBattery.getUid();
+				Integer tenantId = electricityBattery.getTenantId();
+				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
+				if (!isOutTime) {
+					continue;
+				}
+
+				UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+				if(Objects.isNull(userOauthBind)){
+					log.error("USER_OAUTH_BIND IS NULL uid={},tenantId={}", uid, tenantId);
+					continue;
+				}
+				String openId = userOauthBind.getThirdId();
+
+				BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
+				QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
+				wrapper.eq("tenant_id", tenantId);
+				ElectricityPayParams ele = mapper.selectOne(wrapper);
+				if(Objects.isNull(ele)){
+					log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
+					continue;
+				}
+
+				TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
+
+				if(Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())){
+					log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
+					continue;
+				}
+
+				AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+				appTemplateQuery.setAppId(ele.getMerchantMinProAppId());
+				appTemplateQuery.setSecret(ele.getMerchantMinProAppSecert());
+				appTemplateQuery.setTouser(openId);
+				appTemplateQuery.setFormId(RandomUtil.randomString(20));
+				appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
+				Map<String, Object> data = new HashMap<>(4);
+
+				Map<String, String> keyword1 = new HashMap<>(1);
+				keyword1.put("value", electricityBattery.getPower() + "%");
+				Map<String, String> keyword2 = new HashMap<>(1);
+				keyword2.put("value", electricityBattery.getSn());
+				Map<String, String> keyword3 = new HashMap<>(1);
+				keyword3.put("value", sdf.format(new Date(System.currentTimeMillis())));
+				Map<String, String> keyword4 = new HashMap<>(1);
+				keyword4.put("value", "当前电量较低，请及时换电。");
+
+				data.put("keyword1", keyword1);
+				data.put("keyword2", keyword2);
+				data.put("keyword3", keyword3);
+				data.put("keyword4", keyword4);
+
+				appTemplateQuery.setData(data);
+
+				weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+			}
+
+			offset += size;
+		}
+	}
+
+	@Override
 	public void handlerBatteryNotInCabinetWarning() {
 
 		Integer offset = 0;
 		Integer size = 300;
 		while (true) {
-			List<ElectricityBattery> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
+			List<ElectricityBatteryVO> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
 			if (CollectionUtils.isEmpty(borrowExpireBatteryList)) {
 				return;
 			}
 			//将电池按租户id分组
-			Map<Integer, List<ElectricityBattery>> batteryMaps = borrowExpireBatteryList.stream().collect(Collectors.groupingBy(ElectricityBattery::getTenantId));
+			Map<Integer, List<ElectricityBatteryVO>> batteryMaps = borrowExpireBatteryList.stream().collect(Collectors.groupingBy(ElectricityBatteryVO::getTenantId));
 			//频率
-			Long frequency = Long.parseLong(wechatTemplateAdminNotificationConfig.getFrequency()) * 60000;
+			Long frequency = Long.parseLong(wechatTemplateNotificationConfig.getBatteryTimeoutFrequency()) * 60000;
 
 			batteryMaps.entrySet().parallelStream().forEach(entry -> {
 				Integer tenantId = entry.getKey();
-				List<ElectricityBattery> batteryList = entry.getValue();
+				List<ElectricityBatteryVO> batteryList = entry.getValue();
 
 				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
 				if (!isOutTime) {
@@ -340,7 +420,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 
 
-	private AppTemplateQuery createAppTemplateQuery(List<ElectricityBattery> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate){
+	private AppTemplateQuery createAppTemplateQuery(List<ElectricityBatteryVO> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate){
 		AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
 		appTemplateQuery.setAppId(appId);
 		appTemplateQuery.setSecret(appSecret);
@@ -354,14 +434,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		return appTemplateQuery;
 	}
 
-	private Map<String, Object> createData(List<ElectricityBattery> batteryList){
+	private Map<String, Object> createData(List<ElectricityBatteryVO> batteryList){
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh时mm分ss秒");
 
-		Map<String, Object> data = new HashMap<>();
-		Map<String, String> keyword1 = new HashMap<>();
+		Map<String, Object> data = new HashMap<>(2);
+		Map<String, String> keyword1 = new HashMap<>(1);
 		keyword1.put("value", sdf.format(new Date(System.currentTimeMillis())));
 		data.put("keyword1", keyword1);
-		Map<String, String> keyword2 = new HashMap<>();
+		Map<String, String> keyword2 = new HashMap<>(1);
 		keyword2.put("value", String.valueOf(batteryList.size()));
 		data.put("keyword2", keyword2);
 

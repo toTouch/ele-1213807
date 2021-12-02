@@ -3,17 +3,20 @@ package com.xiliulou.electricity.handler;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -22,10 +25,10 @@ import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.Objects;
 
@@ -179,7 +182,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 		newElectricityBattery.setUid(null);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-		Double power = eleBatteryVo.getPower();
+        newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
+        Double power = eleBatteryVo.getPower();
 		if (Objects.nonNull(power)) {
 			newElectricityBattery.setPower(power * 100);
 		}

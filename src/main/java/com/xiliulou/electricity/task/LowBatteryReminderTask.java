@@ -10,22 +10,22 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author Hardy
- * @date 2021/11/25 11:34
+ * @date 2021/12/1 18:55
  * @mood
  */
 @Component
-@JobHandler(value = "batteryNotInCabinetWarningTask")
+@JobHandler(value = "lowBatteryReminderTask")
 @Slf4j
-public class BatteryNotInCabinetWarningTask extends IJobHandler {
+public class LowBatteryReminderTask extends IJobHandler {
 
     @Autowired
     ElectricityBatteryService electricityBatteryService;
 
-    //定时任务--电池逾期未归还发送模板消息提醒
+    //定时任务--电池电量不足提示
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         try {
-            electricityBatteryService.handlerBatteryNotInCabinetWarning();
+            electricityBatteryService.handlerLowBatteryReminder();
         } catch (Exception e) {
             log.error("处理失败",e);
         }

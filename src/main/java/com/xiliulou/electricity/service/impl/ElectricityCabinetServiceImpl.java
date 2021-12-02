@@ -1602,6 +1602,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 			newElectricityBattery.setLongitude(longitude);
 		}
 		electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_BATTERY);
 		electricityBatteryService.update(newElectricityBattery);
 
 		//电池上报是否有其他信息
