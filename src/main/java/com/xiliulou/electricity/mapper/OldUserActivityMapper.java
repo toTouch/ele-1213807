@@ -2,8 +2,10 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.List;
 
@@ -26,4 +28,6 @@ public interface OldUserActivityMapper extends BaseMapper<OldUserActivity>{
 
     Integer queryCount(@Param("query")  OldUserActivityQuery oldUserActivityQuery);
 
+	@Select(" select * from t_old_user_activity where endTime is not null and endTime < #{currentTime} and status = 1 and del_flag = 0 limit #{offset},#{size}")
+	List<OldUserActivity> getExpiredActivity(@Param("currentTime") Long currentTime, @Param("offset") Integer offset, @Param("size") Integer size);
 }

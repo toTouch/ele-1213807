@@ -48,5 +48,5 @@ public interface OldUserActivityService {
 
     R queryInfo(Integer id);
 
-
+	void handleActivityExpired();
 }

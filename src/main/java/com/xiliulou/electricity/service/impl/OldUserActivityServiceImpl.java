@@ -3,10 +3,12 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.OldUserActivity;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.OldUserActivityMapper;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
@@ -241,6 +243,19 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
 	}
 
+	@Override
+	public void handleActivityExpired() {
+		//分页只修改200条
+		List<OldUserActivity> oldUserActivityList = oldUserActivityMapper.getExpiredActivity(System.currentTimeMillis(), 0, 200);
+		if (!DataUtil.collectionIsUsable(oldUserActivityList)) {
+			return;
+		}
+		for (OldUserActivity oldUserActivity : oldUserActivityList) {
+			oldUserActivity.setStatus(OldUserActivity.STATUS_OFF);
+			oldUserActivity.setUpdateTime(System.currentTimeMillis());
+			oldUserActivityMapper.updateById(oldUserActivity);
+		}
+	}
 
 }
 

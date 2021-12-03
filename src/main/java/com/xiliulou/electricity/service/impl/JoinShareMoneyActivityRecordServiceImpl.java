@@ -197,7 +197,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 	}
 
 	@Override
-	public void handelJoinShareActivityExpired() {
+	public void handelJoinShareMoneyActivityExpired() {
 		//
 		JoinShareMoneyActivityRecord joinShareMoneyActivityRecord = new JoinShareMoneyActivityRecord();
 		joinShareMoneyActivityRecord.setStatus(JoinShareMoneyActivityRecord.STATUS_FAIL);

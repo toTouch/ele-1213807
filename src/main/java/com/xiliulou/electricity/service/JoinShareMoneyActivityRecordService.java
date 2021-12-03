@@ -24,7 +24,7 @@ public interface JoinShareMoneyActivityRecordService {
 
 	JoinShareMoneyActivityRecord queryByJoinUid(Long uid);
 
-	void handelJoinShareActivityExpired();
+	void handelJoinShareMoneyActivityExpired();
 
 	void updateByActivityId(JoinShareMoneyActivityRecord joinShareMoneyActivityRecord);
 }
