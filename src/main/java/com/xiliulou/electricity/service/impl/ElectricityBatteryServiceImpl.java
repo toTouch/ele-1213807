@@ -380,7 +380,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	public void handlerBatteryNotInCabinetWarning() {
 
-		/*Integer offset = 0;
+		Integer offset = 0;
 		Integer size = 300;
 		while (true) {
 			List<BorrowExpireBatteryVo> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
@@ -394,10 +394,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 			batteryMaps.entrySet().parallelStream().forEach(entry -> {
 				Integer tenantId = entry.getKey();
-				List<BorrowExpireBatteryVo> batteryList = entry.getValue();*/
-
-				Integer tenantId = 32;
-				List<BorrowExpireBatteryVo> batteryList = new ArrayList<>();
+				List<BorrowExpireBatteryVo> batteryList = entry.getValue();
 
                 WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
 				if (Objects.isNull(wechatTemplateAdminNotification)) {
@@ -433,9 +430,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 						weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
 					}
 				}
-			/*});
+			});
 			offset += size;
-		}*/
+		}
 	}
 
 
