@@ -42,5 +42,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void handlerLowBatteryReminder();
 
-    R queryNotBindList(Long offset, Long size);
+    R queryNotBindList(Long offset, Long size,Integer franchiseeId);
 }

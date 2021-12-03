@@ -147,10 +147,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 		List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
 
-		List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+		/*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
 		if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
 			franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-		}
+		}*/
 
 		for (ElectricityBattery electricityBattery : electricityBatteryList) {
 
@@ -177,7 +177,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 			}
 
 			//用于电池绑定问题
-			electricityBatteryVO.setIsBind(false);
+			/*electricityBatteryVO.setIsBind(false);
 
 			if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
 				for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
@@ -185,7 +185,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 						electricityBatteryVO.setIsBind(true);
 					}
 				}
-			}
+			}*/
 
 			electricityBatteryVOList.add(electricityBatteryVO);
 		}
@@ -194,9 +194,32 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 	@Override
 	@DS("slave_1")
-	public R queryNotBindList(Long offset, Long size) {
-		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size);
-		return R.ok(electricityBatteryList);
+	public R queryNotBindList(Long offset, Long size,Integer franchiseeId) {
+		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size, franchiseeId);
+        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
+
+        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+        if (Objects.nonNull(franchiseeId)) {
+            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(Long.parseLong(franchiseeId+""));
+        }
+
+        for (ElectricityBattery electricityBattery : electricityBatteryList) {
+            ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+
+            electricityBatteryVO.setIsBind(false);
+
+            if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
+                for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
+                    if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
+                        electricityBatteryVO.setIsBind(true);
+                    }
+                }
+            }
+
+            electricityBatteryVOList.add(electricityBatteryVO);
+        }
+		return R.ok(electricityBatteryVOList);
 	}
 
 	@Override

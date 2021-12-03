@@ -109,8 +109,9 @@ public class JsonAdminElectricityCabinetBatteryController {
 
     @GetMapping(value = "/admin/battery/bind/page")
     public R getElectricityBatteryBindPage(@RequestParam(value = "offset") Long offset,
-                                       @RequestParam(value = "size") Long size) {
-        return electricityBatteryService.queryNotBindList(offset, size);
+                                       @RequestParam(value = "size") Long size,
+                                           @RequestParam(value = "franchiseeId") Integer franchiseeId) {
+        return electricityBatteryService.queryNotBindList(offset, size, franchiseeId);
     }
 
     /**
