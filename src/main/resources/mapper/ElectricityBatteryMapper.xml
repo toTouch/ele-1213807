@@ -33,7 +33,7 @@
 			</foreach>
 		</if>
 		<if test="query.franchiseeName != null">
-			and b.id in (select b.electricity_battery_id from t_franchisee_bind_electricity_battery b left join t_franchisee f on b.franchisee_id = f.id where f.name like concat('%',#{query.franchiseeName},'%')))
+			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb left join t_franchisee f on fbeb.franchisee_id = f.id where f.name like concat('%',#{query.franchiseeName},'%')))
 		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
