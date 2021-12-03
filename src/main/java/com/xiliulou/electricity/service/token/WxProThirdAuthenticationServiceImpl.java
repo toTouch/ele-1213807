@@ -456,6 +456,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 				//发放优惠券
 				Long[] uids = new Long[1];
 				uids[0] = insert.getUid();
+				log.info("uids is -->{}",uids[0]);
 				userCouponService.batchRelease(newUserActivity.getCouponId(), uids);
 			}
 		}

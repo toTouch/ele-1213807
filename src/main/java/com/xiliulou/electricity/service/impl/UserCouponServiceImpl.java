@@ -114,6 +114,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 			//查询用户手机号
 			User user = userService.queryByUidFromCache(uid);
 			if (Objects.isNull(user)) {
+				log.error("batchRelease  ERROR! not found user,uid:{} ", user.getUid());
 				return R.fail("ELECTRICITY.0019", "未找到用户");
 			}
 			couponBuild.uid(uid);
