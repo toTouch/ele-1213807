@@ -26,4 +26,5 @@ public class MemberCardOrderQuery {
     private Integer status;
 
     private Long franchiseeId;
+    private String franchiseeName;
 }

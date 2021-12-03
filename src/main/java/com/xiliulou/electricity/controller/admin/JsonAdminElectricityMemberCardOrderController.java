@@ -43,7 +43,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	@GetMapping("admin/electricityMemberCardOrder/page")
 	public R getElectricityMemberCardPage(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-		    @RequestParam(value = "franchiseeId", required = false) Long fId,
+		    @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
@@ -78,8 +78,6 @@ public class JsonAdminElectricityMemberCardOrderController {
 				return R.ok(new ArrayList<>());
 			}
 			franchiseeId=franchisee.getId();
-		} else {
-			franchiseeId = fId;
 		}
 
 		MemberCardOrderQuery memberCardOrderQuery = MemberCardOrderQuery.builder()
@@ -92,6 +90,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.size(size)
 				.tenantId(tenantId)
 				.status(status)
+				.franchiseeName(franchiseeName)
 				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
