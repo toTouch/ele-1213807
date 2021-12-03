@@ -28,6 +28,6 @@ public interface OldUserActivityMapper extends BaseMapper<OldUserActivity>{
 
     Integer queryCount(@Param("query")  OldUserActivityQuery oldUserActivityQuery);
 
-	@Select(" select * from t_old_user_activity where endTime is not null and endTime < #{currentTime} and status = 1 and del_flag = 0 limit #{offset},#{size}")
+	@Select(" select * from t_old_user_activity where end_time is not null and end_time < #{currentTime} and status = 1 and del_flag = 0 limit #{offset},#{size}")
 	List<OldUserActivity> getExpiredActivity(@Param("currentTime") Long currentTime, @Param("offset") Integer offset, @Param("size") Integer size);
 }
