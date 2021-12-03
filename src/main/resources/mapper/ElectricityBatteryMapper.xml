@@ -48,7 +48,7 @@
 		and id not in(
 		     select electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where 1=1
 		     <if test="franchiseeId != null">
-				 fbeb.franchisee_id != #{franchiseeId}
+				 and fbeb.franchisee_id != #{franchiseeId}
              </if>
 		     )
 		order by create_time desc
