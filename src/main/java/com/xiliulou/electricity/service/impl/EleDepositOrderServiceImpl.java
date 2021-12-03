@@ -43,6 +43,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
+import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -507,7 +508,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	public void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response) {
 		eleDepositOrderQuery.setOffset(0L);
 		eleDepositOrderQuery.setSize(2000L);
-		List<EleDepositOrder> eleDepositOrderList = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+		List<EleDepositOrderVO> eleDepositOrderList = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
 		if (ObjectUtil.isEmpty(eleDepositOrderList)) {
 			throw new CustomBusinessException("查不到订单");
 		}
@@ -515,7 +516,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		List<EleDepositOrderExcelVO> eleDepositOrderExcelVOS = new ArrayList();
 		SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		int index = 0;
-		for (EleDepositOrder eleDepositOrder : eleDepositOrderList) {
+		for (EleDepositOrderVO eleDepositOrder : eleDepositOrderList) {
 			index++;
 			EleDepositOrderExcelVO excelVo = new EleDepositOrderExcelVO();
 			excelVo.setId(index);
