@@ -46,9 +46,9 @@
 		from t_electricity_battery b
 		where b.del_flag = 0 and b.tenant_id = #{tenantId}
 		and id not in(
-		     select electricity_battery_id from t_franchisee_bind_electricity_battery where 1=1
+		     select electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where 1=1
 		     <if test="franchiseeId != null">
-                 franchisee_id != #{franchiseeId}
+				 fbeb.franchisee_id != #{franchiseeId}
              </if>
 		     )
 		order by create_time desc
@@ -101,7 +101,7 @@
 	<select id="queryBorrowExpireBattery" resultMap="queryBorrowExpireBatteryMap">
         select b.sn, b.electricity_cabinet_name, b.borrow_expire_time, u.name, u.phone, b.status, b.tenant_id
         FROM t_electricity_battery b left join t_user_info u on b.uid = u.uid
-        WHERE borrow_expire_time &lt; #{curTime} and del_flag = 0 and status in(2,3,4) limit #{offset}, #{size}
+        WHERE b.borrow_expire_time &lt; #{curTime} and b.del_flag = 0 and b.status in(2,3,4) limit #{offset}, #{size}
     </select>
 	<resultMap id="queryBorrowExpireBatteryMap" type="com.xiliulou.electricity.vo.BorrowExpireBatteryVo">
 		<result column="sn" property="sn"></result>
