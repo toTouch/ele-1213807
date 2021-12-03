@@ -195,7 +195,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	@DS("slave_1")
 	public R queryNotBindList(Long offset, Long size,Integer franchiseeId) {
-		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size, franchiseeId);
+		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size, franchiseeId, TenantContextHolder.getTenantId());
         List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
 
         List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
