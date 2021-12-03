@@ -467,7 +467,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 		//用户迁移数据则进行迁移
 
-		moveUser(insertUserInfo, franchiseeUserInfo);
+	/*	moveUser(insertUserInfo, franchiseeUserInfo);*/
 
 
 		return createSecurityUser(insertUser, oauthBind);
