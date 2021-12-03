@@ -251,7 +251,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 			return;
 		}
 
-		log.info("oldUserActivityList is -->{}",oldUserActivityList);
+		log.info("oldUserActivityList1 is -->{}",oldUserActivityList);
 		for (OldUserActivity oldUserActivity : oldUserActivityList) {
 			oldUserActivity.setStatus(OldUserActivity.STATUS_OFF);
 			oldUserActivity.setUpdateTime(System.currentTimeMillis());
