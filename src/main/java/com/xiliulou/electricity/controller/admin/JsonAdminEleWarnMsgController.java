@@ -46,7 +46,8 @@ public class JsonAdminEleWarnMsgController {
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
 			@RequestParam(value = "type", required = false) Integer type,
-			@RequestParam(value = "status", required = false) Integer status) {
+			@RequestParam(value = "status", required = false) Integer status,
+	        @RequestParam(value = "cellNo", required = false) Integer cellNo) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -88,6 +89,7 @@ public class JsonAdminEleWarnMsgController {
 				.status(status)
 				.eleIdList(eleIdList)
 				.tenantId(tenantId)
+				.cellNo(cellNo)
 				.build();
 
 		return eleWarnMsgService.queryList(eleWarnMsgQuery);

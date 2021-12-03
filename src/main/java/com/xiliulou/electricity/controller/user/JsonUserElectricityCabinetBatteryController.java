@@ -34,9 +34,4 @@ public class JsonUserElectricityCabinetBatteryController {
 
         return R.ok(electricityBatteryService.queryByUid(uid));
     }
-
-    @GetMapping("user/battery/outTime/Info")
-    public R batteryOutTimeInfo(@RequestParam("tenantId") Long tenantId){
-        return electricityBatteryService.batteryOutTimeInfo(tenantId);
-    }
 }

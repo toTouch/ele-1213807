@@ -35,4 +35,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     Long queryLowBatteryCount(@Param("batteryLevel")String batteryLevel);
 
     List<ElectricityBattery> queryLowBattery(Integer offset, Integer size, String batteryLevel);
+
+    List<ElectricityBattery> queryNotBindList(Long offset, Long size);
 }

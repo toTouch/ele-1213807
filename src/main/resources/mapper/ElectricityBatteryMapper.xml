@@ -23,8 +23,8 @@
 			and b.tenant_id = #{query.tenantId}
 		</if>
 		<if test="query.electricityCabinetName != null">
-			and b.electricity_cabinet_name =  #{query.electricityCabinetName} and status = 0
-		</if>
+ 			and b.electricity_cabinet_name =  #{query.electricityCabinetName} and status = 0
+ 		</if>
 		<if test="query.electricityBatteryIdList!=null and query.electricityBatteryIdList!=''">
 			and b.id in
 			<foreach collection="query.electricityBatteryIdList" item="id" index="index" open="(" close=")"
@@ -35,6 +35,16 @@
 		<if test="query.franchiseeName != null">
 			and b.id in (select electricity_battery_id from t_franchisee_bind_electricity_battery where franchisee_id in (select id from t_franchisee where name = #{query.franchiseeName}))
 		</if>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
+
+	<!--电池分页-->
+	<select id="queryNotBindList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select b.id, b.sn,b.power, b.voltage, b.capacity, b.status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
+		b.uid,b.model,b.charge_status
+		from t_electricity_battery b
+		where b.del_flag = 0 and b.tenant_id = #{query.tenantId} and id not in(select electricity_battery_id from t_franchisee_bind_electricity_battery)
 		order by create_time desc
 		limit #{offset}, #{size}
 	</select>

@@ -107,6 +107,16 @@ public class JsonAdminElectricityCabinetBatteryController {
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
+    @GetMapping(value = "/admin/battery/bind/page")
+    public R getElectricityBatteryBindPage(@RequestParam(value = "offset") Long offset,
+                                       @RequestParam(value = "size") Long size) {
+        return electricityBatteryService.queryNotBindList(offset, size);
+    }
+
+    /**
+     * 分配电池
+     */
+
     /**
      * 电池分页数量
      *

@@ -41,4 +41,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R batteryOutTimeInfo(Long uid);
 
     void handlerLowBatteryReminder();
+
+    R queryNotBindList(Long offset, Long size);
 }

@@ -192,6 +192,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	}
 
 	@Override
+	@DS("slave_1")
+	public R queryNotBindList(Long offset, Long size) {
+		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size);
+		return R.ok(electricityBatteryList);
+	}
+
+	@Override
 	public R queryById(Long electricityBatteryId) {
 		ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId);
 

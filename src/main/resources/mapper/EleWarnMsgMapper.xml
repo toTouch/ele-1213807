@@ -22,6 +22,9 @@
             <if test="query.tenantId != null ">
                 and tenant_id = #{query.tenantId}
             </if>
+            <if test="query.cellNo != null ">
+                and cell_no = #{query.cellNo}
+            </if>
             <if test="query.eleIdList!=null and query.eleIdList!=''">
                 and electricity_cabinet_id in
                 <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
