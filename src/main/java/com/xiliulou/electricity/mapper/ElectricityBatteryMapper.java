@@ -32,10 +32,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<BorrowExpireBatteryVo>queryBorrowExpireBattery(@Param("curTime")long curTime, @Param("offset")Integer offset, @Param("size")Integer size);
 
-    @Select("select count(1) from t_electricity_battery where power < #{batteryLevel} and report_type = 1 and status = 2")
-    Long queryLowBatteryCount(@Param("batteryLevel")String batteryLevel);
+    //@Select("select count(1) from t_electricity_battery where power < #{batteryLevel} and report_type = 1 and status = 2")
+    //Long queryLowBatteryCount(@Param("batteryLevel")String batteryLevel);
 
-    List<ElectricityBattery> queryLowBattery(Integer offset, Integer size, String batteryLevel);
+    List<ElectricityBattery> queryLowBattery(@Param("offset")Integer offset, @Param("size")Integer size, @Param("batteryLevel")String batteryLevel);
 
     List<ElectricityBattery> queryNotBindList(@Param("offset")Long offset, @Param("size")Long size, @Param("franchiseeId")Integer franchiseeId, @Param("tenantId")Integer tenantId);
 }
