@@ -448,6 +448,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 					&& Objects.nonNull(newUserActivity.getCount())&&Objects.nonNull(newUserActivity.getDays())) {
 				insertFranchiseeUserInfo.setRemainingNumber(newUserActivity.getCount().longValue());
 				insertFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis()+(newUserActivity.getDays()* (24 * 60 * 60 * 1000L)));
+				insertFranchiseeUserInfo.setCardType(FranchiseeUserInfo.TYPE_COUNT);
 			}
 
 
