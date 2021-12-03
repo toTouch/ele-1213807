@@ -21,4 +21,6 @@ public interface TemplateConfigService extends IService<TemplateConfigEntity> {
     R removeByIdFromDB(Long id);
 
     TemplateConfigEntity queryByTenantIdFromDB(Integer tenantId);
+
+    R queryTemplateId();
 }

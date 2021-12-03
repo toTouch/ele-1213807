@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -12,6 +13,8 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -99,6 +102,20 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
         TemplateConfigEntity templateConfigEntity = this.baseMapper.selectOne(wrapper);
         return templateConfigEntity;
+    }
+
+    @Override
+    public R queryTemplateId() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
+
+        List<String> result = new ArrayList<>(2);
+        if(CollectionUtils.isNotEmpty(result)){
+            result.add(templateConfigEntity.getBatteryOuttimeTemplate());
+            result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+        }
+
+        return R.ok(result);
     }
 
 }

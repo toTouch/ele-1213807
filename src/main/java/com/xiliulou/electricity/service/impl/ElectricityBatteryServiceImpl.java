@@ -292,9 +292,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 		String batteryLevel = wechatTemplateNotificationConfig.getBatteryLevel();
 		Long lowBatteryFrequency = Long.parseLong(wechatTemplateNotificationConfig.getLowBatteryFrequency()) * 6000;
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh时mm分ss秒");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh:mm");
 
-		//Long lowBatteryCount = electricitybatterymapper.queryLowBatteryCount(batteryLevel);
 		while(true){
 			List<ElectricityBattery> borrowExpireBatteryList = electricitybatterymapper.queryLowBattery(offset, size, batteryLevel);
 
@@ -302,18 +301,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				return;
 			}
 
-			for(ElectricityBattery electricityBattery : borrowExpireBatteryList){
+			borrowExpireBatteryList.parallelStream().forEach(electricityBattery -> {
 				Long uid = electricityBattery.getUid();
 				Integer tenantId = electricityBattery.getTenantId();
 				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
 				if (!isOutTime) {
-					continue;
+					return;
 				}
 
 				UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
 				if(Objects.isNull(userOauthBind)){
 					log.error("USER_OAUTH_BIND IS NULL uid={},tenantId={}", uid, tenantId);
-					continue;
+					return;
 				}
 				String openId = userOauthBind.getThirdId();
 
@@ -323,14 +322,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				ElectricityPayParams ele = mapper.selectOne(wrapper);
 				if(Objects.isNull(ele)){
 					log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
-					continue;
+					return;
 				}
 
 				TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
 
 				if(Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())){
 					log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
-					continue;
+					return;
 				}
 
 				AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
@@ -341,24 +340,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
 				Map<String, Object> data = new HashMap<>(4);
 
-				Map<String, String> keyword1 = new HashMap<>(1);
-				keyword1.put("value", electricityBattery.getPower() + "%");
-				Map<String, String> keyword2 = new HashMap<>(1);
-				keyword2.put("value", electricityBattery.getSn());
-				Map<String, String> keyword3 = new HashMap<>(1);
-				keyword3.put("value", sdf.format(new Date(System.currentTimeMillis())));
-				Map<String, String> keyword4 = new HashMap<>(1);
-				keyword4.put("value", "当前电量较低，请及时换电。");
-
-				data.put("keyword1", keyword1);
-				data.put("keyword2", keyword2);
-				data.put("keyword3", keyword3);
-				data.put("keyword4", keyword4);
+				data.put("keyword1", electricityBattery.getPower() + "%");
+				data.put("keyword2", electricityBattery.getSn());
+				data.put("keyword3", sdf.format(new Date(System.currentTimeMillis())));
+				data.put("keyword4", "当前电量较低，请及时换电。");
 
 				appTemplateQuery.setData(data);
 
 				weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
-			}
+			});
 
 			offset += size;
 		}
