@@ -27,6 +27,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -369,25 +370,21 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		/*Integer offset = 0;
 		Integer size = 300;
 		while (true) {
-			List<ElectricityBatteryVO> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
+			List<BorrowExpireBatteryVo> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
 			if (CollectionUtils.isEmpty(borrowExpireBatteryList)) {
 				return;
 			}
 			//将电池按租户id分组
-			Map<Integer, List<ElectricityBatteryVO>> batteryMaps = borrowExpireBatteryList.stream().collect(Collectors.groupingBy(ElectricityBatteryVO::getTenantId));
+			Map<Integer, List<BorrowExpireBatteryVo>> batteryMaps = borrowExpireBatteryList.stream().collect(Collectors.groupingBy(BorrowExpireBatteryVo::getTenantId));
 			//频率
 			Long frequency = Long.parseLong(wechatTemplateNotificationConfig.getBatteryTimeoutFrequency()) * 60000;
 
 			batteryMaps.entrySet().parallelStream().forEach(entry -> {
 				Integer tenantId = entry.getKey();
-				List<ElectricityBatteryVO> batteryList = entry.getValue();
+				List<BorrowExpireBatteryVo> batteryList = entry.getValue();*/
 
-				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
-				if (!isOutTime) {
-					return;
-				}*/
-                Integer tenantId = 32;
-                List<ElectricityBatteryVO> batteryList = new ArrayList<>();
+				Integer tenantId = 32;
+				List<BorrowExpireBatteryVo> batteryList = new ArrayList<>();
 
                 WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
 				if (Objects.isNull(wechatTemplateAdminNotification)) {
@@ -430,7 +427,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 
 
-	private AppTemplateQuery createAppTemplateQuery(List<ElectricityBatteryVO> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate){
+	private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate){
 		AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
 		appTemplateQuery.setAppId(appId);
 		appTemplateQuery.setSecret(appSecret);
@@ -443,7 +440,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		return appTemplateQuery;
 	}
 
-	private Map<String, Object> createData(List<ElectricityBatteryVO> batteryList){
+	private Map<String, Object> createData(List<BorrowExpireBatteryVo> batteryList){
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd号 HH:mm");
 
 		Map<String, Object> data = new HashMap<>(2);

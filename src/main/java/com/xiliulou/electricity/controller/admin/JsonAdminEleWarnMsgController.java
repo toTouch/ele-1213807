@@ -45,6 +45,7 @@ public class JsonAdminEleWarnMsgController {
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+		    @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
 			@RequestParam(value = "type", required = false) Integer type,
 			@RequestParam(value = "status", required = false) Integer status,
 	        @RequestParam(value = "cellNo", required = false) Integer cellNo) {
@@ -90,6 +91,7 @@ public class JsonAdminEleWarnMsgController {
 				.eleIdList(eleIdList)
 				.tenantId(tenantId)
 				.cellNo(cellNo)
+				.electricityCabinetName(electricityCabinetName)
 				.build();
 
 		return eleWarnMsgService.queryList(eleWarnMsgQuery);

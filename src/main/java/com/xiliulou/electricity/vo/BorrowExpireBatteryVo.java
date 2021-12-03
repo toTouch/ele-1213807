@@ -15,5 +15,5 @@ public class BorrowExpireBatteryVo {
     private String name;
     private String phone;
     private String status;
-    private String tenantId;
+    private Integer tenantId;
 }

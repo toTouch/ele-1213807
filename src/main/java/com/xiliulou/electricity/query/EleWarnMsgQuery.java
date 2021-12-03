@@ -24,4 +24,5 @@ public class EleWarnMsgQuery {
 
     private Integer tenantId;
     private Integer cellNo;
+    private String electricityCabinetName;
 }
