@@ -14,7 +14,7 @@ import org.springframework.stereotype.Component;
  * @Date: 2021-04-20
  */
 @Component
-@JobHandler(value = "joinShareActivityExpiredTask")
+@JobHandler(value = "joinShareMoneyActivityExpiredTask")
 @Slf4j
 public class JoinShareMoneyActivityExpiredTask extends IJobHandler {
     @Autowired
