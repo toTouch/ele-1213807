@@ -102,7 +102,8 @@ public class JsonAdminEleDepositOrderController {
             @RequestParam(value = "phone", required = false) String phone,
             @RequestParam(value = "orderId", required = false) String orderId,
             @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -133,6 +134,7 @@ public class JsonAdminEleDepositOrderController {
                 .status(status)
                 .orderId(orderId)
                 .tenantId(tenantId)
+                .franchiseeName(franchiseeName)
                 .franchiseeId(franchiseeId).build();
 
         return eleDepositOrderService.queryCount(eleDepositOrderQuery);

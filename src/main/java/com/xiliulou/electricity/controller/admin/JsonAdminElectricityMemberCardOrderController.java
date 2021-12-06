@@ -107,7 +107,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+			@RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -138,6 +139,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.queryEndTime(queryEndTime)
 				.tenantId(tenantId)
 				.status(status)
+				.franchiseeName(franchiseeName)
 				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
