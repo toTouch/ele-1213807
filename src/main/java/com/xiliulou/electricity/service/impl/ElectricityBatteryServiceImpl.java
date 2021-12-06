@@ -327,10 +327,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 			borrowExpireBatteryList.parallelStream().forEach(electricityBattery -> {
 				Long uid = electricityBattery.getUid();
 				Integer tenantId = electricityBattery.getTenantId();
-				/*boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
+				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
 				if (!isOutTime) {
 					return;
-				}*/
+				}
 
 				UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
 				if(Objects.isNull(userOauthBind)){
