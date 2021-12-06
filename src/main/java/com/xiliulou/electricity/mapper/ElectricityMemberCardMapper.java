@@ -20,5 +20,5 @@ public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMembe
 
 	Integer listCountByFranchisee(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 
-
+	void unbindActivity(@Param("activityId") Integer activityId);
 }

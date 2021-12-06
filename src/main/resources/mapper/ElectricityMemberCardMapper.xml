@@ -3,6 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardMapper">
 
 
+
 	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
 		SELECT *
 		FROM t_electricity_member_card
@@ -87,6 +88,14 @@
 			and franchisee_id = #{franchiseeId}
 		</if>
 	</select>
+
+
+	<update id="unbindActivity">
+       update t_electricity_member_card
+       set isBindActivity=0,
+       activityId=null
+       where activity_id = #{activityId}
+	</update>
 
 
 </mapper>

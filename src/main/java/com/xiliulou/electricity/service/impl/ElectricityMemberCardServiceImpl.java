@@ -369,6 +369,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 				.eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE));
 	}
 
+	@Override
+	public void unbindActivity(Integer id) {
+		baseMapper.unbindActivity(id);
+	}
+
 	/**
 	 * 获取套餐
 	 *

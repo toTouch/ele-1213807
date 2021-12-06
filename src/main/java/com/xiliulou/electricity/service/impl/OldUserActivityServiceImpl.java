@@ -13,6 +13,7 @@ import com.xiliulou.electricity.mapper.OldUserActivityMapper;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
 import com.xiliulou.electricity.service.CouponService;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -47,6 +48,9 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
 	@Autowired
 	CouponService couponService;
+
+	@Autowired
+	ElectricityMemberCardService electricityMemberCardService;
 
 
 	/**
@@ -93,13 +97,6 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
-		/*//查询该租户是否有新人活动，有则不能添加
-		int count = oldUserActivityMapper.selectCount(new LambdaQueryWrapper<OldUserActivity>()
-				.eq(OldUserActivity::getTenantId, tenantId).eq(OldUserActivity::getStatus, OldUserActivity.STATUS_ON));
-		if (count > 0) {
-			return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
-		}*/
-
 
 		OldUserActivity oldUserActivity = new OldUserActivity();
 		BeanUtils.copyProperties(oldUserActivityAddAndUpdateQuery,oldUserActivity);
@@ -143,16 +140,6 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		}
 
 
-		/*//查询该租户是否有邀请活动，有则不能启用
-		if (Objects.equals(oldUserActivityAddAndUpdateQuery.getStatus(), OldUserActivity.STATUS_ON)) {
-			int count = oldUserActivityMapper.selectCount(new LambdaQueryWrapper<OldUserActivity>()
-					.eq(OldUserActivity::getTenantId, tenantId).eq(OldUserActivity::getStatus, OldUserActivity.STATUS_ON));
-			if (count > 0) {
-				return R.fail("ELECTRICITY.00200", "该租户已有启用中的新人活动，请勿重复添加");
-			}
-		}*/
-
-
 		OldUserActivity oldUserActivity=new OldUserActivity();
 		BeanUtil.copyProperties(oldUserActivityAddAndUpdateQuery, oldUserActivity);
 		oldUserActivity.setUpdateTime(System.currentTimeMillis());
@@ -162,8 +149,8 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 			//更新缓存
 			redisService.delete(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + oldOldUserActivity.getId());
 
-			//解绑套餐活动 TODO
-
+			//解绑套餐活动
+			electricityMemberCardService.unbindActivity(oldUserActivity.getId());
 
 			return null;
 		});
