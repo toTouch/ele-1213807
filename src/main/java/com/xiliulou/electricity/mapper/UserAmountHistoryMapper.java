@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.UserAmountHistory;
 import com.xiliulou.electricity.query.UserAmountHistoryQuery;
+import com.xiliulou.electricity.vo.UserAmountHistoryVO;
 
 import java.util.List;
 
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public interface UserAmountHistoryMapper extends BaseMapper<UserAmountHistory> {
 
-	List<UserAmountHistory> queryList(UserAmountHistoryQuery userAmountHistoryQuery);
+	List<UserAmountHistoryVO> queryList(UserAmountHistoryQuery userAmountHistoryQuery);
 
 	Integer queryCount(UserAmountHistoryQuery userAmountHistoryQuery);
 }
