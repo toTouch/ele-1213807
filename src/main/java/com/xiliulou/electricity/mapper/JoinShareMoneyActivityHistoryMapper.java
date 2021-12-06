@@ -27,10 +27,10 @@ public interface JoinShareMoneyActivityHistoryMapper extends BaseMapper<JoinShar
 
 	Integer queryCount(JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery);
 
-    @Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where activity_id=#{activityId} and status=1")
+    @Update("update t_join_share_money_activity_history set status=#{status},update_time=#{updateTime} where activity_id=#{activityId} and status=1")
 	void updateByActivityId(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
 
-	@Update("update t_join_share_activity_history set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
+	@Update("update t_join_share_money_activity_history set status=#{status},update_time=#{updateTime} where expired_time <= #{updateTime} and status =1")
 	void updateExpired(JoinShareMoneyActivityHistory joinShareMoneyActivityHistory);
 
 }
