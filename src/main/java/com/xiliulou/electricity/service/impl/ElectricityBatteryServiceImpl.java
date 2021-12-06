@@ -315,7 +315,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 		String batteryLevel = wechatTemplateNotificationConfig.getBatteryLevel();
 		Long lowBatteryFrequency = Long.parseLong(wechatTemplateNotificationConfig.getLowBatteryFrequency()) * 6000;
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh:mm");
+		//SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh:mm");
 
 		while(true){
 			List<ElectricityBattery> borrowExpireBatteryList = electricitybatterymapper.queryLowBattery(offset, size, batteryLevel);
@@ -361,12 +361,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				appTemplateQuery.setTouser(openId);
 				appTemplateQuery.setFormId(RandomUtil.randomString(20));
 				appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
-				Map<String, Object> data = new HashMap<>(4);
+				Map<String, Object> data = new HashMap<>(3);
 
-				data.put("keyword1", electricityBattery.getPower() + "%");
-				data.put("keyword2", electricityBattery.getSn());
-				data.put("keyword3", sdf.format(new Date(System.currentTimeMillis())));
-				data.put("keyword4", "当前电量较低，请及时换电。");
+				data.put("character_string1", electricityBattery.getPower() + "%");
+				data.put("character_string2", electricityBattery.getSn());
+				//data.put("keyword3", sdf.format(new Date(System.currentTimeMillis())));
+				data.put("thing3", "当前电量较低，请及时换电。");
 
 				appTemplateQuery.setData(data);
 
