@@ -92,8 +92,8 @@
 
 	<update id="unbindActivity">
        update t_electricity_member_card
-       set isBindActivity=0,
-       activityId=null
+       set is_bind_activity=0,
+       activity_id=null
        where activity_id = #{activityId}
 	</update>
 
