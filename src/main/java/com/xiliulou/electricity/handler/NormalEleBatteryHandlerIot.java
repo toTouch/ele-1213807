@@ -181,6 +181,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
 		newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 		newElectricityBattery.setUid(null);
+		newElectricityBattery.setBorrowExpireTime(null);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
         Double power = eleBatteryVo.getPower();
