@@ -136,6 +136,7 @@
 		electricity_cabinet_id=#{electricityCabinetId},
 		electricity_cabinet_name=#{electricityCabinetName},
 		uid=#{uid},status=#{status},
+		borrow_expire_time=#{borrowExpireTime},
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>
