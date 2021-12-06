@@ -405,7 +405,7 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setElectricityCabinetName(null);
 			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis() );
+            newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis() );
 			electricityBatteryService.updateByOrder(newElectricityBattery);
 
 
@@ -507,9 +507,9 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setElectricityCabinetId(null);
 		newElectricityBattery.setElectricityCabinetName(null);
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
-        newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
+       // newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600 + System.currentTimeMillis());
+        newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
 		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 		//删除柜机被锁缓存
