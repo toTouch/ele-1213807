@@ -217,6 +217,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 					electricityMemberCardVO.setOldUserActivityVO(oldUserActivityVO);
 				}
 			}
+			electricityMemberCardVOList.add(electricityMemberCardVO);
 		}
 		return R.ok(electricityMemberCardVOList);
 	}
