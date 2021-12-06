@@ -39,6 +39,12 @@ public class UserAmountHistory {
      */
     private BigDecimal amount;
 
+    /**
+     * 邀人uid
+     */
+    private Long joinUid;
+
+
     private Long createTime;
 
     private Integer tenantId;

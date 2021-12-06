@@ -327,7 +327,7 @@ public class ElectricityTradeOrderServiceImpl extends
 					shareMoneyActivityRecordService.addCountByUid(joinShareMoneyActivityRecord.getUid(), shareMoneyActivity.getMoney());
 
 					//返现
-					userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(),shareMoneyActivity.getMoney(),electricityMemberCardOrder.getTenantId());
+					userAmountService.handleAmount(joinShareMoneyActivityRecord.getUid(),joinShareMoneyActivityRecord.getJoinUid(),shareMoneyActivity.getMoney(),electricityMemberCardOrder.getTenantId());
 
 				}
 

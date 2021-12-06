@@ -44,7 +44,7 @@ public interface UserAmountService {
 
     R queryByUid();
 
-    void handleAmount(Long uid, BigDecimal money,Integer tenantId);
+    void handleAmount(Long uid, Long joinUid,BigDecimal money,Integer tenantId);
 
     R queryList(UserAmountQuery userAmountQuery);
 

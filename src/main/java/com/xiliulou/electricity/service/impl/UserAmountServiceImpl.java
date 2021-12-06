@@ -70,7 +70,7 @@ public class UserAmountServiceImpl implements UserAmountService {
 	}
 
 	@Override
-	public void handleAmount(Long uid, BigDecimal money,Integer tenantId) {
+	public void handleAmount(Long uid, Long joinUid, BigDecimal money,Integer tenantId) {
 
 
 		UserAmount userAmount=queryByUid(uid);
@@ -97,6 +97,7 @@ public class UserAmountServiceImpl implements UserAmountService {
 		UserAmountHistory userAmountHistory=new UserAmountHistory();
 		userAmountHistory.setType(UserAmountHistory.TYPE_SHARE_ACTIVITY);
 		userAmountHistory.setUid(uid);
+		userAmountHistory.setJoinUid(joinUid);
 		userAmountHistory.setAmount(money);
 		userAmountHistory.setCreateTime(System.currentTimeMillis());
 		userAmountHistory.setTenantId(userAmount.getTenantId());
