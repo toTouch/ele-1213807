@@ -8,7 +8,7 @@
 		tuah.join_uid as joinUid,tu.phone as joinPhone,tuah.create_time as createTime,
 		tuah.tenant_id as tenantId
 		from t_user_amount_history as tuah
-		left join t_user as tu on tuah.uid=tu.uid
+		left join t_user as tu on tuah.join_uid=tu.uid
 		<where>
 			<if test="uid != null ">
 				and tuah.uid = #{uid}
