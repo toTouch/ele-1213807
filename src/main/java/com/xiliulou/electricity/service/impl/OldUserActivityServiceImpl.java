@@ -161,6 +161,10 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
 			redisService.delete(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + oldOldUserActivity.getId());
+
+			//解绑套餐活动 TODO
+
+
 			return null;
 		});
 

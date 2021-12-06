@@ -7,6 +7,7 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.OldUserActivityService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
@@ -45,7 +46,7 @@ public class JsonAdminOldUserActivityController {
 
 	//编辑（暂时只支持上下架）
 	@PutMapping(value = "/admin/oldUserActivity")
-	public R update(@RequestBody @Validated(value = CreateGroup.class) OldUserActivityAddAndUpdateQuery oldUserActivityAddAndUpdateQuery) {
+	public R update(@RequestBody @Validated(value = UpdateGroup.class) OldUserActivityAddAndUpdateQuery oldUserActivityAddAndUpdateQuery) {
 		return oldUserActivityService.update(oldUserActivityAddAndUpdateQuery);
 	}
 
