@@ -107,8 +107,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
 		Integer insert = baseMapper.insert(electricityMemberCard);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
-			//新增缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
 			return null;
 		});
 
@@ -142,7 +140,6 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//先删再改
 			redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId(), electricityMemberCard);
 			return null;
 		});
 
