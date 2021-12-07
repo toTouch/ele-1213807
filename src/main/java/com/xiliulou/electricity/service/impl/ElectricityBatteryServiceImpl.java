@@ -396,6 +396,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				Integer tenantId = entry.getKey();
 				List<BorrowExpireBatteryVo> batteryList = entry.getValue();
 
+				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
+				if (!isOutTime) {
+					return;
+				}
+
                 WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
 				if (Objects.isNull(wechatTemplateAdminNotification)) {
 					log.error("WECHAT_TEMPLATE_ADMIN_NOTIFICATION IS NULL ERROR! tenantId={}", tenantId);

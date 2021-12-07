@@ -107,9 +107,9 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
     @Override
     public R queryTemplateId() {
         Integer tenantId = TenantContextHolder.getTenantId();
-        TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
-
         List<String> result = new ArrayList<>(2);
+
+        TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
         if(Objects.nonNull(templateConfigEntity)){
             result.add(templateConfigEntity.getBatteryOuttimeTemplate());
             result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
