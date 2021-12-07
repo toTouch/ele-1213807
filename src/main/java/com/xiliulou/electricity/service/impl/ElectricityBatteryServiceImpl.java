@@ -301,9 +301,9 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	public R batteryOutTimeInfo(Long tenantId){
 		String json = redisService.get(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId);
-		List<ElectricityBattery> list = null;
+		List<BorrowExpireBatteryVo> list = null;
 		if(StrUtil.isNotBlank(json)){
-			list = JSON.parseArray(json, ElectricityBattery.class);
+			list = JSON.parseArray(json, BorrowExpireBatteryVo.class);
 		}
 		return R.ok(list);
 	}
