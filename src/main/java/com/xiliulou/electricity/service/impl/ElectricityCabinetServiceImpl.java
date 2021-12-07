@@ -631,20 +631,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				//电柜
 				List<ElectricityCabinet> electricityCabinetList = null;
 				if(Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)){
-                    electricityCabinetList = this.electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
+                    //1、直接查柜子
+				    electricityCabinetList = this.electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
                 } else if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
+				    //1、查代理商
 				    Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+				    //2、再找代理商下的门店
                     List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
                     electricityCabinetList = new ArrayList<>();
-
                     //3、再找门店绑定的柜子
                     for (Store store:storeList) {
                         List<ElectricityCabinet> storeElectricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
                         electricityCabinetList.addAll(storeElectricityCabinetList);
                     }
                 } else {
+				    //1、直接找门店
                     Store store = storeService.queryByUid(user.getUid());
-                    //3、再找门店绑定的柜子
+                    //2、再找门店绑定的柜子
                     electricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
                 }
 
