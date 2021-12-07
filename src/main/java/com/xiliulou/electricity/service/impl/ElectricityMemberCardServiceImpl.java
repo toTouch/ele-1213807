@@ -371,7 +371,20 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
 	@Override
 	public void unbindActivity(Integer id) {
-		baseMapper.unbindActivity(id);
+		List<ElectricityMemberCard> electricityMemberCardList= baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>()
+				.eq(ElectricityMemberCard::getActivityId, id));
+
+		if(ObjectUtil.isEmpty(electricityMemberCardList)){
+			return;
+		}
+
+		for (ElectricityMemberCard electricityMemberCard: electricityMemberCardList) {
+			baseMapper.unbindActivity(electricityMemberCard.getId());
+
+			//删除缓存
+			redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+		}
+
 	}
 
 	/**

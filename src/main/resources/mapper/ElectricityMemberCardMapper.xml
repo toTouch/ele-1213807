@@ -94,7 +94,7 @@
        update t_electricity_member_card
        set is_bind_activity=0,
        activity_id=null
-       where activity_id = #{activityId}
+       where id = #{id}
 	</update>
 
 
