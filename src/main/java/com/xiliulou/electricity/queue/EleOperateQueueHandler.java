@@ -251,9 +251,9 @@ public class EleOperateQueueHandler {
 				//分配电池 --只分配满电电池
 				Triple<Boolean, String, Object> tripleResult;
 				if(Objects.equals(oldFranchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(),oldFranchiseeUserInfo.getBatteryType(),oldFranchiseeUserInfo.getFranchiseeId());
+					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet.getId(), electricityCabinetOrder.getOldCellNo().toString(),oldFranchiseeUserInfo.getBatteryType(),oldFranchiseeUserInfo.getFranchiseeId());
 				}else {
-					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(),null,oldFranchiseeUserInfo.getFranchiseeId());
+					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet.getId(), electricityCabinetOrder.getOldCellNo().toString(),null,oldFranchiseeUserInfo.getFranchiseeId());
 				}
 
 				if(Objects.isNull(tripleResult)){
