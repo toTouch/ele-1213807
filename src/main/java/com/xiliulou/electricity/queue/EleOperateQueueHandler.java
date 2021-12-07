@@ -7,24 +7,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.entity.RentBatteryOrder;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityConfigService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
@@ -102,9 +87,9 @@ public class EleOperateQueueHandler {
 					log.error("ELECTRICITY CABINET OPERATE QUEUE ERROR! ", e);
 				}
 
-			}
-		});
-	}
+            }
+        });
+    }
 
 	/**
 	 * 接收到响应的操作信息
@@ -239,30 +224,36 @@ public class EleOperateQueueHandler {
 					}
 				}
 
-				//放入电池改为在仓
-				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(newElectricityCabinetOrder.getOldElectricityBatterySn());
-				if(Objects.nonNull(oldElectricityBattery)) {
-					ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
-					if(Objects.nonNull(electricityCabinet)){
-						ElectricityBattery newElectricityBattery = new ElectricityBattery();
-						newElectricityBattery.setId(oldElectricityBattery.getId());
-						newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-						newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
-						newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-						newElectricityBattery.setUid(null);
-						newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-						newElectricityBattery.setBorrowExpireTime(null);
-						electricityBatteryService.updateByOrder(newElectricityBattery);
-					}
-				}
+                //放入电池改为在仓
+                ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(newElectricityCabinetOrder.getOldElectricityBatterySn());
+                if(Objects.nonNull(oldElectricityBattery)) {
+                    ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+                    if(Objects.nonNull(electricityCabinet)){
+                        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                        newElectricityBattery.setId(oldElectricityBattery.getId());
+                        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                        newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+                        newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+                        newElectricityBattery.setUid(null);
+                        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                        newElectricityBattery.setBorrowExpireTime(null);
+                        electricityBatteryService.updateByOrder(newElectricityBattery);
+                    }
+                }
 
+
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+                if (Objects.isNull(electricityCabinet)) {
+                    log.error("handelInitExchangeOrder is error!not found electricityCabinet! electricityCabinetId:{}", electricityCabinetOrder.getElectricityCabinetId());
+                    return;
+                }
 
 				//分配电池 --只分配满电电池
 				Triple<Boolean, String, Object> tripleResult;
 				if(Objects.equals(oldFranchiseeUserInfo.getModelType(),FranchiseeUserInfo.MEW_MODEL_TYPE)){
-					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),oldFranchiseeUserInfo.getBatteryType(),oldFranchiseeUserInfo.getFranchiseeId());
+					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(),oldFranchiseeUserInfo.getBatteryType(),oldFranchiseeUserInfo.getFranchiseeId());
 				}else {
-					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo().toString(),null,oldFranchiseeUserInfo.getFranchiseeId());
+					tripleResult=rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(),null,oldFranchiseeUserInfo.getFranchiseeId());
 				}
 
 				if(Objects.isNull(tripleResult)){
@@ -302,8 +293,7 @@ public class EleOperateQueueHandler {
 				innerElectricityCabinetOrder.setNewCellNo(Integer.valueOf(cellNo));
 				electricityCabinetOrderService.update(innerElectricityCabinetOrder);
 
-				//新电池开门
-				ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
+
 				//发送命令
 				HashMap<String, Object> dataMap = Maps.newHashMap();
 				dataMap.put("cell_no", cellNo);
@@ -323,6 +313,8 @@ public class EleOperateQueueHandler {
 				log.error("e", e);
 			} finally {
 				redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + electricityCabinetOrder.getElectricityCabinetId() + "_" + cellNo);
+                //清除柜机锁定缓存
+                redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
 			}
 
 		}
@@ -402,8 +394,8 @@ public class EleOperateQueueHandler {
 			newElectricityBattery.setId(electricityBattery.getId());
 			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 			newElectricityBattery.setElectricityCabinetId(null);
-			newElectricityBattery.setElectricityCabinetName(null);
-			newElectricityBattery.setUid(electricityCabinetOrder.getUid());
+            //newElectricityBattery.setElectricityCabinetName(null);
+            newElectricityBattery.setUid(electricityCabinetOrder.getUid());
 			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis() );
 			electricityBatteryService.updateByOrder(newElectricityBattery);
@@ -505,7 +497,7 @@ public class EleOperateQueueHandler {
 		newElectricityBattery.setId(electricityBattery.getId());
 		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(null);
-		newElectricityBattery.setElectricityCabinetName(null);
+        //newElectricityBattery.setElectricityCabinetName(null);
 		newElectricityBattery.setUid(rentBatteryOrder.getUid());
        // newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -546,23 +538,23 @@ public class EleOperateQueueHandler {
 			}
 		}
 
-		//放入电池改为在仓
-		ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
-		if(Objects.nonNull(oldElectricityBattery)) {
-			ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
-			if(Objects.nonNull(electricityCabinet)){
-				ElectricityBattery newElectricityBattery = new ElectricityBattery();
-				newElectricityBattery.setId(oldElectricityBattery.getId());
-				newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-				newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
-				newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-				newElectricityBattery.setUid(null);
-				newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-				newElectricityBattery.setBorrowExpireTime(null);
-				electricityBatteryService.updateByOrder(newElectricityBattery);
-			}
+        //放入电池改为在仓
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
+        if(Objects.nonNull(oldElectricityBattery)) {
+            ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
+            if(Objects.nonNull(electricityCabinet)){
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(oldElectricityBattery.getId());
+                newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+                newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+                newElectricityBattery.setUid(null);
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                newElectricityBattery.setBorrowExpireTime(null);
+                electricityBatteryService.updateByOrder(newElectricityBattery);
+            }
 
-		}
+        }
 
 		//删除柜机被锁缓存
 		redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
