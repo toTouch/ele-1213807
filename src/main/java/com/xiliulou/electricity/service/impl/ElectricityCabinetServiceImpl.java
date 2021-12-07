@@ -99,6 +99,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	RentBatteryOrderService rentBatteryOrderService;
 	@Autowired
 	BatteryOtherPropertiesService batteryOtherPropertiesService;
+	@Autowired
+    ElectricityCabinetService electricityCabinetService;
 
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 
@@ -627,7 +629,25 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 				homeOne.put("successCount", successOrder.toString());
 
 				//电柜
-				List<ElectricityCabinet> electricityCabinetList = electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
+				List<ElectricityCabinet> electricityCabinetList = null;
+				if(Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)){
+                    electricityCabinetList = this.electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
+                } else if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
+				    Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+                    List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
+                    electricityCabinetList = new ArrayList<>();
+
+                    //3、再找门店绑定的柜子
+                    for (Store store:storeList) {
+                        List<ElectricityCabinet> storeElectricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
+                        electricityCabinetList.addAll(storeElectricityCabinetList);
+                    }
+                } else {
+                    Store store = storeService.queryByUid(user.getUid());
+                    //3、再找门店绑定的柜子
+                    electricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
+                }
+
 				Integer eleCount = electricityCabinetList.size();
 				Integer onlineEleCount = 0;
 				Integer offlineEleCount = 0;
