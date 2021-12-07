@@ -51,6 +51,14 @@ public class ElectricityMemberCardOrder {
 
     private Long franchiseeId;
 
+    private Integer isBindActivity;
+
+
+    /**
+     * 活动id
+     */
+    private Integer activityId;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 0;

@@ -15,10 +15,13 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
+import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
+import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -288,6 +291,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
 		electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
 		electricityMemberCardOrder.setFranchiseeId(store.getFranchiseeId());
+		electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
+		electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
 		baseMapper.insert(electricityMemberCardOrder);
 
 		//支付零元
@@ -453,7 +458,39 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	@Override
 	@DS("slave_1")
 	public R queryList(MemberCardOrderQuery memberCardOrderQuery) {
-		return R.ok(baseMapper.queryList(memberCardOrderQuery));
+		List<ElectricityMemberCardOrderVO> electricityMemberCardOrderVOList= baseMapper.queryList(memberCardOrderQuery);
+		if(ObjectUtil.isEmpty(electricityMemberCardOrderVOList)) {
+			return R.ok(baseMapper.queryList(memberCardOrderQuery));
+		}
+
+		List<ElectricityMemberCardOrderVO> ElectricityMemberCardOrderVOs = new ArrayList<>();
+		for (ElectricityMemberCardOrderVO electricityMemberCardOrderVO : electricityMemberCardOrderVOList) {
+
+			if (Objects.equals(electricityMemberCardOrderVO.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCardOrderVO.getActivityId())) {
+				OldUserActivity oldUserActivity = oldUserActivityService.queryByIdFromCache(electricityMemberCardOrderVO.getActivityId());
+				if (Objects.nonNull(oldUserActivity)) {
+
+					OldUserActivityVO oldUserActivityVO = new OldUserActivityVO();
+					BeanUtils.copyProperties(oldUserActivity, oldUserActivityVO);
+
+					if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUPON) && Objects.nonNull(oldUserActivity.getCouponId())) {
+
+						Coupon coupon = couponService.queryByIdFromCache(oldUserActivity.getCouponId());
+						if (Objects.nonNull(coupon)) {
+							oldUserActivityVO.setCoupon(coupon);
+						}
+
+					}
+					electricityMemberCardOrderVO.setOldUserActivityVO(oldUserActivityVO);
+				}
+			}
+
+			ElectricityMemberCardOrderVOs.add(electricityMemberCardOrderVO);
+		}
+
+		return R.ok(ElectricityMemberCardOrderVOs);
+
+
 	}
 
 	@Override
