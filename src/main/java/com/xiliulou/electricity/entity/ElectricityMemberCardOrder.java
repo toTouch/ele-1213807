@@ -63,4 +63,7 @@ public class ElectricityMemberCardOrder {
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 0;
 
+    public static final Integer BIND_ACTIVITY = 1;
+    public static final Integer UNBIND_ACTIVITY = 0;
+
 }
