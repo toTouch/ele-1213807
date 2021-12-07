@@ -13,6 +13,9 @@
             <if test="query.name != null and query.name != ''">
                 and name = #{query.name}
             </if>
+            <if test="query.status != null and query.status != ''">
+                and status = #{query.status}
+            </if>
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
             </if>

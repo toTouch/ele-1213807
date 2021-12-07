@@ -22,6 +22,7 @@ public class OldUserActivityQuery {
     private String name;
     private Integer tenantId;
     private String discountType;
+    private Integer status;
 
 
 
