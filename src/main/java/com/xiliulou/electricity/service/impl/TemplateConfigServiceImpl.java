@@ -110,7 +110,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
 
         List<String> result = new ArrayList<>(2);
-        if(CollectionUtils.isNotEmpty(result)){
+        if(Objects.nonNull(templateConfigEntity)){
             result.add(templateConfigEntity.getBatteryOuttimeTemplate());
             result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
         }
