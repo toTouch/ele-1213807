@@ -446,10 +446,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
 		appTemplateQuery.setAppId(appId);
 		appTemplateQuery.setSecret(appSecret);
-		//appTemplateQuery.setTouser(openId);
 		appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
-		//TODO 这块写个页面 调用 user/battery/outTime/Info
-		appTemplateQuery.setPage("/pages/protocol/paypro?tenantId"+tenantId);
+		appTemplateQuery.setPage("/pages/start/template?tenantId="+tenantId);
 		//发送内容
 		appTemplateQuery.setData(createData(batteryList));
 		return appTemplateQuery;
