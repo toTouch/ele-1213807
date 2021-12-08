@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
@@ -77,7 +78,7 @@ public class JsonAdminElectricityCabinetOrderController {
 				return R.fail("ELECTRICITY.0066", "用户权限不足");
 			}
 			eleIdList = userTypeService.getEleIdListByUserType(user);
-			if (Objects.isNull(eleIdList)) {
+			if (ObjectUtil.isEmpty(eleIdList)) {
 				return R.ok(new ArrayList<>());
 			}
 		}
@@ -124,7 +125,7 @@ public class JsonAdminElectricityCabinetOrderController {
 				return R.fail("ELECTRICITY.0066", "用户权限不足");
 			}
 			eleIdList = userTypeService.getEleIdListByUserType(user);
-			if (Objects.isNull(eleIdList)) {
+			if (ObjectUtil.isEmpty(eleIdList)) {
 				return R.ok();
 			}
 		}
@@ -179,7 +180,7 @@ public class JsonAdminElectricityCabinetOrderController {
 				throw new CustomBusinessException("查不到订单");
 			}
 			eleIdList = userTypeService.getEleIdListByUserType(user);
-			if (Objects.isNull(eleIdList)) {
+			if (ObjectUtil.isEmpty(eleIdList)) {
 				throw new CustomBusinessException("查不到订单");
 			}
 		}

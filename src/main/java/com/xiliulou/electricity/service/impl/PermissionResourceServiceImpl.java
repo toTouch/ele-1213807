@@ -6,6 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.PermissionResourceTree;
@@ -53,6 +54,9 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	RoleService roleService;
 	@Autowired
 	RolePermissionService rolePermissionService;
+
+	@Autowired
+	RolePermissionConfig rolePermissionConfig;
 
 
 	/**
@@ -260,7 +264,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 
 		//如果不是超级管理员，就不用返回前4个权限
 		if (!Objects.equals(userInfo.getType(), User.TYPE_USER_SUPER)) {
-			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4).collect(Collectors.toList());
+			permissionResources = permissionResources.stream().filter(e -> e.getId() > 4&& !rolePermissionConfig.getUnShow().contains(e.getId())).collect(Collectors.toList());
 		}
 
 		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(permissionResources, PermissionResource.MENU_ROOT);
