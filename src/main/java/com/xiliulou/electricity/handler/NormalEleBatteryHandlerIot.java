@@ -112,6 +112,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         Long reportTime = eleBatteryVo.getReportTime();
         if (Objects.nonNull(reportTime) && Objects.nonNull(oldElectricityCabinetBox.getReportTime())
                 && oldElectricityCabinetBox.getReportTime() >= reportTime) {
+            log.error("ele battery error! reportTime is less ,reportTime:{}", reportTime);
             return false;
         }
 
