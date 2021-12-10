@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -75,7 +76,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
     @Override
     protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-        log.info("receiverMessage is -->{}",receiverMessage);
+
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
         if (Objects.isNull(electricityCabinet)) {
             log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
@@ -136,7 +137,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), BigEleBatteryVo.class);
 
         //不存在电池
-        if (Objects.nonNull(existsBattery) && !existsBattery) {
+        if (Objects.nonNull(existsBattery) && !existsBattery && StrUtil.isNotEmpty(batteryName)) {
+            log.warn("ELE WARN! battery report illegal! battery name is exists! but existsBattery is false ! batteryName ={}",batteryName);
             batteryName = null;
         }
 
