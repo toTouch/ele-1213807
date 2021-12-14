@@ -115,7 +115,7 @@
 
 
 	<select id="queryLowBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select sn, tenant_id, uid , power from t_electricity_battery where power &lt; #{batteryLevel} and report_type = 1 and status = 2 limit #{offset}, #{size}
+		select sn, tenant_id, uid , power from t_electricity_battery where power &lt; #{batteryLevel} and report_type is null and status = 2 limit #{offset}, #{size}
     </select>
 
 	<update id="updateByOrder">
