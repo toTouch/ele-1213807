@@ -69,4 +69,6 @@ public interface WechatTemplateAdminNotificationService {
     R updateOne(WechatTemplateAdminNotificationQuery wechatTemplateAdminNotificationQuery);
 
     WechatTemplateAdminNotification queryByTenant(Integer tenantId);
+
+    R queryList();
 }

@@ -314,7 +314,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 		Integer offset = 0;
 
 		String batteryLevel = wechatTemplateNotificationConfig.getBatteryLevel();
-		Long lowBatteryFrequency = Long.parseLong(wechatTemplateNotificationConfig.getLowBatteryFrequency()) * 6000;
+		Long lowBatteryFrequency = Long.parseLong(wechatTemplateNotificationConfig.getLowBatteryFrequency()) * 60000;
 		//SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh:mm");
 
 		while(true){

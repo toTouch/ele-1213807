@@ -39,8 +39,7 @@ public class JsonAdminWechatTemplateAdminNotificationController {
 
     @GetMapping("/admin/adminNotification")
     public R queryList(){
-        Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(wechatTemplateAdminNotificationService.queryByTenant(tenantId));
+        return R.ok(wechatTemplateAdminNotificationService.queryList());
     }
 
 }

@@ -188,4 +188,15 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         return null;
     }
 
+    @Override
+    public R queryList(){
+        Integer tenantId = TenantContextHolder.getTenantId();
+        WechatTemplateAdminNotification wechatTemplateAdminNotification = this.queryByTenant(tenantId);
+        WechatTemplateAdminNotificationVo vo = new WechatTemplateAdminNotificationVo();
+        if(Objects.nonNull(wechatTemplateAdminNotification)){
+            vo.setId(wechatTemplateAdminNotification.getId());
+            vo.setOpenIds(JSON.parseArray(wechatTemplateAdminNotification.getOpenIds(), String.class));
+        }
+        return R.ok(vo);
+    }
 }
