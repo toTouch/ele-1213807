@@ -26,4 +26,5 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg>{
     List<EleWarnMsg> queryList(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
 
+    Integer queryCount(@Param("query")EleWarnMsgQuery eleWarnMsgQuery);
 }

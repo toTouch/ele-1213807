@@ -97,6 +97,52 @@ public class JsonAdminEleWarnMsgController {
 		return eleWarnMsgService.queryList(eleWarnMsgQuery);
 	}
 
+	//列表查询
+	@GetMapping(value = "/admin/eleWarnMsg/queryCount")
+	public R queryCount(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+					   @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+					   @RequestParam(value = "type", required = false) Integer type,
+					   @RequestParam(value = "status", required = false) Integer status,
+					   @RequestParam(value = "cellNo", required = false) Integer cellNo) {
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		//如果是查全部则直接跳过
+		List<Integer> eleIdList = null;
+		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+			UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+			if (Objects.isNull(userTypeService)) {
+				log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+				return R.fail("ELECTRICITY.0066", "用户权限不足");
+			}
+			eleIdList = userTypeService.getEleIdListByUserType(user);
+			if (ObjectUtil.isEmpty(eleIdList)) {
+				return R.ok(new ArrayList<>());
+			}
+		}
+
+		EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
+				.electricityCabinetId(electricityCabinetId)
+				.type(type)
+				.status(status)
+				.eleIdList(eleIdList)
+				.tenantId(tenantId)
+				.cellNo(cellNo)
+				.electricityCabinetName(electricityCabinetName)
+				.build();
+
+		return eleWarnMsgService.queryCount(eleWarnMsgQuery);
+	}
+
 	//解锁电柜
 	@PostMapping(value = "/admin/eleWarnMsg/haveRead")
 	public R haveRead(@RequestParam("ids") String ids) {
