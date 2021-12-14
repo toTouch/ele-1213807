@@ -39,7 +39,7 @@ public class JsonAdminWechatTemplateAdminNotificationController {
 
     @GetMapping("/admin/adminNotification")
     public R queryList(){
-        return R.ok(wechatTemplateAdminNotificationService.queryList());
+        return wechatTemplateAdminNotificationService.queryList();
     }
 
 }
