@@ -16,19 +16,25 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.constant.CommonConstants;
 import com.xiliulou.electricity.entity.BankCard;
+import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.mapper.WithdrawRecordMapper;
 import com.xiliulou.electricity.query.CheckQuery;
 import com.xiliulou.electricity.query.HandleWithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.service.BankCardService;
+import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.UserAmountService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.WithdrawPasswordService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.pay.weixin.query.PayTransferQuery;
+import com.xiliulou.pay.weixin.transferPay.TransferPayHandlerService;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -84,17 +90,6 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Autowired
 	TransferPayHandlerService transferPayHandlerService;
 
-	@Autowired
-	private AgentService agentService;
-
-	@Autowired
-	ShopService shopService;
-
-	@Autowired
-	AgentSplitAccountHistoryService agentSplitAccountHistoryService;
-
-	@Autowired
-	ShopSplitAccountHistoryService shopSplitAccountHistoryService;
 
 	@Autowired
 	UserService userService;

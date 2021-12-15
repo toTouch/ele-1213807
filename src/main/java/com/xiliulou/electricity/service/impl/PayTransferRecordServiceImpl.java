@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.mapper.PayTransferRecordMapper;
 import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
+import com.xiliulou.electricity.utils.BigDecimalUtil;
 import com.xiliulou.pay.weixin.query.PayTransferQuery;
 import com.xiliulou.pay.weixin.transferPay.QueryTransferResultService;
 import lombok.extern.slf4j.Slf4j;
