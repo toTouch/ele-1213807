@@ -19,4 +19,8 @@ public interface UserAmountMapper extends BaseMapper<UserAmount> {
 	List<UserAmountVO> queryList(UserAmountQuery userAmountQuery);
 
 	Integer queryCount(UserAmountQuery userAmountQuery);
+
+	void updateReduceIncome(@Param("uid") Long uid, @Param("income") Double income);
+
+	void updateRollBackIncome(@Param("uid") Long uid,@Param("income") Double income);
 }

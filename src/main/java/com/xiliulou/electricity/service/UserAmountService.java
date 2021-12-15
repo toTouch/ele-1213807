@@ -49,4 +49,8 @@ public interface UserAmountService {
     R queryList(UserAmountQuery userAmountQuery);
 
     R queryCount(UserAmountQuery userAmountQuery);
+
+	void updateReduceIncome(Long uid, Double requestAmount);
+
+    void updateRollBackIncome(Long uid, Double requestAmount)
 }

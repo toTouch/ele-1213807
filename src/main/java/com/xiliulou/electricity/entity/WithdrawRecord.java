@@ -30,8 +30,6 @@ public class WithdrawRecord {
     * 用户Id
     */
     private Long uid;
-    //加盟商或门店id
-    private Long otherId;
     /**
      * 提现订单号
      */
@@ -93,7 +91,6 @@ public class WithdrawRecord {
     //银行编号
     private String bankCode;
 
-    private BigDecimal serviceTaxRate;
 
     //状态
     //审核中

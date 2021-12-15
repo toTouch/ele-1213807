@@ -40,13 +40,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.WithdrawRecordVO;
 import com.xiliulou.pay.weixin.query.PayTransferQuery;
 import com.xiliulou.pay.weixin.transferPay.TransferPayHandlerService;
-import com.xiliulou.pay.weixinv3.dto.Amount;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -115,17 +115,16 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	public R withdraw(WithdrawQuery query) {
 		try {
 			//根据用户类型查询用户余额
-			BigDecimal balance = BigDecimal.ZERO;
-			Long otherId = null;
+			BigDecimal balance;
+			Long otherId;
 			UserAmount userAmount = userAmountService.queryByUid(query.getUid());
 			if (Objects.isNull(userAmount)) {
 				log.error("AMOUNT ERROR! userAmount is null error! uid={}", query.getUid());
 				return R.fail("未查询到加盟商账户");
 			}
 			balance = userAmount.getBalance();
-			otherId = userAmountS.getAgentIdByUId(query.getUid(), 1);
 
-			if (balance < query.getAmount()) {
+			if (balance.compareTo(BigDecimal.valueOf(query.getAmount())) < 0) {
 				log.error("AMOUNT ERROR! insufficient amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
 				return R.fail("提现余额不足!");
 			}
@@ -176,12 +175,10 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecord.setUpdateTime(System.currentTimeMillis());
 			withdrawRecord.setStatus(WithdrawRecord.CHECKING);
 			withdrawRecord.setOrderId(UUID.randomUUID().toString().replaceAll("-", ""));
-			withdrawRecord.setOtherId(otherId);
 			withdrawRecord.setRequestAmount(query.getAmount());
 			withdrawRecord.setPlatformFee(platformFee.doubleValue());
 			withdrawRecord.setHandlingFee(handlingFee.doubleValue());
 			withdrawRecord.setAmount(amount.doubleValue());
-			withdrawRecord.setServiceTaxRate(this.getServiceTaxRate(tokenUser));
 			withdrawRecordMapper.insert(withdrawRecord);
 
 			//扣除余额
@@ -190,13 +187,11 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			UserAmountHistory history = UserAmountHistory.builder()
 					.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
-					.agentId(withdrawRecord.getOtherId())
-					.createTime(System.currentTimeMillis())
 					.createTime(System.currentTimeMillis())
 					.tenantId(TenantContextHolder.getTenantId())
-					.currentTotalIncome(userAmount.getTotalIncome())
+					.amount(userAmount.getTotalIncome())
 					.oid(withdrawRecord.getId())
-					.splitAmount(withdrawRecord.getRequestAmount()).build();
+					.uid(withdrawRecord.getUid()).build();
 			userAmountHistoryService.insert(history);
 
 			return R.ok();
@@ -245,7 +240,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Transactional(rollbackFor = Exception.class)
 	public R handleWithdraw(HandleWithdrawQuery handleWithdrawQuery) {
 
-		//提现密码确认 TODO
+		//提现密码确认
 		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache();
 		if (Objects.isNull(withdrawPassword)) {
 			return R.fail("请设置提现密码");
@@ -286,43 +281,21 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecordMapper.updateById(withdrawRecord);
 
 			//回退余额
-			if (Objects.equals(withdrawRecord.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-				UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
-				if (Objects.nonNull(userAmount)) {
-					userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+			UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
+			if (Objects.nonNull(userAmount)) {
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
 
-					UserAmountHistory history = UserAmountHistory.builder()
-							.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
-							.agentId(withdrawRecord.getOtherId())
-							.createTime(System.currentTimeMillis())
-							.createTime(System.currentTimeMillis())
-							.tenantId(TenantContextHolder.getTenantId())
-							.currentTotalIncome(userAmount.getTotalIncome())
-							.oid(withdrawRecord.getId())
-							.splitAmount(withdrawRecord.getRequestAmount()).build();
-					userAmountHistoryService.insert(history);
-				}
-
-			} else {
-
-				ShopAmount shopAmount = shopAmountService.queryByUid(withdrawRecord.getUid());
-
-				if (Objects.nonNull(shopAmount)) {
-					shopAmountService.updateRollBackIncome(shopAmount.getShopId(), withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
-
-					ShopSplitAccountHistory history = ShopSplitAccountHistory.builder()
-							.type(ShopSplitAccountHistory.TYPE_WITHDRAW_ROLLBACK)
-							.shopId(withdrawRecord.getOtherId())
-							.createTime(System.currentTimeMillis())
-							.tenantId(TenantContextHolder.getTenantId())
-							.currentTotalIncome(shopAmount.getTotalIncome())
-							.oid(withdrawRecord.getId())
-							.splitAmount(withdrawRecord.getRequestAmount())
-							.build();
-					shopSplitAccountHistoryService.insert(history);
-				}
+				UserAmountHistory history = UserAmountHistory.builder()
+						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
+						.createTime(System.currentTimeMillis())
+						.tenantId(TenantContextHolder.getTenantId())
+						.amount(userAmount.getTotalIncome())
+						.oid(withdrawRecord.getId())
+						.uid(withdrawRecord.getUid()).build();
+				userAmountHistoryService.insert(history);
 			}
+
 			return R.ok();
 		}
 
@@ -330,6 +303,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		withdrawRecordMapper.updateById(withdrawRecord);
 
 		return transferPay(withdrawRecord);
+
 	}
 
 	@Override
@@ -341,48 +315,25 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			return R.fail("查不到该笔流水");
 		}
 
-		AgentAmount agentAmount = null;
-		ShopAmount shopAmount = null;
+		UserAmount userAmount = null;
 
 		if (!result) {
 			//回退余额
-			if (Objects.equals(withdrawRecord.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-				agentAmount = agentAmountService.queryByUid(withdrawRecord.getUid());
-				if (Objects.nonNull(agentAmount)) {
-					agentAmountService.updateRollBackIncome(agentAmount.getAgentId(), withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+			userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
+			if (Objects.nonNull(userAmount)) {
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
 
-					AgentSplitAccountHistory history = AgentSplitAccountHistory.builder()
-							.type(AgentSplitAccountHistory.TYPE_WITHDRAW_ROLLBACK)
-							.agentId(withdrawRecord.getOtherId())
-							.createTime(System.currentTimeMillis())
-							.createTime(System.currentTimeMillis())
-							.tenantId(1)
-							.currentTotalIncome(agentAmount.getTotalIncome())
-							.oid(withdrawRecord.getId())
-							.splitAmount(withdrawRecord.getRequestAmount()).build();
-					agentSplitAccountHistoryService.insert(history);
-				}
-
-			} else {
-
-				shopAmount = shopAmountService.queryByUid(withdrawRecord.getUid());
-				if (Objects.nonNull(shopAmount)) {
-					shopAmountService.updateRollBackIncome(shopAmount.getShopId(), withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
-
-					ShopSplitAccountHistory history = ShopSplitAccountHistory.builder()
-							.type(ShopSplitAccountHistory.TYPE_WITHDRAW_ROLLBACK)
-							.shopId(withdrawRecord.getOtherId())
-							.createTime(System.currentTimeMillis())
-							.tenantId(1)
-							.currentTotalIncome(shopAmount.getTotalIncome())
-							.oid(withdrawRecord.getId())
-							.splitAmount(withdrawRecord.getRequestAmount())
-							.build();
-					shopSplitAccountHistoryService.insert(history);
-				}
-
+				UserAmountHistory history = UserAmountHistory.builder()
+						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
+						.createTime(System.currentTimeMillis())
+						.tenantId(TenantContextHolder.getTenantId())
+						.amount(userAmount.getTotalIncome())
+						.oid(withdrawRecord.getId())
+						.uid(withdrawRecord.getUid()).build();
+				userAmountHistoryService.insert(history);
 			}
+
 		}
 
 		if (result) {
@@ -410,6 +361,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecordMapper.updateById(withdrawRecord);
 			return R.ok();
 		}
+
 	}
 
 	@Override
@@ -439,68 +391,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		return withdrawRecordMapper.selectById(oid);
 	}
 
-	@Override
-	public R getTotalServiceCharge(TokenUser user, BigDecimal amount) {
-		//平台服务费
-		BigDecimal platformFee = getPlatformFee(user, amount);
 
-		if (Objects.isNull(platformFee)) {
-			log.error("PLATFORM FEE ERROR! platformFee is null error! uid={}", user.getUid());
-			return R.fail("平台手续费计算失败");
-		}
 
-		//腾讯收取服务费
-		BigDecimal handlingFee = BigDecimal.valueOf(getHandlingFee(platformFee.doubleValue()));
-		//返回总服务费
-		HashMap<String, BigDecimal> result = new HashMap<>();
-		result.put("platformFee", platformFee);
-		result.put("handlingFee", handlingFee);
-		return R.ok(result);
-	}
-
-	@Override
-	public BigDecimal getServiceTaxRate(TokenUser user) {
-
-		BigDecimal serviceTaxRate = null;
-
-		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			AgentEntity agentEntity = agentService.getAgentByUId(user.getUid());
-			if (Objects.nonNull(agentEntity)) {
-				serviceTaxRate = agentEntity.getServiceTaxRate();
-			}
-		}
-
-		if (Objects.equals(user.getType(), User.TYPE_USER_SHOP)) {
-			Shop shop = shopService.getShopByUId(user.getUid());
-			if (Objects.nonNull(shop)) {
-				serviceTaxRate = shop.getServiceTaxRate();
-			}
-		}
-
-		return serviceTaxRate;
-	}
-
-	private BigDecimal getPlatformFee(TokenUser user, BigDecimal amount) {
-		BigDecimal platformFee = null;
-
-		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			AgentEntity agentEntity = agentService.getAgentByUId(user.getUid());
-			if (Objects.nonNull(agentEntity)) {
-				platformFee = amount.multiply(agentEntity.getServiceTaxRate().divide(new BigDecimal(100.0)));
-			}
-		}
-
-		if (Objects.equals(user.getType(), User.TYPE_USER_SHOP)) {
-			Shop shop = shopService.getShopByUId(user.getUid());
-			if (Objects.nonNull(shop)) {
-				platformFee = amount.multiply(shop.getServiceTaxRate().divide(new BigDecimal(100.0)));
-			}
-		}
-		if (Objects.isNull(platformFee)) {
-			return null;
-		}
-		return platformFee.setScale(2, BigDecimal.ROUND_HALF_UP);
-	}
 
 	@Transactional(rollbackFor = Exception.class)
 	public R transferPay(WithdrawRecord withdrawRecord) {
@@ -645,39 +537,18 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		//回退余额
 		if (Objects.equals(withdrawRecord.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-			AgentAmount agentAmount = agentAmountService.queryByUid(withdrawRecord.getUid());
-			if (Objects.nonNull(agentAmount)) {
-				agentAmountService.updateRollBackIncome(agentAmount.getAgentId(), withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+			UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
+			if (Objects.nonNull(userAmount)) {
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
 
-				AgentSplitAccountHistory history = AgentSplitAccountHistory.builder()
-						.type(AgentSplitAccountHistory.TYPE_WITHDRAW_ROLLBACK)
-						.agentId(withdrawRecord.getOtherId())
-						.createTime(System.currentTimeMillis())
+				UserAmountHistory history = UserAmountHistory.builder()
+						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
 						.createTime(System.currentTimeMillis())
 						.tenantId(TenantContextHolder.getTenantId())
-						.currentTotalIncome(agentAmount.getTotalIncome())
+						.amount(userAmount.getTotalIncome())
 						.oid(withdrawRecord.getId())
-						.splitAmount(withdrawRecord.getRequestAmount()).build();
-				agentSplitAccountHistoryService.insert(history);
-			}
-
-		} else {
-
-			ShopAmount shopAmount = shopAmountService.queryByUid(withdrawRecord.getUid());
-			if (Objects.nonNull(shopAmount)) {
-				shopAmountService.updateRollBackIncome(shopAmount.getShopId(), withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
-
-				ShopSplitAccountHistory history = ShopSplitAccountHistory.builder()
-						.type(ShopSplitAccountHistory.TYPE_WITHDRAW_ROLLBACK)
-						.shopId(withdrawRecord.getOtherId())
-						.createTime(System.currentTimeMillis())
-						.tenantId(TenantContextHolder.getTenantId())
-						.currentTotalIncome(shopAmount.getTotalIncome())
-						.oid(withdrawRecord.getId())
-						.splitAmount(withdrawRecord.getRequestAmount())
-						.build();
-				shopSplitAccountHistoryService.insert(history);
-
+						.uid(withdrawRecord.getUid()).build();
+				userAmountHistoryService.insert(history);
 			}
 
 		}

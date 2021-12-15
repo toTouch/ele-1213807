@@ -33,7 +33,4 @@ public interface WithdrawRecordService {
 
 	WithdrawRecord selectById(Long oid);
 
-    R getTotalServiceCharge(TokenUser user, BigDecimal amount);
-
-	BigDecimal getServiceTaxRate(TokenUser user);
 }

@@ -13,6 +13,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserAmountVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -114,5 +115,15 @@ public class UserAmountServiceImpl implements UserAmountService {
 	public R queryCount(UserAmountQuery userAmountQuery) {
 		Integer count=userAmountMapper.queryCount(userAmountQuery);
 		return R.ok(count);
+	}
+
+	@Override
+	public void updateReduceIncome(Long uid,Double income) {
+		userAmountMapper.updateReduceIncome(uid,income);
+	}
+
+	@Override
+	public void updateRollBackIncome(Long uid,Double income) {
+		userAmountMapper.updateRollBackIncome(uid,income);
 	}
 }

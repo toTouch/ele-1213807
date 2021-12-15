@@ -20,4 +20,7 @@ public interface CommonConstants {
 
 	//提现密码缓存
 	String CACHE_WITHDRAW_PASSWORD = "withdraw_password";
+
+	//提现 用户锁
+	String CACHE_WITHDRAW_USER_UID = "withdraw_user_uid:";
 }
