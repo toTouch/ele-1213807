@@ -1223,10 +1223,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		return R.ok(electricityCabinetVOs);
 	}
 
-	@Override
-	public List<ElectricityCabinet> queryByStoreId(Long storeId) {
-		return electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
-				.eq(ElectricityCabinet::getStoreId, storeId));
+    @Override
+    public List<ElectricityCabinet> queryByStoreId(Long storeId) {
+        return electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
+                .eq(ElectricityCabinet::getStoreId, storeId).eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
 
 	}
 
