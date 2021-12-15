@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.handler;
 
+import com.alibaba.fastjson.JSON;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -183,7 +185,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setUid(null);
 		newElectricityBattery.setBorrowExpireTime(null);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-        newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
+        //newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
         Double power = eleBatteryVo.getPower();
 		if (Objects.nonNull(power)) {
 			newElectricityBattery.setPower(power * 100);
