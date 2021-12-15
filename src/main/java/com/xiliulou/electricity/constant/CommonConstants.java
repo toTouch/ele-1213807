@@ -13,4 +13,7 @@ public interface CommonConstants {
 	 * 验证码前缀
 	 */
 	String DEFAULT_CODE_KEY = "DEFAULT_CODE_KEY_";
+
+	//操作银行卡 用户锁
+	String BIND_BANK_OPER_USER_LOCK = "bind_Bank_oper_user_lock:";
 }
