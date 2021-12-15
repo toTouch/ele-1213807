@@ -103,7 +103,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetService electricityCabinetService;
 
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 20, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
-
+	@Autowired
+	TenantService tenantService;
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -1125,6 +1126,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 		ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinet.getTenantId());
 		if (Objects.nonNull(electricityConfig)) {
 			name = electricityConfig.getName();
+		}
+
+		//租户code
+		electricityCabinetVO.setTenantId(electricityCabinet.getTenantId());
+		Tenant tenant = tenantService.queryByIdFromCache(electricityCabinet.getTenantId());
+		if(Objects.nonNull(tenant)){
+			electricityCabinetVO.setTenantCode(tenant.getCode());
 		}
 
 		electricityCabinetVO.setConfigName(name);
