@@ -52,5 +52,5 @@ public interface UserAmountService {
 
 	void updateReduceIncome(Long uid, Double requestAmount);
 
-    void updateRollBackIncome(Long uid, Double requestAmount)
+    void updateRollBackIncome(Long uid, Double requestAmount);
 }

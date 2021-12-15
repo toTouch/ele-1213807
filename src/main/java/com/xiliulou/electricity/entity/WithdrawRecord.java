@@ -47,10 +47,6 @@ public class WithdrawRecord {
      */
     private Double requestAmount;
     /**
-     * 平台服务费,单位元
-     */
-    private Double platformFee;
-    /**
     * 手续费,单位元
     */
     private Double handlingFee;

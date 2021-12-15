@@ -152,16 +152,10 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 				return R.fail("不支持此银行卡转账!");
 			}
 
-			TokenUser tokenUser = SecurityUtils.getUserInfo();
 
-			BigDecimal platformFee = this.getPlatformFee(tokenUser, BigDecimal.valueOf(query.getAmount()));
-			if (Objects.isNull(platformFee)) {
-				log.error("PLATFORM FEE ERROR! platformFee is null error! uid={}", query.getUid());
-				return R.fail("平台手续费计算失败");
-			}
 
-			BigDecimal handlingFee = BigDecimal.valueOf(this.getHandlingFee(platformFee.doubleValue()));
-			BigDecimal amount = (BigDecimal.valueOf(query.getAmount()).subtract(handlingFee).subtract(platformFee)).setScale(2, BigDecimal.ROUND_HALF_UP);
+			BigDecimal handlingFee = BigDecimal.valueOf(this.getHandlingFee(query.getAmount().doubleValue()));
+			BigDecimal amount = (BigDecimal.valueOf(query.getAmount()).subtract(handlingFee).setScale(2, BigDecimal.ROUND_HALF_UP));
 
 			//插入提现表
 			WithdrawRecord withdrawRecord = new WithdrawRecord();
@@ -176,7 +170,6 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecord.setStatus(WithdrawRecord.CHECKING);
 			withdrawRecord.setOrderId(UUID.randomUUID().toString().replaceAll("-", ""));
 			withdrawRecord.setRequestAmount(query.getAmount());
-			withdrawRecord.setPlatformFee(platformFee.doubleValue());
 			withdrawRecord.setHandlingFee(handlingFee.doubleValue());
 			withdrawRecord.setAmount(amount.doubleValue());
 			withdrawRecordMapper.insert(withdrawRecord);
