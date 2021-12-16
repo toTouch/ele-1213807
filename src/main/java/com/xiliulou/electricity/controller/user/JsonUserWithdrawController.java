@@ -72,7 +72,6 @@ public class JsonUserWithdrawController extends BaseController {
 		}
 
 		query.setUid(user.getUid());
-		query.setType(user.getType());
 		return withdrawRecordService.withdraw(query);
 	}
 
