@@ -59,12 +59,9 @@ public class JsonAdminWithdrawController extends BaseController {
 	public R queryList(@RequestParam(value = "size", required = false) Long size,
 			@RequestParam(value = "offset", required = false) Long offset,
 			@RequestParam(value = "uid", required = false) Long uid,
-			@RequestParam(value = "shopId", required = false) Long shopId,
-			@RequestParam(value = "encBindUserName", required = false) String encBindUserName,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "orderId", required = false) String orderId) {
+			@RequestParam(value = "status", required = false) Integer status) {
 		if (Objects.isNull(size)) {
 			size = 10L;
 		}
@@ -96,12 +93,9 @@ public class JsonAdminWithdrawController extends BaseController {
 
 	@GetMapping(value = "/admin/withdraw/queryCount")
 	public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
-			@RequestParam(value = "shopId", required = false) Long shopId,
-			@RequestParam(value = "encBindUserName", required = false) String encBindUserName,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "orderId", required = false) String orderId) {
+			@RequestParam(value = "status", required = false) Integer status) {
 
 
 		List<Integer> statusList=new ArrayList<>();
