@@ -4,6 +4,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CommonConstants;
+import com.xiliulou.electricity.query.CheckQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
 import com.xiliulou.electricity.service.UserService;
@@ -39,6 +40,20 @@ public class JsonUserWithdrawController extends BaseController {
 
 	@Autowired
 	UserService userService;
+
+
+	//提现前校验
+	@PostMapping(value = "/admin/withdraw/check")
+	public R check(@Validated @RequestBody CheckQuery query) {
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("bindBank  ERROR! not found user ");
+			return R.fail("LOCKER.10017", "没有查询到相关用户");
+		}
+
+		query.setUid(user.getUid());
+		return withdrawRecordService.check(query);
+	}
 
 
 	@PostMapping(value = "/user/withdraw")

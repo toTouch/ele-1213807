@@ -45,18 +45,7 @@ public class JsonAdminWithdrawController extends BaseController {
 	@Autowired
 	UserService userService;
 
-	//提现前校验
-	@PostMapping(value = "/admin/withdraw/check")
-	public R check(@Validated @RequestBody CheckQuery query) {
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("bindBank  ERROR! not found user ");
-			return R.fail("LOCKER.10017", "没有查询到相关用户");
-		}
 
-		query.setUid(user.getUid());
-		return withdrawRecordService.check(query);
-	}
 
 
 
