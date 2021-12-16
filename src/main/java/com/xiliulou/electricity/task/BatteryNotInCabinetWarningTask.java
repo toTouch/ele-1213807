@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
  * @date 2021/11/25 11:34
  * @mood
  */
-@Component
-@JobHandler(value = "batteryNotInCabinetWarningTask")
-@Slf4j
+//@Component
+//@JobHandler(value = "batteryNotInCabinetWarningTask")
+//@Slf4j
 public class BatteryNotInCabinetWarningTask extends IJobHandler {
 
     @Autowired
@@ -27,7 +27,7 @@ public class BatteryNotInCabinetWarningTask extends IJobHandler {
         try {
             electricityBatteryService.handlerBatteryNotInCabinetWarning();
         } catch (Exception e) {
-            log.error("处理失败",e);
+            //log.error("处理失败",e);
         }
         return IJobHandler.SUCCESS;
     }
