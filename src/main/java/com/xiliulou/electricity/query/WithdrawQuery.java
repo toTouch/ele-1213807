@@ -39,10 +39,6 @@ public class WithdrawQuery {
 	 */
 	private Long uid;
 
-	/**
-	 * 用户类型
-	 */
-	private Integer type;
 
 
 }

@@ -151,8 +151,6 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 				return R.fail("PAY_TRANSFER.0018", "不支持此银行卡转账");
 			}
 
-
-
 			BigDecimal handlingFee = BigDecimal.valueOf(this.getHandlingFee(query.getAmount().doubleValue()));
 			BigDecimal amount = (BigDecimal.valueOf(query.getAmount()).subtract(handlingFee).setScale(2, BigDecimal.ROUND_HALF_UP));
 
@@ -163,7 +161,6 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecord.setBankCode(bankCard.getEncBankCode());
 			withdrawRecord.setBankName((bankCard.getFullName()));
 			withdrawRecord.setBankNumber(bankCard.getEncBankNo());
-			withdrawRecord.setType(query.getType());
 			withdrawRecord.setCreateTime(System.currentTimeMillis());
 			withdrawRecord.setUpdateTime(System.currentTimeMillis());
 			withdrawRecord.setStatus(WithdrawRecord.CHECKING);
@@ -174,7 +171,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			//扣除余额
 
-			userAmountService.updateReduceIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
+			userAmountService.updateReduceIncome(withdrawRecord.getUid(), withdrawRecord.getAmount() + withdrawRecord.getHandlingFee());
 
 			UserAmountHistory history = UserAmountHistory.builder()
 					.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
@@ -275,7 +272,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
 			if (Objects.nonNull(userAmount)) {
-				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount() + withdrawRecord.getHandlingFee());
 
 				UserAmountHistory history = UserAmountHistory.builder()
 						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
@@ -313,7 +310,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
 			if (Objects.nonNull(userAmount)) {
-				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount() + withdrawRecord.getHandlingFee());
 
 				UserAmountHistory history = UserAmountHistory.builder()
 						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
@@ -384,7 +381,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Override
 	public R getWithdrawCount(Long uid) {
-		return R.ok(withdrawRecordMapper.selectCount(new LambdaQueryWrapper<WithdrawRecord>().eq(WithdrawRecord::getStatus,WithdrawRecord.CHECKING)));
+		return R.ok(withdrawRecordMapper.selectCount(new LambdaQueryWrapper<WithdrawRecord>().eq(WithdrawRecord::getStatus, WithdrawRecord.CHECKING)));
 	}
 
 	@Transactional(rollbackFor = Exception.class)
@@ -527,24 +524,21 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	}
 
 	private void rollBackWithdraw(WithdrawRecord withdrawRecord) {
-		//回退余额
-		if (Objects.equals(withdrawRecord.getType(), User.TYPE_USER_FRANCHISEE)) {
 
-			UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
-			if (Objects.nonNull(userAmount)) {
-				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
+		UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
+		if (Objects.nonNull(userAmount)) {
+			userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount() + withdrawRecord.getHandlingFee());
 
-				UserAmountHistory history = UserAmountHistory.builder()
-						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
-						.createTime(System.currentTimeMillis())
-						.tenantId(TenantContextHolder.getTenantId())
-						.amount(userAmount.getTotalIncome())
-						.oid(withdrawRecord.getId())
-						.uid(withdrawRecord.getUid()).build();
-				userAmountHistoryService.insert(history);
-			}
-
+			UserAmountHistory history = UserAmountHistory.builder()
+					.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
+					.createTime(System.currentTimeMillis())
+					.tenantId(TenantContextHolder.getTenantId())
+					.amount(userAmount.getTotalIncome())
+					.oid(withdrawRecord.getId())
+					.uid(withdrawRecord.getUid()).build();
+			userAmountHistoryService.insert(history);
 		}
+
 	}
 
 	private String decryptPassword(String encryptPassword) {

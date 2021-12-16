@@ -72,10 +72,6 @@ public class WithdrawRecord {
      */
     private String msg;
 
-    /**
-     * 用户类型 1--代理商，2--门店
-     */
-    private Integer type;
 
     //银行卡号绑定人
     private String trueName;
