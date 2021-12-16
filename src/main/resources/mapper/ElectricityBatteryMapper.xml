@@ -133,8 +133,10 @@
 		<if test="model != null">
 			model =#{model},
 		</if>
+		<if test="electricityCabinetName != null and electricityCabinetName != ''">
+			electricity_cabinet_name=#{electricityCabinetName},
+		</if>
 		electricity_cabinet_id=#{electricityCabinetId},
-		electricity_cabinet_name=#{electricityCabinetName},
 		uid=#{uid},status=#{status},
 		borrow_expire_time=#{borrowExpireTime},
 		update_time=#{updateTime}
