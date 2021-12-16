@@ -40,13 +40,13 @@
         update t_user_amount
 		set balance =balance- #{income},
 		withdraw=withdraw+ #{income}
-		where uid = #{uid} and del_flag = 0
+		where uid = #{uid} and del_flg = 0
     </update>
 
 	<update id="updateRollBackIncome">
         update t_user_amount
 		set balance =balance+ #{income},
 		withdraw=withdraw- #{income}
-		where uid = #{uid} and del_flag = 0
+		where uid = #{uid} and del_flg = 0
     </update>
 </mapper>
