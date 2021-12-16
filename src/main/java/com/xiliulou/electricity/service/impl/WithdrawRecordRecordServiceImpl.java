@@ -168,14 +168,13 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecord.setUpdateTime(System.currentTimeMillis());
 			withdrawRecord.setStatus(WithdrawRecord.CHECKING);
 			withdrawRecord.setOrderId(UUID.randomUUID().toString().replaceAll("-", ""));
-			withdrawRecord.setRequestAmount(query.getAmount());
 			withdrawRecord.setHandlingFee(handlingFee.doubleValue());
 			withdrawRecord.setAmount(amount.doubleValue());
 			withdrawRecordMapper.insert(withdrawRecord);
 
 			//扣除余额
 
-			userAmountService.updateReduceIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+			userAmountService.updateReduceIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
 
 			UserAmountHistory history = UserAmountHistory.builder()
 					.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
@@ -276,7 +275,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
 			if (Objects.nonNull(userAmount)) {
-				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
 
 				UserAmountHistory history = UserAmountHistory.builder()
 						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
@@ -314,7 +313,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
 			if (Objects.nonNull(userAmount)) {
-				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
 
 				UserAmountHistory history = UserAmountHistory.builder()
 						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
@@ -533,7 +532,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 			UserAmount userAmount = userAmountService.queryByUid(withdrawRecord.getUid());
 			if (Objects.nonNull(userAmount)) {
-				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getRequestAmount());
+				userAmountService.updateRollBackIncome(withdrawRecord.getUid(), withdrawRecord.getAmount()+withdrawRecord.getHandlingFee());
 
 				UserAmountHistory history = UserAmountHistory.builder()
 						.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
