@@ -16,9 +16,6 @@
 			<if test="query.uid != null ">
 				and twr.uid = #{query.uid}
 			</if>
-			<if test="query.shopId != null ">
-				and twr.other_id = #{query.shopId}
-			</if>
 			<if test="query.encBindUserName != null and query.encBindUserName != ''">
 				and twr.true_name = #{query.encBindUserName}
 			</if>
@@ -49,9 +46,6 @@
 		<where>
 			<if test="query.uid != null ">
 				and twr.uid = #{query.uid}
-			</if>
-			<if test="query.shopId != null ">
-				and twr.other_id = #{query.shopId}
 			</if>
 			<if test="query.encBindUserName != null and query.encBindUserName != ''">
 				and twr.true_name = #{query.encBindUserName}

@@ -28,7 +28,5 @@ public class WithdrawRecordQuery {
 
 	private String encBindUserName;
 
-	private Long shopId;
-
 	private String orderId;
 }
