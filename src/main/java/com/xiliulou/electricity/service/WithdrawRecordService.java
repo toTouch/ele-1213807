@@ -33,4 +33,5 @@ public interface WithdrawRecordService {
 
 	WithdrawRecord selectById(Long oid);
 
+	R getWithdrawCount(Long uid);
 }

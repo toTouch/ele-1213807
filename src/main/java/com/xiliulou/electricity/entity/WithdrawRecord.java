@@ -43,10 +43,6 @@ public class WithdrawRecord {
     */
     private String bankNumber;
     /**
-     * 请求提现,单位元
-     */
-    private Double requestAmount;
-    /**
     * 手续费,单位元
     */
     private Double handlingFee;

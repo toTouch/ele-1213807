@@ -119,22 +119,22 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			UserAmount userAmount = userAmountService.queryByUid(query.getUid());
 			if (Objects.isNull(userAmount)) {
 				log.error("AMOUNT ERROR! userAmount is null error! uid={}", query.getUid());
-				return R.fail("未查询到用户账户");
+				return R.fail("PAY_TRANSFER.0013", "未查询到用户账户");
 			}
 			balance = userAmount.getBalance();
 
 			if (balance.compareTo(BigDecimal.valueOf(query.getAmount())) < 0) {
 				log.error("AMOUNT ERROR! insufficient amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
-				return R.fail("提现余额不足!");
+				return R.fail("PAY_TRANSFER.0014", "提现余额不足");
 			}
 			if (query.getAmount() <= 2) {
 				log.error("AMOUNT ERROR! less than the minimum amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
-				return R.fail("小于最低提现金额!");
+				return R.fail("PAY_TRANSFER.0015", "小于最低提现金额");
 			}
 
 			if (query.getAmount() > 20000) {
 				log.error("AMOUNT ERROR! greater than the minimum amount error! uid={}, balance={}, requestAmount={}", query.getUid(), balance, query.getAmount());
-				return R.fail("大于单次最大提现金额!");
+				return R.fail("PAY_TRANSFER.0016", "大于单次最大提现金额");
 			}
 
 			//查银行卡信息
@@ -143,12 +143,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 					.eq(BankCard::getDelFlag, BankCard.DEL_NORMAL));
 			if (Objects.isNull(bankCard)) {
 				log.error("BANKCARD ERROR! bankCard is null error! uid={}, bankNumber={}", query.getUid(), query.getBankNumber());
-				return R.fail("找不到此银行卡");
+				return R.fail("PAY_TRANSFER.0017", "找不到此银行卡");
 			}
 
 			if (ObjectUtil.isEmpty(BankNoConstants.BankNoMap.get(bankCard.getEncBankCode()))) {
 				log.error("BANKCARD ERROR! bankCard not support payment error! uid={}, bankNumber={}", query.getUid(), query.getBankNumber());
-				return R.fail("不支持此银行卡转账!");
+				return R.fail("PAY_TRANSFER.0018", "不支持此银行卡转账");
 			}
 
 
@@ -383,8 +383,10 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		return withdrawRecordMapper.selectById(oid);
 	}
 
-
-
+	@Override
+	public R getWithdrawCount(Long uid) {
+		return R.ok(withdrawRecordMapper.selectCount(new LambdaQueryWrapper<WithdrawRecord>().eq(WithdrawRecord::getStatus,WithdrawRecord.CHECKING)));
+	}
 
 	@Transactional(rollbackFor = Exception.class)
 	public R transferPay(WithdrawRecord withdrawRecord) {

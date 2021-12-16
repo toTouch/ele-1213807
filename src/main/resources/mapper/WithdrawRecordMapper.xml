@@ -9,8 +9,8 @@
 		twr.bank_number as bankNumber,
 		twr.check_time as checkTime,twr.arrive_time as arriveTime,twr.status as status,twr.create_time as createTime,
 		twr.update_time as updateTime,twr.msg as msg,twr.type as type,
-		twr.bank_code as bankCode,twr.true_name as trueName, twr.service_tax_rate as serviceTaxRate,
-		twr.amount as amount,twr.handling_fee as handlingFee, twr.request_amount as requestAmount, twr.platform_fee as platformFee
+		twr.bank_code as bankCode,twr.true_name as trueName,
+		twr.amount as amount,twr.handling_fee as handlingFee
 		from t_withdraw_record as twr
 		<where>
 			<if test="query.uid != null ">

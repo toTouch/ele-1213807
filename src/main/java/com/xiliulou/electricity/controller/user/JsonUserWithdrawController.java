@@ -112,5 +112,14 @@ public class JsonUserWithdrawController extends BaseController {
 		return withdrawRecordService.queryList(withdrawRecordQuery);
 	}
 
+	/**
+	 * 用户获取提现审核数量
+	 */
+	@GetMapping("/user/bankcard/getWithdrawCount")
+	public R getWithdrawCount() {
+		Long uid = SecurityUtils.getUid();
+		return withdrawRecordService.getWithdrawCount(uid);
+	}
+
 
 }
