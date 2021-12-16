@@ -116,11 +116,10 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		try {
 			//根据用户类型查询用户余额
 			BigDecimal balance;
-			Long otherId;
 			UserAmount userAmount = userAmountService.queryByUid(query.getUid());
 			if (Objects.isNull(userAmount)) {
 				log.error("AMOUNT ERROR! userAmount is null error! uid={}", query.getUid());
-				return R.fail("未查询到加盟商账户");
+				return R.fail("未查询到用户账户");
 			}
 			balance = userAmount.getBalance();
 
