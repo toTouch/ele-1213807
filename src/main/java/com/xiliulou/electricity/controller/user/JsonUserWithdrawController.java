@@ -43,7 +43,7 @@ public class JsonUserWithdrawController extends BaseController {
 
 
 	//提现前校验
-	@PostMapping(value = "/admin/withdraw/check")
+	@PostMapping(value = "/user/withdraw/check")
 	public R check(@Validated @RequestBody CheckQuery query) {
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
