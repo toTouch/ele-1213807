@@ -29,7 +29,7 @@ public class NotExistSnController extends BaseController {
     @Autowired
     NotExistSnService notExistSnService;
 
-    @GetMapping("/admin/faq/list")
+    @GetMapping("/admin/notExistSn/list")
     public R getList(@RequestParam("size") Integer size,
                      @RequestParam("offset") Integer offset,
                      @RequestParam("eId") Integer eId) {
@@ -49,7 +49,7 @@ public class NotExistSnController extends BaseController {
     }
 
 
-    @GetMapping("/admin/faq/queryCount")
+    @GetMapping("/admin/notExistSn/queryCount")
     public R queryCount(@RequestParam("eId") Integer eId) {
 
         NotExistSnQuery notExistSnQuery = NotExistSnQuery.builder()
