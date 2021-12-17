@@ -25,7 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
  * @date : 2021/9/26 4:45 下午
  */
 @RestController
-public class NotExistSnController extends BaseController {
+public class JsonAdminNotExistSnController extends BaseController {
     @Autowired
     NotExistSnService notExistSnService;
 
