@@ -7,12 +7,14 @@ import com.xiliulou.electricity.mapper.NotExistSnServiceMapper;
 import com.xiliulou.electricity.query.NotExistSnQuery;
 import com.xiliulou.electricity.service.NotExistSnService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 /**
  * @author: Miss.Li
  * @Date: 2021/12/17 13:46
  * @Description:
  */
+@Service
 public class NotExistSnServiceImpl implements NotExistSnService {
 
 	@Autowired
