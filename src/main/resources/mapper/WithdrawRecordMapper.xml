@@ -10,7 +10,7 @@
 		twr.check_time as checkTime,twr.arrive_time as arriveTime,twr.status as status,twr.create_time as createTime,
 		twr.update_time as updateTime,
 		twr.bank_code as bankCode,twr.true_name as trueName,
-		twr.amount as amount,twr.handling_fee as handlingFee
+		twr.amount as amount,twr.handling_fee as handlingFee,twr.msg as msg
 		from t_withdraw_record as twr
 		<where>
 			<if test="query.uid != null ">
@@ -40,6 +40,8 @@
 			limit #{query.offset}, #{query.size}
 		</if>
 	</select>
+
+
 	<select id="queryCount" resultType="java.lang.Integer">
 		select COUNT(1)
 		from t_withdraw_record as twr
