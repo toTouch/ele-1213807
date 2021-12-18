@@ -89,10 +89,6 @@ public class WithdrawRecordVO {
      */
     private String  IdNumber;
 
-    /**
-     * 用户姓名
-     */
-    private String name;
 
     /**
      * 平台税率

@@ -210,7 +210,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			//查询用户名称
 			User user = userService.queryByUidFromCache(withdrawRecordVO.getUid());
 			if (Objects.nonNull(user)) {
-				withdrawRecordVO.setName(user.getName());
+				withdrawRecordVO.setPhone(user.getPhone());
 			}
 
 			withdrawRecordVOs.add(withdrawRecordVO);
