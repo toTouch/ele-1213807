@@ -7,7 +7,7 @@
 	<!--通过实体作为筛选条件查询-->
 	<select id="queryList" resultType="com.xiliulou.electricity.entity.NotExistSn">
 		select
-		id, battery_name, e_id, cell_nov, create_time, update_time,tenant_id,del_flag
+		id, battery_name, e_id, cell_no, create_time, update_time,tenant_id,del_flag
 		from t_not_exist_sn
 		<where>
 			<if test="eId != null ">
