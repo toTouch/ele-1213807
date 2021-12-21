@@ -61,7 +61,8 @@ public class JsonAdminWithdrawController extends BaseController {
 			@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status) {
+			@RequestParam(value = "status", required = false) Integer status,
+			@RequestParam(value = "orderId", required = false) String orderId) {
 		if (Objects.isNull(size)) {
 			size = 10L;
 		}
@@ -86,7 +87,8 @@ public class JsonAdminWithdrawController extends BaseController {
 				.uid(uid)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.status(statusList).build();
+				.status(statusList)
+				.orderId(orderId).build();
 
 		return withdrawRecordService.queryList(withdrawRecordQuery);
 	}
@@ -95,7 +97,8 @@ public class JsonAdminWithdrawController extends BaseController {
 	public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
-			@RequestParam(value = "status", required = false) Integer status) {
+			@RequestParam(value = "status", required = false) Integer status,
+			@RequestParam(value = "orderId", required = false) String orderId) {
 
 
 		List<Integer> statusList=new ArrayList<>();
@@ -112,7 +115,8 @@ public class JsonAdminWithdrawController extends BaseController {
 				.uid(uid)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.status(statusList).build();
+				.status(statusList)
+				.orderId(orderId).build();
 
 		return withdrawRecordService.queryCount(withdrawRecordQuery);
 	}
