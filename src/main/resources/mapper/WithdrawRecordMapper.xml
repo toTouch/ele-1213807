@@ -12,12 +12,13 @@
 		twr.bank_code as bankCode,twr.true_name as trueName,
 		twr.amount as amount,twr.handling_fee as handlingFee,twr.msg as msg
 		from t_withdraw_record as twr
+		left join t_user as tu on tu.uid=twr.uid
 		<where>
 			<if test="query.uid != null ">
 				and twr.uid = #{query.uid}
 			</if>
-			<if test="query.encBindUserName != null and query.encBindUserName != ''">
-				and twr.true_name = #{query.encBindUserName}
+			<if test="query.phone != null and query.phone != ''">
+				and tu.phone = #{query.phone}
 			</if>
 			<if test="query.status!=null and query.status.size()>0">
 				and twr.status in
@@ -45,12 +46,13 @@
 	<select id="queryCount" resultType="java.lang.Integer">
 		select COUNT(1)
 		from t_withdraw_record as twr
+		left join t_user as tu on tu.uid=twr.uid
 		<where>
 			<if test="query.uid != null ">
 				and twr.uid = #{query.uid}
 			</if>
-			<if test="query.encBindUserName != null and query.encBindUserName != ''">
-				and twr.true_name = #{query.encBindUserName}
+			<if test="query.phone != null and query.phone != ''">
+				and tu.phone = #{query.phone}
 			</if>
 			<if test="query.status!=null and query.status.size()>0">
 				and twr.status in

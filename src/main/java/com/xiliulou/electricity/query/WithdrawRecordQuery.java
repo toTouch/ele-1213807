@@ -26,7 +26,7 @@ public class WithdrawRecordQuery {
 
 	private List<Integer> status;
 
-	private String encBindUserName;
-
 	private String orderId;
+
+	private String phone;
 }
