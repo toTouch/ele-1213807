@@ -36,7 +36,7 @@
 				and twr.order_id = #{query.orderId}
 			</if>
 		</where>
-		order by create_time desc
+		order by twr.create_time desc
 		<if test="query.offset != null and query.size != null">
 			limit #{query.offset}, #{query.size}
 		</if>
