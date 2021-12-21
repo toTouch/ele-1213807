@@ -64,7 +64,7 @@ public class WechatConfig {
 
 
     /**
-     * apiName
+     * appId
      */
     private String appId;
 
