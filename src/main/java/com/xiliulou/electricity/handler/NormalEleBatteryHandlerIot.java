@@ -193,6 +193,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 notExistSn.setCellNo(Integer.valueOf(cellNo));
                 notExistSn.setCreateTime(System.currentTimeMillis());
                 notExistSn.setUpdateTime(System.currentTimeMillis());
+                notExistSn.setTenantId(electricityCabinet.getTenantId());
                 notExistSnService.insert(notExistSn);
             }
             return false;
