@@ -79,6 +79,8 @@ public class WithdrawRecord {
     //银行编号
     private String bankCode;
 
+    private Integer tenantId;
+
 
     //状态
     //审核中

@@ -167,6 +167,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			withdrawRecord.setOrderId(UUID.randomUUID().toString().replaceAll("-", ""));
 			withdrawRecord.setHandlingFee(handlingFee.doubleValue());
 			withdrawRecord.setAmount(amount.doubleValue());
+			withdrawRecord.setTenantId(userAmount.getTenantId());
 			withdrawRecordMapper.insert(withdrawRecord);
 
 			//扣除余额
@@ -179,7 +180,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 					.tenantId(TenantContextHolder.getTenantId())
 					.amount(userAmount.getTotalIncome())
 					.oid(withdrawRecord.getId())
-					.uid(withdrawRecord.getUid()).build();
+					.uid(withdrawRecord.getUid())
+					.tenantId(userAmount.getTenantId()).build();
 			userAmountHistoryService.insert(history);
 
 			return R.ok();
@@ -280,7 +282,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 						.tenantId(TenantContextHolder.getTenantId())
 						.amount(userAmount.getTotalIncome())
 						.oid(withdrawRecord.getId())
-						.uid(withdrawRecord.getUid()).build();
+						.uid(withdrawRecord.getUid())
+						.tenantId(userAmount.getTenantId()).build();
 				userAmountHistoryService.insert(history);
 			}
 
@@ -318,7 +321,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 						.tenantId(TenantContextHolder.getTenantId())
 						.amount(userAmount.getTotalIncome())
 						.oid(withdrawRecord.getId())
-						.uid(withdrawRecord.getUid()).build();
+						.uid(withdrawRecord.getUid())
+						.tenantId(userAmount.getTenantId()).build();
 				userAmountHistoryService.insert(history);
 			}
 
@@ -535,7 +539,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 					.tenantId(TenantContextHolder.getTenantId())
 					.amount(userAmount.getTotalIncome())
 					.oid(withdrawRecord.getId())
-					.uid(withdrawRecord.getUid()).build();
+					.uid(withdrawRecord.getUid())
+					.tenantId(userAmount.getTenantId()).build();
 			userAmountHistoryService.insert(history);
 		}
 
