@@ -92,7 +92,6 @@ public class ElectricityBattery {
 
     //所属用户id
     private Long uid;
-    private Integer reportType;
 
 
     public static final Integer DEL_NORMAL = 0;
