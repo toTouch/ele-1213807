@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Data
 public class ShareActivityRecordVO {
 
-    @TableId(value = "id",type = IdType.AUTO)
+
     private Long id;
     /**
     * 活动id

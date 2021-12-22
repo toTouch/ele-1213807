@@ -26,13 +26,6 @@ public class JsonUserJoinShareActivityRecordController {
 	@Autowired
 	GenerateShareUrlService generateShareUrlService;
 
-	/**
-	 * 解密分享图片
-	 */
-	@GetMapping(value = "/outer/joinShareActivityRecord/checkScene")
-	public R checkScene(@RequestParam(value = "scene") String scene) {
-		return joinShareActivityRecordService.checkScene(scene);
-	}
 
 	/**
 	 * 点击分享链接进入活动

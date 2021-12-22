@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -20,5 +21,6 @@ public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMembe
 
 	Integer listCountByFranchisee(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 
+	void unbindActivity(@Param("id") Integer id);
 
 }

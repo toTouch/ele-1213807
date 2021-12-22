@@ -1,0 +1,72 @@
+package com.xiliulou.electricity.controller.admin;
+
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.ShareActivityRecordQuery;
+import com.xiliulou.electricity.query.ShareMoneyActivityRecordQuery;
+import com.xiliulou.electricity.service.ShareActivityRecordService;
+import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+/**
+ * 发起邀请活动记录(ShareActivityRecord)表控制层
+ *
+ * @author makejava
+ * @since 2021-07-14 09:45:04
+ */
+@RestController
+public class JsonAdminShareMoneyActivityRecordController {
+
+	@Autowired
+	private ShareMoneyActivityRecordService shareMoneyActivityRecordService;
+
+	//列表查询
+	@GetMapping(value = "/admin/shareMoneyActivityRecord/list")
+	public R queryList(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "name", required = false) String name) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery = ShareMoneyActivityRecordQuery.builder()
+				.offset(offset)
+				.size(size)
+				.phone(phone)
+				.name(name)
+				.tenantId(tenantId).build();
+
+		return shareMoneyActivityRecordService.queryList(shareMoneyActivityRecordQuery);
+
+	}
+
+	//列表查询
+	@GetMapping(value = "/admin/shareMoneyActivityRecord/queryCount")
+	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "name", required = false) String name) {
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		ShareMoneyActivityRecordQuery shareMoneyActivityRecordQuery = ShareMoneyActivityRecordQuery.builder()
+				.phone(phone)
+				.name(name)
+				.tenantId(tenantId).build();
+
+		return shareMoneyActivityRecordService.queryCount(shareMoneyActivityRecordQuery);
+
+	}
+
+}
+

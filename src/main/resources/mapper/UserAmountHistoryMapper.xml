@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.UserAmountHistoryMapper">
+
+
+	<select id="queryList" resultType="com.xiliulou.electricity.vo.UserAmountHistoryVO">
+		select tuah.id as id,tuah.uid as uid, tuah.type as type,tuah.amount as amount,
+		tuah.join_uid as joinUid,tu.phone as joinPhone,tuah.create_time as createTime,
+		tuah.tenant_id as tenantId
+		from t_user_amount_history as tuah
+		left join t_user as tu on tuah.join_uid=tu.uid
+		<where>
+			<if test="uid != null ">
+				and tuah.uid = #{uid}
+			</if>
+			<if test="tenantId != null ">
+				and tuah.tenant_id = #{tenantId}
+			</if>
+		</where>
+		order by tuah.create_time desc
+		limit #{offset},#{size}
+	</select>
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1) from t_user_amount_history
+		<where>
+			<if test="uid != null ">
+				and uid = #{uid}
+			</if>
+			<if test="tenantId != null ">
+				and tenant_id = #{tenantId}
+			</if>
+		</where>
+	</select>
+</mapper>

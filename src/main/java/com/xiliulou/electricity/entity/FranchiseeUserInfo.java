@@ -43,7 +43,7 @@ public class FranchiseeUserInfo {
     */
     private String cardName;
     /**
-    * 类型(0:月卡,1:季卡,2:年卡)
+    * 类型(0:月卡,1:季卡,2:年卡,3:次卡)
     */
     private Integer cardType;
     /**
@@ -109,5 +109,9 @@ public class FranchiseeUserInfo {
 
     public static final Integer OLD_MODEL_TYPE = 1;
     public static final Integer MEW_MODEL_TYPE = 2;
+
+
+    //送次数卡
+    public static final Integer TYPE_COUNT = 3;
 
 }

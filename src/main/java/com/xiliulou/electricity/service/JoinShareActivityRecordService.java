@@ -22,7 +22,6 @@ public interface JoinShareActivityRecordService {
      */
     Integer update(JoinShareActivityRecord joinShareActivityRecord);
 
-	R checkScene(String scene);
 
     R joinActivity(Integer activityId, Long uid);
 

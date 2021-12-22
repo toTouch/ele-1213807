@@ -74,6 +74,18 @@ public class ElectricityMemberCard {
      */
     private String batteryType;
 
+    /**
+     * 是否绑定活动 1--绑定  0--未绑定
+     */
+    @NotNull(message = "是否绑定活动不能为空!")
+    private Integer isBindActivity;
+
+
+    /**
+     * 活动id
+     */
+    private Integer activityId;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
@@ -91,5 +103,8 @@ public class ElectricityMemberCard {
 
 
     public static final Integer UN_LIMITED_COUNT_TYPE = 0;
+
+    public static final Integer BIND_ACTIVITY = 1;
+    public static final Integer UNBIND_ACTIVITY = 0;
 
 }

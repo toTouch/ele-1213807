@@ -18,7 +18,7 @@ public interface UserCouponService {
 
     R queryList(UserCouponQuery userCouponQuery);
 
-    R batchRelease(Integer id,   Long[] uids);
+    R batchRelease(Integer id, Long[] uids);
 
     void handelUserCouponExpired();
 
