@@ -229,5 +229,9 @@ public class BatteryConstant {
 	public static String acquireBatteryShort(Integer longKey) {
 		return BATTERY_SHORT.get(longKey);
 	}
+
+	public static boolean existsBatteryType(String type) {
+		return BATTERY_V.containsKey(type);
+	}
 }
 

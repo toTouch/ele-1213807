@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ShareMoneyActivityRecordMapper">
+
+
+	<!--通过实体作为筛选条件查询-->
+	<select id="queryList" resultType="com.xiliulou.electricity.vo.ShareMoneyActivityRecordVO">
+		select
+		tsar.id as id, tsar.activity_id as activityId,  tsar.uid as uid, tsar.count as count,
+		tsar.create_time as createTime, tsar.update_time as updateTime,
+		tsar.tenant_id as tenantId,tsar.status as status,
+		tui.phone as phone,tui.name as name,tsa.name as activityName
+		from t_share_money_activity_record as tsar
+		left join t_user_info as tui on tui.uid=tsar.uid
+		left join t_share_money_activity as tsa on tsar.activity_id=tsa.id
+		<where>
+			<if test="phone != null and phone != ''">
+				and tui.phone = #{phone}
+			</if>
+			<if test="name != null and name != ''">
+				and tui.name = #{name}
+			</if>
+			<if test="tenantId != null ">
+				and tsar.tenant_id = #{tenantId}
+			</if>
+		</where>
+		order by tsar.update_time desc
+		limit #{offset}, #{size}
+	</select>
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_share_money_activity_record as tsar
+		left join t_user_info as tui on tui.uid=tsar.uid
+		<where>
+			<if test="phone != null and phone != ''">
+				and tui.phone = #{phone}
+			</if>
+			<if test="name != null and name != ''">
+				and tui.name = #{name}
+			</if>
+			<if test="tenantId != null ">
+				and tsar.tenant_id = #{tenantId}
+			</if>
+		</where>
+	</select>
+
+
+</mapper>

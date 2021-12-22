@@ -28,6 +28,7 @@ import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -125,15 +126,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//是否存在未完成的租电池订单
-		RentBatteryOrder rentBatteryOrder1 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
-		if (Objects.nonNull(rentBatteryOrder1)) {
-			return R.fail((Object) rentBatteryOrder1.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
-		}
-
-		//是否存在未完成的还电池订单
-		RentBatteryOrder rentBatteryOrder2 = rentBatteryOrderService.queryByUidAndType(user.getUid(), RentBatteryOrder.TYPE_USER_RENT);
-		if (Objects.nonNull(rentBatteryOrder2)) {
-			return R.fail((Object) rentBatteryOrder1.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+		RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
+		if (Objects.nonNull(rentBatteryOrder)) {
+			if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)) {
+				return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+			}else if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+				return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+			}
 		}
 
 		//是否存在未完成的换电订单
@@ -277,12 +276,15 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		}
 
 		//分配开门格挡
-		String cellNo = findUsableCellNo(electricityCabinet.getId());
+		Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
+
+		if (Objects.isNull(usableEmptyCellNo.getLeft())) {
+			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+			return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+		}
+
+		String cellNo=usableEmptyCellNo.getRight().toString();
 		try {
-			if (Objects.isNull(cellNo)) {
-				redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
-				return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
-			}
 			if (franchiseeUserInfo.getRemainingNumber() != -1) {
 				//扣除月卡
 				Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
@@ -292,6 +294,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 					return R.fail("ELECTRICITY.0023", "月卡已过期");
 				}
 			}
+
 
 			//3.根据用户查询旧电池
 			ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()

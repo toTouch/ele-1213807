@@ -69,11 +69,6 @@ public class JoinShareActivityRecordServiceImpl implements JoinShareActivityReco
 
 	}
 
-	@Override
-	public R checkScene(String scene) {
-		String[] split = scene.split(",");
-		return R.ok();
-	}
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)

@@ -24,4 +24,9 @@ public class RolePermissionConfig {
     private List<Long> alliance;
     //门店
     private List<Long> shop;
+
+    /**
+     * 不应该给其他租户看的权限
+     */
+    private List<Long> unShow;
 }

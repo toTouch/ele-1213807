@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
@@ -39,13 +40,13 @@ public interface RentBatteryOrderService {
 
     R endOrder(String orderId);
 
-    RentBatteryOrder queryByUidAndType(Long uid, Integer type);
+    RentBatteryOrder queryByUidAndType(Long uid);
 
 	void exportExcel(RentBatteryOrderQuery rentBatteryOrderQuery, HttpServletResponse response);
 
 	R queryNewStatus(String orderId);
 
-    Triple<Boolean, String, Object> findUsableBatteryCellNo(Integer id, String cellNo,String batteryType,Long franchiseeId);
+    Triple<Boolean, String, Object> findUsableBatteryCellNo(ElectricityCabinet electricityCabinet, String cellNo,String batteryType,Long franchiseeId);
 
     R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery);
 

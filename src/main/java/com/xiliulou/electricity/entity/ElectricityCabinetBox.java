@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import com.baomidou.mybatisplus.annotation.TableName;
+
 /**
  * 换电柜仓门表(TElectricityCabinetBox)实体类
  *
@@ -19,29 +21,29 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_electricity_cabinet_box")
 public class ElectricityCabinetBox {
     /**
-    * 仓门Id
-    */
-    @TableId(value = "id",type = IdType.AUTO)
+     * 仓门Id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-    * 所属换电柜柜Id
-    */
+     * 所属换电柜柜Id
+     */
     private Integer electricityCabinetId;
     /**
-    * 仓门号
-    */
+     * 仓门号
+     */
     private String cellNo;
     /**
      * 电池编号
      */
     private String sn;
     /**
-    * 可用状态（0-可用，1-禁用）
-    */
+     * 可用状态（0-可用，1-禁用）
+     */
     private Integer usableStatus;
     /**
-    * 状态（0-有电池，1-无电池
-    */
+     * 状态（0-有电池，1-无电池
+     */
     private Integer status;
     /**
      * 门锁状态（0-开门，1-关门）
@@ -49,7 +51,7 @@ public class ElectricityCabinetBox {
     private Integer isLock;
     /**
      * 风扇状态（0-开，1-关）
-     * */
+     */
     private Integer isFan;
     /**
      * 温度
@@ -64,16 +66,16 @@ public class ElectricityCabinetBox {
      */
     private Integer isLight;
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
     /**
-    * 更新时间
-    */
+     * 更新时间
+     */
     private Long updateTime;
     /**
-    * 是否删除（0-正常，1-删除）
-    */
+     * 是否删除（0-正常，1-删除）
+     */
     private Integer delFlag;
 
     //上报时间
@@ -86,6 +88,11 @@ public class ElectricityCabinetBox {
      * 仓门电池类型
      */
     private String batteryType;
+
+    /**
+     * 电池电量
+     */
+    private Double power;
 
 
     public static final Integer DEL_NORMAL = 0;

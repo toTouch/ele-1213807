@@ -2,8 +2,11 @@ package com.xiliulou.electricity.handler;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.entity.ApiOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.HardwareCommand;
+import com.xiliulou.electricity.service.ApiOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -32,6 +35,8 @@ public class NormalEleOrderOperateHandlerIot extends AbstractIotMessageHandler {
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+    @Autowired
+    ApiOrderOperHistoryService apiOrderOperHistoryService;
 
 
     @Override
@@ -54,15 +59,27 @@ public class NormalEleOrderOperateHandlerIot extends AbstractIotMessageHandler {
 
         EleOrderOperateVO eleOrderOperateVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderOperateVO.class);
 
-        //加入操作记录表
-        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
-                .createTime(System.currentTimeMillis())
-                .orderId(eleOrderOperateVO.getOrderId())
-                .type(eleOrderOperateVO.getOrderType())
-                .tenantId(electricityCabinet.getTenantId())
-                .msg(eleOrderOperateVO.getMsg())
-                .build();
-        electricityCabinetOrderOperHistoryService.insert(history);
+        if (receiverMessage.getType().equalsIgnoreCase(HardwareCommand.API_ORDER_OPER_HISTORY)) {
+            ApiOrderOperHistory history = ApiOrderOperHistory.builder()
+                    .createTime(System.currentTimeMillis())
+                    .orderId(eleOrderOperateVO.getOrderId())
+                    .type(eleOrderOperateVO.getOrderType())
+                    .tenantId(electricityCabinet.getTenantId())
+                    .msg(eleOrderOperateVO.getMsg())
+                    .build();
+            apiOrderOperHistoryService.insert(history);
+        } else {
+            //加入操作记录表
+            ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
+                    .createTime(System.currentTimeMillis())
+                    .orderId(eleOrderOperateVO.getOrderId())
+                    .type(eleOrderOperateVO.getOrderType())
+                    .tenantId(electricityCabinet.getTenantId())
+                    .msg(eleOrderOperateVO.getMsg())
+                    .build();
+            electricityCabinetOrderOperHistoryService.insert(history);
+        }
+
         return true;
     }
 

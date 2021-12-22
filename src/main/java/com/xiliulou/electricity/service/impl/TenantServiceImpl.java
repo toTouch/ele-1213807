@@ -41,7 +41,9 @@ import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 /**
@@ -61,8 +63,6 @@ public class TenantServiceImpl implements TenantService {
     @Resource
     private UserService userService;
 
-    @Autowired
-    private CustomPasswordEncoder customPasswordEncoder;
 
     @Autowired
     RoleService roleService;
@@ -112,23 +112,6 @@ public class TenantServiceImpl implements TenantService {
         tenantMapper.insert(tenant);
 
 
-
-        AdminUserQuery adminUserQuery=new AdminUserQuery();
-        adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
-        adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
-        adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
-        adminUserQuery.setGender(User.GENDER_MALE);
-        adminUserQuery.setUserType(User.TYPE_USER_OPERATE);
-        adminUserQuery.setLang(User.DEFAULT_LANG);
-        adminUserQuery.setCityId(null);
-        adminUserQuery.setProvinceId(null);
-        TenantContextHolder.setTenantId(tenant.getId());
-        R result= userService.addInnerUser(adminUserQuery);
-        if(result.getCode()==1){
-            return result;
-        }
-
-
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
         operateRole.setName(ElectricityCabinetConstant.OPERATE_NAME);
@@ -156,25 +139,51 @@ public class TenantServiceImpl implements TenantService {
         });
 
 
+        //新增用户
+        AdminUserQuery adminUserQuery=new AdminUserQuery();
+        adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
+        adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
+        adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
+        adminUserQuery.setGender(User.GENDER_MALE);
+        adminUserQuery.setUserType(User.TYPE_USER_OPERATE);
+        adminUserQuery.setLang(User.DEFAULT_LANG);
+        adminUserQuery.setCityId(null);
+        adminUserQuery.setProvinceId(null);
+        TenantContextHolder.setTenantId(tenant.getId());
+        R result= userService.addInnerUser(adminUserQuery);
+        if(result.getCode()==1){
+            return result;
+        }
+
+
+
         //5.角色赋予权限
-        ArrayList<RolePermission> rolePermissionList = new ArrayList<>();
-        permissionConfig.getOperator().forEach(item -> {
+        List<RolePermission> operateRolePermission = permissionConfig.getOperator().parallelStream().map(item -> {
             RolePermission operatorRP = new RolePermission();
             operatorRP.setPId(item);
             operatorRP.setRoleId(operateRole.getId());
-            rolePermissionList.add(operatorRP);
-        });
-        permissionConfig.getAlliance().forEach(item -> {
+            return operatorRP;
+        }).collect(Collectors.toList());
+
+        ArrayList<RolePermission> rolePermissionList = new ArrayList<>(operateRolePermission);
+
+        List<RolePermission> franchiseeRolePermission = permissionConfig.getAlliance().parallelStream().map(item -> {
             RolePermission allianceRP = new RolePermission();
             allianceRP.setPId(item);
             allianceRP.setRoleId(franchiseeRole.getId());
-            rolePermissionList.add(allianceRP);
-        });
-        permissionConfig.getShop().forEach(item -> {
+            return allianceRP;
+        }).collect(Collectors.toList());
+        rolePermissionList.addAll(franchiseeRolePermission);
+
+        List<RolePermission> storeRolePermission = permissionConfig.getShop().parallelStream().map(item -> {
             RolePermission shopRP = new RolePermission();
             shopRP.setPId(item);
             shopRP.setRoleId(storeRole.getId());
-        });
+            return shopRP;
+        }).collect(Collectors.toList());
+        rolePermissionList.addAll(storeRolePermission);
+
+
         rolePermissionList.parallelStream().forEach(e -> {
             rolePermissionService.insert(e);
         });

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ApiExchangeOrderMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ApiExchangeOrder" id="ApiExchangeOrderMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="orderId" column="order_id" jdbcType="VARCHAR"/>
+        <result property="eid" column="eid" jdbcType="INTEGER"/>
+        <result property="putBatterySn" column="put_battery_sn" jdbcType="VARCHAR"/>
+        <result property="takeBatterySn" column="take_battery_sn" jdbcType="VARCHAR"/>
+        <result property="batteryType" column="battery_type" jdbcType="VARCHAR"/>
+        <result property="putCellNo" column="put_cell_no" jdbcType="INTEGER"/>
+        <result property="takeCellNo" column="take_cell_no" jdbcType="INTEGER"/>
+        <result property="status" column="status" jdbcType="VARCHAR"/>
+        <result property="orderSeq" column="order_seq" jdbcType="NUMERIC"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ApiExchangeOrderMap">
+        select id,
+               order_id,
+               eid,
+               put_battery_sn,
+               take_battery_sn,
+               battery_type,
+               put_cell_no,
+               take_cell_no,
+               status,
+               order_seq,
+               tenant_id,
+               create_time,
+               update_time
+        from t_api_exchange_order
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ApiExchangeOrderMap">
+        select id,
+               order_id,
+               eid,
+               put_battery_sn,
+               take_battery_sn,
+               battery_type,
+               put_cell_no,
+               take_cell_no,
+               status,
+               order_seq,
+               tenant_id,
+               create_time,
+               update_time
+        from t_api_exchange_order limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ApiExchangeOrderMap">
+        select
+        id, order_id, eid, put_battery_sn, take_battery_sn, battery_type, put_cell_no, take_cell_no, status, order_seq,
+        tenant_id, create_time, update_time
+        from t_api_exchange_order
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="orderId != null and orderId != ''">
+                and order_id = #{orderId}
+            </if>
+            <if test="eid != null">
+                and eid = #{eid}
+            </if>
+            <if test="putBatterySn != null and putBatterySn != ''">
+                and put_battery_sn = #{putBatterySn}
+            </if>
+            <if test="takeBatterySn != null and takeBatterySn != ''">
+                and take_battery_sn = #{takeBatterySn}
+            </if>
+            <if test="batteryType != null and batteryType != ''">
+                and battery_type = #{batteryType}
+            </if>
+            <if test="putCellNo != null">
+                and put_cell_no = #{putCellNo}
+            </if>
+            <if test="takeCellNo != null">
+                and take_cell_no = #{takeCellNo}
+            </if>
+            <if test="status != null and status != ''">
+                and status = #{status}
+            </if>
+            <if test="orderSeq != null">
+                and order_seq = #{orderSeq}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_api_exchange_order(order_id, eid, put_battery_sn, take_battery_sn, battery_type, put_cell_no,
+                                         take_cell_no, status, order_seq, tenant_id, create_time, update_time)
+        values (#{orderId}, #{eid}, #{putBatterySn}, #{takeBatterySn}, #{batteryType}, #{putCellNo}, #{takeCellNo},
+                #{status}, #{orderSeq}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_api_exchange_order
+        <set>
+            <if test="orderId != null and orderId != ''">
+                order_id = #{orderId},
+            </if>
+            <if test="eid != null">
+                eid = #{eid},
+            </if>
+            <if test="putBatterySn != null and putBatterySn != ''">
+                put_battery_sn = #{putBatterySn},
+            </if>
+            <if test="takeBatterySn != null and takeBatterySn != ''">
+                take_battery_sn = #{takeBatterySn},
+            </if>
+            <if test="batteryType != null and batteryType != ''">
+                battery_type = #{batteryType},
+            </if>
+            <if test="putCellNo != null">
+                put_cell_no = #{putCellNo},
+            </if>
+            <if test="takeCellNo != null">
+                take_cell_no = #{takeCellNo},
+            </if>
+            <if test="status != null and status != ''">
+                status = #{status},
+            </if>
+            <if test="orderSeq != null">
+                order_seq = #{orderSeq},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete
+        from t_api_exchange_order
+        where id = #{id}
+    </delete>
+
+    <select id="queryByOrderId" resultMap="ApiExchangeOrderMap">
+        select
+        id, order_id, eid, put_battery_sn, take_battery_sn, battery_type, put_cell_no, take_cell_no, status, order_seq,
+        tenant_id, create_time, update_time
+        from t_api_exchange_order
+        <where>
+            order_id = #{orderId}
+            and tenant_id = #{tenantId}
+        </where>
+    </select>
+
+</mapper>
