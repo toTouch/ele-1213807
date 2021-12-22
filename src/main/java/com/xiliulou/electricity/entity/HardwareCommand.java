@@ -11,6 +11,7 @@ import java.util.Map;
  */
 public class HardwareCommand {
 
+    public static final String CUPBOARD_COMMAND_RESET_PASSWORD = "cupboard_reset";
 
     //业务操作
     //订单开旧门
@@ -144,6 +145,7 @@ public class HardwareCommand {
     public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
     static {
+        ELE_COMMAND_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD,"OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_OLD_DOOR, "OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_NEW_DOOR, "OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, "OK");
