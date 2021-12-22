@@ -17,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Component
 @Slf4j
 @JobHandler(value = "transferPayQuery")
-public class TransferPayTask {
+public class TransferPayTask extends IJobHandler {
 
     @Autowired
     PayTransferRecordService payTransferRecordService;
@@ -26,13 +26,15 @@ public class TransferPayTask {
     /**
      * 提现查询====>修改提现状态 (5分钟执行一次)
      */
-    @Transactional(rollbackFor = Exception.class)
-    public ReturnT<String> transferPayQuery(String param){
+    @Override
+    public ReturnT<String> execute(String s)  {
+        try {
+            log.info("XXL-JOB---TransferPayTask>>>>>开始执行提现查询>>>>>>>");
 
-        log.info("XXL-JOB---TransferPayTask>>>>>开始执行提现查询>>>>>>>");
-
-        payTransferRecordService.handlerTransferPayQuery();
+            payTransferRecordService.handlerTransferPayQuery();
+        } catch (Exception e) {
+            log.error("处理失败",e);
+        }
         return IJobHandler.SUCCESS;
-
     }
 }
