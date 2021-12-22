@@ -87,6 +87,10 @@ public class ElectricityBatteryVO {
      * 所属换电柜柜
      */
     private String electricityCabinetName;
+    /**
+     * 所属加盟商
+     */
+    private String franchiseeName;
 
     //所属用户id
     private Long uid;

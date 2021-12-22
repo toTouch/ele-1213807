@@ -140,6 +140,12 @@ public class ElectricityCabinetVO {
      */
     private Double batteryFullCondition;
 
+    //租户id
+    private Integer tenantId;
+
+    //租户code
+    private String tenantCode;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

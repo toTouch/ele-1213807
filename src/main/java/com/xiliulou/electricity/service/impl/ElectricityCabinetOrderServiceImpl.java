@@ -492,6 +492,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 				if (Objects.nonNull(electricityCabinet)) {
 					e.setElectricityCabinetName(electricityCabinet.getName());
 				}
+
+				UserInfo userInfo = userInfoService.selectUserByUid(e.getUid());
+				if(Objects.nonNull(userInfo)){
+					e.setUName(userInfo.getName());
+				}
 			});
 		}
 

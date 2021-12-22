@@ -2,11 +2,12 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
-		select tel.* , tui.phone as phone from
+		select tel.* , tui.phone as phone , tf.name as franchiseeName from
 		t_electricity_member_card_order tel
 
 		LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
+		LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
 		WHERE 0= 0
 		<if test="query.phone != null">
 			and tui.phone =#{query.phone}
@@ -28,6 +29,9 @@
 		</if>
 		<if test="query.franchiseeId != null">
 			and tel.franchisee_id = #{query.franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and query.franchiseeName != ''">
+			and tf.name = #{query.franchiseeName}
 		</if>
 		order by tel.create_time desc
 		limit #{query.offset}, #{query.size}
@@ -37,7 +41,7 @@
 		select COUNT(1)
 		from t_electricity_member_card_order tel
 		LEFT JOIN t_user_info tui on tui.uid = tel.uid
-
+		LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
 		WHERE 0= 0
 		<if test="query.phone != null">
 			and tui.phone =#{query.phone}
@@ -59,6 +63,9 @@
 		</if>
 		<if test="query.franchiseeId != null">
 			and tel.franchisee_id = #{query.franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and query.franchiseeName != ''">
+			and tf.name = #{query.franchiseeName}
 		</if>
 	</select>
 

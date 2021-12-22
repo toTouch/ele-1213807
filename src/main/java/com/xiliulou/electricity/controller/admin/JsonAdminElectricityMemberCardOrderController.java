@@ -43,6 +43,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	@GetMapping("admin/electricityMemberCardOrder/page")
 	public R getElectricityMemberCardPage(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
+		    @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
@@ -68,7 +69,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		Long franchiseeId=null;
+		Long franchiseeId = null;
 		if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
 				&& !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
 			//加盟商
@@ -89,6 +90,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.size(size)
 				.tenantId(tenantId)
 				.status(status)
+				.franchiseeName(franchiseeName)
 				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
@@ -105,7 +107,8 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+			@RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -136,6 +139,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.queryEndTime(queryEndTime)
 				.tenantId(tenantId)
 				.status(status)
+				.franchiseeName(franchiseeName)
 				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);

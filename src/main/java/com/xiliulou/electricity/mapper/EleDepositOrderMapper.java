@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
+import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -22,7 +23,7 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder>{
      * 查询指定行数据
      *
      */
-    List<EleDepositOrder> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
+    List<EleDepositOrderVO> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
 	Integer queryCount(@Param("query")  EleDepositOrderQuery eleDepositOrderQuery);
 }

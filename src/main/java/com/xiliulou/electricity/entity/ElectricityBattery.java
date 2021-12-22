@@ -58,6 +58,8 @@ public class ElectricityBattery {
 
     private Long updateTime;
 
+    private Long borrowExpireTime;
+
     private Integer delFlag;
 
 
@@ -86,11 +88,10 @@ public class ElectricityBattery {
      * 所属换电柜柜Id
      */
     private Integer electricityCabinetId;
-
+    private String  electricityCabinetName;
 
     //所属用户id
     private Long uid;
-
 
 
     public static final Integer DEL_NORMAL = 0;
@@ -108,5 +109,8 @@ public class ElectricityBattery {
     public static final Integer EXCEPTION_FREE = 4;
 
 
-
+    //柜机上报
+    public static final Integer REPORT_TYPE_ELECTRICITY_CABINET = 0;
+    //电池上报
+    public static final Integer REPORT_TYPE_ELECTRICITY_BATTERY = 1;
 }

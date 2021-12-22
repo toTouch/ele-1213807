@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.handler;
 
+import com.alibaba.fastjson.JSON;
+import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -222,26 +224,28 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			newElectricityBattery.setModel(batteryModel);
 		}
 
-        //修改电池
-        newElectricityBattery.setId(electricityBattery.getId());
-        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
-        newElectricityBattery.setUid(null);
-        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+		//修改电池
+		newElectricityBattery.setId(electricityBattery.getId());
+		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+		newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
+		newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+		newElectricityBattery.setUid(null);
+		newElectricityBattery.setBorrowExpireTime(null);
+		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        //newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
         Double power = eleBatteryVo.getPower();
-        if (Objects.nonNull(power)) {
-            newElectricityBattery.setPower(power * 100);
-            electricityCabinetBox.setPower(power * 100);
-        }
-        String health = eleBatteryVo.getHealth();
-        if (StringUtils.isNotEmpty(health)) {
-            newElectricityBattery.setHealthStatus(Integer.valueOf(health));
-        }
-        String chargeStatus = eleBatteryVo.getChargeStatus();
-        if (StringUtils.isNotEmpty(chargeStatus)) {
-            newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
-        }
-        electricityBatteryService.updateByOrder(newElectricityBattery);
+		if (Objects.nonNull(power)) {
+			newElectricityBattery.setPower(power * 100);
+		}
+		String health = eleBatteryVo.getHealth();
+		if (StringUtils.isNotEmpty(health)) {
+			newElectricityBattery.setHealthStatus(Integer.valueOf(health));
+		}
+		String chargeStatus = eleBatteryVo.getChargeStatus();
+		if (StringUtils.isNotEmpty(chargeStatus)) {
+			newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
+		}
+		electricityBatteryService.updateByOrder(newElectricityBattery);
 
 
 		//电池上报是否有其他信息

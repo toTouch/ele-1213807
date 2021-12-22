@@ -12,6 +12,7 @@ import lombok.Data;
 @Data
 public class ElectricityMemberCardOrderVO extends ElectricityMemberCardOrder {
     private String phone;
+    private String franchiseeName;
 
     private OldUserActivityVO  oldUserActivityVO;
 }

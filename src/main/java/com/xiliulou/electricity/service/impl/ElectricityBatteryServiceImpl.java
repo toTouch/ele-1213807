@@ -2,31 +2,43 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.google.common.collect.Maps;
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.core.wp.entity.AppTemplateQuery;
+import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜电池表(ElectricityBattery)表服务实现类
@@ -47,6 +59,24 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	ElectricityCabinetService electricityCabinetService;
 	@Autowired
 	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+	@Autowired
+	WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
+	@Autowired
+	RedisService redisService;
+	@Autowired
+	UserService userService;
+	@Autowired
+	WechatTemplateAdminNotificationService wechatTemplateAdminNotificationService;
+	@Autowired
+	WeChatAppTemplateService weChatAppTemplateService;
+	@Autowired
+	FranchiseeService franchiseeService;
+	@Autowired
+	ElectricityPayParamsService electricityPayParamsService;
+	@Autowired
+	TemplateConfigService templateConfigService;
+	@Autowired
+	UserOauthBindService userOauthBindService;
 
 	/**
 	 * 保存电池
@@ -109,7 +139,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	@DS("slave_1")
 	public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
-
 		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
 
 		if (ObjectUtil.isEmpty(electricityBatteryList)) {
@@ -118,10 +147,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 		List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
 
-		List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+		/*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
 		if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
 			franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
-		}
+		}*/
 
 		for (ElectricityBattery electricityBattery : electricityBatteryList) {
 
@@ -142,8 +171,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 				}
 			}
 
+			Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
+			if(Objects.nonNull(franchisee)){
+				electricityBatteryVO.setFranchiseeName(franchisee.getName());
+			}
+
 			//用于电池绑定问题
-			electricityBatteryVO.setIsBind(false);
+			/*electricityBatteryVO.setIsBind(false);
 
 			if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
 				for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
@@ -151,10 +185,40 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 						electricityBatteryVO.setIsBind(true);
 					}
 				}
-			}
+			}*/
 
 			electricityBatteryVOList.add(electricityBatteryVO);
 		}
+		return R.ok(electricityBatteryVOList);
+	}
+
+	@Override
+	@DS("slave_1")
+	public R queryNotBindList(Long offset, Long size,Integer franchiseeId) {
+		List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size, franchiseeId, TenantContextHolder.getTenantId());
+        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
+
+        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+        if (Objects.nonNull(franchiseeId)) {
+            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(Long.parseLong(franchiseeId+""));
+        }
+
+        for (ElectricityBattery electricityBattery : electricityBatteryList) {
+            ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+
+            electricityBatteryVO.setIsBind(false);
+
+            if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
+                for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
+                    if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
+                        electricityBatteryVO.setIsBind(true);
+                    }
+                }
+            }
+
+            electricityBatteryVOList.add(electricityBatteryVO);
+        }
 		return R.ok(electricityBatteryVOList);
 	}
 
@@ -232,6 +296,173 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	@Override
 	public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
 		return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
+	}
+
+	@Override
+	public R batteryOutTimeInfo(Long tenantId){
+		String json = redisService.get(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId);
+		List<BorrowExpireBatteryVo> list = null;
+		if(StrUtil.isNotBlank(json)){
+			list = JSON.parseArray(json, BorrowExpireBatteryVo.class);
+		}
+		return R.ok(list);
+	}
+
+	@Override
+	public void handlerLowBatteryReminder() {
+		Integer size = 300;
+		Integer offset = 0;
+
+		String batteryLevel = wechatTemplateNotificationConfig.getBatteryLevel();
+		Long lowBatteryFrequency = Long.parseLong(wechatTemplateNotificationConfig.getLowBatteryFrequency()) * 60000;
+		//SimpleDateFormat sdf = new SimpleDateFormat("yyyy年MM月dd日 hh:mm");
+
+		while(true){
+			List<ElectricityBattery> borrowExpireBatteryList = electricitybatterymapper.queryLowBattery(offset, size, batteryLevel);
+
+			if(CollectionUtils.isEmpty(borrowExpireBatteryList)){
+				return;
+			}
+
+			borrowExpireBatteryList.parallelStream().forEach(electricityBattery -> {
+				Long uid = electricityBattery.getUid();
+				Integer tenantId = electricityBattery.getTenantId();
+				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
+				if (!isOutTime) {
+					return;
+				}
+
+				UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(uid, tenantId);
+				if(Objects.isNull(userOauthBind)){
+					log.error("USER_OAUTH_BIND IS NULL uid={},tenantId={}", uid, tenantId);
+					return;
+				}
+				String openId = userOauthBind.getThirdId();
+
+				BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
+				QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
+				wrapper.eq("tenant_id", tenantId);
+				ElectricityPayParams ele = mapper.selectOne(wrapper);
+				if(Objects.isNull(ele)){
+					log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
+					return;
+				}
+
+				TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
+
+				if(Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())){
+					log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
+					return;
+				}
+
+				AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+				appTemplateQuery.setAppId(ele.getMerchantMinProAppId());
+				appTemplateQuery.setSecret(ele.getMerchantMinProAppSecert());
+				appTemplateQuery.setTouser(openId);
+				appTemplateQuery.setFormId(RandomUtil.randomString(20));
+				appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
+				Map<String, Object> data = new HashMap<>(3);
+
+				data.put("character_string1", electricityBattery.getPower() + "%");
+				data.put("character_string2", electricityBattery.getSn());
+				//data.put("keyword3", sdf.format(new Date(System.currentTimeMillis())));
+				data.put("thing3", "当前电量较低，请及时换电。");
+
+				appTemplateQuery.setData(data);
+
+				weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+			});
+
+			offset += size;
+		}
+	}
+
+	@Override
+	public void handlerBatteryNotInCabinetWarning() {
+
+		Integer offset = 0;
+		Integer size = 300;
+		while (true) {
+			List<BorrowExpireBatteryVo> borrowExpireBatteryList = electricitybatterymapper.queryBorrowExpireBattery(System.currentTimeMillis(), offset, size);
+			if (CollectionUtils.isEmpty(borrowExpireBatteryList)) {
+				return;
+			}
+			//将电池按租户id分组
+			Map<Integer, List<BorrowExpireBatteryVo>> batteryMaps = borrowExpireBatteryList.stream().collect(Collectors.groupingBy(BorrowExpireBatteryVo::getTenantId));
+			//频率
+			Long frequency = Long.parseLong(wechatTemplateNotificationConfig.getBatteryTimeoutFrequency()) * 60000;
+
+			batteryMaps.entrySet().parallelStream().forEach(entry -> {
+				Integer tenantId = entry.getKey();
+				List<BorrowExpireBatteryVo> batteryList = entry.getValue();
+
+				boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
+				if (!isOutTime) {
+					return;
+				}
+
+                WechatTemplateAdminNotification wechatTemplateAdminNotification = wechatTemplateAdminNotificationService.queryByTenant(tenantId);
+				if (Objects.isNull(wechatTemplateAdminNotification)) {
+					log.error("WECHAT_TEMPLATE_ADMIN_NOTIFICATION IS NULL ERROR! tenantId={}", tenantId);
+					return;
+				}
+
+				BaseMapper<ElectricityPayParams> mapper = electricityPayParamsService.getBaseMapper();
+				QueryWrapper<ElectricityPayParams> wrapper = new QueryWrapper<>();
+				wrapper.eq("tenant_id", tenantId);
+				ElectricityPayParams ele = mapper.selectOne(wrapper);
+
+				if (Objects.isNull(ele)) {
+					log.error("ELECTRICITY_PAY_PARAMS IS NULL ERROR! tenantId={}", tenantId);
+					return;
+				}
+
+				TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(tenantId);
+
+				if(Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())){
+					log.error("TEMPLATE_CONFIG IS NULL ERROR! tenantId={}", tenantId);
+					return;
+				}
+
+				String openStr = wechatTemplateAdminNotification.getOpenIds();
+				List<String> openIds = JSON.parseArray(openStr, String.class);
+				AppTemplateQuery appTemplateQuery = createAppTemplateQuery(batteryList, tenantId, ele.getMerchantMinProAppId(), ele.getMerchantMinProAppSecert(), templateConfigEntity.getBatteryOuttimeTemplate());
+
+				if (CollectionUtils.isNotEmpty(openIds)) {
+					for (String openId : openIds) {
+						appTemplateQuery.setTouser(openId);
+						appTemplateQuery.setFormId(RandomUtil.randomString(20));
+						weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+					}
+				}
+			});
+			offset += size;
+		}
+	}
+
+
+
+	private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate){
+		AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+		appTemplateQuery.setAppId(appId);
+		appTemplateQuery.setSecret(appSecret);
+		appTemplateQuery.setTemplateId(batteryOuttimeTemplate);
+		appTemplateQuery.setPage("/pages/start/template?tenantId="+tenantId);
+		//发送内容
+		appTemplateQuery.setData(createData(batteryList));
+		return appTemplateQuery;
+	}
+
+	private Map<String, Object> createData(List<BorrowExpireBatteryVo> batteryList){
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy年MM月dd号 HH:mm");
+
+		Map<String, Object> data = new HashMap<>(2);
+
+		data.put("time1", dateFormat.format(new Date()));
+
+		data.put("number2",String.valueOf(batteryList.size()));
+
+		return data;
 	}
 
 }

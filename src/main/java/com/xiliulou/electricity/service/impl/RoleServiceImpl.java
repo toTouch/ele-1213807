@@ -112,7 +112,7 @@ public class RoleServiceImpl implements RoleService {
 	public Boolean deleteById(Long id) {
 		return this.roleMapper.deleteById(id) > 0;
 	}
-
+//
 	@Override
 	public R addRole(RoleQuery roleQuery) {
 		//租户
@@ -128,7 +128,7 @@ public class RoleServiceImpl implements RoleService {
 		int insert = roleMapper.insertOne(role);
 		return insert > 0 ? R.ok() : R.fail("保存失败！");
 	}
-
+//
 	@Override
 	public R updateRole(RoleQuery roleQuery) {
 		Role role = new Role();
@@ -139,7 +139,7 @@ public class RoleServiceImpl implements RoleService {
 		Integer update = update(role);
 		return update > 0 ? R.ok() : R.fail("更新失败！");
 	}
-
+//
 	@Override
 	public Pair<Boolean, Object> deleteRole(Long id) {
 		Role role = queryByIdFromDB(id);
@@ -157,7 +157,7 @@ public class RoleServiceImpl implements RoleService {
 
 		return Pair.of(false, "删除失败!");
 	}
-
+//
 	@Override
 	public Pair<Boolean, Object> bindUserRole(Long uid, List<Long> roleIds) {
 		User user = userService.queryByUidFromCache(uid);
@@ -212,13 +212,13 @@ public class RoleServiceImpl implements RoleService {
 		List<PermissionResourceTree> permissionResourceTrees = TreeUtils.buildTree(result, PermissionResource.MENU_ROOT);
 		return Pair.of(true, permissionResourceTrees);
 	}
-
+//
 	@Override
 	public Pair<Boolean, Object> queryBindUidRids(Long uid) {
 		List<Long> ids = queryRidsByUid(uid);
 		return Pair.of(true, ids);
 	}
-
+//
 	@Override
 	public List<Long> queryRidsByUid(Long uid) {
 		String jsonRoles = redisService.get(ElectricityCabinetConstant.CACHE_USER_ROLE_RELATION + uid);
@@ -235,7 +235,7 @@ public class RoleServiceImpl implements RoleService {
 
 		return Collections.emptyList();
 	}
-
+//
 	@Override
 	public R queryAll() {
 		//租户

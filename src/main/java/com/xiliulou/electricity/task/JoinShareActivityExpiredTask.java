@@ -27,7 +27,7 @@ public class JoinShareActivityExpiredTask extends IJobHandler {
         try {
             joinShareActivityRecordService.handelJoinShareActivityExpired();
         } catch (Exception e) {
-            log.error("处理失败"+e);
+            log.error("处理失败",e);
         }
         return IJobHandler.SUCCESS;
     }

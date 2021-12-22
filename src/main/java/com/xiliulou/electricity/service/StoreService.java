@@ -3,6 +3,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreBindElectricityCabinetQuery;
+import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
 import com.xiliulou.electricity.query.StoreQuery;
 
 import java.util.HashMap;

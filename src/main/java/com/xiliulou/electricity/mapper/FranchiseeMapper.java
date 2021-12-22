@@ -18,4 +18,6 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
     List<FranchiseeVO> queryList( @Param("query") FranchiseeQuery franchiseeQuery);
 
 	Integer queryCount( @Param("query") FranchiseeQuery franchiseeQuery);
+
+    Franchisee queryByElectricityBatteryId(Long id);
 }

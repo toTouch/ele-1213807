@@ -40,4 +40,6 @@ public interface EleWarnMsgService {
 
 
     R queryList(EleWarnMsgQuery eleWarnMsgQuery);
+
+    R queryCount(EleWarnMsgQuery eleWarnMsgQuery);
 }

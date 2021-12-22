@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.ibatis.annotations.Param;
+import org.apache.ibatis.annotations.Select;
 
 import java.util.HashMap;
 import java.util.List;
@@ -39,5 +40,4 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 	Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
-
 }

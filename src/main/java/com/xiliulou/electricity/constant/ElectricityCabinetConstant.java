@@ -121,6 +121,19 @@ public interface ElectricityCabinetConstant {
      * 门店金额缓存
      */
     String CACHE_STORE_AMOUNT = "cache_store_amount:";
+    /**
+     * 微信模板通知管理员缓存
+     */
+    String CACHE_ADMIN_NOTIFICATION = "cache_admin_notification:";
+    String CACHE_ADMIN_ALREADY_NOTIFICATION = "cache_admin_already_notification:";
+    /**
+     * 租户模板通知缓存
+     */
+    String CACHE_TEMPLATE_CONFIG = "cache_template_config:";
+    /**
+     * 低电量通知用户缓存
+     */
+    String CACHE_LOW_BATTERY_NOTIFICATION = "cache_low_battery_notification:";
 
     String CACHE_APP_INFO_LIMIT = "cache_app_info_limit:";
     String CACHE_APP_INFO_BASE = "cache_app_info_base:";

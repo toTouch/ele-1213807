@@ -35,4 +35,12 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     Integer updateByOrder(ElectricityBattery electricityBattery);
 
 	R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
+
+    void handlerBatteryNotInCabinetWarning();
+
+    R batteryOutTimeInfo(Long uid);
+
+    void handlerLowBatteryReminder();
+
+    R queryNotBindList(Long offset, Long size,Integer franchiseeId);
 }
