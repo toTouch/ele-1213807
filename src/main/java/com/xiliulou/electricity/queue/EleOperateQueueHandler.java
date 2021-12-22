@@ -38,30 +38,30 @@ public class EleOperateQueueHandler {
     private volatile boolean shutdown = false;
     private final LinkedBlockingQueue<EleOpenDTO> queue = new LinkedBlockingQueue<>();
 
-	@Autowired
-	ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
-	@Autowired
-	ElectricityCabinetOrderService electricityCabinetOrderService;
-	@Autowired
-	ElectricityCabinetBoxService electricityCabinetBoxService;
-	@Autowired
-	RedisService redisService;
-	@Autowired
-	ElectricityBatteryService electricityBatteryService;
-	@Autowired
-	UserInfoService userInfoService;
-	@Autowired
-	ElectricityCabinetService electricityCabinetService;
-	@Autowired
-	EleHardwareHandlerManager eleHardwareHandlerManager;
-	@Autowired
-	RentBatteryOrderService rentBatteryOrderService;
-	@Autowired
-	ElectricityConfigService electricityConfigService;
-	@Autowired
-	FranchiseeUserInfoService franchiseeUserInfoService;
-	@Autowired
-	WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
+    @Autowired
+    ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
+    @Autowired
+    ElectricityCabinetBoxService electricityCabinetBoxService;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    RentBatteryOrderService rentBatteryOrderService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -225,9 +225,9 @@ public class EleOperateQueueHandler {
 
                 //放入电池改为在仓
                 ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(newElectricityCabinetOrder.getOldElectricityBatterySn());
-                if(Objects.nonNull(oldElectricityBattery)) {
+                if (Objects.nonNull(oldElectricityBattery)) {
                     ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetOrder.getElectricityCabinetId());
-                    if(Objects.nonNull(electricityCabinet)){
+                    if (Objects.nonNull(electricityCabinet)) {
                         ElectricityBattery newElectricityBattery = new ElectricityBattery();
                         newElectricityBattery.setId(oldElectricityBattery.getId());
                         newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -388,17 +388,17 @@ public class EleOperateQueueHandler {
             }
 
 
-			//电池改为在用
-			ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
-			ElectricityBattery newElectricityBattery = new ElectricityBattery();
-			newElectricityBattery.setId(electricityBattery.getId());
-			newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-			newElectricityBattery.setElectricityCabinetId(null);
+            //电池改为在用
+            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
+            ElectricityBattery newElectricityBattery = new ElectricityBattery();
+            newElectricityBattery.setId(electricityBattery.getId());
+            newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            newElectricityBattery.setElectricityCabinetId(null);
             //newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUid(electricityCabinetOrder.getUid());
-			newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis() );
-			electricityBatteryService.updateByOrder(newElectricityBattery);
+            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
+            electricityBatteryService.updateByOrder(newElectricityBattery);
 
 
             //删除柜机被锁缓存
@@ -491,18 +491,18 @@ public class EleOperateQueueHandler {
             electricityBatteryService.updateByOrder(newElectricityBattery);
         }
 
-		//电池改为在用
-		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
-		ElectricityBattery newElectricityBattery = new ElectricityBattery();
-		newElectricityBattery.setId(electricityBattery.getId());
-		newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-		newElectricityBattery.setElectricityCabinetId(null);
+        //电池改为在用
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(electricityBattery.getId());
+        newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        newElectricityBattery.setElectricityCabinetId(null);
         //newElectricityBattery.setElectricityCabinetName(null);
-		newElectricityBattery.setUid(rentBatteryOrder.getUid());
-       // newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
-		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+        newElectricityBattery.setUid(rentBatteryOrder.getUid());
+        // newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
+        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
-		electricityBatteryService.updateByOrder(newElectricityBattery);
+        electricityBatteryService.updateByOrder(newElectricityBattery);
 
         //删除柜机被锁缓存
         redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
@@ -540,9 +540,9 @@ public class EleOperateQueueHandler {
 
         //放入电池改为在仓
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
-        if(Objects.nonNull(oldElectricityBattery)) {
+        if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(rentBatteryOrder.getElectricityCabinetId());
-            if(Objects.nonNull(electricityCabinet)){
+            if (Objects.nonNull(electricityCabinet)) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
                 newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -554,8 +554,9 @@ public class EleOperateQueueHandler {
                 electricityBatteryService.updateByOrder(newElectricityBattery);
             }
 
-        //删除柜机被锁缓存
-        redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
-    }
+            //删除柜机被锁缓存
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
+        }
 
+    }
 }
