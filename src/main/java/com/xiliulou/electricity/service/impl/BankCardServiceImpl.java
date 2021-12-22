@@ -11,6 +11,7 @@ import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.mapper.BankCardMapper;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BankCardVO;
@@ -27,6 +28,8 @@ public class BankCardServiceImpl extends ServiceImpl<BankCardMapper, BankCard> i
 
 	@Override
 	public R bindBank(BankCard bankCard) {
+
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 		String fullName = BankNoConstants.BankNoMap.get(bankCard.getEncBankCode());
 		if (!Objects.equals(fullName,bankCard.getFullName())) {
@@ -58,6 +61,7 @@ public class BankCardServiceImpl extends ServiceImpl<BankCardMapper, BankCard> i
 		bankCard.setUid(SecurityUtils.getUid());
 		bankCard.setCreateTime(System.currentTimeMillis());
 		bankCard.setUpdateTime(System.currentTimeMillis());
+		bankCard.setTenantId(tenantId);
 		baseMapper.insert(bankCard);
 		return R.ok();
 
