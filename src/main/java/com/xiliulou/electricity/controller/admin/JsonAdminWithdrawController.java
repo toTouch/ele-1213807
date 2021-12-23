@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.CommonConstants;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.WithdrawRecord;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -45,13 +47,17 @@ public class JsonAdminWithdrawController extends BaseController {
 	@Autowired
 	UserService userService;
 
-
+	@Autowired
+	WechatConfig wechatConfig;
 
 
 
 	@PostMapping(value = "/admin/handleWithdraw")
 	public R withdraw(@Validated @RequestBody HandleWithdrawQuery handleWithdrawQuery) {
-
+		Integer tenantId = TenantContextHolder.getTenantId();
+		if(!Objects.equals(tenantId,wechatConfig.getTenantId())){
+			return R.fail("ELECTRICITY.0066", "用户权限不足");
+		}
 		return withdrawRecordService.handleWithdraw(handleWithdrawQuery);
 	}
 

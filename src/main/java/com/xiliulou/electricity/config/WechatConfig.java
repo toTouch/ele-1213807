@@ -79,5 +79,9 @@ public class WechatConfig {
     private String paternerKey;
 
 
+    /**
+     * tenantId
+     */
+    private Integer tenantId;
 
 }
