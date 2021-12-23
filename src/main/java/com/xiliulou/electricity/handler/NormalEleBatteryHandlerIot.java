@@ -5,7 +5,6 @@ import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
@@ -13,12 +12,14 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
+import com.xiliulou.electricity.entity.NotExistSn;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
+import com.xiliulou.electricity.service.NotExistSnService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -61,6 +62,9 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
+
+    @Autowired
+    NotExistSnService notExistSnService;
 
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
 	public static final String IRON_LITHIUM = "IRON_LITHIUM";
@@ -176,11 +180,36 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             return true;
         }
 
+
+        NotExistSn oldNotExistSn=notExistSnService.queryByBatteryName(batteryName);
+
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
             log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
+
+            //插入表
+            if(Objects.isNull(oldNotExistSn)) {
+                NotExistSn notExistSn = new NotExistSn();
+                notExistSn.setEId(electricityCabinet.getId());
+                notExistSn.setBatteryName(batteryName);
+                notExistSn.setCellNo(Integer.valueOf(cellNo));
+                notExistSn.setCreateTime(System.currentTimeMillis());
+                notExistSn.setUpdateTime(System.currentTimeMillis());
+                notExistSn.setTenantId(electricityCabinet.getTenantId());
+                notExistSnService.insert(notExistSn);
+            }
             return false;
         }
+
+
+        //查询表中是否有电池
+        if(Objects.nonNull(oldNotExistSn)) {
+            oldNotExistSn.setDelFlag(NotExistSn.DEL_DEL);
+            oldNotExistSn.setUpdateTime(System.currentTimeMillis());
+            notExistSnService.update(oldNotExistSn);
+        }
+
+
 
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("ele battery error! tenantId is not equal,tenantId1:{},tenantId2:{}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());

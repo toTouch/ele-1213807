@@ -63,4 +63,21 @@ public class WechatConfig {
     private String refundCallBackUrl;
 
 
+    /**
+     * appId
+     */
+    private String appId;
+
+    /**
+     * apiName
+     */
+    private String apiName;
+
+    /**
+     * paternerKey
+     */
+    private String paternerKey;
+
+
+
 }

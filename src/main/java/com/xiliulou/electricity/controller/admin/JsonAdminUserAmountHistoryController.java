@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
  */
 @RestController
 @Slf4j
-public class JsonUserAdminAmountHistoryController {
+public class JsonAdminUserAmountHistoryController {
 	/**
 	 * 服务对象
 	 */

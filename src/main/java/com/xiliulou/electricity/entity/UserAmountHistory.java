@@ -49,7 +49,17 @@ public class UserAmountHistory {
 
     private Integer tenantId;
 
+    /**
+     * 订单id
+     */
+    private Long oid;
+
 
     public static final Integer TYPE_SHARE_ACTIVITY = 1;
+
+    //提现
+    public static final Integer TYPE_WITHDRAW =4;
+    //回退提现
+    public static final Integer TYPE_WITHDRAW_ROLLBACK =5;
 
 }

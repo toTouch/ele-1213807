@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiliulou.electricity.mapper.WithdrawRecordMapper">
+
+
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.WithdrawRecord">
+		select twr.id as id,twr.uid as uid,twr.order_id as orderId,twr.bank_name as bankName,
+		twr.bank_number as bankNumber,
+		twr.check_time as checkTime,twr.arrive_time as arriveTime,twr.status as status,twr.create_time as createTime,
+		twr.update_time as updateTime,
+		twr.bank_code as bankCode,twr.true_name as trueName,
+		twr.amount as amount,twr.handling_fee as handlingFee,twr.msg as msg
+		from t_withdraw_record as twr
+		left join t_user as tu on tu.uid=twr.uid
+		<where>
+			<if test="query.uid != null ">
+				and twr.uid = #{query.uid}
+			</if>
+			<if test="query.phone != null and query.phone != ''">
+				and tu.phone = #{query.phone}
+			</if>
+			<if test="query.status!=null and query.status.size()>0">
+				and twr.status in
+				<foreach collection="query.status" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="query.beginTime != null">
+				and twr.create_time &gt;=#{query.beginTime}
+			</if>
+			<if test="query.endTime != null">
+				and twr.create_time &lt;=#{query.endTime}
+			</if>
+			<if test="query.orderId != null">
+				and twr.order_id = #{query.orderId}
+			</if>
+		</where>
+		order by twr.create_time desc
+		<if test="query.offset != null and query.size != null">
+			limit #{query.offset}, #{query.size}
+		</if>
+	</select>
+
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select COUNT(1)
+		from t_withdraw_record as twr
+		left join t_user as tu on tu.uid=twr.uid
+		<where>
+			<if test="query.uid != null ">
+				and twr.uid = #{query.uid}
+			</if>
+			<if test="query.phone != null and query.phone != ''">
+				and tu.phone = #{query.phone}
+			</if>
+			<if test="query.status!=null and query.status.size()>0">
+				and twr.status in
+				<foreach collection="query.status" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+			<if test="query.beginTime != null">
+				and twr.create_time &gt;=#{query.beginTime}
+			</if>
+			<if test="query.endTime != null">
+				and twr.create_time &lt;=#{query.endTime}
+			</if>
+			<if test="query.orderId != null">
+				and twr.order_id = #{query.orderId}
+			</if>
+		</where>
+	</select>
+
+</mapper>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.xiliulou.electricity.mapper.BankCardMapper">
+
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.BankCard">
+		select id,uid,full_name,enc_bank_no,enc_bind_user_name,enc_bind_id_number,
+		enc_bank_code,del_flag,create_time,update_time
+		from t_bank_card
+		where del_flag=0
+		<if test="query.uid != null ">
+			and uid = #{query.uid}
+		</if>
+		<if test="query.encBindUserName != null and query.encBindUserName != ''">
+			and enc_bind_user_name = #{query.encBindUserName}
+		</if>
+
+		<if test="query.offset != null and query.size != null">
+			limit #{query.offset}, #{query.size}
+		</if>
+	</select>
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_bank_card
+		where del_flag=0
+		<if test="query.uid != null ">
+			and uid = #{query.uid}
+		</if>
+		<if test="query.encBindUserName != null and query.encBindUserName != ''">
+			and enc_bind_user_name = #{query.encBindUserName}
+		</if>
+	</select>
+
+
+</mapper>

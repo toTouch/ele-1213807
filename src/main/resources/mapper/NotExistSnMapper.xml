@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.NotExistSnServiceMapper">
+
+
+	<!--通过实体作为筛选条件查询-->
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.NotExistSn">
+		select
+		id, battery_name, e_id, cell_no, create_time, update_time,tenant_id,del_flag
+		from t_not_exist_sn
+		where del_flag=0
+		<if test="eId != null ">
+			and e_id = #{eId}
+		</if>
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
+
+
+	<select id="queryCount" resultType="java.lang.Integer">
+		select count(1)
+		from t_not_exist_sn
+		where del_flag=0
+		<if test="eId != null ">
+			and e_id = #{eId}
+		</if>
+	</select>
+
+</mapper>
