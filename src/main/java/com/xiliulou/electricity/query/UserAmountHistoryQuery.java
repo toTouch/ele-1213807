@@ -24,5 +24,7 @@ public class UserAmountHistoryQuery {
 
 	private Long uid;
 
+	private Integer type;
+
 
 }

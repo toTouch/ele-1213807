@@ -16,6 +16,9 @@
 			<if test="tenantId != null ">
 				and tuah.tenant_id = #{tenantId}
 			</if>
+			<if test="type != null ">
+				and tuah.type = #{type}
+			</if>
 		</where>
 		order by tuah.create_time desc
 		limit #{offset},#{size}

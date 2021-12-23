@@ -36,7 +36,8 @@ public class JsonUserAmountHistoryController {
 	 */
 	@GetMapping(value = "/user/userAmountHistory/list")
 	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset) {
+			@RequestParam("offset") Long offset,
+			@RequestParam("type") Integer type) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -59,7 +60,8 @@ public class JsonUserAmountHistoryController {
 				.offset(offset)
 				.size(size)
 				.tenantId(tenantId)
-				.uid(user.getUid()).build();
+				.uid(user.getUid())
+				.type(type).build();
 		return userAmountHistoryService.queryList(userAmountHistoryQuery);
 	}
 
