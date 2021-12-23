@@ -37,7 +37,7 @@ public class JsonUserAmountHistoryController {
 	@GetMapping(value = "/user/userAmountHistory/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam("type") Integer type) {
+			@RequestParam(value = "type", required = false) Integer type) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
