@@ -440,7 +440,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 //查满仓空仓数
-                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
+                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
 
                 //查满仓空仓数
                 int electricityBatteryTotal = 0;
