@@ -175,7 +175,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			userAmountService.updateReduceIncome(withdrawRecord.getUid(), withdrawRecord.getAmount() + withdrawRecord.getHandlingFee());
 
 			UserAmountHistory history = UserAmountHistory.builder()
-					.type(UserAmountHistory.TYPE_WITHDRAW_ROLLBACK)
+					.type(UserAmountHistory.TYPE_WITHDRAW)
 					.createTime(System.currentTimeMillis())
 					.tenantId(TenantContextHolder.getTenantId())
 					.amount(userAmount.getTotalIncome())
