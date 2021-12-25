@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.utils;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Base64Util;
 import org.springframework.util.Base64Utils;
 
 import javax.crypto.Cipher;
