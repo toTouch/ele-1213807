@@ -223,7 +223,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			//型号押金
 			List<Map> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
 			if (ObjectUtil.isEmpty(modelBatteryDepositList)) {
-				log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId{}", store.getFranchiseeId());
+				log.error("payDeposit  ERROR! not found modelBatteryDepositList ！franchiseeId{}", franchiseeId);
 				return R.fail("ELECTRICITY.00110", "未找到押金");
 			}
 
@@ -238,7 +238,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		if (Objects.isNull(payAmount)) {
-			log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{}", store.getFranchiseeId());
+			log.error("payDeposit  ERROR! payAmount is null ！franchiseeId{}", franchiseeId);
 			return R.fail("ELECTRICITY.00110", "未找到押金");
 		}
 
