@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.handler;
 
 import cn.hutool.core.util.StrUtil;
-import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.entity.EleOtherConfig;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
@@ -29,8 +28,6 @@ import java.util.Objects;
 @Service
 @Slf4j
 public class IcIdCommandIotHandler extends AbstractIotMessageHandler {
-	@Autowired
-	private RedisService redisService;
 	@Autowired
 	private ElectricityCabinetService electricityCabinetService;
 	@Autowired

@@ -147,6 +147,9 @@ public class HardwareCommand {
      */
     public static final String GET_CARD_NUM_ICCID = "get_card_num_iccid";
 
+    //获取4G卡号
+    public static final String ELE_COMMAND_ICCID_GET_RSP = "iccid_get_rsp";
+
 
     public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 

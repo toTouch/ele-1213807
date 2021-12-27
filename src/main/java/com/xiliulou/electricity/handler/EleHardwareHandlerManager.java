@@ -55,6 +55,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     NormalApiExchangeHandlerIot normalApiExchangeHandlerIot;
     @Autowired
     NormalApiReturnHandlerIot normalApiReturnHandlerIot;
+    @Autowired
+    IcIdCommandIotHandler icIdCommandIotHandler;
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
@@ -134,7 +136,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_OTHER_CONFIG_RSP)) {
             return normalOtherConfigHandlerIot.receiveMessageProcess(receiverMessage);
-        } else {
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ICCID_GET_RSP)) {
+            return icIdCommandIotHandler.receiveMessageProcess(receiverMessage);
+        }else {
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;
         }
