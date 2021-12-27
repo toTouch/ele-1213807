@@ -70,7 +70,7 @@ public class IcIdCommandIotHandler extends AbstractIotMessageHandler {
 			}
 		}else {
 			eleOtherConfig = new EleOtherConfig();
-			eleOtherConfig.setEId(electricityCabinet.getId());
+			eleOtherConfig.setEid(electricityCabinet.getId());
 			eleOtherConfig.setCardNumber(iccid);
 			eleOtherConfig.setTenantId(electricityCabinet.getTenantId());
 			eleOtherConfig.setCreateTime(System.currentTimeMillis());

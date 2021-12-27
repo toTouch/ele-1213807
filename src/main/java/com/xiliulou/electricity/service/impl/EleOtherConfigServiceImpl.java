@@ -55,7 +55,7 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
     public Integer update(EleOtherConfig  eleOtherConfig) {
         int update = this.eleOtherConfigMapper.updateById(eleOtherConfig);
         if (update > 0){
-            redisService.delete(ElectricityCabinetConstant.CACHE_ELE_OTHER_CONFIG + eleOtherConfig.getEId());
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELE_OTHER_CONFIG + eleOtherConfig.getEid());
         }
         return update;
     }
@@ -69,7 +69,7 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
             return eleOtherConfigCache;
         }
 
-        LambdaQueryWrapper<EleOtherConfig> eq = new LambdaQueryWrapper<EleOtherConfig>().eq(EleOtherConfig::getEId, eid).eq(EleOtherConfig::getDelFlag, EleOtherConfig.DEL_NORMAL);
+        LambdaQueryWrapper<EleOtherConfig> eq = new LambdaQueryWrapper<EleOtherConfig>().eq(EleOtherConfig::getEid, eid).eq(EleOtherConfig::getDelFlag, EleOtherConfig.DEL_NORMAL);
         EleOtherConfig eleOtherConfig = eleOtherConfigMapper.selectOne(eq);
 
         if (Objects.isNull(eleOtherConfig)){

@@ -23,7 +23,7 @@ public class EleOtherConfig {
     /**
      * 机柜id
      */
-    private Integer eId;
+    private Integer eid;
     /**
      * 4G卡号
      */
