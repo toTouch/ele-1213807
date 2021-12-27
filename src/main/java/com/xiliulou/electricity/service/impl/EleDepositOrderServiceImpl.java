@@ -112,7 +112,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public R payDeposit(String productKey, String deviceName, Integer model, HttpServletRequest request) {
+	public R payDeposit(String productKey, String deviceName,Long franchiseeId,  Integer model, HttpServletRequest request) {
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
 		if (Objects.isNull(user)) {
@@ -141,13 +141,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
 			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
 			return R.failMsg("未找到用户的第三方授权信息!");
-		}
-
-		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
-		if (Objects.isNull(electricityCabinet)) {
-			log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
-			return R.fail("ELECTRICITY.0005", "未找到换电柜");
 		}
 
 		//判断是否实名认证
@@ -179,27 +172,39 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 			return R.fail("ELECTRICITY.0049", "已缴纳押金");
 		}
 
-		//计算押金
-		//查找换电柜门店
-		if (Objects.isNull(electricityCabinet.getStoreId())) {
-			log.error("payDeposit  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
-			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
-		}
-		Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-		if (Objects.isNull(store)) {
-			log.error("payDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
-			return R.fail("ELECTRICITY.0018", "未找到门店");
+		if(Objects.isNull(franchiseeId)) {
+			//换电柜
+			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(productKey, deviceName);
+			if (Objects.isNull(electricityCabinet)) {
+				log.error("queryDeposit  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+				return R.fail("ELECTRICITY.0005", "未找到换电柜");
+			}
+
+			//计算押金
+			//查找换电柜门店
+			if (Objects.isNull(electricityCabinet.getStoreId())) {
+				log.error("payDeposit  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+				return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+			}
+			Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+			if (Objects.isNull(store)) {
+				log.error("payDeposit  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+				return R.fail("ELECTRICITY.0018", "未找到门店");
+			}
+
+			//查找门店加盟商
+			if (Objects.isNull(store.getFranchiseeId())) {
+				log.error("payDeposit  ERROR! not found Franchisee ！storeId{}", store.getId());
+				return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+			}
+
+			franchiseeId=store.getFranchiseeId();
+
 		}
 
-		//查找门店加盟商
-		if (Objects.isNull(store.getFranchiseeId())) {
-			log.error("payDeposit  ERROR! not found Franchisee ！storeId{}", store.getId());
-			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
-		}
-
-		Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
+		Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeId);
 		if (Objects.isNull(franchisee)) {
-			log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
+			log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", franchiseeId);
 			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
 		}
 
