@@ -204,5 +204,6 @@ public class HardwareCommand {
         ELE_COMMAND_MAPS.put(API_RENT_ORDER, "OK");
         ELE_COMMAND_MAPS.put(API_RETURN_ORDER, "OK");
         ELE_COMMAND_MAPS.put(GET_CARD_NUM_ICCID, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ICCID_GET_RSP, "OK");
     }
 }
