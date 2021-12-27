@@ -74,7 +74,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CUPBOARD_RESTART)
                 || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_UNLOCK_CABINET))
                 || (hardwareCommandQuery.getCommand().equals(HardwareCommand.API_EXCHANGE_ORDER))
-                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG_READ))) {
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG_READ))
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.GET_CARD_NUM_ICCID))) {
             return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
         } else {
             log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
