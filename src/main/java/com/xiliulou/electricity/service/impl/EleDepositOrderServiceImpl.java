@@ -205,7 +205,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeId);
 		if (Objects.isNull(franchisee)) {
 			log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", franchiseeId);
-			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+			return R.fail("ELECTRICITY.0038", "未找到加盟商");
 		}
 
 		BigDecimal payAmount = null;
@@ -227,7 +227,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 				return R.fail("ELECTRICITY.00110", "未找到押金");
 			}
 
-			log.info("modelBatteryDepositList is -->{}", modelBatteryDepositList);
+
 			for (Map map : modelBatteryDepositList) {
 				if ((double) (map.get("model")) - model < 1 && (double) (map.get("model")) - model >= 0) {
 					payAmount = BigDecimal.valueOf((double) map.get("batteryDeposit"));
