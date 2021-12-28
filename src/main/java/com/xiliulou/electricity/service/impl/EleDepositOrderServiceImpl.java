@@ -599,7 +599,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeId);
 		if (Objects.isNull(franchisee)) {
 			log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", franchiseeId);
-			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+			return R.fail("ELECTRICITY.0038", "未找到加盟商");
 		}
 
 		//根据类型分押金
@@ -652,7 +652,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
 		if (Objects.isNull(franchisee)) {
 			log.error("queryDeposit  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
-			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+			return R.fail("ELECTRICITY.0038", "未找到加盟商");
 		}
 
 		return R.ok(franchisee.getModelType());
