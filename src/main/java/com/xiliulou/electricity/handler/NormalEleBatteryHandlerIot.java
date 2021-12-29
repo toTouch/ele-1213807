@@ -167,8 +167,11 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                 if (Objects.nonNull(oldElectricityBattery) && !Objects.equals(oldElectricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
                     newElectricityBattery.setId(oldElectricityBattery.getId());
                     newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+	                newElectricityBattery.setElectricityCabinetId(null);
+	                newElectricityBattery.setElectricityCabinetName(null);
+	                newElectricityBattery.setUid(null);
                     newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                    electricityBatteryService.update(newElectricityBattery);
+	                electricityBatteryService.updateByOrder(newElectricityBattery);
                 }
             }
 

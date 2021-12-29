@@ -219,6 +219,8 @@ public class EleOperateQueueHandler {
                         newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
                         newElectricityBattery.setUid(null);
                         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                        newElectricityBattery.setElectricityCabinetId(null);
+                        newElectricityBattery.setElectricityCabinetName(null);
                         electricityBatteryService.updateByOrder(newElectricityBattery);
                     }
                 }
@@ -383,6 +385,8 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setId(oldElectricityBattery.getId());
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
                 newElectricityBattery.setUid(null);
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateByOrder(newElectricityBattery);
             }
@@ -394,7 +398,7 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setId(electricityBattery.getId());
             newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
             newElectricityBattery.setElectricityCabinetId(null);
-            //newElectricityBattery.setElectricityCabinetName(null);
+            newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUid(electricityCabinetOrder.getUid());
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
@@ -487,6 +491,8 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setId(oldElectricityBattery.getId());
             newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
             newElectricityBattery.setUid(null);
+            newElectricityBattery.setElectricityCabinetId(null);
+            newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateByOrder(newElectricityBattery);
         }
@@ -497,7 +503,7 @@ public class EleOperateQueueHandler {
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         newElectricityBattery.setElectricityCabinetId(null);
-        //newElectricityBattery.setElectricityCabinetName(null);
+        newElectricityBattery.setElectricityCabinetName(null);
         newElectricityBattery.setUid(rentBatteryOrder.getUid());
         // newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -533,6 +539,8 @@ public class EleOperateQueueHandler {
                 newElectricityBattery.setId(electricityBattery.getId());
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
                 newElectricityBattery.setUid(null);
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateByOrder(newElectricityBattery);
             }
