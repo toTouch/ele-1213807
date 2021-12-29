@@ -35,6 +35,12 @@ public class ElectricityConfig {
      * 是否人工审核（0--是，1--否）
      */
     private Integer isManualReview;
+
+    /**
+     * 是否线上提现（0--是，1--否）
+     */
+    private Integer isWithdraw;
+
     /**
      * 创建时间
      */
