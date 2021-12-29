@@ -16,10 +16,13 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.constant.CommonConstants;
 import com.xiliulou.electricity.entity.BankCard;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.mapper.WithdrawRecordMapper;
@@ -28,6 +31,7 @@ import com.xiliulou.electricity.query.HandleWithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
 import com.xiliulou.electricity.service.BankCardService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
@@ -109,6 +113,9 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Autowired
 	UserAmountHistoryService userAmountHistoryService;
+
+	@Autowired
+	ElectricityConfigService electricityConfigService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -230,6 +237,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Transactional(rollbackFor = Exception.class)
 	public R handleWithdraw(HandleWithdrawQuery handleWithdrawQuery) {
 
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		//提现密码确认
 		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache();
 		if (Objects.isNull(withdrawPassword)) {
@@ -265,6 +274,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		withdrawRecord.setStatus(handleWithdrawQuery.getStatus());
 		withdrawRecord.setUpdateTime(System.currentTimeMillis());
 		withdrawRecord.setCheckTime(System.currentTimeMillis());
+
 		//提现审核拒绝
 		if (Objects.equals(handleWithdrawQuery.getStatus(), WithdrawRecord.CHECK_REFUSE)) {
 			withdrawRecord.setMsg(handleWithdrawQuery.getMsg());
@@ -290,9 +300,21 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			return R.ok();
 		}
 
-		//提现审核通过
-		withdrawRecordMapper.updateById(withdrawRecord);
+		//线下提现
+		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		if (Objects.nonNull(electricityConfig)) {
+			if (Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
+				//修改提现表
+				withdrawRecord.setStatus(WithdrawRecord.WITHDRAWING_SUCCESS);
+				//提现审核通过
+				withdrawRecordMapper.updateById(withdrawRecord);
 
+				return R.ok();
+			}
+		}
+
+		//线上提现
+		withdrawRecordMapper.updateById(withdrawRecord);
 		return transferPay(withdrawRecord);
 
 	}

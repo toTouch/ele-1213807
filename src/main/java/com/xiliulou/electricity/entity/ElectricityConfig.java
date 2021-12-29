@@ -58,4 +58,10 @@ public class ElectricityConfig {
     //自动审核
     public static Integer AUTO_REVIEW = 1;
 
+
+    //线上提现
+    public static Integer WITHDRAW = 0;
+    //线下提现
+    public static Integer NON_WITHDRAW = 1;
+
 }
