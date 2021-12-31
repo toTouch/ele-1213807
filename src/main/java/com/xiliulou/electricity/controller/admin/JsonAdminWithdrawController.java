@@ -54,10 +54,10 @@ public class JsonAdminWithdrawController extends BaseController {
 
 	@PostMapping(value = "/admin/handleWithdraw")
 	public R withdraw(@Validated @RequestBody HandleWithdrawQuery handleWithdrawQuery) {
-		Integer tenantId = TenantContextHolder.getTenantId();
+		/*Integer tenantId = TenantContextHolder.getTenantId();
 		if(!Objects.equals(tenantId,wechatConfig.getTenantId())){
 			return R.fail("ELECTRICITY.0066", "用户权限不足");
-		}
+		}*/
 		return withdrawRecordService.handleWithdraw(handleWithdrawQuery);
 	}
 
