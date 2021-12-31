@@ -162,7 +162,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             if (Objects.equals(oldElectricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY)
                     && StringUtils.isNotEmpty(oldElectricityCabinetBox.getSn())) {
 
-                //修改电池
+                if(oldElectricityCabinetBox.getSn().contains("UNKNOW")){
+	                oldElectricityCabinetBox.setSn(oldElectricityCabinetBox.getSn().substring(5));
+                }
+            	//修改电池
                 ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldElectricityCabinetBox.getSn());
                 if (Objects.nonNull(oldElectricityBattery) && !Objects.equals(oldElectricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
                     newElectricityBattery.setId(oldElectricityBattery.getId());
