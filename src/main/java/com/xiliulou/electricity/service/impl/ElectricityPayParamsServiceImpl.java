@@ -113,7 +113,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		}
 
 		String fileName = file.getOriginalFilename();
-		String path = config.getMchCertificateDirectory() + "_" + tenantId + "_" + fileName;
+		String path = config.getMchCertificateDirectory() +  tenantId + "_" + fileName;
 
 		//需要优化,实现MultipartFile接口，在里面进行重写 TODO
 		File newFile = new File(path);
