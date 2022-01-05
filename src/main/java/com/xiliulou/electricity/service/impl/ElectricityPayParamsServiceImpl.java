@@ -130,10 +130,12 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 
 		ElectricityPayParams electricityPayParams = new ElectricityPayParams();
 		electricityPayParams.setId(oldElectricityPayParams.getId());
-		if(Objects.nonNull(type)||Objects.equals(type,ElectricityPayParams.TYPE_MERCHANT_PATH)) {
-			electricityPayParams.setWechatMerchantPrivateKeyPath(path);
-		}else {
-			electricityPayParams.setApiName(path);
+		if(Objects.nonNull(type)) {
+			if (Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
+				electricityPayParams.setWechatMerchantPrivateKeyPath(path);
+			} else {
+				electricityPayParams.setApiName(path);
+			}
 		}
 		electricityPayParams.setUpdateTime(System.currentTimeMillis());
 		baseMapper.updateById(electricityPayParams);
