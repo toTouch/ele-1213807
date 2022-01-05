@@ -310,6 +310,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			if (Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
 				//修改提现表
 				withdrawRecord.setStatus(WithdrawRecord.WITHDRAWING_SUCCESS);
+				withdrawRecord.setType(WithdrawRecord.TYPE_UN_ONLINE);
 				//提现审核通过
 				withdrawRecordMapper.updateById(withdrawRecord);
 
@@ -318,6 +319,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		}
 
 		//线上提现
+		withdrawRecord.setType(WithdrawRecord.TYPE_ONLINE);
 		withdrawRecordMapper.updateById(withdrawRecord);
 		return transferPay(withdrawRecord);
 
