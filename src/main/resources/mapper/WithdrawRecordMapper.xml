@@ -8,7 +8,7 @@
 		select twr.id as id,twr.uid as uid,twr.order_id as orderId,twr.bank_name as bankName,
 		twr.bank_number as bankNumber,twr.check_time as checkTime,twr.arrive_time as arriveTime,
 		twr.status as status,twr.create_time as createTime,twr.update_time as updateTime,
-		twr.bank_code as bankCode,twr.true_name as trueName,twr.type as type
+		twr.bank_code as bankCode,twr.true_name as trueName,twr.type as type,
 		twr.amount as amount,twr.handling_fee as handlingFee,twr.msg as msg
 		from t_withdraw_record as twr
 		left join t_user as tu on tu.uid=twr.uid
