@@ -154,7 +154,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 					&& StringUtils.isNotEmpty(oldElectricityCabinetBox.getSn())) {
 
 				if (oldElectricityCabinetBox.getSn().contains("UNKNOW")) {
-					oldElectricityCabinetBox.setSn(oldElectricityCabinetBox.getSn().substring(5));
+					oldElectricityCabinetBox.setSn(oldElectricityCabinetBox.getSn().substring(6));
 				}
 				//修改电池
 				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldElectricityCabinetBox.getSn());
@@ -329,7 +329,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 		return stringBuilder.toString();
 	}
-
 }
 
 @Data
@@ -355,4 +354,5 @@ class EleBatteryVo {
 	private BatteryOtherPropertiesQuery batteryOtherProperties;
 
 }
+
 
