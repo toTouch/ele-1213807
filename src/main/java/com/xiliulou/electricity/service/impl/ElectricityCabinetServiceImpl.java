@@ -1831,4 +1831,45 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
 
     }
+
+    @Override
+    public R getFranchisee(String productKey, String deviceName) {
+        //换电柜
+        ElectricityCabinet electricityCabinet = queryFromCacheByProductAndDeviceName(productKey, deviceName);
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("getFranchisee  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        //查找换电柜门店
+        if (Objects.isNull(electricityCabinet.getStoreId())) {
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("getFranchisee  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+            return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+        }
+
+
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if (Objects.isNull(store)) {
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("getFranchisee  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+
+        //查找门店加盟商
+        if (Objects.isNull(store.getFranchiseeId())) {
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("getFranchisee  ERROR! not found Franchisee ！storeId{}", store.getId());
+            return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(store.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("getFranchisee  ERROR! not found Franchisee ！franchiseeId{}", store.getFranchiseeId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+
+        return R.ok(franchisee);
+    }
 }
