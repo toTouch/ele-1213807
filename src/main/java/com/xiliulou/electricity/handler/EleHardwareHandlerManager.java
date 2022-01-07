@@ -55,6 +55,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     NormalApiExchangeHandlerIot normalApiExchangeHandlerIot;
     @Autowired
     NormalApiReturnHandlerIot normalApiReturnHandlerIot;
+    @Autowired
+    IcIdCommandIotHandler icIdCommandIotHandler;
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
@@ -72,7 +74,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 || hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_CUPBOARD_RESTART)
                 || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_UNLOCK_CABINET))
                 || (hardwareCommandQuery.getCommand().equals(HardwareCommand.API_EXCHANGE_ORDER))
-                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG_READ))) {
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.ELE_COMMAND_OTHER_CONFIG_READ))
+                || (hardwareCommandQuery.getCommand().equals(HardwareCommand.GET_CARD_NUM_ICCID))) {
             return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
         } else {
             log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
@@ -134,7 +137,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_OTHER_CONFIG_RSP)) {
             return normalOtherConfigHandlerIot.receiveMessageProcess(receiverMessage);
-        } else {
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ICCID_GET_RSP)) {
+            return icIdCommandIotHandler.receiveMessageProcess(receiverMessage);
+        }else {
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;
         }

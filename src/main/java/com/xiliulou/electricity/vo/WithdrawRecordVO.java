@@ -60,6 +60,11 @@ public class WithdrawRecordVO {
     */
     private Integer status;
 
+    /**
+     * 类型 1--线上 2--线下
+     */
+    private Integer type;
+
     private Long createTime;
 
     private Long updateTime;

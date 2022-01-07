@@ -63,4 +63,16 @@ public class ElectricityPayParams {
      */
     private Long updateTime;
 
+    /**
+     * apiName
+     */
+    private String apiName;
+
+    /**
+     * paternerKey
+     */
+    private String paternerKey;
+
+    public static final Integer TYPE_MERCHANT_PATH = 1;
+
 }

@@ -36,11 +36,12 @@ public class JsonUserEleDepositOrderController {
 
 	//缴纳押金
 	@PostMapping("/user/payDeposit")
-	public R payDeposit(@RequestParam("productKey") String productKey,
-			@RequestParam("deviceName") String deviceName,
+	public R payDeposit(@RequestParam(value = "productKey", required = false) String productKey,
+			@RequestParam(value = "deviceName", required = false) String deviceName,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
 			@RequestParam(value = "model", required = false) Integer model,
 			HttpServletRequest request) {
-		return eleDepositOrderService.payDeposit(productKey, deviceName,model, request);
+		return eleDepositOrderService.payDeposit(productKey, deviceName,franchiseeId,model, request);
 	}
 
 	//退还押金
@@ -70,8 +71,10 @@ public class JsonUserEleDepositOrderController {
 
 	//用户查询押金
 	@GetMapping(value = "/user/queryDeposit")
-	public R queryDeposit(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-		return eleDepositOrderService.queryDeposit(productKey, deviceName);
+	public R queryDeposit(@RequestParam(value = "productKey", required = false) String productKey,
+			@RequestParam(value = "deviceName", required = false) String deviceName,
+			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+		return eleDepositOrderService.queryDeposit(productKey, deviceName,franchiseeId);
 	}
 
 

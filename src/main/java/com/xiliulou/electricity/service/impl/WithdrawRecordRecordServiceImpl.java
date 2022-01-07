@@ -16,10 +16,14 @@ import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.constant.CommonConstants;
 import com.xiliulou.electricity.entity.BankCard;
+import com.xiliulou.electricity.entity.EleUserAuth;
+import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.mapper.WithdrawRecordMapper;
@@ -28,6 +32,8 @@ import com.xiliulou.electricity.query.HandleWithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
 import com.xiliulou.electricity.service.BankCardService;
+import com.xiliulou.electricity.service.ElectricityConfigService;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.UserAmountHistoryService;
 import com.xiliulou.electricity.service.UserAmountService;
@@ -47,6 +53,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.SecurityProperties;
+import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -86,8 +93,6 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Autowired
 	RedisService redisService;
 
-	@Autowired
-	WechatConfig wechatConfig;
 
 	@Autowired
 	PayTransferRecordService payTransferRecordService;
@@ -109,6 +114,12 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Autowired
 	UserAmountHistoryService userAmountHistoryService;
+
+	@Autowired
+	ElectricityConfigService electricityConfigService;
+
+	@Autowired
+	ElectricityPayParamsService electricityPayParamsService;
 
 	@Override
 	@Transactional(rollbackFor = Exception.class)
@@ -230,6 +241,8 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Transactional(rollbackFor = Exception.class)
 	public R handleWithdraw(HandleWithdrawQuery handleWithdrawQuery) {
 
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		//提现密码确认
 		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache();
 		if (Objects.isNull(withdrawPassword)) {
@@ -265,6 +278,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		withdrawRecord.setStatus(handleWithdrawQuery.getStatus());
 		withdrawRecord.setUpdateTime(System.currentTimeMillis());
 		withdrawRecord.setCheckTime(System.currentTimeMillis());
+
 		//提现审核拒绝
 		if (Objects.equals(handleWithdrawQuery.getStatus(), WithdrawRecord.CHECK_REFUSE)) {
 			withdrawRecord.setMsg(handleWithdrawQuery.getMsg());
@@ -290,9 +304,23 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			return R.ok();
 		}
 
-		//提现审核通过
-		withdrawRecordMapper.updateById(withdrawRecord);
+		//线下提现
+		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		if (Objects.nonNull(electricityConfig)) {
+			if (Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
+				//修改提现表
+				withdrawRecord.setStatus(WithdrawRecord.WITHDRAWING_SUCCESS);
+				withdrawRecord.setType(WithdrawRecord.TYPE_UN_ONLINE);
+				//提现审核通过
+				withdrawRecordMapper.updateById(withdrawRecord);
 
+				return R.ok();
+			}
+		}
+
+		//线上提现
+		withdrawRecord.setType(WithdrawRecord.TYPE_ONLINE);
+		withdrawRecordMapper.updateById(withdrawRecord);
 		return transferPay(withdrawRecord);
 
 	}
@@ -391,12 +419,18 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 	@Transactional(rollbackFor = Exception.class)
 	public R transferPay(WithdrawRecord withdrawRecord) {
 
+		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(withdrawRecord.getTenantId());
+
+		if(Objects.isNull(electricityPayParams)){
+			throw new AuthenticationServiceException("未能查找到appId和appSecret！");
+		}
+
 		Double amount = BigDecimal.valueOf(withdrawRecord.getAmount()).multiply(BigDecimal.valueOf(100)).doubleValue();
 
 		//微信提现中
 		PayTransferRecord payTransferRecord = PayTransferRecord.builder()
-				.channelMchId(wechatConfig.getMchid())
-				.channelMchAppId(wechatConfig.getMinProAppId())
+				.channelMchId(electricityPayParams.getWechatMerchantId())
+				.channelMchAppId(electricityPayParams.getMerchantMinProAppId())
 				.description(String.valueOf(System.currentTimeMillis()))
 				.encTrueName(withdrawRecord.getTrueName())
 				.bankNo(withdrawRecord.getBankCode())
@@ -411,16 +445,16 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		payTransferRecordService.insert(payTransferRecord);
 
 		PayTransferQuery payTransferQuery = PayTransferQuery.builder()
-				.mchId(wechatConfig.getMchid())
+				.mchId(electricityPayParams.getWechatMerchantId())
 				.partnerOrderNo(payTransferRecord.getOrderId())
 				.amount(payTransferRecord.getRequestAmount())
 				.encBankNo(withdrawRecord.getBankNumber())
 				.encTrueName(payTransferRecord.getEncTrueName())
 				.bankNo(payTransferRecord.getBankNo())
 				.description(payTransferRecord.getDescription())
-				.appId(wechatConfig.getAppId())
-				.patternedKey(wechatConfig.getPaternerKey())
-				.apiName(wechatConfig.getApiName()).build();
+				.appId(electricityPayParams.getMerchantMinProAppId())
+				.patternedKey(electricityPayParams.getPaternerKey())
+				.apiName(electricityPayParams.getApiName()).build();
 
 		Pair<Boolean, Object> transferPayPair = transferPayHandlerService.transferPay(payTransferQuery);
 

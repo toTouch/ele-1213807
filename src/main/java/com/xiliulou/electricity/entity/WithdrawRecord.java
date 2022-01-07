@@ -63,6 +63,11 @@ public class WithdrawRecord {
     */
     private Integer status;
 
+    /**
+     * 类型 1--线上 2--线下
+     */
+    private Integer type;
+
     private Long createTime;
 
     private Long updateTime;
@@ -95,5 +100,11 @@ public class WithdrawRecord {
     public static final Integer WITHDRAWING_SUCCESS = 5;
     //提现失败
     public static final Integer WITHDRAWING_FAIL = 6;
+
+
+    //线上
+    public static final Integer TYPE_ONLINE = 1;
+    //线下
+    public static final Integer TYPE_UN_ONLINE = 2;
 
 }

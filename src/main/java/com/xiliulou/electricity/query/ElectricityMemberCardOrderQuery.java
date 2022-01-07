@@ -19,11 +19,9 @@ public class ElectricityMemberCardOrderQuery {
 	private Integer memberId;
 
 	//三元组
-	@NotEmpty(message = "三元组不能为空!", groups = {CreateGroup.class})
 	private String productKey;
 
 	//三元组
-	@NotEmpty(message = "三元组不能为空!", groups = {CreateGroup.class})
 	private String deviceName;
 
 	//优惠券

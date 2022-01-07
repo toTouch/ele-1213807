@@ -103,7 +103,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	}
 
 	@Override
-	public R uploadFile(MultipartFile file) {
+	public R uploadFile(MultipartFile file, Integer type) {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		ElectricityPayParams oldElectricityPayParams = queryFromCache(tenantId);
@@ -113,7 +113,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		}
 
 		String fileName = file.getOriginalFilename();
-		String path = config.getMchCertificateDirectory() +tenantId+"_"+ fileName;
+		String path = config.getMchCertificateDirectory() +  tenantId + "_" + fileName;
 
 		//需要优化,实现MultipartFile接口，在里面进行重写 TODO
 		File newFile = new File(path);
@@ -130,11 +130,17 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 
 		ElectricityPayParams electricityPayParams = new ElectricityPayParams();
 		electricityPayParams.setId(oldElectricityPayParams.getId());
-		electricityPayParams.setWechatMerchantPrivateKeyPath(path);
+
+		if (Objects.isNull(type) || Objects.equals(type, ElectricityPayParams.TYPE_MERCHANT_PATH)) {
+			electricityPayParams.setWechatMerchantPrivateKeyPath(path);
+		} else {
+			electricityPayParams.setApiName(path);
+		}
+
 		electricityPayParams.setUpdateTime(System.currentTimeMillis());
 		baseMapper.updateById(electricityPayParams);
 
-		redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS+oldElectricityPayParams.getTenantId());
+		redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS + oldElectricityPayParams.getTenantId());
 		return R.ok();
 
 	}

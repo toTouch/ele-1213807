@@ -29,4 +29,6 @@ public class WithdrawRecordQuery {
 	private String orderId;
 
 	private String phone;
+
+	private Integer type;
 }
