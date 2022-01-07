@@ -8,6 +8,7 @@ import com.xiliulou.core.sms.EnableSms;
 import com.xiliulou.core.wp.EnableWeChatTemplate;
 import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
 import com.xiliulou.core.xxl.EnableXllXxlJob;
+import com.xiliulou.feishu.EnableFeishu;
 import com.xiliulou.iot.EnableIot;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.storage.EnableStorage;
@@ -36,6 +37,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableSms
 @EnableCH
 @EnableWeChatTemplate
+@EnableFeishu
 public class ElectricityCabinetApplication {
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);
