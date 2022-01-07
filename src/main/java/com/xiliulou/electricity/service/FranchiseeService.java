@@ -43,4 +43,6 @@ public interface FranchiseeService {
 	R setSplit(List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList);
 
     Franchisee queryByElectricityBatteryId(Long id);
+
+	R queryByTenantId(Integer tenantId);
 }
