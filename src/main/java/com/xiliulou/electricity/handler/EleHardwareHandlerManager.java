@@ -230,9 +230,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         if(Objects.isNull(token)){
             FeishuTokenRsp feishuTokenRsp =  feishuTokenService.acquireAccessToken();
             token = feishuTokenRsp.getTenantAccessToken();
-            //有效期两小时，前一个半小时请求返回token一致，后半小时会新生成token，redis存一小时四十五分
             redisService.set(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN,
-                    token,6300L, TimeUnit.SECONDS);
+                    token,1800L, TimeUnit.SECONDS);
         }
 
         return token;
