@@ -152,5 +152,7 @@ public interface ElectricityCabinetConstant {
     //邀请返现活动缓存
     String SHARE_MONEY_ACTIVITY_CACHE = "share_money_activity_cache:";
 
+    String CACHE_ELE_OTHER_CONFIG = "ele_other_config:";
+
     String CACHE_FEISHU_ACCESS_TOKEN = "cache_feishu_access_token";
 }

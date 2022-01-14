@@ -412,4 +412,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		return franchiseeMapper.queryByElectricityBatteryId(id);
 	}
 
+	@Override
+	public R queryByTenantId(Integer tenantId) {
+		return R.ok(franchiseeMapper.selectList(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getTenantId, tenantId)
+				.eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL)));
+	}
+
 }

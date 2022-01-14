@@ -142,6 +142,15 @@ public class HardwareCommand {
     public static final String API_ORDER_OPER_HISTORY = "api_exchange_order_operate_record";
 
 
+    /**
+     * 获取4G卡号
+     */
+    public static final String GET_CARD_NUM_ICCID = "get_card_num_iccid";
+
+    //获取4G卡号
+    public static final String ELE_COMMAND_ICCID_GET_RSP = "iccid_get_rsp";
+
+
     public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
     static {
@@ -194,5 +203,7 @@ public class HardwareCommand {
         ELE_COMMAND_MAPS.put(API_EXCHANGE_ORDER, "OK");
         ELE_COMMAND_MAPS.put(API_RENT_ORDER, "OK");
         ELE_COMMAND_MAPS.put(API_RETURN_ORDER, "OK");
+        ELE_COMMAND_MAPS.put(GET_CARD_NUM_ICCID, "OK");
+        ELE_COMMAND_MAPS.put(ELE_COMMAND_ICCID_GET_RSP, "OK");
     }
 }

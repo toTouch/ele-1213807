@@ -105,4 +105,6 @@ public interface ElectricityCabinetService {
     void unlockElectricityCabinet(Integer eid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
+
+    R getFranchisee(String productKey, String deviceName);
 }

@@ -19,7 +19,7 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryByOrderId(String orderNo);
 
-    R payDeposit(String productKey,String deviceName,Integer model,HttpServletRequest request);
+    R payDeposit(String productKey,String deviceName,Long franchiseeId,Integer model,HttpServletRequest request);
 
     R returnDeposit(HttpServletRequest request);
 
@@ -31,7 +31,7 @@ public interface EleDepositOrderService {
 
 	void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
 
-    R queryDeposit(String productKey,String deviceName);
+    R queryDeposit(String productKey,String deviceName,Long franchiseeId);
 
 	R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
 

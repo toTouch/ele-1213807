@@ -125,31 +125,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			return R.failMsg("未找到用户的第三方授权信息!");
 		}
 
-		//换电柜
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
-		if (Objects.isNull(electricityCabinet)) {
-			log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
-			return R.fail("ELECTRICITY.0005", "未找到换电柜");
-		}
-
-		//3、查出套餐
-		//查找换电柜门店
-		if (Objects.isNull(electricityCabinet.getStoreId())) {
-			log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
-			return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
-		}
-		Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-		if (Objects.isNull(store)) {
-			log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
-			return R.fail("ELECTRICITY.0018", "未找到门店");
-		}
-
-		//查找门店加盟商
-		if (Objects.isNull(store.getFranchiseeId())) {
-			log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
-			return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
-		}
-
 		//用户
 		UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
 
@@ -187,11 +162,41 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 			return R.fail("ELECTRICITY.0042", "未缴纳押金");
 		}
 
-		//判断该换电柜加盟商和用户加盟商是否一致
-		if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
-			log.error("queryByDevice  ERROR!FranchiseeId is not equal!uid:{} , FranchiseeId1:{} ,FranchiseeId2:{}", user.getUid(), store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId());
-			return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
+		Long franchiseeId=franchiseeUserInfo.getFranchiseeId();
+
+		if (Objects.nonNull(electricityMemberCardOrderQuery.getProductKey())
+				&& Objects.nonNull(electricityMemberCardOrderQuery.getDeviceName())) {
+			//换电柜
+			ElectricityCabinet electricityCabinet = electricityCabinetService.queryFromCacheByProductAndDeviceName(electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
+			if (Objects.isNull(electricityCabinet)) {
+				log.error("rentBattery  ERROR! not found electricityCabinet ！productKey{},deviceName{}", electricityMemberCardOrderQuery.getProductKey(), electricityMemberCardOrderQuery.getDeviceName());
+				return R.fail("ELECTRICITY.0005", "未找到换电柜");
+			}
+
+			//3、查出套餐
+			//查找换电柜门店
+			if (Objects.isNull(electricityCabinet.getStoreId())) {
+				log.error("queryByDevice  ERROR! not found store ！electricityCabinetId{}", electricityCabinet.getId());
+				return R.fail("ELECTRICITY.0097", "换电柜未绑定门店，不可用");
+			}
+			Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+			if (Objects.isNull(store)) {
+				log.error("queryByDevice  ERROR! not found store ！storeId{}", electricityCabinet.getStoreId());
+				return R.fail("ELECTRICITY.0018", "未找到门店");
+			}
+
+			//查找门店加盟商
+			if (Objects.isNull(store.getFranchiseeId())) {
+				log.error("queryByDevice  ERROR! not found Franchisee ！storeId{}", store.getId());
+				return R.fail("ELECTRICITY.0098", "换电柜门店未绑定加盟商，不可用");
+			}
+			franchiseeId = store.getFranchiseeId();
 		}
+
+		if(Objects.isNull(franchiseeId)){
+			return R.fail("ELECTRICITY.0038", "未找到加盟商");
+		}
+
 
 		ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
 		if (Objects.isNull(electricityMemberCard)) {
@@ -290,7 +295,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 		electricityMemberCardOrder.setUserName(userInfo.getUserName());
 		electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
 		electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
-		electricityMemberCardOrder.setFranchiseeId(store.getFranchiseeId());
+		electricityMemberCardOrder.setFranchiseeId(franchiseeId);
 		electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
 		electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
 		baseMapper.insert(electricityMemberCardOrder);

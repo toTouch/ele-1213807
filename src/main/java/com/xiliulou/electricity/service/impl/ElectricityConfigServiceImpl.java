@@ -33,7 +33,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
 
     @Override
-    public R edit(String name,Integer orderTime,Integer isManualReview) {
+    public R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -57,6 +57,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setName(name);
             electricityConfig.setOrderTime(orderTime);
             electricityConfig.setIsManualReview(isManualReview);
+            electricityConfig.setIsWithdraw(isWithdraw);
             electricityConfig.setCreateTime(System.currentTimeMillis());
             electricityConfig.setUpdateTime(System.currentTimeMillis());
             electricityConfig.setTenantId(tenantId);
@@ -67,6 +68,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setName(name);
         electricityConfig.setOrderTime(orderTime);
         electricityConfig.setIsManualReview(isManualReview);
+        electricityConfig.setIsWithdraw(isWithdraw);
         electricityConfig.setUpdateTime(System.currentTimeMillis());
         electricityConfigMapper.updateById(electricityConfig);
         return R.ok();
