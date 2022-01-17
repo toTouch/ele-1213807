@@ -143,18 +143,43 @@ public class JsonAdminEleWarnMsgController {
 		return eleWarnMsgService.queryCount(eleWarnMsgQuery);
 	}
 
-	//解锁电柜
+	//have read message
 	@PostMapping(value = "/admin/eleWarnMsg/haveRead")
 	public R haveRead(@RequestParam("ids") String ids) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
 		for (Long id : idList) {
 			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
 			if (Objects.nonNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_UNREAD)) {
+				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
+					continue;
+				}
 				EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
 				updateEleWarnMsg.setId(eleWarnMsg.getId());
 				updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
 				updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
 				eleWarnMsgService.update(updateEleWarnMsg);
+			}
+		}
+		return R.ok();
+	}
+
+	//delete message by Id
+	@PostMapping(value = "/admin/eleWarnMsg/delete")
+	public R delete(@RequestParam("ids") String ids) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
+		for (Long id : idList) {
+			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
+			if (Objects.nonNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_UNREAD)) {
+				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
+					continue;
+				}
+				eleWarnMsgService.delete(id);
 			}
 		}
 		return R.ok();
