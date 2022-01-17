@@ -24,4 +24,8 @@ public interface NotExistSnService {
     R queryList(NotExistSnQuery notExistSnQuery);
 
     R queryCount(NotExistSnQuery notExistSnQuery);
+
+	NotExistSn queryByIdFromDB(Long id);
+
+    void delete(Long id);
 }

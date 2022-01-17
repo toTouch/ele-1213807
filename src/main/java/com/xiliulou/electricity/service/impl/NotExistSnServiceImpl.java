@@ -9,6 +9,8 @@ import com.xiliulou.electricity.service.NotExistSnService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
+
 /**
  * @author: Miss.Li
  * @Date: 2021/12/17 13:46
@@ -17,7 +19,7 @@ import org.springframework.stereotype.Service;
 @Service
 public class NotExistSnServiceImpl implements NotExistSnService {
 
-	@Autowired
+	@Resource
 	NotExistSnServiceMapper notExistSnServiceMapper;
 
 
@@ -45,5 +47,15 @@ public class NotExistSnServiceImpl implements NotExistSnService {
 	@Override
 	public R queryCount(NotExistSnQuery notExistSnQuery) {
 		return R.ok(notExistSnServiceMapper.queryCount(notExistSnQuery));
+	}
+
+	@Override
+	public NotExistSn queryByIdFromDB(Long id) {
+		return notExistSnServiceMapper.selectById(id);
+	}
+
+	@Override
+	public void delete(Long id) {
+		notExistSnServiceMapper.deleteById(id);
 	}
 }

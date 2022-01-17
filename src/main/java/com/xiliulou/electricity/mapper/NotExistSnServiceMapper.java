@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.NotExistSn;
 import com.xiliulou.electricity.query.NotExistSnQuery;
+import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;
 

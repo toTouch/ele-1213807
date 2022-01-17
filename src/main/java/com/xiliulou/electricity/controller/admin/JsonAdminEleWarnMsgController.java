@@ -177,7 +177,7 @@ public class JsonAdminEleWarnMsgController {
 		List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
 		for (Long id : idList) {
 			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
-			if (Objects.nonNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_UNREAD)) {
+			if (Objects.nonNull(eleWarnMsg)) {
 				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
 					continue;
 				}
