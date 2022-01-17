@@ -65,7 +65,7 @@ public class JsonAdminNotExistSnController extends BaseController {
     }
 
     //delete notExistSn by Id
-    @DeleteMapping (value = "/admin/eleWarnMsg/delete")
+    @DeleteMapping (value = "/admin/notExistSn/delete")
     public R delete(@RequestParam("ids") String ids) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
