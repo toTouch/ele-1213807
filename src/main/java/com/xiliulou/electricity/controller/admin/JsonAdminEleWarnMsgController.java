@@ -14,7 +14,9 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -167,7 +169,7 @@ public class JsonAdminEleWarnMsgController {
 	}
 
 	//delete message by Id
-	@PostMapping(value = "/admin/eleWarnMsg/delete")
+	@DeleteMapping (value = "/admin/eleWarnMsg/delete")
 	public R delete(@RequestParam("ids") String ids) {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
