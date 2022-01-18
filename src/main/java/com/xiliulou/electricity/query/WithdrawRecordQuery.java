@@ -31,4 +31,6 @@ public class WithdrawRecordQuery {
 	private String phone;
 
 	private Integer type;
+
+	private Integer tenantId;
 }
