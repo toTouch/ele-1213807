@@ -146,7 +146,7 @@
         <dependency>
             <groupId>com.xiliulou</groupId>
             <artifactId>xiliulou-common-feishu</artifactId>
-            <version>2.0.1</version>
+            <version>${xiliulou.version}</version>
             <scope>compile</scope>
         </dependency>
     </dependencies>

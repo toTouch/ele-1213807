@@ -25,6 +25,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.mns.HardwareHandlerManager;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -188,6 +189,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return;
         }
 
+        FeishuMsgPostTextQuery query0 = new FeishuMsgPostTextQuery();
+        query0.setText("产品系列：换电柜");
+
         FeishuMsgPostTextQuery query1 = new FeishuMsgPostTextQuery();
         query1.setText("柜机名称：" + electricityCabinet.getName());
 
@@ -197,14 +201,15 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         FeishuMsgPostTextQuery query3 = new FeishuMsgPostTextQuery();
         query3.setText("当前状态：" +  getOnlineStatus(onlineStatus));
 
+        List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine0 = Lists.newArrayList(query0);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine1 = Lists.newArrayList(query1);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine2 = Lists.newArrayList(query2);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine3 = Lists.newArrayList(query3);
 
         FeishuMsgPostSubQuery feishuMsgPostSubQuery = new FeishuMsgPostSubQuery();
         feishuMsgPostSubQuery.setTitle("设备上下线通知");
-        feishuMsgPostSubQuery.setContent(Arrays.asList(feishuMsgPostTypeLine1,
-                feishuMsgPostTypeLine2, feishuMsgPostTypeLine3));
+        feishuMsgPostSubQuery.setContent(Arrays.asList(feishuMsgPostTypeLine0,
+                feishuMsgPostTypeLine1, feishuMsgPostTypeLine2, feishuMsgPostTypeLine3));
 
         FeishuMsgPostQuery feishuMsgPostQuery = new FeishuMsgPostQuery();
         feishuMsgPostQuery.setZhCn(feishuMsgPostSubQuery);
@@ -232,7 +237,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     private String acquireAccessToken() throws FeishuException {
         String token = redisService.get(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN);
 
-        if(Objects.isNull(token)){
+        if(StringUtils.isBlank(token)){
             FeishuTokenRsp feishuTokenRsp =  feishuTokenService.acquireAccessToken();
             token = feishuTokenRsp.getTenantAccessToken();
             redisService.set(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN,
