@@ -178,10 +178,9 @@ public class JsonAdminEleWarnMsgController {
 		for (Long id : idList) {
 			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
 			if (Objects.nonNull(eleWarnMsg)) {
-				if(!Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
-					continue;
+				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
+					eleWarnMsgService.delete(id);
 				}
-				eleWarnMsgService.delete(id);
 			}
 		}
 		return R.ok();
