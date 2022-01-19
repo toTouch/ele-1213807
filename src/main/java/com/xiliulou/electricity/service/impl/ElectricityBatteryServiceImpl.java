@@ -223,6 +223,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	}
 
 	@Override
+	public void insert(ElectricityBattery electricityBattery) {
+		electricitybatterymapper.insert(electricityBattery);
+	}
+
+	@Override
 	public R queryById(Long electricityBatteryId) {
 		ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId);
 

@@ -1,23 +1,30 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Role;
+import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -263,5 +270,26 @@ public class JsonAdminElectricityCabinetBatteryController {
     @GetMapping(value = "/admin/battery/{id}")
     public R queryById(@PathVariable("id") Long id) {
         return electricityBatteryService.queryById(id);
+    }
+
+
+    /**
+     * 文件上传
+     * <p>
+     * 1. 创建excel对应的实体对象
+     * <p>
+     * 2. 由于默认一行行的读取excel，所以需要创建excel一行一行的回调监听器
+     * <p>
+     * 3. 直接读即可
+     */
+    @PostMapping("/admin/battery/excel")
+    @Transactional(rollbackFor = Exception.class)
+    public R upload(@RequestParam("file") MultipartFile file) {
+        try {
+            EasyExcel.read(file.getInputStream(), BatteryExcelQuery.class, new BatteryExcelListener(electricityBatteryService)).sheet().doRead();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return R.ok();
     }
 }
