@@ -74,7 +74,7 @@ public class JsonAdminNotExistSnController extends BaseController {
         for (Long id : idList) {
             NotExistSn notExistSn = notExistSnService.queryByIdFromDB(id);
             if (Objects.nonNull(notExistSn)) {
-                if(Objects.equals(notExistSn.getTenantId(),tenantId)){
+                if(!Objects.equals(notExistSn.getTenantId(),tenantId)){
                     continue;
                 }
                 notExistSnService.delete(id);
