@@ -79,6 +79,9 @@ public class JsonAdminWithdrawController extends BaseController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		List<Integer> statusList=new ArrayList<>();
 		if(Objects.equals(status,-1)){
 			statusList.add(WithdrawRecord.CHECK_PASS);
@@ -98,7 +101,8 @@ public class JsonAdminWithdrawController extends BaseController {
 				.status(statusList)
 				.orderId(orderId)
 				.phone(phone)
-				.type(type).build();
+				.type(type)
+				.tenantId(tenantId).build();
 
 		return withdrawRecordService.queryList(withdrawRecordQuery);
 	}
@@ -123,6 +127,9 @@ public class JsonAdminWithdrawController extends BaseController {
 			}
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		WithdrawRecordQuery withdrawRecordQuery = WithdrawRecordQuery.builder()
 				.uid(uid)
 				.beginTime(beginTime)
@@ -130,7 +137,8 @@ public class JsonAdminWithdrawController extends BaseController {
 				.status(statusList)
 				.orderId(orderId)
 				.phone(phone)
-				.type(type).build();
+				.type(type)
+				.tenantId(tenantId).build();
 
 		return withdrawRecordService.queryCount(withdrawRecordQuery);
 	}
