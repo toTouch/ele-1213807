@@ -14,7 +14,7 @@ import java.util.List;
  * @author makejava
  * @since 2021-09-26 14:06:23
  */
-public interface NotExistSnServiceMapper extends BaseMapper<NotExistSn> {
+public interface NotExistSnMapper extends BaseMapper<NotExistSn> {
 
 	List<NotExistSn> queryList(NotExistSnQuery notExistSnQuery);
 
