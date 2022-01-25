@@ -177,7 +177,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			return true;
 		}
 
-		NotExistSn oldNotExistSn = notExistSnService.queryByBatteryName(batteryName);
+		NotExistSn oldNotExistSn = notExistSnService.queryByBatteryName(batteryName,electricityCabinet.getId(),Integer.valueOf(cellNo));
 
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 		if (Objects.isNull(electricityBattery)) {

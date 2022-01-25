@@ -18,7 +18,7 @@ public interface NotExistSnService {
     void update(NotExistSn notExistSn);
 
 
-    NotExistSn queryByBatteryName(String batteryName);
+    NotExistSn queryByBatteryName(String batteryName,Integer electricityCabinetId,Integer cellNo);
 
 
     R queryList(NotExistSnQuery notExistSnQuery);
