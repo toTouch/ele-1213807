@@ -113,16 +113,9 @@ public class JsonAdminTenantController {
         return tenantService.queryCount(tenantQuery);
     }
 
-    //新增租户
+    //
     @GetMapping(value = "/admin/tenant/{id}")
     public R addTenant(@PathVariable("id") Integer id){
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        if(!Objects.equals(tenantId,1)) {
-            return R.fail("ELECTRICITY.0066", "用户权限不足");
-        }
-
         return R.ok(tenantService.queryByIdFromCache(id));
     }
 
