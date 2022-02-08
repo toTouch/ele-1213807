@@ -156,13 +156,12 @@ public class JsonAdminEleWarnMsgController {
 			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
 			if (Objects.nonNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_UNREAD)) {
 				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
-					continue;
+					EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
+					updateEleWarnMsg.setId(eleWarnMsg.getId());
+					updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
+					updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
+					eleWarnMsgService.update(updateEleWarnMsg);
 				}
-				EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
-				updateEleWarnMsg.setId(eleWarnMsg.getId());
-				updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
-				updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
-				eleWarnMsgService.update(updateEleWarnMsg);
 			}
 		}
 		return R.ok();
