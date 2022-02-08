@@ -93,10 +93,27 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 					continue;
 				}
 				electricityBattery=new ElectricityBattery();
+				if(Objects.isNull(batteryExcelQuery.getSn())){
+					continue;
+				}
 				electricityBattery.setSn(batteryExcelQuery.getSn());
+
+
+				if(Objects.isNull(batteryExcelQuery.getModel())){
+					batteryExcelQuery.setModel("0");
+				}
 				electricityBattery.setModel(batteryExcelQuery.getModel());
+
+				if(Objects.isNull(batteryExcelQuery.getCapacity())){
+					batteryExcelQuery.setCapacity(0);
+				}
 				electricityBattery.setCapacity(batteryExcelQuery.getCapacity());
+
+				if(Objects.isNull(batteryExcelQuery.getVoltage())){
+					batteryExcelQuery.setVoltage(0);
+				}
 				electricityBattery.setVoltage(batteryExcelQuery.getVoltage());
+
 				electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
 				electricityBattery.setCreateTime(System.currentTimeMillis());
 				electricityBattery.setUpdateTime(System.currentTimeMillis());
