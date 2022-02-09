@@ -32,10 +32,16 @@ public class NotExistSnServiceImpl implements NotExistSnService {
 	}
 
 	@Override
-	public NotExistSn queryByBatteryName(String batteryName, Integer electricityCabinetId, Integer cellNo) {
+	public NotExistSn queryByOther(String batteryName, Integer electricityCabinetId, Integer cellNo) {
 		return notExistSnMapper.selectOne(new LambdaQueryWrapper<NotExistSn>()
 				.eq(NotExistSn::getBatteryName, batteryName).eq(NotExistSn::getDelFlag, NotExistSn.DEL_NORMAL)
 				.eq(NotExistSn::getEId, electricityCabinetId).eq(NotExistSn::getCellNo, cellNo));
+	}
+
+	@Override
+	public NotExistSn queryByBatteryName(String batteryName) {
+		return notExistSnMapper.selectOne(new LambdaQueryWrapper<NotExistSn>()
+				.eq(NotExistSn::getBatteryName, batteryName).eq(NotExistSn::getDelFlag, NotExistSn.DEL_NORMAL));
 	}
 
 	@Override
