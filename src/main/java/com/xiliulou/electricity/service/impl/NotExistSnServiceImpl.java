@@ -40,7 +40,8 @@ public class NotExistSnServiceImpl implements NotExistSnService {
 
 	@Override
 	public NotExistSn queryByBatteryName(String batteryName) {
-		return null;
+		return notExistSnMapper.selectOne(new LambdaQueryWrapper<NotExistSn>()
+				.eq(NotExistSn::getBatteryName, batteryName).eq(NotExistSn::getDelFlag, NotExistSn.DEL_NORMAL));
 	}
 
 	@Override
