@@ -25,7 +25,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
 	Integer queryCount(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 
-    ElectricityBattery selectBatteryInfo(@Param("uid") Long uid);
+	ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
 
 	Integer updateByOrder(ElectricityBattery electricityBattery);
 

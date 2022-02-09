@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 
 import java.util.List;
 
@@ -28,7 +29,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
-    ElectricityBattery queryByUid(Long uid);
+    ElectricityBatteryVO queryByUid(Long uid);
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 
