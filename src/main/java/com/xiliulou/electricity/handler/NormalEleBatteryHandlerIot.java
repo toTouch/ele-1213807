@@ -1,7 +1,5 @@
 package com.xiliulou.electricity.handler;
 
-import com.alibaba.fastjson.JSON;
-import cn.hutool.core.util.StrUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -177,22 +175,31 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			return true;
 		}
 
-		NotExistSn oldNotExistSn = notExistSnService.queryByBatteryName(batteryName,electricityCabinet.getId(),Integer.valueOf(cellNo));
+		NotExistSn oldNotExistSn = notExistSnService.queryByOther(batteryName,electricityCabinet.getId(),Integer.valueOf(cellNo));
 
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 		if (Objects.isNull(electricityBattery)) {
 			log.error("ele battery error! no electricityBattery,sn,{}", batteryName);
 
+
 			//插入表
 			if (Objects.isNull(oldNotExistSn)) {
-				NotExistSn notExistSn = new NotExistSn();
-				notExistSn.setEId(electricityCabinet.getId());
-				notExistSn.setBatteryName(batteryName);
-				notExistSn.setCellNo(Integer.valueOf(cellNo));
-				notExistSn.setCreateTime(System.currentTimeMillis());
-				notExistSn.setUpdateTime(System.currentTimeMillis());
-				notExistSn.setTenantId(electricityCabinet.getTenantId());
-				notExistSnService.insert(notExistSn);
+				NotExistSn notExistSnOld = notExistSnService.queryByBatteryName(batteryName);
+				if(Objects.isNull(notExistSnOld)) {
+					NotExistSn notExistSn = new NotExistSn();
+					notExistSn.setEId(electricityCabinet.getId());
+					notExistSn.setBatteryName(batteryName);
+					notExistSn.setCellNo(Integer.valueOf(cellNo));
+					notExistSn.setCreateTime(System.currentTimeMillis());
+					notExistSn.setUpdateTime(System.currentTimeMillis());
+					notExistSn.setTenantId(electricityCabinet.getTenantId());
+					notExistSnService.insert(notExistSn);
+				}else {
+					notExistSnOld.setEId(electricityCabinet.getId());
+					notExistSnOld.setCellNo(Integer.valueOf(cellNo));
+					notExistSnOld.setUpdateTime(System.currentTimeMillis());
+					notExistSnService.update(notExistSnOld);
+				}
 			}
 			return false;
 		}
