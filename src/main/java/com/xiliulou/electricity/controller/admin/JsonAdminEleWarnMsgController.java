@@ -14,7 +14,9 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -143,18 +145,41 @@ public class JsonAdminEleWarnMsgController {
 		return eleWarnMsgService.queryCount(eleWarnMsgQuery);
 	}
 
-	//解锁电柜
+	//have read message
 	@PostMapping(value = "/admin/eleWarnMsg/haveRead")
 	public R haveRead(@RequestParam("ids") String ids) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
 		for (Long id : idList) {
 			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
 			if (Objects.nonNull(eleWarnMsg) && Objects.equals(eleWarnMsg.getStatus(), EleWarnMsg.STATUS_UNREAD)) {
-				EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
-				updateEleWarnMsg.setId(eleWarnMsg.getId());
-				updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
-				updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
-				eleWarnMsgService.update(updateEleWarnMsg);
+				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
+					EleWarnMsg updateEleWarnMsg = new EleWarnMsg();
+					updateEleWarnMsg.setId(eleWarnMsg.getId());
+					updateEleWarnMsg.setStatus(EleWarnMsg.STATUS_HAVE_READ);
+					updateEleWarnMsg.setUpdateTime(System.currentTimeMillis());
+					eleWarnMsgService.update(updateEleWarnMsg);
+				}
+			}
+		}
+		return R.ok();
+	}
+
+	//delete message by Id
+	@DeleteMapping (value = "/admin/eleWarnMsg/delete")
+	public R delete(@RequestParam("ids") String ids) {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
+		for (Long id : idList) {
+			EleWarnMsg eleWarnMsg = eleWarnMsgService.queryByIdFromDB(id);
+			if (Objects.nonNull(eleWarnMsg)) {
+				if(Objects.equals(eleWarnMsg.getTenantId(),tenantId)){
+					eleWarnMsgService.delete(id);
+				}
 			}
 		}
 		return R.ok();

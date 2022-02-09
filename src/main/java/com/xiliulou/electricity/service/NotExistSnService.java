@@ -18,10 +18,14 @@ public interface NotExistSnService {
     void update(NotExistSn notExistSn);
 
 
-    NotExistSn queryByBatteryName(String batteryName);
+    NotExistSn queryByBatteryName(String batteryName,Integer electricityCabinetId,Integer cellNo);
 
 
     R queryList(NotExistSnQuery notExistSnQuery);
 
     R queryCount(NotExistSnQuery notExistSnQuery);
+
+	NotExistSn queryByIdFromDB(Long id);
+
+    void delete(Long id);
 }

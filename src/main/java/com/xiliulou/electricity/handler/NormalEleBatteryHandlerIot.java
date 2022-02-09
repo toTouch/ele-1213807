@@ -155,7 +155,8 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 				if (oldElectricityCabinetBox.getSn().contains("UNKNOW")) {
 					oldElectricityCabinetBox.setSn(oldElectricityCabinetBox.getSn().substring(6));
 				}
-				log.info("oldElectricityCabinetBox is -->{}",oldElectricityCabinetBox);
+
+
 				//修改电池
 				ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldElectricityCabinetBox.getSn());
 				if (Objects.nonNull(oldElectricityBattery) && !Objects.equals(oldElectricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
@@ -176,7 +177,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			return true;
 		}
 
-		NotExistSn oldNotExistSn = notExistSnService.queryByBatteryName(batteryName);
+		NotExistSn oldNotExistSn = notExistSnService.queryByBatteryName(batteryName,electricityCabinet.getId(),Integer.valueOf(cellNo));
 
 		ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
 		if (Objects.isNull(electricityBattery)) {

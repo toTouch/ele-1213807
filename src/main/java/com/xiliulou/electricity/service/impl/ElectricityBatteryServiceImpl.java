@@ -223,6 +223,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	}
 
 	@Override
+	public void insert(ElectricityBattery electricityBattery) {
+		electricitybatterymapper.insert(electricityBattery);
+	}
+
+	@Override
+	public ElectricityBatteryVO queryInfoByUid(Long uid) {
+		return electricitybatterymapper.selectBatteryInfo(uid);
+	}
+
+	@Override
 	public R queryById(Long electricityBatteryId) {
 		ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId);
 
@@ -279,7 +289,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	 */
 	@Override
 	public ElectricityBattery queryByUid(Long uid) {
-		return baseMapper.selectBatteryInfo(uid);
+		return baseMapper.queryByUid(uid);
 	}
 
 	@Override

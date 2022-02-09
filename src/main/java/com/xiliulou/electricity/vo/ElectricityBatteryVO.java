@@ -101,5 +101,12 @@ public class ElectricityBatteryVO {
     //是否绑定加盟商
     private Boolean isBind;
 
+    //电池的标称电压
+    private Double batteryV;
+    /**
+     * 电池充电电流
+     */
+    private Double batteryChargeA;
+
 
 }

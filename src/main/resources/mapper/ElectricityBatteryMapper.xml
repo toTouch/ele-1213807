@@ -89,11 +89,14 @@
 
 
 
-	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-        select id, sn,power, voltage, capacity,status, create_time, update_time,del_flag,tenant_id,
-        electricity_cabinet_id,uid
-        FROM t_electricity_battery
-        WHERE uid = #{uid} and del_flag = 0
+	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
+        select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
+        teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
+        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid,teb.distance as distance,
+        tbop.battery_v as batteryV,tbop.battery_charge_a as batteryChargeA
+        FROM t_electricity_battery as teb
+        left join t_battery_other_properties as tbop on teb.sn=tbop.battery_name
+        WHERE teb.uid = #{uid} and teb.del_flag = 0
     </select>
 
 
@@ -117,6 +120,14 @@
 	<select id="queryLowBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
 		select sn, tenant_id, uid , power from t_electricity_battery where power &lt; #{batteryLevel} and status = 2 limit #{offset}, #{size}
     </select>
+
+	<select id="queryByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
+        teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
+        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid,teb.distance as distance
+        FROM t_electricity_battery as teb
+        WHERE teb.uid = #{uid} and teb.del_flag = 0
+	</select>
 
 	<update id="updateByOrder">
 		update t_electricity_battery

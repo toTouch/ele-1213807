@@ -16,7 +16,7 @@ import javax.annotation.Resource;
  * @author makejava
  * @since 2021-03-29 14:12:45
  */
-@Service("tEleWarnMsgService")
+@Service("eleWarnMsgService")
 public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Resource
     private EleWarnMsgMapper eleWarnMsgMapper;
@@ -67,5 +67,10 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Override
     public R queryCount(EleWarnMsgQuery eleWarnMsgQuery) {
         return R.ok(eleWarnMsgMapper.queryCount(eleWarnMsgQuery));
+    }
+
+    @Override
+    public void delete(Long id) {
+        eleWarnMsgMapper.deleteById(id);
     }
 }
