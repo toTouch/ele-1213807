@@ -29,7 +29,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
-    ElectricityBatteryVO queryByUid(Long uid);
+    ElectricityBattery queryByUid(Long uid);
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 
@@ -46,4 +46,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     R queryNotBindList(Long offset, Long size,Integer franchiseeId);
 
     void insert(ElectricityBattery electricityBattery);
+
+    ElectricityBatteryVO queryInfoByUid(Long uid);
 }

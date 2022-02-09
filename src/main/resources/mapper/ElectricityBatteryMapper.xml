@@ -121,6 +121,14 @@
 		select sn, tenant_id, uid , power from t_electricity_battery where power &lt; #{batteryLevel} and status = 2 limit #{offset}, #{size}
     </select>
 
+	<select id="queryByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
+        teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
+        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid,teb.distance as distance
+        FROM t_electricity_battery as teb
+        WHERE teb.uid = #{uid} and teb.del_flag = 0
+	</select>
+
 	<update id="updateByOrder">
 		update t_electricity_battery
 		set
