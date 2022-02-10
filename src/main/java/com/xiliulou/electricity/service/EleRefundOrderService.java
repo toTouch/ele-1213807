@@ -45,7 +45,7 @@ public interface EleRefundOrderService {
 
     Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
 
-    R handleRefund(String refundOrderNo,Integer status, BigDecimal refundAmount,HttpServletRequest request);
+    R handleRefund(String refundOrderNo,String errMsg,Integer status, BigDecimal refundAmount,HttpServletRequest request);
 
     R queryList(EleRefundQuery eleRefundQuery);
 

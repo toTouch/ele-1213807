@@ -207,7 +207,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	}
 
 	@Override
-	public R handleRefund(String refundOrderNo, Integer status,BigDecimal refundAmount, HttpServletRequest request) {
+	public R handleRefund(String refundOrderNo, String errMsg,Integer status,BigDecimal refundAmount, HttpServletRequest request) {
 		EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
 		if (Objects.isNull(eleRefundOrder)) {
 			log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
@@ -224,13 +224,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 			refundAmount=eleRefundOrder.getRefundAmount();
 		}
 
+		EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+		eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+		eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+		eleRefundOrderUpdate.setErrMsg(errMsg);
+
+
 		//同意退款
 		if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND)) {
 			//修改订单状态
-			EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
-			eleRefundOrderUpdate.setId(eleRefundOrder.getId());
 			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
-			eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 			eleRefundOrderUpdate.setRefundAmount(refundAmount);
 			eleRefundOrderService.update(eleRefundOrderUpdate);
 
@@ -264,10 +267,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		//拒绝退款
 		if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
 			//修改订单状态
-			EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
-			eleRefundOrderUpdate.setId(eleRefundOrder.getId());
 			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
-			eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 			eleRefundOrderService.update(eleRefundOrderUpdate);
 		}
 		return R.ok();

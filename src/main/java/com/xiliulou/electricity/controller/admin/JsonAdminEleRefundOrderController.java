@@ -86,9 +86,10 @@ public class JsonAdminEleRefundOrderController {
 	@PostMapping("/admin/handleRefund")
 	public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo,
 			@RequestParam("status") Integer status,
+			@RequestParam(value = "errMsg", required = false) String errMsg,
 			@RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
 			HttpServletRequest request) {
-		return eleRefundOrderService.handleRefund(refundOrderNo, status, refundAmount,request);
+		return eleRefundOrderService.handleRefund(refundOrderNo,errMsg, status, refundAmount,request);
 	}
 
 
