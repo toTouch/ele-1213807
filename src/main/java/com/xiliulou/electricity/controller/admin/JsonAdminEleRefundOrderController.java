@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -83,8 +84,12 @@ public class JsonAdminEleRefundOrderController {
 
 	//后台退款处理
 	@PostMapping("/admin/handleRefund")
-	public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status, HttpServletRequest request) {
-		return eleRefundOrderService.handleRefund(refundOrderNo, status, request);
+	public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo,
+			@RequestParam("status") Integer status,
+			@RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+			HttpServletRequest request) {
+		return eleRefundOrderService.handleRefund(refundOrderNo, status, refundAmount,request);
 	}
+
 
 }

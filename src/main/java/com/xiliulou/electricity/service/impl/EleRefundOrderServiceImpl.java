@@ -207,11 +207,21 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	}
 
 	@Override
-	public R handleRefund(String refundOrderNo, Integer status, HttpServletRequest request) {
+	public R handleRefund(String refundOrderNo, Integer status,BigDecimal refundAmount, HttpServletRequest request) {
 		EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
 		if (Objects.isNull(eleRefundOrder)) {
 			log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
 			return R.fail("未找到退款订单!");
+		}
+
+
+		if(Objects.nonNull(refundAmount)){
+			if(refundAmount.compareTo(eleRefundOrder.getRefundAmount())>0) {
+				log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
+				return R.fail("退款金额不能大于支付金额!");
+			}
+		}else {
+			refundAmount=eleRefundOrder.getRefundAmount();
 		}
 
 		//同意退款
@@ -221,16 +231,20 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 			eleRefundOrderUpdate.setId(eleRefundOrder.getId());
 			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
 			eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+			eleRefundOrderUpdate.setRefundAmount(refundAmount);
 			eleRefundOrderService.update(eleRefundOrderUpdate);
 
 			//调起退款
 			try {
+
 				RefundOrder refundOrder = RefundOrder.builder()
 						.orderId(eleRefundOrder.getOrderId())
 						.refundOrderNo(eleRefundOrder.getRefundOrderNo())
 						.payAmount(eleRefundOrder.getPayAmount())
-						.refundAmount(eleRefundOrder.getRefundAmount()).build();
-				WechatJsapiRefundResultDTO getPayParamsPair = eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+						.refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+
+
+				eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
 				//提交成功
 				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
 				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());

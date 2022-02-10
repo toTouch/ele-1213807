@@ -9,6 +9,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Map;
 
 /**
@@ -44,7 +45,7 @@ public interface EleRefundOrderService {
 
     Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
 
-    R handleRefund(String refundOrderNo,Integer status,HttpServletRequest request);
+    R handleRefund(String refundOrderNo,Integer status, BigDecimal refundAmount,HttpServletRequest request);
 
     R queryList(EleRefundQuery eleRefundQuery);
 
