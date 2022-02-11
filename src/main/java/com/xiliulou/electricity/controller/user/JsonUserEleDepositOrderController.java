@@ -110,7 +110,9 @@ public class JsonUserEleDepositOrderController {
 
 		EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
 				.uid(user.getUid())
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.offset(0L)
+				.size(10L).build();
 
 		return eleDepositOrderService.queryList(eleDepositOrderQuery);
 	}
