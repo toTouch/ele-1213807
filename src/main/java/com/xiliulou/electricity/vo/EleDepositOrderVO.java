@@ -65,4 +65,9 @@ public class EleDepositOrderVO {
     private String batteryType;
 
     private String franchiseeName;
+
+    /**
+     * 错误原因
+     */
+    private String errMsg;
 }
