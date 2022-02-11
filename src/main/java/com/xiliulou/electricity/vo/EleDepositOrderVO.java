@@ -17,6 +17,10 @@ public class EleDepositOrderVO {
      */
     private BigDecimal payAmount;
     /**
+     * 退款金额
+     */
+    private BigDecimal refundAmount;
+    /**
      * 创建时间
      */
     private Long createTime;
