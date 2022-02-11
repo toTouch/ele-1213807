@@ -27,7 +27,7 @@ public class JsonAdminEleRefundOrderHistoryController {
 	EleRefundOrderHistoryService eleRefundOrderHistoryService;
 
 	//退款列表
-	@GetMapping("/admin/ eleRefundOrderHistory/queryList")
+	@GetMapping("/admin/eleRefundOrderHistory/queryList")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
@@ -57,7 +57,7 @@ public class JsonAdminEleRefundOrderHistoryController {
 	}
 
 	//退款列表总数
-	@GetMapping("/admin/ eleRefundOrderHistory/queryCount")
+	@GetMapping("/admin/eleRefundOrderHistory/queryCount")
 	public R queryCount(@RequestParam(value = "refundOrderNo", required = false) String refundOrderNo,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
