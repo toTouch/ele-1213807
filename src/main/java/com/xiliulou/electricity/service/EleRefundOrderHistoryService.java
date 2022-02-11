@@ -2,16 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.query.EleRefundHistoryQuery;
-import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
-import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
-import com.xiliulou.pay.weixinv3.exception.WechatPayException;
-import org.apache.commons.lang3.tuple.Pair;
-
-import javax.servlet.http.HttpServletRequest;
-import java.math.BigDecimal;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务接口
@@ -25,18 +17,11 @@ public interface EleRefundOrderHistoryService {
     /**
      * 新增数据
      *
-     * @param eleRefundOrder 实例对象
+     * @param eleRefundOrderHistory 实例对象
      * @return 实例对象
      */
-    EleRefundOrder insert(EleRefundOrder eleRefundOrder);
+    EleRefundOrderHistory insert(EleRefundOrderHistory eleRefundOrderHistory);
 
-    /**
-     * 修改数据
-     *
-     * @param eleRefundOrder 实例对象
-     * @return 实例对象
-     */
-    Integer update(EleRefundOrder eleRefundOrder);
 
 
     R queryList(EleRefundHistoryQuery eleRefundHistoryQuery);

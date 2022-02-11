@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.RefundOrder;
@@ -58,28 +59,16 @@ public class EleRefundOrderHistoryServiceImpl implements EleRefundOrderHistorySe
 	/**
 	 * 新增数据
 	 *
-	 * @param eleRefundOrder 实例对象
+	 * @param eleRefundOrderHistory 实例对象
 	 * @return 实例对象
 	 */
 	@Override
 	@Transactional(rollbackFor = Exception.class)
-	public EleRefundOrder insert(EleRefundOrder eleRefundOrder) {
-		this.eleRefundOrderHistoryMapper.insert(eleRefundOrder);
-		return eleRefundOrder;
+	public EleRefundOrderHistory insert(EleRefundOrderHistory eleRefundOrderHistory) {
+		this.eleRefundOrderHistoryMapper.insert(eleRefundOrderHistory);
+		return eleRefundOrderHistory;
 	}
 
-	/**
-	 * 修改数据
-	 *
-	 * @param eleRefundOrder 实例对象
-	 * @return 实例对象
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Integer update(EleRefundOrder eleRefundOrder) {
-		return this.eleRefundOrderHistoryMapper.updateById(eleRefundOrder);
-
-	}
 
 
 	@Override

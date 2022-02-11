@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.query.EleRefundHistoryQuery;
-import com.xiliulou.electricity.query.EleRefundQuery;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -15,7 +14,7 @@ import java.util.Map;
  * @author makejava
  * @since 2021-02-22 10:17:06
  */
-public interface EleRefundOrderHistoryMapper extends BaseMapper<EleRefundOrder>{
+public interface EleRefundOrderHistoryMapper extends BaseMapper<EleRefundOrderHistory>{
 
 
     /**

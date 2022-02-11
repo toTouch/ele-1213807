@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.RefundOrder;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
@@ -70,6 +72,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	WechatV3JsapiService wechatV3JsapiService;
 	@Autowired
 	WechatConfig wechatConfig;
+	@Autowired
+	EleRefundOrderHistoryService eleRefundOrderHistoryService;
 
 
 	/**
@@ -118,7 +122,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl()+ electricityTradeOrder.getTenantId());
 		wechatV3RefundQuery.setCurrency("CNY");
 		wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
-		log.info("、 is -->{}",wechatV3RefundQuery);
 
 		return wechatV3JsapiService.refund(wechatV3RefundQuery);
 	}
@@ -220,6 +223,16 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 				log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
 				return R.fail("退款金额不能大于支付金额!");
 			}
+
+			//插入修改记录
+			EleRefundOrderHistory eleRefundOrderHistory=new EleRefundOrderHistory();
+			eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+			eleRefundOrderHistory.setRefundAmount(refundAmount);
+			eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+			eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+			eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+
+
 		}else {
 			refundAmount=eleRefundOrder.getRefundAmount();
 		}
