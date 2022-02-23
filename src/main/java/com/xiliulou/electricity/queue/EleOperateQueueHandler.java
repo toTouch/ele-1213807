@@ -12,7 +12,9 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import javafx.beans.binding.ObjectExpression;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.context.WebServerInitializedEvent;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -103,6 +106,8 @@ public class EleOperateQueueHandler {
         String type = finalOpenDTO.getType();
         String orderId = finalOpenDTO.getOrderId();
         Double orderSeq = finalOpenDTO.getOrderSeq();
+        String orderStatus=finalOpenDTO.getOrderStatus();
+        Integer isOpenLock=eleExceptionLockStorehouseDoorConfig.getIsOpenLock();
 
         //查找订单
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)
@@ -116,14 +121,9 @@ public class EleOperateQueueHandler {
 
 
             //换电中根据上报的订单状态判断问题仓是旧仓门还是新仓门
-            String orderStatus=finalOpenDTO.getOrderStatus();
-
-
-
-
-
-
-
+            if (Objects.equals(isOpenLock,EleExceptionLockStorehouseDoorConfig.OPEN_LOCK)){
+                lockExceptionDoor(electricityCabinetOrder,null,finalOpenDTO);
+            }
 
 
             //若app订单状态大于云端订单状态则处理
@@ -144,15 +144,92 @@ public class EleOperateQueueHandler {
                 return;
             }
 
+            //换电柜异常
+            if (Objects.equals(isOpenLock,EleExceptionLockStorehouseDoorConfig.OPEN_LOCK)){
+                lockExceptionDoor(null,rentBatteryOrder,finalOpenDTO);
+            }
+
             handleRentOrder(rentBatteryOrder, finalOpenDTO);
 
         }
     }
 
 
+    /**
+     * 异常仓门加锁
+     * @param electricityCabinetOrder
+     * @param rentBatteryOrder
+     */
+    private void lockExceptionDoor(ElectricityCabinetOrder electricityCabinetOrder,RentBatteryOrder rentBatteryOrder,EleOpenDTO eleOpenDTO){
+        //上报的订单状态值
+        String orderStatus=eleOpenDTO.getOrderStatus();
+        if (Objects.isNull(orderStatus)){
+            log.error("ELE LOCK CELL orderStatus is null:{}",eleOpenDTO.getOrderId());
+            return;
+        }
+
+        //仓门编号
+        Integer cellNo=null;
+        //电柜Id
+        Integer electricityCabinetId=null;
 
 
+        if (Objects.nonNull(electricityCabinetOrder) && Objects.isNull(rentBatteryOrder)) {
+            //旧仓门异常
+            if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL)
+                    || Objects.equals(orderStatus,ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+                    || Objects.equals(orderStatus,ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
+                cellNo=electricityCabinetOrder.getOldCellNo();
+                electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
+            }else if (Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS)
+                    || Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)
+                    || Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)){
+                cellNo=electricityCabinetOrder.getNewCellNo();
+                electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
+            }
+        }else {
+            //换退电仓门异常
+            if (Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)
+                || Objects.equals(orderStatus,RentBatteryOrder.RENT_OPEN_FAIL)
+                || Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)
+                || Objects.equals(orderStatus,RentBatteryOrder.RETURN_OPEN_FAIL)
+                || Objects.equals(orderStatus,RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)
+                || Objects.equals(orderStatus,RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)){
+                cellNo=rentBatteryOrder.getCellNo();
+                electricityCabinetId=rentBatteryOrder.getElectricityCabinetId();
+            }
+        }
 
+        if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)){
+            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null",eleOpenDTO.getOrderId());
+            return;
+        }
+
+        //对异常仓门进行锁仓处理
+        electricityCabinetBoxService.disableCell(cellNo,electricityCabinetId);
+
+        //查询三元组信息
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+
+        //发送锁仓命令
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("cell_no", cellNo);
+        dataMap.put("isForbidden", true);
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(UUID.randomUUID().toString().replace("-", ""))
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+                .build();
+
+        Pair<Boolean, String> sendResult =eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        if (!sendResult.getLeft()) {
+            log.error("ELE LOCK CELL ERROR! send command error! requestId={}",eleOpenDTO.getOrderId());
+        }
+    }
 
 
 

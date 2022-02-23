@@ -177,6 +177,8 @@ public class ElectricityCabinetOrder {
     public static final String COMPLETE_BATTERY_TAKE_TIMEOUT="COMPLETE_BATTERY_TAKE_TIMEOUT";
 
 
+
+
     //订单取消 11.0
     public static final String ORDER_CANCEL = "ORDER_CANCEL";
 

@@ -49,4 +49,12 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> queryUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
     List<ElectricityCabinetBox> findUsableEmptyCellNo(Integer eid);
+
+    /**
+     * 禁用异常仓门
+     * @param cellNo
+     * @param electricityCabinetId
+     * @return
+     */
+    Integer disableCell(Integer cellNo,Integer electricityCabinetId);
 }

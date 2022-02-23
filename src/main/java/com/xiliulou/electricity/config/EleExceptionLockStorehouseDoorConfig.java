@@ -22,4 +22,14 @@ public class EleExceptionLockStorehouseDoorConfig {
      */
     private Integer isOpenLock;
 
+    /**
+     * 启用状态
+     */
+    public static final Integer OPEN_LOCK = 0;
+
+    /**
+     * 关闭状态
+     */
+    public static final Integer CLOSE_LOCK=1;
+
 }

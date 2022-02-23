@@ -151,4 +151,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.queryUsableEmptyCellNo(eid);
     }
 
+    @Override
+    public Integer disableCell(Integer cellNo, Integer electricityCabinetId) {
+        return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
+    }
+
 }
