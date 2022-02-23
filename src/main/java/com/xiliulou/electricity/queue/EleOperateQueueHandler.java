@@ -4,6 +4,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
@@ -62,6 +63,8 @@ public class EleOperateQueueHandler {
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
+    @Autowired
+    EleExceptionLockStorehouseDoorConfig eleExceptionLockStorehouseDoorConfig;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -105,10 +108,23 @@ public class EleOperateQueueHandler {
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)
                 || Objects.equals(type, HardwareCommand.ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)) {
 
+
             ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
             if (Objects.isNull(electricityCabinetOrder)) {
                 return;
             }
+
+
+            //换电中根据上报的订单状态判断问题仓是旧仓门还是新仓门
+            String orderStatus=finalOpenDTO.getOrderStatus();
+
+
+
+
+
+
+
+
 
             //若app订单状态大于云端订单状态则处理
             if (Objects.isNull(orderSeq) || orderSeq - electricityCabinetOrder.getOrderSeq() >= 1 || Math.abs(orderSeq - electricityCabinetOrder.getOrderSeq()) < 1) {
@@ -132,6 +148,15 @@ public class EleOperateQueueHandler {
 
         }
     }
+
+
+
+
+
+
+
+
+
 
     public void shutdown() {
         shutdown = true;

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.dto.EleOpenDTO.EleOpenDTOBuilder;
@@ -68,6 +69,7 @@ public class NormalEleOrderHandlerIot extends AbstractIotMessageHandler {
 			warnMsgVo.setMsg(eleOrderVo.getMsg());
 			redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 5L, TimeUnit.MINUTES);
 		}
+
 
 		EleOpenDTOBuilder builder = EleOpenDTO.builder();
 

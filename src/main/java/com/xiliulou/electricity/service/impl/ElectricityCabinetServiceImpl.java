@@ -987,6 +987,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(homeInfo);
     }
 
+
+
     @Override
     public ElectricityCabinet queryByProductAndDeviceName(String productKey, String deviceName) {
 
