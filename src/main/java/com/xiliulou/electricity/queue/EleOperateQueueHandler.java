@@ -12,7 +12,6 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
-import javafx.beans.binding.ObjectExpression;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
