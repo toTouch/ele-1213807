@@ -163,7 +163,7 @@ public class EleOperateQueueHandler {
         //上报的订单状态值
         String orderStatus=eleOpenDTO.getOrderStatus();
         if (Objects.isNull(orderStatus)){
-            log.error("ELE LOCK CELL orderStatus is null:{}",eleOpenDTO.getOrderId());
+            log.error("ELE LOCK CELL orderStatus is null! orderId:{}",eleOpenDTO.getOrderId());
             return;
         }
 
@@ -198,7 +198,7 @@ public class EleOperateQueueHandler {
         }
 
         if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)){
-            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null",eleOpenDTO.getOrderId());
+            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}",eleOpenDTO.getOrderId());
             return;
         }
 
@@ -224,7 +224,7 @@ public class EleOperateQueueHandler {
 
         Pair<Boolean, String> sendResult =eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
-            log.error("ELE LOCK CELL ERROR! send command error! requestId={}",eleOpenDTO.getOrderId());
+            log.error("ELE LOCK CELL ERROR! send command error! orderId:{}",eleOpenDTO.getOrderId());
         }
     }
 
