@@ -188,8 +188,7 @@ public class EleOperateQueueHandler {
             }
         }else {
             //租退电仓门异常
-            if (Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)
-                || Objects.equals(orderStatus,RentBatteryOrder.RENT_OPEN_FAIL)
+            if (Objects.equals(orderStatus,RentBatteryOrder.RENT_OPEN_FAIL)
                 || Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)
                 || Objects.equals(orderStatus,RentBatteryOrder.RETURN_OPEN_FAIL)
                 || Objects.equals(orderStatus,RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)
