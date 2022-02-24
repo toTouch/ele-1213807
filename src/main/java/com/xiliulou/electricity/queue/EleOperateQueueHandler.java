@@ -180,8 +180,7 @@ public class EleOperateQueueHandler {
                     || Objects.equals(orderStatus,ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
                 cellNo=electricityCabinetOrder.getOldCellNo();
                 electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
-            }else if (Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS)
-                    || Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)
+            }else if (Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)
                     || Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)){
                 cellNo=electricityCabinetOrder.getNewCellNo();
                 electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
