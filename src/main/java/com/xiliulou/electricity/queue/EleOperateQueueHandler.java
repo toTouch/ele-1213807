@@ -188,7 +188,7 @@ public class EleOperateQueueHandler {
                 electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
             }
         }else {
-            //换退电仓门异常
+            //租退电仓门异常
             if (Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_NOT_EXISTS)
                 || Objects.equals(orderStatus,RentBatteryOrder.RENT_OPEN_FAIL)
                 || Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)
