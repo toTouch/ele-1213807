@@ -85,7 +85,8 @@ public class JsonAdminOldUserActivityController {
 
 	//列表查询
 	@GetMapping(value = "/admin/oldUserActivity/count")
-	public R queryCount(@RequestParam(value = "name", required = false) String name) {
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+						@RequestParam(value = "status",required = false) Integer status) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -93,7 +94,8 @@ public class JsonAdminOldUserActivityController {
 
 		OldUserActivityQuery oldUserActivityQuery = OldUserActivityQuery.builder()
 				.name(name)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.status(status).build();
 
 		return oldUserActivityService.queryCount(oldUserActivityQuery);
 	}

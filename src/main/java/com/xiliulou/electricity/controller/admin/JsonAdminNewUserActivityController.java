@@ -54,7 +54,8 @@ public class JsonAdminNewUserActivityController {
 	@GetMapping(value = "/admin/newUserActivity/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam(value = "name", required = false) String name) {
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "status", required = false) Integer status) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -71,7 +72,8 @@ public class JsonAdminNewUserActivityController {
 				.offset(offset)
 				.size(size)
 				.name(name)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.status(status).build();
 
 
 		return newUserActivityService.queryList(newUserActivityQuery);
@@ -80,7 +82,8 @@ public class JsonAdminNewUserActivityController {
 
 	//列表查询
 	@GetMapping(value = "/admin/newUserActivity/count")
-	public R queryCount(@RequestParam(value = "name", required = false) String name) {
+	public R queryCount(@RequestParam(value = "name", required = false) String name,
+						@RequestParam(value = "status", required = false) Integer status) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -88,7 +91,8 @@ public class JsonAdminNewUserActivityController {
 
 		NewUserActivityQuery newUserActivityQuery = NewUserActivityQuery.builder()
 				.name(name)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.status(status).build();
 
 		return newUserActivityService.queryCount(newUserActivityQuery);
 	}

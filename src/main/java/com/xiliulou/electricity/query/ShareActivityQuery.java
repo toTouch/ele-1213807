@@ -28,5 +28,10 @@ public class ShareActivityQuery {
 
     private Integer tenantId;
 
+    /**
+     * 活动状态
+     */
+    private Integer status;
+
 
 }
