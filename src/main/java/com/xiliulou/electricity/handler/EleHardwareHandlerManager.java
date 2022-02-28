@@ -31,7 +31,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ExecutorService;
@@ -189,6 +191,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return;
         }
 
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+
         FeishuMsgPostTextQuery query0 = new FeishuMsgPostTextQuery();
         query0.setText("产品系列：换电柜");
 
@@ -201,15 +205,19 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         FeishuMsgPostTextQuery query3 = new FeishuMsgPostTextQuery();
         query3.setText("当前状态：" +  getOnlineStatus(onlineStatus));
 
+        FeishuMsgPostTextQuery query4 = new FeishuMsgPostTextQuery();
+        query3.setText("当前时间：" +  sdf.format(new Date()));
+
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine0 = Lists.newArrayList(query0);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine1 = Lists.newArrayList(query1);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine2 = Lists.newArrayList(query2);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine3 = Lists.newArrayList(query3);
+        List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine4 = Lists.newArrayList(query4);
 
         FeishuMsgPostSubQuery feishuMsgPostSubQuery = new FeishuMsgPostSubQuery();
         feishuMsgPostSubQuery.setTitle("设备上下线通知");
         feishuMsgPostSubQuery.setContent(Arrays.asList(feishuMsgPostTypeLine0,
-                feishuMsgPostTypeLine1, feishuMsgPostTypeLine2, feishuMsgPostTypeLine3));
+                feishuMsgPostTypeLine1, feishuMsgPostTypeLine2, feishuMsgPostTypeLine3,feishuMsgPostTypeLine4));
 
         FeishuMsgPostQuery feishuMsgPostQuery = new FeishuMsgPostQuery();
         feishuMsgPostQuery.setZhCn(feishuMsgPostSubQuery);
