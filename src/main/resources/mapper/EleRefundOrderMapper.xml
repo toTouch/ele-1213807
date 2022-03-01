@@ -57,5 +57,9 @@
         </where>
     </select>
 
+    <select id="queryUserInfoId" resultType="java.lang.Long">
+        select tu.id from t_ele_deposit_order tedo left join  t_ele_refund_order tero on tedo.order_id =tero.order_id  left join t_user_info tu on tu.uid=tedo.uid where tero.refund_order_no=#{refundOrderNo}
+    </select>
+
 
 </mapper>

@@ -54,4 +54,11 @@ public interface EleRefundOrderService {
     Integer queryStatusByOrderId(String orderId);
 
 	R queryCount(EleRefundQuery eleRefundQuery);
+
+    /**
+     * 根据押金退款订单号查询用户的UserInfoId
+     * @param refundOrderNo
+     * @return
+     */
+	Long queryUserInfoIdByRefundOrderNo(String refundOrderNo);
 }

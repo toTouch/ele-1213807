@@ -25,4 +25,6 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder>{
     List<Map<String,Object>> queryList(@Param("query") EleRefundQuery eleRefundQuery);
 
 	Integer queryCount(@Param("query") EleRefundQuery eleRefundQuery);
+
+	Long queryUserInfoId(@Param("refundOrderNo") String refundOrderNo);
 }

@@ -89,4 +89,10 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         franchiseeUserInfoMapper.updateByOrder(franchiseeUserInfo);
     }
 
+    @Override
+    public void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateOrderByUserInfoId(franchiseeUserInfo);
+    }
+
+
 }

@@ -252,10 +252,33 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 			//退款0元，不捕获异常，成功退款
 			if (refundAmount.compareTo(BigDecimal.ZERO)==0){
+
+
+
 				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
 				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 				eleRefundOrderService.update(eleRefundOrderUpdate);
+
+				//查询押金绑定表的id
+				Long id=eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
+
+				FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+				franchiseeUserInfo.setUserInfoId(id);
+				franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+				franchiseeUserInfo.setBatteryDeposit(null);
+				franchiseeUserInfo.setOrderId(null);
+				franchiseeUserInfo.setFranchiseeId(null);
+				franchiseeUserInfo.setModelType(null);
+				franchiseeUserInfo.setBatteryType(null);
+				franchiseeUserInfo.setCardId(null);
+				franchiseeUserInfo.setCardName(null);
+				franchiseeUserInfo.setCardType(null);
+				franchiseeUserInfo.setMemberCardExpireTime(null);
+				franchiseeUserInfo.setRemainingNumber(null);
+				franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
 				return R.ok();
+
 			}
 
 			//调起退款
@@ -317,5 +340,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	public R queryCount(EleRefundQuery eleRefundQuery) {
 		return R.ok(eleRefundOrderMapper.queryCount(eleRefundQuery));
 	}
+
+	@Override
+	public Long queryUserInfoIdByRefundOrderNo(String refundOrderNo) {
+		return eleRefundOrderMapper.queryUserInfoId(refundOrderNo);
+	}
+
 
 }
