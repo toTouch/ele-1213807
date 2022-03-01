@@ -33,7 +33,17 @@ public class EleRefundQuery {
 
     private Integer tenantId;
 
+    /**
+     * 所属加盟商名字
+     */
+    private String franchiseeName;
 
+    private String phone;
+
+    /**
+     * 用户名字
+     */
+    private String name;
 
 
 }

@@ -33,11 +33,14 @@ public class JsonAdminEleRefundOrderController {
 	//退款列表
 	@GetMapping("/admin/eleRefundOrder/queryList")
 	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "orderId", required = false) String orderId,
-			@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime) {
+					   @RequestParam("offset") Long offset,
+					   @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+					   @RequestParam(value = "status", required = false) Integer status,
+					   @RequestParam(value = "name", required = false) String name,
+					   @RequestParam(value = "phone", required = false) String phone,
+					   @RequestParam(value = "orderId", required = false) String orderId,
+					   @RequestParam(value = "beginTime", required = false) Long beginTime,
+					   @RequestParam(value = "endTime", required = false) Long endTime) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -57,7 +60,10 @@ public class JsonAdminEleRefundOrderController {
 				.status(status)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.phone(phone)
+				.franchiseeName(franchiseeName)
+				.name(name).build();
 
 		return eleRefundOrderService.queryList(eleRefundQuery);
 	}
