@@ -255,6 +255,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
 				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 				eleRefundOrderService.update(eleRefundOrderUpdate);
+				return R.ok();
 			}
 
 			//调起退款
