@@ -250,6 +250,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 			eleRefundOrderUpdate.setRefundAmount(refundAmount);
 			eleRefundOrderService.update(eleRefundOrderUpdate);
 
+			//退款0元，不捕获异常，成功退款
+			if (refundAmount.compareTo(BigDecimal.ZERO)==0){
+				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+				eleRefundOrderService.update(eleRefundOrderUpdate);
+			}
+
 			//调起退款
 			try {
 
