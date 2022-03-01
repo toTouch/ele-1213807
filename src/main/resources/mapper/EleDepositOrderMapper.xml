@@ -44,7 +44,7 @@
                 and f.name = #{query.franchiseeName}
             </if>
         </where>
-        order by edo.create_time desc
+        order by ero.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
