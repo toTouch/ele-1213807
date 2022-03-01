@@ -114,7 +114,7 @@ public class JsonUserEleDepositOrderController {
 				.offset(0L)
 				.size(10L).build();
 
-		return eleDepositOrderService.queryList(eleDepositOrderQuery);
+		return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
 	}
 
 }
