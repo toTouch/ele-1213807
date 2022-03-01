@@ -6,7 +6,7 @@
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
         select
-        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
+        edo.id, edo.pay_amount, ero.create_time, edo.update_time, edo.uid,
         edo.order_id, ero.status, edo.name, edo.phone, f.name as franchiseeName,
         ero.refund_amount as refundAmount,ero.err_msg as errMsg
         from t_ele_deposit_order edo left join t_franchisee f on f.id = edo.franchisee_id
