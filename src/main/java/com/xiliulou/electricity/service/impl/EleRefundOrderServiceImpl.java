@@ -252,7 +252,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 			//退款0元，不捕获异常，成功退款
 			if (refundAmount.compareTo(BigDecimal.ZERO)==0){
-				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
 				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 				eleRefundOrderService.update(eleRefundOrderUpdate);
 				return R.ok();
