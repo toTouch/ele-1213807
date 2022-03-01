@@ -14,9 +14,6 @@
             <if test="query.orderId != null and query.orderId != ''">
                 and tero.order_id = #{query.orderId}
             </if>
-            <if test="query.phone != null and query.phone != ''">
-                and tedo.phone = #{query.phone}
-            </if>
             <if test="query.status != null">
                 and tero.status = #{query.status}
             </if>

@@ -62,7 +62,6 @@ public class JsonAdminEleRefundOrderController {
 				.endTime(endTime)
 				.tenantId(tenantId)
 				.phone(phone)
-				.franchiseeName(franchiseeName)
 				.name(name).build();
 
 		return eleRefundOrderService.queryList(eleRefundQuery);
@@ -73,6 +72,7 @@ public class JsonAdminEleRefundOrderController {
 	public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
 
 		//租户
@@ -83,7 +83,8 @@ public class JsonAdminEleRefundOrderController {
 				.status(status)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.phone(phone).build();
 
 		return eleRefundOrderService.queryCount(eleRefundQuery);
 	}
