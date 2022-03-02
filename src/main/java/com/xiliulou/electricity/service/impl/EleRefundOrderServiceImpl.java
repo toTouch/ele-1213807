@@ -8,6 +8,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.EleRefundOrderHistory;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.RefundOrder;
@@ -15,6 +16,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
+import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.ElectricityTradeOrderService;
@@ -70,6 +72,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	WechatV3JsapiService wechatV3JsapiService;
 	@Autowired
 	WechatConfig wechatConfig;
+	@Autowired
+	EleRefundOrderHistoryService eleRefundOrderHistoryService;
 
 
 	/**
@@ -118,7 +122,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		wechatV3RefundQuery.setNotifyUrl(wechatConfig.getRefundCallBackUrl()+ electricityTradeOrder.getTenantId());
 		wechatV3RefundQuery.setCurrency("CNY");
 		wechatV3RefundQuery.setRefundId(refundOrder.getRefundOrderNo());
-		log.info("、 is -->{}",wechatV3RefundQuery);
 
 		return wechatV3JsapiService.refund(wechatV3RefundQuery);
 	}
@@ -207,30 +210,88 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	}
 
 	@Override
-	public R handleRefund(String refundOrderNo, Integer status, HttpServletRequest request) {
+	public R handleRefund(String refundOrderNo, String errMsg,Integer status,BigDecimal refundAmount, HttpServletRequest request) {
 		EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
 		if (Objects.isNull(eleRefundOrder)) {
 			log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
 			return R.fail("未找到退款订单!");
 		}
 
+
+		if(Objects.nonNull(refundAmount)){
+			if(refundAmount.compareTo(eleRefundOrder.getRefundAmount())>0) {
+				log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
+				return R.fail("退款金额不能大于支付金额!");
+			}
+
+			//插入修改记录
+			EleRefundOrderHistory eleRefundOrderHistory=new EleRefundOrderHistory();
+			eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+			eleRefundOrderHistory.setRefundAmount(refundAmount);
+			eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+			eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+			eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+
+
+		}else {
+			refundAmount=eleRefundOrder.getRefundAmount();
+		}
+
+		EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+		eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+		eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+		eleRefundOrderUpdate.setErrMsg(errMsg);
+
+
 		//同意退款
 		if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND)) {
 			//修改订单状态
-			EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
-			eleRefundOrderUpdate.setId(eleRefundOrder.getId());
 			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
-			eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+			eleRefundOrderUpdate.setRefundAmount(refundAmount);
 			eleRefundOrderService.update(eleRefundOrderUpdate);
+
+			//退款0元，不捕获异常，成功退款
+			if (refundAmount.compareTo(BigDecimal.ZERO)==0){
+
+
+
+				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+				eleRefundOrderService.update(eleRefundOrderUpdate);
+
+				//查询押金绑定表的id
+				Long id=eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
+
+				FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+				franchiseeUserInfo.setUserInfoId(id);
+				franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+				franchiseeUserInfo.setBatteryDeposit(null);
+				franchiseeUserInfo.setOrderId(null);
+				franchiseeUserInfo.setFranchiseeId(null);
+				franchiseeUserInfo.setModelType(null);
+				franchiseeUserInfo.setBatteryType(null);
+				franchiseeUserInfo.setCardId(null);
+				franchiseeUserInfo.setCardName(null);
+				franchiseeUserInfo.setCardType(null);
+				franchiseeUserInfo.setMemberCardExpireTime(null);
+				franchiseeUserInfo.setRemainingNumber(null);
+				franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
+				return R.ok();
+
+			}
 
 			//调起退款
 			try {
+
 				RefundOrder refundOrder = RefundOrder.builder()
 						.orderId(eleRefundOrder.getOrderId())
 						.refundOrderNo(eleRefundOrder.getRefundOrderNo())
 						.payAmount(eleRefundOrder.getPayAmount())
-						.refundAmount(eleRefundOrder.getRefundAmount()).build();
-				WechatJsapiRefundResultDTO getPayParamsPair = eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
+						.refundAmount(eleRefundOrderUpdate.getRefundAmount()).build();
+
+
+				eleRefundOrderService.commonCreateRefundOrder(refundOrder, request);
 				//提交成功
 				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUND);
 				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
@@ -250,10 +311,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		//拒绝退款
 		if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
 			//修改订单状态
-			EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
-			eleRefundOrderUpdate.setId(eleRefundOrder.getId());
 			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
-			eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 			eleRefundOrderService.update(eleRefundOrderUpdate);
 		}
 		return R.ok();
@@ -282,5 +340,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	public R queryCount(EleRefundQuery eleRefundQuery) {
 		return R.ok(eleRefundOrderMapper.queryCount(eleRefundQuery));
 	}
+
+	@Override
+	public Long queryUserInfoIdByRefundOrderNo(String refundOrderNo) {
+		return eleRefundOrderMapper.queryUserInfoId(refundOrderNo);
+	}
+
 
 }

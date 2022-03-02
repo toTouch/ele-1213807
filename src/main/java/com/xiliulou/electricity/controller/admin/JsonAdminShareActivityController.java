@@ -58,7 +58,8 @@ public class JsonAdminShareActivityController {
 			@RequestParam("offset") Long offset,
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "type", required = false) String type) {
+			@RequestParam(value = "type", required = false) String type,
+			@RequestParam(value="status",required = false) Integer status) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -90,7 +91,8 @@ public class JsonAdminShareActivityController {
 				.size(size)
 				.name(name)
 				.franchiseeId(franchiseeId)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.status(status).build();
 
 		if (StringUtils.isNotEmpty(type)) {
 			Integer[] types = (Integer[])
@@ -106,7 +108,8 @@ public class JsonAdminShareActivityController {
 	@GetMapping(value = "/admin/shareActivity/count")
 	public R queryCount(@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "type", required = false) String type) {
+			@RequestParam(value = "type", required = false) String type,
+			@RequestParam(value = "status", required = false) Integer status) {
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -129,7 +132,8 @@ public class JsonAdminShareActivityController {
 		ShareActivityQuery shareActivityQuery = ShareActivityQuery.builder()
 				.name(name)
 				.franchiseeId(franchiseeId)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.status(status).build();
 
 		if (StringUtils.isNotEmpty(type)) {
 			Integer[] types = (Integer[])
