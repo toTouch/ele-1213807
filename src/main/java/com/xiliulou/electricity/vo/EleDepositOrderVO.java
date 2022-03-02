@@ -17,6 +17,10 @@ public class EleDepositOrderVO {
      */
     private BigDecimal payAmount;
     /**
+     * 退款金额
+     */
+    private BigDecimal refundAmount;
+    /**
      * 创建时间
      */
     private Long createTime;
@@ -61,4 +65,9 @@ public class EleDepositOrderVO {
     private String batteryType;
 
     private String franchiseeName;
+
+    /**
+     * 错误原因
+     */
+    private String errMsg;
 }

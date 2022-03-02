@@ -22,5 +22,10 @@ public class NewUserActivityQuery {
     private String name;
     private Integer tenantId;
 
+    /**
+     * 活动状态
+     */
+    private Integer status;
+
 
 }

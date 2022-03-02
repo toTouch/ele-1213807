@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
 import java.util.Objects;
 
 /**
@@ -32,11 +33,14 @@ public class JsonAdminEleRefundOrderController {
 	//退款列表
 	@GetMapping("/admin/eleRefundOrder/queryList")
 	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "orderId", required = false) String orderId,
-			@RequestParam(value = "status", required = false) Integer status,
-			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime) {
+					   @RequestParam("offset") Long offset,
+					   @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+					   @RequestParam(value = "status", required = false) Integer status,
+					   @RequestParam(value = "name", required = false) String name,
+					   @RequestParam(value = "phone", required = false) String phone,
+					   @RequestParam(value = "orderId", required = false) String orderId,
+					   @RequestParam(value = "beginTime", required = false) Long beginTime,
+					   @RequestParam(value = "endTime", required = false) Long endTime) {
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -56,7 +60,9 @@ public class JsonAdminEleRefundOrderController {
 				.status(status)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.phone(phone)
+				.name(name).build();
 
 		return eleRefundOrderService.queryList(eleRefundQuery);
 	}
@@ -66,6 +72,7 @@ public class JsonAdminEleRefundOrderController {
 	public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
 
 		//租户
@@ -76,15 +83,21 @@ public class JsonAdminEleRefundOrderController {
 				.status(status)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.tenantId(tenantId).build();
+				.tenantId(tenantId)
+				.phone(phone).build();
 
 		return eleRefundOrderService.queryCount(eleRefundQuery);
 	}
 
 	//后台退款处理
 	@PostMapping("/admin/handleRefund")
-	public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo, @RequestParam("status") Integer status, HttpServletRequest request) {
-		return eleRefundOrderService.handleRefund(refundOrderNo, status, request);
+	public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo,
+			@RequestParam("status") Integer status,
+			@RequestParam(value = "errMsg", required = false) String errMsg,
+			@RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+			HttpServletRequest request) {
+		return eleRefundOrderService.handleRefund(refundOrderNo,errMsg, status, refundAmount,request);
 	}
+
 
 }

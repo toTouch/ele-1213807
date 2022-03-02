@@ -16,6 +16,9 @@
             <if test="query.tenantId != null ">
                 and tenant_id = #{query.tenantId}
             </if>
+            <if test="query.status != null ">
+                and status = #{query.status}
+            </if>
         </where>
         order by update_time desc
         <if test="query.offset != null and query.size != null">
@@ -32,6 +35,9 @@
             </if>
             <if test="query.tenantId != null ">
                 and tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.status != null ">
+                and status = #{query.status}
             </if>
         </where>
     </select>

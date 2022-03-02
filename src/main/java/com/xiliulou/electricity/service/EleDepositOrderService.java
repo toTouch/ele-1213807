@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.query.EleRefundQuery;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
@@ -24,6 +25,8 @@ public interface EleDepositOrderService {
     R returnDeposit(HttpServletRequest request);
 
     R queryList(EleDepositOrderQuery eleDepositOrderQuery);
+
+    R queryListToUser(EleDepositOrderQuery eleDepositOrderQuery);
 
     void update(EleDepositOrder eleDepositOrderUpdate);
 

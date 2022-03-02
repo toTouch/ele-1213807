@@ -2,15 +2,22 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
 import java.util.Objects;
 
 /**
@@ -82,6 +89,29 @@ public class JsonUserEleDepositOrderController {
 	@GetMapping(value = "/user/queryModelType")
 	public R queryModelType(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
 		return eleDepositOrderService.queryModelType(productKey, deviceName);
+	}
+
+
+	//列表查询
+	@GetMapping(value = "/user/eleDepositOrder/list")
+	public R queryList() {
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		//用户
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
+				.uid(user.getUid())
+				.tenantId(tenantId)
+				.offset(0L)
+				.size(10L).build();
+
+		return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
 	}
 
 }

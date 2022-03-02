@@ -12,17 +12,13 @@ import lombok.Data;
  */
 @Data
 @Builder
-public class EleRefundQuery {
+public class EleRefundHistoryQuery {
 
     /**
-     * 缴纳押金订单编号
+     * 退款单号
      */
-    private String orderId;
+    private String refundOrderNo;
 
-    /**
-     * 订单的状态
-     */
-    private Integer status;
 
     private Long size;
     private Long offset;
@@ -33,17 +29,7 @@ public class EleRefundQuery {
 
     private Integer tenantId;
 
-    /**
-     * 所属加盟商名字
-     */
-    private String franchiseeName;
 
-    private String phone;
-
-    /**
-     * 用户名字
-     */
-    private String name;
 
 
 }

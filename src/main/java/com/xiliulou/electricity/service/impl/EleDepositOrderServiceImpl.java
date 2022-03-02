@@ -26,7 +26,9 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserOauthBind;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
+import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
@@ -78,6 +80,8 @@ import java.util.Objects;
 public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	@Resource
 	EleDepositOrderMapper eleDepositOrderMapper;
+	@Resource
+	EleRefundOrderMapper eleRefundOrderMapper;
 	@Autowired
 	RedisService redisService;
 	@Autowired
@@ -437,6 +441,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 	@Override
 	public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
 		return R.ok(eleDepositOrderMapper.queryList(eleDepositOrderQuery));
+	}
+
+	@Override
+	public R queryListToUser(EleDepositOrderQuery eleDepositOrderQuery) {
+		return R.ok(eleDepositOrderMapper.queryListForUser(eleDepositOrderQuery));
 	}
 
 	@Override
