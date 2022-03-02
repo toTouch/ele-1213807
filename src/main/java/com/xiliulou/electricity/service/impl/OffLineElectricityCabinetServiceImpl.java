@@ -30,6 +30,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 
     /**
      * 生成离线换电验证码
+     *
      * @return
      */
     @Override
@@ -91,9 +92,9 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(franchiseeUserInfo.getCardType(),FranchiseeUserInfo.TYPE_COUNT)){
+        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.00116","新用户体验卡，不支持离线换电");
+            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持离线换电");
         }
 
 //        //未租电池
@@ -103,12 +104,12 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
 //        }
 
         //生成验证码key
-        String key= eleOffLineSecretConfig.getSecret()+user.getPhone();
+        String key = eleOffLineSecretConfig.getSecret() + user.getPhone();
         //时间戳初始值
-        long t0=0;
+        long t0 = 0;
         //步长
-        long step=eleOffLineSecretConfig.getStep();
+        long step = eleOffLineSecretConfig.getStep();
 
-        return R.ok(TotpUtils.generateTotp(key,System.currentTimeMillis(),6,step,t0));
+        return R.ok(TotpUtils.generateTotp(key, System.currentTimeMillis(), 6, step, t0));
     }
 }
