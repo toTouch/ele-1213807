@@ -95,10 +95,8 @@ public class JsonUserEleDepositOrderController {
 	//列表查询
 	@GetMapping(value = "/user/eleDepositOrder/list")
 	public R queryList() {
-
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-
 
 		//用户
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -106,7 +104,6 @@ public class JsonUserEleDepositOrderController {
 			log.error("ELECTRICITY  ERROR! not found user ");
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
-
 
 		EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
 				.uid(user.getUid())
