@@ -68,7 +68,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("OffLINE ELECTRICITY payDeposit  ERROR! not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0001", "未找到用户");
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
 
         }
 
