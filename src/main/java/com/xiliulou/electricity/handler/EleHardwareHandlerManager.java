@@ -191,7 +191,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return;
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd hh:mm:ss");
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd hh:mm:ss");
 
         FeishuMsgPostTextQuery query0 = new FeishuMsgPostTextQuery();
         query0.setText("产品系列：换电柜");
