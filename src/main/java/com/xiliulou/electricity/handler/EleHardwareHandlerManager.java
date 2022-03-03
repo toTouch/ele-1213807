@@ -139,7 +139,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 }
                 log.error("type is null,{}", receiverMessage.getOriginContent());
 
-                feishuSendMsg(electricityCabinet, receiverMessage.getStatus());
+                feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
             });
 
             return false;
@@ -176,7 +176,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         }
     }
 
-    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus){
+    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time){
         Tenant tenantEntity = tenantSerivce.queryByIdFromCache(electricityCabinet.getTenantId());
         if(Objects.isNull(tenantEntity)){
             log.error("FEI SHU ERROR! tenant is empty error! cid={},tid={}", electricityCabinet.getId(), electricityCabinet.getTenantId());
@@ -191,8 +191,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return;
         }
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-
         FeishuMsgPostTextQuery query0 = new FeishuMsgPostTextQuery();
         query0.setText("产品系列：换电柜");
 
@@ -206,7 +204,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         query3.setText("当前状态：" +  getOnlineStatus(onlineStatus));
 
         FeishuMsgPostTextQuery query4 = new FeishuMsgPostTextQuery();
-        query4.setText("当前时间：" +  sdf.format(new Date()));
+        query4.setText(getOnlineStatus(onlineStatus) + "时间：" +  time);
 
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine0 = Lists.newArrayList(query0);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine1 = Lists.newArrayList(query1);
