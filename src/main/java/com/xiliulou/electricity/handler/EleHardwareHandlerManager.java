@@ -206,7 +206,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         query3.setText("当前状态：" +  getOnlineStatus(onlineStatus));
 
         FeishuMsgPostTextQuery query4 = new FeishuMsgPostTextQuery();
-        query3.setText("当前时间：" +  sdf.format(new Date()));
+        query4.setText("当前时间：" +  sdf.format(new Date()));
 
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine0 = Lists.newArrayList(query0);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine1 = Lists.newArrayList(query1);
