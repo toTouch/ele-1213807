@@ -39,4 +39,6 @@ public interface FranchiseeUserInfoService {
 	Integer queryCountByFranchiseeId(Long id);
 
 	void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
+
+	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 }
