@@ -5,6 +5,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -13,6 +14,7 @@ import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -38,6 +40,14 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
     ElectricityBatteryService electricityBatteryService;
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
+    @Autowired
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+    @Autowired
+    ElectricityCabinetBoxService electricityCabinetBoxService;
+    @Autowired
+    BatteryOtherPropertiesService batteryOtherPropertiesService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -111,7 +121,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
 
         //更新新电池为在用
         ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(offlineEleOrderVo.getNewElectricityBatterySn());
-        if (Objects.isNull(oldElectricityBattery)) {
+        if (Objects.isNull(newElectricityBattery)) {
             log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn:{}", offlineEleOrderVo.getNewElectricityBatterySn());
             return false;
         }
@@ -125,7 +135,71 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         UsingElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
         electricityBatteryService.updateByOrder(UsingElectricityBattery);
 
+        //电池上报是否有其他信息
+        if (Objects.nonNull(offlineEleOrderVo.getHasOtherAttr()) && offlineEleOrderVo.getHasOtherAttr()) {
+            BatteryOtherPropertiesQuery batteryOtherPropertiesQuery = offlineEleOrderVo.getBatteryOtherProperties();
+            BatteryOtherProperties batteryOtherProperties = new BatteryOtherProperties();
+            BeanUtils.copyProperties(batteryOtherPropertiesQuery, batteryOtherProperties);
+            batteryOtherProperties.setBatteryName(offlineEleOrderVo.getOldElectricityBatterySn());
+            batteryOtherProperties.setBatteryCoreVList(JsonUtil.toJson(batteryOtherPropertiesQuery.getBatteryCoreVList()));
+            batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+        }
+
+        //更新旧仓门有电池
+        ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
+        electricityCabinetBox.setSn(oldElectricityBattery.getSn());
+        electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
+        electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+        electricityCabinetBox.setCellNo(offlineEleOrderVo.getOldCellNo());
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetBox.setPower(offlineEleOrderVo.getPower());
+        electricityCabinetBox.setBatteryType(null);
+        if (Objects.nonNull(offlineEleOrderVo.getIsMultiBatteryModel()) && offlineEleOrderVo.getIsMultiBatteryModel()) {
+            String batteryModel = NormalEleBatteryHandlerIot.parseBatteryNameAcquireBatteryModel(offlineEleOrderVo.getOldElectricityBatterySn());
+            electricityCabinetBox.setBatteryType(batteryModel);
+        }
+        electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+
+        //更新新仓门为空仓
+        electricityCabinetBox.setSn(null);
+        electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+        electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
+        electricityCabinetBox.setCellNo(offlineEleOrderVo.getNewCellNo()+"");
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetBox.setPower(null);
+        electricityCabinetBox.setBatteryType(null);
+        electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+
+        //生成订单
+        ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
+                .orderId(generateOrderId(electricityCabinet.getId(),offlineEleOrderVo.getNewCellNo(),user.getUid()))
+                .uid(user.getUid())
+                .phone(offlineEleOrderVo.getPhone())
+                .electricityCabinetId(electricityCabinet.getId())
+                .oldCellNo(Integer.valueOf(offlineEleOrderVo.getOldCellNo()))
+                .orderSeq(offlineEleOrderVo.getOrderSeq())
+                .status(offlineEleOrderVo.getStatus())
+                .source(OfflineEleOrderVo.ORDER_SOURCE_FOR_OFFLINE)
+                .paymentMethod(franchiseeUserInfo.getCardType())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(electricityCabinet.getTenantId()).build();
+        electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
+
+        //根据用户购买的套餐类型进行套餐扣减
+        oldFranchiseeUserInfo.getCardId();
+
+
+
+
+
+
         return true;
+    }
+
+    private String generateOrderId(Integer id, String cellNo, Long uid) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + id +
+                cellNo + uid;
     }
 }
 
@@ -135,12 +209,12 @@ class OfflineEleOrderVo {
     /**
      * 换电柜旧仓门号
      */
-    private Integer oldCellNo;
+    private String oldCellNo;
 
     /**
      * 换电柜新仓门号
      */
-    private Integer newCellNo;
+    private String newCellNo;
 
     /**
      * 旧电池编号
@@ -166,6 +240,28 @@ class OfflineEleOrderVo {
      * 用户手机号
      */
     private String phone;
+
+    private Boolean hasOtherAttr;
+
+    /**
+     * 电池其他信息
+     */
+    private BatteryOtherPropertiesQuery batteryOtherProperties;
+
+    /**
+     * 是否上报电池类型
+     */
+    private Boolean isMultiBatteryModel;
+
+    /**
+     * 旧电池电量
+     */
+    private Double power;
+
+    /**
+     * 订单来源 APP离线换电
+     */
+    protected static final Integer ORDER_SOURCE_FOR_OFFLINE=3;
 
 
 }

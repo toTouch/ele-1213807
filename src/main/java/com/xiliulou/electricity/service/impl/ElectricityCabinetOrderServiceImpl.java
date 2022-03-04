@@ -99,6 +99,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		return this.electricityCabinetOrderMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetOrder>().eq(ElectricityCabinetOrder::getOrderId, orderId));
 	}
 
+	/**
+	 * 新增订单
+	 * @param electricityCabinetOrder
+	 */
+	public void insertOrder(ElectricityCabinetOrder electricityCabinetOrder){
+		this.electricityCabinetOrderMapper.insert(electricityCabinetOrder);
+	}
+
 	/*
 	  1.判断参数
 	  2.判断用户是否有电池是否有月卡
