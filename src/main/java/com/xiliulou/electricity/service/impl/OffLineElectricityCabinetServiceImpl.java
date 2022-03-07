@@ -65,7 +65,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
-        //未找到用户
+        //未缴纳押金
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("OffLINE ELECTRICITY payDeposit  ERROR! not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");

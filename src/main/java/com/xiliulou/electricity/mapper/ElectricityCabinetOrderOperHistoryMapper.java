@@ -3,6 +3,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import org.apache.ibatis.annotations.Param;
 
@@ -20,4 +21,6 @@ public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<Ele
     List<ElectricityCabinetOrderOperHistory> queryListByOrderId(@Param("query")ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 
 	Integer queryCountByOrderId(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+
+	Integer insertOffLineEleExchangeOperateHistory(@Param("query")OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory);
 }

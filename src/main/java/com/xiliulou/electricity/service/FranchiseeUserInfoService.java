@@ -28,6 +28,8 @@ public interface FranchiseeUserInfoService {
 
     Integer minCount(Long id);
 
+    Integer minCountForOffLineEle(Long id);
+
 	Integer plusCount(Long id);
 
     void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);

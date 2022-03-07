@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 
 /**
@@ -19,6 +20,13 @@ public interface ElectricityCabinetOrderOperHistoryService {
      * @return 实例对象
      */
     ElectricityCabinetOrderOperHistory insert(ElectricityCabinetOrderOperHistory electricityCabinetOrderOperHistory);
+
+    /**
+     * 离线换电新增操作记录
+     * @param offLineElectricityCabinetOrderOperHistory
+     * @return
+     */
+    R insertOffLineOperateHistory(OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory);
 
 
     R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
