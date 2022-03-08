@@ -269,7 +269,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
         Long now = System.currentTimeMillis();
-        if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
@@ -297,16 +298,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         String cellNo = usableEmptyCellNo.getRight().toString();
         try {
-//			if (franchiseeUserInfo.getRemainingNumber() != -1) {
-//				//扣除月卡
-//				Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
-//				if (row < 1) {
-//					redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
-//					log.error("order  ERROR! not found memberCard uid={}", user.getUid());
-//					return R.fail("ELECTRICITY.0023", "月卡已过期");
-//				}
-//			}
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 if (franchiseeUserInfo.getRemainingNumber() < 0) {
                     //用户需购买相同套餐，补齐所欠换电次数
@@ -314,11 +305,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
                     return R.fail("ELECTRICITY.00117", "套餐剩余次数为负");
                 }
+
+                if (franchiseeUserInfo.getMemberCardExpireTime() < now){
+                    redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                    log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+                    return R.fail("ELECTRICITY.0023", "月卡已过期");
+                }
+
                 Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
                 if (row < 1) {
                     redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
                     log.error("order  ERROR! not found memberCard uid={}", user.getUid());
-                    return R.fail("ELECTRICITY.0023", "月卡已过期");
+                    return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
                 }
             }
 
