@@ -26,6 +26,9 @@
             <if test="query.tenantId != null">
                 and tero.tenant_id = #{query.tenantId}
             </if>
+            <if test="query.phone != null and query.phone != ''">
+                and tedo.phone = #{query.phone}
+            </if>
         </where>
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
