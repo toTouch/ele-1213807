@@ -167,7 +167,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getRemainingNumber() < 0) {
             if (!Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
                 log.error("payDeposit  ERROR! not buy same memberCard uid:{}", user.getUid());
-                return R.fail("ELECTRICITY.00117", "套餐剩余次数为负,未购买相同套餐抵扣");
+                return R.fail("ELECTRICITY.00119", "套餐剩余次数为负,应购买相同套餐抵扣");
             }
         }
 

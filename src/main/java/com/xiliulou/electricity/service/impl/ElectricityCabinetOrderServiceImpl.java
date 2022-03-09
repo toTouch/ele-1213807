@@ -303,7 +303,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     //用户需购买相同套餐，补齐所欠换电次数
                     redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
                     log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
-                    return R.fail("ELECTRICITY.00117", "套餐剩余次数为负");
+                    return R.fail("ELECTRICITY.00117", "套餐剩余次数为负",franchiseeUserInfo.getCardId());
                 }
 
                 if (franchiseeUserInfo.getMemberCardExpireTime() < now){
