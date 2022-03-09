@@ -343,11 +343,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //是否存在换电次数欠费情况
         Integer packageOwe = null;
         //套餐欠费次数
-        Integer packageOweNumber = null;
+        Integer memberCardOweNumber = null;
         ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(oldFranchiseeUserInfo.getCardId());
         if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
-            packageOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
-            packageOwe = FranchiseeUserInfo.PACKAGE_OWE;
+            memberCardOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
+            packageOwe = FranchiseeUserInfo.MEMBER_CARD_OWE;
         }
 
         if (Objects.equals(oldFranchiseeUserInfo.getOrderId(), "-1")) {
@@ -419,7 +419,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(eleDepositOrder.getTenantId())
-                .packageOweNumber(packageOweNumber).build();
+                .memberCardOweNumber(memberCardOweNumber).build();
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款

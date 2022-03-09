@@ -115,6 +115,6 @@ public class FranchiseeUserInfo {
     //送次数卡
     public static final Integer TYPE_COUNT = 3;
 
-    public static final Integer PACKAGE_OWE = 1;
+    public static final Integer MEMBER_CARD_OWE = 1;
 
 }
