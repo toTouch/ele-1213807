@@ -341,10 +341,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //是否存在换电次数欠费情况
+        Integer packageOwe = null;
+        //套餐欠费次数
+        Integer packageOweNumber = null;
         ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(oldFranchiseeUserInfo.getCardId());
         if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
-            log.error("returnDeposit  ERROR! not buy same memberCard uid:{}", user.getUid());
-            return R.fail("ELECTRICITY.00117", "套餐剩余次数为负,先购买套餐进行补缴");
+            packageOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
+            packageOwe = FranchiseeUserInfo.PACKAGE_OWE;
         }
 
         if (Objects.equals(oldFranchiseeUserInfo.getOrderId(), "-1")) {
@@ -415,11 +418,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .status(EleRefundOrder.STATUS_INIT)
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
-                .tenantId(eleDepositOrder.getTenantId()).build();
+                .tenantId(eleDepositOrder.getTenantId())
+                .packageOweNumber(packageOweNumber).build();
         eleRefundOrderService.insert(eleRefundOrder);
 
         //等到后台同意退款
-        return R.ok();
+        return R.ok(packageOwe);
     }
 
     @Override
