@@ -24,7 +24,7 @@
     <insert id="insertOffLineEleExchangeOperateHistory">
         insert into t_electricity_cabinet_order_oper_history (order_id,type,msg,create_time,tenant_id)
         values
-        <foreach collection="query.operateMsgVos" item="item" separator=",">
+        <foreach collection="operateMsgVos" item="item" separator=",">
             (
             #{orderId,jdbcType=VARCHAR},
             #{type,jdbcType=INTEGER},
