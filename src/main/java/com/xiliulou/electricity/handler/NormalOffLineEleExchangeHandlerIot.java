@@ -84,6 +84,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         OfflineEleOrderVo offlineEleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineEleOrderVo.class);
 
         Boolean result = redisService.setNx(ElectricityCabinetConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
+        log.error("我接受到的订单id================="+offlineEleOrderVo.getOrderId()+"我接受到type============"+receiverMessage.getType());
         if (!result) {
             log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
             return false;
