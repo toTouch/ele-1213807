@@ -83,12 +83,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
 
         OfflineEleOrderVo offlineEleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineEleOrderVo.class);
 
-        Boolean result = redisService.setNx(ElectricityCabinetConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
-        log.error("我接受到的订单id================="+offlineEleOrderVo.getOrderId()+"我接受到type============"+receiverMessage.getType());
-        if (!result) {
-            log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
-            return false;
-        }
 
         //根据三元组获取柜子信息
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
@@ -101,6 +95,13 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         User user = userService.queryByUserPhone(offlineEleOrderVo.getPhone(), User.TYPE_USER_NORMAL_WX_PRO, electricityCabinet.getTenantId());
         if (Objects.isNull(user)) {
             log.error("OFFLINE EXCHANGE ERROR! not found user! userId:{}", offlineEleOrderVo.getPhone());
+            return false;
+        }
+
+        Boolean result = redisService.setNx(ElectricityCabinetConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
+        if (!result) {
+            senMsg(electricityCabinet,offlineEleOrderVo,user);
+            log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
             return false;
         }
 
