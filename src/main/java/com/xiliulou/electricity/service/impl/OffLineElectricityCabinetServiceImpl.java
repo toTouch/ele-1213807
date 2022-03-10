@@ -110,6 +110,6 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         //步长
         long step = eleOffLineSecretConfig.getStep();
 
-        return R.ok(TotpUtils.generateTotp(key, System.currentTimeMillis(), 6, step, t0));
+        return R.ok(TotpUtils.generateTotp(key, System.currentTimeMillis() / 1000, 6, step, t0));
     }
 }
