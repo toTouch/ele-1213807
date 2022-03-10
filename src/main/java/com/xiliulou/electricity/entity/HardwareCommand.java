@@ -152,6 +152,8 @@ public class HardwareCommand {
 
     public static final String OFFLINE_ELE_EXCHANGE_ORDER_RSP = "offline_ele_exchange_order_rsp";
 
+    public static final String OFFLINE_EXCHANGE_ORDER_ACK_RSP="offline_exchange_order_ack_rsp";
+
     public static final String OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS = "offline_exchange_order_ack";
 
 

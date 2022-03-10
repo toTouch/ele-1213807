@@ -123,6 +123,9 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
                 .phone(offlineEleOrderVo.getPhone())
                 .electricityCabinetId(electricityCabinet.getId())
                 .oldCellNo(Integer.valueOf(offlineEleOrderVo.getOldCellNo()))
+                .newCellNo(Integer.valueOf(offlineEleOrderVo.getNewCellNo()))
+                .newElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn())
+                .oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn())
                 .orderSeq(null)
                 .status(offlineEleOrderVo.getStatus())
                 .source(OfflineEleOrderVo.ORDER_SOURCE_FOR_OFFLINE)
@@ -216,7 +219,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
 
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {
         HashMap<String, Object> dataMap = Maps.newHashMap();
-        dataMap.put("order_id", offlineEleOrderVo.getOrderId());
+        dataMap.put("orderId", offlineEleOrderVo.getOrderId());
         dataMap.put("status", offlineEleOrderVo.getStatus());
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()

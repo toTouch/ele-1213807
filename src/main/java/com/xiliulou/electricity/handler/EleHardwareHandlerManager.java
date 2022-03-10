@@ -145,7 +145,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             return false;
         }
-        if (Objects.equals(receiverMessage.getType(), HardwareCommand.OFFLINE_ELE_EXCHANGE_ORDER_RSP)) {
+        if (Objects.equals(receiverMessage.getType(), HardwareCommand.OFFLINE_EXCHANGE_ORDER_ACK_RSP)) {
+            return true;
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.OFFLINE_ELE_EXCHANGE_ORDER_RSP)) {
             return normalOffLineEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (receiverMessage.getType().contains("order_operate")) {
             return normalEleOrderOperateHandlerIot.receiveMessageProcess(receiverMessage);
