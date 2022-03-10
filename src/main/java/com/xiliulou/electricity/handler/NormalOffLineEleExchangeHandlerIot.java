@@ -2,6 +2,7 @@ package com.xiliulou.electricity.handler;
 
 import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Maps;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
@@ -59,6 +60,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
     EleHardwareHandlerManager eleHardwareHandlerManager;
     @Autowired
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
+    @Autowired
+    RedisService redisService;
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -79,6 +82,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         }
 
         OfflineEleOrderVo offlineEleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), OfflineEleOrderVo.class);
+
+        Boolean result = redisService.setNx(ElectricityCabinetConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
+        if (!result) {
+            log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
+            return false;
+        }
 
         //根据三元组获取柜子信息
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());

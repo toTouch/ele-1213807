@@ -58,6 +58,9 @@ public interface ElectricityCabinetConstant {
 
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
 
+    //离线换电
+    String OFFLINE_ELE_RECEIVER_CACHE_KEY="offline_ele_receiver";
+
 
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
