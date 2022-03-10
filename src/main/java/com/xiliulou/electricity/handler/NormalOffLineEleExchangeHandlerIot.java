@@ -133,6 +133,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
                 .build();
         electricityCabinetOrderOperHistoryService.insertOffLineOperateHistory(offLineElectricityCabinetOrderOperHistory);
 
+        senMsg(electricityCabinet, offlineEleOrderVo, user);
+
         if (offlineEleOrderVo.getIsProcessFail()) {
             log.error("OFFLINE EXCHANGE ERROR! exchange exception!orderId:{}", offlineEleOrderVo.getOrderId());
             senMsg(electricityCabinet, offlineEleOrderVo, user);
@@ -200,7 +202,6 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         UsingElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
         electricityBatteryService.updateByOrder(UsingElectricityBattery);
 
-        senMsg(electricityCabinet, offlineEleOrderVo, user);
         return true;
     }
 
