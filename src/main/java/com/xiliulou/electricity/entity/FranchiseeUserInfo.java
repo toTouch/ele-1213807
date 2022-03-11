@@ -117,4 +117,6 @@ public class FranchiseeUserInfo {
 
     public static final Integer MEMBER_CARD_OWE = 1;
 
+    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER=9999L;
+
 }

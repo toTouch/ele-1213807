@@ -134,6 +134,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
             newCellNo=Integer.valueOf(offlineEleOrderVo.getNewCellNo());
         }
 
+        //订单状态处理
+        String orderStatus=offlineEleOrderVo.getStatus();
+        if (offlineEleOrderVo.getIsProcessFail()){
+            orderStatus=ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL;
+        }
+
         //生成订单
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                 .orderId(generateOrderId(electricityCabinet.getId(), offlineEleOrderVo.getNewCellNo(), user.getUid()))
@@ -145,7 +151,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
                 .newElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn())
                 .oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn())
                 .orderSeq(null)
-                .status(offlineEleOrderVo.getStatus())
+                .status(orderStatus)
                 .source(OfflineEleOrderVo.ORDER_SOURCE_FOR_OFFLINE)
                 .paymentMethod(oldFranchiseeUserInfo.getCardType())
                 .createTime(offlineEleOrderVo.getStartTime())
@@ -291,7 +297,7 @@ class OfflineEleOrderVo {
     /**
      * 订单状态
      */
-    private String status;
+    private String  status;
 
     /**
      * 订单开始时间
