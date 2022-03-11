@@ -256,25 +256,14 @@ public class ElectricityTradeOrderServiceImpl extends
             } else {
                 memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
                         electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-
-                log.error("之前剩余的月卡次数============================"+franchiseeUserInfo.getRemainingNumber());
-
-                log.error("这次买的月卡的次数============================="+remainingNumber);
-
                 if (!Objects.equals(electricityMemberCardOrder.getMaxUseCount(), -1)) {
                     remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
-
-                    log.error("计算后的次数=========================="+remainingNumber);
                 }
-
-
             }
 
-            log.error("出来以后月卡次数为==============================="+remainingNumber);
-
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
-//            franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
-            franchiseeUserInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
+            franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
+//            franchiseeUserInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
             franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
             franchiseeUserInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
             franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
