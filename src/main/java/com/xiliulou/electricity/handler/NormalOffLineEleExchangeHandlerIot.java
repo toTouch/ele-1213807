@@ -62,6 +62,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     @Autowired
     RedisService redisService;
+    @Autowired
+    ElectricityCabinetOfflineReportOrderService electricityCabinetOfflineReportOrderService;
 
     @Override
     protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
@@ -98,9 +100,16 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
             return false;
         }
 
+        //幂等加锁
         Boolean result = redisService.setNx(ElectricityCabinetConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
         if (!result) {
-            senMsg(electricityCabinet,offlineEleOrderVo,user);
+            senMsg(electricityCabinet, offlineEleOrderVo, user);
+            log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
+            return false;
+        }
+        ElectricityCabinetOfflineReportOrder oldElectricityCabinetOfflineReportOrder = electricityCabinetOfflineReportOrderService.queryByOrderId(offlineEleOrderVo.getOrderId());
+        if (Objects.nonNull(oldElectricityCabinetOfflineReportOrder)) {
+            senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
             return false;
         }
@@ -148,6 +157,13 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         electricityCabinetOrderOperHistoryService.insertOffLineOperateHistory(offLineElectricityCabinetOrderOperHistory);
 
         senMsg(electricityCabinet, offlineEleOrderVo, user);
+
+        //新增离线换电上报订单数据
+        ElectricityCabinetOfflineReportOrder electricityCabinetOfflineReportOrder = ElectricityCabinetOfflineReportOrder.builder()
+                .orderId(offlineEleOrderVo.getOrderId())
+                .createTime(System.currentTimeMillis())
+                .build();
+        electricityCabinetOfflineReportOrderService.insertOrder(electricityCabinetOfflineReportOrder);
 
         if (offlineEleOrderVo.getIsProcessFail()) {
             log.error("OFFLINE EXCHANGE ERROR! exchange exception!orderId:{}", offlineEleOrderVo.getOrderId());
