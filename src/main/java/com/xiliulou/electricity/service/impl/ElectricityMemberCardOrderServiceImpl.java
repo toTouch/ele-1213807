@@ -277,6 +277,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
             //TODO 使用次数暂时叠加
             if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+
+                log.error("梦阳月卡减次数==============================原来number======="+franchiseeUserInfo.getRemainingNumber());
                 remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
             }
 
@@ -332,6 +334,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     }
                 }
             }
+
+            log.error("月卡抵扣以后剩余次数==============================="+remainingNumber);
 
             //用户
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
