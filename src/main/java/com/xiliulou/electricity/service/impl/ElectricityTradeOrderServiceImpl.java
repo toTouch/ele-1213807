@@ -260,6 +260,9 @@ public class ElectricityTradeOrderServiceImpl extends
 					remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
 				}
 			}
+
+			log.error("月卡抵扣回掉==========================="+remainingNumber);
+
 			franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
 			franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
 			franchiseeUserInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
