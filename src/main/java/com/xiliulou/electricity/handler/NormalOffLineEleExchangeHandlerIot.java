@@ -17,6 +17,7 @@ import com.xiliulou.iot.entity.SendHardwareMessage;
 import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -127,6 +128,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
             return false;
         }
 
+        //新仓门号处理
+        Integer newCellNo=null;
+        if (StringUtils.isNotEmpty(offlineEleOrderVo.getNewCellNo())){
+            newCellNo=Integer.valueOf(offlineEleOrderVo.getNewCellNo());
+        }
+
         //生成订单
         ElectricityCabinetOrder electricityCabinetOrder = ElectricityCabinetOrder.builder()
                 .orderId(generateOrderId(electricityCabinet.getId(), offlineEleOrderVo.getNewCellNo(), user.getUid()))
@@ -134,7 +141,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
                 .phone(offlineEleOrderVo.getPhone())
                 .electricityCabinetId(electricityCabinet.getId())
                 .oldCellNo(Integer.valueOf(offlineEleOrderVo.getOldCellNo()))
-                .newCellNo(Integer.valueOf(offlineEleOrderVo.getNewCellNo()))
+                .newCellNo(newCellNo)
                 .newElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn())
                 .oldElectricityBatterySn(offlineEleOrderVo.getOldElectricityBatterySn())
                 .orderSeq(null)
