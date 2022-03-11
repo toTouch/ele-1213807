@@ -165,12 +165,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //判断是否已绑定限次数套餐并且换电次数为负
         ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
 
-        if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() < 0) {
-            if (!Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
-                log.error("payDeposit  ERROR! not buy same memberCard uid:{}", user.getUid());
-                return R.fail("ELECTRICITY.00119", "套餐剩余次数为负,应购买相同套餐抵扣");
-            }
-        }
+//        if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() < 0) {
+//            if (!Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
+//                log.error("payDeposit  ERROR! not buy same memberCard uid:{}", user.getUid());
+//                return R.fail("ELECTRICITY.00119", "套餐剩余次数为负,应购买相同套餐抵扣");
+//            }
+//        }
 
         Long franchiseeId = franchiseeUserInfo.getFranchiseeId();
 
