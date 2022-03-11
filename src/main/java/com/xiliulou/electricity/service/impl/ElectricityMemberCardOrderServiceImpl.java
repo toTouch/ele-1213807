@@ -277,10 +277,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
             //TODO 使用次数暂时叠加
             if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-
-                log.error("梦阳月卡减次数==============================原来number======="+franchiseeUserInfo.getRemainingNumber());
                 remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
-                log.error("月卡计算后剩余次数==========================================member======="+remainingNumber);
             }
 
         } else {
@@ -313,13 +310,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         baseMapper.insert(electricityMemberCardOrder);
 
         //支付零元
-
-        log.error("支付的费用=========================="+electricityMemberCardOrder.getPayAmount());
-
         if (electricityMemberCardOrder.getPayAmount().compareTo(BigDecimal.valueOf(0.01)) < 0) {
-
-
-            log.error("开始更新数据===================================");
 
             //月卡是否绑定活动
             if (Objects.equals(electricityMemberCard.getIsBindActivity(), ElectricityMemberCard.BIND_ACTIVITY) && Objects.nonNull(electricityMemberCard.getActivityId())) {
@@ -329,9 +320,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
                     //次数
                     if (Objects.equals(oldUserActivity.getDiscountType(), OldUserActivity.TYPE_COUNT) && Objects.nonNull(oldUserActivity.getCount())) {
-
-                        log.error("次数又加了一次=====================================");
-
                         remainingNumber = remainingNumber + oldUserActivity.getCount();
                     }
 
@@ -344,8 +332,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     }
                 }
             }
-
-            log.error("月卡抵扣以后剩余次数==============================="+remainingNumber);
 
             //用户
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
