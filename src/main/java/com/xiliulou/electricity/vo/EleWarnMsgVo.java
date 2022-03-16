@@ -28,4 +28,9 @@ public class EleWarnMsgVo {
      */
     private Integer systemWarnMsgCount;
 
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
+
 }

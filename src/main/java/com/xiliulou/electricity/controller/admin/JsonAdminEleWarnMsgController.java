@@ -134,6 +134,12 @@ public class JsonAdminEleWarnMsgController {
 		return eleWarnMsgService.queryAllTenant(eleWarnMsgQuery);
 	}
 
+	@GetMapping(value = "/admin/eleWarnMsg/queryAllTenantCount")
+	public R queryAllTenantCount(){
+
+		return null;
+	}
+
 	//列表查询
 	@GetMapping(value = "/admin/eleWarnMsg/queryCount")
 	public R queryCount(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
