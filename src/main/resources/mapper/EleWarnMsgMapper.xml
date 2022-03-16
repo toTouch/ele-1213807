@@ -3,11 +3,11 @@
 <mapper namespace="com.xiliulou.electricity.mapper.EleWarnMsgMapper">
 
 
-
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleWarnMsg">
         select
-          id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time, update_time
+        id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time,
+        update_time
         from t_ele_warn_msg
         <where>
             <if test="query.electricityCabinetId != null">
@@ -32,17 +32,32 @@
                 </foreach>
             </if>
             <if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-                and electricity_cabinet_id in (select id from t_electricity_cabinet where name = #{query.electricityCabinetName})
+                and electricity_cabinet_id in (select id from t_electricity_cabinet where name =
+                #{query.electricityCabinetName})
             </if>
         </where>
         order by id desc
         limit #{query.offset}, #{query.size}
     </select>
 
+    <select id="queryAllTenantList" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select
+        tt.name as tenantName ,
+        count(case
+                when tewn.type=1000
+                then tewn.type
+                 end ) hardwareWarnMsgCount,
+        count(case
+                when tewn.type=101
+                then tewn.type
+                end ) systemWarnMsgCount
+        from t_ele_warn_msg tewn left join t_tenant tt on tewn.tenant_id=tt.id group by tt.name limit #{query.offset}, #{query.size}
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryCount" resultType="integer">
         select
-           count(*)
+        count(*)
         from t_ele_warn_msg
         <where>
             <if test="query.electricityCabinetId != null">
@@ -67,7 +82,8 @@
                 </foreach>
             </if>
             <if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-                and electricity_cabinet_id in (select id from t_electricity_cabinet where name = #{query.electricityCabinetName})
+                and electricity_cabinet_id in (select id from t_electricity_cabinet where name =
+                #{query.electricityCabinetName})
             </if>
         </where>
     </select>

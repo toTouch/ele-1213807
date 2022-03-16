@@ -65,6 +65,11 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     }
 
     @Override
+    public R queryAllTenant(EleWarnMsgQuery eleWarnMsgQuery) {
+        return R.ok(eleWarnMsgMapper.queryAllTenantList(eleWarnMsgQuery));
+    }
+
+    @Override
     public R queryCount(EleWarnMsgQuery eleWarnMsgQuery) {
         return R.ok(eleWarnMsgMapper.queryCount(eleWarnMsgQuery));
     }
