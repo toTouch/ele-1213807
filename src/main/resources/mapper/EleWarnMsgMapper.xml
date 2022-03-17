@@ -54,6 +54,10 @@
         from t_ele_warn_msg tewn left join t_tenant tt on tewn.tenant_id=tt.id group by tt.name limit #{query.offset}, #{query.size}
     </select>
 
+    <select id="queryAllTenantCount" resultType="integer">
+        select count(1) from (select tenant_id  from t_ele_warn_msg GROUP BY tenant_id) sub_ele_warn
+    </select>
+
     <!--查询指定行数据-->
     <select id="queryCount" resultType="integer">
         select

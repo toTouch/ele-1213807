@@ -101,7 +101,8 @@ public class JsonAdminEleWarnMsgController {
 
 	//查询所有租户异常消息
 	@GetMapping(value = "/admin/eleWarnMsg/allTenantList")
-	public R queryAllTenantList(@RequestParam("size") Long size, @RequestParam("offset") Long offset){
+	public R queryAllTenantList(@RequestParam("size") Long size,
+								@RequestParam("offset") Long offset){
 
 		if (size < 0 || size > 50) {
 			size = 10L;
@@ -110,9 +111,6 @@ public class JsonAdminEleWarnMsgController {
 		if (offset < 0) {
 			offset = 0L;
 		}
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//用户区分
 		TokenUser user = SecurityUtils.getUserInfo();
@@ -137,7 +135,19 @@ public class JsonAdminEleWarnMsgController {
 	@GetMapping(value = "/admin/eleWarnMsg/queryAllTenantCount")
 	public R queryAllTenantCount(){
 
-		return null;
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (!Objects.equals(user.getType(),User.TYPE_USER_SUPER)){
+			log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+			return R.fail("ELECTRICITY.0066", "用户权限不足");
+		}
+
+		return eleWarnMsgService.queryAllTenantCount();
 	}
 
 	//列表查询

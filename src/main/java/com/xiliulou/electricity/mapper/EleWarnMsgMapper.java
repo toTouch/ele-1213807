@@ -28,6 +28,7 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg>{
 
     List<EleWarnMsgVo> queryAllTenantList(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
+    Integer queryAllTenantCount();
 
     Integer queryCount(@Param("query")EleWarnMsgQuery eleWarnMsgQuery);
 }
