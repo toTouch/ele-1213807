@@ -58,13 +58,35 @@
     </select>
 
     <select id="queryByCabinetId" resultType="com.xiliulou.electricity.entity.Franchisee">
-        select tf.id,tf.cid,tf.uid,tf.name,tf.del_flag,tf.create_time,tf.update_time,tf.battery_deposit,tf.tenant_id,tf.percent,tf.model_type,tf.model_battery_deposit
-	        from t_franchisee tf
-		        where tf.id = (select franchisee_id
-								from t_store
-									where id = (select store_id
-										            from t_electricity_cabinet
-													    where id=#{id}))
+            SELECT
+                tf.id,
+                tf.cid,
+                tf.uid,
+                tf.NAME,
+                tf.del_flag,
+                tf.create_time,
+                tf.update_time,
+                tf.battery_deposit,
+                tf.tenant_id,
+                tf.percent,
+                tf.model_type,
+                tf.model_battery_deposit
+            FROM
+                t_franchisee tf
+            WHERE
+                tf.id = (
+                SELECT
+                    franchisee_id
+                FROM
+                    t_store
+                WHERE
+                    id = (
+                    SELECT
+                        store_id
+                    FROM
+                        t_electricity_cabinet
+                WHERE
+                id = #{id}))
     </select>
 
 </mapper>
