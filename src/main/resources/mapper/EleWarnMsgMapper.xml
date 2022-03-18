@@ -51,7 +51,7 @@
                 when tewn.type=101
                 then tewn.type
                 end ) systemWarnMsgCount
-        from t_ele_warn_msg tewn left join t_tenant tt on tewn.tenant_id=tt.id group by tt.name limit #{query.offset}, #{query.size}
+        from t_ele_warn_msg tewn left join t_tenant tt on tewn.tenant_id=tt.id group by tt.id limit #{query.offset}, #{query.size}
     </select>
 
     <select id="queryAllTenantCount" resultType="integer">
