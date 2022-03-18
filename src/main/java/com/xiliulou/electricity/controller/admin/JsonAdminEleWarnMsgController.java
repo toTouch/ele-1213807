@@ -195,9 +195,7 @@ public class JsonAdminEleWarnMsgController {
 
     //have read message
     @PostMapping(value = "/admin/eleWarnMsg/haveRead")
-    public R haveRead(@RequestParam("ids") String ids) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+    public R haveRead(@RequestParam("ids") String ids, @RequestParam(value = "tenantId") Integer tenantId) {
 
         List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
         for (Long id : idList) {
@@ -217,9 +215,7 @@ public class JsonAdminEleWarnMsgController {
 
     //delete message by Id
     @DeleteMapping(value = "/admin/eleWarnMsg/delete")
-    public R delete(@RequestParam("ids") String ids) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+    public R delete(@RequestParam("ids") String ids, @RequestParam(value = "tenantId") Integer tenantId) {
 
         List<Long> idList = JsonUtil.fromJsonArray(ids, Long.class);
         for (Long id : idList) {
