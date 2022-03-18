@@ -312,12 +312,20 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 					.tenantId(tenantId).build();
 			electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
+
+
 			//4.开旧电池门
 			//发送命令
 			HashMap<String, Object> dataMap = Maps.newHashMap();
 			dataMap.put("cell_no", cellNo);
 			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
 			dataMap.put("status", electricityCabinetOrder.getStatus());
+
+			//是否开启电池检测
+			ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+			if(Objects.equals(electricityConfig.getIsBatteryReview(),ElectricityConfig.BATTERY_REVIEW)){
+				dataMap.put("user_binding_battery_sn",franchiseeUserInfo.getNowElectricityBatterySn());
+			}
 
 			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
 				dataMap.put("model_type", false);

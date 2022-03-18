@@ -418,4 +418,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 				.eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL)));
 	}
 
+	@Override
+	public R queryByCabinetId(Integer cabinetId) {
+		return R.ok(franchiseeMapper.queryByCabinetId(cabinetId));
+	}
+
 }

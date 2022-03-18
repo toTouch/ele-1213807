@@ -78,6 +78,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     StoreService storeService;
     @Autowired
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
     /**
      * 新增数据
@@ -504,6 +506,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
             dataMap.put("orderId", orderId);
+
+
+            //是否开启电池检测
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+            if(Objects.equals(electricityConfig.getIsBatteryReview(),ElectricityConfig.BATTERY_REVIEW)){
+                dataMap.put("user_binding_battery_sn",franchiseeUserInfo.getNowElectricityBatterySn());
+            }
 
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);

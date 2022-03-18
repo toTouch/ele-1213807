@@ -385,4 +385,10 @@ public class JsonAdminElectricityCabinetController {
 		return electricityCabinetService.queryById(id);
 	}
 
+	//查询换电柜所属加盟商
+	@GetMapping(value = "/admin/cabinetBelongFranchisee/{id}")
+	public R queryCabinetBelongFranchisee(@PathVariable("id") Integer id){
+		return electricityCabinetService.queryCabinetBelongFranchisee(id);
+	}
+
 }

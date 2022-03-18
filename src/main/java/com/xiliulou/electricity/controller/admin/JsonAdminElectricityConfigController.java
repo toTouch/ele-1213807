@@ -25,8 +25,9 @@ public class JsonAdminElectricityConfigController {
     //编辑平台名称
     @PutMapping(value = "/admin/electricityConfig")
     public R edit(@RequestParam("name") String name,@RequestParam(value = "orderTime", required = false) Integer orderTime,
-            @RequestParam("isManualReview") Integer isManualReview,@RequestParam("isWithdraw") Integer isWithdraw) {
-        return electricityConfigService.edit(name,orderTime,isManualReview,isWithdraw);
+            @RequestParam("isManualReview") Integer isManualReview,@RequestParam("isWithdraw") Integer isWithdraw,
+            @RequestParam("isOpenDoorLock") Integer isOpenDoorLock,@RequestParam("isBatteryReview") Integer isBatteryReview) {
+        return electricityConfigService.edit(name,orderTime,isManualReview,isWithdraw,isOpenDoorLock,isBatteryReview);
     }
 
     //查询平台名称

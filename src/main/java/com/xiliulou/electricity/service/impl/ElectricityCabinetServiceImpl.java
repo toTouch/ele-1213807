@@ -1809,6 +1809,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    public R queryCabinetBelongFranchisee(Integer id) {
+        return franchiseeService.queryByCabinetId(id);
+    }
+
+    @Override
     public Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged) {
         List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, batteryType, fullyCharged);
         if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {

@@ -28,7 +28,7 @@
         limit #{query.offset}, #{query.size}
     </select>
 
-	<select id="queryCount" resultType="java.lang.Integer">
+    <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_franchisee
         where del_flag=0
@@ -56,4 +56,15 @@
         from t_franchisee f left join t_franchisee_bind_electricity_battery fb on f.id = fb.franchisee_id
         where f.del_flag=0 and fb.electricity_battery_id=#{id}
     </select>
+
+    <select id="queryByCabinetId" resultType="com.xiliulou.electricity.entity.Franchisee">
+        select tf.id,tf.cid,tf.uid,tf.name,tf.del_flag,tf.create_time,tf.update_time,tf.battery_deposit,tf.tenant_id,tf.percent,tf.model_type,tf.model_battery_deposit
+	        from t_franchisee tf
+		        where tf.id = (select franchisee_id
+								from t_store
+									where id = (select store_id
+										            from t_electricity_cabinet
+													    where id=#{id}))
+    </select>
+
 </mapper>

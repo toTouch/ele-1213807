@@ -100,6 +100,8 @@ public interface ElectricityCabinetService {
 
     R queryById(Integer id);
 
+    R queryCabinetBelongFranchisee(Integer id);
+
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
     void unlockElectricityCabinet(Integer eid);

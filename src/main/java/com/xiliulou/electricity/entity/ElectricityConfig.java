@@ -53,6 +53,16 @@ public class ElectricityConfig {
     //租户id
     private Integer tenantId;
 
+    /**
+     * 是否开启异常仓锁仓 （0--开启，1--关闭）
+     */
+    private Integer isOpenDoorLock;
+
+    /**
+     * 是否电池检测 （0--是，1--否）
+     */
+    private Integer isBatteryReview;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
@@ -63,5 +73,11 @@ public class ElectricityConfig {
     public static Integer WITHDRAW = 0;
     //线下提现
     public static Integer NON_WITHDRAW = 1;
+
+    public static Integer OPEN_DOOR_LOCK = 0;
+    public static Integer NON_OPEN_DOOR_LOCK = 1;
+
+    public static Integer BATTERY_REVIEW = 0;
+    public static Integer NON_BATTERY_REVIEW = 1;
 
 }
