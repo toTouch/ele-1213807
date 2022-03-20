@@ -6,7 +6,7 @@
 	<!--查询指定行数据-->
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
 		select
-		id, name,sn, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
+		id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,
 		online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
 		update_time, del_flag,tenant_id,store_id
 		from t_electricity_cabinet
