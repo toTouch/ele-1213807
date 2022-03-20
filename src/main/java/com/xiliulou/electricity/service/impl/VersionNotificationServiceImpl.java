@@ -91,4 +91,9 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public List<VersionNotification> queryNotificationList() {
         return this.versionNotificationMapper.selectList(null);
     }
+
+    @Override
+    public R queryNotificationCount() {
+        return R.ok(this.versionNotificationMapper.selectCount(null));
+    }
 }

@@ -55,4 +55,13 @@ public class JsonAdminVersionNotificationController extends BaseController {
     public R queryNotificationList(){
         return R.ok(notificationService.queryNotificationList());
     }
+
+    /**
+     * 查询count
+     * @return
+     */
+    @GetMapping("/admin/notification/queryCount")
+    public R queryNotificationCount(){
+        return notificationService.queryNotificationCount();
+    }
 }

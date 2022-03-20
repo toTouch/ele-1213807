@@ -46,4 +46,8 @@ public interface VersionNotificationService {
      */
     List<VersionNotification> queryNotificationList();
 
+    R queryNotificationCount();
+
+
+
 }
