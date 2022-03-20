@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.mapper.VersionNotificationMapper;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -61,10 +63,32 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         }
 
         VersionNotification versionNotification = new VersionNotification();
-        versionNotification.setId(1);
+        versionNotification.setId(versionNotificationQuery.getId());
         versionNotification.setVersion(versionNotificationQuery.getVersion());
         versionNotification.setContent(versionNotificationQuery.getContent());
         update(versionNotification);
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> insertNotification(VersionNotificationQuery versionNotificationQuery) {
+        TokenUser userInfo = SecurityUtils.getUserInfo();
+        if (Objects.isNull(userInfo) || !userInfo.getType().equals(User.TYPE_USER_SUPER)) {
+            return Triple.of(false, "SYSTEM.0007", "系统错误");
+        }
+        VersionNotification versionNotification = new VersionNotification();
+        versionNotification.setVersion(versionNotificationQuery.getVersion());
+        versionNotification.setContent(versionNotificationQuery.getContent());
+        insert(versionNotification);
+        return Triple.of(true,null,null);
+    }
+
+    public Integer insert(VersionNotification versionNotification){
+        return this.versionNotificationMapper.insert(versionNotification);
+    }
+
+    @Override
+    public List<VersionNotification> queryNotificationList() {
+        return this.versionNotificationMapper.selectList(null);
     }
 }
