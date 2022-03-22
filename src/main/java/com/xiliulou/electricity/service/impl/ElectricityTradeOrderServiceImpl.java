@@ -269,6 +269,10 @@ public class ElectricityTradeOrderServiceImpl extends
                     memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 }
+
+                System.out.println("输出月卡类型============="+electricityMemberCard.getLimitCount());
+                System.out.println("输出用户绑定表数据=============="+franchiseeUserInfo);
+
                 remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
             }
 
