@@ -973,11 +973,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0 && franchiseeUserInfo.getMemberCardExpireTime() > now) {
                     cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+
+                    System.out.println("月卡限制次数========================"+franchiseeUserInfo.getRemainingNumber()+franchiseeUserInfo.getMemberCardExpireTime());
+                    System.out.println("月卡过期天数==============="+cardDay);
+
                 }
             } else if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
                 cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+                System.out.println("走了不限制次数=====================");
             }
         }
+
+        System.out.println("最终的剩余天数==================="+cardDay);
 
         //我的电池
         Double battery = null;
