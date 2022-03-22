@@ -90,6 +90,12 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
 
+        //判断套餐是否为新用户送的次数卡
+        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
+            log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持离线换电");
+        }
+
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
         if (Objects.isNull(electricityMemberCard)){
             log.error("OffLINE ELECTRICITY  ERROR! memberCard  is not exist ! uid:{} ", user.getUid());
@@ -97,16 +103,29 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         Long now = System.currentTimeMillis();
-        if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-            log.error("OffLINE ELECTRICITY  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {
+            log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
 
-        //判断套餐是否为新用户送的次数卡
-        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
-            log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持离线换电");
+        if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            if (franchiseeUserInfo.getRemainingNumber() < 0) {
+                //用户需购买相同套餐，补齐所欠换电次数
+                log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
+                return R.fail("ELECTRICITY.00117", "套餐剩余次数为负",franchiseeUserInfo.getCardId());
+            }
+
+            if (franchiseeUserInfo.getMemberCardExpireTime() < now){
+                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+                return R.fail("ELECTRICITY.0023", "月卡已过期");
+            }
+
+            if (franchiseeUserInfo.getRemainingNumber()==0) {
+                log.error("order  ERROR! not found memberCard uid={}", user.getUid());
+                return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
+            }
         }
+
 
 //        //未租电池
 //        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {

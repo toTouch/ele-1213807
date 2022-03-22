@@ -254,6 +254,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //月卡是否过期
         Long now = System.currentTimeMillis();
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+        if (Objects.isNull(electricityMemberCard)){
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("rentBattery  ERROR! memberCard  is not exit ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.00121", "套餐不存在");
+        }
+
         if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("rentBattery  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
