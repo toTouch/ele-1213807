@@ -25,6 +25,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -345,9 +346,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //套餐欠费次数
         Integer memberCardOweNumber = null;
         ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(oldFranchiseeUserInfo.getCardId());
-        if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
-            memberCardOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
-            packageOwe = FranchiseeUserInfo.MEMBER_CARD_OWE;
+        if (Objects.nonNull(bindElectricityMemberCard)) {
+            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
+                memberCardOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
+                packageOwe = FranchiseeUserInfo.MEMBER_CARD_OWE;
+            }
         }
 
         if (Objects.equals(oldFranchiseeUserInfo.getOrderId(), "-1")) {
