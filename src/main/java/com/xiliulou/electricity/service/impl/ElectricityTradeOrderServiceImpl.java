@@ -250,15 +250,26 @@ public class ElectricityTradeOrderServiceImpl extends
 
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-            if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
-                memberCardExpireTime = System.currentTimeMillis() +
-                        electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-            } else {
-                memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
-                        electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-                if (!Objects.equals(electricityMemberCardOrder.getMaxUseCount(), -1)) {
-                    remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
+
+
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
+                    memberCardExpireTime = System.currentTimeMillis() +
+                            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+                } else {
+                    memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
+                            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+
                 }
+            } else {
+                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() <= 0) {
+                    memberCardExpireTime = System.currentTimeMillis() +
+                            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+                } else {
+                    memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
+                            electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+                }
+                remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
             }
 
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
