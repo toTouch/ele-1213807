@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.totp.TotpUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleOffLineSecretConfig;
@@ -31,6 +32,9 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    RedisService redisService;
+
 
     /**
      * 生成离线换电验证码
