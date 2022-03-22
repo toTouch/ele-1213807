@@ -262,18 +262,15 @@ public class ElectricityTradeOrderServiceImpl extends
 
                 }
             } else {
-                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() <= 0) {
+                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 } else {
                     memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+                    remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
                 }
 
-                System.out.println("输出月卡类型============="+electricityMemberCard.getLimitCount());
-                System.out.println("输出用户绑定表数据=============="+franchiseeUserInfo);
-
-                remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
             }
 
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
