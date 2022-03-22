@@ -4,8 +4,10 @@ import com.xiliulou.core.totp.TotpUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleOffLineSecretConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.OffLineElectricityCabinetService;
 import com.xiliulou.electricity.service.UserInfoService;
@@ -27,6 +29,8 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
     UserInfoService userInfoService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
 
     /**
      * 生成离线换电验证码
@@ -85,6 +89,13 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             log.error("OffLINE ELECTRICITY  ERROR! not found memberCard ! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+        if (Objects.isNull(electricityMemberCard)){
+            log.error("OffLINE ELECTRICITY  ERROR! memberCard  is not exist ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.00121","套餐不存在");
+        }
+
         Long now = System.currentTimeMillis();
         if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
             log.error("OffLINE ELECTRICITY  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
