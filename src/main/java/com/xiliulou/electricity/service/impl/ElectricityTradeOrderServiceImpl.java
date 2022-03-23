@@ -262,7 +262,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
                 }
             } else {
-                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || franchiseeUserInfo.getRemainingNumber()<=0) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 } else {
