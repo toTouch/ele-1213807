@@ -251,7 +251,6 @@ public class ElectricityTradeOrderServiceImpl extends
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
 
-
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
                     memberCardExpireTime = System.currentTimeMillis() +
@@ -259,28 +258,17 @@ public class ElectricityTradeOrderServiceImpl extends
                 } else {
                     memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-
                 }
             } else {
-                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || franchiseeUserInfo.getRemainingNumber()==0) {
+                if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || franchiseeUserInfo.getRemainingNumber() == 0) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
-
-                    System.out.println("月卡次数====================="+remainingNumber);
-                    System.out.println("购买月卡时间设置======================"+memberCardExpireTime);
                 } else {
                     memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                     remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
-
-                    System.out.println("else===================="+remainingNumber+"======"+memberCardExpireTime);
                 }
-
             }
-
-            System.out.println("最终的月卡次数======================"+remainingNumber);
-            System.out.println("最终的月卡过期时间=================="+memberCardExpireTime);
-
 
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
