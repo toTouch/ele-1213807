@@ -240,7 +240,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractIotMessageHandle
         UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         UsingElectricityBattery.setElectricityCabinetId(null);
         UsingElectricityBattery.setElectricityCabinetName(null);
-        UsingElectricityBattery.setUid(newElectricityBattery.getUid());
+        UsingElectricityBattery.setUid(user.getUid());
         UsingElectricityBattery.setUpdateTime(System.currentTimeMillis());
         UsingElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
         electricityBatteryService.updateByOrder(UsingElectricityBattery);
