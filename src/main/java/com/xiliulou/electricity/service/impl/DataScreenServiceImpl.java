@@ -8,6 +8,7 @@ import com.xiliulou.electricity.mapper.DataScreenMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.DataBrowsingVo;
+import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.OrderStatisticsVo;
 import com.xiliulou.electricity.vo.WeekOrderStatisticVo;
 import lombok.extern.slf4j.Slf4j;
@@ -48,6 +49,12 @@ public class DataScreenServiceImpl implements DataScreenService {
     UserInfoService userInfoService;
     @Autowired
     TenantService tenantService;
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    StoreService storeService;
 
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
@@ -75,7 +82,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             Integer count=electricityMemberCardOrderService.queryCountForScreenStatistic(memberCardOrderQuery);
             orderStatisticsVo.setMemberCardOrderCount(count);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query memberCard Order Count error!", e);
             return null;
         });
 
@@ -85,7 +92,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             Integer count= rentBatteryOrderService.queryCountForScreenStatistic(rentBatteryOrderQuery);
             orderStatisticsVo.setRentBatteryCount(count);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query rentBattery Order Count error!", e);
             return null;
         });
 
@@ -94,7 +101,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             List<WeekOrderStatisticVo> weekOrderStatisticVos=dataScreenMapper.queryWeekElectricityOrderStatistic(tenantId,beginTime);
             orderStatisticsVo.setWeekOrderStatisticVos(weekOrderStatisticVos);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query weekElectricity Order Count error!", e);
             return null;
         });
 
@@ -103,7 +110,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             List<WeekOrderStatisticVo> weekOrderStatisticVoList= dataScreenMapper.queryWeekMemberCardStatistic(tenantId,beginTime);
             orderStatisticsVo.setWeekMemberCardStatisticVos(weekOrderStatisticVoList);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query weekMemberCard Order Count error!", e);
             return null;
         });
 
@@ -112,7 +119,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             List<WeekOrderStatisticVo> weekOrderStatisticVoList= dataScreenMapper.queryWeekRentBatteryStatistic(tenantId,beginTime);
             orderStatisticsVo.setWeekRentBatteryStatisticVos(weekOrderStatisticVoList);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query WeekRentBattery Order Count error!", e);
             return null;
         });
 
@@ -137,7 +144,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         CompletableFuture<BigDecimal> memberCardTurnOver = CompletableFuture.supplyAsync(()->{
             return electricityMemberCardOrderService.queryTurnOver(tenantId);
         }, threadPool).exceptionally(e -> {
-            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            log.error("DATA SUMMARY BROWSING ERROR! query MemberCardTurnOver error!", e);
             return null;
         });
 
@@ -145,7 +152,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         CompletableFuture<BigDecimal> depositTurnOver = CompletableFuture.supplyAsync(()->{
             return eleDepositOrderService.queryTurnOver(tenantId);
         }, threadPool).exceptionally(e -> {
-            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
             return null;
         });
 
@@ -153,7 +160,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         CompletableFuture<BigDecimal> refundTurnOver = CompletableFuture.supplyAsync(()->{
             return eleRefundOrderService.queryTurnOver(tenantId);
         }, threadPool).exceptionally(e -> {
-            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            log.error("DATA SUMMARY BROWSING ERROR! query refundTurnOver count error!", e);
             return null;
         });
 
@@ -162,7 +169,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().tenantId(tenantId).build();
             return electricityCabinetOrderService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
         }, threadPool).exceptionally(e -> {
-            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            log.error("DATA SUMMARY BROWSING ERROR! query electricityOrderTurnOver error!", e);
             return null;
         });
 
@@ -171,7 +178,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             RentBatteryOrderQuery rentBatteryOrderQuery=RentBatteryOrderQuery.builder().tenantId(tenantId).build();
             return rentBatteryOrderService.queryCountForScreenStatistic(rentBatteryOrderQuery);
         }, threadPool).exceptionally(e -> {
-            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            log.error("DATA SUMMARY BROWSING ERROR! query rentBatteryTurnOver error!", e);
             return null;
         });
 
@@ -181,7 +188,7 @@ public class DataScreenServiceImpl implements DataScreenService {
             Integer sumUserCount=userInfoService.querySumCount(userInfoQuery);
             dataBrowsingVo.setSumUserCount(sumUserCount);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query UserTurnOver error!", e);
             return null;
         });
 
@@ -190,10 +197,38 @@ public class DataScreenServiceImpl implements DataScreenService {
             Integer sumTenantCount=tenantService.querySumCount(null);
             dataBrowsingVo.setTenantCount(sumTenantCount);
         }, threadPool).exceptionally(e -> {
-            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
 
+        //换电柜总数统计
+        CompletableFuture<Void> electricityCabinetCount = CompletableFuture.runAsync(() -> {
+            ElectricityCabinetQuery electricityCabinetQuery=ElectricityCabinetQuery.builder().tenantId(tenantId).build();
+            Integer sumElectricityCabinetCount=electricityCabinetService.querySumCount(electricityCabinetQuery);
+            dataBrowsingVo.setElectricityCabinetCount(sumElectricityCabinetCount);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
+            return null;
+        });
+
+        //电池总数统计
+        CompletableFuture<Void> batteryCount = CompletableFuture.runAsync(() -> {
+            ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder().tenantId(tenantId).build();
+            Integer sumBatteryCount=electricityBatteryService.querySumCount(electricityBatteryQuery);
+            dataBrowsingVo.setBatteryCount(sumBatteryCount);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query BatteryTurnOver error!", e);
+            return null;
+        });
+
+        //换电成功率
+        CompletableFuture<Void> electricityOrderSuccessRate = CompletableFuture.runAsync(() -> {
+            BigDecimal orderSuccessRate=electricityCabinetOrderService.homeOneSuccess(null,null,null,tenantId);
+            dataBrowsingVo.setElectricityOrderSuccessRate(orderSuccessRate);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricityOrderSuccessRate error!", e);
+            return null;
+        });
 
 
         //计算总营业额
@@ -212,11 +247,32 @@ public class DataScreenServiceImpl implements DataScreenService {
                     Integer orderSum=electricityOrderSum+rentBatterySum;
                     dataBrowsingVo.setSumOrderCount(orderSum);
                 }).exceptionally(e -> {
-                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!" ,e);
+                    log.error("DATA SUMMARY BROWSING ERROR! statistics order sum error!" ,e);
                     return null;
                 });
 
+        //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(userCount, tenantCount, electricityCabinetCount, batteryCount,electricityOrderSuccessRate
+        ,payAmountSumFuture,orderSumFuture);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(dataBrowsingVo);
+    }
+
+    @Override
+    public R queryMapProvince(Integer tenantId) {
+
+        List<MapVo> mapVoList=storeService.queryCountGroupByProvinceId(tenantId);
+
+
         return null;
+
+
+
     }
 
 

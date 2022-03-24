@@ -1879,4 +1879,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(franchisee);
     }
+
+    @Override
+    public Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery) {
+        return electricityCabinetMapper.queryCount(electricityCabinetQuery);
+    }
 }

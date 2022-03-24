@@ -30,6 +30,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.pay.weixinv3.dto.Amount;
@@ -96,10 +97,6 @@ public class StoreServiceImpl implements StoreService {
 	@Transactional(rollbackFor = Exception.class)
 	public R save(StoreAddAndUpdate storeAddAndUpdate) {
 
-		//前端处理不了，后台写死
-		storeAddAndUpdate.setCityId(283);
-		storeAddAndUpdate.setProvinceId(27);
-
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -132,6 +129,7 @@ public class StoreServiceImpl implements StoreService {
 
 		Store store = new Store();
 		BeanUtil.copyProperties(storeAddAndUpdate, store);
+		store.setCid(storeAddAndUpdate.getCityId());
 
 		//校验参数
 		if (checkParam(storeAddAndUpdate, store)) {
@@ -450,6 +448,15 @@ public class StoreServiceImpl implements StoreService {
 			redisService.delete(ElectricityCabinetConstant.CACHE_STORE + store.getId());
 			return null;
 		});
+	}
+
+	@Override
+	public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
+		List<MapVo> mapVoList=storeMapper.queryCountGroupByProvinceId(tenantId);
+
+
+
+		return null;
 	}
 
 	public Long getTime(Long time) {

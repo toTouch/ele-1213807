@@ -31,4 +31,19 @@ public class DataBrowsingVo {
      * 总租户数
      */
     private Integer tenantCount;
+
+    /**
+     * 换电柜总数
+     */
+    private Integer electricityCabinetCount;
+
+    /**
+     * 电池总数
+     */
+    private Integer batteryCount;
+
+    /**
+     * 换电成功率
+     */
+    private BigDecimal electricityOrderSuccessRate;
 }

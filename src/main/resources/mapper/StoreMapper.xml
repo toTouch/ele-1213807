@@ -146,5 +146,22 @@
         order by date desc
     </select>
 
+    <select id="queryCountGroupByProvinceId" resultType="com.xiliulou.electricity.vo.MapVo">
+        select
+        count(1) as storeCount,
+        p.id,
+        p.name
+        from t_store s
+        left join t_city c on s.cid = c.id
+        left join t_province p on c.pid=p.id
+        <where>
+            s.del_flag = 0
+            <if test="tenantId != null">
+                and s.tenant_id = #{tenantId}
+            </if>
+        </where>
+        GROUP BY p.id
+    </select>
+
 
 </mapper>

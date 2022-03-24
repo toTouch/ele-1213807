@@ -109,4 +109,6 @@ public interface ElectricityCabinetService {
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
 
     R getFranchisee(String productKey, String deviceName);
+
+    Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery);
 }
