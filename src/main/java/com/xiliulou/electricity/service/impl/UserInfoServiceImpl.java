@@ -128,6 +128,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         for (UserInfo userInfo : userInfoList) {
             UserInfoVO userInfoVO = new UserInfoVO();
             FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+            if (Objects.nonNull(userInfo.getLimitCount()) && Objects.equals(userInfo.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
+                franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+            }
 
             if (Objects.nonNull(franchiseeUserInfo)) {
                 BeanUtil.copyProperties(franchiseeUserInfo, userInfoVO);
