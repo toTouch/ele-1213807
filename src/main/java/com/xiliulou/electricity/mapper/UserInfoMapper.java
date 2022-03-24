@@ -32,4 +32,5 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
 
 	Integer queryCount( @Param("query") UserInfoQuery userInfoQuery);
+
 }

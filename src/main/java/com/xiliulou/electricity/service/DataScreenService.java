@@ -12,4 +12,6 @@ public interface DataScreenService {
 
     R queryOrderStatistics(Integer tenantId);
 
+    R queryDataBrowsing(Integer tenantId);
+
 }

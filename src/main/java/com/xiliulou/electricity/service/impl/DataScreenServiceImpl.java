@@ -3,21 +3,18 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.DataScreenMapper;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
-import com.xiliulou.electricity.query.MemberCardOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.service.DataScreenService;
-import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
-import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.query.*;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.vo.DataBrowsingVo;
 import com.xiliulou.electricity.vo.OrderStatisticsVo;
 import com.xiliulou.electricity.vo.WeekOrderStatisticVo;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -43,6 +40,14 @@ public class DataScreenServiceImpl implements DataScreenService {
     RentBatteryOrderService rentBatteryOrderService;
     @Autowired
     DataScreenMapper dataScreenMapper;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    TenantService tenantService;
 
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
@@ -123,6 +128,96 @@ public class DataScreenServiceImpl implements DataScreenService {
 
     }
 
+    @Override
+    public R queryDataBrowsing(Integer tenantId) {
+
+        DataBrowsingVo dataBrowsingVo=new DataBrowsingVo();
+
+        //统计套餐总营业额
+        CompletableFuture<BigDecimal> memberCardTurnOver = CompletableFuture.supplyAsync(()->{
+            return electricityMemberCardOrderService.queryTurnOver(tenantId);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            return null;
+        });
+
+        //统计押金总营业额
+        CompletableFuture<BigDecimal> depositTurnOver = CompletableFuture.supplyAsync(()->{
+            return eleDepositOrderService.queryTurnOver(tenantId);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            return null;
+        });
+
+        //统计退押金总额
+        CompletableFuture<BigDecimal> refundTurnOver = CompletableFuture.supplyAsync(()->{
+            return eleRefundOrderService.queryTurnOver(tenantId);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            return null;
+        });
+
+        //换电订单统计
+        CompletableFuture<Integer> electricityOrderCount = CompletableFuture.supplyAsync(()->{
+            ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder().tenantId(tenantId).build();
+            return electricityCabinetOrderService.queryCountForScreenStatistic(electricityCabinetOrderQuery);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            return null;
+        });
+
+        //租电订单统计
+        CompletableFuture<Integer> rentBatteryCount = CompletableFuture.supplyAsync(()->{
+            RentBatteryOrderQuery rentBatteryOrderQuery=RentBatteryOrderQuery.builder().tenantId(tenantId).build();
+            return rentBatteryOrderService.queryCountForScreenStatistic(rentBatteryOrderQuery);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query catering order count error!", e);
+            return null;
+        });
+
+        //用户数量统计
+        CompletableFuture<Void> userCount = CompletableFuture.runAsync(() -> {
+            UserInfoQuery userInfoQuery=UserInfoQuery.builder().tenantId(tenantId).serviceStatus(1).build();
+            Integer sumUserCount=userInfoService.querySumCount(userInfoQuery);
+            dataBrowsingVo.setSumUserCount(sumUserCount);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
+        //租户总数统计
+        CompletableFuture<Void> tenantCount = CompletableFuture.runAsync(() -> {
+            Integer sumTenantCount=tenantService.querySumCount(null);
+            dataBrowsingVo.setTenantCount(sumTenantCount);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
+
+
+        //计算总营业额
+        CompletableFuture<Void> payAmountSumFuture = memberCardTurnOver
+                .thenAcceptBoth(depositTurnOver, (memberCardSumAmount, depositSumAmount) ->{
+                    BigDecimal  turnover = memberCardSumAmount.add(depositSumAmount);
+                    dataBrowsingVo.setSumTurnover(turnover);
+                }).exceptionally(e -> {
+                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!" ,e);
+                    return null;
+                });
+
+        //计算总订单数
+        CompletableFuture<Void> orderSumFuture = electricityOrderCount
+                .thenAcceptBoth(rentBatteryCount, (electricityOrderSum, rentBatterySum) ->{
+                    Integer orderSum=electricityOrderSum+rentBatterySum;
+                    dataBrowsingVo.setSumOrderCount(orderSum);
+                }).exceptionally(e -> {
+                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!" ,e);
+                    return null;
+                });
+
+        return null;
+    }
 
 
     /***

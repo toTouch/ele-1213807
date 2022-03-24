@@ -3,6 +3,8 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+
+import java.math.BigDecimal;
 import java.util.List;
 
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
@@ -28,4 +30,6 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder>{
 	Integer queryCount(@Param("query")  EleDepositOrderQuery eleDepositOrderQuery);
 
 	List<EleDepositOrderVO> queryListForUser(@Param("query")EleDepositOrderQuery eleDepositOrderQuery);
+
+	BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
 }

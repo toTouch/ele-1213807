@@ -62,12 +62,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务实现类
@@ -665,6 +660,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		}
 
 		return R.ok(franchisee.getModelType());
+	}
+
+	@Override
+	public BigDecimal queryTurnOver(Integer tenantId) {
+		return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
 	}
 
 	public String generateOrderId(Long uid) {

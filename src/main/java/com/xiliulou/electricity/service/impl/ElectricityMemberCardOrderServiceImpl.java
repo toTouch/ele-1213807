@@ -34,11 +34,7 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @program: XILIULOU
@@ -576,5 +572,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	@Override
 	public Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery) {
 		return baseMapper.queryCount(memberCardOrderQuery);
+	}
+
+	@Override
+	public BigDecimal queryTurnOver(Integer tenantId) {
+		return Optional.ofNullable(baseMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
 	}
 }

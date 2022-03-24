@@ -40,6 +40,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 /**
  * 退款订单表(TEleRefundOrder)表服务实现类
@@ -344,6 +345,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	@Override
 	public Long queryUserInfoIdByRefundOrderNo(String refundOrderNo) {
 		return eleRefundOrderMapper.queryUserInfoId(refundOrderNo);
+	}
+
+	@Override
+	public BigDecimal queryTurnOver(Integer tenantId) {
+		return Optional.ofNullable(eleRefundOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
 	}
 
 

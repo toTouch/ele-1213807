@@ -396,6 +396,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return R.ok(userInfoMapper.queryCount(userInfoQuery));
 	}
 
+	@Override
+	public Integer querySumCount(UserInfoQuery userInfoQuery) {
+		return userInfoMapper.queryCount(userInfoQuery);
+	}
+
 	//后台绑定电池
 	@Override
 	@Transactional
@@ -643,5 +648,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		userMoveHistoryService.insert(userMoveHistory);
 		return R.ok();
 	}
+
 
 }
