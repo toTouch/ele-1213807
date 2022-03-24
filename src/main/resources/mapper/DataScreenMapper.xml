@@ -42,7 +42,7 @@
 
 	<select id="queryWeekRentBatteryStatistic" resultType="com.xiliulou.electricity.vo.WeekOrderStatisticVo">
 		SELECT
-		count( 1 ) as weekCount,
+		count(1) as weekCount,
 		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
 		FROM
 		t_rent_battery_order
