@@ -572,4 +572,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
 		return R.ok(baseMapper.queryCount(memberCardOrderQuery));
 	}
+
+	@Override
+	public Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery) {
+		return baseMapper.queryCount(memberCardOrderQuery);
+	}
 }

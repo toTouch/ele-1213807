@@ -50,4 +50,6 @@ public interface RentBatteryOrderService {
 
     R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery);
 
+    Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery);
+
 }

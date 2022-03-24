@@ -517,6 +517,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 	}
 
 	@Override
+	public Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+		return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
+	}
+
+	@Override
 	public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
 		electricityCabinetOrderQuery.setOffset(0L);
 		electricityCabinetOrderQuery.setSize(2000L);
