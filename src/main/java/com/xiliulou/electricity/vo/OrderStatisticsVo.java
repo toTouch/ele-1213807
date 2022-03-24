@@ -32,4 +32,14 @@ public class OrderStatisticsVo {
      */
     private List<WeekOrderStatisticVo> weekOrderStatisticVos;
 
+    /**
+     * 周月卡统计
+     */
+    private List<WeekOrderStatisticVo> weekMemberCardStatisticVos;
+
+    /**
+     * 周租电统计
+     */
+    private List<WeekOrderStatisticVo> weekRentBatteryStatisticVos;
+
 }

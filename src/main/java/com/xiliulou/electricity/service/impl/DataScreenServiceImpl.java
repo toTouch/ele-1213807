@@ -96,7 +96,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         //近七天购卡数量统计
         CompletableFuture<Void> weekMemberCardStatistic = CompletableFuture.runAsync(() -> {
             List<WeekOrderStatisticVo> weekOrderStatisticVoList= dataScreenMapper.queryWeekMemberCardStatistic(tenantId,beginTime);
-            orderStatisticsVo.setWeekOrderStatisticVos(weekOrderStatisticVoList);
+            orderStatisticsVo.setWeekMemberCardStatisticVos(weekOrderStatisticVoList);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
             return null;
@@ -105,7 +105,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         //近七天租电池数量统计
         CompletableFuture<Void> weekRentBatteryStatistic = CompletableFuture.runAsync(() -> {
             List<WeekOrderStatisticVo> weekOrderStatisticVoList= dataScreenMapper.queryWeekRentBatteryStatistic(tenantId,beginTime);
-            orderStatisticsVo.setWeekOrderStatisticVos(weekOrderStatisticVoList);
+            orderStatisticsVo.setWeekRentBatteryStatisticVos(weekOrderStatisticVoList);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
             return null;
