@@ -69,10 +69,6 @@ public class UserInfo {
     //租户
     private Integer tenantId;
 
-    /**
-     * 月卡类型
-     */
-    private Integer limitCount;
 
 
     public static final Integer DEL_NORMAL = 0;

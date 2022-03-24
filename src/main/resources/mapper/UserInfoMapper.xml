@@ -9,10 +9,9 @@
         tui.id as id, tui.uid as uid, tui.user_name as userName,tui.name as name,
         tui.phone as phone, tui.id_number as idNumber, tui.service_status as serviceStatus,
         tui.auth_status as authStatus,tui.usable_status as usableStatus, tui.del_flag as delFlag,
-        tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId,temc.limit_count as limitCount
+        tui.create_time as createTime,tui.update_time as updateTime,tui.tenant_id as tenantId
         from t_user_info as tui
         left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
-        left join t_electricity_member_card as temc on tfui.card_id=temc.id
         where tui.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tui.name = #{query.name}
