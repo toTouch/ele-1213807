@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.vo.MapVo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -111,4 +112,11 @@ public interface ElectricityCabinetService {
     R getFranchisee(String productKey, String deviceName);
 
     Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery);
+
+    /**
+     * 查询不同省的电柜数量
+     * @param list
+     * @return
+     */
+    List<MapVo> queryProvinceCabinetCount(List<MapVo> list);
 }

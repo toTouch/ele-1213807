@@ -25,6 +25,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -1883,5 +1884,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery) {
         return electricityCabinetMapper.queryCount(electricityCabinetQuery);
+    }
+
+    @Override
+    public List<MapVo> queryProvinceCabinetCount(List<MapVo> list) {
+        return electricityCabinetMapper.queryProvinceCabinetCount(list);
     }
 }

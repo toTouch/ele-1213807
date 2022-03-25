@@ -452,11 +452,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
-		List<MapVo> mapVoList=storeMapper.queryCountGroupByProvinceId(tenantId);
-
-
-
-		return null;
+		return storeMapper.queryCountGroupByProvinceId(tenantId);
 	}
 
 	public Long getTime(Long time) {

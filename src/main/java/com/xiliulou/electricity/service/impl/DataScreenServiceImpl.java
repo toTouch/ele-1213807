@@ -265,14 +265,10 @@ public class DataScreenServiceImpl implements DataScreenService {
 
     @Override
     public R queryMapProvince(Integer tenantId) {
-
+        //查询不同省份的门店数量
         List<MapVo> mapVoList=storeService.queryCountGroupByProvinceId(tenantId);
-
-
-        return null;
-
-
-
+        //查询不同省份的电柜数量
+        return R.ok(electricityCabinetService.queryProvinceCabinetCount(mapVoList));
     }
 
 

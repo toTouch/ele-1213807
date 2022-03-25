@@ -176,5 +176,14 @@
 		order by date desc
 	</select>
 
+	<select id="queryProvinceCabinetCount" resultType="com.xiliulou.electricity.vo.MapVo">
+		<foreach collection="query" item="query" index="index" open="(" close=")" separator=",">
+			SELECT count(1) as electricityCabinetCount,#{query.storeCount} as storeCount,tp.id as pid FROM t_electricity_cabinet tec left join t_store ts on
+			tec.store_id=ts.id left join t_city ty on ts.cid=ty.id left join t_province tp on ty.pid=tp.id
+			where tp.id=#{query.pid}
+			group by tp.id
+		</foreach>
+	</select>
+
 
 </mapper>
