@@ -11,6 +11,7 @@ import lombok.Data;
 public class MapVo {
     private Integer pid;
     private Integer cid;
+    private Integer sid;
     private String name;
     private Integer storeCount;
     private Integer electricityCabinetCount;
