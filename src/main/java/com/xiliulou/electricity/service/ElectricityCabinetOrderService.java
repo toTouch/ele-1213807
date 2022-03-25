@@ -29,6 +29,8 @@ public interface ElectricityCabinetOrderService {
 
     ElectricityCabinetOrder queryByOrderId(String orderId);
 
+    void insertOrder(ElectricityCabinetOrder electricityCabinetOrder);
+
     R order(OrderQuery orderQuery);
 
     R openDoor(OpenDoorQuery openDoorQuery);

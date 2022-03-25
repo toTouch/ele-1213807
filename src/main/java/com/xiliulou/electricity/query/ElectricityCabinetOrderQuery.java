@@ -45,5 +45,7 @@ public class ElectricityCabinetOrderQuery {
 
     private Integer tenantId;
 
+    private Integer source;
+
 
 }

@@ -2,11 +2,13 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
+import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 
 
@@ -32,6 +34,17 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
     public ElectricityCabinetOrderOperHistory insert(ElectricityCabinetOrderOperHistory electricityCabinetOrderOperHistory) {
         this.electricityCabinetOrderOperHistoryMapper.insert(electricityCabinetOrderOperHistory);
         return electricityCabinetOrderOperHistory;
+    }
+
+    /**
+     * 离线换电新增操作记录
+     *
+     * @param offLineElectricityCabinetOrderOperHistory
+     * @return
+     */
+    @Override
+    public R insertOffLineOperateHistory(OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory) {
+        return R.ok(electricityCabinetOrderOperHistoryMapper.insertOffLineEleExchangeOperateHistory(offLineElectricityCabinetOrderOperHistory));
     }
 
     @Override

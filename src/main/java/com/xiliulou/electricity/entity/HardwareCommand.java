@@ -150,11 +150,17 @@ public class HardwareCommand {
     //获取4G卡号
     public static final String ELE_COMMAND_ICCID_GET_RSP = "iccid_get_rsp";
 
+    public static final String OFFLINE_ELE_EXCHANGE_ORDER_RSP = "offline_ele_exchange_order_rsp";
+
+    public static final String OFFLINE_EXCHANGE_ORDER_ACK_RSP="offline_exchange_order_ack_rsp";
+
+    public static final String OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS = "offline_exchange_order_ack";
+
 
     public static final Map<String, String> ELE_COMMAND_MAPS = Maps.newHashMap();
 
     static {
-        ELE_COMMAND_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD,"OK");
+        ELE_COMMAND_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, "OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_OLD_DOOR, "OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_ORDER_OPEN_NEW_DOOR, "OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_CELL_OPEN_DOOR, "OK");
@@ -205,5 +211,7 @@ public class HardwareCommand {
         ELE_COMMAND_MAPS.put(API_RETURN_ORDER, "OK");
         ELE_COMMAND_MAPS.put(GET_CARD_NUM_ICCID, "OK");
         ELE_COMMAND_MAPS.put(ELE_COMMAND_ICCID_GET_RSP, "OK");
+        ELE_COMMAND_MAPS.put(OFFLINE_ELE_EXCHANGE_ORDER_RSP, "OK");
+        ELE_COMMAND_MAPS.put(OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS, "OK");
     }
 }

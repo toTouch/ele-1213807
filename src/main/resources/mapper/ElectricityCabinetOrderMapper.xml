@@ -28,6 +28,9 @@
 			<if test="query.paymentMethod != null">
 				and payment_method = #{query.paymentMethod}
 			</if>
+			<if test="query.source != null">
+				and source = #{query.source}
+			</if>
 			<if test="query.uid != null">
 				and uid = #{query.uid}
 			</if>
@@ -66,6 +69,9 @@
 			</if>
 			<if test="query.paymentMethod != null">
 				and payment_method = #{query.paymentMethod}
+			</if>
+			<if test="query.source != null">
+				and source = #{query.source}
 			</if>
 			<if test="query.uid != null">
 				and uid = #{query.uid}

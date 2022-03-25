@@ -58,6 +58,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public Integer minCountForOffLineEle(Long id) {
+        return franchiseeUserInfoMapper.minMemberCountForOffLineEle(id);
+    }
+
+    @Override
     public Integer plusCount(Long id) {
         return franchiseeUserInfoMapper.plusCount(id);
     }

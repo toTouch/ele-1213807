@@ -4,8 +4,7 @@
 
 
     <!--查询指定行数据-->
-    <select id="queryList"
-            resultType="com.xiliulou.electricity.entity.UserInfo">
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.UserInfo">
         select
         tui.id as id, tui.uid as uid, tui.user_name as userName,tui.name as name,
         tui.phone as phone, tui.id_number as idNumber, tui.service_status as serviceStatus,

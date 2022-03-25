@@ -62,6 +62,11 @@ public class EleRefundOrder {
     //租户id
     private Integer tenantId;
 
+    /**
+     * 套餐欠费次数
+     */
+    private Integer memberCardOweNumber;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

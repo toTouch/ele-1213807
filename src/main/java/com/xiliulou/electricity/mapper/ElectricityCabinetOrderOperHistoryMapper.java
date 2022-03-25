@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.mapper;
+
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import org.apache.ibatis.annotations.Param;
 
@@ -15,9 +17,11 @@ import java.util.Map;
  * @author makejava
  * @since 2020-11-26 10:57:22
  */
-public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<ElectricityCabinetOrderOperHistory>{
+public interface ElectricityCabinetOrderOperHistoryMapper extends BaseMapper<ElectricityCabinetOrderOperHistory> {
 
-    List<ElectricityCabinetOrderOperHistory> queryListByOrderId(@Param("query")ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+    List<ElectricityCabinetOrderOperHistory> queryListByOrderId(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 
-	Integer queryCountByOrderId(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+    Integer queryCountByOrderId(@Param("query") ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+
+    Integer insertOffLineEleExchangeOperateHistory(OffLineElectricityCabinetOrderOperHistory offLineElectricityCabinetOrderOperHistory);
 }

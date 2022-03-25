@@ -49,6 +49,7 @@ public class JsonAdminElectricityCabinetOrderController {
 			@RequestParam(value = "status", required = false) String status,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "source", required = false) Integer source,
 			@RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
 
 		if (size < 0 || size > 50) {
@@ -93,6 +94,7 @@ public class JsonAdminElectricityCabinetOrderController {
 				.endTime(endTime)
 				.paymentMethod(paymentMethod)
 				.eleIdList(eleIdList)
+				.source(source)
 				.tenantId(tenantId).build();
 		return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
 	}
@@ -104,6 +106,7 @@ public class JsonAdminElectricityCabinetOrderController {
 			@RequestParam(value = "status", required = false) String status,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "source", required = false) Integer source,
 			@RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
 
 		//租户
@@ -138,6 +141,7 @@ public class JsonAdminElectricityCabinetOrderController {
 				.endTime(endTime)
 				.paymentMethod(paymentMethod)
 				.eleIdList(eleIdList)
+				.source(source)
 				.tenantId(tenantId).build();
 		return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
 	}

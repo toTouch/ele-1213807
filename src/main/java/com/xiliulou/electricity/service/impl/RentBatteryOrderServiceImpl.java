@@ -78,6 +78,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     StoreService storeService;
     @Autowired
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
 
     /**
      * 新增数据
@@ -251,7 +253,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //月卡是否过期
         Long now = System.currentTimeMillis();
-        if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+        if (Objects.isNull(electricityMemberCard)){
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            log.error("rentBattery  ERROR! memberCard  is not exit ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.00121", "套餐不存在");
+        }
+
+        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("rentBattery  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
@@ -268,6 +277,28 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         Integer refundCount = eleRefundOrderService.queryCountByOrderId(franchiseeUserInfo.getOrderId());
         if (refundCount > 0) {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿租电池");
+        }
+
+        if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+            if (franchiseeUserInfo.getRemainingNumber() < 0) {
+                //用户需购买相同套餐，补齐所欠换电次数
+                redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
+                return R.fail("ELECTRICITY.00117", "套餐剩余次数为负",franchiseeUserInfo.getCardId());
+            }
+
+            if (franchiseeUserInfo.getMemberCardExpireTime() < now){
+                redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+                return R.fail("ELECTRICITY.0023", "月卡已过期");
+            }
+
+            Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
+            if (row < 1) {
+                redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+                log.error("order  ERROR! not found memberCard uid={}", user.getUid());
+                return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
+            }
         }
 
         //分配电池 --只分配满电电池
@@ -848,6 +879,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             boolean isNeedEndOrder = warnMsgVo.getIsNeedEndOrder();
             if (!isNeedEndOrder) {
                 isTry = 0;
+            }
+
+            if (Objects.equals(rentBatteryOrder.getStatus(),RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)){
+                isTry=1;
             }
 
             String msg = warnMsgVo.getMsg();

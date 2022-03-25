@@ -69,6 +69,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     NormalOtherConfigHandlerIot normalOtherConfigHandlerIot;
     @Autowired
     NormalEleOrderOperateHandlerIot normalEleOrderOperateHandlerIot;
+    @Autowired
+    NormalOffLineEleExchangeHandlerIot normalOffLineEleExchangeHandlerIot;
 
     @Autowired
     NormalApiRentHandlerIot normalApiRentHandlerIot;
@@ -86,6 +88,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     FeishuMsgService feishuMsgService;
     @Autowired
     FeishuTokenService feishuTokenService;
+
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
@@ -144,7 +147,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
             return false;
         }
-        if (receiverMessage.getType().contains("order_operate")) {
+        if (Objects.equals(receiverMessage.getType(), HardwareCommand.OFFLINE_EXCHANGE_ORDER_ACK_RSP)) {
+            return true;
+        } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.OFFLINE_ELE_EXCHANGE_ORDER_RSP)) {
+            return normalOffLineEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
+        } else if (receiverMessage.getType().contains("order_operate")) {
             return normalEleOrderOperateHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.API_RETURN_ORDER_RSP)) {
             return normalApiReturnHandlerIot.receiveMessageProcess(receiverMessage);
@@ -170,7 +177,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             return normalOtherConfigHandlerIot.receiveMessageProcess(receiverMessage);
         } else if (Objects.equals(receiverMessage.getType(), HardwareCommand.ELE_COMMAND_ICCID_GET_RSP)) {
             return icIdCommandIotHandler.receiveMessageProcess(receiverMessage);
-        }else {
+        } else {
             log.error("command not support handle,command:{}", receiverMessage.getType());
             return false;
         }
@@ -178,16 +185,16 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
 
     private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time){
         Tenant tenantEntity = tenantSerivce.queryByIdFromCache(electricityCabinet.getTenantId());
-        if(Objects.isNull(tenantEntity)){
+        if (Objects.isNull(tenantEntity)) {
             log.error("FEI SHU ERROR! tenant is empty error! cid={},tid={}", electricityCabinet.getId(), electricityCabinet.getTenantId());
             return;
         }
 
         String token = null;
-        try{
+        try {
             token = this.acquireAccessToken();
-        }catch (FeishuException e){
-            log.error("FEI SHU ERROR! FAILED TO GET TOKEN",e);
+        } catch (FeishuException e) {
+            log.error("FEI SHU ERROR! FAILED TO GET TOKEN", e);
             return;
         }
 
@@ -201,7 +208,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         query2.setText("租户名称：" + tenantEntity.getName());
 
         FeishuMsgPostTextQuery query3 = new FeishuMsgPostTextQuery();
-        query3.setText("当前状态：" +  getOnlineStatus(onlineStatus));
+        query3.setText("当前状态：" + getOnlineStatus(onlineStatus));
 
         FeishuMsgPostTextQuery query4 = new FeishuMsgPostTextQuery();
         query4.setText(getOnlineStatus(onlineStatus) + "时间：" +  time);
@@ -226,11 +233,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         botSendMsgQuery.setContent(JsonUtil.toJson(feishuMsgPostQuery));
 
         List<String> receiveIds = feishuConfig.getReceiveIds();
-        if(!CollectionUtils.isEmpty(receiveIds)){
-            for(String receiveId : receiveIds){
+        if (!CollectionUtils.isEmpty(receiveIds)) {
+            for (String receiveId : receiveIds) {
                 botSendMsgQuery.setReceiveId(receiveId);
                 try {
-                    feishuMsgService.sendBotMsg(botSendMsgQuery ,token);
+                    feishuMsgService.sendBotMsg(botSendMsgQuery, token);
                 } catch (FeishuException e) {
                     log.error("FEI SHU ERROR! FEI SHU SEND BOT MSG ERROR!", e);
                 }
@@ -243,23 +250,25 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     private String acquireAccessToken() throws FeishuException {
         String token = redisService.get(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN);
 
-        if(StringUtils.isBlank(token)){
-            FeishuTokenRsp feishuTokenRsp =  feishuTokenService.acquireAccessToken();
+        if (StringUtils.isBlank(token)) {
+            FeishuTokenRsp feishuTokenRsp = feishuTokenService.acquireAccessToken();
             token = feishuTokenRsp.getTenantAccessToken();
             redisService.set(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN,
-                    token,1800L, TimeUnit.SECONDS);
+                    token, 1800L, TimeUnit.SECONDS);
         }
 
         return token;
     }
 
-    private String getOnlineStatus(String status){
+    private String getOnlineStatus(String status) {
         String str = "";
-        switch (status){
+        switch (status) {
             case "online":
-                str = "上线"; break;
+                str = "上线";
+                break;
             case "offline":
-                str = "下线"; break;
+                str = "下线";
+                break;
         }
         return str;
     }
