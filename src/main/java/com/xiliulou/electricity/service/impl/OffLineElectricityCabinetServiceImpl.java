@@ -130,12 +130,11 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             }
         }
 
-
-//        //未租电池
-//        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
-//            log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid:{} ", user.getUid());
-//            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
-//        }
+        //未租电池
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+            log.error("OffLINE ELECTRICITY  ERROR! user not rent battery! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0033", "用户未绑定电池");
+        }
 
         //生成验证码key
         String key = eleOffLineSecretConfig.getSecret() + user.getPhone();
