@@ -881,6 +881,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 isTry = 0;
             }
 
+            if (Objects.equals(rentBatteryOrder.getStatus(),RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)){
+                isTry=1;
+            }
+
             String msg = warnMsgVo.getMsg();
 
             //出错信息
