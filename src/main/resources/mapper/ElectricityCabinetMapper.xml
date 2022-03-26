@@ -176,14 +176,23 @@
 		order by date desc
 	</select>
 
-	<select id="queryProvinceCabinetCount" resultType="com.xiliulou.electricity.vo.MapVo">
-		<foreach collection="query" item="query" index="index" open="" close="" separator=";">
-			SELECT count(1) as electricityCabinetCount,#{query.storeCount} as storeCount,tp.id as pid FROM t_electricity_cabinet tec left join t_store ts on
-			tec.store_id=ts.id left join t_city ty on ts.cid=ty.id left join t_province tp on ty.pid=tp.id
-
-			group by tp.id
-		</foreach>
+	<select id="queryCountByStoreIds" resultType="integer">
+		select count(1)
+		from t_electricity_cabinet
+		<where>
+			del_flag=0
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="storeIds != null and storeIds.size() > 0">
+				and store_id in
+				<foreach collection="storeIds" item="id" separator="," open="(" close=")">
+					#{id}
+				</foreach>
+			</if>
+		</where>
 	</select>
+
 
 
 </mapper>

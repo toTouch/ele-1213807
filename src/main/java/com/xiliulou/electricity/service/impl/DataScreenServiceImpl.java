@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
@@ -17,7 +18,9 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -267,8 +270,21 @@ public class DataScreenServiceImpl implements DataScreenService {
     public R queryMapProvince(Integer tenantId) {
         //查询不同省份的门店数量
         List<MapVo> mapVoList=storeService.queryCountGroupByProvinceId(tenantId);
-        //查询不同省份的电柜数量
-        return R.ok(electricityCabinetService.queryProvinceCabinetCount(mapVoList));
+
+        if (CollectionUtils.isNotEmpty(mapVoList)){
+            mapVoList.parallelStream().forEach(item ->{
+                if (Objects.nonNull(item.getPid())){
+                    //查询省份下所有门店
+                    List<Long> storeIds=storeService.queryStoreIdsByProvinceId(tenantId,item.getPid());
+                    //获取电柜数量
+                    if (CollectionUtils.isNotEmpty(storeIds)){
+                        Integer electricityCabinetCount=electricityCabinetService.queryCountByStoreIds(tenantId,storeIds);
+                        item.setElectricityCabinetCount(electricityCabinetCount);
+                    }
+                }
+            });
+        }
+        return R.ok(mapVoList);
     }
 
 

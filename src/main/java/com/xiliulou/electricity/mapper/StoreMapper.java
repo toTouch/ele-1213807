@@ -36,4 +36,6 @@ public interface StoreMapper extends BaseMapper<Store> {
 	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("storeIdList") List<Long> storeIdList ,@Param("tenantId")Integer tenantId);
 
     List<MapVo> queryCountGroupByProvinceId(@Param("tenantId") Integer tenantId);
+
+    List<Long> queryStoreIdsByProvinceId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid);
 }

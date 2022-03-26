@@ -163,5 +163,15 @@
         GROUP BY p.id
     </select>
 
+    <select id="queryStoreIdsByProvinceId" resultType="long">
+        select ts.id from t_store ts left join t_city tc on ts.cid=tc.id left join t_province tp on tc.pid=tp.id
+        <where>
+            tp.id = #{pid}
+            <if test="tenantId != null">
+                and ts.tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
 
 </mapper>

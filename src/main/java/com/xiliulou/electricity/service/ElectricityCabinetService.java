@@ -113,10 +113,6 @@ public interface ElectricityCabinetService {
 
     Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery);
 
-    /**
-     * 查询不同省的电柜数量
-     * @param list
-     * @return
-     */
-    List<MapVo> queryProvinceCabinetCount(List<MapVo> list);
+    Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds);
+
 }

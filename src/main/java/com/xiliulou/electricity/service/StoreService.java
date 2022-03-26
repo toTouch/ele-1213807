@@ -60,4 +60,6 @@ public interface StoreService {
 
     List<MapVo> queryCountGroupByProvinceId(Integer tenantId);
 
+    List<Long> queryStoreIdsByProvinceId(Integer tenantId,Integer pid);
+
 }

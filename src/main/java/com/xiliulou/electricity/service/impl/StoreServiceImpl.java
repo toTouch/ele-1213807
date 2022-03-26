@@ -400,6 +400,11 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
+	public List<Long> queryStoreIdsByProvinceId(Integer tenantId, Integer pid) {
+		return storeMapper.queryStoreIdsByProvinceId(tenantId,pid);
+	}
+
+	@Override
 	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
 		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
 	}
@@ -454,6 +459,8 @@ public class StoreServiceImpl implements StoreService {
 	public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
 		return storeMapper.queryCountGroupByProvinceId(tenantId);
 	}
+
+
 
 	public Long getTime(Long time) {
 		Date date1 = new Date(time);

@@ -42,7 +42,7 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
 	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
 
-	List<MapVo> queryProvinceCabinetCount(@Param("query") List<MapVo> list);
+	Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds);
 
 
 }

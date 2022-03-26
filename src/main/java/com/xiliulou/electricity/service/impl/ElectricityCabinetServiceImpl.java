@@ -1887,7 +1887,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public List<MapVo> queryProvinceCabinetCount(List<MapVo> list) {
-        return electricityCabinetMapper.queryProvinceCabinetCount(list);
+    public Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds) {
+        return electricityCabinetMapper.queryCountByStoreIds(tenantId,storeIds);
     }
 }
