@@ -435,9 +435,9 @@ public class DataScreenServiceImpl implements DataScreenService {
                             if (Objects.equals(item.getWeekDate(), itemForDeposit.getWeekDate())) {
                                 BigDecimal turnover = (item.getTurnover().add(itemForDeposit.getTurnover())).divide(bigDecimal, 2, BigDecimal.ROUND_HALF_EVEN);
                                 item.setTurnover(turnover);
-                                return;
                             }
                         });
+                        return;
                     });
                     turnoverAndUserStatisticVo.setWeekTurnOverStatistic(memberCardSumAmount);
                 }).exceptionally(e -> {
