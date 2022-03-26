@@ -148,14 +148,14 @@
 
     <select id="queryCountGroupByProvinceId" resultType="com.xiliulou.electricity.vo.MapVo">
         select
-        count(1) as storeCount,
+        count(case  s.id when s.id then case s.del_flag when 0 then s.id end end) as storeCount,
         p.id as pid,
         p.name
-        from t_store s
-        left join t_city c on s.cid = c.id
-        left join t_province p on c.pid=p.id
+        from t_province p
+        left join t_city c on p.id = c.pid
+        left join t_store s on s.cid=c.id
         <where>
-            s.del_flag = 0
+            p.id = p.id or s.id is null
             <if test="tenantId != null">
                 and s.tenant_id = #{tenantId}
             </if>

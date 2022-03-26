@@ -274,14 +274,16 @@ public class DataScreenServiceImpl implements DataScreenService {
         if (CollectionUtils.isNotEmpty(mapVoList)){
             mapVoList.parallelStream().forEach(item ->{
                 if (Objects.nonNull(item.getPid())){
-                    //查询省份下所有门店
+                    //查询省份下所有门店id
                     List<Long> storeIds=storeService.queryStoreIdsByProvinceId(tenantId,item.getPid());
                     //获取电柜数量
                     if (CollectionUtils.isNotEmpty(storeIds)){
                         Integer electricityCabinetCount=electricityCabinetService.queryCountByStoreIds(tenantId,storeIds);
                         item.setElectricityCabinetCount(electricityCabinetCount);
+                        return;
                     }
                 }
+                item.setElectricityCabinetCount(0);
             });
         }
         return R.ok(mapVoList);
