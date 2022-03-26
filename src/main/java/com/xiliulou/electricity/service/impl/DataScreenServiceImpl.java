@@ -368,7 +368,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
-            log.error("ORDER STATISTICS ERROR!", e);
+            log.error("COUPON STATISTICS ERROR!", e);
         }
         return R.ok(couponStatisticVo);
     }

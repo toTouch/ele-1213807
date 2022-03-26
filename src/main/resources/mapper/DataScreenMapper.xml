@@ -71,9 +71,9 @@
 			<if test="beginTime != null">
 				and create_time &gt;=#{beginTime}
 			</if>
-			<if test="query.statusList!=null and query.statusList!=''">
+			<if test="statusList!=null and statusList!=''">
 				and status in
-				<foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
+				<foreach collection="statusList" item="id" index="index" open="(" close=")" separator=",">
 					#{id}
 				</foreach>
 			</if>
