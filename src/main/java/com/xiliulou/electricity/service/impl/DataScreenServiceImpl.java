@@ -297,7 +297,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         Province province = provinceService.queryByIdFromDB(pid);
         if (Objects.isNull(province)) {
             log.error("QUERY MAP CITY ERROR! province not find error! pid={}", pid);
-            return R.fail("ELECTRICITY.00116", "未查询到该省份");
+            return R.fail("ELECTRICITY.00122", "未查询到该省份");
         }
 
         //获取该省下所有的城市Id，门店数
