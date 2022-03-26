@@ -400,8 +400,13 @@ public class StoreServiceImpl implements StoreService {
 	}
 
 	@Override
-	public List<Long> queryStoreIdsByProvinceId(Integer tenantId, Integer pid) {
+	public List<Long> queryStoreIdsByProvinceIdOrCityId(Integer tenantId, Integer pid,Integer cid) {
 		return storeMapper.queryStoreIdsByProvinceId(tenantId,pid);
+	}
+
+	@Override
+	public List<MapVo> queryCountGroupByCityId(Integer tenantId, Integer pid) {
+		return storeMapper.queryCountGroupByCityId(tenantId,pid);
 	}
 
 	@Override

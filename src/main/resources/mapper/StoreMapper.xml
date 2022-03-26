@@ -166,11 +166,36 @@
     <select id="queryStoreIdsByProvinceId" resultType="long">
         select ts.id from t_store ts left join t_city tc on ts.cid=tc.id left join t_province tp on tc.pid=tp.id
         <where>
-            tp.id = #{pid}
+            <if test="pid != null">
+                and tp.id = #{pid}
+            </if>
+            <if test="cid != null">
+                and tc.id = #{cid}
+            </if>
             <if test="tenantId != null">
                 and ts.tenant_id = #{tenantId}
             </if>
         </where>
+    </select>
+
+    <select id="queryCountGroupByCityId" resultType="com.xiliulou.electricity.vo.MapVo">
+        select
+        count(case  s.id when s.id then case s.del_flag when 0 then s.id end end) as storeCount,
+        c.pid as pid,
+        c.id as cid,
+        c.name
+        from t_city c
+        left join t_store s on s.cid=c.id
+        <where>
+           c.id=c.id
+            <if test="tenantId != null">
+                and s.tenant_id = #{tenantId}
+            </if>
+            <if test="pid != null">
+                and c.pid = #{pid}
+            </if>
+        </where>
+        GROUP BY c.id
     </select>
 
 

@@ -16,4 +16,6 @@ public interface DataScreenService {
 
     R queryMapProvince(Integer tenantId);
 
+    R queryMapCity(Integer tenantId,Integer pid);
+
 }

@@ -71,7 +71,7 @@ public class JsonAdminDataScreenController {
     }
 
     /**
-     * 大屏地图统计
+     * 大屏地图省份统计
      * @param tenantId
      * @return
      */
@@ -89,6 +89,21 @@ public class JsonAdminDataScreenController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         return dataScreenService.queryMapProvince(tenantId);
+    }
+
+    @GetMapping("/admin/dataScreen/mapCity")
+    public R mapCity(@RequestParam(value = "tenantId",required = false) Integer tenantId,@RequestParam(value = "pid") Integer pid){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("dataScreen  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
+            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        return dataScreenService.queryMapCity(tenantId,pid);
     }
 
 }
