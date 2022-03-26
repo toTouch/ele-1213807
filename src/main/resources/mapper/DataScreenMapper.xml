@@ -58,5 +58,29 @@
 		weekDate
 	</select>
 
+	<select id="queryWeekCouponIssue" resultType="com.xiliulou.electricity.vo.WeekCouponStatisticVo">
+		SELECT
+		count(1) as couponCount,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_user_coupon
+		<where>
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+			<if test="query.statusList!=null and query.statusList!=''">
+				and status in
+				<foreach collection="query.statusList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+		GROUP BY
+		weekDate
+	</select>
+
 
 </mapper>

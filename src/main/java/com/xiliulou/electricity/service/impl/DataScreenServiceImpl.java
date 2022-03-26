@@ -9,10 +9,7 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.DataScreenMapper;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.vo.DataBrowsingVo;
-import com.xiliulou.electricity.vo.MapVo;
-import com.xiliulou.electricity.vo.OrderStatisticsVo;
-import com.xiliulou.electricity.vo.WeekOrderStatisticVo;
+import com.xiliulou.electricity.vo.*;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -61,6 +58,8 @@ public class DataScreenServiceImpl implements DataScreenService {
     StoreService storeService;
     @Autowired
     ProvinceService provinceService;
+    @Autowired
+    UserCouponService userCouponService;
 
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
@@ -316,6 +315,62 @@ public class DataScreenServiceImpl implements DataScreenService {
             });
         }
         return R.ok(mapVoList);
+    }
+
+    @Override
+    public R queryCoupon(Integer tenantId) {
+        CouponStatisticVo couponStatisticVo = new CouponStatisticVo();
+
+        //六天前凌晨的时间戳
+        Long beginTime = daysToStamp(-6);
+
+        //优惠券发放数量
+        CompletableFuture<Void> couponIssue = CompletableFuture.runAsync(() -> {
+            UserCouponQuery userCouponQuery = UserCouponQuery.builder().tenantId(tenantId).build();
+            Integer couponIssueCount = (Integer) userCouponService.queryCount(userCouponQuery).getData();
+            couponStatisticVo.setCouponIssueCount(couponIssueCount);
+        }, threadPool).exceptionally(e -> {
+            log.error("COUPON STATISTICS ERROR! query issue coupon Count error!", e);
+            return null;
+        });
+
+        //优惠券使用数量
+        CompletableFuture<Void> couponUse = CompletableFuture.runAsync(() -> {
+            UserCouponQuery userCouponQuery = UserCouponQuery.builder().tenantId(tenantId).statusList(List.of(2)).build();
+            Integer couponUseCount = (Integer) userCouponService.queryCount(userCouponQuery).getData();
+            couponStatisticVo.setCouponUseCount(couponUseCount);
+        }, threadPool).exceptionally(e -> {
+            log.error("COUPON STATISTICS ERROR! query use coupon Count error!", e);
+            return null;
+        });
+
+        //周优惠券发放数量
+        CompletableFuture<Void> weekCouponIssueStatistic = CompletableFuture.runAsync(() -> {
+            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, null);
+            couponStatisticVo.setWeekCouponIssue(weekCouponStatisticVos);
+        }, threadPool).exceptionally(e -> {
+            log.error("COUPON STATISTICS ERROR! query issue coupon Count error!", e);
+            return null;
+        });
+
+        //周优惠券使用数量
+        CompletableFuture<Void> weekCouponUseStatistic = CompletableFuture.runAsync(() -> {
+            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, List.of(2));
+            couponStatisticVo.setWeekCouponUse(weekCouponStatisticVos);
+        }, threadPool).exceptionally(e -> {
+            log.error("COUPON STATISTICS ERROR! query issue coupon Count error!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(couponIssue, couponUse, weekCouponIssueStatistic
+                , weekCouponUseStatistic);
+
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("ORDER STATISTICS ERROR!", e);
+        }
+        return R.ok(couponStatisticVo);
     }
 
     /***

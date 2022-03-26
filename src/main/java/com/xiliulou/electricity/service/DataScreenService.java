@@ -18,4 +18,6 @@ public interface DataScreenService {
 
     R queryMapCity(Integer tenantId,Integer pid);
 
+    R queryCoupon(Integer tenantId);
+
 }
