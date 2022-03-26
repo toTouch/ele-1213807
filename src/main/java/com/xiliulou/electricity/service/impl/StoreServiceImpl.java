@@ -401,7 +401,7 @@ public class StoreServiceImpl implements StoreService {
 
 	@Override
 	public List<Long> queryStoreIdsByProvinceIdOrCityId(Integer tenantId, Integer pid,Integer cid) {
-		return storeMapper.queryStoreIdsByProvinceId(tenantId,pid);
+		return storeMapper.queryStoreIdsByProvinceId(tenantId,pid,cid);
 	}
 
 	@Override

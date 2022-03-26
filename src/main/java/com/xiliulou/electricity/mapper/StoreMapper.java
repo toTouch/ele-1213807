@@ -37,7 +37,7 @@ public interface StoreMapper extends BaseMapper<Store> {
 
     List<MapVo> queryCountGroupByProvinceId(@Param("tenantId") Integer tenantId);
 
-    List<Long> queryStoreIdsByProvinceId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid);
+    List<Long> queryStoreIdsByProvinceId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid,@Param("cid") Integer cid);
 
     List<MapVo> queryCountGroupByCityId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid);
 }
