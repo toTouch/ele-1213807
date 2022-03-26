@@ -131,4 +131,19 @@ public class JsonAdminDataScreenController {
         return dataScreenService.queryCoupon(tenantId);
     }
 
+    @GetMapping("/admin/dataScreen/turnoverAndUser")
+    public R TurnoverAndUserStatistic(@RequestParam(value = "tenantId",required = false) Integer tenantId){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("dataScreen  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
+            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        return dataScreenService.queryTurnoverAndUser(tenantId);
+    }
+
 }

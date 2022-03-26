@@ -6,6 +6,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.WeekCouponStatisticVo;
 import com.xiliulou.electricity.vo.WeekOrderStatisticVo;
+import com.xiliulou.electricity.vo.WeekTurnoverStatisticVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
@@ -28,6 +29,13 @@ public interface DataScreenMapper extends BaseMapper<ElectricityCabinet> {
     List<WeekOrderStatisticVo> queryWeekRentBatteryStatistic(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime);
 
     List<WeekCouponStatisticVo> queryWeekCouponIssue(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime,@Param("statusList") List<Integer> statusList);
+
+    List<WeekTurnoverStatisticVo> queryWeekMemberCardTurnoverStatistic(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime);
+
+    List<WeekTurnoverStatisticVo> queryWeekDepositTurnoverStatistic(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime);
+
+    List<WeekOrderStatisticVo> queryWeekUserStatistic(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime);
+
 
 
 }

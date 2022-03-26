@@ -391,6 +391,73 @@ public class DataScreenServiceImpl implements DataScreenService {
         return R.ok(couponStatisticVo);
     }
 
+    @Override
+    public R queryTurnoverAndUser(Integer tenantId) {
+
+        //六天前凌晨的时间戳
+        Long beginTime = daysToStamp(-6);
+
+        BigDecimal bigDecimal = new BigDecimal(10000);
+
+        TurnoverAndUserStatisticVo turnoverAndUserStatisticVo = new TurnoverAndUserStatisticVo();
+
+        //统计一周套餐总营业额
+        CompletableFuture<List<WeekTurnoverStatisticVo>> memberCardTurnOver = CompletableFuture.supplyAsync(() -> {
+            return dataScreenMapper.queryWeekMemberCardTurnoverStatistic(tenantId, beginTime);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query MemberCardTurnOver error!", e);
+            return null;
+        });
+
+        //统计一周押金总营业额
+        CompletableFuture<List<WeekTurnoverStatisticVo>> depositTurnOver = CompletableFuture.supplyAsync(() -> {
+            return dataScreenMapper.queryWeekDepositTurnoverStatistic(tenantId, beginTime);
+        }, threadPool).exceptionally(e -> {
+            log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
+            return null;
+        });
+
+
+        //统计一周用户数据
+        CompletableFuture<Void> userStatistic = CompletableFuture.runAsync(() -> {
+            List<WeekOrderStatisticVo> userList = dataScreenMapper.queryWeekUserStatistic(tenantId, beginTime);
+            turnoverAndUserStatisticVo.setWeekUserStatistic(userList);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query BatteryTurnOver error!", e);
+            return null;
+        });
+
+        //计算总营业额
+        CompletableFuture<Void> payAmountSumFuture = memberCardTurnOver
+                .thenAcceptBoth(depositTurnOver, (memberCardSumAmount, depositSumAmount) -> {
+                    memberCardSumAmount.parallelStream().forEach(item -> {
+                        depositSumAmount.parallelStream().forEach(itemForDeposit -> {
+                            if (Objects.equals(item.getWeekDate(), itemForDeposit.getWeekDate())) {
+                                BigDecimal turnover = (item.getTurnover().add(itemForDeposit.getTurnover())).divide(bigDecimal, 2, BigDecimal.ROUND_HALF_EVEN);
+                                item.setTurnover(turnover);
+                            }
+                        });
+                    });
+                    turnoverAndUserStatisticVo.setWeekTurnOverStatistic(memberCardSumAmount);
+                }).exceptionally(e -> {
+                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
+                    return null;
+                });
+
+
+        //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(userStatistic
+                , payAmountSumFuture);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(turnoverAndUserStatisticVo);
+    }
+
+
     /***
      * 传入一个天数返回天数的时间戳
      */

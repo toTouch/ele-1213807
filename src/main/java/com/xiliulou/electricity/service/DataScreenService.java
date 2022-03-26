@@ -20,4 +20,6 @@ public interface DataScreenService {
 
     R queryCoupon(Integer tenantId);
 
+    R queryTurnoverAndUser(Integer tenantId);
+
 }
