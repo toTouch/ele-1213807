@@ -18,6 +18,16 @@ public class DataBrowsingVo {
     private BigDecimal sumTurnover;
 
     /**
+     * 月卡营业额
+     */
+    private BigDecimal MemberCardTurnover;
+
+    /**
+     * 缴纳押金营业额
+     */
+    private BigDecimal DepositTurnover;
+
+    /**
      * 总订单数
      */
     private Integer sumOrderCount;

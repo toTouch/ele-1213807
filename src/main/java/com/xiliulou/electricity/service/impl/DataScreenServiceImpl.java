@@ -206,6 +206,24 @@ public class DataScreenServiceImpl implements DataScreenService {
             return null;
         });
 
+        //购买月卡
+        CompletableFuture<Void> payMemberCard = CompletableFuture.runAsync(() -> {
+            BigDecimal memberCardTurnover=electricityMemberCardOrderService.queryTurnOver(tenantId);
+            dataBrowsingVo.setMemberCardTurnover(memberCardTurnover);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //缴纳押金
+        CompletableFuture<Void> payDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal depositTurnover=eleDepositOrderService.queryTurnOver(tenantId);
+            dataBrowsingVo.setDepositTurnover(depositTurnover);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
         //换电柜总数统计
         CompletableFuture<Void> electricityCabinetCount = CompletableFuture.runAsync(() -> {
             ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().tenantId(tenantId).build();
@@ -258,7 +276,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(userCount, tenantCount, electricityCabinetCount, batteryCount, electricityOrderSuccessRate
-                , payAmountSumFuture, orderSumFuture);
+                , payAmountSumFuture, orderSumFuture,payMemberCard,payDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
