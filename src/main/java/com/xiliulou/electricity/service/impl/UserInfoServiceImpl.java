@@ -209,29 +209,37 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-        if (Objects.isNull(electricityMemberCard)){
-            return R.ok();
+        Long memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime();
+        if (!Objects.equals(franchiseeUserInfo.getCardType(),FranchiseeUserInfo.TYPE_COUNT)) {
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+            if (Objects.isNull(electricityMemberCard)) {
+                return R.ok();
+            }
+            if ((Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
+                    System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime()) ||
+                    (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
+                            franchiseeUserInfo.getRemainingNumber() > 0 && System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime()) ||
+                    (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
+                            franchiseeUserInfo.getRemainingNumber() == 0) ||
+                    Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())) {
+                return R.ok();
+            }
+
+            if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+            }
+            if (Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() < 0) {
+                memberCardExpireTime = System.currentTimeMillis();
+            }
+        }else {
+            if (Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+            || System.currentTimeMillis()>=franchiseeUserInfo.getMemberCardExpireTime()|| franchiseeUserInfo.getRemainingNumber()==0){
+                return R.ok();
+            }
         }
 
-        if ((Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
-                System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime()) ||
-                (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
-                        franchiseeUserInfo.getRemainingNumber() > 0 && System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime()) ||
-                (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
-                        franchiseeUserInfo.getRemainingNumber() == 0) ||
-                Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())) {
-            return R.ok();
-        }
 
-        if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-            franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
-        }
 
-        Long memberCardExpireTime=franchiseeUserInfo.getMemberCardExpireTime();
-        if (Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber()<0){
-            memberCardExpireTime=System.currentTimeMillis();
-        }
 
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
         ownMemberCardInfoVo.setMemberCardExpireTime(memberCardExpireTime);

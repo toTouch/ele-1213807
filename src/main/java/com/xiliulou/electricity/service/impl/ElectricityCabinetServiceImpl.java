@@ -966,15 +966,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         }
 
-        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
         //套餐剩余天数
         long cardDay = 0;
-        if (Objects.nonNull(electricityMemberCard)) {
-            if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0 && franchiseeUserInfo.getMemberCardExpireTime() > now) {
+        if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+            if (Objects.nonNull(electricityMemberCard)) {
+                if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                    if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0 && franchiseeUserInfo.getMemberCardExpireTime() > now) {
+                        cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+                    }
+                } else if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
                     cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
                 }
-            } else if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
+            }
+        } else {
+            if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0 && franchiseeUserInfo.getMemberCardExpireTime() > now) {
                 cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
             }
         }
