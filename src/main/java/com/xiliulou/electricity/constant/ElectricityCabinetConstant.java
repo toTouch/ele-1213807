@@ -155,4 +155,6 @@ public interface ElectricityCabinetConstant {
     String CACHE_ELE_OTHER_CONFIG = "ele_other_config:";
 
     String CACHE_FEISHU_ACCESS_TOKEN = "cache_feishu_access_token";
+
+    String CLIENT_ID="xiliulou-ele:";
 }

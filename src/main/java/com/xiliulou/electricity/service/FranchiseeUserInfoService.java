@@ -41,4 +41,6 @@ public interface FranchiseeUserInfoService {
 	void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
 
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+
+	Integer deleteByUserInfoId(Long userInfoId);
 }

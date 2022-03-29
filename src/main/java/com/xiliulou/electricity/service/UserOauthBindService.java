@@ -49,4 +49,8 @@ public interface UserOauthBindService {
     Pair<Boolean, Object> updateOauthBind(OauthBindQuery oauthBindQuery);
 
      UserOauthBind queryUserOauthBySysId(Long uid,Integer tenantId);
+
+    List<UserOauthBind> queryListByUid(Long uid);
+
+    Boolean deleteById(Long id);
 }

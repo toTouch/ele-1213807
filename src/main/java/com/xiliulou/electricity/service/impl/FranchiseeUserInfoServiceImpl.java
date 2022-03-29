@@ -94,5 +94,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         franchiseeUserInfoMapper.updateOrderByUserInfoId(franchiseeUserInfo);
     }
 
-
+    @Override
+    public Integer deleteByUserInfoId(Long userInfoId) {
+        return franchiseeUserInfoMapper.delete(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getUserInfoId,userInfoId));
+    }
 }

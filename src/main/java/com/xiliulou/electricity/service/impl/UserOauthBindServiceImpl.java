@@ -127,4 +127,15 @@ public class UserOauthBindServiceImpl implements UserOauthBindService {
 
         return   userOauthBindMapper.queryUserOauthBySysId(uid,tenantId);
     }
+
+    @Override
+    public List<UserOauthBind> queryListByUid(Long uid) {
+        return userOauthBindMapper.selectList(new LambdaQueryWrapper<UserOauthBind>().eq(UserOauthBind::getUid, uid));
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Boolean deleteById(Long id) {
+        return this.userOauthBindMapper.deleteById(id) > 0;
+    }
 }
