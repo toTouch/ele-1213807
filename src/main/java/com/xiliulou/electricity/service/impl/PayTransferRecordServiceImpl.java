@@ -65,6 +65,7 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 			ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(payTransferRecord.getTenantId());
 			if (ObjectUtil.isEmpty(electricityPayParams)){
 				log.error("pay query not payParams tenantId:{}",payTransferRecord.getTenantId());
+				System.out.println();
 				return;
 			}
 			PayTransferQuery payTransferQuery = PayTransferQuery.builder()
