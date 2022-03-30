@@ -441,6 +441,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 				.updateTime(System.currentTimeMillis())
 				.uid(withdrawRecord.getUid())
 				.transactionOrderNo(generateTransactionId(withdrawRecord.getId(), withdrawRecord.getUid()))
+				.tenantId(withdrawRecord.getTenantId())
 				.build();
 		payTransferRecordService.insert(payTransferRecord);
 

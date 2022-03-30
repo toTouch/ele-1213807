@@ -6,7 +6,7 @@
 
 	<select id="handlerTransferPayQuery" resultType="com.xiliulou.electricity.entity.PayTransferRecord">
        select id,order_id,channel_order_no,channel_mch_id,channel_mch_app_id,create_time,transaction_order_no,
-       uid,actual_amount,commission_amount,request_amount,enc_bank_no,enc_true_name,bank_no,status
+       uid,actual_amount,commission_amount,request_amount,enc_bank_no,enc_true_name,bank_no,status,tenant_id
        from t_pay_transfer_record
        where status=1;
 	</select>

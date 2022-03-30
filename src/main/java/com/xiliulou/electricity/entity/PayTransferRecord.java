@@ -64,6 +64,8 @@ public class PayTransferRecord {
 	private String description;
 	//转账状态
 	private Integer status;
+	//租户id
+	private Integer tenantId;
 
 
 	public static final String TRANSFER_RESULT_FAIL = "FAIL";

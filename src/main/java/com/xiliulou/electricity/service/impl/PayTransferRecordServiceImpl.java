@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.electricity.config.WechatConfig;
+import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.mapper.PayTransferRecordMapper;
+import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.service.PayTransferRecordService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.utils.BigDecimalUtil;
@@ -16,6 +18,7 @@ import org.springframework.util.StringUtils;
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author: Miss.Li
@@ -37,6 +40,8 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 
 	@Autowired
 	WithdrawRecordService withdrawRecordService;
+	@Autowired
+	ElectricityPayParamsService electricityPayParamsService;
 
 	@Override
 	public void insert(PayTransferRecord payTransferRecord) {
@@ -57,17 +62,21 @@ public class PayTransferRecordServiceImpl implements PayTransferRecordService {
 		}
 		log.info("-----payTransferRecordList>>>>>{}", payTransferRecordList);
 		for (PayTransferRecord payTransferRecord : payTransferRecordList) {
+			ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(payTransferRecord.getTenantId());
+			if (ObjectUtil.isEmpty(electricityPayParams)){
+				log.error("pay query not payParams tenantId:{}",payTransferRecord.getTenantId());
+				return;
+			}
 			PayTransferQuery payTransferQuery = PayTransferQuery.builder()
-					.mchId(wechatConfig.getMchid())
+					.mchId(electricityPayParams.getWechatMerchantId())
 					.partnerOrderNo(payTransferRecord.getOrderId())
-					.appId(wechatConfig.getAppId())
-					.patternedKey(wechatConfig.getPaternerKey())
-					.apiName(wechatConfig.getApiName()).build();
+					.appId(electricityPayParams.getMerchantMinProAppId())
+					.patternedKey(electricityPayParams.getPaternerKey())
+					.apiName(electricityPayParams.getApiName()).build();
 			Map<String, String> resultMap = queryTransferResultService.queryBankTransferResultService(payTransferQuery);
 			log.info("-----resultMap>>>>>{}", resultMap);
 			handlerTransferResultMap(resultMap, payTransferRecord);
 		}
-
 	}
 
 	private void handlerTransferResultMap(Map<String, String> resultMap, PayTransferRecord payTransferRecord) {
