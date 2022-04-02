@@ -93,6 +93,11 @@ public class ElectricityBattery {
     //所属用户id
     private Long uid;
 
+    /**
+     * 物联网卡号
+     */
+    private String iotCardMember;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
