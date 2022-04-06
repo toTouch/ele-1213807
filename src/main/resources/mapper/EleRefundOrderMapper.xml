@@ -65,7 +65,7 @@
         select sum(pay_amount) from t_ele_refund_order
         where status=2
         <if test="query.tenantId != null">
-            and tero.tenant_id = #{query.tenantId}
+            and tero.tenant_id = #{tenantId}
         </if>
     </select>
 
