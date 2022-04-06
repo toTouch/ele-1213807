@@ -148,7 +148,6 @@ public class DataScreenServiceImpl implements DataScreenService {
         //统计押金和套餐总营业额
         CompletableFuture<BigDecimal> depositAndMemberCardTurnOver = CompletableFuture.supplyAsync(() -> {
             BigDecimal value=queryTurnOverForMemberCardAndDeposit(tenantId);
-            System.out.println("大屏押金和套餐总营业额统计=================================="+value);
             return value;
         }, threadPool).exceptionally(e -> {
             log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
@@ -251,12 +250,7 @@ public class DataScreenServiceImpl implements DataScreenService {
         //计算总营业额
         CompletableFuture<Void> payAmountSumFuture = depositAndMemberCardTurnOver
                 .thenAcceptBoth(refundTurnOver, (memberCardAndDepositSumAmount, depositSumAmount) -> {
-
-                    System.out.println("退押金金额====================="+depositSumAmount);
                     BigDecimal turnover = memberCardAndDepositSumAmount.subtract(depositSumAmount);
-
-                    System.out.println("最终减去退押金金额============================"+turnover);
-
                     dataBrowsingVo.setSumTurnover(turnover);
                 }).exceptionally(e -> {
                     log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
@@ -464,8 +458,11 @@ public class DataScreenServiceImpl implements DataScreenService {
         //统计押金营业额
         BigDecimal depositTurnOver = eleDepositOrderService.queryTurnOver(tenantId);
 
-        return memberCardTurnOver.add(depositTurnOver);
-
+        if (Objects.isNull(memberCardTurnOver)){
+            return depositTurnOver;
+        }else {
+            return memberCardTurnOver.add(depositTurnOver);
+        }
     }
 
     private List<WeekTurnoverStatisticVo> queryWeekMemberCardAndDepositTurnOver(Integer tenantId, Long beginTime) {
