@@ -34,6 +34,8 @@ public interface DataScreenMapper extends BaseMapper<ElectricityCabinet> {
 
     List<WeekTurnoverStatisticVo> queryWeekDepositTurnoverStatistic(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime);
 
+    List<WeekTurnoverStatisticVo> queryWeekRefundTurnOverStatistic(@Param("tenantId") Integer tenantId,@Param("beginTime") Long beginTime);
+
     List<WeekOrderStatisticVo> queryWeekUserStatistic(@Param("tenantId") Integer tenantId, @Param("beginTime") Long beginTime);
 
 

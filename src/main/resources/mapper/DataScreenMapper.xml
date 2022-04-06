@@ -116,6 +116,23 @@
 		weekDate
 	</select>
 
+	<select id="queryWeekRefundTurnOverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
+		SELECT
+		count(1) as turnover,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_ele_refund_order
+		where status=1
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		<if test="beginTime != null">
+			and create_time &gt;=#{beginTime}
+		</if>
+		GROUP BY
+		weekDate
+	</select>
+
 	<select id="queryWeekUserStatistic" resultType="com.xiliulou.electricity.vo.WeekOrderStatisticVo">
 		SELECT
 		count(1) as weekCount,
