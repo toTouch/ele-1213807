@@ -667,6 +667,7 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo1=userInfoService.queryByUid(uid);
         franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
         //删除用户
+        deleteInnerUser(uid);
         userInfoService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
