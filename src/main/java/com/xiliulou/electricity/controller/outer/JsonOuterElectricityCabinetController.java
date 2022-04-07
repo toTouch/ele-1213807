@@ -165,7 +165,7 @@ public class JsonOuterElectricityCabinetController {
      *
      * @return
      */
-    @PostMapping(value = "/outer/batteryReport")
+    @PostMapping(value = "/outer/batteryReportForGps")
     public R batteryReportForGps(@RequestBody BatteryReportQuery batteryReportQuery) {
         return electricityCabinetService.batteryReport(batteryReportQuery);
     }
