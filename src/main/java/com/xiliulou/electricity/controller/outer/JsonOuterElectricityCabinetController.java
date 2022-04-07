@@ -160,6 +160,16 @@ public class JsonOuterElectricityCabinetController {
         return electricityCabinetService.checkBattery(productKey,deviceName,batterySn,isParseBattery);
     }
 
+    /**
+     * 电池电量上报GPS倒序
+     *
+     * @return
+     */
+    @PostMapping(value = "/outer/batteryReport")
+    public R batteryReportForGps(@RequestBody BatteryReportQuery batteryReportQuery) {
+        return electricityCabinetService.batteryReport(batteryReportQuery);
+    }
+
 
 
 }
