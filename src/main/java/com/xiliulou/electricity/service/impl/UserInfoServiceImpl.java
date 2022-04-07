@@ -649,5 +649,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 		return R.ok();
 	}
 
+	@Override
+	public Integer deleteByUid(Long uid) {
+		return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+	}
+
 
 }

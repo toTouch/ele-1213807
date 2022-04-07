@@ -80,4 +80,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
 	R userMove(UserMoveHistory userMoveHistory);
 
+	Integer deleteByUid(Long uid);
+
 }
