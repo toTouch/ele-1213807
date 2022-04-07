@@ -28,6 +28,11 @@ public class DataBrowsingVo {
     private BigDecimal DepositTurnover;
 
     /**
+     * 退押金总数
+     */
+    private BigDecimal refundDepositTurnOver;
+
+    /**
      * 总订单数
      */
     private Integer sumOrderCount;

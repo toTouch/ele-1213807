@@ -147,8 +147,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //统计押金和套餐总营业额
         CompletableFuture<BigDecimal> depositAndMemberCardTurnOver = CompletableFuture.supplyAsync(() -> {
-            BigDecimal value=queryTurnOverForMemberCardAndDeposit(tenantId);
-            return value;
+            return queryTurnOverForMemberCardAndDeposit(tenantId);
         }, threadPool).exceptionally(e -> {
             log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
             return null;
@@ -217,6 +216,15 @@ public class DataScreenServiceImpl implements DataScreenService {
             return null;
         });
 
+        //退押金
+        CompletableFuture<Void> refundDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal refundDepositTurnover = eleRefundOrderService.queryTurnOver(tenantId);
+            dataBrowsingVo.setRefundDepositTurnOver(refundDepositTurnover);
+        }, threadPool).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
         //换电柜总数统计
         CompletableFuture<Void> electricityCabinetCount = CompletableFuture.runAsync(() -> {
             ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().tenantId(tenantId).build();
@@ -269,7 +277,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(userCount, tenantCount, electricityCabinetCount, batteryCount, electricityOrderSuccessRate
-                , payAmountSumFuture, orderSumFuture, payMemberCard, payDeposit);
+                , payAmountSumFuture, orderSumFuture, payMemberCard, payDeposit,refundDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
