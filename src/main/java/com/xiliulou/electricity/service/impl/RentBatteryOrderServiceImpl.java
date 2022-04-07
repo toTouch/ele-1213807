@@ -511,7 +511,10 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             //是否开启电池检测
             ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
             if(Objects.equals(electricityConfig.getIsBatteryReview(),ElectricityConfig.BATTERY_REVIEW)){
+                dataMap.put("is_checkBatterySn",true);
                 dataMap.put("user_binding_battery_sn",franchiseeUserInfo.getNowElectricityBatterySn());
+            }else {
+                dataMap.put("is_checkBatterySn",false);
             }
 
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
