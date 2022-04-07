@@ -631,7 +631,6 @@ public class UserServiceImpl implements UserService {
             if (deleteById(uid)) {
                 redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
                 redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
-
             }
         }
     }
@@ -664,10 +663,10 @@ public class UserServiceImpl implements UserService {
             delUserOauthBindAndClearToken(userOauthBinds);
         }
         //删除套餐
-        UserInfo userInfo1=userInfoService.queryByUid(uid);
+        UserInfo userInfo1 = userInfoService.queryByUid(uid);
         franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
         //删除用户
-        deleteInnerUser(uid);
+        deleteWxProUser(uid,userInfo1.getTenantId());
         userInfoService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
@@ -685,6 +684,16 @@ public class UserServiceImpl implements UserService {
             userOauthBindService.deleteById(e.getId());
         });
 
+    }
+
+    private void deleteWxProUser(Long uid, Integer tenantId) {
+        User user = queryByUidFromCache(uid);
+        if (Objects.nonNull(user)) {
+            if (deleteById(uid)) {
+                redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
+                redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType());
+            }
+        }
     }
 
 }
