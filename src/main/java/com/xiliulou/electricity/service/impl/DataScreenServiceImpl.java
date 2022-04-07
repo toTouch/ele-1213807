@@ -181,7 +181,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //用户数量统计
         CompletableFuture<Void> userCount = CompletableFuture.runAsync(() -> {
-            UserInfoQuery userInfoQuery = UserInfoQuery.builder().tenantId(tenantId).serviceStatus(1).build();
+            UserInfoQuery userInfoQuery = UserInfoQuery.builder().tenantId(tenantId).build();
             Integer sumUserCount = userInfoService.querySumCount(userInfoQuery);
             dataBrowsingVo.setSumUserCount(sumUserCount);
         }, threadPool).exceptionally(e -> {
