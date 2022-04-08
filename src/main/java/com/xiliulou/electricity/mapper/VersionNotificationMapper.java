@@ -15,7 +15,7 @@ import java.util.List;
  */
 public interface VersionNotificationMapper extends BaseMapper<VersionNotification> {
 
-    List<VersionNotification> queryVersionPage(@Param("offset")Long offset,Long size);
+    List<VersionNotification> queryVersionPage(@Param("offset")Long offset,@Param("size") Long size);
 
     VersionNotification queryCreateTimeMaxTenantNotification();
 
