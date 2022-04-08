@@ -165,17 +165,16 @@
 
     <select id="queryStoreIdsByProvinceId" resultType="long">
         select ts.id from t_store ts left join t_city tc on ts.cid=tc.id left join t_province tp on tc.pid=tp.id
-        <where>
-            <if test="pid != null">
-                and tp.id = #{pid}
-            </if>
-            <if test="cid != null">
-                and tc.id = #{cid}
-            </if>
-            <if test="tenantId != null">
-                and ts.tenant_id = #{tenantId}
-            </if>
-        </where>
+        where ts.del_flag=0
+        <if test="pid != null">
+            and tp.id = #{pid}
+        </if>
+        <if test="cid != null">
+            and tc.id = #{cid}
+        </if>
+        <if test="tenantId != null">
+            and ts.tenant_id = #{tenantId}
+        </if>
     </select>
 
     <select id="queryCountGroupByCityId" resultType="com.xiliulou.electricity.vo.MapVo">
