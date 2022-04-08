@@ -5,6 +5,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Province;
+import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.DataScreenMapper;
 import com.xiliulou.electricity.query.*;
@@ -363,9 +364,9 @@ public class DataScreenServiceImpl implements DataScreenService {
             return null;
         });
 
-        //周优惠券发放数量
+        //周优惠券未使用数量
         CompletableFuture<Void> weekCouponIssueStatistic = CompletableFuture.runAsync(() -> {
-            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, null);
+            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, List.of(UserCoupon.STATUS_UNUSED,UserCoupon.STATUS_EXPIRED));
             couponStatisticVo.setWeekCouponIssue(weekCouponStatisticVos);
         }, threadPool).exceptionally(e -> {
             log.error("COUPON STATISTICS ERROR! query issue coupon Count error!", e);
@@ -374,7 +375,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //周优惠券使用数量
         CompletableFuture<Void> weekCouponUseStatistic = CompletableFuture.runAsync(() -> {
-            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, List.of(2));
+            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, List.of(UserCoupon.STATUS_USED));
             couponStatisticVo.setWeekCouponUse(weekCouponStatisticVos);
         }, threadPool).exceptionally(e -> {
             log.error("COUPON STATISTICS ERROR! query issue coupon Count error!", e);
