@@ -66,6 +66,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         versionNotification.setId(versionNotificationQuery.getId());
         versionNotification.setVersion(versionNotificationQuery.getVersion());
         versionNotification.setContent(versionNotificationQuery.getContent());
+        versionNotification.setUpdateTime(System.currentTimeMillis() );
         update(versionNotification);
         return Triple.of(true, null, null);
     }
@@ -79,6 +80,8 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         VersionNotification versionNotification = new VersionNotification();
         versionNotification.setVersion(versionNotificationQuery.getVersion());
         versionNotification.setContent(versionNotificationQuery.getContent());
+        versionNotification.setCreateTime(System.currentTimeMillis());
+        versionNotification.setUpdateTime(System.currentTimeMillis());
         insert(versionNotification);
         return Triple.of(true,null,null);
     }
@@ -88,12 +91,17 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     }
 
     @Override
-    public List<VersionNotification> queryNotificationList() {
-        return this.versionNotificationMapper.selectList(null);
+    public List<VersionNotification> queryNotificationList(Long offset,Long size) {
+        return this.versionNotificationMapper.queryVersionPage(offset,size);
     }
 
     @Override
     public R queryNotificationCount() {
         return R.ok(this.versionNotificationMapper.selectCount(null));
+    }
+
+    @Override
+    public VersionNotification queryCreateTimeMaxTenantNotification() {
+        return this.versionNotificationMapper.queryCreateTimeMaxTenantNotification();
     }
 }

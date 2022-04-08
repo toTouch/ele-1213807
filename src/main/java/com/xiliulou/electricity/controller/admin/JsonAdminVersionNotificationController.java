@@ -52,8 +52,9 @@ public class JsonAdminVersionNotificationController extends BaseController {
      * @return
      */
     @GetMapping("/admin/notification/list")
-    public R queryNotificationList(){
-        return R.ok(notificationService.queryNotificationList());
+    public R queryNotificationList(@RequestParam(value = "offset",required = false)Long offset,
+                                   @RequestParam(value = "size",required = false)Long size){
+        return R.ok(notificationService.queryNotificationList(offset,size));
     }
 
     /**
@@ -63,5 +64,13 @@ public class JsonAdminVersionNotificationController extends BaseController {
     @GetMapping("/admin/notification/queryCount")
     public R queryNotificationCount(){
         return notificationService.queryNotificationCount();
+    }
+
+    /**
+     * 获取最新的版本信息
+     */
+    @GetMapping("/admin/notification/latest")
+    public R queryVersionLatest(){
+        return R.ok(notificationService.queryCreateTimeMaxTenantNotification());
     }
 }

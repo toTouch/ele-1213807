@@ -3,5 +3,21 @@
 <mapper namespace="com.xiliulou.electricity.mapper.VersionNotificationMapper">
 
 
+    <select id="queryVersionPage" resultType="com.xiliulou.electricity.entity.VersionNotification">
+        select
+        id,
+        version,
+        content
+        from
+          t_version_notification
+        order by create_time desc
+        <if test="offset !=null and size !=null">
+            limit #{offset},#{size}
+        </if>
+    </select>
+
+    <select id="queryCreateTimeMaxTenantNotification" resultType="com.xiliulou.electricity.entity.VersionNotification">
+         select id, version, content,create_time,update_time from t_version_notification order by create_time desc limit 1
+    </select>
 
 </mapper>

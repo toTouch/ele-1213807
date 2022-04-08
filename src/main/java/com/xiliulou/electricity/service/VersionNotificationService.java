@@ -44,9 +44,11 @@ public interface VersionNotificationService {
      * 版本通知列表查询
      * @return
      */
-    List<VersionNotification> queryNotificationList();
+    List<VersionNotification> queryNotificationList(Long offset,Long size);
 
     R queryNotificationCount();
+
+    VersionNotification queryCreateTimeMaxTenantNotification();
 
 
 
