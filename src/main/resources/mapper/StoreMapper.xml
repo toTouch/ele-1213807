@@ -192,10 +192,6 @@
         from t_city c
         left join t_store s on s.cid=c.id
         <where>
-           c.id=c.id
-            <if test="tenantId != null">
-                and s.tenant_id = #{tenantId}
-            </if>
             <if test="pid != null">
                 and c.pid = #{pid}
             </if>
