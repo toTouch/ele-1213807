@@ -16,10 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -327,9 +324,11 @@ public class DataScreenServiceImpl implements DataScreenService {
                 if (Objects.nonNull(item.getCid())) {
                     List<Long> storeIds = storeService.queryStoreIdsByProvinceIdOrCityId(tenantId, item.getPid(), item.getCid());
                     //根据门店id获取电柜数量
-                    Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, storeIds);
-                    item.setElectricityCabinetCount(electricityCabinetCount);
-                    return;
+                    if (CollectionUtils.isNotEmpty(storeIds)) {
+                        Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, storeIds);
+                        item.setElectricityCabinetCount(electricityCabinetCount);
+                        return;
+                    }
                 }
                 item.setElectricityCabinetCount(0);
             });
