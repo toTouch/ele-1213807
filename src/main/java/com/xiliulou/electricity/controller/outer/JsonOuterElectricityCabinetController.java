@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.outer;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.BatteryReportQuery;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
@@ -168,6 +169,19 @@ public class JsonOuterElectricityCabinetController {
     @PostMapping(value = "/outer/batteryReportForGps")
     public R batteryReportForGps(@RequestBody BatteryReportQuery batteryReportQuery) {
         return electricityCabinetService.batteryReport(batteryReportQuery);
+    }
+
+    /**
+     * 三元组前置检测
+     * @param apiRequestQuery
+     * @return
+     */
+    @PostMapping("/outer/checkDevice")
+    public R queryDeviceIsUnActiveFStatus(@RequestBody ApiRequestQuery apiRequestQuery){
+
+
+
+        return null;
     }
 
 
