@@ -323,16 +323,27 @@ public class DataScreenServiceImpl implements DataScreenService {
         List<MapVo> mapVoList = storeService.queryCountGroupByCityId(tenantId, pid);
 
         if (CollectionUtils.isNotEmpty(mapVoList)) {
-            mapVoList.parallelStream().forEach(item -> {
-                if (Objects.nonNull(item.getCid())) {
-                    List<Long> storeIds = storeService.queryStoreIdsByProvinceIdOrCityId(tenantId, item.getPid(), item.getCid());
+//            mapVoList.parallelStream().forEach(item -> {
+//                if (Objects.nonNull(item.getCid())) {
+//                    List<Long> storeIds = storeService.queryStoreIdsByProvinceIdOrCityId(tenantId, item.getPid(), item.getCid());
+//                    //根据门店id获取电柜数量
+//                    Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, storeIds);
+//                    item.setElectricityCabinetCount(electricityCabinetCount);
+//                }else {
+//                    item.setElectricityCabinetCount(0);
+//                }
+//            });
+
+            for (MapVo mapVo:mapVoList){
+                if (Objects.nonNull(mapVo.getCid())){
+                    List<Long> storeIds = storeService.queryStoreIdsByProvinceIdOrCityId(tenantId, mapVo.getPid(), mapVo.getCid());
                     //根据门店id获取电柜数量
                     Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, storeIds);
-                    item.setElectricityCabinetCount(electricityCabinetCount);
-                }else {
-                    item.setElectricityCabinetCount(0);
+                    mapVo.setElectricityCabinetCount(electricityCabinetCount);
+                } else {
+                    mapVo.setElectricityCabinetCount(0);
                 }
-            });
+            }
         }
         return R.ok(mapVoList);
     }
