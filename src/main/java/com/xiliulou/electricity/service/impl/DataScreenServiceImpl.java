@@ -278,7 +278,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(userCount, tenantCount, electricityCabinetCount, batteryCount, electricityOrderSuccessRate
-                , payAmountSumFuture, orderSumFuture, payMemberCard, payDeposit,refundDeposit);
+                , payAmountSumFuture, orderSumFuture, payMemberCard, payDeposit, refundDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -334,15 +334,16 @@ public class DataScreenServiceImpl implements DataScreenService {
 //                }
 //            });
 
-            for (MapVo mapVo:mapVoList){
-                if (Objects.nonNull(mapVo.getCid())){
+            for (MapVo mapVo : mapVoList) {
+                if (Objects.nonNull(mapVo.getCid())) {
                     List<Long> storeIds = storeService.queryStoreIdsByProvinceIdOrCityId(tenantId, mapVo.getPid(), mapVo.getCid());
                     //根据门店id获取电柜数量
                     Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, storeIds);
                     mapVo.setElectricityCabinetCount(electricityCabinetCount);
-                } else {
-                    mapVo.setElectricityCabinetCount(0);
+                    continue;
                 }
+                mapVo.setElectricityCabinetCount(0);
+
             }
         }
         return R.ok(mapVoList);
@@ -377,7 +378,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //周优惠券未使用数量
         CompletableFuture<Void> weekCouponIssueStatistic = CompletableFuture.runAsync(() -> {
-            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, List.of(UserCoupon.STATUS_UNUSED,UserCoupon.STATUS_EXPIRED));
+            List<WeekCouponStatisticVo> weekCouponStatisticVos = dataScreenMapper.queryWeekCouponIssue(tenantId, beginTime, List.of(UserCoupon.STATUS_UNUSED, UserCoupon.STATUS_EXPIRED));
             couponStatisticVo.setWeekCouponIssue(weekCouponStatisticVos);
         }, threadPool).exceptionally(e -> {
             log.error("COUPON STATISTICS ERROR! query issue coupon Count error!", e);
@@ -416,7 +417,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //统计一周押金和套餐总营业额
         CompletableFuture<List<WeekTurnoverStatisticVo>> depositAndMemberCardTurnOver = CompletableFuture.supplyAsync(() -> {
-            return queryWeekMemberCardAndDepositTurnOver(tenantId,beginTime);
+            return queryWeekMemberCardAndDepositTurnOver(tenantId, beginTime);
         }, threadPool).exceptionally(e -> {
             log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
             return null;
@@ -478,9 +479,9 @@ public class DataScreenServiceImpl implements DataScreenService {
         //统计押金营业额
         BigDecimal depositTurnOver = eleDepositOrderService.queryTurnOver(tenantId);
 
-        if (Objects.isNull(memberCardTurnOver)){
+        if (Objects.isNull(memberCardTurnOver)) {
             return depositTurnOver;
-        }else {
+        } else {
             return memberCardTurnOver.add(depositTurnOver);
         }
     }
@@ -491,8 +492,8 @@ public class DataScreenServiceImpl implements DataScreenService {
         //统计一周的押金营业额
         List<WeekTurnoverStatisticVo> weekDepositStatistic = dataScreenMapper.queryWeekDepositTurnoverStatistic(tenantId, beginTime);
 
-        weekMemberCardStatistic.parallelStream().forEach(itemMember ->{
-            weekDepositStatistic.parallelStream().forEach(itemDeposit ->{
+        weekMemberCardStatistic.parallelStream().forEach(itemMember -> {
+            weekDepositStatistic.parallelStream().forEach(itemDeposit -> {
                 if (Objects.equals(itemMember.getWeekDate(), itemDeposit.getWeekDate())) {
                     BigDecimal turnover = (itemMember.getTurnover().add(itemDeposit.getTurnover()));
                     itemMember.setTurnover(turnover);
