@@ -62,10 +62,10 @@
     </select>
 
     <select id="queryTurnOver" resultType="decimal">
-        select sum(pay_amount) from t_ele_refund_order
+        select ifnull(sum(pay_amount),0) from t_ele_refund_order
         where status=2
         <if test="tenantId != null">
-            and tero.tenant_id = #{tenantId}
+            and tenant_id = #{tenantId}
         </if>
     </select>
 
