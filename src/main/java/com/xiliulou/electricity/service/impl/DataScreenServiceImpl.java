@@ -329,8 +329,9 @@ public class DataScreenServiceImpl implements DataScreenService {
                     //根据门店id获取电柜数量
                     Integer electricityCabinetCount = electricityCabinetService.queryCountByStoreIds(tenantId, storeIds);
                     item.setElectricityCabinetCount(electricityCabinetCount);
+                }else {
+                    item.setElectricityCabinetCount(0);
                 }
-                item.setElectricityCabinetCount(0);
             });
         }
         return R.ok(mapVoList);
