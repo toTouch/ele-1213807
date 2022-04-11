@@ -84,7 +84,7 @@
 
 	<select id="queryWeekMemberCardTurnoverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
 		SELECT
-		count(1) as turnover,
+		sum(pay_amount) as turnover,
 		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
 		FROM
 		t_electricity_member_card_order
@@ -101,7 +101,7 @@
 
 	<select id="queryWeekDepositTurnoverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
 		SELECT
-		count(1) as turnover,
+		sum(pay_amount) as turnover,
 		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
 		FROM
 		t_ele_deposit_order
@@ -118,7 +118,7 @@
 
 	<select id="queryWeekRefundTurnOverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
 		SELECT
-		count(1) as turnover,
+		sum(pay_amount) as turnover,
 		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
 		FROM
 		t_ele_refund_order

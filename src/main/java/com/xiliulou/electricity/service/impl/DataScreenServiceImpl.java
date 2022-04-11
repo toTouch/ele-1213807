@@ -434,7 +434,7 @@ public class DataScreenServiceImpl implements DataScreenService {
                     memberCardSumAmount.parallelStream().forEach(item -> {
                         depositSumAmount.parallelStream().forEach(itemForDeposit -> {
                             if (Objects.equals(item.getWeekDate(), itemForDeposit.getWeekDate())) {
-                                BigDecimal turnover = (item.getTurnover().subtract(itemForDeposit.getTurnover())).divide(bigDecimal, 2, BigDecimal.ROUND_HALF_EVEN);
+                                BigDecimal turnover = (item.getTurnover().subtract(itemForDeposit.getTurnover()));
                                 item.setTurnover(turnover);
                             }
                         });
@@ -484,6 +484,7 @@ public class DataScreenServiceImpl implements DataScreenService {
                 if (Objects.equals(itemMember.getWeekDate(), itemDeposit.getWeekDate())) {
                     BigDecimal turnover = (itemMember.getTurnover().add(itemDeposit.getTurnover()));
                     itemMember.setTurnover(turnover);
+                    return;
                 }
             });
 
