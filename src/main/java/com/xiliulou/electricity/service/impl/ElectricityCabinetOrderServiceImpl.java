@@ -278,7 +278,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 		//分配开门格挡
 		Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
 
-		if (Objects.isNull(usableEmptyCellNo.getLeft())) {
+		if (Objects.isNull(usableEmptyCellNo.getRight())) {
 			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
 			return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
 		}
