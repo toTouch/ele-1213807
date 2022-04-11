@@ -149,7 +149,7 @@
     <select id="queryCountGroupByProvinceId" resultType="com.xiliulou.electricity.vo.MapVo">
         select
         count(  case when #{tenantId} is null
-                then case s.id when s.id then case s.del_falg when 0 then s.id end end
+                then case s.id when s.id then case s.del_flag when 0 then s.id end end
                 else case tenant_id when #{tenantId} then
                 case  s.id when s.id then case s.del_flag when 0 then s.id end end
                 end
