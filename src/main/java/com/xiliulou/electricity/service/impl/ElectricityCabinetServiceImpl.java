@@ -4,9 +4,13 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.json.Json;
 import com.google.common.collect.Maps;
+import com.google.gson.JsonObject;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -20,6 +24,7 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
@@ -29,6 +34,7 @@ import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import jodd.util.StringUtil;
@@ -106,6 +112,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 5, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
 	@Autowired
 	TenantService tenantService;
+    @Autowired
+    private IotAcsService iotAcsService;
 	/**
 	 * 通过ID查询单条数据从缓存
 	 *
@@ -1889,5 +1897,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds) {
         return electricityCabinetMapper.queryCountByStoreIds(tenantId,storeIds);
+    }
+
+    @Override
+    public R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery) {
+
+        JSONObject jsonObject= JSON.parseObject(apiRequestQuery.getData());
+        String productKey=String.valueOf(jsonObject.get("productKey"));
+        String deviceName=String.valueOf(jsonObject.get("deviceName"));
+
+        if(org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
+            return R.fail("SYSTEM.0003","参数不合法");
+        }
+
+        Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
+        if(!result.getLeft()){
+            log.error("acsClient link error! errorMsg={}", result.getLeft());
+            return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
+        }
+
+        if(ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())){
+            log.error("Query device is unActive FStatus error!errorMsg={}",result.getRight());
+            return R.fail("CUPBOARD.10036","三元组在线");
+        }
+        return R.ok();
     }
 }

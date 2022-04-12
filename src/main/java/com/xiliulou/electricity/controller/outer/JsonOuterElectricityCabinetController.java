@@ -178,10 +178,7 @@ public class JsonOuterElectricityCabinetController {
      */
     @PostMapping("/outer/checkDevice")
     public R queryDeviceIsUnActiveFStatus(@RequestBody ApiRequestQuery apiRequestQuery){
-
-
-
-        return null;
+        return electricityCabinetService.queryDeviceIsUnActiveFStatus(apiRequestQuery);
     }
 
 
