@@ -245,6 +245,7 @@ public class TenantServiceImpl implements TenantService {
         return tenantMapper.queryCount(tenantQuery);
     }
 
+
     /**
      * 生成新的租户code
      */

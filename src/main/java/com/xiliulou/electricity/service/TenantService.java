@@ -30,4 +30,5 @@ public interface TenantService {
 	R queryCount(TenantQuery tenantQuery);
 
 	Integer querySumCount(TenantQuery tenantQuery);
+
 }

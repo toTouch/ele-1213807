@@ -24,4 +24,5 @@ public interface TenantMapper  extends BaseMapper<Tenant>{
     List<Tenant> queryAll(TenantQuery tenantQuery);
 
     Integer queryCount(TenantQuery tenantQuery);
+
 }
