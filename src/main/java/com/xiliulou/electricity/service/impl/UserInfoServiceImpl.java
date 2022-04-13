@@ -119,7 +119,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
-        List<UserInfo> userInfoList = userInfoMapper.queryList(userInfoQuery);
+        List<UserInfo> userInfoList = userInfoMapper.queryListForBatteryService(userInfoQuery);
         if (ObjectUtil.isEmpty(userInfoList)) {
             return R.ok(userInfoList);
         }
