@@ -510,11 +510,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
             //是否开启电池检测
             ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
-            if(Objects.equals(electricityConfig.getIsBatteryReview(),ElectricityConfig.BATTERY_REVIEW)){
-                dataMap.put("is_checkBatterySn",true);
-                dataMap.put("user_binding_battery_sn",franchiseeUserInfo.getNowElectricityBatterySn());
-            }else {
-                dataMap.put("is_checkBatterySn",false);
+            if (Objects.nonNull(electricityConfig)) {
+                if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+                    dataMap.put("is_checkBatterySn", true);
+                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                } else {
+                    dataMap.put("is_checkBatterySn", false);
+                }
             }
 
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
@@ -624,6 +626,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", rentBatteryOrder.getCellNo());
             dataMap.put("orderId", rentBatteryOrder.getOrderId());
+
+            //是否开启电池检测
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(user.getTenantId());
+            if (Objects.nonNull(electricityConfig)) {
+                UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+                if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+                    dataMap.put("is_checkBatterySn", true);
+                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                } else {
+                    dataMap.put("is_checkBatterySn", false);
+                }
+            }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())

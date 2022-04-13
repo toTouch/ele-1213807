@@ -323,11 +323,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 			//是否开启电池检测
 			ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
-			if(Objects.equals(electricityConfig.getIsBatteryReview(),ElectricityConfig.BATTERY_REVIEW)){
-				dataMap.put("is_checkBatterySn",true);
-				dataMap.put("user_binding_battery_sn",franchiseeUserInfo.getNowElectricityBatterySn());
-			}else {
-				dataMap.put("is_checkBatterySn",false);
+			if (Objects.nonNull(electricityConfig)) {
+				if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+					dataMap.put("is_checkBatterySn", true);
+					dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+				} else {
+					dataMap.put("is_checkBatterySn", false);
+				}
 			}
 
 			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
@@ -451,6 +453,17 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 			dataMap.put("cell_no", electricityCabinetOrder.getOldCellNo());
 			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
 			dataMap.put("status", electricityCabinetOrder.getStatus());
+
+			//是否开启电池检测
+			ElectricityConfig electricityConfig = electricityConfigService.queryOne(userInfo.getTenantId());
+			if (Objects.nonNull(electricityConfig)) {
+				if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+					dataMap.put("is_checkBatterySn", true);
+					dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+				} else {
+					dataMap.put("is_checkBatterySn", false);
+				}
+			}
 
 			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
 				dataMap.put("model_type", false);
