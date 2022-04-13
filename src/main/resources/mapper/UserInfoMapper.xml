@@ -40,6 +40,7 @@
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
         </if>
+        order by tfui.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
