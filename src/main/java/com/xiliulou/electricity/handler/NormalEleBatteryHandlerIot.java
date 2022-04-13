@@ -352,6 +352,8 @@ class EleBatteryVo {
 	private String cellNo;
 	//reportTime
 	private Long reportTime;
+	//充电器电压
+	private Double chargeV;
 
 	private Boolean existsBattery;
 
