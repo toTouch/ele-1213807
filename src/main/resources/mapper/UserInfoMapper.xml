@@ -28,8 +28,8 @@
         <if test="query.endTime != null">
             and tui.create_time &lt;=#{query.endTime}
         </if>
-        <if test="query.authStatus == -1">
-            and tui.auth_status is not null
+        <if test="query.authStatus !=null">
+            and tui.auth_status =#{query.authStatus}
         </if>
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
@@ -40,7 +40,6 @@
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
         </if>
-        order by tfui.member_card_expire_time asc
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -64,8 +63,8 @@
         <if test="query.endTime != null">
             and tui.create_time &lt;=#{query.endTime}
         </if>
-        <if test="query.authStatus == -1">
-            and tui.auth_status is not null
+        <if test="query.authStatus !=null">
+            and tui.auth_status =#{query.authStatus}
         </if>
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
