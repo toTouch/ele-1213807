@@ -68,74 +68,76 @@ import java.util.stream.Collectors;
 @Service("electricityCabinetService")
 @Slf4j
 public class ElectricityCabinetServiceImpl implements ElectricityCabinetService {
-	@Resource
-	private ElectricityCabinetMapper electricityCabinetMapper;
-	@Autowired
-	ElectricityCabinetModelService electricityCabinetModelService;
-	@Autowired
-	RedisService redisService;
-	@Autowired
-	ElectricityCabinetBoxService electricityCabinetBoxService;
-	@Autowired
-	ElectricityBatteryService electricityBatteryService;
-	@Autowired
-	UserInfoService userInfoService;
-	@Autowired
-	ElectricityMemberCardOrderService electricityMemberCardOrderService;
-	@Autowired
-	ElectricityCabinetOrderService electricityCabinetOrderService;
-	@Autowired
-	StoreService storeService;
-	@Autowired
-	PubHardwareService pubHardwareService;
-	@Autowired
-	EleHardwareHandlerManager eleHardwareHandlerManager;
-	@Autowired
-	ElectricityConfigService electricityConfigService;
-	@Autowired
-	UserTypeFactory userTypeFactory;
-	@Autowired
-	FranchiseeService franchiseeService;
-	@Autowired
-	ElectricityMemberCardService electricityMemberCardService;
-	@Autowired
-	FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-	@Autowired
-	FranchiseeUserInfoService franchiseeUserInfoService;
-	@Autowired
-	RentBatteryOrderService rentBatteryOrderService;
-	@Autowired
-	BatteryOtherPropertiesService batteryOtherPropertiesService;
-	@Autowired
+    @Resource
+    private ElectricityCabinetMapper electricityCabinetMapper;
+    @Autowired
+    ElectricityCabinetModelService electricityCabinetModelService;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    ElectricityCabinetBoxService electricityCabinetBoxService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    ElectricityMemberCardOrderService electricityMemberCardOrderService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    PubHardwareService pubHardwareService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+    @Autowired
+    UserTypeFactory userTypeFactory;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    RentBatteryOrderService rentBatteryOrderService;
+    @Autowired
+    BatteryOtherPropertiesService batteryOtherPropertiesService;
+    @Autowired
     ElectricityCabinetService electricityCabinetService;
 
-	ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 5, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
-	@Autowired
-	TenantService tenantService;
+    ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("electricityCabinetServiceExecutor", 5, "ELECTRICITY_CABINET_SERVICE_EXECUTOR");
+    @Autowired
+    TenantService tenantService;
     @Autowired
     private IotAcsService iotAcsService;
-	/**
-	 * 通过ID查询单条数据从缓存
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public ElectricityCabinet queryByIdFromCache(Integer id) {
-		//先查缓存
-		ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id, ElectricityCabinet.class);
-		if (Objects.nonNull(cacheElectricityCabinet)) {
-			return cacheElectricityCabinet;
-		}
-		//缓存没有再查数据库
-		ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectById(id);
-		if (Objects.isNull(electricityCabinet)) {
-			return null;
-		}
-		//放入缓存
-		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id, electricityCabinet);
-		return electricityCabinet;
-	}
+
+
+    /**
+     * 通过ID查询单条数据从缓存
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public ElectricityCabinet queryByIdFromCache(Integer id) {
+        //先查缓存
+        ElectricityCabinet cacheElectricityCabinet = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id, ElectricityCabinet.class);
+        if (Objects.nonNull(cacheElectricityCabinet)) {
+            return cacheElectricityCabinet;
+        }
+        //缓存没有再查数据库
+        ElectricityCabinet electricityCabinet = electricityCabinetMapper.selectById(id);
+        if (Objects.isNull(electricityCabinet)) {
+            return null;
+        }
+        //放入缓存
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + id, electricityCabinet);
+        return electricityCabinet;
+    }
 
     /**
      * 修改数据
@@ -375,12 +377,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     e.setModelName(electricityCabinetModel.getName());
                 }
 
-				//查满仓空仓数
-				Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
-				int electricityBatteryTotal = 0;
-				int noElectricityBattery = 0;
-				List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
-				if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+                //查满仓空仓数
+                Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
+                int electricityBatteryTotal = 0;
+                int noElectricityBattery = 0;
+                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
                     //空仓
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
@@ -638,46 +640,46 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 homeOne.put("orderCount", orderCount.toString());
                 homeOne.put("successCount", successOrder.toString());
 
-				//电柜
-				List<ElectricityCabinet> electricityCabinetList = null;
-				if(Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)){
+                //电柜
+                List<ElectricityCabinet> electricityCabinetList = null;
+                if (Objects.equals(user.getType(), User.TYPE_USER_SUPER) || Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
                     //1、直接查柜子
-				    electricityCabinetList = this.electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
-                } else if(Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)){
-				    //1、查代理商
-				    Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
-				    //2、再找代理商下的门店
-                    List<Store> storeList= storeService.queryByFranchiseeId(franchisee.getId());
+                    electricityCabinetList = this.electricityCabinetMapper.homeOne(finalEleIdList, tenantId);
+                } else if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+                    //1、查代理商
+                    Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+                    //2、再找代理商下的门店
+                    List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
                     electricityCabinetList = new ArrayList<>();
                     //3、再找门店绑定的柜子
-                    for (Store store:storeList) {
+                    for (Store store : storeList) {
                         List<ElectricityCabinet> storeElectricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
                         electricityCabinetList.addAll(storeElectricityCabinetList);
                     }
                 } else {
-				    //1、直接找门店
+                    //1、直接找门店
                     Store store = storeService.queryByUid(user.getUid());
                     //2、再找门店绑定的柜子
                     electricityCabinetList = electricityCabinetService.queryByStoreId(store.getId());
                 }
 
-				Integer eleCount = electricityCabinetList.size();
-				Integer onlineEleCount = 0;
-				Integer offlineEleCount = 0;
-				if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
-					for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
-						boolean result = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-						if (result) {
-							onlineEleCount++;
-						} else {
-							offlineEleCount++;
-						}
-					}
-				}
-				homeOne.put("eleCount", eleCount.toString());
-				homeOne.put("onlineEleCount", onlineEleCount.toString());
-				homeOne.put("offlineEleCount", offlineEleCount.toString());
-			}
+                Integer eleCount = electricityCabinetList.size();
+                Integer onlineEleCount = 0;
+                Integer offlineEleCount = 0;
+                if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
+                    for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
+                        boolean result = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+                        if (result) {
+                            onlineEleCount++;
+                        } else {
+                            offlineEleCount++;
+                        }
+                    }
+                }
+                homeOne.put("eleCount", eleCount.toString());
+                homeOne.put("onlineEleCount", onlineEleCount.toString());
+                homeOne.put("offlineEleCount", offlineEleCount.toString());
+            }
 
         }, executorService).exceptionally(e -> {
             log.error("QUERY home order ERROR! uid={}", user.getUid(), e);
@@ -997,7 +999,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
 
-
     @Override
     public ElectricityCabinet queryByProductAndDeviceName(String productKey, String deviceName) {
 
@@ -1139,20 +1140,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             name = electricityConfig.getName();
         }
 
-		//租户code
-		electricityCabinetVO.setTenantId(electricityCabinet.getTenantId());
-		Tenant tenant = tenantService.queryByIdFromCache(electricityCabinet.getTenantId());
-		if(Objects.nonNull(tenant)){
-			electricityCabinetVO.setTenantCode(tenant.getCode());
-		}
+        //租户code
+        electricityCabinetVO.setTenantId(electricityCabinet.getTenantId());
+        Tenant tenant = tenantService.queryByIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.nonNull(tenant)) {
+            electricityCabinetVO.setTenantCode(tenant.getCode());
+        }
 
-		electricityCabinetVO.setConfigName(name);
-		electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
-		electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
-		electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
-		electricityCabinetVO.setBatteryFullCondition(electricityCabinetVO.getFullyCharged());
-		return R.ok(electricityCabinetVO);
-	}
+        electricityCabinetVO.setConfigName(name);
+        electricityCabinetVO.setElectricityBatteryTotal(electricityBatteryTotal);
+        electricityCabinetVO.setNoElectricityBattery(noElectricityBattery);
+        electricityCabinetVO.setFullyElectricityBattery(fullyElectricityBattery);
+        electricityCabinetVO.setBatteryFullCondition(electricityCabinetVO.getFullyCharged());
+        return R.ok(electricityCabinetVO);
+    }
 
     @Override
     public R showInfoByStoreId(Long storeId) {
@@ -1267,9 +1268,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //是否存在未完成的租电池订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
         if (Objects.nonNull(rentBatteryOrder)) {
-            if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)) {
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
                 return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
-            }else if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+            } else if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
                 return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
             }
         }
@@ -1441,9 +1442,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //是否存在未完成的租电池订单
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
         if (Objects.nonNull(rentBatteryOrder)) {
-            if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RENT)) {
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
                 return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
-            }else if(Objects.equals(rentBatteryOrder.getType(),RentBatteryOrder.TYPE_USER_RETURN)){
+            } else if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
                 return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
             }
         }
@@ -1624,33 +1625,33 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.ok();
         }
 
-		//修改电池
-		ElectricityBattery newElectricityBattery = new ElectricityBattery();
-		newElectricityBattery.setId(electricityBattery.getId());
-		Double power = batteryReportQuery.getPower();
-		if (Objects.nonNull(power)) {
-			newElectricityBattery.setPower(power);
-		}
-		Double latitude = batteryReportQuery.getLatitude();
-		if (Objects.nonNull(latitude)) {
-			newElectricityBattery.setLatitude(latitude);
-		}
-		Double longitude = batteryReportQuery.getLongitude();
-		if (Objects.nonNull(longitude)) {
-			newElectricityBattery.setLongitude(longitude);
-		}
-		electricityBattery.setUpdateTime(System.currentTimeMillis());
-		electricityBatteryService.update(newElectricityBattery);
+        //修改电池
+        ElectricityBattery newElectricityBattery = new ElectricityBattery();
+        newElectricityBattery.setId(electricityBattery.getId());
+        Double power = batteryReportQuery.getPower();
+        if (Objects.nonNull(power)) {
+            newElectricityBattery.setPower(power);
+        }
+        Double latitude = batteryReportQuery.getLatitude();
+        if (Objects.nonNull(latitude)) {
+            newElectricityBattery.setLatitude(latitude);
+        }
+        Double longitude = batteryReportQuery.getLongitude();
+        if (Objects.nonNull(longitude)) {
+            newElectricityBattery.setLongitude(longitude);
+        }
+        electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBatteryService.update(newElectricityBattery);
 
-		//电池上报是否有其他信息
-		if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
-			BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
-			batteryOtherProperties.setBatteryName(batteryName);
-			batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
-		}
+        //电池上报是否有其他信息
+        if (Objects.nonNull(batteryReportQuery.getHasOtherAttr()) && batteryReportQuery.getHasOtherAttr()) {
+            BatteryOtherProperties batteryOtherProperties = batteryReportQuery.getBatteryAttr();
+            batteryOtherProperties.setBatteryName(batteryName);
+            batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
+        }
 
-		return R.ok();
-	}
+        return R.ok();
+    }
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
@@ -1843,7 +1844,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {
             return Pair.of(false, null);
         }
-
         return Pair.of(true, Integer.parseInt(usableEmptyCellNo.get(0).getCellNo()));
 
     }
@@ -1895,30 +1895,30 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds) {
-        return electricityCabinetMapper.queryCountByStoreIds(tenantId,storeIds);
+    public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
+        return electricityCabinetMapper.queryCountByStoreIds(tenantId, storeIds);
     }
 
     @Override
     public R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery) {
 
-        JSONObject jsonObject= JSON.parseObject(apiRequestQuery.getData());
-        String productKey=String.valueOf(jsonObject.get("productKey"));
-        String deviceName=String.valueOf(jsonObject.get("deviceName"));
+        JSONObject jsonObject = JSON.parseObject(apiRequestQuery.getData());
+        String productKey = String.valueOf(jsonObject.get("productKey"));
+        String deviceName = String.valueOf(jsonObject.get("deviceName"));
 
-        if(org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
-            return R.fail("SYSTEM.0003","参数不合法");
+        if (org.apache.commons.lang3.StringUtils.isBlank(productKey) || org.apache.commons.lang3.StringUtils.isBlank(deviceName)) {
+            return R.fail("SYSTEM.0003", "参数不合法");
         }
 
         Pair<Boolean, Object> result = iotAcsService.queryDeviceStatus(productKey, deviceName);
-        if(!result.getLeft()){
+        if (!result.getLeft()) {
             log.error("acsClient link error! errorMsg={}", result.getLeft());
             return R.fail("CUPBOARD.10035", "iot链接失败，请联系管理员");
         }
 
-        if(ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())){
-            log.error("Query device is unActive FStatus error!errorMsg={}",result.getRight());
-            return R.fail("CUPBOARD.10036","三元组在线");
+        if (ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(result.getRight().toString())) {
+            log.error("Query device is unActive FStatus error!errorMsg={}", result.getRight());
+            return R.fail("CUPBOARD.10036", "三元组在线");
         }
         return R.ok();
     }

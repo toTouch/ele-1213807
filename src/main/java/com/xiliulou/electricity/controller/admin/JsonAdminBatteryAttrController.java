@@ -45,21 +45,21 @@ public class JsonAdminBatteryAttrController {
 
 		if (StringUtil.isEmpty(gsmType)) {
 			if (Objects.nonNull(offset) || Objects.nonNull(size)) {
-				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime  limit ?,?";
+				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc  limit ?,?";
 				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end, offset, size));
 			} else {
-				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime  ";
+				String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc  ";
 				return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end));
 			}
 		}
 
 		if (Objects.nonNull(offset) || Objects.nonNull(size)) {
-			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime  limit ?,?";
+			String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc  limit ?,?";
 			return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end, offset, size));
 		}
 
 		//给加的搜索，没什么意义
-		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime ";
+		String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? AND gsmType=? order by  createTime desc";
 		return R.ok(clickHouseService.query(BatteryAttr.class, sql, sn, begin, end, gsmType));
 	}
 

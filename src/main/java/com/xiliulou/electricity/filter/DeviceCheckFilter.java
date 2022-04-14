@@ -9,12 +9,12 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author: Mr Hu
- * @Date: 2021/11/12 14:56
+ * @Date: 2022/04/12 14:56
  * @Description:
  */
 @Slf4j
 @Component()
-@Order(101)
+@Order(100)
 public class DeviceCheckFilter extends ApiFilter{
 	static final String CUPBOARD_URL = "/outer/checkDevice";
 
