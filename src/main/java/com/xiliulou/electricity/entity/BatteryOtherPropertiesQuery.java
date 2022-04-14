@@ -123,5 +123,10 @@ public class BatteryOtherPropertiesQuery {
      */
     private Long expDischargeTime;
 
+    /**
+     * 充电器电压
+     */
+    private Double chargeV;
+
 
 }

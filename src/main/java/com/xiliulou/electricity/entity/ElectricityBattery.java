@@ -93,6 +93,11 @@ public class ElectricityBattery {
     //所属用户id
     private Long uid;
 
+    /**
+     * 电池上次所在的舱门号
+     */
+    private String lastDepositCellNo;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

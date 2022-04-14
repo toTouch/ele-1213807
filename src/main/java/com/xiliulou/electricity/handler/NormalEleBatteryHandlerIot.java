@@ -145,6 +145,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 			electricityCabinetBox.setCellNo(cellNo);
 			electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
 			electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+			electricityCabinetBox.setChargeV(eleBatteryVo.getChargeV());
 			electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 
 			//原来仓门是否有电池
@@ -228,6 +229,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
 		newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
 		newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
+		newElectricityBattery.setLastDepositCellNo(cellNo);
 		newElectricityBattery.setUid(null);
 		newElectricityBattery.setBorrowExpireTime(null);
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -302,6 +304,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
 		electricityCabinetBox.setCellNo(cellNo);
 		electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+		electricityCabinetBox.setChargeV(eleBatteryVo.getChargeV());
 		electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 		return true;
 	}
