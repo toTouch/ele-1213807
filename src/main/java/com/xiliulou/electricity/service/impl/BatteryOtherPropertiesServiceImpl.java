@@ -68,7 +68,9 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 		ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(sn);
 		if (Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)){
 			ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.queryByCellNo(electricityBattery.getElectricityCabinetId(),electricityBattery.getLastDepositCellNo());
-			batteryOtherPropertiesQuery.setChargeV(electricityCabinetBox.getChargeV());
+			if (Objects.nonNull(electricityCabinetBox)) {
+				batteryOtherPropertiesQuery.setChargeV(electricityCabinetBox.getChargeV());
+			}
 		}
 
 		BeanUtils.copyProperties(batteryOtherProperties,batteryOtherPropertiesQuery);
