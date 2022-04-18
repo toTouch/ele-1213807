@@ -16,6 +16,7 @@ import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -86,6 +87,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     StoreService storeService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -385,6 +388,32 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
+
+        //判断用户是否产生电池服务费
+        Long now = System.currentTimeMillis();
+        long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
+
+        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1) {
+            //查询用户是否存在电池服务费
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+            Integer modelType = franchisee.getModelType();
+            if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                //查询用户绑定的电池类型
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
+                String model = electricityBattery.getModel();
+
+                List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                        //计算服务费
+                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费",batteryServiceFee);
+                    }
+                }
+
+            }
+        }
+
 
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
 
