@@ -25,6 +25,11 @@ public class ModelBatteryDeposit {
      */
     private BigDecimal batteryDeposit;
 
+    /**
+     * 电池服务费
+     */
+    private BigDecimal batteryServiceFee;
+
 
 
 
