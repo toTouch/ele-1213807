@@ -96,7 +96,7 @@ public class ElectricityBattery {
     /**
      * 物联网卡号
      */
-    private String iotCardMember;
+    private String iotCardNumber;
 
 
     public static final Integer DEL_NORMAL = 0;
