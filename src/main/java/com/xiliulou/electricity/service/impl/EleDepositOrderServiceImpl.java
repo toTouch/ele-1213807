@@ -331,12 +331,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         }
 
-        //判断是否退电池
-        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0046", "未退还电池");
-        }
-
         //判断是否缴纳押金
         if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
                 || Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
@@ -412,6 +406,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 }
 
             }
+        }
+
+        //判断是否退电池
+        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+            log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0046", "未退还电池");
         }
 
 
