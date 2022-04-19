@@ -305,7 +305,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //限频
         Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.000000","操作频繁,请稍后再试!");
         }
 
         //用户
@@ -387,11 +387,18 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Long now = System.currentTimeMillis();
         long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
 
+        System.out.println("退押金过期时间======================="+cardDays);
+
         if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+
+
+                System.out.println("新型号=服务费=====================================");
+
+
                 //查询用户绑定的电池类型
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
                 String model = electricityBattery.getModel();
@@ -409,6 +416,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 BigDecimal franchiseeBatteryServiceFee=franchisee.getBatteryServiceFee();
                 //计算服务费
                 BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+
+
+                System.out.println("老型号服务费======================================"+batteryServiceFee);
+
                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费",batteryServiceFee);
             }
         }
