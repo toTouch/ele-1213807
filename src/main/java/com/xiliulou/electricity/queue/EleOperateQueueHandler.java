@@ -119,9 +119,9 @@ public class EleOperateQueueHandler {
             }
 
             //是否开启异常仓门锁仓
-            ElectricityConfig electricityConfig=electricityConfigService.queryOne(electricityCabinetOrder.getTenantId());
-            if (Objects.equals(electricityConfig.getIsOpenDoorLock(),ElectricityConfig.OPEN_DOOR_LOCK)){
-                lockExceptionDoor(electricityCabinetOrder,null,finalOpenDTO);
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinetOrder.getTenantId());
+            if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
+                lockExceptionDoor(electricityCabinetOrder, null, finalOpenDTO);
             }
 
 
@@ -144,9 +144,9 @@ public class EleOperateQueueHandler {
             }
 
             //换电柜异常
-            ElectricityConfig electricityConfig=electricityConfigService.queryOne(rentBatteryOrder.getTenantId());
-            if (Objects.equals(electricityConfig.getIsOpenDoorLock(),ElectricityConfig.OPEN_DOOR_LOCK)){
-                lockExceptionDoor(null,rentBatteryOrder,finalOpenDTO);
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(rentBatteryOrder.getTenantId());
+            if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
+                lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
             }
 
             handleRentOrder(rentBatteryOrder, finalOpenDTO);
@@ -157,54 +157,55 @@ public class EleOperateQueueHandler {
 
     /**
      * 异常仓门加锁
+     *
      * @param electricityCabinetOrder
      * @param rentBatteryOrder
      */
-    private void lockExceptionDoor(ElectricityCabinetOrder electricityCabinetOrder,RentBatteryOrder rentBatteryOrder,EleOpenDTO eleOpenDTO){
+    private void lockExceptionDoor(ElectricityCabinetOrder electricityCabinetOrder, RentBatteryOrder rentBatteryOrder, EleOpenDTO eleOpenDTO) {
         //上报的订单状态值
-        String orderStatus=eleOpenDTO.getOrderStatus();
-        if (Objects.isNull(orderStatus)){
-            log.error("ELE LOCK CELL orderStatus is null! orderId:{}",eleOpenDTO.getOrderId());
+        String orderStatus = eleOpenDTO.getOrderStatus();
+        if (Objects.isNull(orderStatus)) {
+            log.error("ELE LOCK CELL orderStatus is null! orderId:{}", eleOpenDTO.getOrderId());
             return;
         }
 
         //仓门编号
-        Integer cellNo=null;
+        Integer cellNo = null;
         //电柜Id
-        Integer electricityCabinetId=null;
+        Integer electricityCabinetId = null;
 
 
         if (Objects.nonNull(electricityCabinetOrder) && Objects.isNull(rentBatteryOrder)) {
             //旧仓门异常
             if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL)
-                    || Objects.equals(orderStatus,ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
-                    || Objects.equals(orderStatus,ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
-                cellNo=electricityCabinetOrder.getOldCellNo();
-                electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
-            }else if (Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)
-                    || Objects.equals(orderStatus,ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)){
-                cellNo=electricityCabinetOrder.getNewCellNo();
-                electricityCabinetId=electricityCabinetOrder.getElectricityCabinetId();
+                    || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+                    || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
+                cellNo = electricityCabinetOrder.getOldCellNo();
+                electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
+            } else if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)
+                    || Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)) {
+                cellNo = electricityCabinetOrder.getNewCellNo();
+                electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
             }
-        }else {
+        } else {
             //租退电仓门异常
-            if (Objects.equals(orderStatus,RentBatteryOrder.RENT_OPEN_FAIL)
-                || Objects.equals(orderStatus,RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)
-                || Objects.equals(orderStatus,RentBatteryOrder.RETURN_OPEN_FAIL)
-                || Objects.equals(orderStatus,RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)
-                || Objects.equals(orderStatus,RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)){
-                cellNo=rentBatteryOrder.getCellNo();
-                electricityCabinetId=rentBatteryOrder.getElectricityCabinetId();
+            if (Objects.equals(orderStatus, RentBatteryOrder.RENT_OPEN_FAIL)
+                    || Objects.equals(orderStatus, RentBatteryOrder.RENT_BATTERY_TAKE_TIMEOUT)
+                    || Objects.equals(orderStatus, RentBatteryOrder.RETURN_OPEN_FAIL)
+                    || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)
+                    || Objects.equals(orderStatus, RentBatteryOrder.RETURN_BATTERY_CHECK_FAIL)) {
+                cellNo = rentBatteryOrder.getCellNo();
+                electricityCabinetId = rentBatteryOrder.getElectricityCabinetId();
             }
         }
 
-        if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)){
-            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}",eleOpenDTO.getOrderId());
+        if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
+            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", eleOpenDTO.getOrderId());
             return;
         }
 
         //对异常仓门进行锁仓处理
-        electricityCabinetBoxService.disableCell(cellNo,electricityCabinetId);
+        electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
 
         //查询三元组信息
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
@@ -223,14 +224,11 @@ public class EleOperateQueueHandler {
                 .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
                 .build();
 
-        Pair<Boolean, String> sendResult =eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
-            log.error("ELE LOCK CELL ERROR! send command error! orderId:{}",eleOpenDTO.getOrderId());
+            log.error("ELE LOCK CELL ERROR! send command error! orderId:{}", eleOpenDTO.getOrderId());
         }
     }
-
-
-
 
 
     public void shutdown() {
