@@ -1,139 +1,147 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
-	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
-		select tel.* , tui.phone as phone , tf.name as franchiseeName from
-		t_electricity_member_card_order tel
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
+        select tel.* , tui.phone as phone , tf.name as franchiseeName from
+        t_electricity_member_card_order tel
 
-		LEFT JOIN t_user_info tui on tui.uid = tel.uid
+        LEFT JOIN t_user_info tui on tui.uid = tel.uid
 
-		LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
-		WHERE 0= 0
-		<if test="query.phone != null">
-			and tui.phone =#{query.phone}
-		</if>
-		<if test="query.orderId != null">
-			and tel.order_id =#{query.orderId}
-		</if>
-		<if test="query.cardType != null">
-			and tel.member_card_type =#{query.cardType}
-		</if>
-		<if test="query.status != null">
-			and tel.status =#{query.status}
-		</if>
-		<if test="query.tenantId != null">
-			and tel.tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.queryStartTime != null">
-			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
-		</if>
-		<if test="query.franchiseeId != null">
-			and tel.franchisee_id = #{query.franchiseeId}
-		</if>
-		<if test="query.franchiseeName != null and query.franchiseeName != ''">
-			and tf.name = #{query.franchiseeName}
-		</if>
-		order by tel.create_time desc
-		limit #{query.offset}, #{query.size}
-	</select>
+        LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
+        WHERE 0= 0
+        <if test="query.phone != null">
+            and tui.phone =#{query.phone}
+        </if>
+        <if test="query.orderId != null">
+            and tel.order_id =#{query.orderId}
+        </if>
+        <if test="query.cardType != null">
+            and tel.member_card_type =#{query.cardType}
+        </if>
+        <if test="query.status != null">
+            and tel.status =#{query.status}
+        </if>
+        <if test="query.tenantId != null">
+            and tel.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.queryStartTime != null">
+            and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+        </if>
+        <if test="query.franchiseeId != null">
+            and tel.franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.franchiseeName != null and query.franchiseeName != ''">
+            and tf.name = #{query.franchiseeName}
+        </if>
+        order by tel.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
 
-	<select id="queryCount" resultType="java.lang.Integer">
-		select COUNT(1)
-		from t_electricity_member_card_order tel
-		LEFT JOIN t_user_info tui on tui.uid = tel.uid
-		LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
-		WHERE 0= 0
-		<if test="query.phone != null">
-			and tui.phone =#{query.phone}
-		</if>
-		<if test="query.orderId != null">
-			and tel.order_id =#{query.orderId}
-		</if>
-		<if test="query.cardType != null">
-			and tel.member_card_type =#{query.cardType}
-		</if>
-		<if test="query.status != null">
-			and tel.status =#{query.status}
-		</if>
-		<if test="query.tenantId != null">
-			and tel.tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.queryStartTime != null">
-			and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
-		</if>
-		<if test="query.franchiseeId != null">
-			and tel.franchisee_id = #{query.franchiseeId}
-		</if>
-		<if test="query.franchiseeName != null and query.franchiseeName != ''">
-			and tf.name = #{query.franchiseeName}
-		</if>
-	</select>
-
-
-	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
-		SELECT * FROM
-		t_electricity_member_card_order
-		WHERE uid =#{uid}
-		and status =1
-		<if test="startTime != null">
-			and create_time BETWEEN #{startTime} and #{endTime}
-		</if>
-		order by create_time desc
-		limit #{offset},#{size}
-
-	</select>
-
-	<select id="getMemberCardOrderCount" resultType="java.lang.Long">
-
-		SELECT count(1)
-		FROM t_electricity_member_card_order
-		WHERE uid =#{uid}
-		and status =1
-		<if test="startTime != null">
-			and create_time BETWEEN #{startTime} and #{endTime}
-		</if>
+    <select id="queryCount" resultType="java.lang.Integer">
+        select COUNT(1)
+        from t_electricity_member_card_order tel
+        LEFT JOIN t_user_info tui on tui.uid = tel.uid
+        LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
+        WHERE 0= 0
+        <if test="query.phone != null">
+            and tui.phone =#{query.phone}
+        </if>
+        <if test="query.orderId != null">
+            and tel.order_id =#{query.orderId}
+        </if>
+        <if test="query.cardType != null">
+            and tel.member_card_type =#{query.cardType}
+        </if>
+        <if test="query.status != null">
+            and tel.status =#{query.status}
+        </if>
+        <if test="query.tenantId != null">
+            and tel.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.queryStartTime != null">
+            and tel.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+        </if>
+        <if test="query.franchiseeId != null">
+            and tel.franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.franchiseeName != null and query.franchiseeName != ''">
+            and tf.name = #{query.franchiseeName}
+        </if>
+    </select>
 
 
-	</select>
+    <select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCardOrder">
+        SELECT * FROM
+        t_electricity_member_card_order
+        WHERE uid =#{uid}
+        and status =1
+        <if test="startTime != null">
+            and create_time BETWEEN #{startTime} and #{endTime}
+        </if>
+        order by create_time desc
+        limit #{offset},#{size}
+
+    </select>
+
+    <select id="getMemberCardOrderCount" resultType="java.lang.Long">
+
+        SELECT count(1)
+        FROM t_electricity_member_card_order
+        WHERE uid =#{uid}
+        and status =1
+        <if test="startTime != null">
+            and create_time BETWEEN #{startTime} and #{endTime}
+        </if>
 
 
-	<select id="homeOne" resultType="java.math.BigDecimal">
-
-		SELECT sum(pay_amount) FROM t_electricity_member_card_order
-		WHERE status = 1 and create_time >= #{first} and create_time &lt;=#{now}
-
-		<if test="cardIdList!=null and cardIdList!=''">
-			and member_card_id in
-			<foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-
-	</select>
+    </select>
 
 
-	<select id="homeTwo" resultType="java.util.HashMap">
+    <select id="homeOne" resultType="java.math.BigDecimal">
 
-		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money
-		from t_electricity_member_card_order
-		where create_time >= #{startTimeMilliDay} and create_time &lt;= #{endTimeMilliDay} and status = 1
+        SELECT sum(pay_amount) FROM t_electricity_member_card_order
+        WHERE status = 1 and create_time >= #{first} and create_time &lt;=#{now}
 
-		<if test="cardIdList!=null and cardIdList!=''">
-			and member_card_id in
-			<foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		<if test="tenantId != null">
-			and tenant_id = #{tenantId}
-		</if>
-		group by date
-		order by date desc
+        <if test="cardIdList!=null and cardIdList!=''">
+            and member_card_id in
+            <foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
 
-	</select>
+    </select>
+
+
+    <select id="homeTwo" resultType="java.util.HashMap">
+
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, sum(pay_amount) as money
+        from t_electricity_member_card_order
+        where create_time >= #{startTimeMilliDay} and create_time &lt;= #{endTimeMilliDay} and status = 1
+
+        <if test="cardIdList!=null and cardIdList!=''">
+            and member_card_id in
+            <foreach collection="cardIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        group by date
+        order by date desc
+
+    </select>
+
+    <select id="queryTurnOver" resultType="decimal">
+        select sum(pay_amount) from t_electricity_member_card_order
+        where status=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
 
 
 </mapper>

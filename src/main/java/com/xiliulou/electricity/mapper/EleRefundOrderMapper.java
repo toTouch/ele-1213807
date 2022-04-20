@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.EleRefundOrder;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
@@ -27,4 +29,6 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder>{
 	Integer queryCount(@Param("query") EleRefundQuery eleRefundQuery);
 
 	Long queryUserInfoId(@Param("refundOrderNo") String refundOrderNo);
+
+	BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
 }

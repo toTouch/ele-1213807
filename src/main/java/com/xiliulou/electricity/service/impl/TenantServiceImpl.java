@@ -240,6 +240,12 @@ public class TenantServiceImpl implements TenantService {
         return R.ok(tenantMapper.queryCount(tenantQuery));
     }
 
+    @Override
+    public Integer querySumCount(TenantQuery tenantQuery) {
+        return tenantMapper.queryCount(tenantQuery);
+    }
+
+
     /**
      * 生成新的租户code
      */

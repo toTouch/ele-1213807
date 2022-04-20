@@ -72,9 +72,14 @@ public interface UserInfoService extends IService<UserInfo> {
 
 	R queryCount(UserInfoQuery userInfoQuery);
 
+	Integer querySumCount(UserInfoQuery userInfoQuery);
+
     R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
     R webUnBindBattery(Long id);
 
 	R userMove(UserMoveHistory userMoveHistory);
+
+	Integer deleteByUid(Long uid);
+
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.query.VersionNotificationQuery;
 import org.apache.commons.lang3.tuple.Triple;
@@ -33,5 +34,22 @@ public interface VersionNotificationService {
 
 
     Triple<Boolean, String, Object> updateNotification(VersionNotificationQuery versionNotificationQuery);
+
+    /**
+     * 新增版本通知
+     */
+    Triple<Boolean, String, Object> insertNotification(VersionNotificationQuery versionNotificationQuery);
+
+    /**
+     * 版本通知列表查询
+     * @return
+     */
+    List<VersionNotification> queryNotificationList(Long offset,Long size);
+
+    R queryNotificationCount();
+
+    VersionNotification queryCreateTimeMaxTenantNotification();
+
+
 
 }

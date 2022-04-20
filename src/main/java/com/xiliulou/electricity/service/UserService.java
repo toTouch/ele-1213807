@@ -83,4 +83,6 @@ public interface UserService {
 	String decryptPassword(String encryptPassword);
 
 	List<User> queryByTenantIdAndType(Integer tenantId, Integer status);
+
+    Triple<Boolean, String, Object> deleteNormalUser(Long uid);
 }

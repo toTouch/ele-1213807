@@ -142,6 +142,11 @@ public class JsonAdminUserController extends BaseController {
         return userService.endLimitUser(uid);
     }
 
+    @DeleteMapping("/user/del/{uid}")
+    public R deleteNormalUser(@PathVariable("uid") Long uid) {
+        return returnTripleResult(userService.deleteNormalUser(uid));
+    }
+
 
 
 }

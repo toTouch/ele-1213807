@@ -39,6 +39,8 @@ public interface ElectricityCabinetOrderService {
 
     R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
+    Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+
     void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response);
 
     R endOrder(String orderId);

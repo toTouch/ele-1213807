@@ -1,20 +1,7 @@
 package com.xiliulou.electricity.entity;
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-            import lombok.AllArgsConstructor;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -42,6 +29,16 @@ public class VersionNotification {
     * 版本内容
     */
     private String content;
+
+    /**
+     * 创建时间
+     */
+    private Long createTime;
+
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

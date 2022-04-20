@@ -427,10 +427,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userInfoMapper.queryCount(userInfoQuery));
     }
 
-    //后台绑定电池
-    @Override
-    @Transactional
-    public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
+	@Override
+	public Integer querySumCount(UserInfoQuery userInfoQuery) {
+		return userInfoMapper.queryCount(userInfoQuery);
+	}
+
+	//后台绑定电池
+	@Override
+	@Transactional
+	public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
         //查找用户
         UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
@@ -674,5 +679,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userMoveHistoryService.insert(userMoveHistory);
         return R.ok();
     }
+
+	@Override
+	public Integer deleteByUid(Long uid) {
+		return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+	}
+
 
 }

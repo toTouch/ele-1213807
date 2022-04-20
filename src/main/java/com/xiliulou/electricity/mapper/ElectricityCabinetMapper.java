@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.MapVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -40,4 +41,8 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 	Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
+
+	Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds);
+
+
 }

@@ -105,8 +105,8 @@ public class EleOperateQueueHandler {
         String type = finalOpenDTO.getType();
         String orderId = finalOpenDTO.getOrderId();
         Double orderSeq = finalOpenDTO.getOrderSeq();
-        String orderStatus=finalOpenDTO.getOrderStatus();
-        Integer isOpenLock=eleExceptionLockStorehouseDoorConfig.getIsOpenLock();
+//        Integer isOpenLock=eleExceptionLockStorehouseDoorConfig.getIsOpenLock();
+
 
         //查找订单
         if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)
@@ -118,9 +118,9 @@ public class EleOperateQueueHandler {
                 return;
             }
 
-
-            //换电中根据上报的订单状态判断问题仓是旧仓门还是新仓门
-            if (Objects.equals(isOpenLock,EleExceptionLockStorehouseDoorConfig.OPEN_LOCK)){
+            //是否开启异常仓门锁仓
+            ElectricityConfig electricityConfig=electricityConfigService.queryOne(electricityCabinetOrder.getTenantId());
+            if (Objects.equals(electricityConfig.getIsOpenDoorLock(),ElectricityConfig.OPEN_DOOR_LOCK)){
                 lockExceptionDoor(electricityCabinetOrder,null,finalOpenDTO);
             }
 
@@ -144,7 +144,8 @@ public class EleOperateQueueHandler {
             }
 
             //换电柜异常
-            if (Objects.equals(isOpenLock,EleExceptionLockStorehouseDoorConfig.OPEN_LOCK)){
+            ElectricityConfig electricityConfig=electricityConfigService.queryOne(rentBatteryOrder.getTenantId());
+            if (Objects.equals(electricityConfig.getIsOpenDoorLock(),ElectricityConfig.OPEN_DOOR_LOCK)){
                 lockExceptionDoor(null,rentBatteryOrder,finalOpenDTO);
             }
 

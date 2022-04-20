@@ -41,6 +41,10 @@ public interface EleWarnMsgService {
 
     R queryList(EleWarnMsgQuery eleWarnMsgQuery);
 
+    R queryAllTenant(EleWarnMsgQuery EleWarnMsgQuery);
+
+    R queryAllTenantCount();
+
     R queryCount(EleWarnMsgQuery eleWarnMsgQuery);
 
 	void delete(Long id);

@@ -64,5 +64,13 @@
         select tu.id from t_ele_deposit_order tedo left join  t_ele_refund_order tero on tedo.order_id =tero.order_id  left join t_user_info tu on tu.uid=tedo.uid where tero.refund_order_no=#{refundOrderNo}
     </select>
 
+    <select id="queryTurnOver" resultType="decimal">
+        select ifnull(sum(pay_amount),0) from t_ele_refund_order
+        where status=2
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
 
 </mapper>

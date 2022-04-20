@@ -24,7 +24,7 @@ public class ElectricityCabinet {
     /**
      * 换电柜Id
      */
-    @TableId(value = "id",type = IdType.AUTO)
+    @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
      * 换电柜名称
@@ -116,5 +116,8 @@ public class ElectricityCabinet {
     public static final Integer ELECTRICITY_CABINET_ONLINE_STATUS = 0;
     //断网
     public static final Integer ELECTRICITY_CABINET_OFFLINE_STATUS = 1;
+
+    public static final String IOT_STATUS_ONLINE = "online";
+    public static final String IOT_STATUS_OFFLINE = "offline";
 
 }

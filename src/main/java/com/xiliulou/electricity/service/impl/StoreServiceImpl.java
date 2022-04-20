@@ -30,6 +30,7 @@ import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.pay.weixinv3.dto.Amount;
@@ -96,12 +97,8 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(rollbackFor = Exception.class)
     public R save(StoreAddAndUpdate storeAddAndUpdate) {
 
-        //前端处理不了，后台写死
-        storeAddAndUpdate.setCityId(283);
-        storeAddAndUpdate.setProvinceId(27);
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 
         //新增加盟商新增用户
@@ -130,8 +127,9 @@ public class StoreServiceImpl implements StoreService {
         Long uid = (Long) result.getData();
 
 
-        Store store = new Store();
-        BeanUtil.copyProperties(storeAddAndUpdate, store);
+		Store store = new Store();
+		BeanUtil.copyProperties(storeAddAndUpdate, store);
+		store.setCid(storeAddAndUpdate.getCityId());
 
         //校验参数
         if (checkParam(storeAddAndUpdate, store)) {
@@ -394,10 +392,20 @@ public class StoreServiceImpl implements StoreService {
         return R.ok(storeMapper.queryCount(storeQuery));
     }
 
-    @Override
-    public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
-        return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
-    }
+	@Override
+	public List<Long> queryStoreIdsByProvinceIdOrCityId(Integer tenantId, Integer pid,Integer cid) {
+		return storeMapper.queryStoreIdsByProvinceId(tenantId,pid,cid);
+	}
+
+	@Override
+	public List<MapVo> queryCountGroupByCityId(Integer tenantId, Integer pid) {
+		return storeMapper.queryCountGroupByCityId(tenantId,pid);
+	}
+
+	@Override
+	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
+		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
+	}
 
     @Override
     public void deleteByUid(Long uid) {
@@ -445,19 +453,26 @@ public class StoreServiceImpl implements StoreService {
         });
     }
 
-    public Long getTime(Long time) {
-        Date date1 = new Date(time);
-        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-        String format = dateFormat.format(date1);
-        Date date2 = null;
-        try {
-            date2 = dateFormat.parse(format);
-        } catch (ParseException e) {
-            e.printStackTrace();
-        }
-        Long ts = date2.getTime();
-        return time - ts;
-    }
+	@Override
+	public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
+		return storeMapper.queryCountGroupByProvinceId(tenantId);
+	}
+
+
+
+	public Long getTime(Long time) {
+		Date date1 = new Date(time);
+		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+		String format = dateFormat.format(date1);
+		Date date2 = null;
+		try {
+			date2 = dateFormat.parse(format);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		Long ts = date2.getTime();
+		return time - ts;
+	}
 
     private boolean checkParam(StoreAddAndUpdate storeAddAndUpdate, Store store) {
         if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {

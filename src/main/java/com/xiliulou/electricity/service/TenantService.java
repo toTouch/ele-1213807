@@ -28,4 +28,7 @@ public interface TenantService {
     Tenant queryByIdFromCache(Integer tenantId);
 
 	R queryCount(TenantQuery tenantQuery);
+
+	Integer querySumCount(TenantQuery tenantQuery);
+
 }

@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.math.BigDecimal;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务接口
@@ -41,4 +42,6 @@ public interface EleDepositOrderService {
 	void insert(EleDepositOrder eleDepositOrder);
 
 	R queryModelType(String productKey, String deviceName);
+
+	BigDecimal queryTurnOver(Integer tenantId);
 }

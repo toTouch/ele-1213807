@@ -45,4 +45,8 @@ public interface FranchiseeService {
     Franchisee queryByElectricityBatteryId(Long id);
 
 	R queryByTenantId(Integer tenantId);
+
+	R queryByCabinetId(Integer cabinetId);
+
+
 }

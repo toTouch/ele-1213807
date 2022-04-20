@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.DataScreenMapper">
+
+
+    <select id="queryWeekElectricityOrderStatistic" resultType="com.xiliulou.electricity.vo.WeekOrderStatisticVo">
+        SELECT
+		count(1) as weekCount,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+	    FROM
+		t_electricity_cabinet_order
+		<where>
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+		</where>
+	    GROUP BY weekDate
+    </select>
+
+	<select id="queryWeekMemberCardStatistic" resultType="com.xiliulou.electricity.vo.WeekOrderStatisticVo">
+		SELECT
+		count(1) as weekCount,
+		FROM_UNIXTIME( tel.create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_electricity_member_card_order tel
+		LEFT JOIN t_user_info tui ON tui.uid = tel.uid
+		LEFT JOIN t_franchisee tf ON tf.id = tel.franchisee_id
+		<where>
+			<if test="tenantId != null">
+				and tel.tenant_id = #{tenantId}
+			</if>
+			<if test="beginTime != null">
+				and tel.create_time &gt;=#{beginTime}
+			</if>
+		</where>
+		GROUP BY
+		weekDate
+	</select>
+
+	<select id="queryWeekRentBatteryStatistic" resultType="com.xiliulou.electricity.vo.WeekOrderStatisticVo">
+		SELECT
+		count(1) as weekCount,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_rent_battery_order
+		<where>
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+		</where>
+		GROUP BY
+		weekDate
+	</select>
+
+	<select id="queryWeekCouponIssue" resultType="com.xiliulou.electricity.vo.WeekCouponStatisticVo">
+		SELECT
+		count(1) as couponCount,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_user_coupon
+		<where>
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="beginTime != null">
+				and create_time &gt;=#{beginTime}
+			</if>
+			<if test="statusList!=null and statusList!=''">
+				and status in
+				<foreach collection="statusList" item="id" index="index" open="(" close=")" separator=",">
+					#{id}
+				</foreach>
+			</if>
+		</where>
+		GROUP BY
+		weekDate
+	</select>
+
+	<select id="queryWeekMemberCardTurnoverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
+		SELECT
+		sum(pay_amount) as turnover,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_electricity_member_card_order
+		where status=1
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		<if test="beginTime != null">
+			and create_time &gt;=#{beginTime}
+		</if>
+		GROUP BY
+		weekDate
+	</select>
+
+	<select id="queryWeekDepositTurnoverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
+		SELECT
+		sum(pay_amount) as turnover,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_ele_deposit_order
+		where status=1
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		<if test="beginTime != null">
+			and create_time &gt;=#{beginTime}
+		</if>
+		GROUP BY
+		weekDate
+	</select>
+
+	<select id="queryWeekRefundTurnOverStatistic" resultType="com.xiliulou.electricity.vo.WeekTurnoverStatisticVo">
+		SELECT
+		sum(pay_amount) as turnover,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_ele_refund_order
+		where status=1
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		<if test="beginTime != null">
+			and create_time &gt;=#{beginTime}
+		</if>
+		GROUP BY
+		weekDate
+	</select>
+
+	<select id="queryWeekUserStatistic" resultType="com.xiliulou.electricity.vo.WeekOrderStatisticVo">
+		SELECT
+		count(1) as weekCount,
+		FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as weekDate
+		FROM
+		t_user_info
+		where del_flag=0
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		<if test="beginTime != null">
+			and create_time &gt;=#{beginTime}
+		</if>
+		GROUP BY
+		weekDate
+	</select>
+
+
+</mapper>

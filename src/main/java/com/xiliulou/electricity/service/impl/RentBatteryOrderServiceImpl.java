@@ -79,6 +79,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Autowired
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
     @Autowired
+    ElectricityConfigService electricityConfigService;
+    @Autowired
     ElectricityMemberCardService electricityMemberCardService;
 
     /**
@@ -504,7 +506,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //分配开门格挡
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
 
-        if (Objects.isNull(usableEmptyCellNo.getLeft())) {
+        if (Objects.isNull(usableEmptyCellNo.getRight())) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
         }
@@ -536,6 +538,18 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", cellNo);
             dataMap.put("orderId", orderId);
+
+
+            //是否开启电池检测
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+            if (Objects.nonNull(electricityConfig)) {
+                if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+                    dataMap.put("is_checkBatterySn", true);
+                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                } else {
+                    dataMap.put("is_checkBatterySn", false);
+                }
+            }
 
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
                 dataMap.put("model_type", false);
@@ -644,6 +658,19 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("cellNo", rentBatteryOrder.getCellNo());
             dataMap.put("orderId", rentBatteryOrder.getOrderId());
+
+            //是否开启电池检测
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(user.getTenantId());
+            if (Objects.nonNull(electricityConfig)) {
+                UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+                FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+                if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+                    dataMap.put("is_checkBatterySn", true);
+                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                } else {
+                    dataMap.put("is_checkBatterySn", false);
+                }
+            }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
@@ -986,6 +1013,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
     @Override
     public R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery) {
         return R.ok(rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery));
+    }
+
+    @Override
+    public Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery) {
+        return rentBatteryOrderMapper.queryCount(rentBatteryOrderQuery);
     }
 
     public boolean isBusiness(ElectricityCabinet electricityCabinet) {

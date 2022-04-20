@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.query.StoreQuery;
+import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -33,4 +34,10 @@ public interface StoreMapper extends BaseMapper<Store> {
     Integer homeOne(@Param("storeIdList") List<Long> storeIdList,@Param("tenantId") Integer tenantId);
 
 	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("storeIdList") List<Long> storeIdList ,@Param("tenantId")Integer tenantId);
+
+    List<MapVo> queryCountGroupByProvinceId(@Param("tenantId") Integer tenantId);
+
+    List<Long> queryStoreIdsByProvinceId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid,@Param("cid") Integer cid);
+
+    List<MapVo> queryCountGroupByCityId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid);
 }

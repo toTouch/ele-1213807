@@ -233,6 +233,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	}
 
 	@Override
+	public Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery) {
+		return electricitybatterymapper.queryCount(electricityBatteryQuery);
+	}
+
+	@Override
 	public R queryById(Long electricityBatteryId) {
 		ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId);
 

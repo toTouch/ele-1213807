@@ -7,6 +7,8 @@ import com.xiliulou.electricity.query.BatteryReportQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.vo.MapVo;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
@@ -100,6 +102,8 @@ public interface ElectricityCabinetService {
 
     R queryById(Integer id);
 
+    R queryCabinetBelongFranchisee(Integer id);
+
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
     void unlockElectricityCabinet(Integer eid);
@@ -107,4 +111,11 @@ public interface ElectricityCabinetService {
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
 
     R getFranchisee(String productKey, String deviceName);
+
+    Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery);
+
+    Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds);
+
+    R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery);
+
 }

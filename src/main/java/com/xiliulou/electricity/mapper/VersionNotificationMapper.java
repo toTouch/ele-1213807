@@ -3,6 +3,9 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.VersionNotification;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 /**
  * (VersionNotification)表数据库访问层
@@ -12,5 +15,8 @@ import com.xiliulou.electricity.entity.VersionNotification;
  */
 public interface VersionNotificationMapper extends BaseMapper<VersionNotification> {
 
+    List<VersionNotification> queryVersionPage(@Param("offset")Long offset,@Param("size") Long size);
+
+    VersionNotification queryCreateTimeMaxTenantNotification();
 
 }
