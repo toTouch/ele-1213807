@@ -1,0 +1,38 @@
+package com.xiliulou.electricity.service.impl;
+
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
+import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
+import com.xiliulou.electricity.service.*;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
+
+
+/**
+ * 退款订单表(TEleRefundOrder)表服务实现类
+ *
+ * @author makejava
+ * @since 2022-04-20 10:21:24
+ */
+@Service("eleBatteryServiceFeeOrderService")
+@Slf4j
+public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFeeOrderService {
+
+	@Resource
+	EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
+
+
+	@Override
+	public EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo) {
+		return eleBatteryServiceFeeOrderMapper.selectOne(new LambdaQueryWrapper<EleBatteryServiceFeeOrder>().eq(EleBatteryServiceFeeOrder::getOrderId, orderNo));
+	}
+
+	@Override
+	public void update(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder) {
+		eleBatteryServiceFeeOrderMapper.updateById(eleBatteryServiceFeeOrder);
+	}
+}

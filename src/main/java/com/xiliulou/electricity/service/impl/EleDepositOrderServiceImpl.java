@@ -389,7 +389,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //判断用户是否产生电池服务费
         Long now = System.currentTimeMillis();
         long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
-        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1) {
+        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1 && !Objects.equals(oldFranchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_SERVICE_FEE)) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
@@ -785,7 +785,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (WechatPayException e) {
-            log.error("payDeposit ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+            log.error("payEleBatteryServiceFee ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
 
         return R.fail("ELECTRICITY.0099", "下单失败");
