@@ -49,12 +49,17 @@ public class ElectricityTradeOrder {
     public static final Integer ORDER_TYPE_MEMBER_CARD = 1;
     //押金支付
     public static final Integer ORDER_TYPE_DEPOSIT = 2;
+    //电池服务费支付
+    public static final Integer ORDER_TYPE_BATTERY_SERVICE_FEE = 3;
 
     //押金支付附加信息
     public static final String ATTACH_DEPOSIT = "deposit";
 
     //押金支付附加信息
     public static final String ATTACH_MEMBER = "memberCard";
+
+    //电池服务费附加信息
+    public static final String ATTACH_BATTERY_SERVICE_FEE = "batteryServiceFee";
 
 
 }

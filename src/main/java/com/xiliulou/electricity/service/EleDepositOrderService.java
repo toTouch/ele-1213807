@@ -41,4 +41,6 @@ public interface EleDepositOrderService {
 	void insert(EleDepositOrder eleDepositOrder);
 
 	R queryModelType(String productKey, String deviceName);
+
+	R payBatteryServiceFee(HttpServletRequest request);
 }

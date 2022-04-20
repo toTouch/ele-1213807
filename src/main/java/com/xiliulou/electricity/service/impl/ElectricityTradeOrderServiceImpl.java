@@ -463,6 +463,11 @@ public class ElectricityTradeOrderServiceImpl extends
     }
 
     @Override
+    public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource) {
+        return null;
+    }
+
+    @Override
     public ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo) {
         return baseMapper.selectTradeOrderByTradeOrderNo(outTradeNo);
     }

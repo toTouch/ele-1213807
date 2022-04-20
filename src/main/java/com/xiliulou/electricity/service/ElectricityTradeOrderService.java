@@ -30,6 +30,9 @@ public interface ElectricityTradeOrderService {
     //押金支付回调
     Pair<Boolean, Object> notifyDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
 
+    //电池服务费支付回调
+    Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource);
+
 
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
 

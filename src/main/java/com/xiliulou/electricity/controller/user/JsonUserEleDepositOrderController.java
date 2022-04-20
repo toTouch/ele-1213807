@@ -114,5 +114,14 @@ public class JsonUserEleDepositOrderController {
 		return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
 	}
 
+	/**
+	 * 缴纳电池服务费
+	 * @return
+	 */
+	@PostMapping("/user/payBatteryServiceFee")
+	public R payBatteryServiceFee(HttpServletRequest request){
+		return eleDepositOrderService.payBatteryServiceFee(request);
+	}
+
 }
 
