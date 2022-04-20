@@ -7,7 +7,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type
+        update_time, del_flag,tenant_id,temperature,battery_type,charge_v
         from t_electricity_cabinet_box
         where del_flag=0
         <if test="query.electricityCabinetId != null">
@@ -24,7 +24,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type
+        update_time, del_flag,tenant_id,temperature,battery_type,charge_v
         from t_electricity_cabinet_box
         where del_flag=0 AND electricity_cabinet_id=#{id}
         and status=0 and usable_status=0
@@ -53,6 +53,9 @@
         set sn = #{sn},
         <if test="status!= null ">
             status = #{status},
+        </if>
+        <if test="chargeV != null">
+            charge_v= #{chargeV},
         </if>
         update_time = #{updateTime},
         battery_type = #{batteryType},
@@ -90,6 +93,9 @@
             <if test="updateTime!= null ">
                 update_time = #{updateTime}
             </if>
+            <if test="chargeV != null">
+                charge_v= #{chargeV},
+            </if>
         </set>
         where cell_no = #{cellNo}
         and electricity_cabinet_id = #{electricityCabinetId}
@@ -100,7 +106,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,power
+        update_time, del_flag,tenant_id,temperature,battery_type,power,charge_v
         from t_electricity_cabinet_box
         <where>
             electricity_cabinet_id = #{eid}
@@ -119,7 +125,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,power
+        update_time, del_flag,tenant_id,temperature,battery_type,power,charge_v
         from t_electricity_cabinet_box
         <where>
             electricity_cabinet_id = #{eid}
