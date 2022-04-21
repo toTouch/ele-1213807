@@ -627,6 +627,7 @@ public class EleOperateQueueHandler {
         franchiseeUserInfo.setUserInfoId(userInfo.getId());
         franchiseeUserInfo.setNowElectricityBatterySn(null);
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+        franchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
         franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
