@@ -97,6 +97,11 @@ public class FranchiseeUserInfo {
      */
     private String batteryType;
 
+    /**
+     * 电池服务费状态 0-初始状态 1-已支付
+     */
+    private Integer batteryServiceFeeStatus;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金
@@ -104,7 +109,9 @@ public class FranchiseeUserInfo {
     //已租电池
     public static final Integer STATUS_IS_BATTERY = 3;
 
-    public static final Integer STATUS_IS_SERVICE_FEE = 4;
+    //电池服务费状态
+    public static final Integer STATUS_NOT_IS_SERVICE_FEE = 0;
+    public static final Integer STATUS_IS_SERVICE_FEE = 1;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
