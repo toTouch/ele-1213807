@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 
 import java.util.List;
 
@@ -43,4 +45,6 @@ public interface FranchiseeUserInfoService {
 	void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
 
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+
+    EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
 }

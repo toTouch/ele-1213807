@@ -48,4 +48,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     void insert(ElectricityBattery electricityBattery);
 
     ElectricityBatteryVO queryInfoByUid(Long uid);
+
 }

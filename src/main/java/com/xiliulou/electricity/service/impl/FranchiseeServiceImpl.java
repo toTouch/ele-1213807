@@ -418,4 +418,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 				.eq(Franchisee::getDelFlag, Franchisee.DEL_NORMAL)));
 	}
 
+	@Override
+	public Franchisee queryByUserId(Long uid) {
+		return franchiseeMapper.queryByUserId(uid);
+	}
+
 }
