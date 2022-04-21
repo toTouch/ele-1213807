@@ -3,19 +3,19 @@
 <mapper namespace="com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper">
 
 
-	<update id="unBind">
-		update t_franchisee_user_info
-		set service_status = #{serviceStatus},
-		now_electricity_battery_sn = #{nowElectricityBatterySn},
-		<if test="initElectricityBatterySn != null">
-			init_electricity_battery_sn = #{initElectricityBatterySn},
-		</if>
-		update_time = #{updateTime}
-		where id = #{id} and del_flag=0
-	</update>
+    <update id="unBind">
+        update t_franchisee_user_info
+        set service_status = #{serviceStatus},
+        now_electricity_battery_sn = #{nowElectricityBatterySn},
+        <if test="initElectricityBatterySn != null">
+            init_electricity_battery_sn = #{initElectricityBatterySn},
+        </if>
+        update_time = #{updateTime}
+        where id = #{id} and del_flag=0
+    </update>
 
 
-	<update id="updateRefund">
+    <update id="updateRefund">
 		update t_franchisee_user_info
         set service_status = #{serviceStatus},
             order_id = #{orderId},
@@ -25,20 +25,23 @@
 	</update>
 
 
-	<update id="updateByUserInfoId">
-		update t_franchisee_user_info
-		set now_electricity_battery_sn = #{nowElectricityBatterySn},
-		<if test="serviceStatus != null">
-			service_status = #{serviceStatus},
-		</if>
-		<if test="initElectricityBatterySn != null">
-			init_electricity_battery_sn = #{initElectricityBatterySn},
-		</if>
-		update_time = #{updateTime}
-		where user_info_id = #{userInfoId} and del_flag=0
-	</update>
+    <update id="updateByUserInfoId">
+        update t_franchisee_user_info
+        set now_electricity_battery_sn = #{nowElectricityBatterySn},
+        <if test="serviceStatus != null">
+            service_status = #{serviceStatus},
+        </if>
+        <if test="initElectricityBatterySn != null">
+            init_electricity_battery_sn = #{initElectricityBatterySn},
+        </if>
+        <if test="batteryServiceFeeStatus != null">
+            battery_service_fee_status = #{batteryServiceFeeStatus},
+        </if>
+        update_time = #{updateTime}
+        where user_info_id = #{userInfoId} and del_flag=0
+    </update>
 
-	<update id="updateByOrder">
+    <update id="updateByOrder">
 		update t_franchisee_user_info
 		set service_status = #{serviceStatus},
 		update_time = #{updateTime},
@@ -56,7 +59,7 @@
 	</update>
 
 
-	<update id="updateOrderByUserInfoId">
+    <update id="updateOrderByUserInfoId">
 		update t_franchisee_user_info
 		set service_status = #{serviceStatus},
 		update_time = #{updateTime},
