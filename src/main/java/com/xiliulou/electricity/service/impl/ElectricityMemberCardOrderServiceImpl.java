@@ -345,6 +345,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
             franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
             franchiseeUserInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+            franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
