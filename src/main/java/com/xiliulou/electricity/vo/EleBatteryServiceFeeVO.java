@@ -1,12 +1,14 @@
 package com.xiliulou.electricity.vo;
 
 
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 电池服务费视图对象
@@ -29,5 +31,10 @@ public class EleBatteryServiceFeeVO {
      * 用户所产生的电池服务费
      */
     private BigDecimal userBatteryServiceFee;
+
+    /**
+     * 分型号电池服务费
+     */
+    private List<ModelBatteryDeposit> modelBatteryServiceFeeList;
 
 }

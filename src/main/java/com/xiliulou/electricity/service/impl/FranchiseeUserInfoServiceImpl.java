@@ -145,6 +145,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 String model = electricityBattery.getModel();
 
                 List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+                eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
                 for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                     if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                         //计算服务费
