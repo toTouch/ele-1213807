@@ -25,5 +25,25 @@ public interface EleBatteryServiceFeeOrderService {
 
     void update(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
 
+    /**
+     * 用户查询电池服务费支付记录
+     * @param offset
+     * @param size
+     * @param startTime
+     * @param endTime
+     * @return
+     */
     R queryList(Long offset, Long size, Long startTime, Long endTime);
+
+    /**
+     * 后台查询电池服务费支付记录
+     * @param offset
+     * @param size
+     * @param startTime
+     * @param endTime
+     * @param uid
+     * @param status
+     * @return
+     */
+    R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime,Long uid,Integer status);
 }
