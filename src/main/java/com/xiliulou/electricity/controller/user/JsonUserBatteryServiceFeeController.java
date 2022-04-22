@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserAmountService;
@@ -8,6 +9,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.Resource;
@@ -22,14 +24,17 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserBatteryServiceFeeController {
-
-
 	@Autowired
 	ElectricityBatteryService electricityBatteryService;
 	@Autowired
 	FranchiseeUserInfoService franchiseeUserInfoService;
+	@Autowired
+	EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
-
+	/**
+	 * 查询电池服务费
+	 * @return
+	 */
 	@GetMapping("/user/batteryServiceFee/query")
 	public R queryBatteryServiceFee(){
 		Long uid = SecurityUtils.getUid();
@@ -37,6 +42,21 @@ public class JsonUserBatteryServiceFeeController {
 			return R.fail("ELECTRICITY.0001", "未找到用户!");
 		}
 		return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
+	}
+
+	/**
+	 * 查询用户的服务费支付记录
+	 * @param offset
+	 * @param size
+	 * @param queryStartTime
+	 * @param queryEndTime
+	 * @return
+	 */
+	@GetMapping("/user/batteryServiceFee/orderList")
+	public R queryBatteryServiceFeeOrder(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+										 @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+										 @RequestParam(value = "queryEndTime", required = false) Long queryEndTime){
+		return eleBatteryServiceFeeOrderService.queryList(offset,size,queryStartTime,queryEndTime);
 	}
 
 }

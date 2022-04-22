@@ -24,4 +24,6 @@ public interface EleBatteryServiceFeeOrderService {
     EleBatteryServiceFeeOrder queryEleBatteryServiceFeeOrderByOrderId(String orderNo);
 
     void update(EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder);
+
+    R queryList(Long offset, Long size, Long startTime, Long endTime);
 }

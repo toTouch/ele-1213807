@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper">
+
+
+
+	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder">
+		SELECT * FROM
+		t_ele_battery_service_fee_order
+		WHERE uid =#{uid}
+		and status =1
+		<if test="startTime != null">
+			and create_time BETWEEN #{startTime} and #{endTime}
+		</if>
+		order by create_time desc
+		limit #{offset},#{size}
+	</select>
+
+
+
+</mapper>
