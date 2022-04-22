@@ -20,7 +20,7 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("c")
+@TableName("t_ele_battery_service_fee_order")
 public class EleBatteryServiceFeeOrder {
 
     @TableId(value = "id",type = IdType.AUTO)
