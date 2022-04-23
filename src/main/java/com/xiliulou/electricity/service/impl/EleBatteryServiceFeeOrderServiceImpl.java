@@ -54,6 +54,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
 	@Override
 	public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status) {
-		return R.ok(eleBatteryServiceFeeOrderMapper.queryUserList(offset,size,startTime,endTime,uid));
+
+		eleBatteryServiceFeeOrderMapper.queryUserList(offset,size,startTime,endTime,uid);
+
+		return R.ok();
 	}
 }

@@ -1,4 +1,4 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
@@ -20,10 +20,8 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_ele_battery_service_fee_order")
-public class EleBatteryServiceFeeOrder {
+public class EleBatteryServiceFeeOrderVo {
 
-    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
     * 支付金额
@@ -77,6 +75,21 @@ public class EleBatteryServiceFeeOrder {
      * 电池sn码
      */
     private String sn;
+
+    /**
+     * 加盟商名字
+     */
+    private String franchiseeName;
+
+    /**
+     * 电池服务费
+     */
+    private BigDecimal batteryServiceFee;
+
+    /**
+     *电池类型
+     */
+    private Integer model;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
