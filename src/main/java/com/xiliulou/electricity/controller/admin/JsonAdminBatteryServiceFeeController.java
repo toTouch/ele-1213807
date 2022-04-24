@@ -47,6 +47,9 @@ public class JsonAdminBatteryServiceFeeController {
 										 @RequestParam("uid") Long uid,
 										 @RequestParam(value = "status", required = false) Integer status){
 
+
+		System.out.println("参数uid============================================="+uid);
+
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
