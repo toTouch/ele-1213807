@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -22,4 +23,6 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
     List<EleBatteryServiceFeeOrder> queryUserList(@Param("uid") Long uid,
                                                    @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
+    List<EleBatteryServiceFeeOrderVo> queryListForAdmin(@Param("uid") Long uid,
+                                                        @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 }

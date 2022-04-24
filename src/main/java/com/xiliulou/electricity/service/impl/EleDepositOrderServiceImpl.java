@@ -741,7 +741,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             payAmount = (franchisee.getBatteryServiceFee()).multiply(new BigDecimal(cardDays));
-        }else {
+        } else {
             //查询用户绑定的电池类型
             ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
             String model = electricityBattery.getModel();
@@ -758,7 +758,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         String orderId = generateOrderId(user.getUid());
         //创建订单
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder=EleBatteryServiceFeeOrder.builder()
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
                 .orderId(orderId)
                 .uid(user.getUid())
                 .phone(userInfo.getPhone())

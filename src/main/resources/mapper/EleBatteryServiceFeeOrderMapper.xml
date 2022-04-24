@@ -18,4 +18,19 @@
 
 
 
+	<select id="queryListForAdmin" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
+		SELECT tf.payAmount, tf.sn, tf.battery_type, tf.order_id, tf.create_time, te.model_type, te.battery_service_fee, te.model_battery_deposit,
+		  te.name as franchiseeName   FROM
+		t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
+		WHERE tf.uid =#{uid}
+		and tf.status =1
+		<if test="tartTime != null">
+			and tf.create_time BETWEEN #{startTime} and #{endTime}
+		</if>
+		order by tf.create_time desc
+		limit #{offset},#{size}
+	</select>
+
+
+
 </mapper>

@@ -91,6 +91,9 @@ public class EleBatteryServiceFeeOrderVo {
      */
     private Integer model;
 
+    //新分型号押金
+    private String modelBatteryDeposit;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;
