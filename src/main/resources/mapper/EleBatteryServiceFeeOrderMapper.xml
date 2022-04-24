@@ -26,9 +26,9 @@
 		<if test="status != null">
 			and te.status =#{status}
 		</if>
-		<if test="startTime != null">
-			and te.create_time BETWEEN #{startTime} and #{endTime}
-		</if>
+<!--		<if test="startTime != null">-->
+<!--			and te.create_time BETWEEN #{startTime} and #{endTime}-->
+<!--		</if>-->
 		order by te.create_time desc
 		limit #{offset},#{size}
 	</select>
