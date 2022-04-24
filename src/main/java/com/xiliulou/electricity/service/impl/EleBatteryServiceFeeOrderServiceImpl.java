@@ -64,7 +64,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     @Override
     public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status) {
 
-        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(offset, size, startTime, endTime, uid);
+        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(offset, size, startTime, endTime, uid,status);
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
