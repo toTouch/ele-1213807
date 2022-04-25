@@ -146,6 +146,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             return eleBatteryServiceFeeVO;
         }
 
+        eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
 
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24;
@@ -156,25 +157,18 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 //查询用户绑定的电池类型
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
                 String model = electricityBattery.getModel();
-                List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
-
                 List<ModelBatteryDeposit> list=JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
 
-                System.out.println("json解析数据==========================================="+modelBatteryDepositList);
+                eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(list);
 
-                System.out.println("新的json解析list========================================="+list);
-
-                eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
-
-
-//                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-//                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
-//                            //计算服务费
-//                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-//                            eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
-//                            return eleBatteryServiceFeeVO;
-//                        }
-//                    }
+                for (ModelBatteryDeposit modelBatteryDeposit : list) {
+                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                        //计算服务费
+                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                        eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
+                        return eleBatteryServiceFeeVO;
+                    }
+                }
             } else {
                 BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                 //计算服务费

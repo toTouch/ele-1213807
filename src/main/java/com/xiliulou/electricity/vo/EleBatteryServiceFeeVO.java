@@ -37,4 +37,6 @@ public class EleBatteryServiceFeeVO {
      */
     private List<ModelBatteryDeposit> modelBatteryServiceFeeList;
 
+    private Integer modelType;
+
 }
