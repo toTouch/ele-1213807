@@ -147,10 +147,13 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                     ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
                     String model = electricityBattery.getModel();
                     List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+
+
                     eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
 
-                    System.out.println("电池服务费解析josn===============================" + modelBatteryDepositList);
+                    System.out.println("解析前电池付费================================="+franchisee.getModelBatteryDeposit());
 
+                    System.out.println("电池服务费解析josn===============================" + modelBatteryDepositList);
 
 //                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
 //                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
