@@ -1,6 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.json.JSON;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONString;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.google.api.client.json.Json;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -129,31 +136,36 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         //计算用户所产生的电池服务费
 
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
-        if (Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0.00))) {
+        if (Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0))) {
             return eleBatteryServiceFeeVO;
         }
 
-        eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
-
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
+        eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())){
+            return eleBatteryServiceFeeVO;
+        }
+
+
         Long now = System.currentTimeMillis();
-        if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime())) {
-            long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
-            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1 && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
-                //查询用户是否存在电池服务费
-                Integer modelType = franchisee.getModelType();
-                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                    //查询用户绑定的电池类型
-                    ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
-                    String model = electricityBattery.getModel();
-                    List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+        long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24;
+        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1 && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+            //查询用户是否存在电池服务费
+            Integer modelType = franchisee.getModelType();
+            if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                //查询用户绑定的电池类型
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
+                String model = electricityBattery.getModel();
+                List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
 
+                List<ModelBatteryDeposit> list=JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
 
-                    eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
+                System.out.println("json解析数据==========================================="+modelBatteryDepositList);
 
-                    System.out.println("解析前电池付费================================="+franchisee.getModelBatteryDeposit());
+                System.out.println("新的json解析list========================================="+list);
 
-                    System.out.println("电池服务费解析josn===============================" + modelBatteryDepositList);
+                eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
+
 
 //                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
 //                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
@@ -163,13 +175,12 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 //                            return eleBatteryServiceFeeVO;
 //                        }
 //                    }
-                } else {
-                    BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
-                    //计算服务费
-                    BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-                    eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
-                    return eleBatteryServiceFeeVO;
-                }
+            } else {
+                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+                //计算服务费
+                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
+                return eleBatteryServiceFeeVO;
             }
         }
 
