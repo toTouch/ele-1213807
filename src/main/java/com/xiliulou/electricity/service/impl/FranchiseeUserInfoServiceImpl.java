@@ -19,12 +19,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * 用户绑定列表(FranchiseeUserInfo)表服务实现类
  *
@@ -52,14 +54,14 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(FranchiseeUserInfo franchiseeUserInfo) {
-       return this.franchiseeUserInfoMapper.updateById(franchiseeUserInfo);
+        return this.franchiseeUserInfoMapper.updateById(franchiseeUserInfo);
 
     }
 
     @Override
     public FranchiseeUserInfo queryByUserInfoId(Long id) {
         return franchiseeUserInfoMapper.selectOne(new LambdaQueryWrapper<FranchiseeUserInfo>()
-        .eq(FranchiseeUserInfo::getUserInfoId,id).eq(FranchiseeUserInfo::getDelFlag,FranchiseeUserInfo.DEL_NORMAL));
+                .eq(FranchiseeUserInfo::getUserInfoId, id).eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
     }
 
    /* @Override
@@ -107,7 +109,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     @Override
     public Integer queryCountByFranchiseeId(Long id) {
-        return franchiseeUserInfoMapper.selectCount(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId,id).last("limit 0,1"));
+        return franchiseeUserInfoMapper.selectCount(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId, id).last("limit 0,1"));
     }
 
     @Override
@@ -123,17 +125,17 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {
         //获取改用户所绑定的加盟商的电池服务费
-        Franchisee franchisee=franchiseeService.queryByUserId(uid);
+        Franchisee franchisee = franchiseeService.queryByUserId(uid);
         //计算用户所产生的电池服务费
 
-        EleBatteryServiceFeeVO eleBatteryServiceFeeVO=new EleBatteryServiceFeeVO();
-        if (Objects.equals(franchisee.getBatteryServiceFee(),new BigDecimal(0.00))){
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
+        if (Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0.00))) {
             return eleBatteryServiceFeeVO;
         }
 
         eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
 
-        FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
         Long now = System.currentTimeMillis();
         if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime())) {
             long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
@@ -144,21 +146,20 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                     //查询用户绑定的电池类型
                     ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
                     String model = electricityBattery.getModel();
-
-
-                    System.out.println("多型号电池服务费json数据======================="+franchisee.getModelBatteryDeposit());
-
-
-                    List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+                    List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
                     eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(modelBatteryDepositList);
-                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
-                            //计算服务费
-                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-                            eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
-                            return eleBatteryServiceFeeVO;
-                        }
-                    }
+
+                    System.out.println("电池服务费解析josn===============================" + modelBatteryDepositList);
+
+
+//                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+//                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+//                            //计算服务费
+//                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+//                            eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
+//                            return eleBatteryServiceFeeVO;
+//                        }
+//                    }
                 } else {
                     BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                     //计算服务费
