@@ -39,4 +39,6 @@ public class EleBatteryServiceFeeVO {
 
     private Integer modelType;
 
+    private Integer model;
+
 }
