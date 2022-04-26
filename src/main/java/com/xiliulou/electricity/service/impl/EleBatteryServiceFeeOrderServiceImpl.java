@@ -60,7 +60,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return R.ok(eleBatteryServiceFeeOrderMapper.queryUserList(user.getUid(), offset, size, startTime, endTime));
+        return this.queryListForAdmin(offset,size,startTime,endTime,user.getUid(),EleBatteryServiceFeeOrderVo.STATUS_SUCCESS);
     }
 
     @Override
