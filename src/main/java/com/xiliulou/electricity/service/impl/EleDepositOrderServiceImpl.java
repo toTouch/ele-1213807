@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -389,7 +390,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //判断用户是否产生电池服务费
         Long now = System.currentTimeMillis();
         if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime())) {
-            long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
+            long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24;
             if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1 && Objects.equals(oldFranchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
@@ -399,7 +400,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
                     String model = electricityBattery.getModel();
 
-                    List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
+                    List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
                     for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                         if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                             //计算服务费
@@ -745,8 +746,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             //查询用户绑定的电池类型
             ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
             String model = electricityBattery.getModel();
-            List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
-
+            List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                     //计算服务费

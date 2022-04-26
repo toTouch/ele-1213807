@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -68,7 +69,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
-                List<ModelBatteryDeposit> modelBatteryDepositList = JsonUtil.fromJson(eleBatteryServiceFeeOrderVo.getModelBatteryDeposit(), List.class);
+                List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(eleBatteryServiceFeeOrderVo.getModelBatteryDeposit(),ModelBatteryDeposit.class);
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(eleBatteryServiceFeeOrderVo.getSn());
                 String model = electricityBattery.getModel();
                 for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
