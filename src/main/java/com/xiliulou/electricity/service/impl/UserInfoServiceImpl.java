@@ -11,6 +11,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
@@ -311,10 +312,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                //查询用户绑定的电池类型
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
-                String model = electricityBattery.getModel();
-
+                Integer model= BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
                 List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                 for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                     if (Objects.equals(model, modelBatteryDeposit.getModel())) {

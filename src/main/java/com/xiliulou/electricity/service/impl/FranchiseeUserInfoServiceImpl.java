@@ -10,6 +10,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
@@ -154,9 +155,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             //查询用户是否存在电池服务费
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                //查询用户绑定的电池类型
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
-                String model = electricityBattery.getModel();
+                Integer model=BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+
                 List<ModelBatteryDeposit> list=JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
 
                 eleBatteryServiceFeeVO.setModelBatteryServiceFeeList(list);

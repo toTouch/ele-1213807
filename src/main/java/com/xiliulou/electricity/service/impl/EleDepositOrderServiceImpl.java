@@ -396,10 +396,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
                 if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                    //查询用户绑定的电池类型
-                    ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
-                    String model = electricityBattery.getModel();
-
+                    Integer model=BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
                     List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
                     for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                         if (Objects.equals(model, modelBatteryDeposit.getModel())) {
@@ -743,9 +740,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             payAmount = (franchisee.getBatteryServiceFee()).multiply(new BigDecimal(cardDays));
         } else {
-            //查询用户绑定的电池类型
-            ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(franchiseeUserInfo.getNowElectricityBatterySn());
-            String model = electricityBattery.getModel();
+            Integer model=BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
             List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {
