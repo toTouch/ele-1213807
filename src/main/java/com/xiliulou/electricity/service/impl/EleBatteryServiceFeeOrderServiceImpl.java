@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
@@ -70,8 +71,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
                 List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(eleBatteryServiceFeeOrderVo.getModelBatteryDeposit(),ModelBatteryDeposit.class);
-                ElectricityBattery electricityBattery = electricityBatteryService.queryByBindSn(eleBatteryServiceFeeOrderVo.getSn());
-                String model = electricityBattery.getModel();
+                Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
+                eleBatteryServiceFeeOrderVo.setModel(model);
                 for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                     if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                         eleBatteryServiceFeeOrderVo.setBatteryServiceFee(modelBatteryDeposit.getBatteryServiceFee());
