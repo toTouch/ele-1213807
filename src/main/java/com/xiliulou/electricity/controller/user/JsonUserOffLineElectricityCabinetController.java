@@ -31,4 +31,13 @@ public class JsonUserOffLineElectricityCabinetController {
         return offLineElectricityCabinetService.generateVerificationCode();
     }
 
+    /**
+     * 离线换电-手机离线前置检测
+     * @return
+     */
+    @GetMapping("/user/offLineElectricityCabinet/frontDetection")
+    public R frontDetection(){
+        return offLineElectricityCabinetService.frontDetection();
+    }
+
 }
