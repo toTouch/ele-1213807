@@ -98,7 +98,8 @@ public class JsonAdminElectricityCabinetController {
 			@RequestParam(value = "usableStatus", required = false) Integer usableStatus,
 			@RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
-			@RequestParam(value = "endTime", required = false) Long endTime) {
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "id", required = false) Integer id) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -141,6 +142,7 @@ public class JsonAdminElectricityCabinetController {
 				.beginTime(beginTime)
 				.endTime(endTime)
 				.eleIdList(eleIdList)
+				.id(id)
 				.tenantId(tenantId).build();
 
 		return electricityCabinetService.queryList(electricityCabinetQuery);

@@ -13,6 +13,9 @@ import java.util.List;
 @Data
 @Builder
 public class ElectricityCabinetQuery {
+
+    private Integer id;
+
     private Long size;
     private Long offset;
     /**

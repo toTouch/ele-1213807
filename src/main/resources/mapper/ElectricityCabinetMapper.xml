@@ -20,6 +20,9 @@
 		<if test="query.usableStatus != null">
 			and usable_status = #{query.usableStatus}
 		</if>
+		<if test="query.id != null">
+			and id =#{query.id}
+		</if>
 		<if test="query.onlineStatus != null">
 			and online_status = #{query.onlineStatus}
 		</if>
