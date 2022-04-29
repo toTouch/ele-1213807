@@ -396,8 +396,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
                 if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                    Integer model=BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
-                    List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
+                    Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
+                    List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                     for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                         if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                             //计算服务费
@@ -740,8 +740,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             payAmount = (franchisee.getBatteryServiceFee()).multiply(new BigDecimal(cardDays));
         } else {
-            Integer model=BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
-            List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(franchisee.getModelBatteryDeposit(),ModelBatteryDeposit.class);
+            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+            List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                     //计算服务费

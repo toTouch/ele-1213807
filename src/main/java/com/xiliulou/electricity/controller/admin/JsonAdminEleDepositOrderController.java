@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.controller.admin;
+
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -68,7 +69,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long franchiseeId=null;
+        Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -76,7 +77,7 @@ public class JsonAdminEleDepositOrderController {
             if (Objects.isNull(franchisee)) {
                 return R.ok(new ArrayList<>());
             }
-            franchiseeId=franchisee.getId();
+            franchiseeId = franchisee.getId();
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -98,12 +99,12 @@ public class JsonAdminEleDepositOrderController {
     //列表查询
     @GetMapping(value = "/admin/eleDepositOrder/queryCount")
     public R queryCount(@RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime,
-            @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                        @RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "orderId", required = false) String orderId,
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -115,7 +116,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long franchiseeId=null;
+        Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -123,7 +124,7 @@ public class JsonAdminEleDepositOrderController {
             if (Objects.isNull(franchisee)) {
                 return R.ok(0);
             }
-            franchiseeId=franchisee.getId();
+            franchiseeId = franchisee.getId();
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -143,11 +144,11 @@ public class JsonAdminEleDepositOrderController {
     //押金订单导出报表
     @GetMapping("/admin/eleDepositOrder/exportExcel")
     public void exportExcel(@RequestParam(value = "status", required = false) Integer status,
-            @RequestParam(value = "name", required = false) String name,
-            @RequestParam(value = "phone", required = false) String phone,
-            @RequestParam(value = "orderId", required = false) String orderId,
-            @RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
+                            @RequestParam(value = "name", required = false) String name,
+                            @RequestParam(value = "phone", required = false) String phone,
+                            @RequestParam(value = "orderId", required = false) String orderId,
+                            @RequestParam(value = "beginTime", required = false) Long beginTime,
+                            @RequestParam(value = "endTime", required = false) Long endTime, HttpServletResponse response) {
 
         Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 33) {
@@ -164,7 +165,7 @@ public class JsonAdminEleDepositOrderController {
             throw new CustomBusinessException("查不到订单");
         }
 
-        Long franchiseeId=null;
+        Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -172,7 +173,7 @@ public class JsonAdminEleDepositOrderController {
             if (Objects.isNull(franchisee)) {
                 throw new CustomBusinessException("查不到订单");
             }
-            franchiseeId=franchisee.getId();
+            franchiseeId = franchisee.getId();
         }
 
 

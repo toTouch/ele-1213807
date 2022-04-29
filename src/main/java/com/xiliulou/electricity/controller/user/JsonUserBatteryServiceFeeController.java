@@ -24,39 +24,41 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserBatteryServiceFeeController {
-	@Autowired
-	ElectricityBatteryService electricityBatteryService;
-	@Autowired
-	FranchiseeUserInfoService franchiseeUserInfoService;
-	@Autowired
-	EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
-	/**
-	 * 查询电池服务费
-	 * @return
-	 */
-	@GetMapping("/user/batteryServiceFee/query")
-	public R queryBatteryServiceFee(){
-		Long uid = SecurityUtils.getUid();
-		if (Objects.isNull(uid)) {
-			return R.fail("ELECTRICITY.0001", "未找到用户!");
-		}
-		return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
-	}
+    /**
+     * 查询电池服务费
+     *
+     * @return
+     */
+    @GetMapping("/user/batteryServiceFee/query")
+    public R queryBatteryServiceFee() {
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户!");
+        }
+        return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
+    }
 
-	/**
-	 * 查询用户的服务费支付记录
-	 * @param offset
-	 * @param size
-	 * @param queryStartTime
-	 * @param queryEndTime
-	 * @return
-	 */
-	@GetMapping("/user/batteryServiceFee/orderList")
-	public R queryBatteryServiceFeeOrder(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
-										 @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
-										 @RequestParam(value = "queryEndTime", required = false) Long queryEndTime){
-		return eleBatteryServiceFeeOrderService.queryList(offset,size,queryStartTime,queryEndTime);
-	}
+    /**
+     * 查询用户的服务费支付记录
+     *
+     * @param offset
+     * @param size
+     * @param queryStartTime
+     * @param queryEndTime
+     * @return
+     */
+    @GetMapping("/user/batteryServiceFee/orderList")
+    public R queryBatteryServiceFeeOrder(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+                                         @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+                                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
+        return eleBatteryServiceFeeOrderService.queryList(offset, size, queryStartTime, queryEndTime);
+    }
 
 }

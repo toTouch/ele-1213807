@@ -449,7 +449,7 @@ public class ElectricityTradeOrderServiceImpl extends
             return Pair.of(false, "交易订单已处理");
         }
         //电池服务费订单
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder=eleBatteryServiceFeeOrderService.queryEleBatteryServiceFeeOrderByOrderId(electricityTradeOrder.getOrderNo());
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.queryEleBatteryServiceFeeOrderByOrderId(electricityTradeOrder.getOrderNo());
         if (ObjectUtil.isEmpty(eleBatteryServiceFeeOrder)) {
             log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
             return Pair.of(false, "未找到订单!");
@@ -497,7 +497,7 @@ public class ElectricityTradeOrderServiceImpl extends
         baseMapper.updateById(electricityTradeOrderUpdate);
 
         //电池服务费订单
-        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate=new EleBatteryServiceFeeOrder();
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
         eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
         eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);
         eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());

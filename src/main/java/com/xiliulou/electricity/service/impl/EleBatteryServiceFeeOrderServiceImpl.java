@@ -60,17 +60,17 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return this.queryListForAdmin(offset,size,startTime,endTime,user.getUid(),EleBatteryServiceFeeOrderVo.STATUS_SUCCESS);
+        return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS);
     }
 
     @Override
     public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status) {
 
-        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid,offset, size, startTime, endTime,status);
+        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid, offset, size, startTime, endTime, status);
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
-                List<ModelBatteryDeposit> modelBatteryDepositList= JSONObject.parseArray(eleBatteryServiceFeeOrderVo.getModelBatteryDeposit(),ModelBatteryDeposit.class);
+                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(eleBatteryServiceFeeOrderVo.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                 Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
                 eleBatteryServiceFeeOrderVo.setModel(model);
                 for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {

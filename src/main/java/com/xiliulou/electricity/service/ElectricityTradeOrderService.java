@@ -17,14 +17,13 @@ public interface ElectricityTradeOrderService {
 
     //通用生成订单，调起支付
     WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonPayOrder,
-            ElectricityPayParams electricityPayParams,
-            String openId,
-            HttpServletRequest request) throws WechatPayException;
+                                                                    ElectricityPayParams electricityPayParams,
+                                                                    String openId,
+                                                                    HttpServletRequest request) throws WechatPayException;
 
 
     //月卡回调
     Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
-
 
 
     //押金支付回调
