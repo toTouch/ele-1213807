@@ -104,6 +104,12 @@ public class ElectricityBatteryVO {
 
     //电池的标称电压
     private Double batteryV;
+
+    /**
+     * 物联网卡号
+     */
+    private String iotCardNumber;
+
     /**
      * 电池充电电流
      */
