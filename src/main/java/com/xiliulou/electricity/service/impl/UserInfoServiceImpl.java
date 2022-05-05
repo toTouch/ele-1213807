@@ -318,14 +318,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                         //计算服务费
                         BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                        if (!Objects.equals(batteryServiceFee,FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                        }
                     }
                 }
             } else {
                 BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                 //计算服务费
                 BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                if (!Objects.equals(batteryServiceFee,FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                }
             }
         }
 

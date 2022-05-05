@@ -128,4 +128,9 @@ public class FranchiseeUserInfo {
 
     public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 
+    /**
+     *用户电池服务费为0元
+     */
+    public static final BigDecimal BATTERY_SERVICE_FEE_ZERO=new BigDecimal(0);
+
 }
