@@ -86,13 +86,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 	 */
 	@Override
 	public R saveElectricityBattery(ElectricityBattery electricityBattery) {
-
-
-		System.out.println("你啊后======================"+electricityBattery);
-		System.out.println("存入物联网卡号数======================="+electricityBattery.getIotCardNumber());
-
-
-
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
