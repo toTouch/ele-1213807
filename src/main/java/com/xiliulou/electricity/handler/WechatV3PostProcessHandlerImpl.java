@@ -83,6 +83,8 @@ public class WechatV3PostProcessHandlerImpl implements WechatV3PostProcessHandle
 			return;
 		}
 
+		System.out.println("微信后置处理==================================="+callBackResource.getAttach());
+
 		if (Objects.equals(callBackResource.getAttach(), ElectricityTradeOrder.ATTACH_DEPOSIT)) {
 			electricityTradeOrderService.notifyDepositOrder(callBackResource);
 		}
