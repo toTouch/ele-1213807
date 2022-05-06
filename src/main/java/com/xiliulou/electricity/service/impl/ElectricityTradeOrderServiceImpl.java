@@ -125,6 +125,13 @@ public class ElectricityTradeOrderServiceImpl extends
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> notifyMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
+
+
+        System.out.println("月卡回调=================================");
+
+
+
+
         //回调参数
         String tradeOrderNo = callBackResource.getOutTradeNo();
         String tradeState = callBackResource.getTradeState();
@@ -219,6 +226,9 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
 
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+
+                System.out.println("不限次-=---------------------==================");
+
                 if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
@@ -227,6 +237,10 @@ public class ElectricityTradeOrderServiceImpl extends
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
                 }
             } else {
+
+
+                System.out.println("限次==========================================");
+
                 if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now || Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || franchiseeUserInfo.getRemainingNumber() == 0) {
                     memberCardExpireTime = System.currentTimeMillis() +
                             electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
@@ -236,6 +250,9 @@ public class ElectricityTradeOrderServiceImpl extends
                     remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
                 }
             }
+
+
+            System.out.println("过期时间==========================="+memberCardExpireTime);
 
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
