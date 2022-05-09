@@ -135,18 +135,6 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         franchisee.setCid(franchiseeAddAndUpdate.getCityId());
         int insert = franchiseeMapper.insert(franchisee);
 
-        //新增租户给租户添加的默认系统配置
-        ElectricityConfig electricityConfig = ElectricityConfig.builder()
-                .name("")
-                .createTime(System.currentTimeMillis())
-                .updateTime(System.currentTimeMillis())
-                .tenantId(tenantId)
-                .isManualReview(ElectricityConfig.MANUAL_REVIEW)
-                .isWithdraw(ElectricityConfig.WITHDRAW)
-                .isOpenDoorLock(ElectricityConfig.OPEN_DOOR_LOCK)
-                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
-        electricityConfigService.insertElectricityConfig(electricityConfig);
-
         //新增加盟商账户
         FranchiseeAmount franchiseeAmount = FranchiseeAmount.builder()
                 .franchiseeId(franchisee.getId())
