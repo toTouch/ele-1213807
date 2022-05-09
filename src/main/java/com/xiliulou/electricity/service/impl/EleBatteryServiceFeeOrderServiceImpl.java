@@ -70,15 +70,8 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
-                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(eleBatteryServiceFeeOrderVo.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                 Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
                 eleBatteryServiceFeeOrderVo.setModel(model);
-                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
-                        eleBatteryServiceFeeOrderVo.setBatteryServiceFee(modelBatteryDeposit.getBatteryServiceFee());
-                        break;
-                    }
-                }
             }
         }
         return R.ok(eleBatteryServiceFeeOrders);

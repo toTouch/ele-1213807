@@ -78,6 +78,11 @@ public class EleBatteryServiceFeeOrder {
      */
     private String sn;
 
+    /**
+     * 电池服务费
+     */
+    private BigDecimal batteryServiceFee;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;

@@ -734,18 +734,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
 
         BigDecimal payAmount = null;
+        BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
-            payAmount = (franchisee.getBatteryServiceFee()).multiply(new BigDecimal(cardDays));
+            batteryServiceFee=franchisee.getBatteryServiceFee();
+            payAmount = (batteryServiceFee).multiply(new BigDecimal(cardDays));
         } else {
             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
             List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
                 if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                     //计算服务费
-                    payAmount = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                    batteryServiceFee=modelBatteryDeposit.getBatteryServiceFee();
+                    payAmount = batteryServiceFee.multiply(new BigDecimal(cardDays));
                     break;
                 }
             }
@@ -766,7 +769,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
-                .sn(franchiseeUserInfo.getNowElectricityBatterySn()).build();
+                .sn(franchiseeUserInfo.getNowElectricityBatterySn())
+                .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
         //调起支付
