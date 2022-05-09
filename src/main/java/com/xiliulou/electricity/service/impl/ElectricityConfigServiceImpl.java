@@ -83,4 +83,8 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         return electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>()
                 .eq(ElectricityConfig::getTenantId,tenantId));
     }
+
+    public void insertElectricityConfig(ElectricityConfig electricityConfig){
+        this.electricityConfigMapper.insert(electricityConfig);
+    }
 }

@@ -15,4 +15,6 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
     R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw,Integer isOpenDoorLock,Integer isBatteryReview);
 
     ElectricityConfig queryOne(Integer tenantId);
+
+    public void insertElectricityConfig(ElectricityConfig electricityConfig);
 }
