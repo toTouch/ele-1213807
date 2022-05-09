@@ -391,7 +391,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Long now = System.currentTimeMillis();
         if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime())) {
             long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24;
-            if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays > 1 && Objects.equals(oldFranchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+            if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 && Objects.equals(oldFranchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
