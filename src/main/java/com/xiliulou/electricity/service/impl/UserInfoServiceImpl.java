@@ -306,29 +306,31 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         Long now = System.currentTimeMillis();
-        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
-        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
-            //查询用户是否存在电池服务费
-            Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
-            Integer modelType = franchisee.getModelType();
-            if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                Integer model= BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
-                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
-                        //计算服务费
-                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-                        if (!Objects.equals(batteryServiceFee,FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
-                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+        if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
+            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+                //查询用户是否存在电池服务费
+                Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                Integer modelType = franchisee.getModelType();
+                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                    Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+                    List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                            //计算服务费
+                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                            if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+                                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                            }
                         }
                     }
-                }
-            } else {
-                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
-                //计算服务费
-                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-                if (!Objects.equals(batteryServiceFee,FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
-                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                } else {
+                    BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+                    //计算服务费
+                    BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                    if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                    }
                 }
             }
         }

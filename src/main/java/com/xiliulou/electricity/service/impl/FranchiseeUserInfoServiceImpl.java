@@ -216,7 +216,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
         eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
-        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())) {
+        if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             return eleBatteryServiceFeeVO;
         }
 
