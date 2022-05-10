@@ -208,9 +208,13 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         //获取新用户所绑定的加盟商的电池服务费
         Franchisee franchisee = franchiseeService.queryByUserId(uid);
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
-
         //计算用户所产生的电池服务费
-        if (Objects.isNull(franchisee) || Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0))) {
+        if (Objects.isNull(franchisee)) {
+            return eleBatteryServiceFeeVO;
+        }
+
+        Integer modelType = franchisee.getModelType();
+        if (Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0))) {
             return eleBatteryServiceFeeVO;
         }
 
@@ -224,12 +228,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-
-        System.out.println("我的电池电池服务费===============时间"+cardDays+"===================商户服务==============="+franchisee.getBatteryServiceFee()+"======"+franchisee.getModelBatteryDeposit());
-
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
-            Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
                 eleBatteryServiceFeeVO.setModel(model);
