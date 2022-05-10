@@ -232,6 +232,10 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+
+        System.out.println("超出的天数==============="+cardDays+"==================="+franchiseeUserInfo.getNowElectricityBatterySn());
+
+
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
             if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
@@ -243,8 +247,14 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
                 for (ModelBatteryDeposit modelBatteryDeposit : list) {
                     if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+
+                        System.out.println("模式===================="+model);
+
                         //计算服务费
                         BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+
+
+                        System.out.println("服务费=========================="+batteryServiceFee);
                         eleBatteryServiceFeeVO.setUserBatteryServiceFee(batteryServiceFee);
                         return eleBatteryServiceFeeVO;
                     }
