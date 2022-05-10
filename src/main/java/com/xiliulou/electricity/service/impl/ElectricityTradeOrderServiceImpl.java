@@ -237,6 +237,7 @@ public class ElectricityTradeOrderServiceImpl extends
                 }
             }
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
 //            franchiseeUserInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
             franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
@@ -483,6 +484,7 @@ public class ElectricityTradeOrderServiceImpl extends
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
             franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_IS_SERVICE_FEE);
+            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(franchiseeUserInfo.getBatteryServiceFeeGenerateTime() + (24 * 60 * 60 * 1000L));
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         }

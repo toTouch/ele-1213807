@@ -102,6 +102,11 @@ public class FranchiseeUserInfo {
      */
     private Integer batteryServiceFeeStatus;
 
+    /**
+     * 电池服务费产生时间
+     */
+    private Long batteryServiceFeeGenerateTime;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金

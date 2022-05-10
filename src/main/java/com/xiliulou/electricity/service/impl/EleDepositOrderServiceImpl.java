@@ -390,8 +390,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //判断用户是否产生电池服务费
         Long now = System.currentTimeMillis();
         if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime())) {
-            long cardDays = (now - oldFranchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24;
-            if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 && Objects.equals(oldFranchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+            long cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
@@ -736,7 +736,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal payAmount = null;
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
-        long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000 / 60 / 60 / 24;
+        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             batteryServiceFee=franchisee.getBatteryServiceFee();

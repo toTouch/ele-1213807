@@ -223,8 +223,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
 
         Long now = System.currentTimeMillis();
-        long cardDays = (now - franchiseeUserInfo.getMemberCardExpireTime()) / 1000L / 60 / 60 / 24;
-        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
             Integer modelType = franchisee.getModelType();
             if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
