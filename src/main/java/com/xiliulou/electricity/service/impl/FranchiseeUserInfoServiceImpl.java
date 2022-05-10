@@ -208,6 +208,10 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         //获取新用户所绑定的加盟商的电池服务费
         Franchisee franchisee = franchiseeService.queryByUserId(uid);
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = new EleBatteryServiceFeeVO();
+
+
+        System.out.println("加盟商============"+franchisee+"==============="+franchisee.getModelType()+"=========="+franchisee.getBatteryServiceFee());
+
         //计算用户所产生的电池服务费
         if (Objects.isNull(franchisee)) {
             return eleBatteryServiceFeeVO;
