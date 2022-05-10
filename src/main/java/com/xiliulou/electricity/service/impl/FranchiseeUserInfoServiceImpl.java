@@ -224,6 +224,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+
+        System.out.println("我的电池电池服务费===============时间"+cardDays+"===================商户服务==============="+franchisee.getBatteryServiceFee()+"======"+franchisee.getModelBatteryDeposit());
+
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
             Integer modelType = franchisee.getModelType();
