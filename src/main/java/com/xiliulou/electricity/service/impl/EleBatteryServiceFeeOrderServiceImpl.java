@@ -63,6 +63,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         return this.queryListForAdmin(offset, size, startTime, endTime, user.getUid(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS);
     }
 
+
     @Override
     public R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status) {
 
@@ -72,7 +73,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
                 eleBatteryServiceFeeOrderVo.setModel(model);
-                eleBatteryServiceFeeOrderVo.setBatteryServiceFeeGenerateTime(eleBatteryServiceFeeOrderVo.getBatteryServiceFeeGenerateTime() + (24 * 60 * 60 * 1000L));
+                if (Objects.nonNull(eleBatteryServiceFeeOrderVo.getBatteryServiceFeeGenerateTime())) {
+                    eleBatteryServiceFeeOrderVo.setBatteryServiceFeeGenerateTime(eleBatteryServiceFeeOrderVo.getBatteryServiceFeeGenerateTime() + (24 * 60 * 60 * 1000L));
+                }
             }
         }
         return R.ok(eleBatteryServiceFeeOrders);
