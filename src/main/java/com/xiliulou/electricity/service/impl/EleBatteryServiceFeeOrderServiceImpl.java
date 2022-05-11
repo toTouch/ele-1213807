@@ -73,10 +73,12 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
                 eleBatteryServiceFeeOrderVo.setModel(model);
-                if (Objects.nonNull(eleBatteryServiceFeeOrderVo.getBatteryServiceFeeGenerateTime())) {
-                    eleBatteryServiceFeeOrderVo.setBatteryServiceFeeGenerateTime(eleBatteryServiceFeeOrderVo.getBatteryServiceFeeGenerateTime() + (24 * 60 * 60 * 1000L));
-                }
             }
+
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(),EleBatteryServiceFeeOrderVo.STATUS_SUCCESS)){
+                eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
+            }
+
         }
         return R.ok(eleBatteryServiceFeeOrders);
     }
