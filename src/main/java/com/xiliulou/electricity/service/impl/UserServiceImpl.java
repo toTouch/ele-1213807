@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.codec.Base64;
+import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import cn.hutool.crypto.Mode;
 import cn.hutool.crypto.Padding;
@@ -26,6 +27,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
@@ -41,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 /**
  * (User)表服务实现类
@@ -670,6 +673,31 @@ public class UserServiceImpl implements UserService {
         userInfoService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
+    }
+
+    @Override
+    public R userAutoCodeGeneration() {
+        if(!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("权限不足");
+        }
+
+        String key = RandomUtil.randomString(6);
+        redisService.set(key, key);
+        redisService.expire(key, TimeUnit.MINUTES.toMillis(10), false);
+
+        return R.ok(key);
+    }
+
+    @Override
+    public R userAutoCodeCheck(String autoCode) {
+        String key = redisService.get(autoCode);
+        if(StringUtils.isBlank(key)){
+            return R.fail("验证码已使用或不存在");
+        }
+
+        redisService.delete(autoCode);
+
+        return R.ok();
     }
 
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
