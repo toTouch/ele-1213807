@@ -75,7 +75,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
                 eleBatteryServiceFeeOrderVo.setModel(model);
             }
 
-            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(),EleBatteryServiceFeeOrderVo.STATUS_SUCCESS)){
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && !Objects.equals(eleBatteryServiceFeeOrderVo.getBatteryServiceFee(), new BigDecimal(0))) {
                 eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
             }
 
