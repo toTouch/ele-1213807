@@ -94,6 +94,11 @@ public class EleBatteryServiceFeeOrderVo {
     //新分型号押金
     private String modelBatteryDeposit;
 
+    /**
+     * 电池服务费产生时间
+     */
+    private Long batteryServiceFeeGenerateTime;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;

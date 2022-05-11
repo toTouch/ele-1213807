@@ -770,7 +770,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
                 .sn(franchiseeUserInfo.getNowElectricityBatterySn())
-                .batteryServiceFee(batteryServiceFee).build();
+                .batteryServiceFee(batteryServiceFee)
+                .batteryServiceFeeGenerateTime(franchiseeUserInfo.getBatteryServiceFeeGenerateTime()).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
         //调起支付
