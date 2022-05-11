@@ -76,6 +76,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             }
 
             if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && !Objects.equals(eleBatteryServiceFeeOrderVo.getBatteryServiceFee(), new BigDecimal(0))) {
+
+                System.out.println("循环查询被除数=========================="+eleBatteryServiceFeeOrderVo.getBatteryServiceFee());
+
                 eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
             }
 
