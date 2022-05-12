@@ -229,4 +229,10 @@ public class JsonAdminEleWarnMsgController {
         return R.ok();
     }
 
+
+    public R statisticsEleWarmMsg(){
+
+        return null;
+    }
+
 }
