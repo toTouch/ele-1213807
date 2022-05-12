@@ -340,6 +340,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
             Long memberCardExpireTime = now +
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+
+            System.out.println("可用天数==========================="+electricityMemberCardOrder.getValidDays());
+
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
