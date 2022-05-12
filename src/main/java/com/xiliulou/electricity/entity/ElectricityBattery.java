@@ -98,6 +98,11 @@ public class ElectricityBattery {
      */
     private String lastDepositCellNo;
 
+    /**
+     * 物联网卡号
+     */
+    private String iotCardNumber;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

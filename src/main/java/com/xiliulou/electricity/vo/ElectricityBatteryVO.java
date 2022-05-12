@@ -10,6 +10,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
+import java.math.BigDecimal;
 
 /**
  * 换电柜电池表(ElectricityBattery)实体类
@@ -103,10 +104,25 @@ public class ElectricityBatteryVO {
 
     //电池的标称电压
     private Double batteryV;
+
+    /**
+     * 物联网卡号
+     */
+    private String iotCardNumber;
+
     /**
      * 电池充电电流
      */
     private Double batteryChargeA;
 
+    /**
+     * 电池服务费
+     */
+    private BigDecimal batteryServiceFee;
+
+    /**
+     * 用户所产生的电池服务费
+     */
+    private BigDecimal userBatteryServiceFee;
 
 }

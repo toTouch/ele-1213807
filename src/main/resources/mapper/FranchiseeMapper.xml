@@ -9,7 +9,7 @@
         select
         id, cid, name, uid, del_flag,
         create_time, update_time, battery_deposit,tenant_id,percent,
-        model_type,model_battery_deposit
+        model_type,model_battery_deposit,battery_service_fee
         from t_franchisee
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -89,4 +89,13 @@
                 id = #{id}))
     </select>
 
+
+
+    <select id="queryByUserId" resultType="com.xiliulou.electricity.entity.Franchisee">
+         select
+        f.id, f.cid, f.name, f.uid, f.del_flag,
+        f.create_time, f.update_time, f.battery_deposit,f.tenant_id,f.percent,
+        f.model_type,f.model_battery_deposit,f.battery_service_fee from t_franchisee f
+        left join t_franchisee_user_info tf on f.id =tf.franchisee_id left join t_user_info tu on tu.id=tf.user_info_id where tu.uid=#{uid}
+    </select>
 </mapper>

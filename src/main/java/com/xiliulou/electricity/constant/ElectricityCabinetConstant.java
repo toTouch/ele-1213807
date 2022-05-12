@@ -75,6 +75,7 @@ public interface ElectricityCabinetConstant {
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
 
+    String ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY="ele_cache_user_battery_service_fee_lock_key";
 
 
     //下单周期限制

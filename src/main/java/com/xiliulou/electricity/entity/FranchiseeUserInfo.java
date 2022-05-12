@@ -97,12 +97,26 @@ public class FranchiseeUserInfo {
      */
     private String batteryType;
 
+    /**
+     * 电池服务费状态 0-初始状态 1-已支付
+     */
+    private Integer batteryServiceFeeStatus;
+
+    /**
+     * 电池服务费产生时间
+     */
+    private Long batteryServiceFeeGenerateTime;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金
     public static final Integer STATUS_IS_DEPOSIT = 2;
     //已租电池
     public static final Integer STATUS_IS_BATTERY = 3;
+
+    //电池服务费状态
+    public static final Integer STATUS_NOT_IS_SERVICE_FEE = 0;
+    public static final Integer STATUS_IS_SERVICE_FEE = 1;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
@@ -117,6 +131,11 @@ public class FranchiseeUserInfo {
 
     public static final Integer MEMBER_CARD_OWE = 1;
 
-    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER=9999L;
+    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
+
+    /**
+     *用户电池服务费为0元
+     */
+    public static final BigDecimal BATTERY_SERVICE_FEE_ZERO=new BigDecimal(0);
 
 }

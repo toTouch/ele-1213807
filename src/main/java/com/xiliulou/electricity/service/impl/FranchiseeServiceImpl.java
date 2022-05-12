@@ -423,4 +423,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		return R.ok(franchiseeMapper.queryByCabinetId(cabinetId));
 	}
 
+	@Override
+	public Franchisee queryByUserId(Long uid) {
+		return franchiseeMapper.queryByUserId(uid);
+	}
+
 }

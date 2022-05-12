@@ -337,10 +337,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             Long memberCardExpireTime = now +
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
             franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
             franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
             franchiseeUserInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+            franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 

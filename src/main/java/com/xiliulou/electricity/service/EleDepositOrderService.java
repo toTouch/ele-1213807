@@ -44,4 +44,6 @@ public interface EleDepositOrderService {
 	R queryModelType(String productKey, String deviceName);
 
 	BigDecimal queryTurnOver(Integer tenantId);
+
+	R payBatteryServiceFee(HttpServletRequest request);
 }

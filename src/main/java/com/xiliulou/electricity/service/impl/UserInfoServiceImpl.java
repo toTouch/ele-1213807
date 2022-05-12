@@ -2,16 +2,20 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.*;
@@ -29,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -65,6 +70,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     UserMoveHistoryService userMoveHistoryService;
     @Autowired
     EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    FranchiseeService franchiseeService;
 
 
     /**
@@ -128,8 +135,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         for (UserInfo userInfo : userInfoList) {
             UserInfoVO userInfoVO = new UserInfoVO();
             FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            ElectricityMemberCard electricityMemberCard=electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
             }
 
@@ -210,7 +217,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         Long memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime();
-        if (!Objects.equals(franchiseeUserInfo.getCardType(),FranchiseeUserInfo.TYPE_COUNT)) {
+        if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.isNull(electricityMemberCard)) {
                 return R.ok();
@@ -231,14 +238,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() < 0) {
                 memberCardExpireTime = System.currentTimeMillis();
             }
-        }else {
+        } else {
             if (Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-            || System.currentTimeMillis()>=franchiseeUserInfo.getMemberCardExpireTime()|| franchiseeUserInfo.getRemainingNumber()==0){
+                    || System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime() || franchiseeUserInfo.getRemainingNumber() == 0) {
                 return R.ok();
             }
         }
-
-
 
 
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
@@ -246,7 +251,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setRemainingNumber(franchiseeUserInfo.getRemainingNumber());
         ownMemberCardInfoVo.setType(franchiseeUserInfo.getCardType());
         ownMemberCardInfoVo.setName(franchiseeUserInfo.getCardName());
-        ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime- System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
+        ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getCardId());
         return R.ok(ownMemberCardInfoVo);
     }
@@ -299,7 +304,38 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
+
         Long now = System.currentTimeMillis();
+        if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
+            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+                //查询用户是否存在电池服务费
+                Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                Integer modelType = franchisee.getModelType();
+                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                    Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+                    List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                            //计算服务费
+                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                            if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+                                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                            }
+                        }
+                    }
+                } else {
+                    BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+                    //计算服务费
+                    BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                    if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                    }
+                }
+            }
+        }
+
+
         if (franchiseeUserInfo.getMemberCardExpireTime() < now
                 || franchiseeUserInfo.getRemainingNumber() == 0) {
             log.error("ELECTRICITY  ERROR! memberCard is  Expire ! uid:{} ", userInfo.getUid());

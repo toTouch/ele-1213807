@@ -3,45 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.entity.CommonPayOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityMemberCard;
-import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
-import com.xiliulou.electricity.entity.ElectricityPayParams;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.JoinShareActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityHistory;
-import com.xiliulou.electricity.entity.JoinShareMoneyActivityRecord;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.mapper.ElectricityTradeOrderMapper;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.ElectricityMemberCardService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.FranchiseeAmountService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareActivityRecordService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
-import com.xiliulou.electricity.service.JoinShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.OldUserActivityService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
-import com.xiliulou.electricity.service.ShareMoneyActivityService;
-import com.xiliulou.electricity.service.StoreAmountService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserAmountService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -113,6 +78,8 @@ public class ElectricityTradeOrderServiceImpl extends
     OldUserActivityService oldUserActivityService;
     @Autowired
     UserAmountService userAmountService;
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
     @Override
     public WechatJsapiOrderResultDTO commonCreateTradeOrderAndGetPayParams(CommonPayOrder commonOrder, ElectricityPayParams electricityPayParams, String openId, HttpServletRequest request) throws WechatPayException {
@@ -269,13 +236,14 @@ public class ElectricityTradeOrderServiceImpl extends
                     remainingNumber = remainingNumber + franchiseeUserInfo.getRemainingNumber();
                 }
             }
-
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
+            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
 //            franchiseeUserInfoUpdate.setRemainingNumber(electricityMemberCardOrder.getMaxUseCount());
             franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
             franchiseeUserInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
             franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
+            franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
 
@@ -459,6 +427,83 @@ public class ElectricityTradeOrderServiceImpl extends
         eleDepositOrderUpdate.setStatus(depositOrderStatus);
         eleDepositOrderUpdate.setUpdateTime(System.currentTimeMillis());
         eleDepositOrderService.update(eleDepositOrderUpdate);
+        return Pair.of(result, null);
+    }
+
+    @Override
+    public Pair<Boolean, Object> notifyBatteryServiceFeeOrder(WechatJsapiOrderCallBackResource callBackResource) {
+
+        //回调参数
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+
+        //系统订单
+        ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(electricityTradeOrder)) {
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, TRADE_ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+        //电池服务费订单
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = eleBatteryServiceFeeOrderService.queryEleBatteryServiceFeeOrderByOrderId(electricityTradeOrder.getOrderNo());
+        if (ObjectUtil.isEmpty(eleBatteryServiceFeeOrder)) {
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR ,NOT FOUND ELECTRICITY_DEPOSIT_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "未找到订单!");
+        }
+
+        if (!ObjectUtil.equal(EleBatteryServiceFeeOrder.STATUS_INIT, eleBatteryServiceFeeOrder.getStatus())) {
+            log.error("NOTIFY_BATTERY_SERVICE_FEE_ORDER ERROR , ELECTRICITY_DEPOSIT_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "押金订单已处理!");
+        }
+
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        Integer eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_FAIL;
+        boolean result = false;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+            eleBatteryServiceFeeOrderStatus = EleBatteryServiceFeeOrder.STATUS_SUCCESS;
+            result = true;
+        } else {
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.selectUserByUid(eleBatteryServiceFeeOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", eleBatteryServiceFeeOrder.getUid(), tradeOrderNo);
+            return Pair.of(false, "未找到用户信息!");
+        }
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        if (Objects.equals(eleBatteryServiceFeeOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+            franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_IS_SERVICE_FEE);
+            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
+            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        }
+
+        //交易订单
+        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
+        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
+        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
+        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(electricityTradeOrderUpdate);
+
+        //电池服务费订单
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrderUpdate = new EleBatteryServiceFeeOrder();
+        eleBatteryServiceFeeOrderUpdate.setId(eleBatteryServiceFeeOrder.getId());
+        eleBatteryServiceFeeOrderUpdate.setStatus(eleBatteryServiceFeeOrderStatus);
+        eleBatteryServiceFeeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleBatteryServiceFeeOrderUpdate.setBatteryServiceFeeGenerateTime(franchiseeUserInfo.getBatteryServiceFeeGenerateTime());
+        eleBatteryServiceFeeOrderService.update(eleBatteryServiceFeeOrderUpdate);
         return Pair.of(result, null);
     }
 

@@ -66,5 +66,10 @@ public class FranchiseeAddAndUpdate {
     //新分型号押金
     private String modelBatteryDeposit;
 
+    /**
+     * 电池服务费
+     */
+    private BigDecimal batteryServiceFee;
+
 
 }

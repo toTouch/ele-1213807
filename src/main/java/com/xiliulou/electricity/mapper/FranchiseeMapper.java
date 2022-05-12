@@ -21,5 +21,7 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
 
     Franchisee queryByElectricityBatteryId(Long id);
 
+    Franchisee queryByUserId(Long uid);
+
     Franchisee queryByCabinetId(Integer id);
 }

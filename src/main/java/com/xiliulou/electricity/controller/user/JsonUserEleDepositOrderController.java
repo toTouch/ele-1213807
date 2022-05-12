@@ -29,90 +29,100 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonUserEleDepositOrderController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	EleDepositOrderService eleDepositOrderService;
-	@Autowired
-	FranchiseeService franchiseeService;
-	@Autowired
-	UserService userService;
-	@Autowired
-	UserInfoService userInfoService;
+    /**
+     * 服务对象
+     */
+    @Autowired
+    EleDepositOrderService eleDepositOrderService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    UserService userService;
+    @Autowired
+    UserInfoService userInfoService;
 
-	//缴纳押金
-	@PostMapping("/user/payDeposit")
-	public R payDeposit(@RequestParam(value = "productKey", required = false) String productKey,
-			@RequestParam(value = "deviceName", required = false) String deviceName,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "model", required = false) Integer model,
-			HttpServletRequest request) {
-		return eleDepositOrderService.payDeposit(productKey, deviceName,franchiseeId,model, request);
-	}
+    //缴纳押金
+    @PostMapping("/user/payDeposit")
+    public R payDeposit(@RequestParam(value = "productKey", required = false) String productKey,
+                        @RequestParam(value = "deviceName", required = false) String deviceName,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "model", required = false) Integer model,
+                        HttpServletRequest request) {
+        return eleDepositOrderService.payDeposit(productKey, deviceName, franchiseeId, model, request);
+    }
 
-	//退还押金
-	@PostMapping("/user/returnDeposit")
-	public R returnDeposit(HttpServletRequest request) {
-		return eleDepositOrderService.returnDeposit(request);
-	}
+    //退还押金
+    @PostMapping("/user/returnDeposit")
+    public R returnDeposit(HttpServletRequest request) {
+        return eleDepositOrderService.returnDeposit(request);
+    }
 
-	//查询缴纳押金状态
-	@PostMapping("/user/eleDepositOrder/queryStatus")
-	public R queryStatus(@RequestParam("orderId") String orderId) {
-		EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderId);
-		if (Objects.isNull(eleDepositOrder)) {
-			log.error("ELECTRICITY  ERROR! not " +
-					"" +
-					" order,orderId{} ", orderId);
-			return R.fail("ELECTRICITY.0015", "未找到订单");
-		}
-		return R.ok(eleDepositOrder.getStatus());
-	}
+    //查询缴纳押金状态
+    @PostMapping("/user/eleDepositOrder/queryStatus")
+    public R queryStatus(@RequestParam("orderId") String orderId) {
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(orderId);
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("ELECTRICITY  ERROR! not " +
+                    "" +
+                    " order,orderId{} ", orderId);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+        return R.ok(eleDepositOrder.getStatus());
+    }
 
-	//用户查询缴纳押金
-	@GetMapping(value = "/user/queryUserDeposit")
-	public R queryUserDeposit() {
-		return eleDepositOrderService.queryUserDeposit();
-	}
+    //用户查询缴纳押金
+    @GetMapping(value = "/user/queryUserDeposit")
+    public R queryUserDeposit() {
+        return eleDepositOrderService.queryUserDeposit();
+    }
 
-	//用户查询押金
-	@GetMapping(value = "/user/queryDeposit")
-	public R queryDeposit(@RequestParam(value = "productKey", required = false) String productKey,
-			@RequestParam(value = "deviceName", required = false) String deviceName,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
-		return eleDepositOrderService.queryDeposit(productKey, deviceName,franchiseeId);
-	}
-
-
-	//用户查询缴纳押金
-	@GetMapping(value = "/user/queryModelType")
-	public R queryModelType(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
-		return eleDepositOrderService.queryModelType(productKey, deviceName);
-	}
+    //用户查询押金
+    @GetMapping(value = "/user/queryDeposit")
+    public R queryDeposit(@RequestParam(value = "productKey", required = false) String productKey,
+                          @RequestParam(value = "deviceName", required = false) String deviceName,
+                          @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
+        return eleDepositOrderService.queryDeposit(productKey, deviceName, franchiseeId);
+    }
 
 
-	//列表查询
-	@GetMapping(value = "/user/eleDepositOrder/list")
-	public R queryList() {
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+    //用户查询缴纳押金
+    @GetMapping(value = "/user/queryModelType")
+    public R queryModelType(@RequestParam("productKey") String productKey, @RequestParam("deviceName") String deviceName) {
+        return eleDepositOrderService.queryModelType(productKey, deviceName);
+    }
 
-		//用户
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
 
-		EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
-				.uid(user.getUid())
-				.tenantId(tenantId)
-				.offset(0L)
-				.size(10L).build();
+    //列表查询
+    @GetMapping(value = "/user/eleDepositOrder/list")
+    public R queryList() {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-		return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
-	}
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
+                .uid(user.getUid())
+                .tenantId(tenantId)
+                .offset(0L)
+                .size(10L).build();
+
+        return eleDepositOrderService.queryListToUser(eleDepositOrderQuery);
+    }
+
+    /**
+     * 缴纳电池服务费
+     *
+     * @return
+     */
+    @PostMapping("/user/payBatteryServiceFee")
+    public R payBatteryServiceFee(HttpServletRequest request) {
+        return eleDepositOrderService.payBatteryServiceFee(request);
+    }
 
 }
 

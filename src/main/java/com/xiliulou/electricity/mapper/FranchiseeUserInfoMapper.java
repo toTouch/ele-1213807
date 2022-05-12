@@ -35,4 +35,6 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
+
+	FranchiseeUserInfo queryFranchiseeUserInfoByUid(Long uid);
 }

@@ -1,6 +1,9 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 
 import java.util.List;
 
@@ -40,9 +43,15 @@ public interface FranchiseeUserInfoService {
 
 	Integer queryCountByFranchiseeId(Long id);
 
+    R updateBattery(String batteryType);
+
+    R queryBattery();
+
+    Integer deleteByUserInfoId(Long userInfoId);
+
 	void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
 
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
-	Integer deleteByUserInfoId(Long userInfoId);
+    EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
 }

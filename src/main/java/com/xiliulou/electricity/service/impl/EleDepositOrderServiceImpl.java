@@ -4,6 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -12,10 +13,12 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -81,6 +84,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     StoreService storeService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
+    @Resource
+    EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -297,7 +304,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //限频
         Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
         }
 
         //用户
@@ -321,12 +328,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
-        }
-
-        //判断是否退电池
-        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0046", "未退还电池");
         }
 
         //判断是否缴纳押金
@@ -380,6 +381,40 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
+
+        //判断用户是否产生电池服务费
+        Long now = System.currentTimeMillis();
+        if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            long cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
+                //查询用户是否存在电池服务费
+                Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+                Integer modelType = franchisee.getModelType();
+                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                    Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
+                    List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                            //计算服务费
+                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                        }
+                    }
+                } else {
+                    BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+                    //计算服务费
+                    BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                    return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                }
+            }
+        }
+
+        //判断是否退电池
+        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+            log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0046", "未退还电池");
+        }
+
 
         BigDecimal payAmount = eleDepositOrder.getPayAmount();
 
@@ -652,6 +687,108 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         return R.ok(franchisee.getModelType());
     }
+
+    @Override
+    public R payBatteryServiceFee(HttpServletRequest request) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("payDeposit  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //限频
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+
+        //支付相关
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            return R.failMsg("未配置支付参数!");
+        }
+
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            return R.failMsg("未找到用户的第三方授权信息!");
+        }
+
+        //判断是否实名认证
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+
+        BigDecimal payAmount = null;
+        BigDecimal batteryServiceFee = null;
+        Long now = System.currentTimeMillis();
+        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
+
+        if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
+            batteryServiceFee=franchisee.getBatteryServiceFee();
+            payAmount = (batteryServiceFee).multiply(new BigDecimal(cardDays));
+        } else {
+            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+            List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+            for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                    //计算服务费
+                    batteryServiceFee=modelBatteryDeposit.getBatteryServiceFee();
+                    payAmount = batteryServiceFee.multiply(new BigDecimal(cardDays));
+                    break;
+                }
+            }
+        }
+
+        String orderId = generateOrderId(user.getUid());
+        //创建订单
+        EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
+                .orderId(orderId)
+                .uid(user.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(payAmount)
+                .status(EleDepositOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenantId)
+                .franchiseeId(franchisee.getId())
+                .modelType(franchisee.getModelType())
+                .batteryType(franchiseeUserInfo.getBatteryType())
+                .sn(franchiseeUserInfo.getNowElectricityBatterySn())
+                .batteryServiceFee(batteryServiceFee).build();
+        eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
+
+        //调起支付
+        try {
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(orderId)
+                    .uid(user.getUid())
+                    .payAmount(payAmount)
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_BATTERY_SERVICE_FEE)
+                    .attach(ElectricityTradeOrder.ATTACH_BATTERY_SERVICE_FEE)
+                    .description("电池服务费收费")
+                    .tenantId(tenantId).build();
+
+            WechatJsapiOrderResultDTO resultDTO =
+                    electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return R.ok(resultDTO);
+        } catch (WechatPayException e) {
+            log.error("payEleBatteryServiceFee ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+        }
+
+        return R.fail("ELECTRICITY.0099", "下单失败");
+    }
+
 
 	@Override
 	public BigDecimal queryTurnOver(Integer tenantId) {

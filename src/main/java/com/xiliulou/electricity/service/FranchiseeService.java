@@ -49,4 +49,7 @@ public interface FranchiseeService {
 	R queryByCabinetId(Integer cabinetId);
 
 
+
+	Franchisee queryByUserId(Long uid);
+
 }

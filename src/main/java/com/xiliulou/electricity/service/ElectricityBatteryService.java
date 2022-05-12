@@ -49,5 +49,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBatteryVO queryInfoByUid(Long uid);
 
+
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
 }

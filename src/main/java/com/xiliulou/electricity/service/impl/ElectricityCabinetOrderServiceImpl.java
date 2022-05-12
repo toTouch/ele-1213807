@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.*;
@@ -77,6 +78,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     StoreService storeService;
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
+    @Autowired
+    FranchiseeService franchiseeService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
     /**
      * 修改数据
@@ -276,8 +281,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        ElectricityMemberCard electricityMemberCard=null;
         Long now = System.currentTimeMillis();
+        ElectricityMemberCard electricityMemberCard=null;
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {
