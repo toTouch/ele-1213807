@@ -411,7 +411,17 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                     //计算服务费
                     BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+
+
+                    System.out.println("服务费==========================="+batteryServiceFee);
+
+
+
                     if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+
+
+                        System.out.println("======================发大发的身份地位=---------------------");
+
                         return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                     }
                 }
