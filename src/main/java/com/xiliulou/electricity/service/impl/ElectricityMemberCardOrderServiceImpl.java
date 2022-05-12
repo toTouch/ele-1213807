@@ -273,6 +273,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //同一个套餐可以续费
         if (Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
             if (now < franchiseeUserInfo.getMemberCardExpireTime() && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber()>0) {
+
+                System.out.println("时间叠加=====================================");
                 now = franchiseeUserInfo.getMemberCardExpireTime();
             }
             //TODO 使用次数暂时叠加
@@ -342,7 +344,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
 
             System.out.println("可用天数==========================="+electricityMemberCardOrder.getValidDays());
+            System.out.println("当前时间--==========================="+now);
 
+
+            System.out.println("入库时间============================"+memberCardExpireTime);
             franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
