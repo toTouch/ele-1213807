@@ -402,7 +402,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                         if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                             //计算服务费
                             BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
-                            if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
+                            if (!Objects.equals(batteryServiceFee, BigDecimal.valueOf(0.00))) {
                                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                             }
                         }
@@ -411,17 +411,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                     //计算服务费
                     BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-
-
-                    System.out.println("服务费==========================="+batteryServiceFee);
-
-
-
-                    if (!Objects.equals(batteryServiceFee, FranchiseeUserInfo.BATTERY_SERVICE_FEE_ZERO)) {
-
-
-                        System.out.println("======================发大发的身份地位=---------------------");
-
+                    if (!Objects.equals(batteryServiceFee, BigDecimal.valueOf(0.00))) {
                         return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                     }
                 }
