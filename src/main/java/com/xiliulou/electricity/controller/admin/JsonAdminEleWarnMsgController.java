@@ -245,7 +245,7 @@ public class JsonAdminEleWarnMsgController {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
-        return null;
+        return eleWarnMsgService.queryStatisticsEleWarmMsg(beginTime,endTime);
     }
 
 }

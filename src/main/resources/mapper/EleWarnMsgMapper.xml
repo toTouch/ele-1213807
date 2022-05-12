@@ -91,4 +91,17 @@
             </if>
         </where>
     </select>
+
+    <select id="queryStatisticsEleWarmMsg" resultType="java.util.Map">
+        select count(code) as msgCount , code  from t_ele_warn_msg
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+         group by code;
+    </select>
+
+
 </mapper>

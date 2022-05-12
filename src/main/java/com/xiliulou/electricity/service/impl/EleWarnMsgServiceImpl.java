@@ -86,6 +86,6 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
     @Override
     public R queryStatisticsEleWarmMsg(Long beginTime, Long endTime) {
-        return null;
+        return R.ok(eleWarnMsgMapper.queryStatisticsEleWarmMsg(beginTime,endTime));
     }
 }
