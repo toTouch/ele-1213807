@@ -48,4 +48,6 @@ public interface EleWarnMsgService {
     R queryCount(EleWarnMsgQuery eleWarnMsgQuery);
 
 	void delete(Long id);
+
+	R queryStatisticsEleWarmMsg(Long beginTime,Long endTime);
 }

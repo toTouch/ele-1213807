@@ -83,4 +83,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     public void delete(Long id) {
         eleWarnMsgMapper.deleteById(id);
     }
+
+    @Override
+    public R queryStatisticsEleWarmMsg(Long beginTime, Long endTime) {
+        return null;
+    }
 }
