@@ -248,4 +248,6 @@ public class JsonAdminEleWarnMsgController {
         return eleWarnMsgService.queryStatisticsEleWarmMsg(beginTime,endTime);
     }
 
+
+
 }

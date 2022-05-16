@@ -118,4 +118,6 @@ public interface ElectricityCabinetService {
 
     R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery);
 
+    R queryAllElectricityCabinet(ElectricityCabinetQuery electricityCabinetQuery);
+
 }
