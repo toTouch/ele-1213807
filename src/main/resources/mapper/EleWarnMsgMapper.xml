@@ -130,7 +130,7 @@
 
     <select id="queryStatisticEleWarnMsgRanking" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
         select
-        tt.name as tenantName , tt.id as tenantId, tewn.electricity_cabinet_name,
+        tt.name as tenantName , tt.id as tenantId, tewn.name as electricityCabinetName,
         count(case
         when tewn.type=101
         then tewn.type
