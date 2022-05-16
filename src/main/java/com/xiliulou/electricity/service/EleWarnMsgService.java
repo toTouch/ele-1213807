@@ -49,5 +49,7 @@ public interface EleWarnMsgService {
 
 	void delete(Long id);
 
-	R queryStatisticsEleWarmMsg(Long beginTime,Long endTime);
+	R queryStatisticsEleWarmMsg(EleWarnMsgQuery eleWarnMsgQuery);
+
+	R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery);
 }

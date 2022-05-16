@@ -33,5 +33,7 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg> {
 
     Integer queryCount(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
-    List<Map<String, Object>> queryStatisticsEleWarmMsg(@Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+    List<Map<String, Object>> queryStatisticsEleWarmMsg(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
+
+    List<Map<String,Object>> queryStatisticEleWarnMsgByElectricityCabinet(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 }

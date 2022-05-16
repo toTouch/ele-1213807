@@ -85,7 +85,12 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     }
 
     @Override
-    public R queryStatisticsEleWarmMsg(Long beginTime, Long endTime) {
-        return R.ok(eleWarnMsgMapper.queryStatisticsEleWarmMsg(beginTime,endTime));
+    public R queryStatisticsEleWarmMsg(EleWarnMsgQuery eleWarnMsgQuery) {
+        return R.ok(eleWarnMsgMapper.queryStatisticsEleWarmMsg(eleWarnMsgQuery));
+    }
+
+    @Override
+    public R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery) {
+        return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgByElectricityCabinet(eleWarnMsgQuery));
     }
 }
