@@ -128,5 +128,28 @@
         group by cell_no;
     </select>
 
+    <select id="queryStatisticEleWarnMsgRanking" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select
+        tt.name as tenantName , tt.id as tenantId, tewn.electricity_cabinet_name,
+        count(case
+        when tewn.type=101
+        then tewn.type
+        end ) hardwareWarnMsgCount,
+        count(case
+        when tewn.type=1
+        then tewn.type
+        end ) systemWarnMsgCount
+        from t_ele_warn_msg tewn left join t_tenant tt on tewn.tenant_id=tt.id
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+            <if test="query.cellNo != null">
+                and cell_no=#{query.cellNo}
+            </if>
+        </where>
+        group by tt.id limit #{query.offset}, #{query.size}
+    </select>
+
 
 </mapper>

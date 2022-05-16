@@ -52,4 +52,6 @@ public interface EleWarnMsgService {
 	R queryStatisticsEleWarmMsg(EleWarnMsgQuery eleWarnMsgQuery);
 
 	R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery);
+
+	R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery);
 }

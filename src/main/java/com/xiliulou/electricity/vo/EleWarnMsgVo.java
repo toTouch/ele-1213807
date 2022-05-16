@@ -33,4 +33,9 @@ public class EleWarnMsgVo {
      */
     private Integer tenantId;
 
+    /**
+     * 电柜名称
+     */
+    private String electricityCabinetName;
+
 }

@@ -93,4 +93,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     public R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery) {
         return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgByElectricityCabinet(eleWarnMsgQuery));
     }
+
+    @Override
+    public R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery) {
+        return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery));
+    }
 }
