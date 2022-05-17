@@ -142,10 +142,10 @@
         from t_ele_warn_msg tewn left join t_tenant tt on tewn.tenant_id=tt.id
         <where>
             <if test="query.electricityCabinetId != null">
-                and electricity_cabinet_id = #{query.electricityCabinetId}
+                and tewn.electricity_cabinet_id = #{query.electricityCabinetId}
             </if>
             <if test="query.cellNo != null">
-                and cell_no=#{query.cellNo}
+                and tewn.cell_no=#{query.cellNo}
             </if>
         </where>
         group by tt.id limit #{query.offset}, #{query.size}
