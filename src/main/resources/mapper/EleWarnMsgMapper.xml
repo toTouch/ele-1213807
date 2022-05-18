@@ -145,9 +145,7 @@
 
 
     <select id="queryStatisticEleWarnMsgForTenant" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
-        <foreach collection="eleWarnMsgVoList" item="item" index="index" open="" close="" separator=";">
-            select tec.name as electricityCabinetName,tt.name as tenantName from t_electricity_cabinet tec left join t_tenant tt on tec.tenant_id=tt.id  where tec.id=#{item.electricityCabinetId}
-        </foreach>
+        select tec.name as electricityCabinetName,tt.name as tenantName from t_electricity_cabinet tec left join t_tenant tt on tec.tenant_id=tt.id  where tec.id=#{electricityCabinetId}
     </select>
 
 

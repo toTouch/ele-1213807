@@ -11,6 +11,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 换电柜异常上报信息(TEleWarnMsg)表服务实现类
@@ -98,16 +99,14 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
     @Override
     public R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery) {
-
-
         List<EleWarnMsgVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
-
-        List<EleWarnMsgVo> eleWarnMsgVos=eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgRankingVos);
-
-
-        System.out.println("异常数据统计=================================="+eleWarnMsgVos);
-
-
-        return R.ok();
+        if (Objects.nonNull(eleWarnMsgRankingVos)){
+            for (EleWarnMsgVo eleWarnMsgVo:eleWarnMsgRankingVos){
+                EleWarnMsgVo eleWarnMsgVoForTenant=eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgVo.getElectricityCabinetId());
+                eleWarnMsgVo.setElectricityCabinetName(eleWarnMsgVoForTenant.getElectricityCabinetName());
+                eleWarnMsgVo.setTenantName(eleWarnMsgVoForTenant.getTenantName());
+            }
+        }
+        return R.ok(eleWarnMsgRankingVos);
     }
 }
