@@ -102,6 +102,11 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
         List<EleWarnMsgVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
 
+        List<EleWarnMsgVo> eleWarnMsgVos=eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgRankingVos);
+
+
+        System.out.println("异常数据统计=================================="+eleWarnMsgVos);
+
 
         return R.ok();
     }
