@@ -5,10 +5,12 @@ import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.mapper.EleWarnMsgMapper;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.vo.EleWarnMsgRankingVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.List;
 
 /**
  * 换电柜异常上报信息(TEleWarnMsg)表服务实现类
@@ -96,6 +98,12 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
     @Override
     public R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery) {
-        return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery));
+
+
+        List<EleWarnMsgRankingVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
+
+        System.out.println("换电柜一场======================="+eleWarnMsgRankingVos);
+
+        return R.ok();
     }
 }
