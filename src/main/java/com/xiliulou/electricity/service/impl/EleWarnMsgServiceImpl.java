@@ -116,4 +116,9 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
         }
         return R.ok(eleWarnMsgRankingVos);
     }
+
+    @Override
+    public R queryStatisticEleWarnMsgRankingCount() {
+        return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgRankingCount());
+    }
 }
