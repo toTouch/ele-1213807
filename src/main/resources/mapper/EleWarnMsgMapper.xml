@@ -130,17 +130,17 @@
 
     <select id="queryStatisticEleWarnMsgRanking" resultType="com.xiliulou.electricity.vo.EleWarnMsgRankingVo">
         select
-        tewn.electricity_cabinet_id,
+        electricity_cabinet_id as electricityCabinetId,
         count(case
-        when tewn.type=101
-        then tewn.type
+        when type=101
+        then type
         end ) hardwareWarnMsgCount,
         count(case
-        when tewn.type=1
-        then tewn.type
+        when type=1
+        then type
         end ) systemWarnMsgCount
-        from t_ele_warn_msg tewn
-        group by tewn.electricity_cabinet_id limit #{query.offset}, #{query.size}
+        from t_ele_warn_msg
+        group by electricity_cabinet_id limit #{query.offset}, #{query.size}
     </select>
 
 

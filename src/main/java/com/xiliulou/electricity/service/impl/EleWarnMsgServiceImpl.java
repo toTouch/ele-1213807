@@ -102,7 +102,6 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
         List<EleWarnMsgRankingVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
 
-        System.out.println("换电柜一场======================="+eleWarnMsgRankingVos);
 
         return R.ok();
     }
