@@ -128,7 +128,7 @@
         group by cell_no;
     </select>
 
-    <select id="queryStatisticEleWarnMsgRanking" resultType="com.xiliulou.electricity.vo.EleWarnMsgRankingVo">
+    <select id="queryStatisticEleWarnMsgRanking" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
         select
         electricity_cabinet_id as electricityCabinetId,
         count(case

@@ -9,7 +9,6 @@ import java.util.Map;
 
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.vo.EleWarnMsgRankingVo;
 import com.xiliulou.electricity.vo.EleWarnMsgVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -38,5 +37,5 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg> {
 
     List<Map<String,Object>> queryStatisticEleWarnMsgByElectricityCabinet(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
-    List<EleWarnMsgRankingVo> queryStatisticEleWarnMsgRanking(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
+    List<EleWarnMsgVo> queryStatisticEleWarnMsgRanking(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 }

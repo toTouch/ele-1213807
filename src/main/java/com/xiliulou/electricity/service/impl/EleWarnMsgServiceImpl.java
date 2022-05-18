@@ -5,7 +5,7 @@ import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.mapper.EleWarnMsgMapper;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
-import com.xiliulou.electricity.vo.EleWarnMsgRankingVo;
+import com.xiliulou.electricity.vo.EleWarnMsgVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -100,7 +100,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     public R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery) {
 
 
-        List<EleWarnMsgRankingVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
+        List<EleWarnMsgVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
 
 
         return R.ok();
