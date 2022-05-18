@@ -294,8 +294,7 @@ public class JsonAdminEleWarnMsgController {
     @GetMapping(value = "/admin/statisticsEleWarmMsg/ranking")
     public R statisticEleWarnMsgRanking(@RequestParam("size") Long size,
                                         @RequestParam("offset") Long offset,
-                                        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-                                        @RequestParam(value = "cellNo", required = false) Integer cellNo) {
+                                        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId) {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -311,8 +310,7 @@ public class JsonAdminEleWarnMsgController {
         EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
                 .size(size)
                 .offset(offset)
-                .electricityCabinetId(electricityCabinetId)
-                .cellNo(cellNo).build();
+                .electricityCabinetId(electricityCabinetId).build();
         return eleWarnMsgService.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
     }
 

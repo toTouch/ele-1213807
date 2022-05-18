@@ -39,5 +39,7 @@ public interface EleWarnMsgMapper extends BaseMapper<EleWarnMsg> {
 
     List<EleWarnMsgVo> queryStatisticEleWarnMsgRanking(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
 
+    List<EleWarnMsgVo> queryStatisticEleWarnMsgRankingByElectricityCabinetId(@Param("query") EleWarnMsgQuery eleWarnMsgQuery);
+
     EleWarnMsgVo queryStatisticEleWarnMsgForTenant(@Param("electricityCabinetId") Integer electricityCabinetId);
 }

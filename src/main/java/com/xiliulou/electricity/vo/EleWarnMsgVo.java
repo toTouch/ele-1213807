@@ -46,4 +46,10 @@ public class EleWarnMsgVo {
 
     private Integer electricityCabinetId;
 
+    /**
+     * 仓门号
+     */
+    private Integer cellNo;
+
+
 }

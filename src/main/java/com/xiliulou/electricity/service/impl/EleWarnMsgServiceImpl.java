@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.EleWarnMsgVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
@@ -58,7 +59,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EleWarnMsg eleWarnMsg) {
-       return this.eleWarnMsgMapper.updateById(eleWarnMsg);
+        return this.eleWarnMsgMapper.updateById(eleWarnMsg);
 
     }
 
@@ -99,10 +100,16 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
 
     @Override
     public R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery) {
-        List<EleWarnMsgVo> eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
-        if (Objects.nonNull(eleWarnMsgRankingVos)){
-            for (EleWarnMsgVo eleWarnMsgVo:eleWarnMsgRankingVos){
-                EleWarnMsgVo eleWarnMsgVoForTenant=eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgVo.getElectricityCabinetId());
+        List<EleWarnMsgVo> eleWarnMsgRankingVos = null;
+        if (Objects.nonNull(eleWarnMsgQuery.getElectricityCabinetId())) {
+            eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRankingByElectricityCabinetId(eleWarnMsgQuery);
+            return R.ok(eleWarnMsgRankingVos);
+        }else {
+            eleWarnMsgRankingVos = eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
+        }
+        if (Objects.nonNull(eleWarnMsgRankingVos)) {
+            for (EleWarnMsgVo eleWarnMsgVo : eleWarnMsgRankingVos) {
+                EleWarnMsgVo eleWarnMsgVoForTenant = eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgVo.getElectricityCabinetId());
                 eleWarnMsgVo.setElectricityCabinetName(eleWarnMsgVoForTenant.getElectricityCabinetName());
                 eleWarnMsgVo.setTenantName(eleWarnMsgVoForTenant.getTenantName());
             }

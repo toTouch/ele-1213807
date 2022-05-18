@@ -144,11 +144,26 @@
     </select>
 
 
-    <select id="queryStatisticEleWarnMsgForTenant" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
-        select tec.name as electricityCabinetName,tt.name as tenantName from t_electricity_cabinet tec left join t_tenant tt on tec.tenant_id=tt.id  where tec.id=#{electricityCabinetId}
+    <select id="queryStatisticEleWarnMsgRankingByElectricityCabinetId"
+            resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select
+        cell_no,
+        count(case
+        when type=101
+        then type
+        end ) hardwareWarnMsgCount,
+        count(case
+        when type=1
+        then type
+        end ) systemWarnMsgCount
+        from t_ele_warn_msg
+        group by cell_no limit #{query.offset}, #{query.size}
     </select>
 
 
+    <select id="queryStatisticEleWarnMsgForTenant" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select tec.name as electricityCabinetName,tt.name as tenantName from t_electricity_cabinet tec left join t_tenant tt on tec.tenant_id=tt.id  where tec.id=#{electricityCabinetId}
+    </select>
 
 
 </mapper>
