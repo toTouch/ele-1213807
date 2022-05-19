@@ -140,6 +140,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		}
 
 		if (StringUtils.isEmpty(batteryName)) {
+
+
+			//TODO 电池上报电量大幅变化，忽略此条上报
+
 			electricityCabinetBox.setSn(null);
 			electricityCabinetBox.setPower(null);
 			electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
@@ -235,9 +239,14 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 		newElectricityBattery.setUpdateTime(System.currentTimeMillis());
 		//newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
 		Double power = eleBatteryVo.getPower();
+
+
 		if (Objects.nonNull(power)) {
 			newElectricityBattery.setPower(power * 100);
 		}
+
+
+
 		String health = eleBatteryVo.getHealth();
 		if (StringUtils.isNotEmpty(health)) {
 			newElectricityBattery.setHealthStatus(Integer.valueOf(health));

@@ -10,6 +10,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.HardwareCommand;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.feishu.config.FeishuConfig;
 import com.xiliulou.feishu.entity.query.FeishuBotSendMsgQuery;
@@ -24,6 +25,7 @@ import com.xiliulou.feishu.service.FeishuTokenService;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.iot.mns.HardwareHandlerManager;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -89,6 +91,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     @Autowired
     FeishuTokenService feishuTokenService;
 
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
@@ -143,6 +148,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 log.error("type is null,{}", receiverMessage.getOriginContent());
 
                 feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
+
+
+                //TODO 发送MQ通知
+                maintenanceUserNotifyConfigService.sendDeviceNotifyMq(electricityCabinet,receiverMessage.getStatus(), receiverMessage.getTime());
+
             });
 
             return false;
@@ -183,7 +193,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         }
     }
 
-    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time){
+    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time) {
         Tenant tenantEntity = tenantSerivce.queryByIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(tenantEntity)) {
             log.error("FEI SHU ERROR! tenant is empty error! cid={},tid={}", electricityCabinet.getId(), electricityCabinet.getTenantId());
@@ -211,7 +221,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         query3.setText("当前状态：" + getOnlineStatus(onlineStatus));
 
         FeishuMsgPostTextQuery query4 = new FeishuMsgPostTextQuery();
-        query4.setText(getOnlineStatus(onlineStatus) + "时间：" +  time);
+        query4.setText(getOnlineStatus(onlineStatus) + "时间：" + time);
 
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine0 = Lists.newArrayList(query0);
         List<FeishuMsgPostTypeQuery> feishuMsgPostTypeLine1 = Lists.newArrayList(query1);
@@ -222,7 +232,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         FeishuMsgPostSubQuery feishuMsgPostSubQuery = new FeishuMsgPostSubQuery();
         feishuMsgPostSubQuery.setTitle("设备上下线通知");
         feishuMsgPostSubQuery.setContent(Arrays.asList(feishuMsgPostTypeLine0,
-                feishuMsgPostTypeLine1, feishuMsgPostTypeLine2, feishuMsgPostTypeLine3,feishuMsgPostTypeLine4));
+                feishuMsgPostTypeLine1, feishuMsgPostTypeLine2, feishuMsgPostTypeLine3, feishuMsgPostTypeLine4));
 
         FeishuMsgPostQuery feishuMsgPostQuery = new FeishuMsgPostQuery();
         feishuMsgPostQuery.setZhCn(feishuMsgPostSubQuery);

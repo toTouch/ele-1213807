@@ -160,4 +160,7 @@ public interface ElectricityCabinetConstant {
     String CACHE_FEISHU_ACCESS_TOKEN = "cache_feishu_access_token";
 
     String CLIENT_ID="xiliulou-ele:";
+
+    String CACHE_TENANT_MAINTENANCE_USER_CONFIG = "cache_maintenance_config:";
+    String CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST = "cache_maintenance_config_test:";
 }
