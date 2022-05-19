@@ -32,9 +32,9 @@ public class JsonAdminMaintenanceUserNotifyConfigController extends BaseControll
         return returnPairResult(maintenanceUserNotifyConfigService.updateConfig(query));
     }
 
-//    @PostMapping("/admin/maintenace/test")
-//    public R testSendMsg() {
-//        return returnPairResult(maintenanceUserNotifyConfigService.testSendMsg());
-//    }
+    @PostMapping("/admin/maintenace/test")
+    public R testSendMsg() {
+        return returnPairResult(maintenanceUserNotifyConfigService.testSendMsg());
+    }
 
 }

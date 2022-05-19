@@ -241,7 +241,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
             mqHardwareNotify.setOccurTime(occurTime);
-            mqHardwareNotify.setErrMsg(String.format("%s号格挡发生异常，已被锁定！", cellNo));
+            mqHardwareNotify.setErrMsg(String.format("%s号仓门发生异常，已被锁定！", cellNo));
             mqHardwareNotify.setProjectTitle(MqHardwareNotify.LOCK_CELL_PROJECT_TITLE);
             query.setData(mqHardwareNotify);
 
@@ -250,40 +250,40 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
         });
     }
 
-//    @Override
-//    public Pair<Boolean, Object> testSendMsg() {
-//        Integer tenantId = TenantContextHolder.getTenantId();
-//        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(tenantId);
-//        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
-//            return Pair.of(false, "请先配置手机号");
-//        }
-//
-//        if (!redisService.setNx(CupboardConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST + tenantId, "ok", TimeUnit.MINUTES.toMillis(5), false)) {
-//            return Pair.of(false, "5分钟之内只能测试一次");
-//        }
-//
-//        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
-//
-//        phones.forEach(p -> {
-//            MqNotifyCommon<MqDeviceNotify> query = new MqNotifyCommon<>();
-//            query.setPhone(p);
-//            query.setTime(System.currentTimeMillis());
-//            query.setType(MaintenanceUserNotifyConfig.P_DEVICE);
-//
-//            MqDeviceNotify mqDeviceNotify = new MqDeviceNotify();
-//            mqDeviceNotify.setProductKey("test");
-//            mqDeviceNotify.setDeviceSn("test");
-//            mqDeviceNotify.setOccurTime("test");
-//            mqDeviceNotify.setStatus("test");
-//            mqDeviceNotify.setProjectName(MqNotifyCommon.PROJECT_NAME);
-//            mqDeviceNotify.setDeviceName("test");
-//            query.setData(mqDeviceNotify);
-//
-//            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
-//            if (!result.getLeft()) {
-//                log.error("SEND MQ ERROR! d={} reason={}", "test", result.getRight());
-//            }
-//        });
-//        return Pair.of(true, null);
-//    }
+    @Override
+    public Pair<Boolean, Object> testSendMsg() {
+        Integer tenantId = TenantContextHolder.getTenantId();
+        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(tenantId);
+        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
+            return Pair.of(false, "请先配置手机号");
+        }
+
+        if (!redisService.setNx(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST + tenantId, "ok", TimeUnit.MINUTES.toMillis(5), false)) {
+            return Pair.of(false, "5分钟之内只能测试一次");
+        }
+
+        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
+
+        phones.forEach(p -> {
+            MqNotifyCommon<MqDeviceNotify> query = new MqNotifyCommon<>();
+            query.setPhone(p);
+            query.setTime(System.currentTimeMillis());
+            query.setType(MaintenanceUserNotifyConfig.P_DEVICE);
+
+            MqDeviceNotify mqDeviceNotify = new MqDeviceNotify();
+            mqDeviceNotify.setProductKey("test");
+            mqDeviceNotify.setDeviceSn("test");
+            mqDeviceNotify.setOccurTime("test");
+            mqDeviceNotify.setStatus("test");
+            mqDeviceNotify.setProjectName(MqNotifyCommon.PROJECT_NAME);
+            mqDeviceNotify.setDeviceName("test");
+            query.setData(mqDeviceNotify);
+
+            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
+            if (!result.getLeft()) {
+                log.error("SEND MQ ERROR! d={} reason={}", "test", result.getRight());
+            }
+        });
+        return Pair.of(true, null);
+    }
 }

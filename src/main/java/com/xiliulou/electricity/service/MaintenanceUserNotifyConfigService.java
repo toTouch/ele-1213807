@@ -74,6 +74,6 @@ public interface MaintenanceUserNotifyConfigService {
 
     void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String s);
 
-//    Pair<Boolean, Object> testSendMsg();
+    Pair<Boolean, Object> testSendMsg();
 
 }

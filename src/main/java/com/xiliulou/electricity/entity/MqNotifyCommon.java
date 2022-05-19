@@ -34,5 +34,5 @@ public class MqNotifyCommon<T> {
      */
     public static final Integer TYPE_DEVICE_LOG = 1;
 
-    public static final String PROJECT_NAME = "取餐柜";
+    public static final String PROJECT_NAME = "换电柜";
 }

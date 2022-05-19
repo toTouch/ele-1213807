@@ -25,5 +25,5 @@ public class MqHardwareNotify {
      */
     private String projectTitle;
 
-    public static final String LOCK_CELL_PROJECT_TITLE = "餐柜格挡异常";
+    public static final String LOCK_CELL_PROJECT_TITLE = "换电柜仓门异常";
 }
