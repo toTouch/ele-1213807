@@ -637,6 +637,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
+        System.out.println("传入的状态类型================================"+usableStatus.getClass());
+
         EleDisableMemberCardRecord eleDisableMemberCardRecord=EleDisableMemberCardRecord.builder()
                 .memberCardName(franchiseeUserInfo.getCardName())
                 .phone(userInfo.getPhone())
@@ -651,6 +653,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(usableStatus,FranchiseeUserInfo.MEMBER_CARD_DISABLE)){
             usableStatus=FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW;
         }
+
         FranchiseeUserInfo updateFranchiseeUserInfo=new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
