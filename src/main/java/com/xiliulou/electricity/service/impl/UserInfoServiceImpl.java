@@ -128,8 +128,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         for (UserInfo userInfo : userInfoList) {
             UserInfoVO userInfoVO = new UserInfoVO();
             FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            ElectricityMemberCard electricityMemberCard=electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                 franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
             }
 
@@ -210,7 +210,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         Long memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime();
-        if (!Objects.equals(franchiseeUserInfo.getCardType(),FranchiseeUserInfo.TYPE_COUNT)) {
+        if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.isNull(electricityMemberCard)) {
                 return R.ok();
@@ -231,14 +231,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() < 0) {
                 memberCardExpireTime = System.currentTimeMillis();
             }
-        }else {
+        } else {
             if (Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-            || System.currentTimeMillis()>=franchiseeUserInfo.getMemberCardExpireTime()|| franchiseeUserInfo.getRemainingNumber()==0){
+                    || System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime() || franchiseeUserInfo.getRemainingNumber() == 0) {
                 return R.ok();
             }
         }
-
-
 
 
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
@@ -246,8 +244,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setRemainingNumber(franchiseeUserInfo.getRemainingNumber());
         ownMemberCardInfoVo.setType(franchiseeUserInfo.getCardType());
         ownMemberCardInfoVo.setName(franchiseeUserInfo.getCardName());
-        ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime- System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
+        ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getCardId());
+        ownMemberCardInfoVo.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
+        ownMemberCardInfoVo.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
         return R.ok(ownMemberCardInfoVo);
     }
 
@@ -427,15 +427,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userInfoMapper.queryCount(userInfoQuery));
     }
 
-	@Override
-	public Integer querySumCount(UserInfoQuery userInfoQuery) {
-		return userInfoMapper.queryCount(userInfoQuery);
-	}
+    @Override
+    public Integer querySumCount(UserInfoQuery userInfoQuery) {
+        return userInfoMapper.queryCount(userInfoQuery);
+    }
 
-	//后台绑定电池
-	@Override
-	@Transactional
-	public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
+    //后台绑定电池
+    @Override
+    @Transactional
+    public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
         //查找用户
         UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
@@ -680,10 +680,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
 
-	@Override
-	public Integer deleteByUid(Long uid) {
-		return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
-	}
+    @Override
+    public Integer deleteByUid(Long uid) {
+        return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+    }
 
 
 }

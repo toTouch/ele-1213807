@@ -5,16 +5,11 @@ import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import java.util.Objects;
@@ -53,6 +48,11 @@ public class JsonUserElectricityMemberCardOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户!");
         }
         return electricityMemberCardOrderService.getMemberCardOrderCount(uid, queryStartTime, queryEndTime);
+    }
+
+    @PutMapping("user/memberCard/openOrDisableMemberCard")
+    public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus){
+        return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
     }
 
 

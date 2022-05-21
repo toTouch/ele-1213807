@@ -29,4 +29,6 @@ public class OwnMemberCardInfoVo {
      */
     private Integer cardId;
 
+    private Integer memberCardDisableStatus;
+
 }

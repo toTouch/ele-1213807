@@ -34,4 +34,6 @@ public interface ElectricityMemberCardOrderService {
     Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery);
 
     BigDecimal queryTurnOver(Integer tenantId);
+
+    R openOrDisableMemberCard(Integer usableStatus);
 }

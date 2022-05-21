@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
@@ -86,6 +89,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     OldUserActivityService oldUserActivityService;
     @Autowired
     UserAmountService userAmountService;
+    @Autowired
+    RedisService redisService;
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
     /**
      * 创建月卡订单
@@ -589,4 +596,65 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 	public BigDecimal queryTurnOver(Integer tenantId) {
 		return Optional.ofNullable(baseMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
 	}
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R openOrDisableMemberCard(Integer usableStatus) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //限频
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return R.fail("操作频繁,请稍后再试!");
+        }
+
+        //校验用户
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("OffLINE ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未缴纳押金
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("OffLINE ELECTRICITY payDeposit  ERROR! not found user! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+
+        }
+
+        //判断套餐是否为新用户送的次数卡
+        if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
+            log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
+        }
+
+        EleDisableMemberCardRecord eleDisableMemberCardRecord=EleDisableMemberCardRecord.builder()
+                .memberCardName(franchiseeUserInfo.getCardName())
+                .phone(userInfo.getPhone())
+                .userName(userInfo.getName())
+                .status(EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW)
+                .tenantId(userInfo.getTenantId())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+
+        eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
+
+        if (Objects.equals(usableStatus,FranchiseeUserInfo.MEMBER_CARD_DISABLE)){
+            usableStatus=FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW;
+        }
+        FranchiseeUserInfo updateFranchiseeUserInfo=new FranchiseeUserInfo();
+        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+        updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
+        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+        return R.ok();
+    }
 }

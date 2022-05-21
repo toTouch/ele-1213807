@@ -30,9 +30,9 @@ public interface ElectricityCabinetConstant {
     //城市缓存，不变
     String CACHE_CITY = "city:";
     String CACHE_SUBSCRIPTION_MESSAGE = "CACHE_SUBSCRIPTION_MESSAGE_";
-	String CACHE_USER_ROLE_RELATION = "user_role_relation:";
-	String CACHE_ROLE_PERMISSION_RELATION = "role_permission_relation:";
-	String CACHE_PERMISSION = "permission_id:";
+    String CACHE_USER_ROLE_RELATION = "user_role_relation:";
+    String CACHE_ROLE_PERMISSION_RELATION = "role_permission_relation:";
+    String CACHE_PERMISSION = "permission_id:";
 
     //门店缓存
     String CACHE_STORE = "store:";
@@ -59,7 +59,7 @@ public interface ElectricityCabinetConstant {
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
 
     //离线换电
-    String OFFLINE_ELE_RECEIVER_CACHE_KEY="offline_ele_receiver";
+    String OFFLINE_ELE_RECEIVER_CACHE_KEY = "offline_ele_receiver";
 
 
     //换电柜平台修改缓存
@@ -70,11 +70,10 @@ public interface ElectricityCabinetConstant {
     String ELE_CACHE_AUTH_ENTRY = "ele_cache_auth_entry:";
 
     //用户实名认证资料锁
-   String ELE_CACHE_USER_AUTH_LOCK_KEY = "ele_cache_user_auth_lock_key:";
+    String ELE_CACHE_USER_AUTH_LOCK_KEY = "ele_cache_user_auth_lock_key:";
 
     //用户缴纳押金
     String ELE_CACHE_USER_DEPOSIT_LOCK_KEY = "ele_cache_user_deposit_lock_key:";
-
 
 
     //下单周期限制
@@ -145,7 +144,6 @@ public interface ElectricityCabinetConstant {
     String CACHE_TENANT_ID_OPERATE = "cache_tenant_id_operate:";
 
 
-
     //新用户活动缓存
     String NEW_USER_ACTIVITY_CACHE = "new_user_activity_cache:";
 
@@ -159,8 +157,10 @@ public interface ElectricityCabinetConstant {
 
     String CACHE_FEISHU_ACCESS_TOKEN = "cache_feishu_access_token";
 
-    String CLIENT_ID="xiliulou-ele:";
+    String CLIENT_ID = "xiliulou-ele:";
 
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG = "cache_maintenance_config:";
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST = "cache_maintenance_config_test:";
+
+    String ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY = "ele-cache_user_disable_member_card_lock_key";
 }

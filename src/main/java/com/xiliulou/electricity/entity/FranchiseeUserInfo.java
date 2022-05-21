@@ -97,6 +97,11 @@ public class FranchiseeUserInfo {
      */
     private String batteryType;
 
+    /**
+     * 月卡停启用状态 0--启用 1--停用
+     */
+    private Integer memberCardDisableStatus;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金
@@ -111,12 +116,16 @@ public class FranchiseeUserInfo {
     public static final Integer OLD_MODEL_TYPE = 1;
     public static final Integer MEW_MODEL_TYPE = 2;
 
+    public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
+    public static final Integer MEMBER_CARD_DISABLE = 1;
+    public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
+
 
     //送次数卡
     public static final Integer TYPE_COUNT = 3;
 
     public static final Integer MEMBER_CARD_OWE = 1;
 
-    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER=9999L;
+    public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 
 }
