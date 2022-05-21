@@ -103,14 +103,14 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
         eleDisableMemberCardRecordMapper.update(updateEleDisableMemberCardRecord, new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo));
 
-        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-            updateFranchiseeUserInfo.setMemberCardDisableStatus(status);
-            updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
-            franchiseeUserInfoService.update(franchiseeUserInfo);
+        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateFranchiseeUserInfo.setMemberCardDisableStatus(status);
+        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
+            updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
         }
-
+        franchiseeUserInfoService.update(franchiseeUserInfo);
         return R.ok();
     }
 
