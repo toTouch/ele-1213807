@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper">
+
+
+    <select id="queryList"  resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
+        select * from t_ele_disable_member_card_record limit #{offset},#{size}
+    </select>
+
+</mapper>

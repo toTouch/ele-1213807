@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -631,7 +632,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
             log.error("DISABLE MEMBER CARD ERROR! disable review userId:{}", user.getUid());
-
+            return R.fail("ELECTRICITY.100001", "用户停卡申请审核中");
         }
 
         //判断套餐是否为新用户送的次数卡
@@ -641,6 +642,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
+                .disableMemberCardNo(generateOrderId(userInfo.getUid()))
                 .memberCardName(franchiseeUserInfo.getCardName())
                 .phone(userInfo.getPhone())
                 .userName(userInfo.getName())
@@ -660,5 +662,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
         return R.ok();
+    }
+
+    private String generateOrderId(Long uid) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
+                RandomUtil.randomNumbers(6);
     }
 }

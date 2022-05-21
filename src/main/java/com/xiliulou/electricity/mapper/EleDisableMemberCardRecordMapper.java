@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import org.apache.ibatis.annotations.Param;
@@ -13,5 +14,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableMemberCardRecord>{
 
-
+    EleDisableMemberCardRecord queryList(@Param("offset") Long offset,@Param("size") Long size);
 }

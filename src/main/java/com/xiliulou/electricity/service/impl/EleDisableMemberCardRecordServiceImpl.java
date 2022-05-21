@@ -56,4 +56,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
         return eleDisableMemberCardRecordMapper.insert(eleDisableMemberCardRecord);
     }
+
+    @Override
+    public R list(Long offset, Long size) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset,size));
+    }
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -31,6 +32,9 @@ public class JsonAdminElectricityMemberCardController {
 
     @Autowired
     FranchiseeService franchiseeService;
+
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
     /**
      * 新增
@@ -161,6 +165,19 @@ public class JsonAdminElectricityMemberCardController {
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Long id){
         return R.ok(electricityMemberCardService.queryByFranchisee(id));
+    }
+
+    /**
+     * 用户停卡记录
+     * @param offset
+     * @param size
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/disableMemberCard")
+    public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset,
+                                                 @RequestParam(value = "size") Long size){
+        return eleDisableMemberCardRecordService.list(offset,size);
+
     }
 
 }

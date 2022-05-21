@@ -389,6 +389,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
 	}
 
+	@Override
+	public R queryDisableMemberCardList(Long offset, Long size) {
+		return null;
+	}
+
 	/**
 	 * 获取套餐
 	 *

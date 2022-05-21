@@ -94,6 +94,11 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
 
+        if (!Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
+            log.error("OffLINE ELECTRICITY  ERROR! disable memberCard ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.100002", "月卡停卡");
+        }
+
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());
@@ -101,9 +106,9 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-        if (Objects.isNull(electricityMemberCard)){
+        if (Objects.isNull(electricityMemberCard)) {
             log.error("OffLINE ELECTRICITY  ERROR! memberCard  is not exist ! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.00121","套餐不存在");
+            return R.fail("ELECTRICITY.00121", "套餐不存在");
         }
 
         Long now = System.currentTimeMillis();
@@ -116,15 +121,15 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             if (franchiseeUserInfo.getRemainingNumber() < 0) {
                 //用户需购买相同套餐，补齐所欠换电次数
                 log.error("order  ERROR! memberCard remainingNumber insufficient uid={}", user.getUid());
-                return R.fail("ELECTRICITY.00117", "套餐剩余次数为负",franchiseeUserInfo.getCardId());
+                return R.fail("ELECTRICITY.00117", "套餐剩余次数为负", franchiseeUserInfo.getCardId());
             }
 
-            if (franchiseeUserInfo.getMemberCardExpireTime() < now){
+            if (franchiseeUserInfo.getMemberCardExpireTime() < now) {
                 log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
                 return R.fail("ELECTRICITY.0023", "月卡已过期");
             }
 
-            if (franchiseeUserInfo.getRemainingNumber()==0) {
+            if (franchiseeUserInfo.getRemainingNumber() == 0) {
                 log.error("order  ERROR! not found memberCard uid={}", user.getUid());
                 return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
             }

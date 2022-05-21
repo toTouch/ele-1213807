@@ -16,4 +16,6 @@ public interface EleDisableMemberCardRecordService {
 
     int save(EleDisableMemberCardRecord eleDisableMemberCardRecord);
 
+    R list(Long offset, Long size);
+
 }

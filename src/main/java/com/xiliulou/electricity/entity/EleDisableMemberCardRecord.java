@@ -29,9 +29,19 @@ public class EleDisableMemberCardRecord {
     private Long id;
 
     /**
+     * 用户id
+     */
+    private Long uid;
+
+    /**
      * 月卡名称
      */
     private String memberCardName;
+
+    /**
+     * 停卡单号
+     */
+    private String disableMemberCardNo;
 
     /**
      * 停卡状态
