@@ -65,8 +65,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R list(Long offset, Long size,Integer tenantId) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size,tenantId,null));
+    public R list(Long offset, Long size,Integer tenantId,Long uid) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size,tenantId,uid));
     }
 
     @Override
@@ -75,7 +75,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.isNull(eleDisableMemberCardRecord)) {
             log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO:{}", disableMemberCardNo);
-            return R.fail("未找到退款订单!");
+            return R.fail("未找到停卡订单!");
         }
 
         //用户

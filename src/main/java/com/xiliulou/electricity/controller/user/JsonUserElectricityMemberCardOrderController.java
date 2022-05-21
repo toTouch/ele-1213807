@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
+import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -27,6 +28,9 @@ public class JsonUserElectricityMemberCardOrderController {
 
     @Autowired
     ElectricityMemberCardOrderService electricityMemberCardOrderService;
+
+    @Autowired
+    EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
 
 
     @PostMapping("user/memberCard/payMemberCard")
@@ -56,9 +60,8 @@ public class JsonUserElectricityMemberCardOrderController {
     }
 
     @GetMapping("user/memberCard/getDisableMemberCardList")
-    public R getDisableMemberCardList(){
-
-        return null;
+    public R getDisableMemberCardList(@RequestParam("offset") Long offset, @RequestParam("size") Long size){
+        return electricityMemberCardOrderService.getDisableMemberCardList(offset,size);
     }
 
 

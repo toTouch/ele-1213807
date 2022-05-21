@@ -187,7 +187,7 @@ public class JsonAdminElectricityMemberCardController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        return eleDisableMemberCardRecordService.list(offset,size,tenantId);
+        return eleDisableMemberCardRecordService.list(offset,size,tenantId,null);
     }
 
     /**

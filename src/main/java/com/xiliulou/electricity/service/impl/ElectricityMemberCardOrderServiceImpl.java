@@ -665,6 +665,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return R.ok();
     }
 
+    @Override
+    public R getDisableMemberCardList(Long offset, Long size) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("rentBattery  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return eleDisableMemberCardRecordService.list(offset,size,null,user.getUid());
+    }
+
     private String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
                 RandomUtil.randomNumbers(6);
