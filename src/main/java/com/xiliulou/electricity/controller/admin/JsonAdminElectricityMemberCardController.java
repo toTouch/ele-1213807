@@ -177,7 +177,20 @@ public class JsonAdminElectricityMemberCardController {
     public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset,
                                                  @RequestParam(value = "size") Long size){
         return eleDisableMemberCardRecordService.list(offset,size);
+    }
 
+    /**
+     * 审核用户停卡
+     * @param disableMemberCardNo
+     * @param status
+     * @param errMsg
+     * @return
+     */
+    @PostMapping(value = "/admin/electricityMemberCard/reviewDisableMemberCard")
+    public R reviewDisableMemberCard(@RequestParam("disableMemberCardNo") String disableMemberCardNo,
+                                     @RequestParam("status") Integer status,
+                                     @RequestParam(value = "errMsg", required = false) String errMsg){
+        return eleDisableMemberCardRecordService.reviewDisableMemberCard(disableMemberCardNo,errMsg,status);
     }
 
 }

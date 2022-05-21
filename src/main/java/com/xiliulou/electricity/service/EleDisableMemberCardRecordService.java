@@ -18,4 +18,6 @@ public interface EleDisableMemberCardRecordService {
 
     R list(Long offset, Long size);
 
+    R reviewDisableMemberCard(String disableMemberCardNo,String errMsg,Integer status);
+
 }

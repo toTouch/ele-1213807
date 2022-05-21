@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.List;
+
 /**
  * 换电柜文件表(TEleDisableMemberCardRecord)表数据库访问层
  *
@@ -14,5 +16,5 @@ import org.apache.ibatis.annotations.Param;
  */
 public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableMemberCardRecord>{
 
-    EleDisableMemberCardRecord queryList(@Param("offset") Long offset,@Param("size") Long size);
+    List<EleDisableMemberCardRecord> queryList(@Param("offset") Long offset, @Param("size") Long size);
 }

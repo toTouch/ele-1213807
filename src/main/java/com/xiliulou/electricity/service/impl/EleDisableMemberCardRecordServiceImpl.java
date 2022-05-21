@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
@@ -52,6 +53,12 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     @Resource
     EleDisableMemberCardRecordMapper eleDisableMemberCardRecordMapper;
 
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
+
+    @Autowired
+    UserInfoService userInfoService;
+
     @Override
     public int save(EleDisableMemberCardRecord eleDisableMemberCardRecord) {
         return eleDisableMemberCardRecordMapper.insert(eleDisableMemberCardRecord);
@@ -59,6 +66,51 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public R list(Long offset, Long size) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset,size));
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size));
+    }
+
+    @Override
+    public R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status) {
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = eleDisableMemberCardRecordMapper.selectOne(new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo));
+
+        if (Objects.isNull(eleDisableMemberCardRecord)) {
+            log.error("REVIEW_DISABLE_MEMBER_CARD ERROR ,NOT FOUND DISABLE_MEMBER_CARD ORDER_NO:{}", disableMemberCardNo);
+            return R.fail("未找到退款订单!");
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.selectUserByUid(eleDisableMemberCardRecord.getUid());
+
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", eleDisableMemberCardRecord.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payDeposit  ERROR! not found user! userId:{}", eleDisableMemberCardRecord.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        EleDisableMemberCardRecord updateEleDisableMemberCardRecord = new EleDisableMemberCardRecord();
+        updateEleDisableMemberCardRecord.setDisableMemberCardNo(disableMemberCardNo);
+        updateEleDisableMemberCardRecord.setStatus(status);
+        updateEleDisableMemberCardRecord.setErrMsg(errMsg);
+        updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+
+        eleDisableMemberCardRecordMapper.update(updateEleDisableMemberCardRecord, new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo));
+
+        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateFranchiseeUserInfo.setMemberCardDisableStatus(status);
+            updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+            franchiseeUserInfoService.update(franchiseeUserInfo);
+        }
+
+        return R.ok();
     }
 }
