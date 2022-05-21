@@ -642,12 +642,13 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
-                .disableMemberCardNo(generateOrderId(userInfo.getUid()))
+                .disableMemberCardNo(generateOrderId(user.getUid()))
                 .memberCardName(franchiseeUserInfo.getCardName())
                 .phone(userInfo.getPhone())
                 .userName(userInfo.getName())
                 .status(EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW)
                 .tenantId(userInfo.getTenantId())
+                .uid(user.getUid())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
 

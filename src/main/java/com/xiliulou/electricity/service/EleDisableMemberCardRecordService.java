@@ -16,8 +16,10 @@ public interface EleDisableMemberCardRecordService {
 
     int save(EleDisableMemberCardRecord eleDisableMemberCardRecord);
 
-    R list(Long offset, Long size);
+    R list(Long offset, Long size,Integer tenantId);
 
     R reviewDisableMemberCard(String disableMemberCardNo,String errMsg,Integer status);
+
+    R queryCount(Integer tenantId);
 
 }

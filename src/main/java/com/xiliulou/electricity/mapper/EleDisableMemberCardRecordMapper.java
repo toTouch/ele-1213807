@@ -14,7 +14,9 @@ import java.util.List;
  * @author makejava
  * @since 2020-11-27 10:17:18
  */
-public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableMemberCardRecord>{
+public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableMemberCardRecord> {
 
-    List<EleDisableMemberCardRecord> queryList(@Param("offset") Long offset, @Param("size") Long size);
+    List<EleDisableMemberCardRecord> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("tenantId") Integer tenantId,@Param("uid") Long uid);
+
+    Integer queryCount(@Param("tenantId") Integer tenantId);
 }

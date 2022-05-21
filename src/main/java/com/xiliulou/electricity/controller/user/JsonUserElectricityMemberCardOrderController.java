@@ -55,5 +55,11 @@ public class JsonUserElectricityMemberCardOrderController {
         return electricityMemberCardOrderService.openOrDisableMemberCard(usableStatus);
     }
 
+    @GetMapping("user/memberCard/getDisableMemberCardList")
+    public R getDisableMemberCardList(){
+
+        return null;
+    }
+
 
 }

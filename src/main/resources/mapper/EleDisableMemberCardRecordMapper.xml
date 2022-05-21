@@ -4,7 +4,25 @@
 
 
     <select id="queryList"  resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
-        select * from t_ele_disable_member_card_record limit #{offset},#{size}
+        select * from t_ele_disable_member_card_record
+        <where>
+            <if test="tenantId !=null">
+                and tenant_id=#{tenantId}
+            </if>
+            <if test="uid !=null">
+                and uid=#{uid}
+            </if>
+        </where>
+        limit #{offset},#{size}
     </select>
 
+
+    <select id="queryCount" resultType="integer">
+        select count(1) from t_ele_disable_member_card_record
+        <where>
+            <if test="tenantId!=null">
+                and tenant_id=#{tenantId}
+            </if>
+        </where>
+    </select>
 </mapper>

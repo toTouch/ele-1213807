@@ -65,8 +65,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R list(Long offset, Long size) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size));
+    public R list(Long offset, Long size,Integer tenantId) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size,tenantId,null));
     }
 
     @Override
@@ -112,5 +112,10 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         }
 
         return R.ok();
+    }
+
+    @Override
+    public R queryCount(Integer tenantId) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryCount(tenantId));
     }
 }

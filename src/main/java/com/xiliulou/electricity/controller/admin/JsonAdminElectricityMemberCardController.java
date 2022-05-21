@@ -176,7 +176,31 @@ public class JsonAdminElectricityMemberCardController {
     @GetMapping(value = "/admin/electricityMemberCard/disableMemberCard")
     public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset,
                                                  @RequestParam(value = "size") Long size){
-        return eleDisableMemberCardRecordService.list(offset,size);
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return eleDisableMemberCardRecordService.list(offset,size,tenantId);
+    }
+
+    /**
+     * 停卡记录count
+     * @return
+     */
+    @GetMapping(value = "/admin/electricityMemberCard/disableMemberCardCount")
+    public R getElectricityDisableMemberCardCount(){
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return eleDisableMemberCardRecordService.queryCount(tenantId);
     }
 
     /**
