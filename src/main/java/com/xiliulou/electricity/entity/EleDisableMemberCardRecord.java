@@ -27,10 +27,7 @@ public class EleDisableMemberCardRecord {
      */
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-    /**
-     * 停卡单号
-     */
-    private String disableMemberCardNo;
+
     /**
      * 月卡名称
      */
