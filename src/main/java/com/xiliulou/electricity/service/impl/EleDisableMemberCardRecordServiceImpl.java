@@ -110,7 +110,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
             updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
         }
-        franchiseeUserInfoService.update(franchiseeUserInfo);
+        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
         return R.ok();
     }
 
