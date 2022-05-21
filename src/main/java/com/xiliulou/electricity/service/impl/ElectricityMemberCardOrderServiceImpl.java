@@ -275,7 +275,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //同一个套餐可以续费
         if (Objects.equals(franchiseeUserInfo.getCardId(), electricityMemberCardOrderQuery.getMemberId())) {
-            if (now < franchiseeUserInfo.getMemberCardExpireTime() && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber()>0) {
+            if (now < franchiseeUserInfo.getMemberCardExpireTime() && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0) {
                 now = franchiseeUserInfo.getMemberCardExpireTime();
             }
             //TODO 使用次数暂时叠加
@@ -335,7 +335,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     }
                 }
             }
-
 
 
             //用户
@@ -582,20 +581,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
     }
 
-	@Override
-	public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
-		return R.ok(baseMapper.queryCount(memberCardOrderQuery));
-	}
+    @Override
+    public R queryCount(MemberCardOrderQuery memberCardOrderQuery) {
+        return R.ok(baseMapper.queryCount(memberCardOrderQuery));
+    }
 
-	@Override
-	public Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery) {
-		return baseMapper.queryCount(memberCardOrderQuery);
-	}
+    @Override
+    public Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery) {
+        return baseMapper.queryCount(memberCardOrderQuery);
+    }
 
-	@Override
-	public BigDecimal queryTurnOver(Integer tenantId) {
-		return Optional.ofNullable(baseMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
-	}
+    @Override
+    public BigDecimal queryTurnOver(Integer tenantId) {
+        return Optional.ofNullable(baseMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -617,7 +616,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //校验用户
         UserInfo userInfo = userInfoService.queryByUid(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("OffLINE ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -626,20 +625,22 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //未缴纳押金
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("OffLINE ELECTRICITY payDeposit  ERROR! not found user! userId:{}", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR!not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("DISABLE MEMBER CARD ERROR! disable review userId:{}", user.getUid());
 
         }
 
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
-            log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());
+            log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
-        System.out.println("传入的状态类型================================"+usableStatus.getClass());
-
-        EleDisableMemberCardRecord eleDisableMemberCardRecord=EleDisableMemberCardRecord.builder()
+        EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
                 .memberCardName(franchiseeUserInfo.getCardName())
                 .phone(userInfo.getPhone())
                 .userName(userInfo.getName())
@@ -650,11 +651,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
-        if (Objects.equals(usableStatus,FranchiseeUserInfo.MEMBER_CARD_DISABLE)){
-            usableStatus=FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW;
+        if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            usableStatus = FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW;
         }
 
-        FranchiseeUserInfo updateFranchiseeUserInfo=new FranchiseeUserInfo();
+        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
