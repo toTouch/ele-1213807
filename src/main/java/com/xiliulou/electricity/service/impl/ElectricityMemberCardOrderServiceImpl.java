@@ -616,7 +616,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //限频
         Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
-            return R.fail("操作频繁,请稍后再试!");
+            return R.fail("ELECTRICITY.0034", "操作频繁,请稍后再试!");
         }
 
         //校验用户
@@ -678,8 +678,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
 
-        if (Objects.equals(usableStatus,EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)){
-            usableStatus=EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW;
+        if (Objects.equals(usableStatus, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
+            usableStatus = EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW;
         }
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
                 .disableMemberCardNo(generateOrderId(user.getUid()))
@@ -715,7 +715,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return eleDisableMemberCardRecordService.list(offset,size,null,user.getUid());
+        return eleDisableMemberCardRecordService.list(offset, size, null, user.getUid());
     }
 
     private String generateOrderId(Long uid) {
