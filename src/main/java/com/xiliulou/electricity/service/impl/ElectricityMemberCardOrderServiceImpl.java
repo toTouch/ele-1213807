@@ -4,16 +4,19 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -94,6 +97,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     RedisService redisService;
     @Autowired
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
+    @Autowired
+    FranchiseeService franchiseeService;
 
     /**
      * 创建月卡订单
@@ -640,6 +645,38 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
+
+        //判断用户是否产生电池服务费
+        Long now = System.currentTimeMillis();
+        if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+                //查询用户是否存在电池服务费
+                Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                Integer modelType = franchisee.getModelType();
+                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                    Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+                    List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                            //计算服务费
+                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                            }
+                        }
+                    }
+                } else {
+                    BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+                    //计算服务费
+                    BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                    if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                    }
+                }
+            }
+        }
+
 
         if (Objects.equals(usableStatus,EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)){
             usableStatus=EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW;
