@@ -31,4 +31,9 @@ public class OwnMemberCardInfoVo {
 
     private Integer memberCardDisableStatus;
 
+    /**
+     * 有效天数
+     */
+    private Long validDays;
+
 }

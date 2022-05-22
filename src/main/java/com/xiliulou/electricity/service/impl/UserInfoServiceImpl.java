@@ -238,7 +238,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
         ownMemberCardInfoVo.setMemberCardExpireTime(memberCardExpireTime);
         ownMemberCardInfoVo.setRemainingNumber(franchiseeUserInfo.getRemainingNumber());
@@ -247,7 +246,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getCardId());
         ownMemberCardInfoVo.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
-        ownMemberCardInfoVo.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            ownMemberCardInfoVo.setValidDays((memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L));
+        }
         return R.ok(ownMemberCardInfoVo);
     }
 

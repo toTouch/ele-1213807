@@ -65,8 +65,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R list(Long offset, Long size,Integer tenantId,Long uid) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size,tenantId,uid));
+    public R list(Long offset, Long size, Integer tenantId, Long uid) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size, tenantId, uid));
     }
 
     @Override
@@ -110,6 +110,13 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW_REFUSE)) {
             updateFranchiseeUserInfo.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
         }
+        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
+        }
+        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
+            updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
+        }
+
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
         return R.ok();
     }

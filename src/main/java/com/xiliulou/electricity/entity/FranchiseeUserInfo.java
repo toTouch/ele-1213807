@@ -102,6 +102,11 @@ public class FranchiseeUserInfo {
      */
     private Integer memberCardDisableStatus;
 
+    /**
+     * 月卡暂停启用更新时间
+     */
+    private Long disableMemberCardTime;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金
