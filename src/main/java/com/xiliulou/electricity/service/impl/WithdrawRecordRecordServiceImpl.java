@@ -413,7 +413,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 	@Override
 	public R getWithdrawCount(Long uid) {
-		return R.ok(withdrawRecordMapper.selectCount(new LambdaQueryWrapper<WithdrawRecord>().eq(WithdrawRecord::getStatus, WithdrawRecord.CHECKING)));
+		return R.ok(withdrawRecordMapper.selectCount(new LambdaQueryWrapper<WithdrawRecord>().eq(WithdrawRecord::getStatus, WithdrawRecord.CHECKING).eq(WithdrawRecord::getUid,uid)));
 	}
 
 	@Transactional(rollbackFor = Exception.class)
