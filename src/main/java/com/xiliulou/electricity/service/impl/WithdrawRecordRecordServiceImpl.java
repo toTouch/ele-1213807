@@ -400,7 +400,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 
 		if (!bankCard.getEncBindIdNumber().contains(query.getIdNumber())) {
 			log.error("idNumber is not equal! uIdNumber:{} ,qIdNumber:{},uid:{}", bankCard.getEncBindIdNumber(), query.getIdNumber(), query.getUid());
-			return R.fail("PAY_TRANSFER.0012", "身份证后四位与本人手机号不符");
+			return R.fail("PAY_TRANSFER.0012", "身份证后四位与绑定的不一致");
 		}
 
 		return R.ok();

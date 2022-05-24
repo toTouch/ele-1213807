@@ -83,7 +83,7 @@ public class JsonAdminFranchiseeController {
 			@RequestParam(value = "name", required = false) String name,
 			@RequestParam(value = "beginTime", required = false) Long beginTime,
 			@RequestParam(value = "endTime", required = false) Long endTime) {
-		if (size < 0 || size > 50) {
+		if (size < 0 || size > 50 && size <1000) {
 			size = 10L;
 		}
 
