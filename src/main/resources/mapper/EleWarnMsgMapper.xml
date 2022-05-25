@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleWarnMsg">
         select
         id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time,
-        update_time
+        update_time,code
         from t_ele_warn_msg
         <where>
             <if test="query.electricityCabinetId != null">
