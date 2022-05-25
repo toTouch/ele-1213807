@@ -47,5 +47,9 @@ public class ElectricityCabinetOrderQuery {
 
     private Integer source;
 
+    private String electricityCabinetName;
+
+    private Integer oldCellNo;
+
 
 }
