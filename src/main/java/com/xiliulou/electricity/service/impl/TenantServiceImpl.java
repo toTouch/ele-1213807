@@ -29,9 +29,12 @@ import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserRoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
+import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang.RandomStringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -197,12 +200,11 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
+    public R  editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
         Tenant tenant=tenantMapper.selectById(tenantAddAndUpdateQuery.getId());
-        if(Objects.isNull(tenant)){
-            return R.fail("ELECTRICITY.00101", "找不到租户");
+        if (Objects.isNull(tenant)) {
+            return R.fail("USER.0001", "查询不到用户！");
         }
-
         //修改租户信息
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
         tenant.setUpdateTime(System.currentTimeMillis());
@@ -211,7 +213,7 @@ public class TenantServiceImpl implements TenantService {
         tenantMapper.updateById(tenant);
 
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId(),tenant);
-        return R.ok();
+        return null;
     }
 
     @Override
@@ -256,6 +258,7 @@ public class TenantServiceImpl implements TenantService {
         }
         return genTenantCode();
     }
+
 
 
 }
