@@ -19,7 +19,7 @@
 			<if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
 				and tec.name = #{query.electricityCabinetName}
 			</if>
-			<if test="query.old_cell_no != null">
+			<if test="query.oldCellNo != null">
 				and teco.old_cell_no = #{query.oldCellNo}
 			</if>
 			<if test="query.status != null and query.status != ''">
