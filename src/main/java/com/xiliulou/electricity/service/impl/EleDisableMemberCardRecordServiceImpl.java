@@ -113,9 +113,6 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
             updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
         }
-        if (Objects.equals(status, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
-            updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
-        }
 
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
         return R.ok();
