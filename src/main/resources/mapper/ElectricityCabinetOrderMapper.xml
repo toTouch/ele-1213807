@@ -5,9 +5,9 @@
 	<!--查询指定行数据-->
 	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetOrderVO">
 		select
-		id, order_id, phone, uid, pay_amount, electricity_cabinet_id, old_electricity_battery_sn,
-		new_electricity_battery_sn, old_cell_no, new_cell_no, status, payment_method, source, remark, switch_begin_time,
-		switch_end_time, create_time, update_time
+		teco.id, teco.order_id, teco.phone, teco.uid, teco.pay_amount, teco.electricity_cabinet_id, teco.old_electricity_battery_sn,
+		teco.new_electricity_battery_sn, teco.old_cell_no, teco.new_cell_no, teco.status, teco.payment_method, teco.source, teco.remark, teco.switch_begin_time,
+		teco.switch_end_time, teco.create_time, teco.update_time
 		from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
 		<where>
 			<if test="query.orderId != null and query.orderId != ''">
