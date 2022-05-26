@@ -51,6 +51,11 @@ public class EleWarnMsg {
     //租户id
     private Integer tenantId;
 
+    /**
+     * 硬件异常具体分类
+     */
+    private Integer code;
+
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 

@@ -15,6 +15,7 @@ import java.util.Objects;
 
 /**
  * 数据大屏
+ *
  * @author hrp
  * @date 2022/3/22 10:35
  * @mood
@@ -28,11 +29,12 @@ public class JsonAdminDataScreenController {
 
     /**
      * 大屏订单统计
+     *
      * @param tenantId
      * @return
      */
     @GetMapping("/admin/dataScreen/order")
-    public R queryOrderStatistics(@RequestParam(value = "tenantId",required = false) Integer tenantId){
+    public R queryOrderStatistics(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -40,22 +42,22 @@ public class JsonAdminDataScreenController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
-            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         return dataScreenService.queryOrderStatistics(tenantId);
     }
 
 
-
     /**
      * 大屏订单统计
+     *
      * @param tenantId
      * @return
      */
     @GetMapping("/admin/dataScreen/dataBrowsing")
-    public R dataBrowsing(@RequestParam(value = "tenantId",required = false) Integer tenantId){
+    public R dataBrowsing(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -63,8 +65,8 @@ public class JsonAdminDataScreenController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
-            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         return dataScreenService.queryDataBrowsing(tenantId);
@@ -72,11 +74,12 @@ public class JsonAdminDataScreenController {
 
     /**
      * 大屏地图省份统计
+     *
      * @param tenantId
      * @return
      */
     @GetMapping("/admin/dataScreen/map")
-    public R mapProvince(@RequestParam(value = "tenantId",required = false) Integer tenantId){
+    public R mapProvince(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -84,8 +87,8 @@ public class JsonAdminDataScreenController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
-            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         return dataScreenService.queryMapProvince(tenantId);
@@ -93,54 +96,56 @@ public class JsonAdminDataScreenController {
 
     /**
      * 大屏地图城市统计
+     *
      * @param tenantId
      * @return
      */
     @GetMapping("/admin/dataScreen/mapCity")
-    public R mapCity(@RequestParam(value = "tenantId",required = false) Integer tenantId,@RequestParam(value = "pid") Integer pid){
+    public R mapCity(@RequestParam(value = "tenantId", required = false) Integer tenantId, @RequestParam(value = "pid") Integer pid) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("dataScreen  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
-            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        return dataScreenService.queryMapCity(tenantId,pid);
+        return dataScreenService.queryMapCity(tenantId, pid);
     }
 
     /**
      * 大屏优惠券统计
+     *
      * @param tenantId
      * @return
      */
     @GetMapping("/admin/dataScreen/coupon")
-    public R couponStatistic(@RequestParam(value = "tenantId",required = false) Integer tenantId){
+    public R couponStatistic(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("dataScreen  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
-            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         return dataScreenService.queryCoupon(tenantId);
     }
 
     @GetMapping("/admin/dataScreen/turnoverAndUser")
-    public R TurnoverAndUserStatistic(@RequestParam(value = "tenantId",required = false) Integer tenantId){
+    public R TurnoverAndUserStatistic(@RequestParam(value = "tenantId", required = false) Integer tenantId) {
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("dataScreen  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)){
-            log.error("dataScreen  ERROR! user not permissions userType:{}",user.getType());
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
         return dataScreenService.queryTurnoverAndUser(tenantId);

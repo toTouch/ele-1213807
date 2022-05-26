@@ -25,4 +25,7 @@ public class EleWarnMsgQuery {
     private Integer tenantId;
     private Integer cellNo;
     private String electricityCabinetName;
+
+    private Long beginTime;
+    private Long endTime;
 }

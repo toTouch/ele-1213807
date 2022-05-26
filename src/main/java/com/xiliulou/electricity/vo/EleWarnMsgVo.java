@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.vo;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * 电柜异常信息视图
@@ -11,6 +13,8 @@ import lombok.Data;
  */
 @Data
 @Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class EleWarnMsgVo {
 
     /**
@@ -32,5 +36,20 @@ public class EleWarnMsgVo {
      * 租户id
      */
     private Integer tenantId;
+
+
+    /**
+     * 换电柜名字
+     */
+    private String electricityCabinetName;
+
+
+    private Integer electricityCabinetId;
+
+    /**
+     * 仓门号
+     */
+    private Integer cellNo;
+
 
 }

@@ -7,7 +7,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleWarnMsg">
         select
         id, electricity_cabinet_id, electricity_cabinet_name, cell_no, msg, type, status, operate_uid, create_time,
-        update_time
+        update_time,code
         from t_ele_warn_msg
         <where>
             <if test="query.electricityCabinetId != null">
@@ -91,4 +91,83 @@
             </if>
         </where>
     </select>
+
+    <select id="queryStatisticsEleWarmMsg" resultType="java.util.Map">
+        select count(code) as msgCount , code from t_ele_warn_msg
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+            <if test="query.cellNo !=null">
+                and cell_no =#{query.cellNo}
+            </if>
+            <if test="query.beginTime != null">
+                and create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and create_time &lt;=#{query.endTime}
+            </if>
+        </where>
+        group by code;
+    </select>
+
+
+    <select id="queryStatisticEleWarnMsgByElectricityCabinet" resultType="java.util.Map">
+        select count(*) as msgCount,cell_no from t_ele_warn_msg
+        <where>
+            <if test="query.electricityCabinetId != null">
+                and electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+            <if test="query.beginTime != null">
+                and create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and create_time &lt;=#{query.endTime}
+            </if>
+        </where>
+        group by cell_no;
+    </select>
+
+    <select id="queryStatisticEleWarnMsgRanking" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select
+        electricity_cabinet_id as electricityCabinetId,
+        count(case
+        when type=101
+        then type
+        end ) hardwareWarnMsgCount,
+        count(case
+        when type=1
+        then type
+        end ) systemWarnMsgCount
+        from t_ele_warn_msg
+        group by electricity_cabinet_id limit #{query.offset}, #{query.size}
+    </select>
+
+
+    <select id="queryStatisticEleWarnMsgRankingByElectricityCabinetId"
+            resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select
+        cell_no,
+        count(case
+        when type=101
+        then type
+        end ) hardwareWarnMsgCount,
+        count(case
+        when type=1
+        then type
+        end ) systemWarnMsgCount
+        from t_ele_warn_msg
+        group by cell_no limit #{query.offset}, #{query.size}
+    </select>
+
+
+    <select id="queryStatisticEleWarnMsgForTenant" resultType="com.xiliulou.electricity.vo.EleWarnMsgVo">
+        select tec.name as electricityCabinetName,tt.name as tenantName from t_electricity_cabinet tec left join t_tenant tt on tec.tenant_id=tt.id  where tec.id=#{electricityCabinetId}
+    </select>
+
+    <select id="queryStatisticEleWarnMsgRankingCount"  resultType="integer">
+        select count(1) from (select electricity_cabinet_id from t_ele_warn_msg GROUP BY electricity_cabinet_id) sub_ele_warn;
+    </select>
+
+
 </mapper>

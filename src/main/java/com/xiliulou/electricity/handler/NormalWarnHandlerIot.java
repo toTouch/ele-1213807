@@ -68,6 +68,7 @@ public class NormalWarnHandlerIot extends AbstractIotMessageHandler {
                 .cellNo(eleWarnVO.getCellNo())
                 .msg(eleWarnVO.getMsg())
                 .type(eleWarnVO.getMsgType())
+                .code(eleWarnVO.getCode())
                 .status(EleWarnMsg.STATUS_UNREAD)
                 .createTime(eleWarnVO.getCreateTime())
                 .updateTime(eleWarnVO.getCreateTime())
@@ -89,6 +90,8 @@ class EleWarnVO {
     private Integer msgType;
 
     private Long createTime;
+
+    private Integer code;
 
 }
 

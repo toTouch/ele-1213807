@@ -5,10 +5,14 @@ import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.mapper.EleWarnMsgMapper;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
+import com.xiliulou.electricity.vo.EleWarnMsgVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * 换电柜异常上报信息(TEleWarnMsg)表服务实现类
@@ -55,7 +59,7 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(EleWarnMsg eleWarnMsg) {
-       return this.eleWarnMsgMapper.updateById(eleWarnMsg);
+        return this.eleWarnMsgMapper.updateById(eleWarnMsg);
 
     }
 
@@ -82,5 +86,39 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Override
     public void delete(Long id) {
         eleWarnMsgMapper.deleteById(id);
+    }
+
+    @Override
+    public R queryStatisticsEleWarmMsg(EleWarnMsgQuery eleWarnMsgQuery) {
+        return R.ok(eleWarnMsgMapper.queryStatisticsEleWarmMsg(eleWarnMsgQuery));
+    }
+
+    @Override
+    public R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery) {
+        return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgByElectricityCabinet(eleWarnMsgQuery));
+    }
+
+    @Override
+    public R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery) {
+        List<EleWarnMsgVo> eleWarnMsgRankingVos = null;
+        if (Objects.nonNull(eleWarnMsgQuery.getElectricityCabinetId())) {
+            eleWarnMsgRankingVos=eleWarnMsgMapper.queryStatisticEleWarnMsgRankingByElectricityCabinetId(eleWarnMsgQuery);
+            return R.ok(eleWarnMsgRankingVos);
+        }else {
+            eleWarnMsgRankingVos = eleWarnMsgMapper.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
+        }
+        if (Objects.nonNull(eleWarnMsgRankingVos)) {
+            for (EleWarnMsgVo eleWarnMsgVo : eleWarnMsgRankingVos) {
+                EleWarnMsgVo eleWarnMsgVoForTenant = eleWarnMsgMapper.queryStatisticEleWarnMsgForTenant(eleWarnMsgVo.getElectricityCabinetId());
+                eleWarnMsgVo.setElectricityCabinetName(eleWarnMsgVoForTenant.getElectricityCabinetName());
+                eleWarnMsgVo.setTenantName(eleWarnMsgVoForTenant.getTenantName());
+            }
+        }
+        return R.ok(eleWarnMsgRankingVos);
+    }
+
+    @Override
+    public R queryStatisticEleWarnMsgRankingCount() {
+        return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgRankingCount());
     }
 }

@@ -229,4 +229,107 @@ public class JsonAdminEleWarnMsgController {
         return R.ok();
     }
 
+    /**
+     * 错误消息分类 admin查看所有异常
+     *
+     * @param beginTime
+     * @param endTime
+     * @return
+     */
+    @GetMapping(value = "/admin/statisticsEleWarmMsg/list")
+    public R statisticsEleWarmMsg(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                                  @RequestParam(value = "cellNo", required = false) Integer cellNo,
+                                  @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                  @RequestParam(value = "endTime", required = false) Long endTime) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
+                .electricityCabinetId(electricityCabinetId)
+                .cellNo(cellNo)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+        return eleWarnMsgService.queryStatisticsEleWarmMsg(eleWarnMsgQuery);
+    }
+
+    @GetMapping(value = "/admin/statisticsEleWarmMsg/cabinetList")
+    public R statisticEleWarnMsgByElectricityCabinet(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                                                     @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                                     @RequestParam(value = "endTime", required = false) Long endTime) {
+
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
+                .electricityCabinetId(electricityCabinetId)
+                .beginTime(beginTime)
+                .endTime(endTime).build();
+
+
+        return eleWarnMsgService.queryStatisticEleWarnMsgByElectricityCabinet(eleWarnMsgQuery);
+
+    }
+
+    @GetMapping(value = "/admin/statisticsEleWarmMsg/ranking")
+    public R statisticEleWarnMsgRanking(@RequestParam("size") Long size,
+                                        @RequestParam("offset") Long offset,
+                                        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId) {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
+                .size(size)
+                .offset(offset)
+                .electricityCabinetId(electricityCabinetId).build();
+        return eleWarnMsgService.queryStatisticEleWarnMsgRanking(eleWarnMsgQuery);
+    }
+
+    @GetMapping(value = "/admin/statisticsEleWarmMsg/rankingCount")
+    public R statisticEleWarnMsgRankingCount(){
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+
+        return eleWarnMsgService.queryStatisticEleWarnMsgRankingCount();
+    }
+
+
 }

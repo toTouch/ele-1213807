@@ -12,22 +12,11 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.RolePermissionConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.City;
-import com.xiliulou.electricity.entity.Province;
-import com.xiliulou.electricity.entity.Role;
-import com.xiliulou.electricity.entity.RolePermission;
-import com.xiliulou.electricity.entity.Tenant;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserRole;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
-import com.xiliulou.electricity.service.EleAuthEntryService;
-import com.xiliulou.electricity.service.RolePermissionService;
-import com.xiliulou.electricity.service.RoleService;
-import com.xiliulou.electricity.service.TenantService;
-import com.xiliulou.electricity.service.UserRoleService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
@@ -81,6 +70,9 @@ public class TenantServiceImpl implements TenantService {
 
     @Autowired
     EleAuthEntryService eleAuthEntryService;
+
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
 
 
@@ -191,6 +183,18 @@ public class TenantServiceImpl implements TenantService {
 
         //新增实名认证审核项
         eleAuthEntryService.insertByTenantId(tenant.getId());
+
+        //新增租户给租户添加的默认系统配置
+        ElectricityConfig electricityConfig = ElectricityConfig.builder()
+                .name("")
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenant.getId())
+                .isManualReview(ElectricityConfig.MANUAL_REVIEW)
+                .isWithdraw(ElectricityConfig.WITHDRAW)
+                .isOpenDoorLock(ElectricityConfig.OPEN_DOOR_LOCK)
+                .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
+        electricityConfigService.insertElectricityConfig(electricityConfig);
 
         return R.ok();
     }

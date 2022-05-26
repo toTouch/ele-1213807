@@ -48,4 +48,12 @@ public interface EleWarnMsgService {
     R queryCount(EleWarnMsgQuery eleWarnMsgQuery);
 
 	void delete(Long id);
+
+	R queryStatisticsEleWarmMsg(EleWarnMsgQuery eleWarnMsgQuery);
+
+	R queryStatisticEleWarnMsgByElectricityCabinet(EleWarnMsgQuery eleWarnMsgQuery);
+
+	R queryStatisticEleWarnMsgRanking(EleWarnMsgQuery eleWarnMsgQuery);
+
+	R queryStatisticEleWarnMsgRankingCount();
 }
