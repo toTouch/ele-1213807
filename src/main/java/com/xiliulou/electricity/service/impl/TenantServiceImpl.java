@@ -203,7 +203,7 @@ public class TenantServiceImpl implements TenantService {
     public R  editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
         Tenant tenant=tenantMapper.selectById(tenantAddAndUpdateQuery.getId());
         if (Objects.isNull(tenant)) {
-            return R.fail("USER.0001", "查询不到用户！");
+            return R.fail("ELECTRICITY.00101", "查询不到租户！");
         }
         //修改租户信息
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
@@ -213,7 +213,7 @@ public class TenantServiceImpl implements TenantService {
         tenantMapper.updateById(tenant);
 
         redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId(),tenant);
-        return null;
+        return R.ok();
     }
 
     @Override

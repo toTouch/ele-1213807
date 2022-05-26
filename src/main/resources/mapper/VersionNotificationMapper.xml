@@ -7,7 +7,9 @@
         select
         id,
         version,
-        content
+        content,
+        create_time,
+        update_time
         from
           t_version_notification
         order by create_time desc
