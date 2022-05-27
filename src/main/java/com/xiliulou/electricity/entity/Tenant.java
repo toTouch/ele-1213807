@@ -1,7 +1,8 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
-                                import com.baomidou.mybatisplus.annotation.TableId;
-                                import lombok.AllArgsConstructor;
+import com.baomidou.mybatisplus.annotation.TableId;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,25 +21,25 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_tenant")
 public class Tenant {
     /**
-    * 租户id
-    */
+     * 租户id
+     */
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
-    * 租户名称
-    */
+     * 租户名称
+     */
     private String name;
     /**
-    * 租户编号
-    */
+     * 租户编号
+     */
     private String code;
     /**
-    * 0正常 1-冻结
-    */
+     * 0正常 1-冻结
+     */
     private Integer status;
     /**
-    * 删除标记
-    */
+     * 删除标记
+     */
     private Integer delFlag;
 
 
@@ -54,5 +55,7 @@ public class Tenant {
 
     public static final Integer STA_NO_OUT = 0;
     public static final Integer STA_OUT = 1;
+
+    public static final Integer ZHONGYING_TENANT_ID = 15;
 
 }
