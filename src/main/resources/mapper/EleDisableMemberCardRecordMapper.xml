@@ -13,6 +13,7 @@
                 and uid=#{uid}
             </if>
         </where>
+        order by create_time desc
         limit #{offset},#{size}
     </select>
 
