@@ -85,7 +85,7 @@
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
         </if>
-        order by tfui.member_card_expire_time asc
+        order by tfui.member_card_expire_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
