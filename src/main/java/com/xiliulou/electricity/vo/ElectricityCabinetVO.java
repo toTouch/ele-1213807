@@ -112,6 +112,11 @@ public class ElectricityCabinetVO {
      */
     private Integer noElectricityBattery;
 
+    /**
+     * 在仓
+     */
+    private Integer BatteryInElectricity;
+
 
     private Double distance;
 

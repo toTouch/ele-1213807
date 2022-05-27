@@ -400,6 +400,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
+                e.setBatteryInElectricity(fullyElectricityBattery-noElectricityBattery);
 
                 //是否锁住
                 int isLock = 0;
