@@ -107,6 +107,11 @@ public class FranchiseeUserInfo {
      */
     private Long disableMemberCardTime;
 
+    /**
+     * 停卡电池服务费支付状态 0--未缴纳 1--缴纳
+     */
+    private Integer batteryServiceFeeStatus;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金
@@ -125,6 +130,9 @@ public class FranchiseeUserInfo {
     public static final Integer MEMBER_CARD_DISABLE = 1;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
+
+    public static final Integer DISABLE_CARD_BATTERY_SERVICE_FEE_PAY = 1;
+    public static final Integer DISABLE_CARD_BATTERY_SERVICE_FEE_NOT_PAY = 0;
 
 
     //送次数卡

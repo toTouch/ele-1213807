@@ -646,32 +646,46 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
-        //判断用户是否产生电池服务费
-        Long now = System.currentTimeMillis();
-        if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
-            long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
-                //查询用户是否存在电池服务费
-                Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
-                Integer modelType = franchisee.getModelType();
-                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
-                    Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
-                    List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
-                    for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
-                        if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+
+        //启用月卡时判断用户是否有电池，收取服务费
+        if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
+            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(),FranchiseeUserInfo.DISABLE_CARD_BATTERY_SERVICE_FEE_NOT_PAY)) {
+                //判断用户是否产生电池服务费
+                Long now = System.currentTimeMillis();
+                if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
+
+                    long cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+
+                    //不足一天按一天计算
+                    double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+                    if (time < 24) {
+                        cardDays = 1;
+                    }
+
+                    if (cardDays >= 1) {
+                        //查询用户是否存在电池服务费
+                        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+                        Integer modelType = franchisee.getModelType();
+                        if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+                            List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+                            for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                                if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                                    //计算服务费
+                                    BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                                    if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                                    }
+                                }
+                            }
+                        } else {
+                            BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                             //计算服务费
-                            BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                            BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
                             if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
                                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                             }
                         }
-                    }
-                } else {
-                    BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
-                    //计算服务费
-                    BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
-                    if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                     }
                 }
             }
@@ -681,6 +695,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(usableStatus, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
             usableStatus = EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW;
         }
+
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
                 .disableMemberCardNo(generateOrderId(user.getUid()))
                 .memberCardName(franchiseeUserInfo.getCardName())
@@ -701,6 +716,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
             updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
+            updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.DISABLE_CARD_BATTERY_SERVICE_FEE_NOT_PAY);
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
@@ -725,4 +741,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
                 RandomUtil.randomNumbers(6);
     }
+
+
 }
