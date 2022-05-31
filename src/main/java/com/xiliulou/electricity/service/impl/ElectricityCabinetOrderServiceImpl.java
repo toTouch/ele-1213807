@@ -246,6 +246,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         }
 
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100004", "月卡已暂停");
+        }
+
         //判断该换电柜加盟商和用户加盟商是否一致
         if (!Objects.equals(store.getFranchiseeId(), franchiseeUserInfo.getFranchiseeId())) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
