@@ -657,14 +657,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     Long now = System.currentTimeMillis();
                     long cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
-
-                    System.out.println("产生费用的天数====================="+cardDays);
-
                     //不足一天按一天计算
                     double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-
-                    System.out.println("时间==================================="+time);
-
                     if (time < 24) {
                         cardDays = 1;
                     }
