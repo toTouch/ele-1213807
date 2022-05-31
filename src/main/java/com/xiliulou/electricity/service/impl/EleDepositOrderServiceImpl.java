@@ -698,7 +698,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public R payBatteryServiceFee(HttpServletRequest request) {
+    public R payBatteryServiceFee(Integer payType,HttpServletRequest request) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -740,7 +740,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal payAmount = null;
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
+
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
+
+        if (Objects.equals(payType,Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
+
+
+        }
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             batteryServiceFee = franchisee.getBatteryServiceFee();

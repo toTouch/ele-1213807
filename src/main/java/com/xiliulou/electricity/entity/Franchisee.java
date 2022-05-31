@@ -26,8 +26,8 @@ public class Franchisee {
     /**
      * Id
      */
-    @TableId(value = "id",type = IdType.AUTO)
-    private  Long id;
+    @TableId(value = "id", type = IdType.AUTO)
+    private Long id;
     /**
      * 门店名称
      */
@@ -61,12 +61,12 @@ public class Franchisee {
 
     /**
      * 加盟商分润比例
-     * */
+     */
     private Integer percent;
 
     /**
      * 加盟商押金类型 1--老（不分型号） 2--新（分型号）
-     * */
+     */
     private Integer modelType;
 
     //新分型号押金
@@ -83,5 +83,7 @@ public class Franchisee {
 
     public static final Integer OLD_MODEL_TYPE = 1;
     public static final Integer MEW_MODEL_TYPE = 2;
+
+    public static final Integer DISABLE_MEMBER_CARD_PAY_TYPE = 1;
 
 }

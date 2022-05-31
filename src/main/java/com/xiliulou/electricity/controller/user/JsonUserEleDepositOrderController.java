@@ -120,8 +120,8 @@ public class JsonUserEleDepositOrderController {
      * @return
      */
     @PostMapping("/user/payBatteryServiceFee")
-    public R payBatteryServiceFee(HttpServletRequest request) {
-        return eleDepositOrderService.payBatteryServiceFee(request);
+    public R payBatteryServiceFee(@RequestParam("payType") Integer payType,HttpServletRequest request) {
+        return eleDepositOrderService.payBatteryServiceFee(payType,request);
     }
 
 }
