@@ -675,7 +675,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                                     //计算服务费
                                     BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
                                     if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-                                        return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                                        return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
                                     }
                                 }
                             }
@@ -684,7 +684,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                             //计算服务费
                             BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
                             if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
-                                return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                                return R.fail("ELECTRICITY.100000", "用户启用月卡存在电池服务费", batteryServiceFee);
                             }
                         }
                     }
