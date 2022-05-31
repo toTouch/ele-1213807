@@ -245,6 +245,16 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			}
 		}
 
+		if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+			log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
+			return R.fail("ELECTRICITY.100003", "停卡正在审核中");
+		}
+
+		if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+			log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
+			return R.fail("ELECTRICITY.100004", "月卡已暂停");
+		}
+
 		return R.ok(serviceStatus);
 	}
 
