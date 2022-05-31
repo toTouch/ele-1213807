@@ -131,8 +131,9 @@ public class FranchiseeUserInfo {
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
-    public static final Integer DISABLE_CARD_BATTERY_SERVICE_FEE_PAY = 1;
-    public static final Integer DISABLE_CARD_BATTERY_SERVICE_FEE_NOT_PAY = 0;
+    //电池服务费状态
+    public static final Integer STATUS_NOT_IS_SERVICE_FEE = 0;
+    public static final Integer STATUS_IS_SERVICE_FEE = 1;
 
 
     //送次数卡
