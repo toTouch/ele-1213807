@@ -307,6 +307,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0023", "月卡已过期");
         }
 
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100004", "月卡已暂停");
+        }
+
         //未租电池
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
             log.error("ELECTRICITY  ERROR! not rent battery! userInfo:{} ", userInfo);
