@@ -698,7 +698,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public R payBatteryServiceFee(Integer payType,HttpServletRequest request) {
+    public R payBatteryServiceFee(HttpServletRequest request) {
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -743,7 +743,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
 
-        if (Objects.equals(payType,Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
+        //判断用户是否暂停月卡了，如果月卡暂停了，就是暂停月卡后服务费的计算方式
+
+        if (Objects.equals(franchiseeUserInfo,Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
 
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
