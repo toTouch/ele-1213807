@@ -740,12 +740,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal payAmount = null;
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
-
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-
-        //判断用户是否暂停月卡了，如果月卡暂停了，就是暂停月卡后服务费的计算方式
-
-        if (Objects.equals(franchiseeUserInfo,Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(),Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
 
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
