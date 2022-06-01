@@ -333,11 +333,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.100004", "月卡已暂停");
         }
 
-        //判断是否退电池
-        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0046", "未退还电池");
-        }
 
         //判断是否缴纳押金
         if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
