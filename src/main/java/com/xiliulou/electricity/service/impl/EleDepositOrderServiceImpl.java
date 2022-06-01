@@ -741,7 +741,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
 
-        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
+        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
 
         if (Objects.equals(payType,Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
 
