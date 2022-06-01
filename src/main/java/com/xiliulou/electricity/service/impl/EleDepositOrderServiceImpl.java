@@ -390,15 +390,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //判断用户是否产生电池服务费
         Long now = System.currentTimeMillis();
 
-        System.out.println("用户的月卡过期时间========================="+oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime());
-
-
         if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             long cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-
-
-            System.out.println("电池服务费产生天数========================"+cardDays);
-
 
             if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
                 //查询用户是否存在电池服务费
