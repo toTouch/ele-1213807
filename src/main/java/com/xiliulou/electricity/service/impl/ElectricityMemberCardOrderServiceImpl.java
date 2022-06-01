@@ -305,7 +305,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             payAmount = BigDecimal.valueOf(0);
         }
 
-        Long now = System.currentTimeMillis();
         Long remainingNumber = electricityMemberCard.getMaxUseCount();
 
         //同一个套餐可以续费
