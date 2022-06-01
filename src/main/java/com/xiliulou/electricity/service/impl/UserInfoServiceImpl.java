@@ -308,6 +308,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Long now = System.currentTimeMillis();
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000 / 60 / 60 / 24;
+
+            System.out.println("服务费产生时间========================="+cardDays);
+
             if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
