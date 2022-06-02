@@ -705,10 +705,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .status(usableStatus)
                 .tenantId(userInfo.getTenantId())
                 .uid(user.getUid())
-                .userInfoId(userInfo.getId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
-
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {

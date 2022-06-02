@@ -18,7 +18,6 @@ import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
@@ -67,16 +66,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public R list(Long offset, Long size, Integer tenantId, Long uid) {
-        List<EleDisableMemberCardRecordVO> eleDisableMemberCardRecordVOS = eleDisableMemberCardRecordMapper.queryList(offset, size, tenantId, uid);
-        if (Objects.nonNull(eleDisableMemberCardRecordVOS)) {
-            Long now = System.currentTimeMillis();
-            for (EleDisableMemberCardRecordVO eleDisableMemberCardRecordVO : eleDisableMemberCardRecordVOS) {
-                if (Objects.nonNull(eleDisableMemberCardRecordVO.getMemberCardExpireTime())) {
-                    eleDisableMemberCardRecordVO.setCardDays((eleDisableMemberCardRecordVO.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24);
-                }
-            }
-        }
-        return R.ok(eleDisableMemberCardRecordVOS);
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size, tenantId, uid));
     }
 
     @Override
@@ -110,6 +100,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         updateEleDisableMemberCardRecord.setStatus(status);
         updateEleDisableMemberCardRecord.setErrMsg(errMsg);
         updateEleDisableMemberCardRecord.setUpdateTime(System.currentTimeMillis());
+        updateEleDisableMemberCardRecord.setCardDays((franchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
 
         eleDisableMemberCardRecordMapper.update(updateEleDisableMemberCardRecord, new LambdaQueryWrapper<EleDisableMemberCardRecord>().eq(EleDisableMemberCardRecord::getDisableMemberCardNo, disableMemberCardNo));
 

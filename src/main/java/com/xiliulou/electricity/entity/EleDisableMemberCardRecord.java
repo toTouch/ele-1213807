@@ -33,8 +33,6 @@ public class EleDisableMemberCardRecord {
      */
     private Long uid;
 
-    private Long userInfoId;
-
     /**
      * 月卡名称
      */
@@ -77,6 +75,11 @@ public class EleDisableMemberCardRecord {
      * 租户id
      */
     private Integer tenantId;
+
+    /**
+     * 月卡剩余天数
+     */
+    private Long cardDays;
 
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
