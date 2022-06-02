@@ -238,10 +238,10 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         newElectricityBattery.setBorrowExpireTime(null);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         //newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
-        Double power = eleBatteryVo.getPower();
+        Double power = (eleBatteryVo.getPower());
         //上报电量和上次电量相差百分之50以上，电量不做修改
-        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && (power - electricityBattery.getPower()) >= 0.5) {
-            power = electricityBattery.getPower();
+        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && (electricityBattery.getPower() - (power * 100)) >= 50) {
+            power = (electricityBattery.getPower()) / 100;
         }
 
         if (Objects.nonNull(power)) {
