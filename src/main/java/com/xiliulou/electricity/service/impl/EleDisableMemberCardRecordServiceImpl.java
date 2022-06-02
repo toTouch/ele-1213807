@@ -71,7 +71,9 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(eleDisableMemberCardRecordVOS)) {
             Long now = System.currentTimeMillis();
             for (EleDisableMemberCardRecordVO eleDisableMemberCardRecordVO : eleDisableMemberCardRecordVOS) {
-                eleDisableMemberCardRecordVO.setCardDays((eleDisableMemberCardRecordVO.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24);
+                if (Objects.nonNull(eleDisableMemberCardRecordVO.getMemberCardExpireTime())) {
+                    eleDisableMemberCardRecordVO.setCardDays((eleDisableMemberCardRecordVO.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24);
+                }
             }
         }
         return R.ok(eleDisableMemberCardRecordVOS);
