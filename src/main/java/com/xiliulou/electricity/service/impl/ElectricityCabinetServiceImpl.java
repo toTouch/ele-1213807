@@ -1640,9 +1640,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //电池电量上报变化在百分之50以上，不更新电池电量
         Double power = batteryReportQuery.getPower();
+
+        System.out.println("上报电量======================"+batteryReportQuery.getPower());
+
+        System.out.println("电池原电量========================"+electricityBattery.getPower());
+
         if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(batteryReportQuery.getPower()) &&  (electricityBattery.getPower() - batteryReportQuery.getPower()) >= 50) {
             power = electricityBattery.getPower();
         }
+
+        System.out.println("最终电量========================="+power);
+
         //修改电池
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
