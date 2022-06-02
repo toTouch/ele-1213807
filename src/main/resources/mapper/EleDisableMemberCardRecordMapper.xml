@@ -3,17 +3,19 @@
 <mapper namespace="com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper">
 
 
-    <select id="queryList"  resultType="com.xiliulou.electricity.entity.EleDisableMemberCardRecord">
-        select * from t_ele_disable_member_card_record
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO">
+        select tedmcr.member_card_name, tedmcr.status, tedmcr.user_name,tedmcr.phone, tedmcr.create_time,tedmcr.tenant_id, tedmcr.err_msg,
+        tedmcr.disable_member_card_no , tedmcr.user_info_id , tfui.member_card_expire_time from t_ele_disable_member_card_record tedmcr left join t_franchisee_user_info tfui on
+        tedmcr.user_info_id=tfui.user_info_id
         <where>
             <if test="tenantId !=null">
-                and tenant_id=#{tenantId}
+                and tedmcr.tenant_id=#{tenantId}
             </if>
             <if test="uid !=null">
-                and uid=#{uid}
+                and tedmcr.uid=#{uid}
             </if>
         </where>
-        order by create_time desc
+        order by tedmcr.create_time desc
         limit #{offset},#{size}
     </select>
 
@@ -21,7 +23,7 @@
     <select id="queryCount" resultType="integer">
         select count(1) from t_ele_disable_member_card_record
         <where>
-            <if test="tenantId!=null">
+            <if test="tenantId != null">
                 and tenant_id=#{tenantId}
             </if>
         </where>

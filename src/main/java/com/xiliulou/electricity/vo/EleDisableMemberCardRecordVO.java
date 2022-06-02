@@ -1,37 +1,23 @@
-package com.xiliulou.electricity.entity;
+package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
-
 /**
- * 停卡记录表(TEleDisableMemberCardRecord)实体类
+ * 换电柜电池表(DisableMemberCardRecord)实体类
  *
  * @author makejava
- * @since 2022-05-21 10:17:06
+ * @since 2022-06-02 14:44:12
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_ele_disable_member_card_record")
-public class EleDisableMemberCardRecord {
-    /**
-     * 停卡Id
-     */
-    @TableId(value = "id", type = IdType.AUTO)
-    private Long id;
+public class EleDisableMemberCardRecordVO {
 
-    /**
-     * 用户id
-     */
-    private Long uid;
 
     private Long userInfoId;
 
@@ -78,8 +64,15 @@ public class EleDisableMemberCardRecord {
      */
     private Integer tenantId;
 
-    public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
-    public static final Integer MEMBER_CARD_DISABLE = 1;
-    public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
+    /**
+     * 月卡过期时间
+     */
+    private Long memberCardExpireTime;
+
+    /**
+     * 月卡剩余天数
+     */
+    private Long cardDays;
+
 
 }

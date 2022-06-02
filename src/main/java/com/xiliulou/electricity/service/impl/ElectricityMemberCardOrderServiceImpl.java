@@ -705,6 +705,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .status(usableStatus)
                 .tenantId(userInfo.getTenantId())
                 .uid(user.getUid())
+                .userInfoId(userInfo.getId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
 

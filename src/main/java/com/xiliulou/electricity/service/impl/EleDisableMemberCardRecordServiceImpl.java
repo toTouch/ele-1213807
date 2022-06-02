@@ -18,6 +18,7 @@ import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.EleDisableMemberCardRecordVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
@@ -66,7 +67,14 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public R list(Long offset, Long size, Integer tenantId, Long uid) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size, tenantId, uid));
+        List<EleDisableMemberCardRecordVO> eleDisableMemberCardRecordVOS = eleDisableMemberCardRecordMapper.queryList(offset, size, tenantId, uid);
+        if (Objects.nonNull(eleDisableMemberCardRecordVOS)) {
+            Long now = System.currentTimeMillis();
+            for (EleDisableMemberCardRecordVO eleDisableMemberCardRecordVO : eleDisableMemberCardRecordVOS) {
+                eleDisableMemberCardRecordVO.setCardDays((eleDisableMemberCardRecordVO.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24);
+            }
+        }
+        return R.ok(eleDisableMemberCardRecordVOS);
     }
 
     @Override
