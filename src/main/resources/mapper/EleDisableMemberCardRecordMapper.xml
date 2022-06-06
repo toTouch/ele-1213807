@@ -24,7 +24,7 @@
             </if>
         </where>
         order by create_time desc
-        limit #{offset},#{size}
+        limit #{query.offset},#{query.size}
     </select>
 
 
