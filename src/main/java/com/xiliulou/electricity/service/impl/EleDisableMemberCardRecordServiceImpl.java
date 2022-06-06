@@ -14,6 +14,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleDisableMemberCardRecordMapper;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -65,8 +66,8 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R list(Long offset, Long size, Integer tenantId, Long uid) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryList(offset, size, tenantId, uid));
+    public R list(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryList(electricityMemberCardRecordQuery));
     }
 
     @Override
@@ -120,7 +121,7 @@ public class EleDisableMemberCardRecordServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public R queryCount(Integer tenantId) {
-        return R.ok(eleDisableMemberCardRecordMapper.queryCount(tenantId));
+    public R queryCount(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery) {
+        return R.ok(eleDisableMemberCardRecordMapper.queryCount(electricityMemberCardRecordQuery));
     }
 }

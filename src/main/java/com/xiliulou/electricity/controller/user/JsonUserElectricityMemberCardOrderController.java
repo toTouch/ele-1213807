@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.user;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -61,7 +62,28 @@ public class JsonUserElectricityMemberCardOrderController {
 
     @GetMapping("user/memberCard/getDisableMemberCardList")
     public R getDisableMemberCardList(@RequestParam("offset") Long offset, @RequestParam("size") Long size){
-        return electricityMemberCardOrderService.getDisableMemberCardList(offset,size);
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("rentBattery  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery= ElectricityMemberCardRecordQuery.builder()
+                .size(size)
+                .offset(offset)
+                .uid(user.getUid()).build();
+
+        return electricityMemberCardOrderService.getDisableMemberCardList(electricityMemberCardRecordQuery);
     }
 
 

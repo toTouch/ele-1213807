@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,5 +38,5 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
-    R getDisableMemberCardList(Long offset,Long size);
+    R getDisableMemberCardList(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 }

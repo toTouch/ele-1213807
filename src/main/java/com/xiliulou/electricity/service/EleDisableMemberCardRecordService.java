@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
@@ -16,10 +17,10 @@ public interface EleDisableMemberCardRecordService {
 
     int save(EleDisableMemberCardRecord eleDisableMemberCardRecord);
 
-    R list(Long offset, Long size, Integer tenantId, Long uid);
+    R list(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
     R reviewDisableMemberCard(String disableMemberCardNo, String errMsg, Integer status);
 
-    R queryCount(Integer tenantId);
+    R queryCount(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
 }

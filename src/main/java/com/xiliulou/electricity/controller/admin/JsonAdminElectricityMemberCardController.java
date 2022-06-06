@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -81,9 +82,8 @@ public class JsonAdminElectricityMemberCardController {
                                           @RequestParam(value = "status", required = false) Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityMemberCardService.queryList(offset, size, status, type,tenantId);
+        return electricityMemberCardService.queryList(offset, size, status, type, tenantId);
     }
-
 
 
     /**
@@ -93,10 +93,10 @@ public class JsonAdminElectricityMemberCardController {
      */
     @GetMapping("admin/electricityMemberCard/queryCount")
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "status", required = false) Integer status) {
+                                          @RequestParam(value = "status", required = false) Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityMemberCardService.queryCount(status, type,tenantId);
+        return electricityMemberCardService.queryCount(status, type, tenantId);
     }
 
 
@@ -107,9 +107,9 @@ public class JsonAdminElectricityMemberCardController {
      */
     @GetMapping("/admin/electricityMemberCard/listByFranchisee")
     public R listByFranchisee(@RequestParam(value = "offset") Long offset,
-            @RequestParam(value = "size") Long size,
-            @RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "status", required = false) Integer status) {
+                              @RequestParam(value = "size") Long size,
+                              @RequestParam(value = "type", required = false) Integer type,
+                              @RequestParam(value = "status", required = false) Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -122,13 +122,13 @@ public class JsonAdminElectricityMemberCardController {
         }
 
         //加盟商
-        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
-        if(Objects.isNull(franchisee)){
+        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+        if (Objects.isNull(franchisee)) {
             return R.ok(new ArrayList<>());
         }
 
 
-        return electricityMemberCardService.listByFranchisee(offset, size, status, type,tenantId,franchisee.getId());
+        return electricityMemberCardService.listByFranchisee(offset, size, status, type, tenantId, franchisee.getId());
     }
 
     /**
@@ -138,7 +138,7 @@ public class JsonAdminElectricityMemberCardController {
      */
     @GetMapping("/admin/electricityMemberCard/listCountByFranchisee")
     public R listCountByFranchisee(@RequestParam(value = "type", required = false) Integer type,
-            @RequestParam(value = "status", required = false) Integer status) {
+                                   @RequestParam(value = "status", required = false) Integer status) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -151,31 +151,35 @@ public class JsonAdminElectricityMemberCardController {
         }
 
         //加盟商
-        Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
-        if(Objects.isNull(franchisee)){
+        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+        if (Objects.isNull(franchisee)) {
             return R.ok(0);
         }
 
 
-        return electricityMemberCardService.listCountByFranchisee(status, type,tenantId,franchisee.getId());
+        return electricityMemberCardService.listCountByFranchisee(status, type, tenantId, franchisee.getId());
     }
 
 
     //查询换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
-    public R getElectricityBatteryList(@PathVariable("id") Long id){
+    public R getElectricityBatteryList(@PathVariable("id") Long id) {
         return R.ok(electricityMemberCardService.queryByFranchisee(id));
     }
 
     /**
      * 用户停卡记录
+     *
      * @param offset
      * @param size
      * @return
      */
     @GetMapping(value = "/admin/electricityMemberCard/disableMemberCard")
     public R getElectricityDisableMemberCardList(@RequestParam(value = "offset") Long offset,
-                                                 @RequestParam(value = "size") Long size){
+                                                 @RequestParam(value = "size") Long size,
+                                                 @RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
+                                                 @RequestParam(value = "phone", required = false) String phone,
+                                                 @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -187,24 +191,42 @@ public class JsonAdminElectricityMemberCardController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        return eleDisableMemberCardRecordService.list(offset,size,tenantId,null);
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery= ElectricityMemberCardRecordQuery.builder()
+                .offset(offset)
+                .size(size)
+                .disableMemberCardNo(disableMemberCardNo)
+                .phone(phone)
+                .status(status)
+                .tenantId(tenantId).build();
+
+        return eleDisableMemberCardRecordService.list(electricityMemberCardRecordQuery);
     }
 
     /**
      * 停卡记录count
+     *
      * @return
      */
     @GetMapping(value = "/admin/electricityMemberCard/disableMemberCardCount")
-    public R getElectricityDisableMemberCardCount(){
+    public R getElectricityDisableMemberCardCount(@RequestParam(value = "disableMemberCardNo", required = false) String disableMemberCardNo,
+                                                  @RequestParam(value = "phone", required = false) String phone,
+                                                  @RequestParam(value = "status", required = false) Integer status) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        return eleDisableMemberCardRecordService.queryCount(tenantId);
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery=ElectricityMemberCardRecordQuery.builder()
+                .disableMemberCardNo(disableMemberCardNo)
+                .phone(phone)
+                .status(status)
+                .tenantId(tenantId).build();
+
+        return eleDisableMemberCardRecordService.queryCount(electricityMemberCardRecordQuery);
     }
 
     /**
      * 审核用户停卡
+     *
      * @param disableMemberCardNo
      * @param status
      * @param errMsg
@@ -213,8 +235,8 @@ public class JsonAdminElectricityMemberCardController {
     @PostMapping(value = "/admin/electricityMemberCard/reviewDisableMemberCard")
     public R reviewDisableMemberCard(@RequestParam("disableMemberCardNo") String disableMemberCardNo,
                                      @RequestParam("status") Integer status,
-                                     @RequestParam(value = "errMsg", required = false) String errMsg){
-        return eleDisableMemberCardRecordService.reviewDisableMemberCard(disableMemberCardNo,errMsg,status);
+                                     @RequestParam(value = "errMsg", required = false) String errMsg) {
+        return eleDisableMemberCardRecordService.reviewDisableMemberCard(disableMemberCardNo, errMsg, status);
     }
 
 }

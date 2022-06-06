@@ -2,6 +2,8 @@ package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.EleDisableMemberCardRecord;
+import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -14,7 +16,7 @@ import java.util.List;
  */
 public interface EleDisableMemberCardRecordMapper extends BaseMapper<EleDisableMemberCardRecord> {
 
-    List<EleDisableMemberCardRecord> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("tenantId") Integer tenantId, @Param("uid") Long uid);
+    List<EleDisableMemberCardRecord> queryList( @Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
-    Integer queryCount(@Param("tenantId") Integer tenantId);
+    Integer queryCount(@Param("query") ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 }
