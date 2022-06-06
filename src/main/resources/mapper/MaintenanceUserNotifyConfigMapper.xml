@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig" id="MaintenanceUserNotifyConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="phones" column="phones" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="permissions" column="permissions" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryByTenantId" resultMap="MaintenanceUserNotifyConfigMap">
+        select
+          id, phones, create_time, update_time, tenant_id, permissions
+        from t_maintenance_user_notify_config
+        where tenant_id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="MaintenanceUserNotifyConfigMap">
+        select
+          id, phones, create_time, update_time, tenant_id, permissions
+        from t_maintenance_user_notify_config
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="MaintenanceUserNotifyConfigMap">
+        select
+          id, phones, create_time, update_time, tenant_id, permissions
+        from t_maintenance_user_notify_config
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="phones != null and phones != ''">
+                and phones = #{phones}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="permissions != null">
+                and permissions = #{permissions}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_maintenance_user_notify_config(phones, create_time, update_time, tenant_id, permissions)
+        values (#{phones}, #{createTime}, #{updateTime}, #{tenantId}, #{permissions})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_maintenance_user_notify_config
+        <set>
+            <if test="phones != null and phones != ''">
+                phones = #{phones},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="permissions != null">
+                permissions = #{permissions},
+            </if>
+        </set>
+        where tenant_id = #{tenantId}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_maintenance_user_notify_config where id = #{id}
+    </delete>
+
+</mapper>

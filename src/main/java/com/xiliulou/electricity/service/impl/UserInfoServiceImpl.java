@@ -245,7 +245,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
         ownMemberCardInfoVo.setMemberCardExpireTime(memberCardExpireTime);
         ownMemberCardInfoVo.setRemainingNumber(franchiseeUserInfo.getRemainingNumber());
@@ -253,6 +252,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         ownMemberCardInfoVo.setName(franchiseeUserInfo.getCardName());
         ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
         ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getCardId());
+        ownMemberCardInfoVo.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            ownMemberCardInfoVo.setValidDays((memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L));
+        }
         return R.ok(ownMemberCardInfoVo);
     }
 
@@ -340,6 +343,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 || franchiseeUserInfo.getRemainingNumber() == 0) {
             log.error("ELECTRICITY  ERROR! memberCard is  Expire ! uid:{} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0023", "月卡已过期");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100004", "月卡已暂停");
         }
 
         //未租电池
@@ -463,15 +476,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok(userInfoMapper.queryCount(userInfoQuery));
     }
 
-	@Override
-	public Integer querySumCount(UserInfoQuery userInfoQuery) {
-		return userInfoMapper.queryCount(userInfoQuery);
-	}
+    @Override
+    public Integer querySumCount(UserInfoQuery userInfoQuery) {
+        return userInfoMapper.queryCount(userInfoQuery);
+    }
 
-	//后台绑定电池
-	@Override
-	@Transactional
-	public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
+    //后台绑定电池
+    @Override
+    @Transactional
+    public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
         //查找用户
         UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
@@ -716,10 +729,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return R.ok();
     }
 
-	@Override
-	public Integer deleteByUid(Long uid) {
-		return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
-	}
+    @Override
+    public Integer deleteByUid(Long uid) {
+        return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+    }
 
 
 }

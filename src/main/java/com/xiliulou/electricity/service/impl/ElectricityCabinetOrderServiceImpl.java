@@ -274,6 +274,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
 
+        //用户是否暂停月卡
+        if (!Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
+            log.error("order ERROR! member card is disable ! uid:{}", user.getUid());
+            return R.fail("ELECTRICITY.100002", "月卡已暂停");
+        }
+
         //未租电池
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
@@ -321,22 +327,22 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //分配开门格挡
         Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
 
-		if (Objects.isNull(usableEmptyCellNo.getRight())) {
-			redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
-			return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
-		}
+        if (Objects.isNull(usableEmptyCellNo.getRight())) {
+            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
+            return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+        }
 
         String cellNo = usableEmptyCellNo.getRight().toString();
         try {
-            if (Objects.equals(franchiseeUserInfo.getCardType(),FranchiseeUserInfo.TYPE_COUNT)) {
+            if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
                 Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
                 if (row < 1) {
                     redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
                     log.error("order  ERROR! not found memberCard uid={}", user.getUid());
                     return R.fail("ELECTRICITY.00118", "月卡可用次数已用完");
                 }
-            }else {
-                if (!Objects.equals(electricityMemberCard.getLimitCount(),ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)){
+            } else {
+                if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                     Integer row = franchiseeUserInfoService.minCount(franchiseeUserInfo.getId());
                     if (row < 1) {
                         redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
@@ -363,31 +369,30 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
 
+            //4.开旧电池门
+            //发送命令
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            dataMap.put("cell_no", cellNo);
+            dataMap.put("order_id", electricityCabinetOrder.getOrderId());
+            dataMap.put("status", electricityCabinetOrder.getStatus());
 
-			//4.开旧电池门
-			//发送命令
-			HashMap<String, Object> dataMap = Maps.newHashMap();
-			dataMap.put("cell_no", cellNo);
-			dataMap.put("order_id", electricityCabinetOrder.getOrderId());
-			dataMap.put("status", electricityCabinetOrder.getStatus());
+            //是否开启电池检测
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+            if (Objects.nonNull(electricityConfig)) {
+                if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+                    dataMap.put("is_checkBatterySn", true);
+                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                } else {
+                    dataMap.put("is_checkBatterySn", false);
+                }
+            }
 
-			//是否开启电池检测
-			ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
-			if (Objects.nonNull(electricityConfig)) {
-				if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
-					dataMap.put("is_checkBatterySn", true);
-					dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
-				} else {
-					dataMap.put("is_checkBatterySn", false);
-				}
-			}
-
-			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
-				dataMap.put("model_type", false);
-			}else {
-				dataMap.put("model_type", true);
-				dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
-			}
+            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+                dataMap.put("model_type", false);
+            } else {
+                dataMap.put("model_type", true);
+                dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+            }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
@@ -504,23 +509,23 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("order_id", electricityCabinetOrder.getOrderId());
             dataMap.put("status", electricityCabinetOrder.getStatus());
 
-			//是否开启电池检测
-			ElectricityConfig electricityConfig = electricityConfigService.queryOne(userInfo.getTenantId());
-			if (Objects.nonNull(electricityConfig)) {
-				if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
-					dataMap.put("is_checkBatterySn", true);
-					dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
-				} else {
-					dataMap.put("is_checkBatterySn", false);
-				}
-			}
+            //是否开启电池检测
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(userInfo.getTenantId());
+            if (Objects.nonNull(electricityConfig)) {
+                if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+                    dataMap.put("is_checkBatterySn", true);
+                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                } else {
+                    dataMap.put("is_checkBatterySn", false);
+                }
+            }
 
-			if(Objects.equals(franchiseeUserInfo.getModelType(),FranchiseeUserInfo.OLD_MODEL_TYPE)) {
-				dataMap.put("model_type", false);
-			}else {
-				dataMap.put("model_type", true);
-				dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
-			}
+            if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.OLD_MODEL_TYPE)) {
+                dataMap.put("model_type", false);
+            } else {
+                dataMap.put("model_type", true);
+                dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+            }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
@@ -582,19 +587,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
     }
 
-	@Override
-	public Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
-		return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
-	}
+    @Override
+    public Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
+        return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
+    }
 
-	@Override
-	public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
-		electricityCabinetOrderQuery.setOffset(0L);
-		electricityCabinetOrderQuery.setSize(2000L);
-		List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
-		if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
-			throw new CustomBusinessException("查不到订单");
-		}
+    @Override
+    public void exportExcel(ElectricityCabinetOrderQuery electricityCabinetOrderQuery, HttpServletResponse response) {
+        electricityCabinetOrderQuery.setOffset(0L);
+        electricityCabinetOrderQuery.setSize(2000L);
+        List<ElectricityCabinetOrderVO> electricityCabinetOrderVOList = electricityCabinetOrderMapper.queryList(electricityCabinetOrderQuery);
+        if (ObjectUtil.isEmpty(electricityCabinetOrderVOList)) {
+            throw new CustomBusinessException("查不到订单");
+        }
 
         List<ElectricityCabinetOrderExcelVO> electricityCabinetOrderExcelVOS = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");

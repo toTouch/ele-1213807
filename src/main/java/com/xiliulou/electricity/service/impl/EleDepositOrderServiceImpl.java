@@ -325,10 +325,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //未找到用户
         if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+            log.error("returnDeposit  ERROR! not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
+
+        if (Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
+            log.error("returnDeposit  ERROR! disable member card is reviewing userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100003", "停卡正在审核中");
+        }
+
+        if (Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            log.error("returnDeposit  ERROR! member card is disable userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.100004", "月卡已暂停");
+        }
+
 
         //判断是否缴纳押金
         if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
@@ -812,8 +823,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 		return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
 	}
 
-	public String generateOrderId(Long uid) {
-		return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
-				RandomUtil.randomNumbers(6);
-	}
+    public String generateOrderId(Long uid) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
+                RandomUtil.randomNumbers(6);
+    }
 }

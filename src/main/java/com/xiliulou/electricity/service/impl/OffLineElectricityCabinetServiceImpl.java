@@ -95,6 +95,11 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
             return R.fail("ELECTRICITY.0022", "未开通月卡");
         }
 
+        if (!Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
+            log.error("OffLINE ELECTRICITY  ERROR! disable memberCard ! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.100002", "月卡停卡");
+        }
+
         //判断套餐是否为新用户送的次数卡
         if (Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             log.error("OffLINE ELECTRICITY  ERROR! memberCard Type  is newUserActivity ! uid:{} ", user.getUid());

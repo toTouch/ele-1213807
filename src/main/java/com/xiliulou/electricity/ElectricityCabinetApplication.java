@@ -10,6 +10,7 @@ import com.xiliulou.db.dynamic.annotation.EnableDynamicDataSource;
 import com.xiliulou.core.xxl.EnableXllXxlJob;
 import com.xiliulou.feishu.EnableFeishu;
 import com.xiliulou.iot.EnableIot;
+import com.xiliulou.mq.EnableMq;
 import com.xiliulou.pay.EnablePay;
 import com.xiliulou.storage.EnableStorage;
 import org.mybatis.spring.annotation.MapperScan;
@@ -38,6 +39,7 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 @EnableCH
 @EnableWeChatTemplate
 @EnableFeishu
+@EnableMq
 public class ElectricityCabinetApplication {
     public static void main(String[] args) {
         SpringApplication.run(ElectricityCabinetApplication.class, args);

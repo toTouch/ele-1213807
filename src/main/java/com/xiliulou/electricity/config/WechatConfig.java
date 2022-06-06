@@ -84,4 +84,9 @@ public class WechatConfig {
      */
     private Integer tenantId;
 
+    /**
+     * 运维二维码
+     */
+    private String maintenanceQr;
+
 }

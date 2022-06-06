@@ -147,6 +147,16 @@ public class JsonAdminUserController extends BaseController {
         return returnTripleResult(userService.deleteNormalUser(uid));
     }
 
+    @GetMapping("/user/auth/generationCode")
+    public R userAutoCodeGeneration() {
+        return userService.userAutoCodeGeneration();
+    }
+
+    @PostMapping("user/auth/checkCode")
+    public R userAutoCodeCheck(@RequestParam("autoCode")String autoCode) {
+        return userService.userAutoCodeCheck(autoCode);
+    }
+
 
 
 }

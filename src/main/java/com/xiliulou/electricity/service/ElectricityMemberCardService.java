@@ -30,4 +30,6 @@ public interface ElectricityMemberCardService {
 	ElectricityMemberCard queryByStatus(Integer id);
 
 	void unbindActivity(Integer id);
+
+	R queryDisableMemberCardList(Long offset, Long size);
 }

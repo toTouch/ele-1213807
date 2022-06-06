@@ -85,4 +85,8 @@ public interface UserService {
 	List<User> queryByTenantIdAndType(Integer tenantId, Integer status);
 
     Triple<Boolean, String, Object> deleteNormalUser(Long uid);
+
+    R userAutoCodeGeneration();
+
+    R userAutoCodeCheck(String autoCode);
 }

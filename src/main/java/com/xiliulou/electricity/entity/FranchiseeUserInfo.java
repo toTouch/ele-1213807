@@ -98,9 +98,20 @@ public class FranchiseeUserInfo {
     private String batteryType;
 
     /**
-     * 电池服务费状态 0-初始状态 1-已支付
+     * 月卡停启用状态 0--启用 1--停用
+     */
+    private Integer memberCardDisableStatus;
+
+    /**
+     * 月卡暂停启用更新时间
+     */
+    private Long disableMemberCardTime;
+
+    /**
+     * 停卡电池服务费支付状态 0--未缴纳 1--缴纳
      */
     private Integer batteryServiceFeeStatus;
+
 
     /**
      * 电池服务费产生时间
@@ -124,6 +135,11 @@ public class FranchiseeUserInfo {
 
     public static final Integer OLD_MODEL_TYPE = 1;
     public static final Integer MEW_MODEL_TYPE = 2;
+
+    public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
+    public static final Integer MEMBER_CARD_DISABLE = 1;
+    public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
+    public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
 
     //送次数卡
