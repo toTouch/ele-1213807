@@ -210,5 +210,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return R.ok(electricityCarMapper.queryList(electricityCarQuery));
     }
 
+    @Override
+    public Integer queryByModelId(Integer id) {
+        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL));
+    }
+
 
 }

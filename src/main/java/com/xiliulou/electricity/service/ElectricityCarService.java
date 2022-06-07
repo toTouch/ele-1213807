@@ -37,5 +37,7 @@ public interface ElectricityCarService {
 
     R queryList(ElectricityCarQuery electricityCarQuery);
 
+    Integer queryByModelId(Integer id);
+
 
 }
