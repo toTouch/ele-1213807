@@ -156,7 +156,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         ElectricityCar electricityCar = queryByIdFromCache(id);
         if (Objects.isNull(electricityCar)) {
-            return R.fail("ELECTRICITY.10000", "未找到换电柜");
+            return R.fail("100007", "未找到车辆");
         }
 
         //删除数据库

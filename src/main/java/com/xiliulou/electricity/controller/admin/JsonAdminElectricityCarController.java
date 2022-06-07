@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import java.util.*;
 
 /**
@@ -157,6 +158,15 @@ public class JsonAdminElectricityCarController {
                 .tenantId(tenantId).build();
 
         return electricityCarService.queryCount(electricityCarQuery);
+    }
+
+    //车辆绑定用户
+    @PutMapping("/admin/electricityCar/bindUser")
+    public R bindUser(@RequestParam(value = "phone") String phone){
+
+
+
+        return null;
     }
 
 }
