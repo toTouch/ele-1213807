@@ -86,4 +86,5 @@ public class JsonAdminElectricityCarModelController {
 		return electricityCarModelService.queryCount(electricityCarModelQuery);
 	}
 
+
 }

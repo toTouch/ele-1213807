@@ -32,6 +32,11 @@ public class ElectricityCarModel {
      */
     private String name;
 
+    /**
+     * 加盟商Id
+     */
+    private Integer franchiseeId;
+
     private Integer delFlag;
 
     /**
