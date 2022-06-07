@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarMapper">
+
+
+	<!--查询指定行数据-->
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCar">
+		select
+		id,sn, model,longitude,latitude,status,uid,user_name,
+		from t_electricity_car
+		where del_flag=0
+		<if test="query.name != null and query.name != ''">
+			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.address != null and query.address != ''">
+			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.usableStatus != null">
+			and usable_status = #{query.usableStatus}
+		</if>
+		<if test="query.id != null">
+			and id =#{query.id}
+		</if>
+		<if test="query.onlineStatus != null">
+			and online_status = #{query.onlineStatus}
+		</if>
+		<if test="query.tenantId != null ">
+			and tenant_id = #{query.tenantId}
+		</if>
+		<if test="query.beginTime != null">
+			and create_time &gt;=#{query.beginTime}
+		</if>
+		<if test="query.endTime != null">
+			and create_time &lt;=#{query.endTime}
+		</if>
+		<if test="query.eleIdList!=null and query.eleIdList!=''">
+			and id in
+			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+				#{id}
+			</foreach>
+		</if>
+		order by create_time desc
+		limit #{query.offset}, #{query.size}
+	</select>
+
+
+</mapper>
