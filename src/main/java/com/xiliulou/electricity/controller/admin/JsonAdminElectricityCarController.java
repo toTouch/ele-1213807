@@ -121,9 +121,6 @@ public class JsonAdminElectricityCarController {
                 .batterySn(batterySn)
                 .createTime(createTime)
                 .tenantId(tenantId).build();
-
-
-
         return electricityCarService.queryList(electricityCarQuery);
     }
 

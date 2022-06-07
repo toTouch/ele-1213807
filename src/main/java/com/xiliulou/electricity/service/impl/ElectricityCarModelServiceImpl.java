@@ -7,14 +7,12 @@ import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
-import com.xiliulou.electricity.service.ElectricityCabinetModelService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.ElectricityCarModelService;
-import com.xiliulou.electricity.service.ElectricityCarService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +40,8 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     ElectricityCabinetService electricityCabinetService;
     @Autowired
     ElectricityCarService electricityCarService;
+    @Autowired
+    StoreService storeService;
 
 
     /**
@@ -138,6 +138,11 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCarModelQuery electricityCarModelQuery) {
+        //查询门店的车辆型号
+        if (Objects.nonNull(electricityCarModelQuery.getUid())){
+            Store store=storeService.queryByUid(electricityCarModelQuery.getUid());
+            electricityCarModelQuery.setFranchiseeId(store.getFranchiseeId());
+        }
         return R.ok(electricityCarModelMapper.queryList(electricityCarModelQuery));
     }
 

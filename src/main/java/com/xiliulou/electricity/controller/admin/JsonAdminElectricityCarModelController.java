@@ -53,7 +53,10 @@ public class JsonAdminElectricityCarModelController {
 	@GetMapping(value = "/admin/electricityCarModel/list")
 	public R queryList(@RequestParam("size") Long size,
 			@RequestParam("offset") Long offset,
-			@RequestParam(value = "name", required = false) String name) {
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "franchiseeId",required = false) Long franchiseeId,
+			@RequestParam(value = "storeId",required = false) Long storeId,
+			@RequestParam(value = "uid",required = false) Long uid) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -68,6 +71,9 @@ public class JsonAdminElectricityCarModelController {
 				.offset(offset)
 				.size(size)
 				.name(name)
+				.franchiseeId(franchiseeId)
+				.storeId(storeId)
+				.uid(uid)
 				.tenantId(tenantId).build();
 
 		return electricityCarModelService.queryList(electricityCarModelQuery);

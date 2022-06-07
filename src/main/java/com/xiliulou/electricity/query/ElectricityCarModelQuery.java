@@ -18,6 +18,10 @@ public class ElectricityCarModelQuery {
     private Long size;
     private Long offset;
     private String name;
+    private Long franchiseeId;
+    private Long storeId;
+    private Long uid;
+
     //租户id
     private Integer tenantId;
 }

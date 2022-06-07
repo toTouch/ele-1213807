@@ -189,5 +189,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return R.ok(electricityCarMapper.queryCount(electricityCarQuery));
     }
 
+    @Override
+    public R bindUser(String phone) {
+        return null;
+    }
+
 
 }
