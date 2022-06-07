@@ -124,7 +124,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //查找快递柜型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
         if (Objects.isNull(electricityCarModel)) {
-            return R.fail("ELECTRICITY.100005", "未找到车辆型号");
+            return R.fail("100005", "未找到车辆型号");
         }
 
         int insert = electricityCarMapper.insert(electricityCar);
@@ -157,7 +157,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         BeanUtil.copyProperties(electricityCarAddAndUpdate, electricityCar);
         ElectricityCar oldElectricityCar = queryByIdFromCache(electricityCar.getId());
         if (Objects.isNull(oldElectricityCar)) {
-            return R.fail("ELECTRICITY.10000", "未找到车辆");
+            return R.fail("100007", "未找到车辆");
         }
 
         //车辆老型号
@@ -165,7 +165,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //查找快递柜型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
         if (Objects.isNull(electricityCarModel)) {
-            return R.fail("ELECTRICITY.100005", "未找到车辆型号");
+            return R.fail("100005", "未找到车辆型号");
         }
         if (!oldModelId.equals(electricityCar.getModelId())) {
             return R.fail("ELECTRICITY.0010", "不能修改型号");

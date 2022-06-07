@@ -95,11 +95,11 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         }
         ElectricityCarModel oldElectricityCarModel = queryByIdFromCache(electricityCarModel.getId());
         if (Objects.isNull(oldElectricityCarModel)) {
-            return R.fail("ELECTRICITY.100005", "未找到车辆型号");
+            return R.fail("100005", "未找到车辆型号");
         }
         Integer count = electricityCarService.queryByModelId(electricityCarModel.getId());
         if (count > 0) {
-            return R.fail("ELECTRICITY.100006", "型号已绑定车辆，不能操作");
+            return R.fail("100006", "型号已绑定车辆，不能操作");
         }
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
         int update = electricityCarModelMapper.updateById(electricityCarModel);
@@ -116,11 +116,11 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     public R delete(Integer id) {
         ElectricityCarModel electricityCarModel = queryByIdFromCache(id);
         if (Objects.isNull(electricityCarModel)) {
-            return R.fail("ELECTRICITY.100005", "未找到车辆型号");
+            return R.fail("100005", "未找到车辆型号");
         }
         Integer count = electricityCarService.queryByModelId(electricityCarModel.getId());
         if (count > 0) {
-            return R.fail("ELECTRICITY.100006", "型号已绑定车辆，不能操作");
+            return R.fail("100006", "型号已绑定车辆，不能操作");
         }
         //删除数据库
         electricityCarModel.setId(id);
