@@ -3,45 +3,34 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarMapper">
 
 
-	<!--查询指定行数据-->
-	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCar">
-		select
-		id,sn, model,longitude,latitude,status,uid,user_name,
-		from t_electricity_car
-		where del_flag=0
-		<if test="query.name != null and query.name != ''">
-			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
+        select
+        tec.id,tec.sn,
+        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id,tec.battery_sn,tec.create_time,tec.update_time,ts.name
+        from t_electricity_car tec left join t_store ts on tec.store_id=ts.id
+        where del_flag=0
+		<if test="query.sn != null and query.sn!=''">
+			and tec.sn = #{query.sn}
 		</if>
-		<if test="query.address != null and query.address != ''">
-			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+		<if test="query.model != null and query.model !=''">
+			and tec.model = #{query.model}
 		</if>
-		<if test="query.usableStatus != null">
-			and usable_status = #{query.usableStatus}
+		<if test="query.status != null ">
+			and tec.status = #{query.status}
 		</if>
-		<if test="query.id != null">
-			and id =#{query.id}
+		<if test="query.storeId != null ">
+			and tec.store_id = #{query.store_id}
 		</if>
-		<if test="query.onlineStatus != null">
-			and online_status = #{query.onlineStatus}
+		<if test="query.batterySn != null and query.batterySn!=''">
+			and tec.battery_sn = #{query.batterySn}
 		</if>
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
+		<if test="query.createTime != null">
+			and tec.create_time = #{query.createTime}
 		</if>
-		<if test="query.beginTime != null">
-			and create_time &gt;=#{query.beginTime}
-		</if>
-		<if test="query.endTime != null">
-			and create_time &lt;=#{query.endTime}
-		</if>
-		<if test="query.eleIdList!=null and query.eleIdList!=''">
-			and id in
-			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		order by create_time desc
-		limit #{query.offset}, #{query.size}
-	</select>
+        order by tec.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
 
 
 </mapper>

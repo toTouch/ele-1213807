@@ -4,7 +4,9 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.ElectricityCarVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
@@ -20,12 +22,7 @@ import java.util.Map;
 public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
 
 
-    /**
-     * @param electricityCabinetQuery
-     * @return 对象列表
-     */
-    List<ElectricityCabinetVO> queryList(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
-
+    List<ElectricityCarVO> queryList(@Param("query") ElectricityCarQuery electricityCarQuery);
 
 
 }

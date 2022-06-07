@@ -207,9 +207,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCarQuery electricityCarQuery) {
-
-
-        return R.ok(null);
+        return R.ok(electricityCarMapper.queryList(electricityCarQuery));
     }
 
 
