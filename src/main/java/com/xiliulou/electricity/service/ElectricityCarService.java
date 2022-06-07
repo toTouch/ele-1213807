@@ -39,5 +39,7 @@ public interface ElectricityCarService {
 
     Integer queryByModelId(Integer id);
 
+    R queryCount(ElectricityCarQuery electricityCarQuery);
+
 
 }

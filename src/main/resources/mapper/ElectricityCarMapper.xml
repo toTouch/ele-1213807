@@ -9,7 +9,7 @@
         tec.id,tec.sn,
         tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id,tec.battery_sn,tec.create_time,tec.update_time,ts.name
         from t_electricity_car tec left join t_store ts on tec.store_id=ts.id
-        where del_flag=0
+        where tec.del_flag=0
 		<if test="query.sn != null and query.sn!=''">
 			and tec.sn = #{query.sn}
 		</if>
@@ -31,6 +31,33 @@
         order by tec.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
+
+	<select id="queryCount" resultType="integer">
+		select
+		count(1)
+		from t_electricity_car tec left join t_store ts on tec.store_id=ts.id
+		where tec.del_flag=0
+		<if test="query.sn != null and query.sn!=''">
+			and tec.sn = #{query.sn}
+		</if>
+		<if test="query.model != null and query.model !=''">
+			and tec.model = #{query.model}
+		</if>
+		<if test="query.status != null ">
+			and tec.status = #{query.status}
+		</if>
+		<if test="query.storeId != null ">
+			and tec.store_id = #{query.store_id}
+		</if>
+		<if test="query.batterySn != null and query.batterySn!=''">
+			and tec.battery_sn = #{query.batterySn}
+		</if>
+		<if test="query.createTime != null">
+			and tec.create_time = #{query.createTime}
+		</if>
+		order by tec.create_time desc
+		limit #{query.offset}, #{query.size}
+	</select>
 
 
 </mapper>

@@ -3,11 +3,10 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarModelMapper">
 
 
-
     <!--查询指定行数据-->
     <select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
         select
-          id, name, num,  del_flag, create_time, update_time,tenant_id
+        id, name, del_flag, create_time, update_time,tenant_id
         from t_electricity_car_model
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -19,7 +18,7 @@
         order by update_time desc
         limit #{query.offset}, #{query.size}
     </select>
-	<select id="queryCount" resultType="java.lang.Integer">
+    <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_electricity_car_model
         where del_flag=0

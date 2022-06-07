@@ -108,20 +108,6 @@ public class JsonAdminElectricityCarController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //如果是查全部则直接跳过
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok(new ArrayList<>());
-            }
-        }
 
         ElectricityCarQuery electricityCarQuery= ElectricityCarQuery.builder()
                 .size(size)
@@ -142,12 +128,13 @@ public class JsonAdminElectricityCarController {
 
     //列表数量查询
     @GetMapping(value = "/admin/electricityCar/queryCount")
-    public R queryCount(@RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "address", required = false) String address,
-                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
-                        @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
-                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                        @RequestParam(value = "endTime", required = false) Long endTime) {
+    public R queryCount( @RequestParam(value = "sn", required = false) String sn,
+                         @RequestParam(value = "model", required = false) String model,
+                         @RequestParam(value = "status", required = false) Integer status,
+                         @RequestParam(value = "storeId", required = false) Integer storeId,
+                         @RequestParam(value = "phone", required = false) String phone,
+                         @RequestParam(value = "batterySn", required = false) String batterySn,
+                         @RequestParam(value = "createTime", required = false) Long createTime) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -158,32 +145,18 @@ public class JsonAdminElectricityCarController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        //如果是查全部则直接跳过
-        List<Integer> eleIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
-            if (Objects.isNull(userTypeService)) {
-                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
-                return R.fail("ELECTRICITY.0066", "用户权限不足");
-            }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-            if (ObjectUtil.isEmpty(eleIdList)) {
-                return R.ok();
-            }
-        }
 
-        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
-                .name(name)
-                .address(address)
-                .usableStatus(usableStatus)
-                .onlineStatus(onlineStatus)
-                .beginTime(beginTime)
-                .endTime(endTime)
-                .eleIdList(eleIdList)
+        ElectricityCarQuery electricityCarQuery= ElectricityCarQuery.builder()
+                .sn(sn)
+                .model(model)
+                .Phone(phone)
+                .status(status)
+                .storeId(storeId)
+                .batterySn(batterySn)
+                .createTime(createTime)
                 .tenantId(tenantId).build();
 
-        return electricityCabinetService.queryCount(electricityCabinetQuery);
+        return electricityCarService.queryCount(electricityCarQuery);
     }
 
 }
