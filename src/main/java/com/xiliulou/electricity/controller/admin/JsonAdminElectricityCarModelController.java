@@ -74,7 +74,7 @@ public class JsonAdminElectricityCarModelController {
 	}
 
 	//列表查询
-	@GetMapping(value = "/admin/electricityCar/queryCount")
+	@GetMapping(value = "/admin/electricityCarModel/queryCount")
 	public R queryCount(@RequestParam(value = "name", required = false) String name) {
 
 		Integer tenantId = TenantContextHolder.getTenantId();
