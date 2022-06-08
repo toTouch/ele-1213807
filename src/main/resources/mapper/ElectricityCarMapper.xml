@@ -8,7 +8,7 @@
         select
         tec.id,tec.sn,
         tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id, tec.phone
-        ,tec.create_time,tec.update_time,ts.name,tfui.now_electricity_battery_sn as batterySn
+        ,tec.create_time,tec.update_time,ts.name as storeName,tfui.now_electricity_battery_sn as batterySn
         from t_electricity_car tec left join t_store ts on tec.store_id=ts.id left join t_franchisee_user_info tfui on
         tec.user_info_id=tfui.user_info_id
         where tec.del_flag=0
