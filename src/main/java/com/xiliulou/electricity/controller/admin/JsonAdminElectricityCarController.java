@@ -145,10 +145,9 @@ public class JsonAdminElectricityCarController {
     }
 
     //车辆绑定用户
-    @PutMapping("/admin/electricityCar/bindUser")
-    public R bindUser(@RequestParam(value = "uid") Long uid,
-                      @RequestParam(value = "carId") Integer carId) {
-        return electricityCarService.bindUser(carId,uid);
+    @PostMapping("/admin/electricityCar/bindUser")
+    public R bindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
+        return electricityCarService.bindUser(electricityCarBindUser);
     }
 
 }

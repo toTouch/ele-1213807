@@ -195,10 +195,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
-    public R bindUser(Integer carId, Long uid) {
-        UserInfo userInfo = userInfoService.queryByUid(uid);
+    public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
+        UserInfo userInfo = userInfoService.queryByUid(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("ELECTRICITY CAR ERROR! not found user userId:{}", uid);
+            log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -209,13 +209,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        ElectricityCar electricityCar = queryByIdFromCache(carId);
+        ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
         }
 
         electricityCar.setStatus(ElectricityCar.CAR_IS_RENT);
-        electricityCar.setUid(uid);
+        electricityCar.setUid(electricityCarBindUser.getUid());
         electricityCar.setPhone(userInfo.getPhone());
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());

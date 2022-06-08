@@ -41,7 +41,7 @@ public interface ElectricityCarService {
 
     R queryCount(ElectricityCarQuery electricityCarQuery);
 
-    R bindUser(Integer carId,Long uid);
+    R bindUser(ElectricityCarBindUser electricityCarBindUser);
 
 
 }
