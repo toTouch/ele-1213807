@@ -11,16 +11,16 @@ import java.util.List;
 
 public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMemberCard> {
 
-    List<ElectricityMemberCard> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId);
+    List<ElectricityMemberCard> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("cardModel") Integer cardModel);
 
-	List<ElectricityMemberCard> queryUserList(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Long id, @Param("batteryType") String batteryType);
+    List<ElectricityMemberCard> queryUserList(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Long id, @Param("batteryType") String batteryType);
 
-	Integer queryCount(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId);
+    Integer queryCount(@Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId);
 
-	List<ElectricityMemberCard> listByFranchisee(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    List<ElectricityMemberCard> listByFranchisee(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 
-	Integer listCountByFranchisee(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
+    Integer listCountByFranchisee(@Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 
-	void unbindActivity(@Param("id") Integer id);
+    void unbindActivity(@Param("id") Integer id);
 
 }

@@ -79,10 +79,11 @@ public class JsonAdminElectricityMemberCardController {
     public R getElectricityMemberCardPage(@RequestParam(value = "offset") Long offset,
                                           @RequestParam(value = "size") Long size,
                                           @RequestParam(value = "type", required = false) Integer type,
-                                          @RequestParam(value = "status", required = false) Integer status) {
+                                          @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "cardModel", required = false) Integer cardModel) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityMemberCardService.queryList(offset, size, status, type, tenantId);
+        return electricityMemberCardService.queryList(offset, size, status, type, tenantId,cardModel);
     }
 
 
@@ -191,7 +192,7 @@ public class JsonAdminElectricityMemberCardController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery= ElectricityMemberCardRecordQuery.builder()
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder()
                 .offset(offset)
                 .size(size)
                 .disableMemberCardNo(disableMemberCardNo)
@@ -215,7 +216,7 @@ public class JsonAdminElectricityMemberCardController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery=ElectricityMemberCardRecordQuery.builder()
+        ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery = ElectricityMemberCardRecordQuery.builder()
                 .disableMemberCardNo(disableMemberCardNo)
                 .phone(phone)
                 .status(status)
