@@ -139,8 +139,14 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @DS("slave_1")
     public R queryList(ElectricityCarModelQuery electricityCarModelQuery) {
         //查询门店的车辆型号
-        if (Objects.nonNull(electricityCarModelQuery.getUid())){
-            Store store=storeService.queryByUid(electricityCarModelQuery.getUid());
+        Store store = null;
+        if (Objects.nonNull(electricityCarModelQuery.getUid())) {
+            store = storeService.queryByUid(electricityCarModelQuery.getUid());
+        }
+        if (Objects.nonNull(electricityCarModelQuery.getStoreId())) {
+            store = storeService.queryByIdFromCache(electricityCarModelQuery.getStoreId());
+        }
+        if (Objects.nonNull(store)){
             electricityCarModelQuery.setFranchiseeId(store.getFranchiseeId());
         }
         return R.ok(electricityCarModelMapper.queryList(electricityCarModelQuery));
