@@ -45,6 +45,18 @@ public class RentCarDepositAdd {
     @NotNull(message = "缴纳金额不能为空!", groups = {UpdateGroup.class})
     private BigDecimal payAmount;
 
+    /**
+     * 门店Id
+     */
+    @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
+    private Integer storeId;
+
+    /**
+     * 车辆型号Id
+     */
+    @NotNull(message = "车辆型号不能为空!", groups = {UpdateGroup.class})
+    private Integer carModelId;
+
     private Integer tenantId;
 
 

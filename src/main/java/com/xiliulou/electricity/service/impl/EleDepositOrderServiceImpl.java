@@ -846,6 +846,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(rentCarDepositAdd.getTenantId())
                 .depositType(EleDepositOrder.RENT_CAR_DEPOSIT)
+                .storeId(rentCarDepositAdd.getStoreId())
+                .carModelId(rentCarDepositAdd.getCarModelId())
                 .franchiseeId(rentCarDepositAdd.getFranchiseeId()).build();
 
         return R.ok(eleDepositOrderMapper.insert(eleDepositOrder));
