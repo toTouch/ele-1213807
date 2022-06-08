@@ -52,6 +52,8 @@ public class ElectricityCar {
 
     private Long uid;
 
+    private Long userInfoId;
+
     /**
      * 车辆绑定的用户名字
      */
@@ -66,6 +68,8 @@ public class ElectricityCar {
      * 车辆型号Id
      */
     private Integer modelId;
+
+    private String phone;
 
     /**
      * 绑定电池Sn码
@@ -84,6 +88,9 @@ public class ElectricityCar {
     private Integer tenantId;
 
     private Integer delFlag;
+
+    public static final Integer CAR_NOT_RENT = 0;
+    public static final Integer CAR_IS_RENT = 1;
 
 
     public static final Integer DEL_NORMAL = 0;

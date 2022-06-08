@@ -37,7 +37,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     RedisService redisService;
     @Autowired
     ElectricityCarModelService electricityCarModelService;
-
+    @Autowired
+    UserInfoService userInfoService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
 
     /**
@@ -69,7 +72,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -90,11 +93,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUpdateTime(System.currentTimeMillis());
         electricityCar.setDelFlag(ElectricityCabinet.DEL_NORMAL);
 
-        //查找快递柜型号
+        //查找车辆型号
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(electricityCar.getModelId());
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
+        electricityCar.setModel(electricityCarModel.getName());
+        electricityCar.setModelId(electricityCarModel.getId());
 
         int insert = electricityCarMapper.insert(electricityCar);
         DbUtils.dbOperateSuccessThen(insert, () -> {
@@ -111,7 +116,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELECTRICITY CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -190,10 +195,32 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
-    public R bindUser(String phone) {
+    public R bindUser(Integer carId, Long uid) {
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY CAR ERROR! not found user userId:{}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-        return null;
+        ElectricityCar electricityCar = queryByIdFromCache(carId);
+        if (Objects.isNull(electricityCar)) {
+            return R.fail("100007", "未找到车辆");
+        }
+
+        electricityCar.setStatus(ElectricityCar.CAR_IS_RENT);
+        electricityCar.setUid(uid);
+        electricityCar.setPhone(userInfo.getPhone());
+        electricityCar.setUserInfoId(userInfo.getId());
+        electricityCar.setUserName(userInfo.getName());
+        electricityCar.setUpdateTime(System.currentTimeMillis());
+        return R.ok(electricityCarMapper.updateById(electricityCar));
     }
 
 

@@ -97,7 +97,7 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        ElectricityCarQuery electricityCarQuery= ElectricityCarQuery.builder()
+        ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .size(size)
                 .offset(offset)
                 .sn(sn)
@@ -113,13 +113,13 @@ public class JsonAdminElectricityCarController {
 
     //列表数量查询
     @GetMapping(value = "/admin/electricityCar/queryCount")
-    public R queryCount( @RequestParam(value = "sn", required = false) String sn,
-                         @RequestParam(value = "model", required = false) String model,
-                         @RequestParam(value = "status", required = false) Integer status,
-                         @RequestParam(value = "storeId", required = false) Integer storeId,
-                         @RequestParam(value = "phone", required = false) String phone,
-                         @RequestParam(value = "batterySn", required = false) String batterySn,
-                         @RequestParam(value = "createTime", required = false) Long createTime) {
+    public R queryCount(@RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "model", required = false) String model,
+                        @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "storeId", required = false) Integer storeId,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "batterySn", required = false) String batterySn,
+                        @RequestParam(value = "createTime", required = false) Long createTime) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -131,7 +131,7 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        ElectricityCarQuery electricityCarQuery= ElectricityCarQuery.builder()
+        ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .sn(sn)
                 .model(model)
                 .Phone(phone)
@@ -146,8 +146,9 @@ public class JsonAdminElectricityCarController {
 
     //车辆绑定用户
     @PutMapping("/admin/electricityCar/bindUser")
-    public R bindUser(@RequestParam(value = "phone") String phone){
-        return electricityCarService.bindUser(phone);
+    public R bindUser(@RequestParam(value = "uid") Long uid,
+                      @RequestParam(value = "carId") Integer carId) {
+        return electricityCarService.bindUser(carId,uid);
     }
 
 }

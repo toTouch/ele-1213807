@@ -52,6 +52,11 @@ public class ElectricityCarVO {
     private String userName;
 
     /**
+     * 绑定用户手机号
+     */
+    private String phone;
+
+    /**
      * 绑定的电池型号
      */
     private String batterySn;
