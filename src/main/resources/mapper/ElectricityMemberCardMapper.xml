@@ -9,7 +9,7 @@
         temc.limit_count,temc.franchisee_id,temc.del_flag,temc.tenant_id,temc.model_type,temc.battery_Type,temc.is_bind_activity,temc.activity_id,temc.max_use_distance,
         temc.card_model,tecm.name
         FROM t_electricity_member_card temc left join t_electricity_car_model tecm on temc.car_model_id=tecm.id
-        where del_flag=0
+        where temc.del_flag=0
         <if test="status != null">
             AND temc.status = #{status}
         </if>
