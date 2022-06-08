@@ -82,4 +82,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
 	Integer deleteByUid(Long uid);
 
+	UserInfo queryUserInfoByPhone(String phone,Integer tenantId);
+
 }

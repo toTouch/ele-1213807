@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -749,7 +750,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(),Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
 
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
@@ -817,11 +818,44 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
+    @Override
+    public R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd) {
+        UserInfo userInfo = userInfoService.queryUserInfoByPhone(rentCarDepositAdd.getPhone(), rentCarDepositAdd.getTenantId());
+        if (Objects.isNull(userInfo)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user! phone={}", rentCarDepositAdd.getPhone());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-	@Override
-	public BigDecimal queryTurnOver(Integer tenantId) {
-		return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
-	}
+        BigDecimal payAmount = rentCarDepositAdd.getPayAmount();
+
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
+        String orderId = generateOrderId(userInfo.getUid());
+
+        //生成订单
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+                .orderId(orderId)
+                .uid(userInfo.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(payAmount)
+                .status(EleDepositOrder.STATUS_SUCCESS)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(rentCarDepositAdd.getTenantId())
+                .depositType(EleDepositOrder.RENT_CAR_DEPOSIT)
+                .franchiseeId(rentCarDepositAdd.getFranchiseeId()).build();
+
+        return R.ok(eleDepositOrderMapper.insert(eleDepositOrder));
+    }
+
+
+    @Override
+    public BigDecimal queryTurnOver(Integer tenantId) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
