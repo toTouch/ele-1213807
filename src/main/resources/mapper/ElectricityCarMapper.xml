@@ -56,7 +56,6 @@
 			and tec.create_time = #{query.createTime}
 		</if>
 		order by tec.create_time desc
-		limit #{query.offset}, #{query.size}
 	</select>
 
 

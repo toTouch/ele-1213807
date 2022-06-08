@@ -43,20 +43,7 @@ public class JsonAdminElectricityCarController {
      * 服务对象
      */
     @Autowired
-    ElectricityCabinetService electricityCabinetService;
-    @Qualifier("alibabaSmsService")
-    @Autowired
-    SmsService smsService;
-    @Autowired
-    StoreService storeService;
-    @Autowired
-    FranchiseeService franchiseeService;
-    @Autowired
-    EleHardwareHandlerManager eleHardwareHandlerManager;
-    @Autowired
     RedisService redisService;
-    @Autowired
-    UserTypeFactory userTypeFactory;
     @Autowired
     ElectricityCarService electricityCarService;
 
@@ -160,10 +147,7 @@ public class JsonAdminElectricityCarController {
     //车辆绑定用户
     @PutMapping("/admin/electricityCar/bindUser")
     public R bindUser(@RequestParam(value = "phone") String phone){
-
-
-
-        return null;
+        return electricityCarService.bindUser(phone);
     }
 
 }

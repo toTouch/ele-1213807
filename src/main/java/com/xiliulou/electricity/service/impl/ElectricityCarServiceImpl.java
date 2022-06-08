@@ -191,6 +191,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Override
     public R bindUser(String phone) {
+
+
         return null;
     }
 
