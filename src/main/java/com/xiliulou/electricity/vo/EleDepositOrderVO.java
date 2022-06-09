@@ -70,4 +70,14 @@ public class EleDepositOrderVO {
      * 错误原因
      */
     private String errMsg;
+
+    /**
+     * 押金类型
+     */
+    private Integer depositType;
+
+    /**
+     * 支付方式
+     */
+    private Integer payType;
 }

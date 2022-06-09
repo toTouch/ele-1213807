@@ -8,7 +8,7 @@
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
         edo.order_id, edo.status, edo.name, edo.phone, f.name as franchiseeName,
-        ero.refund_amount as refundAmount,ero.err_msg as errMsg
+        ero.refund_amount as refundAmount,ero.err_msg as errMsg,edo.deposit_type,edo.pay_type
         from t_ele_deposit_order edo left join t_franchisee f on f.id = edo.franchisee_id
         left join t_ele_refund_order as ero on ero.order_id= edo.order_id
         <where>
@@ -55,8 +55,8 @@
     </select>
 
 
-	<select id="queryCount" resultType="java.lang.Integer">
-        select  COUNT(1)
+    <select id="queryCount" resultType="java.lang.Integer">
+        select COUNT(1)
         from t_ele_deposit_order edo left join t_franchisee f on f.id = edo.franchisee_id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
@@ -88,10 +88,6 @@
             </if>
         </where>
     </select>
-
-
-
-
 
 
     <select id="queryListForUser" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
