@@ -57,6 +57,11 @@ public class StoreGoodsVO {
      */
     private String carModel;
 
+    /**
+     * 车辆库存
+     */
+    private Integer carInventory;
+
     List<ElectricityCabinetFile> electricityCabinetFiles;
 
 }
