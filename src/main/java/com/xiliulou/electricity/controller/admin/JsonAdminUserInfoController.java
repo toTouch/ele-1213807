@@ -42,7 +42,8 @@ public class JsonAdminUserInfoController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
-                       @RequestParam(value = "memberCardExpireTime", required = false) Long memberCardExpireTime) {
+                       @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                       @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -63,7 +64,8 @@ public class JsonAdminUserInfoController {
                 .endTime(endTime)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
-				.memberCardExpireTime(memberCardExpireTime)
+				.memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .tenantId(tenantId).build();
 
         return userInfoService.queryList(userInfoQuery);
