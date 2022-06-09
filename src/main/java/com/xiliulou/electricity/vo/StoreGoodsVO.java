@@ -52,6 +52,11 @@ public class StoreGoodsVO {
 
     private Integer tenantId;
 
+    /**
+     * 车辆型号
+     */
+    private String carModel;
+
     List<ElectricityCabinetFile> electricityCabinetFiles;
 
 }

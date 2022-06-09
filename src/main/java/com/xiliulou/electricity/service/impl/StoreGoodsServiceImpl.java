@@ -94,13 +94,13 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
 
 	@Override
 	public R queryList(StoreShopsQuery storeShopsQuery) {
-		List<StoreGoods> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
+		List<StoreGoodsVO> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
 		if (ObjectUtil.isEmpty(storeGoodsList)) {
 			return R.ok(storeGoodsList);
 		}
 
 		List<StoreGoodsVO> storeGoodsVOList = new ArrayList<>();
-		for (StoreGoods storeGoods : storeGoodsList) {
+		for (StoreGoodsVO storeGoods : storeGoodsList) {
 			StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
 			BeanUtils.copyProperties(storeGoods, storeGoodsVO);
 
