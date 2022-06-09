@@ -381,7 +381,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
                 int electricityBatteryTotal = 0;
                 int noElectricityBattery = 0;
-                int unUseElectricityBattery = 0;
+                int batteryInElectricity = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
@@ -389,7 +389,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
 
                     //禁用的仓门
-                    unUseElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isUnUseElectricityBattery).count();
+                    batteryInElectricity = (int) electricityCabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
 
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
@@ -404,7 +404,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
-                e.setBatteryInElectricity(electricityCabinetModel.getNum() - noElectricityBattery - unUseElectricityBattery);
+                e.setBatteryInElectricity(batteryInElectricity);
 
                 //是否锁住
                 int isLock = 0;
@@ -1675,8 +1675,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
     }
 
-    private boolean isUnUseElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
-        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE);
+    private boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
 
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
