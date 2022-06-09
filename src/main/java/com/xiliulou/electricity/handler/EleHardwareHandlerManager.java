@@ -5,6 +5,7 @@ import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
+import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.HardwareCommand;
@@ -90,6 +91,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     FeishuMsgService feishuMsgService;
     @Autowired
     FeishuTokenService feishuTokenService;
+    @Autowired
+    TenantConfig tenantConfig;
 
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
@@ -193,7 +196,13 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         }
     }
 
-    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time) {
+    private void feishuSendMsg(ElectricityCabinet electricityCabinet, String onlineStatus, String time){
+        //租户不发上下线通知
+        List<Integer> tenantIdList = tenantConfig.getDisableRobotMessageForTenantId();
+        if (Objects.nonNull(tenantIdList) && tenantIdList.contains(electricityCabinet.getTenantId())){
+            return;
+        }
+
         Tenant tenantEntity = tenantSerivce.queryByIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(tenantEntity)) {
             log.error("FEI SHU ERROR! tenant is empty error! cid={},tid={}", electricityCabinet.getId(), electricityCabinet.getTenantId());

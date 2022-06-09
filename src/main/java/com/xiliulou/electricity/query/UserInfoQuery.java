@@ -24,4 +24,7 @@ public class UserInfoQuery {
     private Integer tenantId;
 
     private Integer serviceStatus;
+
+    private Long memberCardExpireTimeBegin;
+    private Long memberCardExpireTimeEnd;
 }

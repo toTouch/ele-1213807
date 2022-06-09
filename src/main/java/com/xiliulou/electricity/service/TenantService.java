@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 /**
  * 租户表(Tenant)表服务接口

@@ -164,4 +164,6 @@ public interface ElectricityCabinetConstant {
     String CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST = "cache_maintenance_config_test:";
 
     String ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY = "ele-cache_user_disable_member_card_lock_key";
+
+    String APP_ID = "wx76159ea6aa7a64bc";
 }

@@ -381,11 +381,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 Integer fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), "-1");
                 int electricityBatteryTotal = 0;
                 int noElectricityBattery = 0;
+                int batteryInElectricity = 0;
                 List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
                 if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
 
                     //空仓
                     noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+
+                    //禁用的仓门
+                    batteryInElectricity = (int) electricityCabinetBoxList.stream().filter(this::isBatteryInElectricity).count();
 
                     //电池总数
                     electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
@@ -400,6 +404,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
+                e.setBatteryInElectricity(batteryInElectricity);
 
                 //是否锁住
                 int isLock = 0;
@@ -1669,6 +1674,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private boolean isNoElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
         return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+    }
+
+    private boolean isBatteryInElectricity(ElectricityCabinetBox electricityCabinetBox) {
+        return Objects.equals(electricityCabinetBox.getStatus(), ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
     }
 
     private boolean isElectricityBattery(ElectricityCabinetBox electricityCabinetBox) {
