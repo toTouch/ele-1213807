@@ -88,12 +88,20 @@ public class EleDepositOrder {
      */
     private Integer carModelId;
 
+    /**
+     * 交易方式
+     */
+    private Integer payType;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;
 
     public static final Integer ELECTRICITY_DEPOSIT = 0;
     public static final Integer RENT_CAR_DEPOSIT = 1;
+
+    public static final Integer ONLINE_PAYMENT = 0;
+    public static final Integer OFFLINE_PAYMENT = 1;
 
 
 }

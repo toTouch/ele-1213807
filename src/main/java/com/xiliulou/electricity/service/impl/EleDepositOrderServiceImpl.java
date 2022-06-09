@@ -848,7 +848,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .depositType(EleDepositOrder.RENT_CAR_DEPOSIT)
                 .storeId(rentCarDepositAdd.getStoreId())
                 .carModelId(rentCarDepositAdd.getCarModelId())
-                .franchiseeId(rentCarDepositAdd.getFranchiseeId()).build();
+                .franchiseeId(rentCarDepositAdd.getFranchiseeId())
+                .payType(EleDepositOrder.OFFLINE_PAYMENT).build();
 
         return R.ok(eleDepositOrderMapper.insert(eleDepositOrder));
     }

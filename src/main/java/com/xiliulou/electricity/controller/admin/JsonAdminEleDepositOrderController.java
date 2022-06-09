@@ -50,7 +50,9 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "depositType",required = false) Integer depositType,
+                       @RequestParam(value = "payType",required = false) Integer payType) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
