@@ -43,6 +43,12 @@
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}
             </if>
+            <if test="query.depositType != null">
+                and edo.deposit_type = #{query.depositType}
+            </if>
+            <if test="query.payType != null">
+                and edo.pay_type = #{query.payType}
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}

@@ -94,6 +94,8 @@ public class JsonAdminEleDepositOrderController {
                 .orderId(orderId)
                 .tenantId(tenantId)
                 .franchiseeName(franchiseeName)
+                .depositType(depositType)
+                .payType(payType)
                 .franchiseeId(franchiseeId).build();
 
         return eleDepositOrderService.queryList(eleDepositOrderQuery);

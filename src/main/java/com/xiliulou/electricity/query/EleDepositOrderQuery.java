@@ -31,4 +31,7 @@ public class EleDepositOrderQuery {
 
     private Long uid;
 
+    private Integer depositType;
+    private Integer payType;
+
 }
