@@ -124,5 +124,16 @@ public class JsonUserEleDepositOrderController {
         return eleDepositOrderService.payBatteryServiceFee(request);
     }
 
+
+    /**
+     * 缴纳电池服务费
+     *
+     * @return
+     */
+    @PostMapping("/user/payRentCarDeposit")
+    public R payRentCarDeposit(HttpServletRequest request) {
+        return eleDepositOrderService.payBatteryServiceFee(request);
+    }
+
 }
 
