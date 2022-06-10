@@ -400,11 +400,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
-                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                     checkCupboardStatusAndUpdateDiff(true, item);
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                 } else {
-                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                     checkCupboardStatusAndUpdateDiff(false, item);
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);

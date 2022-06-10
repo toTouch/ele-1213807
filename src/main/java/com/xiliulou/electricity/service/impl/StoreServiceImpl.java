@@ -368,11 +368,11 @@ public class StoreServiceImpl implements StoreService {
                         boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 
                         if (result) {
-                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
+                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                         } else {
-                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                             checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
+                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                         }
 
 
