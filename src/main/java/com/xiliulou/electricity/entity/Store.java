@@ -105,4 +105,8 @@ public class Store {
     //不支持
     public static final Integer UN_SUPPORT = 1;
 
+
+    public static final Integer ONLINE_PAYMENT = 0;
+    public static final Integer OFFLINE_PAYMENT = 1;
+
 }

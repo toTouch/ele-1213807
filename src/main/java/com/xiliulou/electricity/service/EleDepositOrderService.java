@@ -49,4 +49,6 @@ public interface EleDepositOrderService {
 	R payBatteryServiceFee(HttpServletRequest request);
 
 	R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
+
+	R payRentCarDeposit(Long storeId,Integer carModelId,HttpServletRequest request);
 }

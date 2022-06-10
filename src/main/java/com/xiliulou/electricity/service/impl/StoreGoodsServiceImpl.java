@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreGoods;
@@ -32,99 +34,104 @@ import java.util.Objects;
 @Service("storeGoodsService")
 public class StoreGoodsServiceImpl implements StoreGoodsService {
 
-	@Resource
-	StoreGoodsMapper storeGoodsMapper;
+    @Resource
+    StoreGoodsMapper storeGoodsMapper;
 
-	@Autowired
-	StoreService storeService;
+    @Autowired
+    StoreService storeService;
 
-	@Autowired
-	ElectricityCabinetFileService electricityCabinetFileService;
+    @Autowired
+    ElectricityCabinetFileService electricityCabinetFileService;
 
-	@Autowired
-	StorageConfig storageConfig;
+    @Autowired
+    StorageConfig storageConfig;
 
-	@Qualifier("aliyunOssService")
-	@Autowired
-	StorageService storageService;
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
-	@Override
-	public R insert(StoreGoods storeGoods) {
-		Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
-		if (Objects.isNull(store)) {
-			return R.fail("ELECTRICITY.0018", "未找到门店");
-		}
+    @Override
+    public R insert(StoreGoods storeGoods) {
+        Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
+        if (Objects.isNull(store)) {
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-		storeGoods.setCreateTime(System.currentTimeMillis());
-		storeGoods.setUpdateTime(System.currentTimeMillis());
-		storeGoods.setDelFlag(StoreGoods.DEL_NORMAL);
-		storeGoods.setTenantId(tenantId);
-		storeGoodsMapper.insert(storeGoods);
-		return R.ok(storeGoods.getId());
-	}
+        storeGoods.setCreateTime(System.currentTimeMillis());
+        storeGoods.setUpdateTime(System.currentTimeMillis());
+        storeGoods.setDelFlag(StoreGoods.DEL_NORMAL);
+        storeGoods.setTenantId(tenantId);
+        storeGoodsMapper.insert(storeGoods);
+        return R.ok(storeGoods.getId());
+    }
 
-	@Override
-	public R update(StoreGoods storeGoods) {
-		if (Objects.nonNull(storeGoods.getStoreId())) {
-			Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
-			if (Objects.isNull(store)) {
-				return R.fail("ELECTRICITY.0018", "未找到门店");
-			}
-		}
+    @Override
+    public R update(StoreGoods storeGoods) {
+        if (Objects.nonNull(storeGoods.getStoreId())) {
+            Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
+            if (Objects.isNull(store)) {
+                return R.fail("ELECTRICITY.0018", "未找到门店");
+            }
+        }
 
-		storeGoods.setUpdateTime(System.currentTimeMillis());
-		return R.ok(storeGoodsMapper.updateById(storeGoods));
-	}
+        storeGoods.setUpdateTime(System.currentTimeMillis());
+        return R.ok(storeGoodsMapper.updateById(storeGoods));
+    }
 
-	@Override
-	public R delete(Long id) {
-		StoreGoods storeGoods = storeGoodsMapper.selectById(id);
-		if (Objects.isNull(storeGoods)) {
-			R.fail("ELECTRICITY.00109", "未找到门店商品");
-		}
+    @Override
+    public R delete(Long id) {
+        StoreGoods storeGoods = storeGoodsMapper.selectById(id);
+        if (Objects.isNull(storeGoods)) {
+            R.fail("ELECTRICITY.00109", "未找到门店商品");
+        }
 
-		storeGoods.setId(id);
-		storeGoods.setUpdateTime(System.currentTimeMillis());
-		storeGoods.setDelFlag(StoreGoods.DEL_DEL);
-		return R.ok(storeGoodsMapper.updateById(storeGoods));
-	}
+        storeGoods.setId(id);
+        storeGoods.setUpdateTime(System.currentTimeMillis());
+        storeGoods.setDelFlag(StoreGoods.DEL_DEL);
+        return R.ok(storeGoodsMapper.updateById(storeGoods));
+    }
 
-	@Override
-	public R queryList(StoreShopsQuery storeShopsQuery) {
-		List<StoreGoodsVO> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
-		if (ObjectUtil.isEmpty(storeGoodsList)) {
-			return R.ok(storeGoodsList);
-		}
+    @Override
+    public R queryList(StoreShopsQuery storeShopsQuery) {
+        List<StoreGoodsVO> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
+        if (ObjectUtil.isEmpty(storeGoodsList)) {
+            return R.ok(storeGoodsList);
+        }
 
-		List<StoreGoodsVO> storeGoodsVOList = new ArrayList<>();
-		for (StoreGoodsVO storeGoods : storeGoodsList) {
-			StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
-			BeanUtils.copyProperties(storeGoods, storeGoodsVO);
+        List<StoreGoodsVO> storeGoodsVOList = new ArrayList<>();
+        for (StoreGoodsVO storeGoods : storeGoodsList) {
+            StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
+            BeanUtils.copyProperties(storeGoods, storeGoodsVO);
 
-			//图片显示
-			List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
-			if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-				List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-				for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-					if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-						electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-					}
-					electricityCabinetFiles.add(electricityCabinetFile);
-				}
-				storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
-			}
+            //图片显示
+            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
+            if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
+                List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
+                for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
+                    if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+                        electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                    }
+                    electricityCabinetFiles.add(electricityCabinetFile);
+                }
+                storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
+            }
 
-			storeGoodsVOList.add(storeGoodsVO);
-		}
+            storeGoodsVOList.add(storeGoodsVO);
+        }
 
-		return R.ok(storeGoodsVOList);
-	}
+        return R.ok(storeGoodsVOList);
+    }
 
-	@Override
-	public R queryCount(StoreShopsQuery storeShopsQuery) {
-		return R.ok(storeGoodsMapper.queryCount(storeShopsQuery));
-	}
+    @Override
+    public R queryCount(StoreShopsQuery storeShopsQuery) {
+        return R.ok(storeGoodsMapper.queryCount(storeShopsQuery));
+    }
+
+    @Override
+    public StoreGoods queryByStoreIdAndCarModelId(Long storeId, Integer carModelId) {
+        return storeGoodsMapper.selectOne(new LambdaQueryWrapper<StoreGoods>().eq(StoreGoods::getStoreId, storeId).eq(StoreGoods::getCarModelId, carModelId));
+    }
 }

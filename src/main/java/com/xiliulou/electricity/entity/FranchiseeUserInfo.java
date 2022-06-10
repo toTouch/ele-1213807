@@ -118,6 +118,11 @@ public class FranchiseeUserInfo {
      */
     private Long batteryServiceFeeGenerateTime;
 
+    /**
+     * 服务状态 (1--已缴纳押金，2--已租车辆)
+     */
+    private Integer rentCarStatus;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金
@@ -141,6 +146,9 @@ public class FranchiseeUserInfo {
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
+    public static final Integer RENT_CAR_STATUS_IS_DEPOSIT = 1;
+    public static final Integer RENT_CAR_STATUS_IS_RENT_CAR = 2;
+
 
     //送次数卡
     public static final Integer TYPE_COUNT = 3;
@@ -149,9 +157,7 @@ public class FranchiseeUserInfo {
 
     public static final Long UN_LIMIT_COUNT_REMAINING_NUMBER = 9999L;
 
-    /**
-     *用户电池服务费为0元
-     */
-    public static final BigDecimal BATTERY_SERVICE_FEE_ZERO=new BigDecimal(0);
+    //用户电池服务费为0元
+    public static final BigDecimal BATTERY_SERVICE_FEE_ZERO = BigDecimal.valueOf(0);
 
 }

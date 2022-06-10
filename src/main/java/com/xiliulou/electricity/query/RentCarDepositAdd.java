@@ -49,7 +49,7 @@ public class RentCarDepositAdd {
      * 门店Id
      */
     @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
-    private Integer storeId;
+    private Long storeId;
 
     /**
      * 车辆型号Id
