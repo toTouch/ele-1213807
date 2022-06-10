@@ -324,11 +324,6 @@ public class StoreServiceImpl implements StoreService {
     public R showInfoByDistance(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
         List<StoreVO> storeVOs = new ArrayList<>();
-
-
-        System.out.println("查找门店=================================="+storeVOList);
-
-
         if (ObjectUtil.isNotEmpty(storeVOList)) {
             storeVOList.parallelStream().forEach(e -> {
 
@@ -367,20 +362,6 @@ public class StoreServiceImpl implements StoreService {
                     for (ElectricityCabinet electricityCabinet : electricityCabinetList) {
                         Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId(), null);
                         fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
-
-
-
-                        boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
-
-                        if (result) {
-                            checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
-                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
-                        } else {
-                            checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
-                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
-                        }
-
-
                     }
                 }
                 e.setFullyElectricityBattery(fullyElectricityBatteryCount);

@@ -25,27 +25,27 @@ public class JsonUserStoreController {
 	@Autowired
 	StoreService storeService;
 
-//	//列表查询
-//	@GetMapping(value = "/outer/store/showInfoByDistance")
-//	public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
-//			@RequestParam(value = "name", required = false) String name,
-//			@RequestParam("lon") Double lon,
-//			@RequestParam("lat") Double lat) {
-//
-//		if (lon <= 0.0 || lat <= 0.0) {
-//			return R.fail("ELECTRICITY.0007", "不合法的参数");
-//		}
-//
-//		Integer tenantId = TenantContextHolder.getTenantId();
-//
-//		StoreQuery storeQuery = StoreQuery.builder()
-//				.distance(distance)
-//				.lon(lon)
-//				.lat(lat)
-//				.tenantId(tenantId)
-//				.name(name).build();
-//
-//		return storeService.showInfoByDistance(storeQuery);
-//	}
+	//列表查询
+	@GetMapping(value = "/outer/store/showInfoByDistance")
+	public R showInfoByDistance(@RequestParam(value = "distance", required = false) Double distance,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam("lon") Double lon,
+			@RequestParam("lat") Double lat) {
+
+		if (lon <= 0.0 || lat <= 0.0) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+		StoreQuery storeQuery = StoreQuery.builder()
+				.distance(distance)
+				.lon(lon)
+				.lat(lat)
+				.tenantId(tenantId)
+				.name(name).build();
+
+		return storeService.showInfoByDistance(storeQuery);
+	}
 
 }

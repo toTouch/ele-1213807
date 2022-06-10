@@ -400,11 +400,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
-                    checkCupboardStatusAndUpdateDiff(true, item);
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    checkCupboardStatusAndUpdateDiff(true, item);
                 } else {
-                    checkCupboardStatusAndUpdateDiff(false, item);
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    checkCupboardStatusAndUpdateDiff(false, item);
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -431,6 +431,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
+
+                ElectricityCabinet item = new ElectricityCabinet();
+                BeanUtils.copyProperties(e, item);
 
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
@@ -484,8 +487,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    checkCupboardStatusAndUpdateDiff(true, item);
                 } else {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    checkCupboardStatusAndUpdateDiff(false, item);
                 }
                 //电柜不在线也返回，可离线换电
                 if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
