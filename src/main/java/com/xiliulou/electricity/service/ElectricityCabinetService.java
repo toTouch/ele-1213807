@@ -120,4 +120,6 @@ public interface ElectricityCabinetService {
 
     R queryAllElectricityCabinet(ElectricityCabinetQuery electricityCabinetQuery);
 
+    int idempotentUpdateCupboard(ElectricityCabinet electricityCabinet, ElectricityCabinet updateElectricityCabinet);
+
 }

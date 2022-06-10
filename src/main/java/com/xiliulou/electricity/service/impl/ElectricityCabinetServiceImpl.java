@@ -353,6 +353,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
 
+                ElectricityCabinet item = new ElectricityCabinet();
+                BeanUtils.copyProperties(e, item);
+
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -398,8 +401,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    checkCupboardStatusAndUpdateDiff(true, item);
                 } else {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    checkCupboardStatusAndUpdateDiff(false, item);
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
                 e.setNoElectricityBattery(noElectricityBattery);
@@ -476,12 +481,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setFullyElectricityBattery(fullyElectricityBattery);
 
                 //动态查询在线状态
-//                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
-//                if (result) {
-//                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
-//                } else {
-//                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
-//                }
+                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+                if (result) {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                } else {
+                    e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                }
                 //电柜不在线也返回，可离线换电
                 if (Objects.equals(e.getUsableStatus(), ElectricityCabinet.ELECTRICITY_CABINET_USABLE_STATUS)) {
                     electricityCabinets.add(e);
@@ -1949,5 +1954,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryAllElectricityCabinet(ElectricityCabinetQuery electricityCabinetQuery) {
         return R.ok(electricityCabinetMapper.queryList(electricityCabinetQuery));
+    }
+
+
+    private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
+        if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {
+            ElectricityCabinet update = new ElectricityCabinet();
+            update.setId(electricityCabinet.getId());
+            update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS : ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            idempotentUpdateCupboard(electricityCabinet, update);
+        }
+    }
+
+    private boolean isCupboardAttrIsOnline(ElectricityCabinet electricityCabinet) {
+        return ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(electricityCabinet.getOnlineStatus().toString());
+    }
+
+    @Override
+    public int idempotentUpdateCupboard(ElectricityCabinet electricityCabinet, ElectricityCabinet updateElectricityCabinet) {
+        Integer update = update(electricityCabinet);
+        if (update > 0) {
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId());
+            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
+        }
+        return update;
     }
 }
