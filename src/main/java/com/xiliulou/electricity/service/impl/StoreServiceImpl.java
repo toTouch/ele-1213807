@@ -368,6 +368,8 @@ public class StoreServiceImpl implements StoreService {
                         boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 
                         if (result) {
+
+                            System.out.println("===================在线");
                             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
                             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                         } else {
@@ -510,6 +512,9 @@ public class StoreServiceImpl implements StoreService {
 
 
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
+
+        System.out.println("======================换电柜状态============"+electricityCabinet.getOnlineStatus());
+
         if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {
             ElectricityCabinet update = new ElectricityCabinet();
             update.setId(electricityCabinet.getId());
