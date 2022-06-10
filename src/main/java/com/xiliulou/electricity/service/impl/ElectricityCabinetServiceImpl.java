@@ -353,8 +353,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
 
-                ElectricityCabinet item = new ElectricityCabinet();
-                BeanUtils.copyProperties(e, item);
+
 
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
@@ -399,11 +398,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
 
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
+
+                ElectricityCabinet item = new ElectricityCabinet();
+                item.setUpdateTime(System.currentTimeMillis());
+                item.setId(e.getId());
+
                 if (result) {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(true, item);
                 } else {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(false, item);
                 }
                 e.setElectricityBatteryTotal(electricityBatteryTotal);
@@ -431,10 +437,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinetVO> electricityCabinets = new ArrayList<>();
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
-
-                ElectricityCabinet item = new ElectricityCabinet();
-                BeanUtils.copyProperties(e, item);
-
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -483,13 +485,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setNoElectricityBattery(noElectricityBattery);
                 e.setFullyElectricityBattery(fullyElectricityBattery);
 
+                ElectricityCabinet item = new ElectricityCabinet();
+                item.setUpdateTime(System.currentTimeMillis());
+                item.setId(e.getId());
+
                 //动态查询在线状态
                 boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
                 if (result) {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(true, item);
                 } else {
                     e.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                    item.setOnlineStatus(e.getOnlineStatus());
                     checkCupboardStatusAndUpdateDiff(false, item);
                 }
                 //电柜不在线也返回，可离线换电
