@@ -126,7 +126,7 @@ public class JsonUserEleDepositOrderController {
 
 
     /**
-     * 缴纳电池服务费
+     * 缴纳租车押金
      *
      * @return
      */

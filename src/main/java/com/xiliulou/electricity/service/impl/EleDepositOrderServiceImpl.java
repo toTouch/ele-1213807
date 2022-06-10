@@ -1020,7 +1020,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
             return R.ok(resultDTO);
         } catch (WechatPayException e) {
-            log.error("payDeposit ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+            log.error("payCarDeposit ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
         }
 
         return null;
