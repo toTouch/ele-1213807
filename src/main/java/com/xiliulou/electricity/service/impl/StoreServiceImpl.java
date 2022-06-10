@@ -369,7 +369,7 @@ public class StoreServiceImpl implements StoreService {
 
                         if (result) {
 
-                            System.out.println("===================在线");
+                            System.out.println("===================你好===============================");
                             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
                             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                         } else {
