@@ -943,18 +943,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //门店
-
-        System.out.println("门店id=========================================="+storeId);
-
         Store store = storeService.queryByIdFromCache(storeId);
-
-        System.out.println("门店-----==============================="+store);
-
         if (Objects.isNull(store)) {
             log.error("payCarDeposit  ERROR! not store! ,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-        if (Objects.equals(store.getPayType(), Store.ONLINE_PAYMENT)) {
+        if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
             log.error("payCarDeposit  ERROR! not support online pay deposit!,storeId{}", store.getId());
             return R.fail("100008", "不支持线上缴纳租车押金");
         }
