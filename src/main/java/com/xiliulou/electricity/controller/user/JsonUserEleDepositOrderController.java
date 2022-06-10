@@ -131,7 +131,7 @@ public class JsonUserEleDepositOrderController {
      * @return
      */
     @PostMapping("/user/payRentCarDeposit")
-    public R payRentCarDeposit( @RequestParam(value = "storeId") Long storeId,
+    public R payRentCarDeposit( @RequestParam(value = "storeId",required = false) Long storeId,
                                 @RequestParam(value = "carModelId") Integer carModelId,
             HttpServletRequest request) {
         return eleDepositOrderService.payRentCarDeposit(storeId,carModelId,request);
