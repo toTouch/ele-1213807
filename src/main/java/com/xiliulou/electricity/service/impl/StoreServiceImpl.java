@@ -373,6 +373,9 @@ public class StoreServiceImpl implements StoreService {
                             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
                             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                         } else {
+
+
+                            System.out.println("===================不在线你好===============================");
                             checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
                             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                         }
