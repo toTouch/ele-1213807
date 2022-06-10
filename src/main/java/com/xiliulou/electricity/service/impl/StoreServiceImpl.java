@@ -363,6 +363,19 @@ public class StoreServiceImpl implements StoreService {
                         Integer fullyElectricityBattery = electricityCabinetService.queryFullyElectricityBattery(electricityCabinet.getId(), null);
                         fullyElectricityBatteryCount = fullyElectricityBatteryCount + fullyElectricityBattery;
 
+
+
+                        boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+
+                        if (result) {
+                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+                            checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
+                        } else {
+                            electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+                            checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
+                        }
+
+
                     }
                 }
                 e.setFullyElectricityBattery(fullyElectricityBatteryCount);
@@ -489,6 +502,20 @@ public class StoreServiceImpl implements StoreService {
             return true;
         }
         return false;
+    }
+
+    private boolean isCupboardAttrIsOnline(ElectricityCabinet electricityCabinet) {
+        return ElectricityCabinet.IOT_STATUS_ONLINE.equalsIgnoreCase(electricityCabinet.getOnlineStatus().toString());
+    }
+
+
+    private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
+        if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {
+            ElectricityCabinet update = new ElectricityCabinet();
+            update.setId(electricityCabinet.getId());
+            update.setOnlineStatus(isOnline ? ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS : ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            electricityCabinetService.idempotentUpdateCupboard(electricityCabinet, update);
+        }
     }
 
 }
