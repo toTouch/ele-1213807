@@ -943,7 +943,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //门店
+
+        System.out.println("门店id=========================================="+storeId);
+
         Store store = storeService.queryByIdFromCache(storeId);
+
+        System.out.println("门店-----==============================="+store);
+
         if (Objects.isNull(store)) {
             log.error("payCarDeposit  ERROR! not store! ,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0018", "未找到门店");
