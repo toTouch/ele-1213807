@@ -324,6 +324,11 @@ public class StoreServiceImpl implements StoreService {
     public R showInfoByDistance(StoreQuery storeQuery) {
         List<StoreVO> storeVOList = storeMapper.showInfoByDistance(storeQuery);
         List<StoreVO> storeVOs = new ArrayList<>();
+
+
+        System.out.println("查找门店=================================="+storeVOList);
+
+
         if (ObjectUtil.isNotEmpty(storeVOList)) {
             storeVOList.parallelStream().forEach(e -> {
 
@@ -368,14 +373,9 @@ public class StoreServiceImpl implements StoreService {
                         boolean result = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
 
                         if (result) {
-
-                            System.out.println("===================你好===============================");
                             checkCupboardStatusAndUpdateDiff(true, electricityCabinet);
                             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
                         } else {
-
-
-                            System.out.println("===================不在线你好===============================");
                             checkCupboardStatusAndUpdateDiff(false, electricityCabinet);
                             electricityCabinet.setOnlineStatus(ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
                         }
@@ -515,9 +515,6 @@ public class StoreServiceImpl implements StoreService {
 
 
     private void checkCupboardStatusAndUpdateDiff(boolean isOnline, ElectricityCabinet electricityCabinet) {
-
-        System.out.println("======================换电柜状态============"+electricityCabinet.getOnlineStatus());
-
         if (!isOnline && isCupboardAttrIsOnline(electricityCabinet) || isOnline && !isCupboardAttrIsOnline(electricityCabinet)) {
             ElectricityCabinet update = new ElectricityCabinet();
             update.setId(electricityCabinet.getId());
