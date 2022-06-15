@@ -66,8 +66,11 @@ public class ElectricityTradeOrder {
     //电池服务费附加信息
     public static final String ATTACH_BATTERY_SERVICE_FEE = "batteryServiceFee";
 
-
+    //租车押金附加信息
     public static final String ATTACH_RENT_CAR_DEPOSIT = "rentCarDeposit";
+
+    //租车月卡附加信息
+    public static final String ATTACH_RENT_CAR_MEMBER_CARD = "rentCarMemberCard";
 
 
 }

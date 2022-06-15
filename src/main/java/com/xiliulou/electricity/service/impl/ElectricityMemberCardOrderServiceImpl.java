@@ -874,7 +874,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     .uid(user.getUid())
                     .payAmount(electricityMemberCardOrder.getPayAmount())
                     .orderType(ElectricityTradeOrder.ORDER_TYPE_RENT_MEMBER_CARD)
-                    .attach(String.valueOf(electricityMemberCardOrderQuery.getUserCouponId()))
+                    .attach(ElectricityTradeOrder.ATTACH_RENT_CAR_MEMBER_CARD)
                     .description("租车月卡收费")
                     .tenantId(tenantId).build();
 
