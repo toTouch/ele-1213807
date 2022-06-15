@@ -131,10 +131,26 @@ public class JsonUserEleDepositOrderController {
      * @return
      */
     @PostMapping("/user/payRentCarDeposit")
-    public R payRentCarDeposit( @RequestParam(value = "storeId",required = false) Long storeId,
-                                @RequestParam(value = "carModelId",required = false) Integer carModelId,
-            HttpServletRequest request) {
-        return eleDepositOrderService.payRentCarDeposit(storeId,carModelId,request);
+    public R payRentCarDeposit(@RequestParam(value = "storeId", required = false) Long storeId,
+                               @RequestParam(value = "carModelId", required = false) Integer carModelId,
+                               HttpServletRequest request) {
+        return eleDepositOrderService.payRentCarDeposit(storeId, carModelId, request);
+    }
+
+    //用户查询租车押金
+    @GetMapping(value = "/user/queryRentCarDeposit")
+    public R queryRentCarDeposit() {
+        return eleDepositOrderService.queryRentCarDeposit();
+    }
+
+    /**
+     * 退租车押金
+     *
+     * @return
+     */
+    @PostMapping("/user/refundRentCarDeposit")
+    public R refundRentCarDeposit(HttpServletRequest request) {
+        return eleDepositOrderService.refundRentCarDeposit(request);
     }
 
 }

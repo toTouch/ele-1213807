@@ -71,6 +71,17 @@ public class FranchiseeUserInfo {
      * 押金订单编号
      */
     private String orderId;
+
+    /**
+     * 租车订单编号
+     */
+    private String rentCarOrderId;
+
+    /**
+     * 租车押金
+     */
+    private BigDecimal rentCarDeposit;
+
     /**
      * 0--正常 1--删除
      */
@@ -146,6 +157,7 @@ public class FranchiseeUserInfo {
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
+    public static final Integer RENT_CAR_STATUS_INIT = 0;
     public static final Integer RENT_CAR_STATUS_IS_DEPOSIT = 1;
     public static final Integer RENT_CAR_STATUS_IS_RENT_CAR = 2;
 

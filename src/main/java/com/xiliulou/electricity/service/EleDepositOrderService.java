@@ -51,4 +51,8 @@ public interface EleDepositOrderService {
 	R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 
 	R payRentCarDeposit(Long storeId,Integer carModelId,HttpServletRequest request);
+
+    R refundRentCarDeposit(HttpServletRequest request);
+
+    R queryRentCarDeposit();
 }
