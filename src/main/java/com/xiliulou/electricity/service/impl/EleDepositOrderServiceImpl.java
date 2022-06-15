@@ -1005,9 +1005,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
             return R.ok();
         }
-
-        System.out.println("缴纳押金类型=================="+eleDepositOrder.getDepositType());
-
         eleDepositOrderMapper.insert(eleDepositOrder);
 
         //调起支付
