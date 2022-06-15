@@ -1179,13 +1179,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 } else {
                     map.put("refundStatus", null);
                 }
-                ElectricityCar userBindElectricityCar = electricityCarService.queryByIdFromCache(franchiseeUserInfo.getBindCarId());
 
-                if (Objects.isNull(userBindElectricityCar)) {
+                EleDepositOrder eleDepositOrder = queryByOrderId(franchiseeUserInfo.getRentCarOrderId());
+
+                if (Objects.isNull(eleDepositOrder)) {
                     map.put("store", null);
                     map.put("carModel", null);
                 } else {
-                    Store store = storeService.queryByIdFromCache(userBindElectricityCar.getStoreId());
+                    Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
                     if (Objects.nonNull(store)) {
                         map.put("store", store.getName());
                     } else {
