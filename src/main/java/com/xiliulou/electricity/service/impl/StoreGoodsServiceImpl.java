@@ -57,6 +57,11 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
+        StoreGoods oleStoreGoods=queryByStoreIdAndCarModelId(storeGoods.getStoreId(),storeGoods.getCarModelId());
+        if (Objects.nonNull(oleStoreGoods)){
+            return R.fail("100010","已添加此型号车辆押金");
+        }
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
