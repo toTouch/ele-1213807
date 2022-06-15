@@ -139,6 +139,11 @@ public class FranchiseeUserInfo {
      */
     private Integer bindCarId;
 
+    /**
+     * 绑定的车辆Id
+     */
+    private Integer bindCarModelId;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金

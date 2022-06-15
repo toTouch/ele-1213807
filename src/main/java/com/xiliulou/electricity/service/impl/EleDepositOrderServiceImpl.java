@@ -999,8 +999,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfoUpdate.setId(userInfo.getId());
             franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoUpdate.setOrderId(orderId);
-            franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
+            franchiseeUserInfoUpdate.setRentCarOrderId(orderId);
+            franchiseeUserInfoUpdate.setBindCarModelId(carModelId);
 
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
             return R.ok();
@@ -1177,20 +1177,24 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 } else {
                     map.put("refundStatus", null);
                 }
-
                 ElectricityCar userBindElectricityCar = electricityCarService.queryByIdFromCache(franchiseeUserInfo.getBindCarId());
+
                 if (Objects.isNull(userBindElectricityCar)) {
                     map.put("store", null);
                     map.put("carModel", null);
                 } else {
-
                     Store store = storeService.queryByIdFromCache(userBindElectricityCar.getStoreId());
-                    if (Objects.nonNull(store)){
+                    if (Objects.nonNull(store)) {
                         map.put("store", store.getName());
-                    }else {
+                    } else {
                         map.put("store", null);
                     }
-                    map.put("carModel", userBindElectricityCar.getModel());
+                    ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(franchiseeUserInfo.getBindCarModelId());
+                    if (Objects.nonNull(electricityCarModel)) {
+                        map.put("carModel", electricityCarModel.getName());
+                    } else {
+                        map.put("carModel", null);
+                    }
                 }
 
                 map.put("deposit", franchiseeUserInfo.getRentCarDeposit().toString());
