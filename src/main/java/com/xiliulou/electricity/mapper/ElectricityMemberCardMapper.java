@@ -12,7 +12,7 @@ import java.util.List;
 
 public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMemberCard> {
 
-    List<ElectricityMemberCardVO> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("cardModel") Integer cardModel,@Param("franchiseeId") Long franchiseeId);
+    List<ElectricityMemberCardVO> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("type") Integer type, @Param("tenantId") Integer tenantId, @Param("cardModel") Integer cardModel,@Param("franchiseeId") Long franchiseeId,@Param("carModelId") Integer carModelId);
 
     List<ElectricityMemberCard> queryUserList(@Param("offset") Long offset, @Param("size") Long size, @Param("id") Long id, @Param("batteryType") String batteryType);
 
