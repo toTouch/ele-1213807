@@ -36,6 +36,8 @@ public class JsonAdminEleRefundOrderController {
 					   @RequestParam("offset") Long offset,
 					   @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
 					   @RequestParam(value = "status", required = false) Integer status,
+					   @RequestParam(value = "payType", required = false) Integer payType,
+					   @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
 					   @RequestParam(value = "name", required = false) String name,
 					   @RequestParam(value = "phone", required = false) String phone,
 					   @RequestParam(value = "orderId", required = false) String orderId,
@@ -62,6 +64,8 @@ public class JsonAdminEleRefundOrderController {
 				.endTime(endTime)
 				.tenantId(tenantId)
 				.phone(phone)
+				.payType(payType)
+				.refundOrderType(refundOrderType)
 				.name(name).build();
 
 		return eleRefundOrderService.queryList(eleRefundQuery);

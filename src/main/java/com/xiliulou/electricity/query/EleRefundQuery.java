@@ -45,5 +45,12 @@ public class EleRefundQuery {
      */
     private String name;
 
+    /**
+     * 退押金类型
+     */
+    private Integer refundOrderType;
+
+    private Integer payType;
+
 
 }
