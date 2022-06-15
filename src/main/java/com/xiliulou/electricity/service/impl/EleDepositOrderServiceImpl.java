@@ -93,6 +93,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     ElectricityCarModelService electricityCarModelService;
     @Autowired
     StoreGoodsService storeGoodsService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -1162,6 +1164,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 && Objects.nonNull(franchiseeUserInfo.getRentCarDeposit()) && Objects.nonNull(franchiseeUserInfo.getRentCarOrderId())) {
 
             if (Objects.equals(franchiseeUserInfo.getOrderId(), "-1")) {
+                map.put("storeId",null);
+                map.put("carId",null);
                 map.put("refundStatus", null);
                 map.put("deposit", franchiseeUserInfo.getRentCarDeposit().toString());
                 map.put("time", String.valueOf(System.currentTimeMillis()));
@@ -1172,6 +1176,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     map.put("refundStatus", refundStatus.toString());
                 } else {
                     map.put("refundStatus", null);
+                }
+
+                ElectricityCar userBindElectricityCar=electricityCarService.queryByIdFromCache(franchiseeUserInfo.getBindCarId());
+                if (Objects.isNull(userBindElectricityCar)){
+                    map.put("storeId",null);
+                    map.put("carId",null);
+                }else {
+                    map.put("storeId",userBindElectricityCar.getStoreId().toString());
+                    map.put("carId",franchiseeUserInfo.getBindCarId().toString());
                 }
 
                 map.put("deposit", franchiseeUserInfo.getRentCarDeposit().toString());

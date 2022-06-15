@@ -195,6 +195,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
         UserInfo userInfo = userInfoService.queryByUid(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
@@ -213,6 +214,12 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
         }
+
+        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+        updateFranchiseeUserInfo.setBindCarId(electricityCarBindUser.getCarId());
+        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
 
         electricityCar.setStatus(ElectricityCar.CAR_IS_RENT);
         electricityCar.setUid(electricityCarBindUser.getUid());

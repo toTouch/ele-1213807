@@ -277,6 +277,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 				franchiseeUserInfo.setCardType(null);
 				franchiseeUserInfo.setMemberCardExpireTime(null);
 				franchiseeUserInfo.setRemainingNumber(null);
+				franchiseeUserInfo.setRentCarOrderId(null);
+				franchiseeUserInfo.setRentCarDeposit(null);
+				franchiseeUserInfo.setBindCarId(null);
+				franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
 				franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
 				return R.ok();
 
