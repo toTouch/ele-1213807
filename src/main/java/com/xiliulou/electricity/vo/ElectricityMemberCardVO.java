@@ -96,6 +96,11 @@ public class ElectricityMemberCardVO {
      */
     private Integer carModelId;
 
+    /**
+     * 车辆型号
+     */
+    private String carModel;
+
 
 
 }
