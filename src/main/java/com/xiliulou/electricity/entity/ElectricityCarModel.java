@@ -35,7 +35,7 @@ public class ElectricityCarModel {
     /**
      * 加盟商Id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     private Integer delFlag;
 

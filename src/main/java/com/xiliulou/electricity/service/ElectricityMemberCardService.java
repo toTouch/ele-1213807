@@ -19,6 +19,8 @@ public interface ElectricityMemberCardService {
 
 	R queryUserList(Long offset, Long size,String productKey, String deviceName,Long franchiseeId);
 
+	R queryRentCarMemberCardList(Long offset, Long size);
+
 	List<ElectricityMemberCard> queryByFranchisee(Long id);
 
 	R queryCount(Integer status, Integer type, Integer tenantId);

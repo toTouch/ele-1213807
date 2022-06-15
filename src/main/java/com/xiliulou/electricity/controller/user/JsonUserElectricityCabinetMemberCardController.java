@@ -58,4 +58,24 @@ public class JsonUserElectricityCabinetMemberCardController {
 	public R queryUserList(@PathVariable("id") Integer id) {
 		return R.ok(electricityMemberCardService.queryByStatus(id));
 	}
+
+
+	/**
+	 * 月卡分页
+	 *
+	 * @param
+	 * @return
+	 */
+	@GetMapping(value = "/user/rentCarMemberCard/list")
+	public R queryRentCarMemberCardList(@RequestParam("size") Long size,
+						   @RequestParam("offset") Long offset) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+		return electricityMemberCardService.queryRentCarMemberCardList(offset, size);
+	}
 }

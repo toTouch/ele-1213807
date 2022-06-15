@@ -19,6 +19,9 @@
         <if test="tenantId != null ">
             and temc.tenant_id = #{tenantId}
         </if>
+        <if test="franchiseeId != null ">
+            and temc.franchisee_id = #{franchiseeId}
+        </if>
         <if test="cardModel != null ">
             and temc.card_model = #{cardModel}
         </if>
