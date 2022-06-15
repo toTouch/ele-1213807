@@ -187,18 +187,26 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 		if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
 			FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
 			franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-			franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+			if (Objects.equals(eleRefundOrder.getRefundOrderType(),EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+				franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+				franchiseeUserInfo.setBatteryDeposit(null);
+				franchiseeUserInfo.setOrderId(null);
+				franchiseeUserInfo.setFranchiseeId(null);
+				franchiseeUserInfo.setModelType(null);
+				franchiseeUserInfo.setBatteryType(null);
+				franchiseeUserInfo.setCardId(null);
+				franchiseeUserInfo.setCardName(null);
+				franchiseeUserInfo.setCardType(null);
+				franchiseeUserInfo.setMemberCardExpireTime(null);
+				franchiseeUserInfo.setRemainingNumber(null);
+			}else {
+				franchiseeUserInfo.setRentCarOrderId(null);
+				franchiseeUserInfo.setRentCarDeposit(null);
+				franchiseeUserInfo.setBindCarId(null);
+				franchiseeUserInfo.setBindCarModelId(null);
+				franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+			}
 			franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-			franchiseeUserInfo.setBatteryDeposit(null);
-			franchiseeUserInfo.setOrderId(null);
-			franchiseeUserInfo.setFranchiseeId(null);
-			franchiseeUserInfo.setModelType(null);
-			franchiseeUserInfo.setBatteryType(null);
-			franchiseeUserInfo.setCardId(null);
-			franchiseeUserInfo.setCardName(null);
-			franchiseeUserInfo.setCardType(null);
-			franchiseeUserInfo.setMemberCardExpireTime(null);
-			franchiseeUserInfo.setRemainingNumber(null);
 			franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
 		}
 
@@ -254,8 +262,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 			//退款0元，不捕获异常，成功退款
 			if (refundAmount.compareTo(BigDecimal.ZERO)==0){
 
-
-
 				eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
 				eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
 				eleRefundOrderService.update(eleRefundOrderUpdate);
@@ -265,22 +271,26 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 				FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
 				franchiseeUserInfo.setUserInfoId(id);
-				franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+				if (Objects.equals(eleRefundOrder.getRefundOrderType(),EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+					franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+					franchiseeUserInfo.setBatteryDeposit(null);
+					franchiseeUserInfo.setOrderId(null);
+					franchiseeUserInfo.setFranchiseeId(null);
+					franchiseeUserInfo.setModelType(null);
+					franchiseeUserInfo.setBatteryType(null);
+					franchiseeUserInfo.setCardId(null);
+					franchiseeUserInfo.setCardName(null);
+					franchiseeUserInfo.setCardType(null);
+					franchiseeUserInfo.setMemberCardExpireTime(null);
+					franchiseeUserInfo.setRemainingNumber(null);
+				}else {
+					franchiseeUserInfo.setRentCarOrderId(null);
+					franchiseeUserInfo.setRentCarDeposit(null);
+					franchiseeUserInfo.setBindCarId(null);
+					franchiseeUserInfo.setBindCarModelId(null);
+					franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+				}
 				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-				franchiseeUserInfo.setBatteryDeposit(null);
-				franchiseeUserInfo.setOrderId(null);
-				franchiseeUserInfo.setFranchiseeId(null);
-				franchiseeUserInfo.setModelType(null);
-				franchiseeUserInfo.setBatteryType(null);
-				franchiseeUserInfo.setCardId(null);
-				franchiseeUserInfo.setCardName(null);
-				franchiseeUserInfo.setCardType(null);
-				franchiseeUserInfo.setMemberCardExpireTime(null);
-				franchiseeUserInfo.setRemainingNumber(null);
-				franchiseeUserInfo.setRentCarOrderId(null);
-				franchiseeUserInfo.setRentCarDeposit(null);
-				franchiseeUserInfo.setBindCarId(null);
-				franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
 				franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
 				return R.ok();
 

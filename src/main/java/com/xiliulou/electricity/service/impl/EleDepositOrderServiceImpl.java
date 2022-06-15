@@ -1163,7 +1163,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR))
                 && Objects.nonNull(franchiseeUserInfo.getRentCarDeposit()) && Objects.nonNull(franchiseeUserInfo.getRentCarOrderId())) {
 
-            if (Objects.equals(franchiseeUserInfo.getOrderId(), "-1")) {
+            if (Objects.equals(franchiseeUserInfo.getRentCarOrderId(), "-1")) {
                 map.put("store", null);
                 map.put("carModel", null);
                 map.put("refundStatus", null);
