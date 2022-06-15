@@ -863,7 +863,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(electricityMemberCard.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
-        electricityMemberCardOrder.setMemberCarModel(ElectricityMemberCardOrder.RENT_CAR_MEMBER_CARD);
+        electricityMemberCardOrder.setMemberCardModel(ElectricityMemberCardOrder.RENT_CAR_MEMBER_CARD);
         baseMapper.insert(electricityMemberCardOrder);
 
 

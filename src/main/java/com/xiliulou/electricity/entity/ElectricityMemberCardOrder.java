@@ -62,7 +62,7 @@ public class ElectricityMemberCardOrder {
     /**
      * 套餐模式 0--电池套餐 1--租车套餐
      */
-    private Integer memberCarModel;
+    private Integer memberCardModel;
 
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
