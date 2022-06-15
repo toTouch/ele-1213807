@@ -94,7 +94,7 @@ public class JsonUserEleDepositOrderController {
 
     //列表查询
     @GetMapping(value = "/user/eleDepositOrder/list")
-    public R queryList() {
+    public R queryList(@RequestParam("productKey") Integer refundOrderType) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -108,6 +108,7 @@ public class JsonUserEleDepositOrderController {
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .uid(user.getUid())
                 .tenantId(tenantId)
+                .refundOrderType(refundOrderType)
                 .offset(0L)
                 .size(10L).build();
 

@@ -34,4 +34,6 @@ public class EleDepositOrderQuery {
     private Integer depositType;
     private Integer payType;
 
+    private Integer refundOrderType;
+
 }

@@ -126,6 +126,9 @@
             <if test="query.uid != null">
                 and edo.uid = #{query.uid}
             </if>
+            <if test="query.refundOrderType != null">
+                and edo.refund_order_type = #{query.refundOrderType}
+            </if>
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}
             </if>

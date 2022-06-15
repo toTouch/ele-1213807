@@ -62,7 +62,7 @@ public class ElectricityCar {
     /**
      * 门店Id
      */
-    private Integer storeId;
+    private Long storeId;
 
     /**
      * 车辆型号Id
