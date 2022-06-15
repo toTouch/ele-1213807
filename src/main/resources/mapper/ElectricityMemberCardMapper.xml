@@ -25,8 +25,8 @@
         <if test="cardModel != null ">
             and temc.card_model = #{cardModel}
         </if>
-        <if test="cardModelId != null ">
-            and temc.car_model_id = #{cardModelId}
+        <if test="carModelId != null ">
+            and temc.car_model_id = #{carModelId}
         </if>
         ORDER BY temc.create_time DESC
         limit #{offset}, #{size}
