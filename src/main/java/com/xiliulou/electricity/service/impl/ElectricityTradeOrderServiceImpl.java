@@ -573,7 +573,6 @@ public class ElectricityTradeOrderServiceImpl extends
             franchiseeUserInfoUpdate.setRentCarDeposit(eleDepositOrder.getPayAmount());
             franchiseeUserInfoUpdate.setRentCarOrderId(eleDepositOrder.getOrderId());
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         }
 

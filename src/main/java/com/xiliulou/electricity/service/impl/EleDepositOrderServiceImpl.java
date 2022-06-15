@@ -1005,6 +1005,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
             return R.ok();
         }
+
+        System.out.println("缴纳押金类型=================="+eleDepositOrder.getDepositType());
+
         eleDepositOrderMapper.insert(eleDepositOrder);
 
         //调起支付
@@ -1098,6 +1101,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfo.setRentCarDeposit(null);
             franchiseeUserInfo.setRentCarOrderId(null);
+            franchiseeUserInfo.setBindCarModelId(null);
+            franchiseeUserInfo.setBindCarId(null);
             franchiseeUserInfoService.update(franchiseeUserInfo);
             return R.ok();
         }
