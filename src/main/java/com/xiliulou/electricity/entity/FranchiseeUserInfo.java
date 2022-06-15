@@ -144,6 +144,16 @@ public class FranchiseeUserInfo {
      */
     private Integer bindCarModelId;
 
+    /**
+     * 租车套餐id
+     */
+    private Integer rentCarCardId;
+
+    /**
+     * 租车月卡过期时间
+     */
+    private Long rentCarMemberCardExpireTime;
+
     //初始化
     public static final Integer STATUS_IS_INIT = 1;
     //已缴纳押金

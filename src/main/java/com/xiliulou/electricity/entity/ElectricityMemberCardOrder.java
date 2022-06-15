@@ -59,11 +59,19 @@ public class ElectricityMemberCardOrder {
      */
     private Integer activityId;
 
+    /**
+     * 套餐模式 0--电池套餐 1--租车套餐
+     */
+    private Integer memberCarModel;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 0;
 
     public static final Integer BIND_ACTIVITY = 1;
     public static final Integer UNBIND_ACTIVITY = 0;
+
+    public static final Integer BATTERY_MEMBER_CARD = 0;
+    public static final Integer RENT_CAR_MEMBER_CARD = 1;
 
 }

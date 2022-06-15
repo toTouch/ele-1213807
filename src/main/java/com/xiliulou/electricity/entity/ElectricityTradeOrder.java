@@ -54,6 +54,9 @@ public class ElectricityTradeOrder {
     //租车押金
     public static final Integer ORDER_TYPE_RENT_CAR_DEPOSIT = 4;
 
+    //租车月卡支付
+    public static final Integer ORDER_TYPE_RENT_MEMBER_CARD = 5;
+
     //押金支付附加信息
     public static final String ATTACH_DEPOSIT = "deposit";
 

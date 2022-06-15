@@ -596,6 +596,97 @@ public class ElectricityTradeOrderServiceImpl extends
     }
 
     @Override
+    public Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource) {
+
+        //回调参数
+        String tradeOrderNo = callBackResource.getOutTradeNo();
+        String tradeState = callBackResource.getTradeState();
+        String transactionId = callBackResource.getTransactionId();
+
+        //交易订单
+        ElectricityTradeOrder electricityTradeOrder = baseMapper.selectTradeOrderByTradeOrderNo(tradeOrderNo);
+        if (Objects.isNull(electricityTradeOrder)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_TRADE_ORDER ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "未找到交易订单!");
+        }
+        if (ObjectUtil.notEqual(ElectricityTradeOrder.STATUS_INIT, electricityTradeOrder.getStatus())) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_TRADE_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", tradeOrderNo);
+            return Pair.of(false, "交易订单已处理");
+        }
+
+        //购卡订单
+        ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderMapper.selectByOrderNo(electricityTradeOrder.getOrderNo());
+        if (ObjectUtil.isEmpty(electricityMemberCardOrder)) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR ,NOT FOUND ELECTRICITY_MEMBER_CARD_ORDER ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "未找到订单!");
+        }
+        if (!ObjectUtil.equal(ElectricityMemberCardOrder.STATUS_INIT, electricityMemberCardOrder.getStatus())) {
+            log.error("NOTIFY_MEMBER_ORDER ERROR , ELECTRICITY_MEMBER_CARD_ORDER  STATUS IS NOT INIT, ORDER_NO:{}", electricityTradeOrder.getOrderNo());
+            return Pair.of(false, "套餐订单已处理!");
+        }
+
+        //成功或失败
+        Integer tradeOrderStatus = ElectricityTradeOrder.STATUS_FAIL;
+        Integer memberOrderStatus = ElectricityMemberCardOrder.STATUS_FAIL;
+        boolean result = false;
+        if (StringUtils.isNotEmpty(tradeState) && ObjectUtil.equal("SUCCESS", tradeState)) {
+            tradeOrderStatus = ElectricityTradeOrder.STATUS_SUCCESS;
+            memberOrderStatus = ElectricityMemberCardOrder.STATUS_SUCCESS;
+            result = true;
+        } else {
+            log.error("NOTIFY REDULT PAY FAIL,ORDER_NO:{}" + tradeOrderNo);
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.selectUserByUid(electricityMemberCardOrder.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("NOTIFY  ERROR,NOT FOUND USERINFO,USERID:{},ORDER_NO:{}", electricityMemberCardOrder.getUid(), tradeOrderNo);
+            return Pair.of(false, "未找到用户信息!");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+            return Pair.of(false, "未找到用户信息!");
+        }
+
+        Long now = System.currentTimeMillis();
+        Long memberCardExpireTime;
+        if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
+            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+            franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+            memberCardExpireTime = System.currentTimeMillis() +
+                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+            franchiseeUserInfoUpdate.setRentCarMemberCardExpireTime(memberCardExpireTime);
+            franchiseeUserInfoUpdate.setRentCarCardId(electricityMemberCardOrder.getMemberCardId());
+            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        }
+
+
+        //交易订单
+        ElectricityTradeOrder electricityTradeOrderUpdate = new ElectricityTradeOrder();
+        electricityTradeOrderUpdate.setId(electricityTradeOrder.getId());
+        electricityTradeOrderUpdate.setStatus(tradeOrderStatus);
+        electricityTradeOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityTradeOrderUpdate.setChannelOrderNo(transactionId);
+        baseMapper.updateById(electricityTradeOrderUpdate);
+
+        //月卡订单
+        ElectricityMemberCardOrder electricityMemberCardOrderUpdate = new ElectricityMemberCardOrder();
+        electricityMemberCardOrderUpdate.setId(electricityMemberCardOrder.getId());
+        electricityMemberCardOrderUpdate.setStatus(memberOrderStatus);
+        electricityMemberCardOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrderMapper.updateById(electricityMemberCardOrderUpdate);
+
+        return Pair.of(result, null);
+
+    }
+
+    @Override
     public ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo) {
         return baseMapper.selectTradeOrderByTradeOrderNo(outTradeNo);
     }

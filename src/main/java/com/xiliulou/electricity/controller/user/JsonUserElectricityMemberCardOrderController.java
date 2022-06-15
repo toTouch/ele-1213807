@@ -87,7 +87,10 @@ public class JsonUserElectricityMemberCardOrderController {
     }
 
 
-
+    @PostMapping("user/memberCard/payRentCarMemberCard")
+    public R payRentCarMemberCard(@RequestBody @Validated(value = CreateGroup.class) ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
+        return electricityMemberCardOrderService.payRentCarMemberCard(electricityMemberCardOrderQuery, request);
+    }
 
 
 

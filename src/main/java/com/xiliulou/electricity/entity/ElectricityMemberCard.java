@@ -56,7 +56,7 @@ public class ElectricityMemberCard {
      * franchiseeId
      */
     @NotNull(message = "加盟商Id不能为空!")
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     /**
      * 是否删除（0-正常，1-删除）

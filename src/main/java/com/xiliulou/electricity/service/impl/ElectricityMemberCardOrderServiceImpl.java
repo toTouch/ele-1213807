@@ -765,6 +765,130 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return eleDisableMemberCardRecordService.list(electricityMemberCardRecordQuery);
     }
 
+    @Override
+    public R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("rentBattery  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //支付相关
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            return R.failMsg("未配置支付参数!");
+        }
+
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            return R.failMsg("未找到用户的第三方授权信息!");
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
+
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("ELECTRICITY  ERROR! user is unUsable! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //未实名认证
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            log.error("ELECTRICITY  ERROR! user not auth! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //判断是否缴纳押金
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)
+                || Objects.isNull(franchiseeUserInfo.getRentCarDeposit()) || Objects.isNull(franchiseeUserInfo.getRentCarOrderId())) {
+            log.error("rentBattery  ERROR! not pay deposit! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(electricityMemberCardOrderQuery.getMemberId());
+        if (Objects.isNull(electricityMemberCard)) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND MEMBER_CARD BY ID:{}", electricityMemberCardOrderQuery.getMemberId());
+            return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
+        }
+        if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
+            log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS UN_USABLE ID:{}", electricityMemberCardOrderQuery.getMemberId());
+            return R.fail("ELECTRICITY.0088", "月卡已禁用!");
+        }
+
+        BigDecimal payAmount = electricityMemberCard.getHolidayPrice();
+
+        //支付金额不能为负数
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
+
+        ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+        electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
+        electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
+        electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_INIT);
+        electricityMemberCardOrder.setMemberCardId(electricityMemberCardOrderQuery.getMemberId());
+        electricityMemberCardOrder.setUid(user.getUid());
+        electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
+        electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
+        electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
+        electricityMemberCardOrder.setPayAmount(payAmount);
+        electricityMemberCardOrder.setUserName(userInfo.getUserName());
+        electricityMemberCardOrder.setValidDays(electricityMemberCard.getValidDays());
+        electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
+        electricityMemberCardOrder.setFranchiseeId(electricityMemberCard.getFranchiseeId());
+        electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
+        electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setMemberCarModel(ElectricityMemberCardOrder.RENT_CAR_MEMBER_CARD);
+        baseMapper.insert(electricityMemberCardOrder);
+
+
+        //调起支付
+        try {
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(electricityMemberCardOrder.getOrderId())
+                    .uid(user.getUid())
+                    .payAmount(electricityMemberCardOrder.getPayAmount())
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_RENT_MEMBER_CARD)
+                    .attach(String.valueOf(electricityMemberCardOrderQuery.getUserCouponId()))
+                    .description("租车月卡收费")
+                    .tenantId(tenantId).build();
+
+            WechatJsapiOrderResultDTO resultDTO =
+                    electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return R.ok(resultDTO);
+        } catch (WechatPayException e) {
+            log.error("CREATE MEMBER_ORDER ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+        }
+
+        return R.fail("ELECTRICITY.0099", "下单失败");
+
+    }
+
     private String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
                 RandomUtil.randomNumbers(6);

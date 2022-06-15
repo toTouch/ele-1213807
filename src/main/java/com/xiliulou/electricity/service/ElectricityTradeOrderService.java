@@ -35,6 +35,9 @@ public interface ElectricityTradeOrderService {
     //租车押金支付回调
     Pair<Boolean, Object> notifyRentCarDepositOrder(WechatJsapiOrderCallBackResource callBackResource);
 
+    //租车月卡回调
+    Pair<Boolean, Object> notifyRentCarMemberOrder(WechatJsapiOrderCallBackResource callBackResource);
+
 
     ElectricityTradeOrder selectTradeOrderByTradeOrderNo(String outTradeNo);
 

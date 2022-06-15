@@ -39,4 +39,6 @@ public interface ElectricityMemberCardOrderService {
     R openOrDisableMemberCard(Integer usableStatus);
 
     R getDisableMemberCardList(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
+
+    R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 }
