@@ -220,17 +220,17 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.nonNull(franchiseeUserInfo.getBindCarId())){
+        if (Objects.nonNull(franchiseeUserInfo.getBindCarId())) {
             log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("100012", "已绑定车辆");
         }
 
-        if (Objects.isNull(franchiseeUserInfo.getRentCarDeposit())){
+        if (Objects.isNull(franchiseeUserInfo.getRentCarDeposit())) {
             log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("100013", "未缴纳租车押金");
         }
 
-        if (Objects.isNull(franchiseeUserInfo.getRentCarCardId())){
+        if (Objects.isNull(franchiseeUserInfo.getRentCarCardId())) {
             log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("100014", "未购买租车套餐");
         }
@@ -247,7 +247,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
 
         //新增操作记录
-        EleBindCarRecord eleBindCarRecord=EleBindCarRecord.builder()
+        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
                 .sn(electricityCar.getSn())
                 .operateUser(user.getUsername())
                 .model(electricityCar.getModel())
@@ -291,7 +291,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.isNull(franchiseeUserInfo.getBindCarId())){
+        if (Objects.isNull(franchiseeUserInfo.getBindCarId())) {
             log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("100012", "已绑定车辆");
         }
@@ -308,7 +308,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
 
         //新增操作记录
-        EleBindCarRecord eleBindCarRecord=EleBindCarRecord.builder()
+        EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
                 .sn(electricityCar.getSn())
                 .operateUser(user.getUsername())
                 .model(electricityCar.getModel())
@@ -326,6 +326,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(null);
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
+
+
+        System.out.println("解绑的车辆======================" + electricityCar);
+
         return R.ok(electricityCarMapper.updateById(electricityCar));
     }
 
