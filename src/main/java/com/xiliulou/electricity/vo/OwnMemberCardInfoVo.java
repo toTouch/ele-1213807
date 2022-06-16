@@ -36,4 +36,6 @@ public class OwnMemberCardInfoVo {
      */
     private Long validDays;
 
+    private String carName;
+
 }

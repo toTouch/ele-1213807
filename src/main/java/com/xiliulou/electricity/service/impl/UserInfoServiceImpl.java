@@ -72,7 +72,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     EleDepositOrderService eleDepositOrderService;
     @Autowired
     FranchiseeService franchiseeService;
-
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -256,6 +257,56 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
             ownMemberCardInfoVo.setValidDays((memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L));
         }
+        return R.ok(ownMemberCardInfoVo);
+    }
+
+    @Override
+    public R getRentCarMemberCardInfo(Long uid) {
+
+        UserInfo userInfo = selectUserByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("GET_MEMBER_CARD_INFO ERROR,NOT FOUND USERINFO,UID:{}", uid);
+            return R.failMsg("未找到用户信息!");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+        //判断是否缴纳押金
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)
+                || Objects.isNull(franchiseeUserInfo.getRentCarDeposit()) || Objects.isNull(franchiseeUserInfo.getRentCarOrderId())) {
+            log.error("returnBattery  ERROR! not pay deposit! uid:{} ", userInfo.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getRentCarCardId());
+        if (Objects.isNull(electricityMemberCard)) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", userInfo.getUid());
+            return R.fail("ELECTRICITY.0022", "未开通月卡");
+        }
+
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(franchiseeUserInfo.getBindCarModelId());
+        if (Objects.isNull(electricityCarModel)) {
+            log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", userInfo.getUid());
+            return R.fail("100005", "未找到车辆型号");
+        }
+
+        Long memberCardExpireTime = franchiseeUserInfo.getRentCarMemberCardExpireTime();
+
+        OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
+        ownMemberCardInfoVo.setMemberCardExpireTime(memberCardExpireTime);
+        ownMemberCardInfoVo.setName(electricityMemberCard.getName());
+        ownMemberCardInfoVo.setCarName(electricityCarModel.getName());
+        ownMemberCardInfoVo.setType(electricityMemberCard.getType());
+        ownMemberCardInfoVo.setDays((long) Math.round((memberCardExpireTime - System.currentTimeMillis()) / (24 * 60 * 60 * 1000L)));
+        ownMemberCardInfoVo.setCardId(franchiseeUserInfo.getRentCarCardId());
         return R.ok(ownMemberCardInfoVo);
     }
 
@@ -736,6 +787,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId,tenantId));
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId));
     }
 }
