@@ -998,6 +998,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(userInfo.getId());
             franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
+            franchiseeUserInfoUpdate.setBatteryDeposit(BigDecimal.valueOf(0));
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoUpdate.setRentCarOrderId(orderId);
             franchiseeUserInfoUpdate.setBindCarModelId(carModelId);
