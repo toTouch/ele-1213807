@@ -27,7 +27,7 @@ public class EleBindCarRecordQuery {
     /**
      * 绑定时间
      */
-    private Long bidTime;
+    private Long bindTime;
 
     /**
      * 车辆sn码

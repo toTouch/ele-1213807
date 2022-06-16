@@ -70,7 +70,7 @@ public class JsonAdminEleBindCarRecordController {
 		EleBindCarRecordQuery eleBindCarRecordQuery = EleBindCarRecordQuery.builder()
 				.offset(offset)
 				.size(size)
-				.bidTime(bindTime)
+				.bindTime(bindTime)
 				.operateName(operateName)
 				.phone(phone)
 				.sn(sn)
