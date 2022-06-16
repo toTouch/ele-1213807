@@ -46,6 +46,8 @@ public class ElectricityCarVO {
      */
     private Integer status;
 
+    private Long uid;
+
     /**
      * 用户名
      */
