@@ -20,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -41,6 +42,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     UserInfoService userInfoService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    EleBindCarRecordService eleBindCarRecordService;
 
 
     /**
@@ -197,6 +200,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY CAR  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到操作用户");
+        }
+
         UserInfo userInfo = userInfoService.queryByUid(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
@@ -210,6 +220,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        if (Objects.nonNull(franchiseeUserInfo.getBindCarId())){
+            log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("100012", "已绑定车辆");
+        }
+
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
@@ -221,11 +236,85 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfoService.update(updateFranchiseeUserInfo);
 
+        //新增操作记录
+        EleBindCarRecord eleBindCarRecord=EleBindCarRecord.builder()
+                .sn(electricityCar.getSn())
+                .operateUser(user.getUsername())
+                .model(electricityCar.getModel())
+                .phone(userInfo.getPhone())
+                .status(EleBindCarRecord.BIND_CAR)
+                .userName(userInfo.getName())
+                .tenantId(electricityCar.getTenantId())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleBindCarRecordService.insert(eleBindCarRecord);
+
         electricityCar.setStatus(ElectricityCar.CAR_IS_RENT);
         electricityCar.setUid(electricityCarBindUser.getUid());
         electricityCar.setPhone(userInfo.getPhone());
         electricityCar.setUserInfoId(userInfo.getId());
         electricityCar.setUserName(userInfo.getName());
+        electricityCar.setUpdateTime(System.currentTimeMillis());
+        return R.ok(electricityCarMapper.updateById(electricityCar));
+    }
+
+    @Override
+    public R unBindUser(ElectricityCarBindUser electricityCarBindUser) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY CAR  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到操作用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUid(electricityCarBindUser.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.isNull(franchiseeUserInfo.getBindCarId())){
+            log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("100012", "已绑定车辆");
+        }
+
+        ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
+        if (Objects.isNull(electricityCar)) {
+            return R.fail("100007", "未找到车辆");
+        }
+
+        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+        updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
+        updateFranchiseeUserInfo.setBindCarId(null);
+        updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+
+        //新增操作记录
+        EleBindCarRecord eleBindCarRecord=EleBindCarRecord.builder()
+                .sn(electricityCar.getSn())
+                .operateUser(user.getUsername())
+                .model(electricityCar.getModel())
+                .phone(userInfo.getPhone())
+                .status(EleBindCarRecord.NOT_BIND_CAR)
+                .userName(userInfo.getName())
+                .tenantId(electricityCar.getTenantId())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleBindCarRecordService.insert(eleBindCarRecord);
+
+        electricityCar.setStatus(ElectricityCar.CAR_NOT_RENT);
+        electricityCar.setUid(null);
+        electricityCar.setPhone(null);
+        electricityCar.setUserInfoId(null);
+        electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
         return R.ok(electricityCarMapper.updateById(electricityCar));
     }

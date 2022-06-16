@@ -28,6 +28,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -147,6 +148,13 @@ public class JsonAdminElectricityCarController {
     //车辆绑定用户
     @PostMapping("/admin/electricityCar/bindUser")
     public R bindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
+        return electricityCarService.bindUser(electricityCarBindUser);
+    }
+
+
+    //用户解绑车辆
+    @PostMapping("/admin/electricityCar/unBindUser")
+    public R unBindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
         return electricityCarService.bindUser(electricityCarBindUser);
     }
 

@@ -8,6 +8,7 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import org.apache.commons.lang3.tuple.Pair;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,6 +43,8 @@ public interface ElectricityCarService {
     R queryCount(ElectricityCarQuery electricityCarQuery);
 
     R bindUser(ElectricityCarBindUser electricityCarBindUser);
+
+    R unBindUser(ElectricityCarBindUser electricityCarBindUser);
 
 
 }

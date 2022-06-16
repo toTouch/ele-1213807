@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleBindCarRecordMapper">
+
+
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.EleBindCarRecord">
+        select * from t_ele_bind_car_record
+        <where>
+            <if test="query.operateName != null and query.operateName !=''">
+                and operate_name =#{query.operateName}
+            </if>
+            <if test="query.bindTime != null">
+                and create_time =#{query.bindTime}
+            </if>
+            <if test="query.sn != null and query.sn != ''">
+                and sn =#{query.sn}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and phone =#{query.phone}
+            </if>
+            <if test="query.tenantId != null">
+                and tenant_id =#{query.tenantId}
+            </if>
+        </where>
+    </select>
+
+
+</mapper>
