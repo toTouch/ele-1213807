@@ -155,7 +155,7 @@ public class JsonAdminElectricityCarController {
     //用户解绑车辆
     @PostMapping("/admin/electricityCar/unBindUser")
     public R unBindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
-        return electricityCarService.bindUser(electricityCarBindUser);
+        return electricityCarService.unBindUser(electricityCarBindUser);
     }
 
 }

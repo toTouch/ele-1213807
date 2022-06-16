@@ -225,6 +225,16 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100012", "已绑定车辆");
         }
 
+        if (Objects.isNull(franchiseeUserInfo.getRentCarDeposit())){
+            log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("100013", "未缴纳租车押金");
+        }
+
+        if (Objects.isNull(franchiseeUserInfo.getRentCarCardId())){
+            log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("100014", "未购买租车套餐");
+        }
+
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
