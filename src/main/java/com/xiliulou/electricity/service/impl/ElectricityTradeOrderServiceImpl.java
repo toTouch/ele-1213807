@@ -656,14 +656,13 @@ public class ElectricityTradeOrderServiceImpl extends
         Long memberCardExpireTime;
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
 
-            if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
+            if (Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) || franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
                 memberCardExpireTime = System.currentTimeMillis() +
                         electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             } else {
-                memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
+                memberCardExpireTime = franchiseeUserInfo.getRentCarMemberCardExpireTime() +
                         electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             }
-
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
             franchiseeUserInfoUpdate.setRentCarMemberCardExpireTime(memberCardExpireTime);
