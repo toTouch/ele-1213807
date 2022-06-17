@@ -1106,6 +1106,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfo.setRentCarOrderId(null);
             franchiseeUserInfo.setBindCarModelId(null);
             franchiseeUserInfo.setBindCarId(null);
+            franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
             franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
             return R.ok();
         }

@@ -101,7 +101,8 @@
             update_time = #{updateTime},
             rent_car_order_id=#{rentCarOrderId},
             bind_car_model_id=#{bindCarModelId},
-            rent_car_deposit=#{rentCarDeposit}
+            rent_car_deposit=#{rentCarDeposit},
+            rent_car_member_card_expire_time=#{rentCarMemberCardExpireTime}
         where id = #{id} and del_flag=0
     </update>
 
