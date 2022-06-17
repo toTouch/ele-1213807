@@ -268,4 +268,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     public void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo) {
         franchiseeUserInfoMapper.modifyRentCarStatus(franchiseeUserInfo);
     }
+
+    @Override
+    public void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.modifyRentCarStatusByUserInfoId(franchiseeUserInfo);
+    }
 }

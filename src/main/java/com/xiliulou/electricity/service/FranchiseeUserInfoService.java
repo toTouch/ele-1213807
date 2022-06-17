@@ -58,4 +58,6 @@ public interface FranchiseeUserInfoService {
     void updateRentCar(FranchiseeUserInfo franchiseeUserInfo);
 
     void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo);
+
+    void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 }
