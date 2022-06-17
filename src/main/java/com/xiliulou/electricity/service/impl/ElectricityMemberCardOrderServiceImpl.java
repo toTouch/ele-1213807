@@ -845,7 +845,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             payAmount = BigDecimal.valueOf(0);
         }
 
-
         ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());

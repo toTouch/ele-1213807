@@ -652,14 +652,20 @@ public class ElectricityTradeOrderServiceImpl extends
             log.error("payDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return Pair.of(false, "未找到用户信息!");
         }
-
         Long now = System.currentTimeMillis();
         Long memberCardExpireTime;
+
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime()) || franchiseeUserInfo.getMemberCardExpireTime() < now) {
+            memberCardExpireTime = System.currentTimeMillis() +
+                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        } else {
+            memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime() +
+                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
+        }
+
         if (Objects.equals(memberOrderStatus, EleDepositOrder.STATUS_SUCCESS)) {
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-            memberCardExpireTime = System.currentTimeMillis() +
-                    electricityMemberCardOrder.getValidDays() * (24 * 60 * 60 * 1000L);
             franchiseeUserInfoUpdate.setRentCarMemberCardExpireTime(memberCardExpireTime);
             franchiseeUserInfoUpdate.setRentCarCardId(electricityMemberCardOrder.getMemberCardId());
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
