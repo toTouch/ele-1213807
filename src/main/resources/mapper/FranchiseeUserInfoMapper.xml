@@ -88,7 +88,7 @@
 
     <update id="updateRentCar">
         update t_franchisee_user_info
-        set rent_car_status = #{RentCarStatus},
+        set rent_car_status = #{rentCarStatus},
             bind_car_id=#{bindCarId},
             update_time = #{updateTime}
         where id = #{id} and del_flag=0
