@@ -56,4 +56,6 @@ public interface FranchiseeUserInfoService {
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
 
     void updateRentCar(FranchiseeUserInfo franchiseeUserInfo);
+
+    void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo);
 }
