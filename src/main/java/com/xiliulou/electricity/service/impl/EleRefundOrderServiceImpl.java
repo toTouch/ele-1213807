@@ -207,6 +207,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 franchiseeUserInfo.setBindCarModelId(null);
                 franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
                 franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+                franchiseeUserInfo.setRentCarCardId(null);
                 franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
                 franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
             }
@@ -296,6 +297,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
                     franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
                     franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+                    franchiseeUserInfo.setRentCarCardId(null);
                     franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(franchiseeUserInfo);
                 }
                 return R.ok();
