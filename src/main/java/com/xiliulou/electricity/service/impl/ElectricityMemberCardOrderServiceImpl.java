@@ -838,7 +838,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
-        if (Objects.nonNull(franchiseeUserInfo.getRentCarCardId()) && Objects.equals(franchiseeUserInfo.getRentCarCardId(),electricityMemberCardOrderQuery.getMemberId())) {
+        if (Objects.nonNull(franchiseeUserInfo.getRentCarCardId()) && !Objects.equals(franchiseeUserInfo.getRentCarCardId(), electricityMemberCardOrderQuery.getMemberId())) {
             log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
             return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
         }
