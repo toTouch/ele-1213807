@@ -293,7 +293,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         if (Objects.isNull(franchiseeUserInfo.getBindCarId())) {
             log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
-            return R.fail("100012", "已绑定车辆");
+            return R.fail("100015", "用户未绑定车辆");
         }
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
