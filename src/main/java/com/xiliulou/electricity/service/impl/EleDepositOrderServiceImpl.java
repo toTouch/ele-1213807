@@ -1074,6 +1074,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
+
+
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getRentCarOrderId()));
         if (Objects.isNull(eleDepositOrder)) {

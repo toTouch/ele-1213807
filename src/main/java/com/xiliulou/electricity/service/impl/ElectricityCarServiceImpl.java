@@ -305,6 +305,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setBindCarId(null);
         updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+        updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
         franchiseeUserInfoService.updateRentCar(updateFranchiseeUserInfo);
 
         //新增操作记录
