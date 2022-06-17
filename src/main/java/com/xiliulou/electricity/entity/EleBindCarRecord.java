@@ -76,7 +76,7 @@ public class EleBindCarRecord {
     private String binCarNo;
 
     public static final Integer BIND_CAR = 0;
-    public static final Integer NOT_BIND_CAR = 0;
+    public static final Integer NOT_BIND_CAR = 1;
 
 
 }
