@@ -259,5 +259,10 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         return eleBatteryServiceFeeVO;
     }
 
+    @Override
+    public void updateRentCar(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateRentCar(franchiseeUserInfo);
+    }
+
 
 }

@@ -70,4 +70,16 @@
     </select>
 
 
+    <update id="updateBindUser">
+        update t_electricity_car set
+        status=#{status},
+        uid=#{uid},
+        phone=#{phone},
+        user_info_id=#{userInfoId},
+        user_name=#{userName},
+        update_time=#{updateTime}
+        where id=#{id}
+    </update>
+
+
 </mapper>

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCar;
+import com.xiliulou.electricity.query.EleBindCarRecordQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -25,5 +26,7 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
     List<ElectricityCarVO> queryList(@Param("query") ElectricityCarQuery electricityCarQuery);
 
     Integer queryCount(@Param("query") ElectricityCarQuery electricityCarQuery);
+
+    Integer updateBindUser(ElectricityCar electricityCar);
 
 }

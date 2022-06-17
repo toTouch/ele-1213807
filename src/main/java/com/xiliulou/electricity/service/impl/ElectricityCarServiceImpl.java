@@ -305,7 +305,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setBindCarId(null);
         updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.update(updateFranchiseeUserInfo);
+        franchiseeUserInfoService.updateRentCar(updateFranchiseeUserInfo);
 
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
@@ -326,11 +326,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserInfoId(null);
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
-
-
-        System.out.println("解绑的车辆======================" + electricityCar);
-
-        return R.ok(electricityCarMapper.updateById(electricityCar));
+        return R.ok(electricityCarMapper.updateBindUser(electricityCar));
     }
 
 

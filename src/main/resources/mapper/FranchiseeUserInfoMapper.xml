@@ -85,4 +85,12 @@
                 left join t_user_info tu on tf.user_info_id=tu.id where tu.uid=#{uid} and tf.del_flag=0
     </select>
 
+
+    <update id="updateRentCar">
+        update t_franchisee_user_info
+        set rent_car_status = #{RentCarStatus},
+            update_time = #{updateTime}
+        where id = #{id} and del_flag=0
+    </update>
+
 </mapper>
