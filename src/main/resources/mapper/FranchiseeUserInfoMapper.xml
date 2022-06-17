@@ -99,7 +99,7 @@
         set rent_car_status = #{rentCarStatus},
             bind_car_id=#{bindCarId},
             update_time = #{updateTime},
-            rent_car_order=#{rentCarOrderId},
+            rent_car_order_id=#{rentCarOrderId},
             bind_car_model_id=#{bindCarModelId},
             rent_car_deposit=#{rentCarDeposit}
         where id = #{id} and del_flag=0
