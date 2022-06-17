@@ -1070,11 +1070,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if (Objects.equals(oldFranchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)) {
-            log.error("returnRentCarDeposit  ERROR! user is rent deposit! ,uid:{} ", user.getUid());
+            log.error("returnRentCarDeposit  ERROR! user is not rent deposit! ,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-
+        if (Objects.equals(oldFranchiseeUserInfo.getRentCarStatus(),FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)){
+            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", user.getUid());
+            return R.fail("100012", "用户绑定车辆");
+        }
 
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getRentCarOrderId()));
