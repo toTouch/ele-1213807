@@ -6,6 +6,8 @@ import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCar;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.ElectricityCarVO;
 import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
@@ -45,6 +47,8 @@ public interface ElectricityCarService {
     R bindUser(ElectricityCarBindUser electricityCarBindUser);
 
     R unBindUser(ElectricityCarBindUser electricityCarBindUser);
+
+    ElectricityCarVO queryInfoByUid(Long uid);
 
 
 }

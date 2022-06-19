@@ -13,6 +13,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -329,6 +330,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         electricityCar.setUserName(null);
         electricityCar.setUpdateTime(System.currentTimeMillis());
         return R.ok(electricityCarMapper.updateBindUser(electricityCar));
+    }
+
+    @Override
+    public ElectricityCarVO queryInfoByUid(Long uid) {
+        return electricityCarMapper.selectElectricityCarInfo(uid);
     }
 
 

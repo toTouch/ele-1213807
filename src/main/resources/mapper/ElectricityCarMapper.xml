@@ -21,9 +21,9 @@
         <if test="query.status != null ">
             and tec.status = #{query.status}
         </if>
-		<if test="query.phone != null and query.phone != '' ">
-			and tec.phone = #{query.phone}
-		</if>
+        <if test="query.phone != null and query.phone != '' ">
+            and tec.phone = #{query.phone}
+        </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.store_id}
         </if>
@@ -80,6 +80,10 @@
         update_time=#{updateTime}
         where id=#{id}
     </update>
+
+    <select id="selectElectricityCarInfo" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
+        select sn,model from t_electricity_car where uid=#{uid}
+    </select>
 
 
 </mapper>
