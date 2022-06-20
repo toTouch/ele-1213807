@@ -3,13 +3,12 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityCabinetFile;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.StoreGoods;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreGoodsMapper;
+import com.xiliulou.electricity.query.ElectricityCarQuery;
 import com.xiliulou.electricity.query.StoreShopsQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
+import com.xiliulou.electricity.service.ElectricityCarService;
 import com.xiliulou.electricity.service.StoreGoodsService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -49,6 +48,8 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     @Override
     public R insert(StoreGoods storeGoods) {
@@ -57,9 +58,9 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
-        StoreGoods oleStoreGoods=queryByStoreIdAndCarModelId(storeGoods.getStoreId(),storeGoods.getCarModelId());
-        if (Objects.nonNull(oleStoreGoods)){
-            return R.fail("100010","已添加此型号车辆押金");
+        StoreGoods oleStoreGoods = queryByStoreIdAndCarModelId(storeGoods.getStoreId(), storeGoods.getCarModelId());
+        if (Objects.nonNull(oleStoreGoods)) {
+            return R.fail("100010", "已添加此型号车辆押金");
         }
 
         //租户
@@ -106,11 +107,18 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             return R.ok(storeGoodsList);
         }
 
+
         List<StoreGoodsVO> storeGoodsVOList = new ArrayList<>();
         for (StoreGoodsVO storeGoods : storeGoodsList) {
             StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
             BeanUtils.copyProperties(storeGoods, storeGoodsVO);
 
+            ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
+                    .tenantId(storeGoods.getTenantId())
+                    .storeId(storeGoods.getStoreId())
+                    .status(ElectricityCar.CAR_NOT_RENT).build();
+            Integer carInventory = (Integer) electricityCarService.queryCount(electricityCarQuery).getData();
+            storeGoodsVO.setCarInventory(carInventory);
             //图片显示
             List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
             if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {

@@ -33,7 +33,7 @@ public class ElectricityCarQuery {
     /**
      * 门店Id
      */
-    private Integer storeId;
+    private Long storeId;
 
     /**
      * 手机号

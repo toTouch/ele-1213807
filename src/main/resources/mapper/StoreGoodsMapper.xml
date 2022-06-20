@@ -8,7 +8,7 @@
             resultType="com.xiliulou.electricity.vo.StoreGoodsVO">
         select
         tsg.id, tsg.name, tsg.price,tsg.discount_price, tsg.del_flag,
-        tsg.create_time, tsg.update_time,tsg.tenant_id,tsg.store_id,tsg.car_inventory , tsg.car_model_id,tecm.name as carModel
+        tsg.create_time, tsg.update_time,tsg.tenant_id,tsg.store_id, tsg.car_model_id,tecm.name as carModel
         from t_store_goods tsg left join t_electricity_car_model tecm on tsg.car_model_id=tecm.id
         where tsg.del_flag=0
         <if test="query.name != null and query.name != ''">
