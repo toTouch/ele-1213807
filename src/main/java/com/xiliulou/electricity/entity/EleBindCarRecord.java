@@ -27,6 +27,11 @@ public class EleBindCarRecord {
     private Long id;
 
     /**
+     * 车辆Id
+     */
+    private Integer carId;
+
+    /**
      * 车辆sn码
      */
     private String sn;

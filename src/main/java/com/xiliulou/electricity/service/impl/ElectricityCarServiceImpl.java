@@ -250,6 +250,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
+                .carId(electricityCar.getId())
                 .sn(electricityCar.getSn())
                 .operateUser(user.getUsername())
                 .model(electricityCar.getModel())
@@ -312,6 +313,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
         //新增操作记录
         EleBindCarRecord eleBindCarRecord = EleBindCarRecord.builder()
+                .carId(electricityCar.getId())
                 .sn(electricityCar.getSn())
                 .operateUser(user.getUsername())
                 .model(electricityCar.getModel())

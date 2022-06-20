@@ -35,27 +35,61 @@ import java.util.Objects;
 @Slf4j
 public class JsonAdminEleBindCarRecordController {
 
-	@Autowired
-	EleBindCarRecordService eleBindCarRecordService;
+    @Autowired
+    EleBindCarRecordService eleBindCarRecordService;
 
+
+    //列表查询
+    @GetMapping(value = "/admin/bindCarRecord/list")
+    public R queryList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "operateName", required = false) String operateName,
+                       @RequestParam(value = "sn", required = false) String sn,
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "bindTime", required = false) Long bindTime,
+                       @RequestParam(value = "id", required = false) Integer id,
+                       @RequestParam(value = "carId", required = false) Integer carId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+
+        EleBindCarRecordQuery eleBindCarRecordQuery = EleBindCarRecordQuery.builder()
+                .offset(offset)
+                .size(size)
+                .bindTime(bindTime)
+                .operateName(operateName)
+                .phone(phone)
+                .sn(sn)
+                .id(id)
+				.carId(carId)
+                .tenantId(tenantId).build();
+
+        return eleBindCarRecordService.queryList(eleBindCarRecordQuery);
+    }
 
 	//列表查询
-	@GetMapping(value = "/admin/bindCarRecord/list")
-	public R queryList(@RequestParam("size") Long size,
-					   @RequestParam("offset") Long offset,
-					   @RequestParam(value = "operateName", required = false) String operateName,
+	@GetMapping(value = "/admin/bindCarRecord/queryCount")
+	public R queryCount(@RequestParam(value = "operateName", required = false) String operateName,
 					   @RequestParam(value = "sn", required = false) String sn,
 					   @RequestParam(value = "phone", required = false) String phone,
 					   @RequestParam(value = "bindTime", required = false) Long bindTime,
-					   @RequestParam(value = "id", required = false) Integer id) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-
-		if (offset < 0) {
-			offset = 0L;
-		}
-
+					   @RequestParam(value = "id", required = false) Integer id,
+					   @RequestParam(value = "carId", required = false) Integer carId) {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -68,16 +102,15 @@ public class JsonAdminEleBindCarRecordController {
 
 
 		EleBindCarRecordQuery eleBindCarRecordQuery = EleBindCarRecordQuery.builder()
-				.offset(offset)
-				.size(size)
 				.bindTime(bindTime)
 				.operateName(operateName)
 				.phone(phone)
 				.sn(sn)
 				.id(id)
+				.carId(carId)
 				.tenantId(tenantId).build();
 
-		return eleBindCarRecordService.queryList(eleBindCarRecordQuery);
+		return eleBindCarRecordService.queryCount(eleBindCarRecordQuery);
 	}
 
 }

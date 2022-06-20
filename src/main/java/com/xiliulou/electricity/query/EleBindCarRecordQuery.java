@@ -35,6 +35,11 @@ public class EleBindCarRecordQuery {
     private String sn;
 
     /**
+     * 车辆Id
+     */
+    private Integer carId;
+
+    /**
      * 用户手机号
      */
     private String phone;

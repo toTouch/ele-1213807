@@ -57,4 +57,9 @@ public class EleBindCarRecordServiceImpl extends ServiceImpl<EleBindCarRecordMap
     public R queryList(EleBindCarRecordQuery eleBindCarRecordQuery) {
         return R.ok(eleBindCarRecordMapper.queryList(eleBindCarRecordQuery));
     }
+
+    @Override
+    public R queryCount(EleBindCarRecordQuery eleBindCarRecordQuery) {
+        return R.ok(eleBindCarRecordMapper.queryCount(eleBindCarRecordQuery));
+    }
 }
