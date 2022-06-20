@@ -2008,18 +2008,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         Double fullyCharged = electricityCabinet.getFullyCharged();
 
-        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
-            electricityCabinetBoxes.parallelStream().forEach(item->{
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
+        if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            electricityCabinetBoxList.parallelStream().forEach(item -> {
 
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                 BeanUtils.copyProperties(item, electricityCabinetBoxVO);
-                electricityCabinetBoxVO.setExchange(item.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
+
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(item.getSn());
+                if (!Objects.isNull(electricityBattery)) {
+                    electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+                    electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
+                }
 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
             });
         }
-
         return R.ok(electricityCabinetBoxVOList);
     }
 }
