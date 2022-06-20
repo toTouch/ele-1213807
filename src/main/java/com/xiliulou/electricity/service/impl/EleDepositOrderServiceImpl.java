@@ -1196,7 +1196,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 if (Objects.isNull(eleDepositOrder)) {
                     map.put("store", null);
                     map.put("carModel", null);
+                    map.put("payType",null);
                 } else {
+                    map.put("payType",eleDepositOrder.getPayType().toString());
                     Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
                     if (Objects.nonNull(store)) {
                         map.put("store", store.getName());
