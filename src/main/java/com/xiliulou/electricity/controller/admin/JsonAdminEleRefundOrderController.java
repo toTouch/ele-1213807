@@ -103,5 +103,15 @@ public class JsonAdminEleRefundOrderController {
 		return eleRefundOrderService.handleRefund(refundOrderNo,errMsg, status, refundAmount,request);
 	}
 
+	//后台退款处理
+	@PostMapping("/admin/handleOffLineRefund")
+	public R handleOffLineRefund(@RequestParam("refundOrderNo") String refundOrderNo,
+								 @RequestParam("status") Integer status,
+								 @RequestParam(value = "errMsg", required = false) String errMsg,
+								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+								 HttpServletRequest request){
+		return eleRefundOrderService.handleOffLineRefund(refundOrderNo,errMsg,status,refundAmount,request);
+	}
+
 
 }
