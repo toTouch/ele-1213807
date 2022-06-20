@@ -116,6 +116,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                     .tenantId(storeGoods.getTenantId())
                     .storeId(storeGoods.getStoreId())
+                    .model(storeGoods.getCarModel())
                     .status(ElectricityCar.CAR_NOT_RENT).build();
             Integer carInventory = (Integer) electricityCarService.queryCount(electricityCarQuery).getData();
             storeGoodsVO.setCarInventory(carInventory);
