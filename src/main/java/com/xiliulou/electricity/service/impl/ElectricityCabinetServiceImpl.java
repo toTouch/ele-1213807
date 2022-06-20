@@ -1998,7 +1998,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId) {
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
+        List<ElectricityCabinetBoxVO> resultList = Lists.newArrayList();
 
         ElectricityCabinet electricityCabinet = queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
@@ -2010,8 +2010,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
-            electricityCabinetBoxList.parallelStream().forEach(item -> {
+            List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
 
+            electricityCabinetBoxList.parallelStream().forEach(item -> {
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                 BeanUtils.copyProperties(item, electricityCabinetBoxVO);
 
@@ -2023,7 +2024,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
             });
+
+            //排序
+            if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo)).collect(Collectors.toList());
+            }
+
         }
-        return R.ok(electricityCabinetBoxVOList);
+        return R.ok(resultList);
     }
 }
