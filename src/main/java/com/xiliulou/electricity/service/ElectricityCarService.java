@@ -48,7 +48,7 @@ public interface ElectricityCarService {
 
     R unBindUser(ElectricityCarBindUser electricityCarBindUser);
 
-    ElectricityCarVO queryInfoByUid(Long uid);
+    ElectricityCar queryInfoByUid(Long uid);
 
 
 }

@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -335,8 +336,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     }
 
     @Override
-    public ElectricityCarVO queryInfoByUid(Long uid) {
-        return electricityCarMapper.selectElectricityCarInfo(uid);
+    public ElectricityCar queryInfoByUid(Long uid) {
+        return electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getUid, uid));
     }
 
 

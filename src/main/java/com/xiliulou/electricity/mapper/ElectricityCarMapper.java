@@ -30,6 +30,4 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
 
     Integer updateBindUser(ElectricityCar electricityCar);
 
-    ElectricityCarVO selectElectricityCarInfo(@Param("uid") Long uid);
-
 }
