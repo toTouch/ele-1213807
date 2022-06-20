@@ -843,7 +843,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         }
 
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
             log.error("payCarDeposit  ERROR! user is rent deposit! ,uid:{} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
@@ -942,7 +942,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         }
 
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT)) {
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
             log.error("payCarDeposit  ERROR! user is rent deposit! ,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
@@ -1077,7 +1077,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        if (Objects.equals(oldFranchiseeUserInfo.getRentCarStatus(),FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)){
+        if (Objects.equals(oldFranchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
             log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", user.getUid());
             return R.fail("100012", "用户绑定车辆");
         }
