@@ -61,7 +61,7 @@ public class JsonUserElectricityCabinetMemberCardController {
 
 
 	/**
-	 * 月卡分页
+	 * 租车月卡分页
 	 *
 	 * @param
 	 * @return

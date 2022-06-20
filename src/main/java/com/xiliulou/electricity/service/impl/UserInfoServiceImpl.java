@@ -300,6 +300,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         Long memberCardExpireTime = franchiseeUserInfo.getRentCarMemberCardExpireTime();
 
+        if (Objects.isNull(memberCardExpireTime) || System.currentTimeMillis() >= memberCardExpireTime) {
+            return R.ok();
+        }
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
         ownMemberCardInfoVo.setMemberCardExpireTime(memberCardExpireTime);
         ownMemberCardInfoVo.setName(electricityMemberCard.getName());
