@@ -22,7 +22,7 @@
                 and tenant_id =#{query.tenantId}
             </if>
             <if test="query.carId !=null">
-                and car_id=#{carId}
+                and car_id=#{query.carId}
             </if>
         </where>
     </select>
@@ -46,7 +46,7 @@
                 and tenant_id =#{query.tenantId}
             </if>
             <if test="query.carId !=null">
-                and car_id=#{carId}
+                and car_id=#{query.carId}
             </if>
         </where>
     </select>
