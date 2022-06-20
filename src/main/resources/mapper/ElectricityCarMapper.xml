@@ -25,7 +25,7 @@
             and tec.phone = #{query.phone}
         </if>
         <if test="query.storeId != null ">
-            and tec.store_id = #{query.store_id}
+            and tec.store_id = #{query.storeId}
         </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tfui.now_electricity_battery_sn = #{query.batterySn}
@@ -58,7 +58,7 @@
             and tec.status = #{query.status}
         </if>
         <if test="query.storeId != null ">
-            and tec.store_id = #{query.store_id}
+            and tec.store_id = #{query.storeId}
         </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tec.battery_sn = #{query.batterySn}
