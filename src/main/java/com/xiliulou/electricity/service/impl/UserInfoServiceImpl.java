@@ -288,8 +288,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getRentCarCardId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("ELECTRICITY  ERROR! not found memberCard ! uid:{} ", userInfo.getUid());
-            return R.fail("100014", "未开通租车套餐");
+            return R.ok();
         }
 
         ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(franchiseeUserInfo.getBindCarModelId());
