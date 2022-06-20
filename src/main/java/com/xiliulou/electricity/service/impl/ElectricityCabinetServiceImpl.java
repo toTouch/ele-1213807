@@ -9,6 +9,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.json.Json;
+import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.google.gson.JsonObject;
 import com.xiliulou.cache.redis.RedisService;
@@ -29,6 +30,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.iot.entity.AliIotRsp;
@@ -46,6 +48,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -1991,5 +1994,31 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
         }
         return update;
+    }
+
+    @Override
+    public R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId) {
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
+
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        Double fullyCharged = electricityCabinet.getFullyCharged();
+
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
+        if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+            for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxes) {
+
+                ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
+                BeanUtils.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
+                electricityCabinetBoxVO.setExchange(electricityCabinetBox.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
+
+                electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+            }
+        }
+
+        return R.ok(electricityCabinetBoxVOList);
     }
 }

@@ -161,7 +161,14 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		return electricityCabinetService.queryByOrder(productKey, deviceName);
 	}
 
+	/**
+	 * 查询换电柜 电池详情
+	 */
+	@GetMapping(value="/user/electricityCabinetBoxInfo/{electricityCabinetId}")
+	public R queryElectricityCabinetBoxInfoById(@PathVariable("electricityCabinetId") Integer electricityCabinetId){
 
+		return electricityCabinetService.queryElectricityCabinetBoxInfoById(electricityCabinetId);
+	}
 
 
 }
