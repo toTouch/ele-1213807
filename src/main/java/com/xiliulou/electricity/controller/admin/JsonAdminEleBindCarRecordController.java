@@ -43,12 +43,13 @@ public class JsonAdminEleBindCarRecordController {
     @GetMapping(value = "/admin/bindCarRecord/list")
     public R queryList(@RequestParam("size") Long size,
                        @RequestParam("offset") Long offset,
-                       @RequestParam(value = "operateName", required = false) String operateName,
+                       @RequestParam(value = "operateUser", required = false) String operateUser,
                        @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "bindTime", required = false) Long bindTime,
                        @RequestParam(value = "id", required = false) Integer id,
-                       @RequestParam(value = "carId", required = false) Integer carId) {
+                       @RequestParam(value = "carId", required = false) Integer carId,
+                       @RequestParam(value = "status", required = false) Integer status) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -72,45 +73,48 @@ public class JsonAdminEleBindCarRecordController {
                 .offset(offset)
                 .size(size)
                 .bindTime(bindTime)
-                .operateName(operateName)
+                .operateUser(operateUser)
                 .phone(phone)
                 .sn(sn)
                 .id(id)
-				.carId(carId)
+                .carId(carId)
+                .status(status)
                 .tenantId(tenantId).build();
 
         return eleBindCarRecordService.queryList(eleBindCarRecordQuery);
     }
 
-	//列表查询
-	@GetMapping(value = "/admin/bindCarRecord/queryCount")
-	public R queryCount(@RequestParam(value = "operateName", required = false) String operateName,
-					   @RequestParam(value = "sn", required = false) String sn,
-					   @RequestParam(value = "phone", required = false) String phone,
-					   @RequestParam(value = "bindTime", required = false) Long bindTime,
-					   @RequestParam(value = "id", required = false) Integer id,
-					   @RequestParam(value = "carId", required = false) Integer carId) {
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+    //列表查询
+    @GetMapping(value = "/admin/bindCarRecord/queryCount")
+    public R queryCount(@RequestParam(value = "operateUser", required = false) String operateUser,
+                        @RequestParam(value = "sn", required = false) String sn,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "bindTime", required = false) Long bindTime,
+                        @RequestParam(value = "id", required = false) Integer id,
+                        @RequestParam(value = "carId", required = false) Integer carId,
+                        @RequestParam(value = "status", required = false) Integer status) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-		//用户区分
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
 
-		EleBindCarRecordQuery eleBindCarRecordQuery = EleBindCarRecordQuery.builder()
-				.bindTime(bindTime)
-				.operateName(operateName)
-				.phone(phone)
-				.sn(sn)
-				.id(id)
-				.carId(carId)
-				.tenantId(tenantId).build();
+        EleBindCarRecordQuery eleBindCarRecordQuery = EleBindCarRecordQuery.builder()
+                .bindTime(bindTime)
+                .operateUser(operateUser)
+                .phone(phone)
+                .sn(sn)
+                .id(id)
+                .carId(carId)
+				.status(status)
+                .tenantId(tenantId).build();
 
-		return eleBindCarRecordService.queryCount(eleBindCarRecordQuery);
-	}
+        return eleBindCarRecordService.queryCount(eleBindCarRecordQuery);
+    }
 
 }

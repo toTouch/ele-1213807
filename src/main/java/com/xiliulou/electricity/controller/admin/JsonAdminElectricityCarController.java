@@ -79,7 +79,8 @@ public class JsonAdminElectricityCarController {
                        @RequestParam(value = "storeId", required = false) Integer storeId,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "batterySn", required = false) String batterySn,
-                       @RequestParam(value = "createTime", required = false) Long createTime) {
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -107,7 +108,8 @@ public class JsonAdminElectricityCarController {
                 .status(status)
                 .storeId(storeId)
                 .batterySn(batterySn)
-                .createTime(createTime)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .tenantId(tenantId).build();
         return electricityCarService.queryList(electricityCarQuery);
     }
@@ -120,7 +122,8 @@ public class JsonAdminElectricityCarController {
                         @RequestParam(value = "storeId", required = false) Integer storeId,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "batterySn", required = false) String batterySn,
-                        @RequestParam(value = "createTime", required = false) Long createTime) {
+                        @RequestParam(value = "beginTime", required = false) Long beginTime,
+                        @RequestParam(value = "endTime", required = false) Long endTime) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -139,7 +142,8 @@ public class JsonAdminElectricityCarController {
                 .status(status)
                 .storeId(storeId)
                 .batterySn(batterySn)
-                .createTime(createTime)
+                .beginTime(beginTime)
+                .endTime(endTime)
                 .tenantId(tenantId).build();
 
         return electricityCarService.queryCount(electricityCarQuery);

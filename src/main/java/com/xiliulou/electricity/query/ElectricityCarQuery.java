@@ -45,10 +45,8 @@ public class ElectricityCarQuery {
      */
     private String batterySn;
 
-    /**
-     * 创建时间
-     */
-    private Long createTime;
+    private Long beginTime;
+    private Long endTime;
 
     private Integer tenantId;
 

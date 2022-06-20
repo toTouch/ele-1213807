@@ -22,7 +22,7 @@ public class EleBindCarRecordQuery {
     /**
      * 操作人
      */
-    private String operateName;
+    private String operateUser;
 
     /**
      * 绑定时间
@@ -45,5 +45,7 @@ public class EleBindCarRecordQuery {
     private String phone;
 
     private Integer tenantId;
+
+    private Integer status;
 
 }

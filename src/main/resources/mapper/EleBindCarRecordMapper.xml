@@ -6,8 +6,8 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleBindCarRecord">
         select * from t_ele_bind_car_record
         <where>
-            <if test="query.operateName != null and query.operateName !=''">
-                and operate_name =#{query.operateName}
+            <if test="query.operateUser != null and query.operateUser !=''">
+                and operate_user =#{query.operateUser}
             </if>
             <if test="query.bindTime != null">
                 and create_time =#{query.bindTime}
@@ -23,6 +23,9 @@
             </if>
             <if test="query.carId !=null">
                 and car_id=#{query.carId}
+            </if>
+            <if test="query.status !=null">
+                and status=#{query.status}
             </if>
         </where>
     </select>
@@ -30,8 +33,8 @@
     <select id="queryCount" resultType="integer">
         select count(1) from t_ele_bind_car_record
         <where>
-            <if test="query.operateName != null and query.operateName !=''">
-                and operate_name =#{query.operateName}
+            <if test="query.operateUser != null and query.operateUser !=''">
+                and operate_user =#{query.operateUser}
             </if>
             <if test="query.bindTime != null">
                 and create_time =#{query.bindTime}
@@ -47,6 +50,9 @@
             </if>
             <if test="query.carId !=null">
                 and car_id=#{query.carId}
+            </if>
+            <if test="query.status !=null">
+                and status=#{query.status}
             </if>
         </where>
     </select>
