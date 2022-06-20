@@ -2002,6 +2002,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         ElectricityCabinet electricityCabinet = queryByIdFromCache(electricityCabinetId);
         if (Objects.isNull(electricityCabinet)) {
+            log.error("ELE ERROR! not found eletricity cabinet,electricityCabinetId={}", electricityCabinetId);
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
@@ -2009,14 +2010,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxes)) {
-            for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxes) {
+            electricityCabinetBoxes.parallelStream().forEach(item->{
 
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
-                BeanUtils.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);
-                electricityCabinetBoxVO.setExchange(electricityCabinetBox.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
+                BeanUtils.copyProperties(item, electricityCabinetBoxVO);
+                electricityCabinetBoxVO.setExchange(item.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
-            }
+            });
         }
 
         return R.ok(electricityCabinetBoxVOList);
