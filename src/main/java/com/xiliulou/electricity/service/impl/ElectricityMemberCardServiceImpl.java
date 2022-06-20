@@ -171,7 +171,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     @DS("slave_1")
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel) {
-        List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, null,null);
+        List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, null, null);
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
         }
@@ -295,9 +295,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             if (Objects.isNull(franchiseeUserInfo.getBatteryType())) {
                 return R.ok();
             }
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, franchiseeUserInfo.getBatteryType());
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, franchiseeUserInfo.getBatteryType(), ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         } else {
-            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null);
+            electricityMemberCardList = baseMapper.queryUserList(offset, size, franchiseeId, null, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD);
         }
 
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
@@ -387,7 +387,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             return R.fail("100011", "加盟商没有对应的车辆型号");
         }
 
-        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, franchiseeUserInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, electricityCarModel.getFranchiseeId(),franchiseeUserInfo.getBindCarModelId()));
+        return R.ok(baseMapper.queryList(offset, size, ElectricityMemberCard.STATUS_USEABLE, null, franchiseeUserInfo.getTenantId(), ElectricityMemberCard.RENT_CAR_MEMBER_CARD, electricityCarModel.getFranchiseeId(), franchiseeUserInfo.getBindCarModelId()));
     }
 
     @Override
