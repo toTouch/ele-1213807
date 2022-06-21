@@ -85,5 +85,5 @@ public class ElectricityCabinetBoxVO {
     private Integer exchange;
 
     public static final Integer EXCHANGE_YES=0;
-    public static final Integer EXCHANGE_NO=0;
+    public static final Integer EXCHANGE_NO=1;
 }
