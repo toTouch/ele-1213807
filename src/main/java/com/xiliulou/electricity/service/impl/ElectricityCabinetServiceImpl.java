@@ -2012,7 +2012,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
 
-            electricityCabinetBoxList.stream().forEach(item -> {
+            electricityCabinetBoxList.parallelStream().forEach(item -> {
                 ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                 BeanUtils.copyProperties(item, electricityCabinetBoxVO);
 
@@ -2027,7 +2027,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //排序
             if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
-                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(ElectricityCabinetBoxVO::getCellNo)).collect(Collectors.toList());
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item->Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
             }
 
         }
