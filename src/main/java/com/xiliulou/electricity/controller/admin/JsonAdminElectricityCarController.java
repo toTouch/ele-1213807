@@ -10,6 +10,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.HardwareCommand;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
@@ -47,6 +48,8 @@ public class JsonAdminElectricityCarController {
     RedisService redisService;
     @Autowired
     ElectricityCarService electricityCarService;
+    @Autowired
+    StoreService storeService;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -99,6 +102,13 @@ public class JsonAdminElectricityCarController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
+            Store store=storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)){
+                storeId=store.getId();
+            }
+        }
+
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .size(size)
                 .offset(offset)
@@ -133,6 +143,13 @@ public class JsonAdminElectricityCarController {
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if(Objects.equals(user.getType(),User.TYPE_USER_STORE)){
+            Store store=storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)){
+                storeId=store.getId();
+            }
         }
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
