@@ -114,6 +114,10 @@ public class JsonAdminEleDepositOrderController {
                 .payType(payType)
                 .franchiseeId(franchiseeId).build();
 
+
+        System.out.println("查询参数========================"+eleDepositOrderQuery);
+
+
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
