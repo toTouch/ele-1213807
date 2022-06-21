@@ -57,8 +57,8 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
-                       @RequestParam(value = "depositType",required = false) Integer depositType,
-                       @RequestParam(value = "payType",required = false) Integer payType) {
+                       @RequestParam(value = "depositType", required = false) Integer depositType,
+                       @RequestParam(value = "payType", required = false) Integer payType) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -78,12 +78,12 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long storeId=null;
-        if (Objects.equals(user.getType(),User.TYPE_USER_STORE)){
-            depositType= EleDepositOrder.RENT_CAR_DEPOSIT;
-            Store store=storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)){
-                storeId=store.getId();
+        Long storeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                storeId = store.getId();
             }
         }
 
@@ -92,6 +92,9 @@ public class JsonAdminEleDepositOrderController {
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+
+            System.out.println("加盟商======================" + franchisee);
+
             if (Objects.isNull(franchisee)) {
                 return R.ok(new ArrayList<>());
             }
@@ -115,7 +118,7 @@ public class JsonAdminEleDepositOrderController {
                 .franchiseeId(franchiseeId).build();
 
 
-        System.out.println("查询参数========================"+eleDepositOrderQuery);
+        System.out.println("查询参数========================" + eleDepositOrderQuery);
 
 
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
@@ -129,7 +132,7 @@ public class JsonAdminEleDepositOrderController {
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
-                        @RequestParam(value = "depositType",required = false) Integer depositType,
+                        @RequestParam(value = "depositType", required = false) Integer depositType,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
         //租户
@@ -142,12 +145,12 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long storeId=null;
-        if (Objects.equals(user.getType(),User.TYPE_USER_STORE)){
-            depositType= EleDepositOrder.RENT_CAR_DEPOSIT;
-            Store store=storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)){
-                storeId=store.getId();
+        Long storeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                storeId = store.getId();
             }
         }
 
