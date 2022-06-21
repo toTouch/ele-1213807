@@ -38,4 +38,6 @@ public class StoreQuery {
 
 	private Long franchiseeId;
 
+	private Long uid;
+
 }
