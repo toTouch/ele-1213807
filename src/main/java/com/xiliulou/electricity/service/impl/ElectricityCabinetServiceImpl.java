@@ -2020,6 +2020,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(item.getSn());
                 if (!Objects.isNull(electricityBattery)) {
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+
+                    log.info("ELE INFO! power={},fullyCharged={},result={}",electricityBattery.getPower(),fullyCharged,electricityBattery.getPower() >= fullyCharged);
+
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
                 }
 
