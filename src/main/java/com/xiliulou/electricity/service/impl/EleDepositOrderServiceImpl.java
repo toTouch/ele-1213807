@@ -1077,11 +1077,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        if (Objects.equals(oldFranchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
-            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", user.getUid());
-            return R.fail("100012", "用户绑定车辆");
-        }
-
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getRentCarOrderId()));
         if (Objects.isNull(eleDepositOrder)) {
@@ -1196,9 +1191,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 if (Objects.isNull(eleDepositOrder)) {
                     map.put("store", null);
                     map.put("carModel", null);
-                    map.put("payType",null);
+                    map.put("payType", null);
                 } else {
-                    map.put("payType",eleDepositOrder.getPayType().toString());
+                    map.put("payType", eleDepositOrder.getPayType().toString());
                     Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
                     if (Objects.nonNull(store)) {
                         map.put("store", store.getName());
