@@ -36,4 +36,6 @@ public class EleDepositOrderQuery {
 
     private Integer refundOrderType;
 
+    private Long storeId;
+
 }

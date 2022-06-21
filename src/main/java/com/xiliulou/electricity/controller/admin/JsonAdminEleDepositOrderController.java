@@ -2,13 +2,16 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -39,6 +42,9 @@ public class JsonAdminEleDepositOrderController {
 
     @Autowired
     FranchiseeService franchiseeService;
+
+    @Autowired
+    StoreService storeService;
 
     //列表查询
     @GetMapping(value = "/admin/eleDepositOrder/list")
@@ -72,6 +78,15 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        Long storeId=null;
+        if (Objects.equals(user.getType(),User.TYPE_USER_STORE)){
+            depositType= EleDepositOrder.RENT_CAR_DEPOSIT;
+            Store store=storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)){
+                storeId=store.getId();
+            }
+        }
+
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
@@ -92,6 +107,7 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
+                .storeId(storeId)
                 .tenantId(tenantId)
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
@@ -109,6 +125,7 @@ public class JsonAdminEleDepositOrderController {
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "depositType",required = false) Integer depositType,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
         //租户
@@ -119,6 +136,15 @@ public class JsonAdminEleDepositOrderController {
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Long storeId=null;
+        if (Objects.equals(user.getType(),User.TYPE_USER_STORE)){
+            depositType= EleDepositOrder.RENT_CAR_DEPOSIT;
+            Store store=storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)){
+                storeId=store.getId();
+            }
         }
 
         Long franchiseeId = null;
@@ -139,6 +165,8 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
+                .storeId(storeId)
+                .depositType(depositType)
                 .tenantId(tenantId)
                 .franchiseeName(franchiseeName)
                 .franchiseeId(franchiseeId).build();
