@@ -25,6 +25,8 @@ public interface FranchiseeUserInfoService {
 
     FranchiseeUserInfo queryByUserInfoId(Long id);
 
+    FranchiseeUserInfo queryByUid(Long uid);
+
     /*Integer queryCountByBatterySn(String electricityBatterySn);*/
 
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);

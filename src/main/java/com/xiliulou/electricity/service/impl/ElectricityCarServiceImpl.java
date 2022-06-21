@@ -242,6 +242,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
 
+        if (!Objects.equals(electricityCar.getModelId(),franchiseeUserInfo.getBindCarModelId())){
+            log.error("ELECTRICITY CAR ERROR! user bind carModel not equals will bond carModel! userId:{}", userInfo.getUid());
+            return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
+        }
+
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setBindCarId(electricityCarBindUser.getCarId());

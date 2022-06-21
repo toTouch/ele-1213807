@@ -81,6 +81,7 @@
         select tf.id ,tf.user_info_id,tf.service_status,tf.franchisee_id,tf.card_id,tf.card_name,tf.card_type,tf.member_card_expire_time,
                 tf.remaining_number,tf.init_electricity_battery_sn,tf.now_electricity_battery_sn,tf.battery_deposit,tf.order_id,tf.del_flag,
                 tf.create_time,tf.update_time,tf.tenant_id,tf.model_type,tf.battery_type,tf.battery_service_fee_status,tf.battery_service_fee_generate_time
+                tf.rent_car_status,tf.rent_car_order_id,tf.rent_car_deposit,tf.bind_car_id,tf.bind_car_model_id,tf.rent_car_card_id,tf.rent_car_member_card_expire_time
                 from t_franchisee_user_info tf
                 left join t_user_info tu on tf.user_info_id=tu.id where tu.uid=#{uid} and tf.del_flag=0
     </select>
