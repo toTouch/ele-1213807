@@ -52,5 +52,7 @@ public class EleRefundQuery {
 
     private Integer payType;
 
+    private Long storeId;
+
 
 }

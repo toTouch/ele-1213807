@@ -7,10 +7,11 @@
         select
         tero.id as id, tero.refund_order_no as refundOrderNo, tero.order_id as orderId, tero.pay_amount as payAmount,
         tero.refund_amount as refundAmount, tero.status as status, tero.err_msg as errMsg,
-        tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
+        tero.create_time as createTime, tero.update_time as updateTime ,tero.member_card_owe_number as
+        memberCardOweNumber,tedo.uid as uid,tedo.name as name,tedo.phone as phone,
         tero.refund_order_type as refundOrderType, tedo.pay_type as payType
         from t_ele_refund_order as tero
-        left join t_ele_deposit_order as tedo  on  tero.order_id= tedo.order_id
+        left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and tero.order_id = #{query.orderId}
@@ -36,15 +37,18 @@
             <if test="query.phone != null and query.phone != ''">
                 and tedo.phone = #{query.phone}
             </if>
+            <if test="query.storeId != null">
+                and tedo.store_id = #{query.storeId}
+            </if>
         </where>
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
 
 
-	<select id="queryCount" resultType="java.lang.Integer">
+    <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
-        from t_ele_refund_order tero left join t_ele_deposit_order as tedo  on  tero.order_id= tedo.order_id
+        from t_ele_refund_order tero left join t_ele_deposit_order as tedo on tero.order_id= tedo.order_id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and tero.order_id = #{query.orderId}
@@ -55,6 +59,9 @@
             <if test="query.status != null">
                 and tero.status = #{query.status}
             </if>
+            <if test="query.refundOrderType != null">
+                and tero.refund_order_type = #{query.refundOrderType}
+            </if>
             <if test="query.beginTime != null">
                 and tero.create_time &gt;=#{query.beginTime}
             </if>
@@ -63,6 +70,9 @@
             </if>
             <if test="query.tenantId != null">
                 and tero.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.storeId != null">
+                and tedo.store_id = #{query.storeId}
             </if>
         </where>
     </select>
