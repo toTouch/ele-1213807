@@ -92,13 +92,9 @@ public class JsonAdminEleDepositOrderController {
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-
-            System.out.println("加盟商======================" + franchisee);
-
             if (Objects.isNull(franchisee)) {
-                return R.ok(new ArrayList<>());
+                franchiseeId = franchisee.getId();
             }
-            franchiseeId = franchisee.getId();
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -116,11 +112,6 @@ public class JsonAdminEleDepositOrderController {
                 .depositType(depositType)
                 .payType(payType)
                 .franchiseeId(franchiseeId).build();
-
-
-        System.out.println("查询参数========================" + eleDepositOrderQuery);
-
-
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
@@ -160,9 +151,8 @@ public class JsonAdminEleDepositOrderController {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.isNull(franchisee)) {
-                return R.ok(0);
+                franchiseeId = franchisee.getId();
             }
-            franchiseeId = franchisee.getId();
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
