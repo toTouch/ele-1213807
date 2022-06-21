@@ -57,4 +57,6 @@ public interface ElectricityCabinetBoxService {
      * @return
      */
     Integer disableCell(Integer cellNo,Integer electricityCabinetId);
+
+    List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer electricityCabinetId);
 }

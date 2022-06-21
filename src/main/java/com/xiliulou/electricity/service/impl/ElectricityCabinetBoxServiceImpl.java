@@ -114,6 +114,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     }
 
     @Override
+    public List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer id) {
+        return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
+                .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
+    }
+
+    @Override
     public List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
