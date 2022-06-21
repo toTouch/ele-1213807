@@ -92,7 +92,7 @@ public class JsonAdminEleDepositOrderController {
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
+            if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();
             }
         }
@@ -150,7 +150,7 @@ public class JsonAdminEleDepositOrderController {
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
+            if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();
             }
         }
