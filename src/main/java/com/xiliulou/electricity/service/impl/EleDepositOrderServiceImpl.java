@@ -485,7 +485,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
-        return R.ok(eleDepositOrderMapper.queryList(eleDepositOrderQuery));
+        List<EleDepositOrderVO> eleDepositOrderVOS = null;
+        if (Objects.equals(eleDepositOrderQuery.getDepositType(),EleDepositOrder.ELECTRICITY_DEPOSIT)){
+            eleDepositOrderVOS=eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+        }else {
+            eleDepositOrderVOS=eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
+        }
+        return R.ok(eleDepositOrderVOS);
     }
 
     @Override

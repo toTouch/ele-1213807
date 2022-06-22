@@ -80,4 +80,14 @@ public class EleDepositOrderVO {
      * 支付方式
      */
     private Integer payType;
+
+    /**
+     * 门店名称
+     */
+    private String storeName;
+
+    /**
+     * 车辆名称
+     */
+    private String carModel;
 }

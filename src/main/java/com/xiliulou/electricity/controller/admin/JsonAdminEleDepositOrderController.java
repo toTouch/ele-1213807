@@ -78,6 +78,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //隔离门店租车数据
         Long storeId = null;
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
@@ -136,6 +137,7 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //隔离门店租车数据
         Long storeId = null;
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
