@@ -287,18 +287,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        //租车未购买套餐
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) && Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime())) {
-            log.error("order ERROR! not rent car member card! uid:{}", user.getUid());
-            return R.fail("100012", "未购买租车套餐");
-        }
-
         Long now = System.currentTimeMillis();
-        if (Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
-            log.error("order ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
-            return R.fail("100013", "租车套餐已过期");
-        }
-
         ElectricityMemberCard electricityMemberCard = null;
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());

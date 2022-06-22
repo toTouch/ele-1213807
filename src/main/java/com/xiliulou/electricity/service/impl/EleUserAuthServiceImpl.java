@@ -225,7 +225,18 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		if (Objects.isNull(franchiseeUserInfo)) {
 			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
 
+		//租车未购买套餐
+		if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) && Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime())) {
+			log.error("order ERROR! not rent car member card! uid:{}", user.getUid());
+			return R.fail("100012", "未购买租车套餐");
+		}
+
+		Long now = System.currentTimeMillis();
+		if (Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
+			log.error("order ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
+			return R.fail("100013", "租车套餐已过期");
 		}
 
 		if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
@@ -238,7 +249,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
 			serviceStatus = -1;
 		} else {
-			Long now = System.currentTimeMillis();
 			if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
 				log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
 				serviceStatus = -1;
