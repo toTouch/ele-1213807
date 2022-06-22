@@ -1100,7 +1100,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
             eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
             eleDepositOrderMapper.insert(eleDepositOrder);
-
             //用户
             FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
             franchiseeUserInfo.setId(userInfo.getId());
