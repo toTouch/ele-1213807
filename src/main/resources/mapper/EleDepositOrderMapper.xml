@@ -60,7 +60,7 @@
     <select id="queryListForRentCar" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
-        edo.order_id, edo.status, edo.name, edo.phone, ts.name as storeName,tecm.name as carModel
+        edo.order_id, edo.status, edo.name, edo.phone, ts.name as storeName,tecm.name as carModel,
         ero.refund_amount as refundAmount,ero.err_msg as errMsg,edo.deposit_type,edo.pay_type
         from t_ele_deposit_order edo left join t_ele_refund_order as ero on ero.order_id= edo.order_id
         left join t_store ts on edo.store_id=ts.id
@@ -92,9 +92,6 @@
             </if>
             <if test="query.uid != null">
                 and edo.uid = #{query.uid}
-            </if>
-            <if test="query.franchiseeName != null and query.franchiseeName != ''">
-                and f.name = #{query.franchiseeName}
             </if>
             <if test="query.depositType != null">
                 and edo.deposit_type = #{query.depositType}
