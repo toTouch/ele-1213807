@@ -108,8 +108,6 @@ public class JsonAdminElectricityCarController {
             }
         }
 
-
-
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
@@ -119,10 +117,6 @@ public class JsonAdminElectricityCarController {
                 franchiseeId = franchisee.getId();
             }
         }
-
-        System.out.println("用户类型=-===================="+user.getType());
-
-        System.out.println("加盟商ID====================="+franchiseeId);
 
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .size(size)
