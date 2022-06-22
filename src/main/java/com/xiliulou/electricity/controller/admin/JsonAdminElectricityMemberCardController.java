@@ -94,10 +94,11 @@ public class JsonAdminElectricityMemberCardController {
      */
     @GetMapping("admin/electricityMemberCard/queryCount")
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type,
-                                          @RequestParam(value = "status", required = false) Integer status) {
+                                          @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "cardModel", required = false) Integer cardModel) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityMemberCardService.queryCount(status, type, tenantId);
+        return electricityMemberCardService.queryCount(status, type, tenantId,cardModel);
     }
 
 

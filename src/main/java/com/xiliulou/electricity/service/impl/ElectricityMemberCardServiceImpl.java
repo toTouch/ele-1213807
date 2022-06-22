@@ -396,8 +396,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public R queryCount(Integer status, Integer type, Integer tenantId) {
-        return R.ok(baseMapper.queryCount(status, type, tenantId));
+    public R queryCount(Integer status, Integer type, Integer tenantId,Integer cardModel) {
+        return R.ok(baseMapper.queryCount(status, type, tenantId, cardModel));
     }
 
     @Override
