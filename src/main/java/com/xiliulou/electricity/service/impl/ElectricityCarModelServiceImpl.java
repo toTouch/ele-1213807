@@ -154,6 +154,9 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         if (Objects.nonNull(store)){
             electricityCarModelQuery.setFranchiseeId(store.getFranchiseeId());
         }
+
+        System.out.println("最终查询参数===================="+electricityCarModelQuery);
+
         return R.ok(electricityCarModelMapper.queryList(electricityCarModelQuery));
     }
 
