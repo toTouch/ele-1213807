@@ -71,6 +71,9 @@
             <if test="query.tenantId != null">
                 and tero.tenant_id = #{query.tenantId}
             </if>
+            <if test="query.payType != null">
+                and tedo.pay_type = #{query.payType}
+            </if>
             <if test="query.storeId != null">
                 and tedo.store_id = #{query.storeId}
             </if>

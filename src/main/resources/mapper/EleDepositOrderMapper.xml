@@ -142,6 +142,9 @@
             <if test="query.storeId != null">
                 and edo.store_id = #{query.storeId}
             </if>
+            <if test="query.depositType != null">
+                and edo.deposit_type = #{query.depositType}
+            </if>
         </where>
     </select>
 

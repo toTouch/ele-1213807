@@ -101,6 +101,7 @@ public class JsonAdminEleRefundOrderController {
     @GetMapping("/admin/eleRefundOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "status", required = false) Integer status,
+                        @RequestParam(value = "payType", required = false) Integer payType,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
 						@RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                         @RequestParam(value = "phone", required = false) String phone,
@@ -130,6 +131,7 @@ public class JsonAdminEleRefundOrderController {
                 .orderId(orderId)
                 .status(status)
 				.storeId(storeId)
+                .payType(payType)
 				.refundOrderType(refundOrderType)
                 .beginTime(beginTime)
                 .endTime(endTime)

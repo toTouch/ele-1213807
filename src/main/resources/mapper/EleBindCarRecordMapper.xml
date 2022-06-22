@@ -27,6 +27,8 @@
             <if test="query.status !=null">
                 and status=#{query.status}
             </if>
+            order by create_time desc
+            limit #{querry.offset}, #{querry.size}
         </where>
     </select>
 
