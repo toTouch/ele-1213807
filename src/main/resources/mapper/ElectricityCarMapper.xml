@@ -27,6 +27,9 @@
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
         </if>
+        <if test="query.franchiseeId != null ">
+            and ts.franchisee_id = #{query.franchiseeId}
+        </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tfui.now_electricity_battery_sn = #{query.batterySn}
         </if>
@@ -59,6 +62,9 @@
         </if>
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
+        </if>
+        <if test="query.franchiseeId != null ">
+            and ts.franchisee_id = #{query.franchiseeId}
         </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tec.battery_sn = #{query.batterySn}

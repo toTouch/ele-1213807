@@ -36,6 +36,11 @@ public class ElectricityCarQuery {
     private Long storeId;
 
     /**
+     * 加盟商Id
+     */
+    private Long franchiseeId;
+
+    /**
      * 手机号
      */
     private String Phone;

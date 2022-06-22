@@ -8,10 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
@@ -50,6 +47,8 @@ public class JsonAdminElectricityCarController {
     ElectricityCarService electricityCarService;
     @Autowired
     StoreService storeService;
+    @Autowired
+    FranchiseeService franchiseeService;
 
     //新增换电柜车辆
     @PostMapping(value = "/admin/electricityCar")
@@ -109,6 +108,16 @@ public class JsonAdminElectricityCarController {
             }
         }
 
+        Long franchiseeId = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .size(size)
                 .offset(offset)
@@ -117,6 +126,7 @@ public class JsonAdminElectricityCarController {
                 .Phone(phone)
                 .status(status)
                 .storeId(storeId)
+                .franchiseeId(franchiseeId)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -152,12 +162,23 @@ public class JsonAdminElectricityCarController {
             }
         }
 
+        Long franchiseeId = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .sn(sn)
                 .model(model)
                 .Phone(phone)
                 .status(status)
                 .storeId(storeId)
+                .franchiseeId(franchiseeId)
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
