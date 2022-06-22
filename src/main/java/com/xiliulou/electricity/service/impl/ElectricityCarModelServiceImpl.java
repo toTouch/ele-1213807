@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.entity.ElectricityCarModel;
-import com.xiliulou.electricity.entity.Store;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
@@ -71,6 +69,13 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     @Transactional
     public R save(ElectricityCarModel electricityCarModel) {
+        ElectricityCarModelQuery electricityCarModelQuery=ElectricityCarModelQuery.builder()
+                .franchiseeId(electricityCarModel.getFranchiseeId())
+                .name(electricityCarModel.getName()).build();
+        Integer count = electricityCarModelMapper.queryCount(electricityCarModelQuery);
+        if (count > 0) {
+            return R.fail("该型号车辆已存在!");
+        }
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
         //插入数据库
