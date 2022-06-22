@@ -267,7 +267,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //租车未购买套餐
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)) {
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) && Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime())) {
             log.error("order ERROR! not rent car member card! uid:{}", user.getUid());
             return R.fail("100012", "未购买租车套餐");
         }
