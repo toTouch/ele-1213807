@@ -83,13 +83,6 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            Store store = storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)) {
-                storeId = store.getId();
-            }
-        }
-
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
             //加盟商
@@ -124,14 +117,6 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long storeId = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            Store store = storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)) {
-                storeId = store.getId();
-            }
-        }
-
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
                 && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
@@ -145,7 +130,6 @@ public class JsonAdminElectricityCarModelController {
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
 				.franchiseeId(franchiseeId)
-				.storeId(storeId)
                 .name(name)
                 .tenantId(tenantId).build();
 

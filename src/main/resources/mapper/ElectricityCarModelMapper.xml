@@ -8,7 +8,6 @@
         select
         tecm.id, tecm.name,tecm.franchisee_id, tecm.del_flag, tecm.create_time, tecm.update_time,tecm.tenant_id
         from t_electricity_car_model tecm left join t_franchisee tf on tecm.franchisee_id=tf.id
-        left join t_store ts on ts.franchisee_id=tecm.franchisee_id
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tecm.name = #{query.name}
@@ -18,16 +17,13 @@
         </if>
         <if test="query.franchiseeId != null">
             and tecm.franchisee_id = #{query.franchiseeId}
-        </if>
-        <if test="query.storeId != null">
-            and ts.id = #{query.storeId}
         </if>
         order by tecm.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
-        from t_electricity_car_model tecm  left join t_store ts on ts.franchisee_id=tecm.franchisee_id
+        from t_electricity_car_model tecm  left join t_franchisee tf on tecm.franchisee_id=tf.id
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
             and tecm.name = #{query.name}
@@ -37,9 +33,6 @@
         </if>
         <if test="query.franchiseeId != null">
             and tecm.franchisee_id = #{query.franchiseeId}
-        </if>
-        <if test="query.storeId != null">
-            and ts.id = #{query.storeId}
         </if>
     </select>
 
