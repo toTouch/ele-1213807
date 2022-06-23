@@ -91,12 +91,31 @@ public class JsonAdminFranchiseeController {
 			offset = 0L;
 		}
 
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		Long franchiseeId = null;
+		if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
+			//加盟商
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.nonNull(franchisee)) {
+				franchiseeId = franchisee.getId();
+			}
+		}
+
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
 				.offset(offset)
 				.size(size)
+				.franchiseeId(franchiseeId)
 				.name(name)
 				.beginTime(beginTime)
 				.endTime(endTime)
@@ -115,10 +134,28 @@ public class JsonAdminFranchiseeController {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		Long franchiseeId = null;
+		if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
+			//加盟商
+			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+			if (Objects.nonNull(franchisee)) {
+				franchiseeId = franchisee.getId();
+			}
+		}
+
 		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
 				.name(name)
 				.beginTime(beginTime)
 				.endTime(endTime)
+				.franchiseeId(franchiseeId)
 				.tenantId(tenantId).build();
 
 		return franchiseeService.queryCount(franchiseeQuery);

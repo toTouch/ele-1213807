@@ -24,6 +24,9 @@
         <if test="query.tenantId != null">
             and tenant_id = #{query.tenantId}
         </if>
+        <if test="query.franchiseeId != null">
+            and id = #{query.franchiseeId}
+        </if>
         order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -43,6 +46,9 @@
         </if>
         <if test="query.tenantId != null ">
             and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.franchiseeId != null">
+            and id = #{query.franchiseeId}
         </if>
         order by create_time desc
     </select>
