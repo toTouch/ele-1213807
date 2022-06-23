@@ -99,15 +99,10 @@ public class JsonAdminFranchiseeController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		Long franchiseeId = null;
+		Long uid = null;
 		if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
-			//加盟商
-			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-			if (Objects.nonNull(franchisee)) {
-				franchiseeId = franchisee.getId();
-			}
+			uid=user.getUid();
 		}
-
 
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
@@ -115,7 +110,7 @@ public class JsonAdminFranchiseeController {
 		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
 				.offset(offset)
 				.size(size)
-				.franchiseeId(franchiseeId)
+				.uid(uid)
 				.name(name)
 				.beginTime(beginTime)
 				.endTime(endTime)
@@ -142,20 +137,16 @@ public class JsonAdminFranchiseeController {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		Long franchiseeId = null;
+		Long uid = null;
 		if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
-			//加盟商
-			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-			if (Objects.nonNull(franchisee)) {
-				franchiseeId = franchisee.getId();
-			}
+			uid=user.getUid();
 		}
 
 		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
 				.name(name)
 				.beginTime(beginTime)
 				.endTime(endTime)
-				.franchiseeId(franchiseeId)
+				.uid(uid)
 				.tenantId(tenantId).build();
 
 		return franchiseeService.queryCount(franchiseeQuery);
