@@ -20,7 +20,7 @@
             and tecm.franchisee_id = #{query.franchiseeId}
         </if>
         <if test="query.storeId != null">
-            and ts.store_id = #{query.storeId}
+            and ts.id = #{query.storeId}
         </if>
         order by tecm.update_time desc
         limit #{query.offset}, #{query.size}
@@ -39,7 +39,7 @@
             and tecm.franchisee_id = #{query.franchiseeId}
         </if>
         <if test="query.storeId != null">
-            and ts.store_id = #{query.storeId}
+            and ts.id = #{query.storeId}
         </if>
     </select>
 

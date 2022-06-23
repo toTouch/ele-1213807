@@ -66,7 +66,7 @@ public class JsonAdminElectricityCarModelController {
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "uid", required = false) Long uid) {
-        if (size < 0 || size > 50) {
+        if (size < 0 || size > 50 && size <1000) {
             size = 10L;
         }
 
