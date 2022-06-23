@@ -236,13 +236,18 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELECTRICITY CAR ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("100014", "未购买租车套餐");
         }
+        Long now = System.currentTimeMillis();
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) && Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
+            log.error("ELECTRICITY CAR ERROR! rent car memberCard  is Expire ! uid:{}", user.getUid());
+            return R.fail("100013", "租车套餐已过期");
+        }
 
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
         }
 
-        if (!Objects.equals(electricityCar.getModelId(),franchiseeUserInfo.getBindCarModelId())){
+        if (!Objects.equals(electricityCar.getModelId(), franchiseeUserInfo.getBindCarModelId())) {
             log.error("ELECTRICITY CAR ERROR! user bind carModel not equals will bond carModel! userId:{}", userInfo.getUid());
             return R.fail("100016", "用户缴纳的车辆型号押金与绑定的不符");
         }

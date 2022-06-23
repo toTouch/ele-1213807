@@ -83,21 +83,21 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-//            Store store = storeService.queryByUid(user.getUid());
-//            if (Objects.nonNull(store)) {
-//                storeId = store.getId();
-//            }
-//        }
-//
-//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
-//            //加盟商
-//            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-//            if (Objects.nonNull(franchisee)) {
-//                franchiseeId = franchisee.getId();
-//            }
-//        }
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                storeId = store.getId();
+            }
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .offset(offset)
