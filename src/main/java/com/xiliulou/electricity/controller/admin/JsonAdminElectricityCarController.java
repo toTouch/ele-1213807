@@ -165,7 +165,8 @@ public class JsonAdminElectricityCarController {
 
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
