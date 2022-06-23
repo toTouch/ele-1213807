@@ -151,6 +151,9 @@
             <if test="query.carModel != null and query.carModel != ''">
                 and tecm.name = #{query.carModel}
             </if>
+            <if test="query.payType != null">
+                and edo.pay_type = #{query.payType}
+            </if>
         </where>
     </select>
 

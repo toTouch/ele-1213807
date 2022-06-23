@@ -129,7 +129,8 @@ public class JsonAdminEleDepositOrderController {
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "depositType", required = false) Integer depositType,
                         @RequestParam(value = "carModel", required = false) String carModel,
-                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                        @RequestParam(value = "payType", required = false) Integer payType) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -172,6 +173,7 @@ public class JsonAdminEleDepositOrderController {
                 .storeId(storeId)
                 .carModel(carModel)
                 .depositType(depositType)
+                .payType(payType)
                 .tenantId(tenantId)
                 .franchiseeName(franchiseeName)
                 .franchiseeId(franchiseeId).build();
