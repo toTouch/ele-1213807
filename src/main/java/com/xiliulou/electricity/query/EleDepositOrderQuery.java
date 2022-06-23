@@ -38,4 +38,6 @@ public class EleDepositOrderQuery {
 
     private Long storeId;
 
+    private String carModel;
+
 }

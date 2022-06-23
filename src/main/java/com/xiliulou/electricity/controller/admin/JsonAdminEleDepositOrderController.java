@@ -58,6 +58,7 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "depositType", required = false) Integer depositType,
+                       @RequestParam(value = "carModel", required = false) String carModel,
                        @RequestParam(value = "payType", required = false) Integer payType) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -90,7 +91,8 @@ public class JsonAdminEleDepositOrderController {
 
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(),User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
@@ -109,6 +111,7 @@ public class JsonAdminEleDepositOrderController {
                 .orderId(orderId)
                 .storeId(storeId)
                 .tenantId(tenantId)
+                .carModel(carModel)
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
                 .payType(payType)
@@ -125,6 +128,7 @@ public class JsonAdminEleDepositOrderController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "depositType", required = false) Integer depositType,
+                        @RequestParam(value = "carModel", required = false) String carModel,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
         //租户
@@ -149,7 +153,8 @@ public class JsonAdminEleDepositOrderController {
 
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(),User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
@@ -165,6 +170,7 @@ public class JsonAdminEleDepositOrderController {
                 .status(status)
                 .orderId(orderId)
                 .storeId(storeId)
+                .carModel(carModel)
                 .depositType(depositType)
                 .tenantId(tenantId)
                 .franchiseeName(franchiseeName)

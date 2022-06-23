@@ -101,6 +101,9 @@
             <if test="query.storeId != null">
                 and edo.store_id = #{query.storeId}
             </if>
+            <if test="query.carModel != null and query.carModel != ''">
+                and tecm.name = #{query.carModel}
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
@@ -143,6 +146,9 @@
             </if>
             <if test="query.depositType != null">
                 and edo.deposit_type = #{query.depositType}
+            </if>
+            <if test="query.carModel != null and query.carModel != ''">
+                and tecm.name = #{query.carModel}
             </if>
         </where>
     </select>
