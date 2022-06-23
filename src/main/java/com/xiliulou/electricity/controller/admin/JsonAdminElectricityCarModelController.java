@@ -83,8 +83,6 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        System.out.println("用户类型===================="+user.getType());
-
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             Store store = storeService.queryByUid(user.getUid());
             if (Objects.nonNull(store)) {
@@ -100,10 +98,6 @@ public class JsonAdminElectricityCarModelController {
                 franchiseeId = franchisee.getId();
             }
         }
-
-        System.out.println("门店==================="+storeId);
-
-        System.out.println("加盟商====================="+franchiseeId);
 
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
                 .offset(offset)
