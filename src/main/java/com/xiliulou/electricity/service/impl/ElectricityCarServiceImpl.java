@@ -90,7 +90,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //换电柜
+        //换电柜车辆
         ElectricityCar electricityCar = new ElectricityCar();
         BeanUtil.copyProperties(electricityCarAddAndUpdate, electricityCar);
         electricityCar.setTenantId(tenantId);
@@ -103,6 +103,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId,tenantId));
+        if (Objects.nonNull(existElectricityCar)) {
+            return R.fail("100017", "已存在该编号车辆");
+        }
+
         electricityCar.setModel(electricityCarModel.getName());
         electricityCar.setModelId(electricityCarModel.getId());
 
@@ -124,6 +129,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             log.error("ELECTRICITY CAR  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
         //操作频繁
         boolean result = redisService.setNx(ElectricityCabinetConstant.CAR_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
@@ -149,6 +157,11 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (!oldModelId.equals(electricityCar.getModelId())) {
             return R.fail("ELECTRICITY.0010", "不能修改型号");
         }
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId,tenantId));
+        if (Objects.nonNull(existElectricityCar)) {
+            return R.fail("100017", "已存在该编号车辆");
+        }
+
         electricityCar.setUpdateTime(System.currentTimeMillis());
 
         int update = electricityCarMapper.updateById(electricityCar);
@@ -186,13 +199,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCarQuery electricityCarQuery) {
-        List<ElectricityCarVO> list =electricityCarMapper.queryList(electricityCarQuery);
-
-        System.out.println("查询参==========================="+electricityCarQuery);
-
-        System.out.println("查询列表================="+list);
-
-        return R.ok(list);
+        return R.ok(electricityCarMapper.queryList(electricityCarQuery));
     }
 
     @Override
