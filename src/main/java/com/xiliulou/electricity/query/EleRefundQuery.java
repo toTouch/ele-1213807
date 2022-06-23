@@ -54,5 +54,7 @@ public class EleRefundQuery {
 
     private Long storeId;
 
+    private Long franchiseeId;
+
 
 }

@@ -40,6 +40,9 @@
             <if test="query.storeId != null">
                 and tedo.store_id = #{query.storeId}
             </if>
+            <if test="query.franchiseeId != null">
+                and tedo.franchisee_id = #{query.franchiseeId}
+            </if>
         </where>
         order by tero.update_time desc
         limit #{query.offset}, #{query.size}
@@ -76,6 +79,9 @@
             </if>
             <if test="query.storeId != null">
                 and tedo.store_id = #{query.storeId}
+            </if>
+            <if test="query.franchiseeId != null">
+                and tedo.franchisee_id = #{query.franchiseeId}
             </if>
         </where>
     </select>

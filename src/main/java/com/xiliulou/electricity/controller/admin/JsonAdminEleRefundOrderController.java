@@ -2,10 +2,12 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleRefundOrder;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleRefundOrderService;
+import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -37,6 +39,8 @@ public class JsonAdminEleRefundOrderController {
     EleRefundOrderService eleRefundOrderService;
     @Autowired
     StoreService storeService;
+    @Autowired
+    FranchiseeService franchiseeService;
 
     //退款列表
     @GetMapping("/admin/eleRefundOrder/queryList")
@@ -80,6 +84,17 @@ public class JsonAdminEleRefundOrderController {
             }
         }
 
+        Long franchiseeId = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -89,6 +104,7 @@ public class JsonAdminEleRefundOrderController {
                 .endTime(endTime)
                 .tenantId(tenantId)
                 .storeId(storeId)
+                .franchiseeId(franchiseeId)
                 .phone(phone)
                 .payType(payType)
                 .refundOrderType(refundOrderType)
@@ -127,10 +143,23 @@ public class JsonAdminEleRefundOrderController {
 			}
 		}
 
+
+        Long franchiseeId = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
                 .orderId(orderId)
                 .status(status)
 				.storeId(storeId)
+                .franchiseeId(franchiseeId)
                 .payType(payType)
 				.refundOrderType(refundOrderType)
                 .beginTime(beginTime)
