@@ -66,7 +66,7 @@ public class JsonAdminElectricityCarModelController {
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "storeId", required = false) Long storeId,
                        @RequestParam(value = "uid", required = false) Long uid) {
-        if (size < 0 || size > 50 && size <1000) {
+        if (size < 0 || size > 50 && size < 1000) {
             size = 10L;
         }
 
@@ -83,8 +83,16 @@ public class JsonAdminElectricityCarModelController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                franchiseeId = store.getFranchiseeId();
+            }
+        }
+
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
@@ -118,8 +126,16 @@ public class JsonAdminElectricityCarModelController {
         }
 
         Long franchiseeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                franchiseeId = store.getFranchiseeId();
+            }
+        }
+
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
@@ -127,9 +143,8 @@ public class JsonAdminElectricityCarModelController {
             }
         }
 
-
         ElectricityCarModelQuery electricityCarModelQuery = ElectricityCarModelQuery.builder()
-				.franchiseeId(franchiseeId)
+                .franchiseeId(franchiseeId)
                 .name(name)
                 .tenantId(tenantId).build();
 
