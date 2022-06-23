@@ -186,7 +186,13 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCarQuery electricityCarQuery) {
-        return R.ok(electricityCarMapper.queryList(electricityCarQuery));
+        List<ElectricityCarVO> list =electricityCarMapper.queryList(electricityCarQuery);
+
+        System.out.println("查询参==========================="+electricityCarQuery);
+
+        System.out.println("查询列表================="+list);
+
+        return R.ok(list);
     }
 
     @Override
