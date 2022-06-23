@@ -119,6 +119,12 @@ public class JsonAdminElectricityCarController {
             }
         }
 
+        System.out.println("用户类型========================"+user.getType());
+
+        System.out.println("门店Id========================"+storeId);
+
+        System.out.println("加盟商Id========================"+franchiseeId);
+
         ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
                 .size(size)
                 .offset(offset)
