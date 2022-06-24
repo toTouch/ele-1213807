@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.query;
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -34,31 +35,30 @@ public class RentCarDepositAdd {
     /**
      * 用户名
      */
-    @NotEmpty(message = "用户名不能为空!", groups = {UpdateGroup.class})
     private String name;
 
     /**
      * 手机号
      */
-    @NotEmpty(message = "手机号不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "手机号不能为空!", groups = {CreateGroup.class})
     private String phone;
 
     /**
      * 缴纳金额
      */
-    @NotBlank(message = "缴纳金额不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "缴纳金额不能为空!", groups = {CreateGroup.class})
     private BigDecimal payAmount;
 
     /**
      * 门店Id
      */
-    @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
     private Long storeId;
 
     /**
      * 车辆型号Id
      */
-    @NotNull(message = "车辆型号不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "车辆型号不能为空!", groups = {CreateGroup.class})
     private Integer carModelId;
 
     private Integer tenantId;
