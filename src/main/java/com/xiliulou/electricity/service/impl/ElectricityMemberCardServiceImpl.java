@@ -170,8 +170,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @DS("slave_1")
-    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel) {
-        List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, null, null);
+    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel,Long franchiseeId) {
+        List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, franchiseeId, null);
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
         }

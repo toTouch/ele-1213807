@@ -15,7 +15,7 @@ public interface ElectricityMemberCardService {
 
     ElectricityMemberCard queryByCache(Integer id);
 
-    R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Integer cardModel);
+    R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Integer cardModel,Long franchiseeId);
 
 	R queryUserList(Long offset, Long size,String productKey, String deviceName,Long franchiseeId);
 
