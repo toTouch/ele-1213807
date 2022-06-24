@@ -171,10 +171,15 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     @DS("slave_1")
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel,Long franchiseeId) {
+
+        System.out.println("列表查询参数=================="+cardModel+"============"+franchiseeId);
+
         List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, franchiseeId, null);
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
         }
+
+        System.out.println("查询出的列表数据================第一count"+electricityMemberCardList.size()+"数据==============="+electricityMemberCardList);
 
         List<ElectricityMemberCardVO> electricityMemberCardVOList = new ArrayList<>();
         for (ElectricityMemberCardVO electricityMemberCard : electricityMemberCardList) {
@@ -396,8 +401,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public R queryCount(Integer status, Integer type, Integer tenantId,Integer cardModel) {
-        return R.ok(baseMapper.queryCount(status, type, tenantId, cardModel));
+    public R queryCount(Integer status, Integer type, Integer tenantId,Integer cardModel,Long franchiseeId) {
+
+        Integer count=baseMapper.queryCount(status, type, tenantId, cardModel,franchiseeId);
+
+        System.out.println("查询出的数量============================"+count);
+
+        return R.ok(count);
     }
 
     @Override

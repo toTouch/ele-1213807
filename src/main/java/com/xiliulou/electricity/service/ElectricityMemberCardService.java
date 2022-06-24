@@ -23,7 +23,7 @@ public interface ElectricityMemberCardService {
 
 	List<ElectricityMemberCard> queryByFranchisee(Long id);
 
-	R queryCount(Integer status, Integer type, Integer tenantId,Integer cardModel);
+	R queryCount(Integer status, Integer type, Integer tenantId,Integer cardModel,Long franchiseeId);
 
 	R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
