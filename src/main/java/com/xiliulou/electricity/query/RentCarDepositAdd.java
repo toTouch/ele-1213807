@@ -32,6 +32,7 @@ public class RentCarDepositAdd {
     /**
      * 用户名
      */
+    @NotEmpty(message = "用户名不能为空!", groups = {UpdateGroup.class})
     private String name;
 
     /**
@@ -49,13 +50,13 @@ public class RentCarDepositAdd {
     /**
      * 门店Id
      */
-    @NotEmpty(message = "门店不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
     private Long storeId;
 
     /**
      * 车辆型号Id
      */
-    @NotEmpty(message = "车辆型号不能为空!", groups = {UpdateGroup.class})
+    @NotNull(message = "车辆型号不能为空!", groups = {UpdateGroup.class})
     private Integer carModelId;
 
     private Integer tenantId;
