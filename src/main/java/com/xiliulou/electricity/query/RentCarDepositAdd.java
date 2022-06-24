@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
@@ -35,25 +36,25 @@ public class RentCarDepositAdd {
     /**
      * 手机号
      */
-    @NotNull(message = "手机号不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "手机号不能为空!", groups = {UpdateGroup.class})
     private String phone;
 
     /**
      * 缴纳金额
      */
-    @NotNull(message = "缴纳金额不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "缴纳金额不能为空!", groups = {UpdateGroup.class})
     private BigDecimal payAmount;
 
     /**
      * 门店Id
      */
-    @NotNull(message = "门店不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "门店不能为空!", groups = {UpdateGroup.class})
     private Long storeId;
 
     /**
      * 车辆型号Id
      */
-    @NotNull(message = "车辆型号不能为空!", groups = {UpdateGroup.class})
+    @NotEmpty(message = "车辆型号不能为空!", groups = {UpdateGroup.class})
     private Integer carModelId;
 
     private Integer tenantId;
