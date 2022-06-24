@@ -30,7 +30,6 @@ public class RentCarDepositAdd {
     /**
      * 用户名
      */
-    @NotNull(message = "用户名不能为空!", groups = {UpdateGroup.class})
     private String name;
 
     /**
