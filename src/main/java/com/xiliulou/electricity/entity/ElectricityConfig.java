@@ -66,7 +66,7 @@ public class ElectricityConfig {
     /**
      * 是否开始暂停月卡功能 （0--关闭 1--开启）
      */
-    private Integer isDisableMemberCard;
+    private Integer disableMemberCard;
 
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
