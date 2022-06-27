@@ -101,6 +101,7 @@ public class ElectricityMemberCardVO {
      */
     private String carModel;
 
+    private String franchiseeName;
 
 
 }
