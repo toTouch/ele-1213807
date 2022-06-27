@@ -16,5 +16,5 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
 
     ElectricityConfig queryOne(Integer tenantId);
 
-    public void insertElectricityConfig(ElectricityConfig electricityConfig);
+    void insertElectricityConfig(ElectricityConfig electricityConfig);
 }
