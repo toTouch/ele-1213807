@@ -20,4 +20,5 @@ import java.util.List;
 public class TenantConfig {
     //租户Id
     private List<Integer> disableRobotMessageForTenantId;
+
 }
