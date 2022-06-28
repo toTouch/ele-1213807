@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardOrderMapper">
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO">
-        select tel.* , tui.phone as phone , tf.name as franchiseeName from
+        select tel.* , tui.phone as phone , tui.user_name, tf.name as franchiseeName from
         t_electricity_member_card_order tel
 
         LEFT JOIN t_user_info tui on tui.uid = tel.uid
