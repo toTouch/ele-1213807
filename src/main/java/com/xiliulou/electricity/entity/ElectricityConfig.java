@@ -68,6 +68,11 @@ public class ElectricityConfig {
      */
     private Integer disableMemberCard;
 
+    /**
+     * 是否开启低电量换电 （0--是 1--否）
+     */
+    private Integer isLowBatteryExchange;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
