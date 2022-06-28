@@ -76,23 +76,11 @@ public class JsonAdminVerificationCodeController extends BaseController {
     }
 
     @GetMapping("page_count")
-    public R selectPageCount(@RequestParam("size") int size,
-                             @RequestParam("offset") int offset,
-                             @RequestParam(value = "userName", required = false) String userName,
+    public R selectPageCount(@RequestParam(value = "userName", required = false) String userName,
                              @RequestParam(value = "phone", required = false) String phone,
                              @RequestParam(value = "verificationCode", required = false) String verificationCode) {
 
-        if (size < 0 || size > 50) {
-            size = 10;
-        }
-
-        if (offset < 0) {
-            offset = 0;
-        }
-
         VerificationCodeQuery codeQuery = VerificationCodeQuery.builder()
-                .size(size)
-                .offset(offset)
                 .userName(userName)
                 .phone(phone)
                 .verificationCode(verificationCode)
