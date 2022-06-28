@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.VerificationCodeMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.VerificationCode" id="VerificationCodeMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="verificationCode" column="verification_code" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+        <result property="phone" column="phone" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="delFlag" column="del_flag" jdbcType="INTEGER"/>
+        <result property="createdTime" column="created_time" jdbcType="INTEGER"/>
+        <result property="updatedTime" column="updated_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="VerificationCodeMap">
+        select
+          id, verification_code, user_name, phone, status, del_flag, created_time, updated_time
+        from t_verification_code
+        where id = #{id}
+    </select>
+
+    <!--分页查询-->
+    <select id="queryAllByLimit" resultMap="VerificationCodeMap" parameterType="com.xiliulou.electricity.query.VerificationCodeQuery">
+        select
+          id, verification_code, user_name, phone, status, del_flag, created_time, updated_time
+        from t_verification_code
+        where del_flag=0
+
+        <if test="verificationCode != null and verificationCode != ''">
+            and verification_code = #{verificationCode}
+        </if>
+        <if test="userName != null and userName != ''">
+            and user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="selectCountByQuery" resultType="int" parameterType="com.xiliulou.electricity.query.VerificationCodeQuery">
+        select  count(1)
+        from t_verification_code
+        where del_flag=0
+
+        <if test="verificationCode != null and verificationCode != ''">
+            and verification_code = #{verificationCode}
+        </if>
+        <if test="userName != null and userName != ''">
+            and user_name like concat('%',#{userName},'%')
+        </if>
+        <if test="phone != null and phone != ''">
+            and phone = #{phone}
+        </if>
+
+    </select>
+
+
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="VerificationCodeMap">
+        select
+        id, verification_code, user_name, phone, status, del_flag, created_time, updated_time
+        from t_verification_code
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="verificationCode != null and verificationCode != ''">
+                and verification_code = #{verificationCode}
+            </if>
+            <if test="userName != null and userName != ''">
+                and user_name = #{userName}
+            </if>
+            <if test="phone != null and phone != ''">
+                and phone = #{phone}
+            </if>
+            <if test="status != null">
+                and status = #{status}
+            </if>
+            <if test="delFlag != null">
+                and del_flag = #{delFlag}
+            </if>
+            <if test="createdTime != null">
+                and created_time = #{createdTime}
+            </if>
+            <if test="updatedTime != null">
+                and updated_time = #{updatedTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_verification_code(verification_code, user_name, phone, status, del_flag, created_time, updated_time)
+        values (#{verificationCode}, #{userName}, #{phone}, #{status}, #{delFlag}, #{createdTime}, #{updatedTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_verification_code
+        <set>
+            <if test="verificationCode != null and verificationCode != ''">
+                verification_code = #{verificationCode},
+            </if>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createdTime != null">
+                created_time = #{createdTime},
+            </if>
+            <if test="updatedTime != null">
+                updated_time = #{updatedTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_verification_code where id = #{id}
+    </delete>
+
+</mapper>
