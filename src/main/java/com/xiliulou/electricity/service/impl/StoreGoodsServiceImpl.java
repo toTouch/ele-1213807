@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.StoreGoodsMapper;
@@ -22,8 +23,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author: Miss.Li
@@ -103,40 +106,69 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
     @Override
     public R queryList(StoreShopsQuery storeShopsQuery) {
         List<StoreGoodsVO> storeGoodsList = storeGoodsMapper.queryList(storeShopsQuery);
-        if (ObjectUtil.isEmpty(storeGoodsList)) {
-            return R.ok(storeGoodsList);
+        if (!DataUtil.collectionIsUsable(storeGoodsList)) {
+            return R.ok(Collections.emptyList());
         }
 
-
-        List<StoreGoodsVO> storeGoodsVOList = new ArrayList<>();
-        for (StoreGoodsVO storeGoods : storeGoodsList) {
+        List<StoreGoodsVO> result = storeGoodsList.parallelStream().map(e -> {
             StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
-            BeanUtils.copyProperties(storeGoods, storeGoodsVO);
+            BeanUtils.copyProperties(e, storeGoodsVO);
 
             ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
-                    .tenantId(storeGoods.getTenantId())
-                    .storeId(storeGoods.getStoreId())
-                    .model(storeGoods.getCarModel())
+                    .tenantId(e.getTenantId())
+                    .storeId(e.getStoreId())
+                    .model(e.getCarModel())
                     .status(ElectricityCar.CAR_NOT_RENT).build();
             Integer carInventory = (Integer) electricityCarService.queryCount(electricityCarQuery).getData();
             storeGoodsVO.setCarInventory(carInventory);
+
             //图片显示
-            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
-            if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-                List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-                for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-                    if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-                        electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-                    }
-                    electricityCabinetFiles.add(electricityCabinetFile);
+            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(e.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
+            if (!DataUtil.collectionIsUsable(electricityCabinetFileList)) {
+                return storeGoodsVO;
+            }
+            List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
+            electricityCabinetFileList.stream().forEach(auth -> {
+                if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+                    auth.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), auth.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+                    electricityCabinetFiles.add(auth);
                 }
                 storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
-            }
+            });
+            return storeGoodsVO;
+        }).collect(Collectors.toList());
 
-            storeGoodsVOList.add(storeGoodsVO);
-        }
 
-        return R.ok(storeGoodsVOList);
+//        for (StoreGoodsVO storeGoods : storeGoodsList) {
+//            StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
+//            BeanUtils.copyProperties(storeGoods, storeGoodsVO);
+//
+//            ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
+//                    .tenantId(storeGoods.getTenantId())
+//                    .storeId(storeGoods.getStoreId())
+//                    .model(storeGoods.getCarModel())
+//                    .status(ElectricityCar.CAR_NOT_RENT).build();
+//            Integer carInventory = (Integer) electricityCarService.queryCount(electricityCarQuery).getData();
+//            storeGoodsVO.setCarInventory(carInventory);
+//            //图片显示
+//            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
+//
+//
+//            if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
+//                List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
+//                for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
+//                    if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
+//                        electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
+//                    }
+//                    electricityCabinetFiles.add(electricityCabinetFile);
+//                }
+//                storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
+//            }
+//
+//            storeGoodsVOList.add(storeGoodsVO);
+//        }
+
+        return R.ok(result);
     }
 
     @Override
