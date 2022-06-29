@@ -137,37 +137,6 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
             });
             return storeGoodsVO;
         }).collect(Collectors.toList());
-
-
-//        for (StoreGoodsVO storeGoods : storeGoodsList) {
-//            StoreGoodsVO storeGoodsVO = new StoreGoodsVO();
-//            BeanUtils.copyProperties(storeGoods, storeGoodsVO);
-//
-//            ElectricityCarQuery electricityCarQuery = ElectricityCarQuery.builder()
-//                    .tenantId(storeGoods.getTenantId())
-//                    .storeId(storeGoods.getStoreId())
-//                    .model(storeGoods.getCarModel())
-//                    .status(ElectricityCar.CAR_NOT_RENT).build();
-//            Integer carInventory = (Integer) electricityCarService.queryCount(electricityCarQuery).getData();
-//            storeGoodsVO.setCarInventory(carInventory);
-//            //图片显示
-//            List<ElectricityCabinetFile> electricityCabinetFileList = electricityCabinetFileService.queryByDeviceInfo(storeGoodsVO.getId(), ElectricityCabinetFile.TYPE_STORE_GOODS, storageConfig.getIsUseOSS());
-//
-//
-//            if (ObjectUtil.isNotEmpty(electricityCabinetFileList)) {
-//                List<ElectricityCabinetFile> electricityCabinetFiles = new ArrayList<>();
-//                for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFileList) {
-//                    if (Objects.equals(StorageConfig.IS_USE_OSS, storageConfig.getIsUseOSS())) {
-//                        electricityCabinetFile.setUrl(storageService.getOssFileUrl(storageConfig.getBucketName(), electricityCabinetFile.getName(), System.currentTimeMillis() + 10 * 60 * 1000L));
-//                    }
-//                    electricityCabinetFiles.add(electricityCabinetFile);
-//                }
-//                storeGoodsVO.setElectricityCabinetFiles(electricityCabinetFiles);
-//            }
-//
-//            storeGoodsVOList.add(storeGoodsVO);
-//        }
-
         return R.ok(result);
     }
 
