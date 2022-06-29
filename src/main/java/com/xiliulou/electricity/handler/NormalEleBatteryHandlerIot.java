@@ -240,7 +240,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         //newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
         Double power = (eleBatteryVo.getPower());
         //上报电量和上次电量相差百分之50以上，电量不做修改
-        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && (electricityBattery.getPower() - (power * 100)) >= 50) {
+        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50 && Math.abs(electricityBattery.getPower() - (power * 100)) != 100) {
             power = (electricityBattery.getPower()) / 100;
         }
 
