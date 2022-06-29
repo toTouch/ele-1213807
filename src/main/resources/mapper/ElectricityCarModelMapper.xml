@@ -4,9 +4,10 @@
 
 
     <!--查询指定行数据-->
-    <select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityCarModel">
+
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
         select
-        tecm.id, tecm.name,tecm.franchisee_id, tecm.del_flag, tecm.create_time, tecm.update_time,tecm.tenant_id
+        tecm.id, tecm.name,tecm.franchisee_id, tecm.del_flag, tecm.create_time, tecm.update_time,tecm.tenant_id,tf.name as franchiseeName
         from t_electricity_car_model tecm left join t_franchisee tf on tecm.franchisee_id=tf.id
         where tecm.del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -21,6 +22,7 @@
         order by tecm.update_time desc
         limit #{query.offset}, #{query.size}
     </select>
+
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_electricity_car_model tecm  left join t_franchisee tf on tecm.franchisee_id=tf.id

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.entity.ElectricityCarModel;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
+import com.xiliulou.electricity.vo.ElectricityCarModelVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -21,7 +22,7 @@ public interface ElectricityCarModelMapper extends BaseMapper<ElectricityCarMode
     /**
      * @return 对象列表
      */
-    List<ElectricityCarModel> queryList(@Param("query") ElectricityCarModelQuery electricityCarModelQuery);
+    List<ElectricityCarModelVO> queryList(@Param("query") ElectricityCarModelQuery electricityCarModelQuery);
 
 	Integer queryCount(@Param("query") ElectricityCarModelQuery electricityCarModelQuery);
 }
