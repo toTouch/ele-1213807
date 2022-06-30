@@ -18,6 +18,9 @@
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
         </if>
+        <if test="query.cardModel != null">
+            and tel.member_card_model =#{query.cardModel}
+        </if>
         <if test="query.status != null">
             and tel.status =#{query.status}
         </if>
@@ -51,6 +54,9 @@
         </if>
         <if test="query.cardType != null">
             and tel.member_card_type =#{query.cardType}
+        </if>
+        <if test="query.cardModel != null">
+            and tel.member_card_model =#{query.cardModel}
         </if>
         <if test="query.status != null">
             and tel.status =#{query.status}

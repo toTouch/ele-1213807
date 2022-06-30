@@ -47,6 +47,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
+			@RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
@@ -90,6 +91,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.size(size)
 				.tenantId(tenantId)
 				.status(status)
+				.cardModel(memberCardModel)
 				.franchiseeName(franchiseeName)
 				.franchiseeId(franchiseeId).build();
 
@@ -105,6 +107,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	public R queryCount(@RequestParam(value = "phone", required = false) String phone,
 			@RequestParam(value = "orderId", required = false) String orderId,
 			@RequestParam(value = "memberCardType", required = false) Integer cardType,
+			@RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
@@ -139,6 +142,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.queryEndTime(queryEndTime)
 				.tenantId(tenantId)
 				.status(status)
+				.cardModel(memberCardModel)
 				.franchiseeName(franchiseeName)
 				.franchiseeId(franchiseeId).build();
 
