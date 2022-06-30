@@ -246,7 +246,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         //上报电量和上次电量相差百分之50以上，电量不做修改
 
         Integer isBatteryReportCheck = eleCommonConfig.getBatteryReportCheck();
-        if (Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck,EleCommonConfig.OPEN_BATTERY_REPORT_CHECK)) {
+        if (Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck, EleCommonConfig.OPEN_BATTERY_REPORT_CHECK)) {
             if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50 && Math.abs(electricityBattery.getPower() - (power * 100)) != 100) {
                 power = (electricityBattery.getPower()) / 100;
             }
