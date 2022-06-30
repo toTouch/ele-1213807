@@ -414,17 +414,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-
-        System.out.println("换电起那只检测========================="+franchiseeUserInfo);
-
-
-
         //租车未购买套餐
         if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR) && Objects.isNull(franchiseeUserInfo.getRentCarMemberCardExpireTime())) {
             log.error("order ERROR! not rent car member card! uid:{}", user.getUid());
             return R.fail("100012", "未购买租车套餐");
         }
-
 
 
         if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR) && Objects.nonNull(franchiseeUserInfo.getRentCarMemberCardExpireTime()) && franchiseeUserInfo.getRentCarMemberCardExpireTime() < now) {
