@@ -9,9 +9,9 @@ import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.HardwareCommand;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
@@ -315,7 +315,7 @@ public class JsonAdminElectricityCabinetController {
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.ELE_COMMAND_UNLOCK_CABINET)
+                .command(ElectricityIotConstant.ELE_COMMAND_UNLOCK_CABINET)
                 .build();
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);

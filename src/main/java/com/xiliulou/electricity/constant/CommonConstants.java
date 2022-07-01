@@ -23,4 +23,15 @@ public interface CommonConstants {
 
 	//提现 用户锁
 	String CACHE_WITHDRAW_USER_UID = "withdraw_user_uid:";
+
+
+	/**
+	 * 柜机状态
+	 */
+	//在线
+	String STATUS_ONLINE="online";
+	//离线
+	String STATUS_OFFLINE="offline";
+
+
 }

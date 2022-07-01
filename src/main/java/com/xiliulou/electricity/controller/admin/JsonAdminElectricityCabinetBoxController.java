@@ -5,8 +5,8 @@ import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -104,7 +104,7 @@ public class JsonAdminElectricityCabinetBoxController {
 				.data(dataMap)
 				.productKey(electricityCabinet.getProductKey())
 				.deviceName(electricityCabinet.getDeviceName())
-				.command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+				.command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)
 				.build();
 
 		eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
@@ -163,7 +163,7 @@ public class JsonAdminElectricityCabinetBoxController {
 				.data(dataMap)
 				.productKey(electricityCabinet.getProductKey())
 				.deviceName(electricityCabinet.getDeviceName())
-				.command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+				.command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)
 				.build();
 
 		eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);

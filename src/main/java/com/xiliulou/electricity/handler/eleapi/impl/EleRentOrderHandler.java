@@ -7,8 +7,9 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.EleApiConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.handler.eleapi.EleApiHandler;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.query.api.RentQuery;
@@ -117,7 +118,7 @@ public class EleRentOrderHandler implements EleApiHandler {
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.API_RENT_ORDER).build();
+                .command(ElectricityIotConstant.API_RENT_ORDER).build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
             log.error("ELE RENT ORDER ERROR! send command error! requestId={}", apiRequestQuery.getRequestId());

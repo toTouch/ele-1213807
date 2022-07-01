@@ -1,21 +1,20 @@
-package com.xiliulou.electricity.handler;
+package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
+import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xiliulou.iot.entity.SendHardwareMessage;
-import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.apache.commons.lang3.tuple.Pair;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -26,9 +25,9 @@ import java.util.Objects;
  * @Date: 2020/12/28 17:02
  * @Description:
  */
-@Service
+@Service(value= ElectricityIotConstant.NORMAL_POWER_CONSUMPTION_HANDLER)
 @Slf4j
-public class NormalPowerConsumptionHandlerIot extends AbstractIotMessageHandler {
+public class NormalPowerConsumptionHandlerIot extends AbstractElectricityIotHandler {
 	@Autowired
 	RedisService redisService;
 	@Autowired
@@ -36,41 +35,26 @@ public class NormalPowerConsumptionHandlerIot extends AbstractIotMessageHandler 
 	@Autowired
 	ElectricityCabinetPowerService electricityCabinetPowerService;
 
-	DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+	DateTimeFormatter formatter = DateTimeFormatter.ofPattern(DatePattern.NORM_DATE_PATTERN);
+
 
 	@Override
-	protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
-		String sessionId = generateSessionId(hardwareCommandQuery);
-		SendHardwareMessage message = SendHardwareMessage.builder()
-				.sessionId(sessionId)
-				.type(hardwareCommandQuery.getCommand())
-				.data(hardwareCommandQuery.getData()).build();
-		return Pair.of(message, sessionId);
-	}
-
-	@Override
-	protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+	public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 		String sessionId = receiverMessage.getSessionId();
 		if (StrUtil.isEmpty(sessionId)) {
 			log.error("no sessionId,{}", receiverMessage.getOriginContent());
-			return false;
+			return ;
 		}
 
 		PowerConsumption powerConsumption = JsonUtil.fromJson(receiverMessage.getOriginContent(), PowerConsumption.class);
 		if (Objects.isNull(powerConsumption)) {
 			log.error("NORMAL POWER ERROR! parse  power error! originContent={}", receiverMessage.getOriginContent());
-			return false;
+			return ;
 		}
 
 		if (!powerConsumption.isSuccess()) {
 			log.warn("NORMAL POWER WARN! power consumption warn! originContent={}", receiverMessage.getOriginContent());
-			return false;
-		}
-
-		ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-		if (Objects.isNull(electricityCabinet)) {
-			log.error("NORMAL POWER ERROR! no electricityCabinet! p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-			return false;
+			return ;
 		}
 
 		ElectricityCabinetPower build = ElectricityCabinetPower.builder()
@@ -83,15 +67,16 @@ public class NormalPowerConsumptionHandlerIot extends AbstractIotMessageHandler 
 				.tenantId(electricityCabinet.getTenantId())
 				.build();
 		electricityCabinetPowerService.insertOrUpdate(build);
-		return true;
 	}
 
+
+	@Data
+	class PowerConsumption {
+		private String powerConsumption;
+		private String date;
+		private String sumConsumption;
+		private boolean success;
+	}
 }
 
-@Data
-class PowerConsumption {
-	private String powerConsumption;
-	private String date;
-	private String sumConsumption;
-	private boolean success;
-}
+

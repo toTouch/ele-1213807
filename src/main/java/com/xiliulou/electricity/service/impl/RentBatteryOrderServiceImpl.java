@@ -12,8 +12,9 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
@@ -366,7 +367,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR).build();
+                .command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         return R.ok(orderId);
 
@@ -563,7 +564,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderId);
 
@@ -648,7 +649,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_RENT_OPEN_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_RENT_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
 
@@ -677,7 +678,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_RETURN_OPEN_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_RETURN_OPEN_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 
         }

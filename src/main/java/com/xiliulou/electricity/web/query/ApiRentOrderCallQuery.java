@@ -1,12 +1,18 @@
 package com.xiliulou.electricity.web.query;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 /**
  * @author : eclair
  * @date : 2021/11/11 8:35 上午
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
+@Builder
 public class ApiRentOrderCallQuery {
     /**
      * 设备的产品名

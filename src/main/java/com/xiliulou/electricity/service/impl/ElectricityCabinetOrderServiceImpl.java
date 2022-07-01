@@ -12,11 +12,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
 import com.xiliulou.electricity.service.*;
@@ -399,7 +399,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(electricityCabinetOrder.getOrderId());
         } catch (Exception e) {
@@ -532,7 +532,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
 
@@ -551,7 +551,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         }
         redisService.delete(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId());

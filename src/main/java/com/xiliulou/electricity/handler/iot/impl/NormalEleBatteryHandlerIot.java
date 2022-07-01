@@ -1,33 +1,18 @@
-package com.xiliulou.electricity.handler;
+package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.BatteryOtherProperties;
-import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
-import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
-import com.xiliulou.electricity.entity.NotExistSn;
-import com.xiliulou.electricity.entity.Store;
-import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
-import com.xiliulou.electricity.service.NotExistSnService;
-import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xiliulou.iot.entity.SendHardwareMessage;
-import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
@@ -39,9 +24,9 @@ import java.util.Objects;
  * @Date: 2020/12/28 17:02
  * @Description:
  */
-@Service
+@Service(value= ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
 @Slf4j
-public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
+public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
@@ -50,57 +35,38 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
     ElectricityCabinetBoxService electricityCabinetBoxService;
     @Autowired
     RedisService redisService;
-
     @Autowired
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
-
     @Autowired
     StoreService storeService;
-
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
-
     @Autowired
     NotExistSnService notExistSnService;
 
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     public static final String IRON_LITHIUM = "IRON_LITHIUM";
 
-    @Override
-    protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
-        String sessionId = generateSessionId(hardwareCommandQuery);
-        SendHardwareMessage message = SendHardwareMessage.builder()
-                .sessionId(sessionId)
-                .type(hardwareCommandQuery.getCommand())
-                .data(hardwareCommandQuery.getData()).build();
-        return Pair.of(message, sessionId);
-    }
 
     @Override
-    protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
-
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("ELE ERROR! no product and device ,p={},d={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-            return false;
-        }
+    public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
         EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
         if (Objects.isNull(eleBatteryVo)) {
             log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return false;
+            return ;
         }
 
         String cellNo = eleBatteryVo.getCellNo();
         if (StringUtils.isEmpty(cellNo)) {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return false;
+            return ;
         }
 
         ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
         if (Objects.isNull(oldElectricityCabinetBox)) {
             log.error("ELE ERROR! no cellNo! p={},d={},cell={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(), cellNo);
-            return false;
+            return ;
         }
 
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
@@ -114,7 +80,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         if (Objects.nonNull(reportTime) && Objects.nonNull(oldElectricityCabinetBox.getReportTime())
                 && oldElectricityCabinetBox.getReportTime() >= reportTime) {
             log.error("ele battery error! reportTime is less ,reportTime:{}", reportTime);
-            return false;
+            return ;
         }
 
         if (Objects.nonNull(reportTime)) {
@@ -127,7 +93,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         //存在电池但是电池名字没有上报
         if (Objects.nonNull(existsBattery) && StringUtils.isEmpty(batteryName) && existsBattery) {
             log.error("ELE ERROR! battery report illegal! existsBattery={},batteryName={}", existsBattery, batteryName);
-            return false;
+            return ;
         }
 
         //缓存存换电柜中电量最多的电池
@@ -177,7 +143,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             if (Objects.nonNull(bigEleBatteryVo) && Objects.equals(bigEleBatteryVo.getCellNo(), cellNo)) {
                 redisService.delete(electricityCabinet.getId().toString());
             }
-            return true;
+            return ;
         }
 
         NotExistSn oldNotExistSn = notExistSnService.queryByOther(batteryName, electricityCabinet.getId(), Integer.valueOf(cellNo));
@@ -206,7 +172,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
                     notExistSnService.update(notExistSnOld);
                 }
             }
-            return false;
+            return ;
         }
 
         //查询表中是否有电池
@@ -218,7 +184,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("ele battery error! tenantId is not equal,tenantId1:{},tenantId2:{}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
-            return false;
+            return ;
         }
 
         //根据电池查询仓门类型
@@ -302,7 +268,7 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
             if (Objects.isNull(store)) {
                 log.error("ele battery error! not find store,storeId:{}", electricityCabinet.getStoreId());
-                return false;
+                return ;
             }
 
             if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
@@ -316,7 +282,6 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         electricityCabinetBox.setCellNo(cellNo);
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
-        return true;
     }
 
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
@@ -350,32 +315,34 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         }
         return stringBuilder.toString();
     }
+
+    @Data
+    class EleBatteryVo {
+        private String batteryName;
+        //电量
+        private Double power;
+        //健康状态
+        private String health;
+        //充电状态
+        private String chargeStatus;
+        //cellNo
+        private String cellNo;
+        //reportTime
+        private Long reportTime;
+        //充电器电压
+        private Double chargeV;
+
+        private Boolean existsBattery;
+
+        private Boolean isMultiBatteryModel;
+
+        private Boolean hasOtherAttr;
+
+        private BatteryOtherPropertiesQuery batteryOtherProperties;
+
+    }
 }
 
-@Data
-class EleBatteryVo {
-    private String batteryName;
-    //电量
-    private Double power;
-    //健康状态
-    private String health;
-    //充电状态
-    private String chargeStatus;
-    //cellNo
-    private String cellNo;
-    //reportTime
-    private Long reportTime;
-    //充电器电压
-    private Double chargeV;
 
-    private Boolean existsBattery;
-
-    private Boolean isMultiBatteryModel;
-
-    private Boolean hasOtherAttr;
-
-    private BatteryOtherPropertiesQuery batteryOtherProperties;
-
-}
 
 
