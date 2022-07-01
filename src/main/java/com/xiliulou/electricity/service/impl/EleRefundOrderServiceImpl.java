@@ -235,7 +235,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(),FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)){
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
             log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
             return R.fail("100012", "用户绑定车辆");
         }
@@ -367,7 +367,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(status,EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(),FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)){
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
             log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
             return R.fail("100012", "用户绑定车辆");
         }
