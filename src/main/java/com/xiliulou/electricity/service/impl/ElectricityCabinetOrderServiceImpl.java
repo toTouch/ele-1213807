@@ -288,7 +288,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         Long now = System.currentTimeMillis();
-        ElectricityMemberCard electricityMemberCard=null;
+        ElectricityMemberCard electricityMemberCard = null;
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {
@@ -392,6 +392,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             } else {
                 dataMap.put("model_type", true);
                 dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
+            }
+
+            dataMap.put("exchangeType", OrderQuery.NORMAL_ORDER);
+            if (Objects.nonNull(orderQuery.getExchangeType()) && Objects.equals(orderQuery.getExchangeType(), OrderQuery.LOW_BATTERY_ORDER)) {
+                dataMap.put("exchangeType", OrderQuery.LOW_BATTERY_ORDER);
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
