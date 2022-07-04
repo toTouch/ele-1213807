@@ -165,13 +165,7 @@ public class ShareActivityRecordServiceImpl implements ShareActivityRecordServic
                 .eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
 
         //3、scene
-
-        Long uid = 1999L;
-
-        String scene = "uid:" + uid + ",id:" + activityId + ",code:" + shareActivityRecord.getCode() + ",type:1";
-
-		System.out.println("请求微信参数======================="+scene);
-
+        String scene = "uid:" + user.getUid() + ",id:" + activityId + ",type:1";
 
         //修改分享状态
         ShareActivityRecord newShareActivityRecord = new ShareActivityRecord();
