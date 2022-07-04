@@ -12,7 +12,7 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
  */
 public interface ElectricityConfigService extends IService<ElectricityConfig> {
 
-    R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw,Integer isOpenDoorLock,Integer isBatteryReview,Integer disableMemberCard,Integer isLowBatteryExchange);
+    R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw,Integer isOpenDoorLock,Integer isBatteryReview,Integer disableMemberCard,Integer isLowBatteryExchange,String lowBatteryExchangeModel);
 
     ElectricityConfig queryOne(Integer tenantId);
 

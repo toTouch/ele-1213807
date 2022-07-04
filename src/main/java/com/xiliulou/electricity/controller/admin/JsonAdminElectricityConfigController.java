@@ -27,8 +27,9 @@ public class JsonAdminElectricityConfigController {
     public R edit(@RequestParam("name") String name,@RequestParam(value = "orderTime", required = false) Integer orderTime,
             @RequestParam("isManualReview") Integer isManualReview,@RequestParam("isWithdraw") Integer isWithdraw,
             @RequestParam("isOpenDoorLock") Integer isOpenDoorLock,@RequestParam("isBatteryReview") Integer isBatteryReview,
-            @RequestParam("disableMemberCard") Integer disableMemberCard,@RequestParam("isLowBatteryExchange") Integer isLowBatteryExchange) {
-        return electricityConfigService.edit(name,orderTime,isManualReview,isWithdraw,isOpenDoorLock,isBatteryReview,disableMemberCard,isLowBatteryExchange);
+            @RequestParam("disableMemberCard") Integer disableMemberCard,@RequestParam("isLowBatteryExchange") Integer isLowBatteryExchange,
+             @RequestParam("lowBatteryExchangeModel") String lowBatteryExchangeModel) {
+        return electricityConfigService.edit(name,orderTime,isManualReview,isWithdraw,isOpenDoorLock,isBatteryReview,disableMemberCard,isLowBatteryExchange,lowBatteryExchangeModel);
     }
 
     //查询平台名称

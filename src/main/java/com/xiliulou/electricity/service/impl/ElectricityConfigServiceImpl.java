@@ -33,7 +33,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
 
     @Override
-    public R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw, Integer isOpenDoorLock,Integer isBatteryReview,Integer disableMemberCard,Integer isLowBatteryExchange) {
+    public R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw, Integer isOpenDoorLock,Integer isBatteryReview,Integer disableMemberCard,Integer isLowBatteryExchange,String lowBatteryExchangeModel) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -65,6 +65,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setIsBatteryReview(isBatteryReview);
             electricityConfig.setDisableMemberCard(disableMemberCard);
             electricityConfig.setIsLowBatteryExchange(isLowBatteryExchange);
+            electricityConfig.setLowBatteryExchangeModel(lowBatteryExchangeModel);
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -78,6 +79,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setUpdateTime(System.currentTimeMillis());
         electricityConfig.setDisableMemberCard(disableMemberCard);
         electricityConfig.setIsLowBatteryExchange(isLowBatteryExchange);
+        electricityConfig.setLowBatteryExchangeModel(lowBatteryExchangeModel);
         electricityConfigMapper.updateById(electricityConfig);
         return R.ok();
     }

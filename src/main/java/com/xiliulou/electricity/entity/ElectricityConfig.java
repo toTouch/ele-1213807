@@ -73,6 +73,11 @@ public class ElectricityConfig {
      */
     private Integer isLowBatteryExchange;
 
+    /**
+     * 低电量换电模式
+     */
+    private String lowBatteryExchangeModel;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
