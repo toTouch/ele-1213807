@@ -54,4 +54,11 @@ public interface FranchiseeUserInfoService {
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
+
+    /**
+     * 根据套餐id查询用户
+     * @param id
+     * @return
+     */
+    List<FranchiseeUserInfo> selectByMemberCardId(Integer id);
 }

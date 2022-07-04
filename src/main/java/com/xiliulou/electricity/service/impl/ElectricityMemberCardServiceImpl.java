@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -155,6 +156,14 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 	 */
 	@Override
 	public R delete(Integer id) {
+
+		//判断是否有用户绑定该套餐
+		List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.selectByMemberCardId(id);
+		if (!CollectionUtils.isEmpty(franchiseeUserInfoList)) {
+			log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}",id);
+			return R.fail("100100", "删除失败，该套餐已有用户使用！");
+		}
+
 		ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
 		electricityMemberCard.setId(id);
 		electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);

@@ -27,4 +27,8 @@ public class UserInfoQuery {
 
     private Long memberCardExpireTimeBegin;
     private Long memberCardExpireTimeEnd;
+    /**
+     * 套餐id
+     */
+    private Long memberCardId;
 }

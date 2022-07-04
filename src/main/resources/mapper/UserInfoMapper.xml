@@ -76,6 +76,9 @@
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>
+        <if test="query.memberCardId != null">
+            and tfui.card_id = #{query.memberCardId}
+        </if>
         <if test="query.memberCardExpireTimeBegin !=null">
             and tfui.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
         </if>
