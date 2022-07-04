@@ -192,6 +192,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 							.phone(existPhone.getRight().getPhone())
 							.userName(existPhone.getRight().getName())
 							.serviceStatus(UserInfo.STATUS_INIT)
+							.authStatus(UserInfo.AUTH_STATUS_STATUS_INIT)
 							.delFlag(User.DEL_NORMAL)
 							.usableStatus(UserInfo.USER_USABLE_STATUS)
 							.tenantId(tenantId)

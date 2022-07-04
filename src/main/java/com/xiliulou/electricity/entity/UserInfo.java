@@ -74,6 +74,7 @@ public class UserInfo {
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
+
     //用户状态--初始化
     public static final Integer STATUS_INIT = 0;
     //已实名认证
@@ -85,6 +86,10 @@ public class UserInfo {
     //禁用
     public static final Integer USER_UN_USABLE_STATUS = 1;
 
+    /**
+     * 用户状态 扫码登录成功未开始实名认证
+     */
+    public static final Integer AUTH_STATUS_STATUS_INIT = -1;
     //等待审核中
     public static Integer AUTH_STATUS_PENDING_REVIEW = 0;
     //审核被拒绝
