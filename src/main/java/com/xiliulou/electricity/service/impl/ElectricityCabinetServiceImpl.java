@@ -109,8 +109,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     TenantService tenantService;
     @Autowired
     private IotAcsService iotAcsService;
-    @Autowired
-    ElectricityConfigService electricityConfigService;
 
 
     /**
