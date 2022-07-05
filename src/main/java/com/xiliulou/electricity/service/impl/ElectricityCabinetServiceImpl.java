@@ -1101,7 +1101,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //不合法的命令
 //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
-        if (ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
+        if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
 
