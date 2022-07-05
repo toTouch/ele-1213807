@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -457,9 +458,12 @@ public class StoreServiceImpl implements StoreService {
 		return storeMapper.queryCountGroupByProvinceId(tenantId);
 	}
 
+    @Override
+    public List<Store> selectByFranchiseeId(Long id) {
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL));
+    }
 
-
-	public Long getTime(Long time) {
+    public Long getTime(Long time) {
 		Date date1 = new Date(time);
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 		String format = dateFormat.format(date1);
