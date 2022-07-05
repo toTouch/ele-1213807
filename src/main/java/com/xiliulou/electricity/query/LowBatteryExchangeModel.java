@@ -27,7 +27,7 @@ public class LowBatteryExchangeModel {
     /**
      * 电量标准
      */
-    private Integer batteryPowerStandard;
+    private Double batteryPowerStandard;
 
 
 

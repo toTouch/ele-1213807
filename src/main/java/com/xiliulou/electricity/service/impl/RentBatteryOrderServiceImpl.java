@@ -16,9 +16,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.RentBatteryOrderMapper;
-import com.xiliulou.electricity.query.RentBatteryOrderQuery;
-import com.xiliulou.electricity.query.RentBatteryQuery;
-import com.xiliulou.electricity.query.RentOpenDoorQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -308,9 +306,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         //分配电池 --只分配满电电池
         Triple<Boolean, String, Object> tripleResult;
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-            tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+            tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(), null);
         } else {
-            tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, franchiseeUserInfo.getFranchiseeId());
+            tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, franchiseeUserInfo.getFranchiseeId(), null);
         }
 
         if (Objects.isNull(tripleResult)) {
@@ -929,10 +927,20 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     //分配满仓
     @Override
-    public Triple<Boolean, String, Object> findUsableBatteryCellNo(ElectricityCabinet electricityCabinet, String cellNo, String batteryType, Long franchiseeId) {
+    public Triple<Boolean, String, Object> findUsableBatteryCellNo(ElectricityCabinet electricityCabinet, String cellNo, String batteryType, Long franchiseeId, Integer orderSource) {
 
 
         Integer box = null;
+
+        Double fullCharged = electricityCabinet.getFullyCharged();
+        if (Objects.nonNull(orderSource) && Objects.equals(orderSource, OrderQuery.LOW_BATTERY_ORDER)) {
+            ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinet.getTenantId());
+            List<LowBatteryExchangeModel> list = JsonUtil.fromJson(electricityConfig.getLowBatteryExchangeModel(), List.class);
+            if (Objects.nonNull(list) && list.size() > 0) {
+                fullCharged = list.get(0).getBatteryPowerStandard();
+            }
+        }
+
         //先查询缓存
         BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId(), BigEleBatteryVo.class);
 
@@ -941,7 +949,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 String newCellNo = bigEleBatteryVo.getCellNo();
                 Double power = bigEleBatteryVo.getPower();
                 if (Objects.nonNull(newCellNo) && Objects.nonNull(power)
-                        && !Objects.equals(cellNo, newCellNo) && power > electricityCabinet.getFullyCharged()) {
+                        && !Objects.equals(cellNo, newCellNo) && power > fullCharged) {
 
                     //1、查仓门
                     ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), bigEleBatteryVo.getCellNo());
@@ -979,7 +987,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 //是否满电
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
                 if (Objects.nonNull(electricityBattery)) {
-                    if (electricityBattery.getPower() >= electricityCabinet.getFullyCharged()) {
+                    if (electricityBattery.getPower() >= fullCharged) {
 
                         ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
                         BeanUtil.copyProperties(electricityCabinetBox, electricityCabinetBoxVO);

@@ -394,11 +394,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 dataMap.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
             }
 
-            dataMap.put("exchangeType", OrderQuery.NORMAL_ORDER);
-            if (Objects.nonNull(orderQuery.getExchangeType()) && Objects.equals(orderQuery.getExchangeType(), OrderQuery.LOW_BATTERY_ORDER)) {
-                dataMap.put("exchangeType", OrderQuery.LOW_BATTERY_ORDER);
-            }
-
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
                     .data(dataMap)

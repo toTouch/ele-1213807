@@ -25,17 +25,12 @@ public class OrderQuery {
     private Integer source;
 
 
-    private Integer exchangeType;
 
     //微信公众号来源
     public static final Integer SOURCE_WX_MP = 1;
     //微信小程序来源
     public static final Integer SOURCE_WX_RPO = 2;
-
-    //正常换电
-    public static final Integer NORMAL_ORDER = 0;
-
     //低电量换电
-    public static final Integer LOW_BATTERY_ORDER = 1;
+    public static final Integer LOW_BATTERY_ORDER = 6;
 
 }
