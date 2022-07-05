@@ -61,4 +61,6 @@ public interface FranchiseeUserInfoService {
      * @return
      */
     List<FranchiseeUserInfo> selectByMemberCardId(Integer id);
+
+    List<FranchiseeUserInfo> selectByFranchiseeId(Long id);
 }

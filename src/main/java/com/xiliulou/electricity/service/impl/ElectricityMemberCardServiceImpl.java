@@ -360,6 +360,12 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 	}
 
 	@Override
+	public List<ElectricityMemberCard> selectByFranchiseeId(Long id) {
+		return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
+		.eq(ElectricityMemberCard::getDelFlag,ElectricityMemberCard.DEL_NORMAL));
+	}
+
+	@Override
 	public R queryCount(Integer status, Integer type, Integer tenantId) {
 		return R.ok(baseMapper.queryCount(status, type, tenantId));
 	}
