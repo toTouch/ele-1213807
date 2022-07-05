@@ -20,6 +20,7 @@ public class ElectricityConfigAddAndUpdateQuery {
     /**
      * 平台名称
      */
+    @NotEmpty(message = "平台名称不能为空!", groups = {CreateGroup.class})
     private String name;
 
     /**
@@ -56,6 +57,11 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否开启低电量换电 (0--关闭，1--开启)
      */
     private Integer isLowBatteryExchange;
+
+    /**
+     * 低电量换电配置模式
+     */
+    private List<LowBatteryExchangeModel> lowBatteryExchangeModelList;
 
     /**
      * 低电量换电配置模式

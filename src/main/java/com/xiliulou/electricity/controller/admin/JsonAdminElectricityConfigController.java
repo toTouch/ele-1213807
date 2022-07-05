@@ -3,7 +3,9 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.validator.CreateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 /**
@@ -22,7 +24,7 @@ public class JsonAdminElectricityConfigController {
 
     //编辑平台名称
     @PutMapping(value = "/admin/electricityConfig")
-    public R edit(@RequestBody ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
+    public R edit(@RequestBody @Validated(value = CreateGroup.class)ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         return electricityConfigService.edit(electricityConfigAddAndUpdateQuery);
     }
 

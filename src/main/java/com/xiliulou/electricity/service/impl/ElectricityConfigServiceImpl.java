@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
@@ -50,6 +52,14 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        if (ObjectUtil.isEmpty(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        //封装型号押金
+        String lowBatteryExchangeModel = JsonUtil.toJson(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList());
+        electricityConfigAddAndUpdateQuery.setLowBatteryExchangeModel(lowBatteryExchangeModel);
 
 
         ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId,tenantId));
