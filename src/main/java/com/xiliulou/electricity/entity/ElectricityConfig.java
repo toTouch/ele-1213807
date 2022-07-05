@@ -98,4 +98,7 @@ public class ElectricityConfig {
     public static Integer NOT_DISABLE_MEMBER_CARD = 0;
     public static Integer DISABLE_MEMBER_CARD = 1;
 
+    public static Integer LOW_BATTERY_EXCHANGE = 0;
+    public static Integer NOT_LOW_BATTERY_EXCHANGE = 1;
+
 }

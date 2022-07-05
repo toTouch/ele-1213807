@@ -10,6 +10,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
@@ -19,10 +20,7 @@ import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -111,6 +109,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     TenantService tenantService;
     @Autowired
     private IotAcsService iotAcsService;
+    @Autowired
+    ElectricityConfigService electricityConfigService;
 
 
     /**
@@ -349,7 +349,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         if (ObjectUtil.isNotEmpty(electricityCabinetList)) {
             electricityCabinetList.parallelStream().forEach(e -> {
-
 
 
                 //营业时间
@@ -1437,7 +1436,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (Objects.isNull(tripleResult)) {
-            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
+            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池",checkIsLowBatteryExchange(electricityCabinet.getTenantId()));
         }
 
         if (!tripleResult.getLeft()) {
@@ -1989,5 +1988,49 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
         }
         return update;
+    }
+
+    private Integer checkIsLowBatteryExchange(Integer tenantId) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+        Integer result = null;
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
+            return result;
+        }
+        List<LowBatteryExchangeModel> list = JsonUtil.fromJson(electricityConfig.getLowBatteryExchangeModel(), List.class);
+        Long now = System.currentTimeMillis();
+        for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
+            boolean isInExchangeTime = timeCalendar(new Date(now), new Date(lowBatteryExchangeModel.getExchangeBeginTime()), new Date(lowBatteryExchangeModel.getExchangeEndTime()));
+            if (isInExchangeTime) {
+                result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
+                return result;
+            }
+        }
+        return result;
+    }
+
+
+    /**
+     * @param nowTime
+     * @param beginTime
+     * @param endTime
+     * @return boolean
+     */
+    //判断是否在规定的时间内签到 nowTime 当前时间 beginTime规定开始时间 endTime规定结束时间
+    public static boolean timeCalendar(Date nowTime, Date beginTime, Date endTime) {
+        //设置当前时间
+        Calendar date = Calendar.getInstance();
+        date.setTime(nowTime);
+        //设置开始时间
+        Calendar begin = Calendar.getInstance();
+        begin.setTime(beginTime);//开始时间
+        //设置结束时间
+        Calendar end = Calendar.getInstance();
+        end.setTime(endTime);//上午结束时间
+        //处于开始时间之后，和结束时间之前的判断
+        if ((date.after(begin) && date.before(end))) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
