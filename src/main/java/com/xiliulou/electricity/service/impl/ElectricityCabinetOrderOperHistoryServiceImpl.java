@@ -67,7 +67,7 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
                 for (int i = 0; i < historyList.size(); i++) {
                     historyList.get(i).setSeq(i + 1);
 
-                    historyList.get(i).setResult(checkOrderOperResult(historyList.get(i)) ? ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS : ElectricityCabinetOrderOperHistory.OPERATE_RESULT_FAIL);
+                    historyList.get(i).setResult(checkOrderOperResult(historyList.get(i)) ? ElectricityCabinetOrderOperHistory.OPERATE_RESULT_FAIL : ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS);
                 }
             }
         }
@@ -91,6 +91,7 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
                     history.getMsg().contains("未关闭") ||
                     history.getMsg().contains("不匹配") ||
                     history.getMsg().contains("不属于") ||
+                    history.getMsg().contains("无法") ||
                     history.getMsg().contains("超时");
         }
 
