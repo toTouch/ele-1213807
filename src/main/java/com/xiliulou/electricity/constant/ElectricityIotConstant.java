@@ -30,6 +30,10 @@ public class ElectricityIotConstant {
     public static final String NORMAL_OTHER_CONFIG_HANDLER = "normalOtherConfigHandler";
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
+    /**
+     * 核心板上报数据处理
+     */
+    public static final String NORMAL_CABINET_CORE_DATA_HANDLER = "normalCabinetCoreDataHandler";
 
 
     public static String acquireChargeHandlerName(String command) {
@@ -248,6 +252,10 @@ public class ElectricityIotConstant {
     public static final String OFFLINE_EXCHANGE_ORDER_ACK_RSP = "offline_exchange_order_ack_rsp";
 
     public static final String OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS = "offline_exchange_order_ack";
+    /**
+     * 核心板数据上报
+     */
+    public static final String EXCHANGE_CORE_REPORT = "exchange_core_report";
 
 
     static {
@@ -317,6 +325,13 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_BATTERY_SYNC_INFO , NORMAL_ELE_BATTERY_HANDLER);
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_BATTERY_REPORT_INFO, NORMAL_ELE_BATTERY_HANDLER);
+
+
+        /**
+         * 核心板数据上报
+         */
+        COMMAND_HANDLER_MAPS.put( EXCHANGE_CORE_REPORT, NORMAL_CABINET_CORE_DATA_HANDLER);
+
 
 
     }
