@@ -211,21 +211,21 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id);
         if(!CollectionUtils.isEmpty(electricityMemberCardList)){
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}",id);
-            return R.fail("100101", "删除失败，该加盟商已绑定套餐！");
+            return R.fail(id,"100101", "删除失败，该加盟商已绑定套餐！");
         }
 
         //查询加盟商是否绑定门店
         List<Store> storeList=storeService.selectByFranchiseeId(id);
         if(!CollectionUtils.isEmpty(storeList)){
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding store,franchiseeId={}",id);
-            return R.fail("100102", "删除失败，该加盟商已绑定门店！");
+            return R.fail(id,"100102", "删除失败，该加盟商已绑定门店！");
         }
 
         //查询加盟商是否绑定普通用户
         List<FranchiseeUserInfo> franchiseeUserInfoList=franchiseeUserInfoService.selectByFranchiseeId(id);
         if(!CollectionUtils.isEmpty(franchiseeUserInfoList)){
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding user,franchiseeId={}",id);
-            return R.fail("100103", "删除失败，该加盟商已绑定用户！");
+            return R.fail(id,"100103", "删除失败，该加盟商已绑定用户！");
         }
 
         //查询加盟商是否绑定门店，绑定门店则不能删除

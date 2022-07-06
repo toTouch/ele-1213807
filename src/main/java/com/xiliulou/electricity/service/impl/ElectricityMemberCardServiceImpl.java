@@ -178,7 +178,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 		if (update > 0) {
 			return R.ok();
 		}
-		return R.fail("ELECTRICITY.0086", "操作失败");
+		return R.fail(id,"ELECTRICITY.0086", "操作失败");
 	}
 
 	/**
