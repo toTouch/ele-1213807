@@ -161,7 +161,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 		List<FranchiseeUserInfo> franchiseeUserInfoList= franchiseeUserInfoService.selectByMemberCardId(id);
 		if (!CollectionUtils.isEmpty(franchiseeUserInfoList)) {
 			log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}",id);
-			return R.fail("100100", "删除失败，该套餐已有用户使用！");
+			return R.fail(id,"100100", "删除失败，该套餐已有用户使用！");
 		}
 
 		ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
@@ -178,7 +178,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 		if (update > 0) {
 			return R.ok();
 		}
-		return R.fail(id,"ELECTRICITY.0086", "操作失败");
+		return R.fail("ELECTRICITY.0086", "操作失败");
 	}
 
 	/**
