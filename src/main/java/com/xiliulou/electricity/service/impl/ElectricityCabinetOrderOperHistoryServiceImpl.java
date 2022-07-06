@@ -56,18 +56,18 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
         List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
 
         if (ObjectUtil.isNotEmpty(historyList)) {
-            boolean falg= Boolean.FALSE;
+            boolean falg = Boolean.FALSE;
             //判断上报的操作记录数据是否有操作顺序及操作结果
             for (ElectricityCabinetOrderOperHistory history : historyList) {
-                falg=ObjectUtil.isEmpty(history.getSeq())||ObjectUtil.isEmpty(history.getResult());
+                falg = ObjectUtil.isEmpty(history.getSeq()) || ObjectUtil.isEmpty(history.getResult());
             }
 
             //若上报的操作记录数据没有操作顺序或操作结果（即旧数据），手动排序 设置操作结果
-            if(falg){
-                for (int i = 1; i <= historyList.size(); i++) {
-                    historyList.get(i).setSeq(i);
+            if (falg) {
+                for (int i = 0; i <= historyList.size(); i++) {
+                    historyList.get(i).setSeq(i + 1);
 
-                    historyList.get(i).setResult(checkOrderOperResult(historyList.get(i))?0:1);
+                    historyList.get(i).setResult(checkOrderOperResult(historyList.get(i)) ? ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS : ElectricityCabinetOrderOperHistory.OPERATE_RESULT_FAIL);
                 }
             }
         }
