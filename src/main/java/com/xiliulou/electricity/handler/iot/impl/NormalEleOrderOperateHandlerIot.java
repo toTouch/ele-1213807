@@ -16,6 +16,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 /**
  * @author: lxc
  * @Date: 2020/12/28 17:02
@@ -37,6 +39,10 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
         EleOrderOperateVO eleOrderOperateVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderOperateVO.class);
+        if (Objects.isNull(eleOrderOperateVO)) {
+            log.error("ELE ERROR! eleOrderOperateVO is null,sessionId={}",receiverMessage.getSessionId());
+            return ;
+        }
 
         if (receiverMessage.getType().equalsIgnoreCase(ElectricityIotConstant.API_ORDER_OPER_HISTORY)) {
             ApiOrderOperHistory history = ApiOrderOperHistory.builder()
@@ -55,7 +61,8 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                     .type(eleOrderOperateVO.getOrderType())
                     .tenantId(electricityCabinet.getTenantId())
                     .msg(eleOrderOperateVO.getMsg())
-                    .build();
+                    .seq(eleOrderOperateVO.getSeq())
+                    .result(eleOrderOperateVO.getResult()).build();
             electricityCabinetOrderOperHistoryService.insert(history);
         }
     }
@@ -71,6 +78,14 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
         private Integer orderType;
         //msg
         private String msg;
+        /**
+         * 操作步骤序号
+         */
+        private Integer seq;
+        /**
+         * 操作结果 0：成功，1：失败
+         */
+        private Integer result;
     }
 }
 

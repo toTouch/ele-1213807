@@ -112,6 +112,9 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_RENT_OPEN_DOOR = "rent_open_door";
     //还电池开门
     public static final String ELE_COMMAND_RETURN_OPEN_DOOR = "return_open_door";
+    //操作记录
+    public static final String ELE_EXCHANGE_ORDER_OPERATE_RECORD = "exchange_order_operate_record";
+
     //物理操作
     public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
     public static final String ELE_COMMAND_CORE_OPEN_DOOR = "core_open_door";
@@ -295,6 +298,7 @@ public class ElectricityIotConstant {
 
 
         COMMAND_HANDLER_MAPS.put(API_ORDER_OPER_HISTORY , NORMAL_ELE_ORDER_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_EXCHANGE_ORDER_OPERATE_RECORD , NORMAL_ELE_ORDER_OPERATE_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_ORDER_OPEN_OLD_DOOR, NORMAL_ELE_ORDER_HANDLER);

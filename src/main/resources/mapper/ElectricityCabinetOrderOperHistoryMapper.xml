@@ -10,7 +10,7 @@
 		from t_electricity_cabinet_order_oper_history
 		where order_id = #{query.orderId}
 		AND type =#{query.type}
-		order by create_time desc
+		order by create_time asc
 		limit #{query.offset}, #{query.size}
 	</select>
 
