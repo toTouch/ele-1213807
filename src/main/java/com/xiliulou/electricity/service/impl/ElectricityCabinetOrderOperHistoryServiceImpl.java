@@ -64,7 +64,7 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
 
             //若上报的操作记录数据没有操作顺序或操作结果（即旧数据），手动排序 设置操作结果
             if (falg) {
-                for (int i = 0; i <= historyList.size(); i++) {
+                for (int i = 0; i < historyList.size(); i++) {
                     historyList.get(i).setSeq(i + 1);
 
                     historyList.get(i).setResult(checkOrderOperResult(historyList.get(i)) ? ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS : ElectricityCabinetOrderOperHistory.OPERATE_RESULT_FAIL);
