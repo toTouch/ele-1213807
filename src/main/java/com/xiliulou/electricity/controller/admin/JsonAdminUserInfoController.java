@@ -38,12 +38,10 @@ public class JsonAdminUserInfoController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "batterySn",required = false) String batterySn,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
-                       @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
-                       @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "memberCardId",required = false) Long memberCardId) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -61,12 +59,10 @@ public class JsonAdminUserInfoController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
+                .batterySn(batterySn)
+                .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
-				.memberCardExpireTimeBegin(memberCardExpireTimeBegin)
-                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .memberCardId(memberCardId)
                 .tenantId(tenantId).build();
 
