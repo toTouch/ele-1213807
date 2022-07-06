@@ -257,6 +257,13 @@ public class ElectricityIotConstant {
      */
     public static final String EXCHANGE_CORE_REPORT = "exchange_core_report";
 
+    /**
+     * 柜机检测电池数据上报
+     */
+    public static final String BATTERY_CHANGE_REPORT = "battery_change_report";
+
+
+
 
     static {
         COMMAND_HANDLER_MAPS.put( CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -325,6 +332,10 @@ public class ElectricityIotConstant {
 
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_BATTERY_SYNC_INFO , NORMAL_ELE_BATTERY_HANDLER);
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_BATTERY_REPORT_INFO, NORMAL_ELE_BATTERY_HANDLER);
+        /**
+         * 柜机检测电池数据上报
+         */
+        COMMAND_HANDLER_MAPS.put( BATTERY_CHANGE_REPORT, NORMAL_ELE_BATTERY_HANDLER);
 
 
         /**

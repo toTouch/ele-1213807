@@ -2,7 +2,9 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -17,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
 /**
@@ -27,6 +31,9 @@ import java.util.Objects;
 @Service(value= ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
 @Slf4j
 public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
+
+    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
@@ -43,6 +50,8 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     NotExistSnService notExistSnService;
+    @Autowired
+    ClickHouseService clickHouseService;
 
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     public static final String IRON_LITHIUM = "IRON_LITHIUM";
@@ -50,6 +59,20 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
+
+        if(ElectricityIotConstant.BATTERY_CHANGE_REPORT.equals(receiverMessage.getType())){
+            EleBatteryChangeReportVO batteryChangeReportVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryChangeReportVO.class);
+            if (Objects.isNull(batteryChangeReportVO)) {
+                log.error("ELE ERROR! batteryChangeReport is null,productKey={}", receiverMessage.getProductKey());
+                return ;
+            }
+
+            //电池检测上报数据保存到ClickHouse
+            saveReportDataToClickHouse(batteryChangeReportVO);
+
+        }else{
+
+
 
         EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
         if (Objects.isNull(eleBatteryVo)) {
@@ -282,6 +305,29 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         electricityCabinetBox.setCellNo(cellNo);
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
+        }
+    }
+
+    /**
+     * 检测电池数据保存到clickhouse
+     * @param batteryChangeReport
+     */
+    private void saveReportDataToClickHouse(EleBatteryChangeReportVO batteryChangeReport) {
+
+        LocalDateTime now = LocalDateTime.now();
+        String createTime = formatter.format(now);
+
+        LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(batteryChangeReport.getCreateTime()) ? 0L : batteryChangeReport.getCreateTime());
+        String reportTime = formatter.format(reportDateTime);
+
+        String sql = "insert into t_battery_change (productKey,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?);";
+
+        try {
+            clickHouseService.insert(sql, batteryChangeReport.getProductKey(), batteryChangeReport.getPreBatteryName(), batteryChangeReport.getChangeBatteryName(),
+                    reportTime, createTime);
+        } catch (Exception e) {
+            log.error("ELE ERROR! clickHouse insert sql error!", e);
+        }
     }
 
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
@@ -341,6 +387,16 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         private BatteryOtherPropertiesQuery batteryOtherProperties;
 
     }
+
+    @Data
+    class EleBatteryChangeReportVO {
+        private String sessionId;
+        private String productKey;
+        private String preBatteryName;
+        private String changeBatteryName;
+        private Long createTime;
+    }
+
 }
 
 
