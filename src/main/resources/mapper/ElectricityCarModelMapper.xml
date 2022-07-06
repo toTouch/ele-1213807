@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarModelMapper">
+
+
+    <!--查询指定行数据-->
+
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarModelVO">
+        select
+        tecm.id, tecm.name,tecm.franchisee_id, tecm.del_flag, tecm.create_time, tecm.update_time,tecm.tenant_id,tf.name as franchiseeName
+        from t_electricity_car_model tecm left join t_franchisee tf on tecm.franchisee_id=tf.id
+        where tecm.del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and tecm.name = #{query.name}
+        </if>
+        <if test="query.tenantId != null">
+            and tecm.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.franchiseeId != null">
+            and tecm.franchisee_id = #{query.franchiseeId}
+        </if>
+        order by tecm.update_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+        select COUNT(1)
+        from t_electricity_car_model tecm  left join t_franchisee tf on tecm.franchisee_id=tf.id
+        where tecm.del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and tecm.name = #{query.name}
+        </if>
+        <if test="query.tenantId != null">
+            and tecm.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.franchiseeId != null">
+            and tecm.franchisee_id = #{query.franchiseeId}
+        </if>
+    </select>
+
+
+</mapper>

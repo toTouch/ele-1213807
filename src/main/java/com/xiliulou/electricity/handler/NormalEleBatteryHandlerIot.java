@@ -3,6 +3,7 @@ package com.xiliulou.electricity.handler;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.BatteryOtherProperties;
 import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
@@ -62,6 +63,9 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
 
     @Autowired
     NotExistSnService notExistSnService;
+
+    @Autowired
+    EleCommonConfig eleCommonConfig;
 
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     public static final String IRON_LITHIUM = "IRON_LITHIUM";
@@ -240,9 +244,13 @@ public class NormalEleBatteryHandlerIot extends AbstractIotMessageHandler {
         //newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
         Double power = eleBatteryVo.getPower();
         //上报电量和上次电量相差百分之50以上，电量不做修改
-//        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && (electricityBattery.getPower() - (power * 100)) >= 50) {
-//            power = (electricityBattery.getPower()) / 100;
-//        }
+
+        Integer isBatteryReportCheck = eleCommonConfig.getBatteryReportCheck();
+        if (Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck, EleCommonConfig.OPEN_BATTERY_REPORT_CHECK)) {
+            if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50 && Math.abs(electricityBattery.getPower() - (power * 100)) != 100) {
+                power = (electricityBattery.getPower()) / 100;
+            }
+        }
 
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power * 100);

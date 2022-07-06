@@ -288,7 +288,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         Long now = System.currentTimeMillis();
-        ElectricityMemberCard electricityMemberCard=null;
+        ElectricityMemberCard electricityMemberCard = null;
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && franchiseeUserInfo.getMemberCardExpireTime() < now) {

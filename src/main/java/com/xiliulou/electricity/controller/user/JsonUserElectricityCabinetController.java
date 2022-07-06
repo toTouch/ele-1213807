@@ -112,6 +112,19 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	}
 
 	/**
+	 * 查询租车套餐信息
+	 * @return
+	 */
+	@GetMapping(value = "/user/rentCarMemberCard/info")
+	public R getRentCarMemberCardInfo(){
+		Long uid = SecurityUtils.getUid();
+		if (Objects.isNull(uid)) {
+			return R.fail("ELECTRICITY.0001", "未找到用户!");
+		}
+		return userInfoService.getRentCarMemberCardInfo(uid);
+	}
+
+	/**
 	 * 获取 小程序服务信息
 	 *
 	 * @return

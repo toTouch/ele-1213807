@@ -27,9 +27,9 @@ import java.math.BigDecimal;
 @TableName("t_store_goods")
 public class StoreGoods {
     /**
-    * 门店商品Id
-    */
-    @TableId(value = "id",type = IdType.AUTO)
+     * 门店商品Id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
     @NotNull(message = "门店商品Id不能为空!", groups = {UpdateGroup.class})
     private Long id;
 
@@ -37,21 +37,21 @@ public class StoreGoods {
     private Long storeId;
 
     /**
-    * 门店商品名称
-    */
+     * 门店商品名称
+     */
     @NotEmpty(message = "门店商品名称不能为空!", groups = {CreateGroup.class})
     private String name;
     /**
-    * 0--正常 1--删除
-    */
+     * 0--正常 1--删除
+     */
     private Integer delFlag;
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
     /**
-    * 更新时间
-    */
+     * 更新时间
+     */
     private Long updateTime;
 
     @NotNull(message = "价格不能为空!", groups = {CreateGroup.class})
@@ -63,6 +63,15 @@ public class StoreGoods {
 
     private Integer tenantId;
 
+    /**
+     * 车辆型号Id
+     */
+    private Integer carModelId;
+
+    /**
+     * 车辆库存
+     */
+    private Integer carInventory;
 
 
     public static final Integer DEL_NORMAL = 0;

@@ -25,6 +25,8 @@ public interface FranchiseeUserInfoService {
 
     FranchiseeUserInfo queryByUserInfoId(Long id);
 
+    FranchiseeUserInfo queryByUid(Long uid);
+
     /*Integer queryCountByBatterySn(String electricityBatterySn);*/
 
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);
@@ -54,4 +56,10 @@ public interface FranchiseeUserInfoService {
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
+
+    void updateRentCar(FranchiseeUserInfo franchiseeUserInfo);
+
+    void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo);
+
+    void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 }

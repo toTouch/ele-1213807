@@ -94,7 +94,7 @@ public class JsonUserEleDepositOrderController {
 
     //列表查询
     @GetMapping(value = "/user/eleDepositOrder/list")
-    public R queryList() {
+    public R queryList(@RequestParam("refundOrderType") Integer refundOrderType) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -108,6 +108,7 @@ public class JsonUserEleDepositOrderController {
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .uid(user.getUid())
                 .tenantId(tenantId)
+                .refundOrderType(refundOrderType)
                 .offset(0L)
                 .size(10L).build();
 
@@ -122,6 +123,35 @@ public class JsonUserEleDepositOrderController {
     @PostMapping("/user/payBatteryServiceFee")
     public R payBatteryServiceFee(HttpServletRequest request) {
         return eleDepositOrderService.payBatteryServiceFee(request);
+    }
+
+
+    /**
+     * 缴纳租车押金
+     *
+     * @return
+     */
+    @PostMapping("/user/payRentCarDeposit")
+    public R payRentCarDeposit(@RequestParam(value = "storeId", required = false) Long storeId,
+                               @RequestParam(value = "carModelId", required = false) Integer carModelId,
+                               HttpServletRequest request) {
+        return eleDepositOrderService.payRentCarDeposit(storeId, carModelId, request);
+    }
+
+    //用户查询租车押金
+    @GetMapping(value = "/user/queryRentCarDeposit")
+    public R queryRentCarDeposit() {
+        return eleDepositOrderService.queryRentCarDeposit();
+    }
+
+    /**
+     * 退租车押金
+     *
+     * @return
+     */
+    @PostMapping("/user/refundRentCarDeposit")
+    public R refundRentCarDeposit(HttpServletRequest request) {
+        return eleDepositOrderService.refundRentCarDeposit(request);
     }
 
 }

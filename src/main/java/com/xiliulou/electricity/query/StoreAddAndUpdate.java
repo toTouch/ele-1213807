@@ -96,5 +96,11 @@ public class StoreAddAndUpdate {
     private Integer franchiseeId;
 
 
+    /**
+     * 缴纳押金方式
+     */
+    private Integer payType;
+
+
 
 }

@@ -266,8 +266,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿租电池");
         }
 
-        //月卡是否过期
         Long now = System.currentTimeMillis();
+        //月卡是否过期
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.isNull(electricityMemberCard)) {

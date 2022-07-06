@@ -92,6 +92,8 @@ public class StoreVO {
 
     private String franchiseeName;
 
+    private Integer payType;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

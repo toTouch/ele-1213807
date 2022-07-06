@@ -31,4 +31,13 @@ public class EleDepositOrderQuery {
 
     private Long uid;
 
+    private Integer depositType;
+    private Integer payType;
+
+    private Integer refundOrderType;
+
+    private Long storeId;
+
+    private String carModel;
+
 }

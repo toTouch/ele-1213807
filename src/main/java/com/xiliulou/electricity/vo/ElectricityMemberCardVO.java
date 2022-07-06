@@ -86,6 +86,22 @@ public class ElectricityMemberCardVO {
 
     private OldUserActivityVO  oldUserActivityVO;
 
+    /**
+     * 套餐类型
+     */
+    private Integer cardModel;
+
+    /**
+     * 车辆型号Id
+     */
+    private Integer carModelId;
+
+    /**
+     * 车辆型号
+     */
+    private String carModel;
+
+    private String franchiseeName;
 
 
 }

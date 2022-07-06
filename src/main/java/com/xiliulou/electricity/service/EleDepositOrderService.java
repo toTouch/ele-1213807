@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.query.RentCarDepositAdd;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
@@ -46,4 +47,12 @@ public interface EleDepositOrderService {
 	BigDecimal queryTurnOver(Integer tenantId);
 
 	R payBatteryServiceFee(HttpServletRequest request);
+
+	R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
+
+	R payRentCarDeposit(Long storeId,Integer carModelId,HttpServletRequest request);
+
+    R refundRentCarDeposit(HttpServletRequest request);
+
+    R queryRentCarDeposit();
 }

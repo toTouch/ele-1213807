@@ -91,12 +91,26 @@ public class JsonAdminFranchiseeController {
 			offset = 0L;
 		}
 
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		Long uid = null;
+		if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
+			uid=user.getUid();
+		}
+
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
 				.offset(offset)
 				.size(size)
+				.uid(uid)
 				.name(name)
 				.beginTime(beginTime)
 				.endTime(endTime)
@@ -115,10 +129,24 @@ public class JsonAdminFranchiseeController {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
 
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		Long uid = null;
+		if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
+			uid=user.getUid();
+		}
+
 		FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
 				.name(name)
 				.beginTime(beginTime)
 				.endTime(endTime)
+				.uid(uid)
 				.tenantId(tenantId).build();
 
 		return franchiseeService.queryCount(franchiseeQuery);

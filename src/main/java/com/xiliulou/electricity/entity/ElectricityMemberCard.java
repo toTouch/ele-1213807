@@ -56,7 +56,7 @@ public class ElectricityMemberCard {
      * franchiseeId
      */
     @NotNull(message = "加盟商Id不能为空!")
-    private Integer franchiseeId;
+    private Long franchiseeId;
 
     /**
      * 是否删除（0-正常，1-删除）
@@ -65,8 +65,7 @@ public class ElectricityMemberCard {
 
     /**
      * 加盟商套餐类型 1--老（不分型号） 2--新（分型号）
-     * */
-    @NotNull(message = "加盟商套餐类型不能为空!")
+     */
     private Integer modelType;
 
     /**
@@ -85,6 +84,16 @@ public class ElectricityMemberCard {
      * 活动id
      */
     private Integer activityId;
+
+    /**
+     * 套餐类型
+     */
+    private Integer cardModel;
+
+    /**
+     * 车辆型号Id
+     */
+    private Integer carModelId;
 
 
     public static final Integer DEL_NORMAL = 0;
@@ -106,5 +115,8 @@ public class ElectricityMemberCard {
 
     public static final Integer BIND_ACTIVITY = 1;
     public static final Integer UNBIND_ACTIVITY = 0;
+
+    public static final Integer ELECTRICITY_MEMBER_CARD = 0;
+    public static final Integer RENT_CAR_MEMBER_CARD = 1;
 
 }

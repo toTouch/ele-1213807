@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCarMapper">
+
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCarVO">
+        select
+        tec.id,tec.sn,
+        tec.model,tec.longitude,tec.latitude,tec.status,tec.uid,tec.user_name,tec.store_id, tec.phone
+        ,tec.create_time,tec.update_time,ts.name as storeName,tfui.now_electricity_battery_sn as batterySn,tec.uid
+        from t_electricity_car tec left join t_store ts on tec.store_id=ts.id left join t_franchisee_user_info tfui on
+        tec.user_info_id=tfui.user_info_id
+        where tec.del_flag=0
+        <if test="query.sn != null and query.sn!=''">
+            and tec.sn = #{query.sn}
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and tec.model = #{query.model}
+        </if>
+        <if test="query.status != null ">
+            and tec.status = #{query.status}
+        </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and tec.phone = #{query.phone}
+        </if>
+        <if test="query.storeId != null ">
+            and tec.store_id = #{query.storeId}
+        </if>
+        <if test="query.franchiseeId != null ">
+            and ts.franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.batterySn != null and query.batterySn!=''">
+            and tfui.now_electricity_battery_sn = #{query.batterySn}
+        </if>
+        <if test="query.beginTime != null">
+            and tec.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and tec.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.tenantId != null ">
+            and tec.tenant_id = #{query.tenantId}
+        </if>
+        order by tec.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+    <select id="queryCount" resultType="integer">
+        select
+        count(1)
+        from t_electricity_car tec left join t_store ts on tec.store_id=ts.id
+        left join t_franchisee_user_info tfui on
+        tec.user_info_id=tfui.user_info_id
+        where tec.del_flag=0
+        <if test="query.sn != null and query.sn!=''">
+            and tec.sn = #{query.sn}
+        </if>
+        <if test="query.model != null and query.model !=''">
+            and tec.model = #{query.model}
+        </if>
+        <if test="query.status != null ">
+            and tec.status = #{query.status}
+        </if>
+        <if test="query.storeId != null ">
+            and tec.store_id = #{query.storeId}
+        </if>
+        <if test="query.franchiseeId != null ">
+            and ts.franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.batterySn != null and query.batterySn!=''">
+            and tec.battery_sn = #{query.batterySn}
+        </if>
+        <if test="query.beginTime != null">
+            and tec.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and tec.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.tenantId != null ">
+            and tec.tenant_id = #{query.tenantId}
+        </if>
+        order by tec.create_time desc
+    </select>
+
+
+    <update id="updateBindUser">
+        update t_electricity_car set
+        status=#{status},
+        uid=#{uid},
+        phone=#{phone},
+        user_info_id=#{userInfoId},
+        user_name=#{userName},
+        update_time=#{updateTime}
+        where id=#{id}
+    </update>
+
+
+
+
+</mapper>

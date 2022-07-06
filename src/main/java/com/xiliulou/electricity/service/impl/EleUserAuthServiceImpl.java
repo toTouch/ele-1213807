@@ -225,9 +225,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		if (Objects.isNull(franchiseeUserInfo)) {
 			log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");
-
 		}
 
+		Long now = System.currentTimeMillis();
 		if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
 			serviceStatus = franchiseeUserInfo.getServiceStatus();
 		}
@@ -238,7 +238,6 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
 			serviceStatus = -1;
 		} else {
-			Long now = System.currentTimeMillis();
 			if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
 				log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
 				serviceStatus = -1;

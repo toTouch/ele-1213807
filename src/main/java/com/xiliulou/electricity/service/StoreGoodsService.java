@@ -21,5 +21,6 @@ public interface StoreGoodsService {
 
 	R queryCount(StoreShopsQuery storeShopsQuery);
 
+	StoreGoods queryByStoreIdAndCarModelId(Long storeId,Integer carModelId);
 
 }

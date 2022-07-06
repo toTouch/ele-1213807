@@ -165,5 +165,22 @@ public interface ElectricityCabinetConstant {
 
     String ELE_CACHE_USER_DISABLE_MEMBER_CARD_LOCK_KEY = "ele-cache_user_disable_member_card_lock_key";
 
+    //换电柜车辆型号缓存
+    String CACHE_ELECTRICITY_CAR_MODEL = "electricity_car_model:";
+
+    //新增换电柜车辆缓存
+    String CAR_SAVE_UID = "car_save_uid:";
+    //修改换电柜车辆缓存
+    String CAR_EDIT_UID = "car_edit_uid:";
+
+    //换电柜车辆缓存
+    String CACHE_ELECTRICITY_CAR = "electricity_car:";
+
+    //新增租户缓存
+    String ELE_ADD_TENANT_CACHE = "ele_add_tenant__lock_id:";
+
+    //用户缴纳租车押金
+    String ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY = "ele_cache_user_car_deposit_lock_key:";
+
     String APP_ID = "wx76159ea6aa7a64bc";
 }

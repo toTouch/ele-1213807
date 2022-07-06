@@ -78,6 +78,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 .eq(FranchiseeUserInfo::getUserInfoId, id).eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
     }
 
+    @Override
+    public FranchiseeUserInfo queryByUid(Long uid) {
+        return franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
+    }
+
    /* @Override
     public Integer queryCountByBatterySn(String electricityBatterySn) {
         return franchiseeUserInfoMapper.selectCount(new LambdaQueryWrapper<FranchiseeUserInfo>()
@@ -259,5 +264,18 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         return eleBatteryServiceFeeVO;
     }
 
+    @Override
+    public void updateRentCar(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateRentCar(franchiseeUserInfo);
+    }
 
+    @Override
+    public void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.modifyRentCarStatus(franchiseeUserInfo);
+    }
+
+    @Override
+    public void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.modifyRentCarStatusByUserInfoId(franchiseeUserInfo);
+    }
 }

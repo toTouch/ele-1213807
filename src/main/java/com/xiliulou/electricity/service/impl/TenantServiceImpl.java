@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
@@ -39,6 +40,7 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
+
 /**
  * 租户表(Tenant)表服务实现类
  *
@@ -79,7 +81,6 @@ public class TenantServiceImpl implements TenantService {
     ElectricityConfigService electricityConfigService;
 
 
-
     /**
      * 新增数据
      *
@@ -93,6 +94,12 @@ public class TenantServiceImpl implements TenantService {
         //判断用户名是否存在
         if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
             return R.fail("LOCKER.10015", "用户名已存在");
+        }
+
+        //限频
+        boolean lockResult = redisService.setNx(ElectricityCabinetConstant.ELE_ADD_TENANT_CACHE + tenantAddAndUpdateQuery.getId(), "1", 5 * 1000L, false);
+        if (!lockResult) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
         }
 
         //1.保存租户信息
@@ -136,7 +143,7 @@ public class TenantServiceImpl implements TenantService {
 
 
         //新增用户
-        AdminUserQuery adminUserQuery=new AdminUserQuery();
+        AdminUserQuery adminUserQuery = new AdminUserQuery();
         adminUserQuery.setName(tenantAddAndUpdateQuery.getName());
         adminUserQuery.setPassword(tenantAddAndUpdateQuery.getPassword());
         adminUserQuery.setPhone(tenantAddAndUpdateQuery.getPhone());
@@ -146,11 +153,10 @@ public class TenantServiceImpl implements TenantService {
         adminUserQuery.setCityId(null);
         adminUserQuery.setProvinceId(null);
         TenantContextHolder.setTenantId(tenant.getId());
-        R result= userService.addInnerUser(adminUserQuery);
-        if(result.getCode()==1){
+        R result = userService.addInnerUser(adminUserQuery);
+        if (result.getCode() == 1) {
             return result;
         }
-
 
 
         //5.角色赋予权限
@@ -205,10 +211,10 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R  editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
-        Tenant tenant=tenantMapper.selectById(tenantAddAndUpdateQuery.getId());
+    public R editTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
+        Tenant tenant = tenantMapper.selectById(tenantAddAndUpdateQuery.getId());
         if (Objects.isNull(tenant)) {
-            return R.fail("ELECTRICITY.00101", "查询不到租户！");
+            return R.fail("ELECTRICITY.00101", "找不到租户");
         }
         //修改租户信息
         tenant.setStatus(tenantAddAndUpdateQuery.getStatus());
@@ -217,7 +223,7 @@ public class TenantServiceImpl implements TenantService {
         tenant.setName(tenantAddAndUpdateQuery.getName());
         tenantMapper.updateById(tenant);
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId(),tenant);
+        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId(), tenant);
         return R.ok();
     }
 

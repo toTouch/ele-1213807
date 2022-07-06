@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
+import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -88,6 +89,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     ElectricityBatteryService electricityBatteryService;
     @Resource
     EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
+    @Autowired
+    ElectricityCarModelService electricityCarModelService;
+    @Autowired
+    StoreGoodsService storeGoodsService;
+    @Autowired
+    ElectricityCarService electricityCarService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -478,7 +485,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
-        return R.ok(eleDepositOrderMapper.queryList(eleDepositOrderQuery));
+        List<EleDepositOrderVO> eleDepositOrderVOS = null;
+        if (Objects.equals(eleDepositOrderQuery.getDepositType(),EleDepositOrder.ELECTRICITY_DEPOSIT)){
+            eleDepositOrderVOS=eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+        }else {
+            eleDepositOrderVOS=eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
+        }
+        return R.ok(eleDepositOrderVOS);
     }
 
     @Override
@@ -749,7 +762,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(),Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
 
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
@@ -817,11 +830,403 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd) {
+        UserInfo userInfo = userInfoService.queryUserInfoByPhone(rentCarDepositAdd.getPhone(), rentCarDepositAdd.getTenantId());
+        if (Objects.isNull(userInfo)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user! phone={}", rentCarDepositAdd.getPhone());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-	@Override
-	public BigDecimal queryTurnOver(Integer tenantId) {
-		return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
-	}
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
+            log.error("payCarDeposit  ERROR! user is rent deposit! ,uid:{} ", userInfo.getUid());
+            return R.fail("ELECTRICITY.0049", "已缴纳押金");
+        }
+
+        BigDecimal payAmount = rentCarDepositAdd.getPayAmount();
+
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
+        String orderId = generateOrderId(userInfo.getUid());
+
+        //生成订单
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+                .orderId(orderId)
+                .uid(userInfo.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(payAmount)
+                .status(EleDepositOrder.STATUS_SUCCESS)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(rentCarDepositAdd.getTenantId())
+                .depositType(EleDepositOrder.RENT_CAR_DEPOSIT)
+                .storeId(rentCarDepositAdd.getStoreId())
+                .carModelId(rentCarDepositAdd.getCarModelId())
+                .franchiseeId(rentCarDepositAdd.getFranchiseeId())
+                .payType(EleDepositOrder.OFFLINE_PAYMENT).build();
+        eleDepositOrderMapper.insert(eleDepositOrder);
+
+        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+        franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+        franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        franchiseeUserInfoUpdate.setRentCarDeposit(payAmount);
+        franchiseeUserInfoUpdate.setBindCarModelId(rentCarDepositAdd.getCarModelId());
+        franchiseeUserInfoUpdate.setRentCarOrderId(orderId);
+        franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
+        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        return R.ok();
+    }
+
+
+    @Override
+    public R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("payCarDeposit  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //限频
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+
+        //支付相关
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            return R.failMsg("未配置支付参数!");
+        }
+
+        UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
+
+        if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
+            return R.failMsg("未找到用户的第三方授权信息!");
+        }
+
+        //判断是否实名认证
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+
+        //用户是否可用
+        if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("payCarDeposit  ERROR! not found userInfo,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+        //未实名认证
+        if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
+            log.error("payCarDeposit  ERROR! user not auth! ,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0041", "未实名认证");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("payCarDeposit  ERROR! not found user! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT) || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
+            log.error("payCarDeposit  ERROR! user is rent deposit! ,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0049", "已缴纳押金");
+        }
+
+        //门店
+        Store store = storeService.queryByIdFromCache(storeId);
+        if (Objects.isNull(store)) {
+            log.error("payCarDeposit  ERROR! not store! ,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if (Objects.equals(store.getPayType(), Store.OFFLINE_PAYMENT)) {
+            log.error("payCarDeposit  ERROR! not support online pay deposit!,storeId{}", store.getId());
+            return R.fail("100008", "不支持线上缴纳租车押金");
+        }
+
+        ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(carModelId);
+        if (Objects.isNull(electricityCarModel)) {
+            log.error("payCarDeposit  ERROR! not find carMode, carModelId{}", carModelId);
+            return R.fail("100009", "未找到该型号车辆");
+        }
+
+        StoreGoods storeGoods = storeGoodsService.queryByStoreIdAndCarModelId(storeId, carModelId);
+        if (Objects.isNull(storeGoods)) {
+            log.error("payCarDeposit  ERROR! not find carMode, carModelId{}", carModelId);
+            return R.fail("100009", "未找到该型号车辆");
+        }
+
+        String orderId = generateOrderId(user.getUid());
+
+        //生成订单
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+                .orderId(orderId)
+                .uid(user.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(storeGoods.getPrice())
+                .status(EleDepositOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenantId)
+                .franchiseeId(store.getFranchiseeId())
+                .depositType(EleDepositOrder.RENT_CAR_DEPOSIT)
+                .payType(EleDepositOrder.ONLINE_PAYMENT)
+                .storeId(storeId)
+                .carModelId(carModelId).build();
+
+
+        BigDecimal payAmount = storeGoods.getPrice();
+
+        //支付零元
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
+            eleDepositOrderMapper.insert(eleDepositOrder);
+
+            //用户缴纳押金
+            FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+            franchiseeUserInfoUpdate.setId(userInfo.getId());
+            franchiseeUserInfoUpdate.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT);
+            franchiseeUserInfoUpdate.setRentCarDeposit(BigDecimal.valueOf(0));
+            franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfoUpdate.setRentCarOrderId(orderId);
+            franchiseeUserInfoUpdate.setBindCarModelId(carModelId);
+
+            franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+            return R.ok();
+        }
+        eleDepositOrderMapper.insert(eleDepositOrder);
+
+        //调起支付
+        try {
+            CommonPayOrder commonPayOrder = CommonPayOrder.builder()
+                    .orderId(orderId)
+                    .uid(user.getUid())
+                    .payAmount(payAmount)
+                    .orderType(ElectricityTradeOrder.ORDER_TYPE_RENT_CAR_DEPOSIT)
+                    .attach(ElectricityTradeOrder.ATTACH_RENT_CAR_DEPOSIT)
+                    .description("租车押金收费")
+                    .tenantId(tenantId).build();
+
+            WechatJsapiOrderResultDTO resultDTO =
+                    electricityTradeOrderService.commonCreateTradeOrderAndGetPayParams(commonPayOrder, electricityPayParams, userOauthBind.getThirdId(), request);
+            return R.ok(resultDTO);
+        } catch (WechatPayException e) {
+            log.error("payCarDeposit ERROR! wechat v3 order  error! uid={}", user.getUid(), e);
+        }
+
+        return null;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R refundRentCarDeposit(HttpServletRequest request) {
+
+        //登录用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("returnRentCarDeposit  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //限频
+        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        if (!getLockSuccess) {
+            return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
+        }
+
+        //用户
+        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("returnRentCarDeposit  ERROR! not found user,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //用户是否可用
+        if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+            log.error("returnRentCarDeposit  ERROR! user is unUsable! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0024", "用户已被禁用");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(oldFranchiseeUserInfo)) {
+            log.error("returnRentCarDeposit  ERROR! not found user! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+        if (Objects.equals(oldFranchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_INIT)) {
+            log.error("returnRentCarDeposit  ERROR! user is not rent deposit! ,uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //查找缴纳押金订单
+        EleDepositOrder eleDepositOrder = eleDepositOrderMapper.selectOne(new LambdaQueryWrapper<EleDepositOrder>().eq(EleDepositOrder::getOrderId, oldFranchiseeUserInfo.getRentCarOrderId()));
+        if (Objects.isNull(eleDepositOrder)) {
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+
+        BigDecimal deposit = oldFranchiseeUserInfo.getRentCarDeposit();
+        if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
+            return R.fail("ELECTRICITY.0044", "退款金额不符");
+        }
+
+        BigDecimal payAmount = eleDepositOrder.getPayAmount();
+
+        //退款零元
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            eleDepositOrder.setStatus(EleDepositOrder.STATUS_SUCCESS);
+            eleDepositOrderMapper.insert(eleDepositOrder);
+            //用户
+            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+            franchiseeUserInfo.setId(userInfo.getId());
+            franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+            franchiseeUserInfo.setRentCarDeposit(null);
+            franchiseeUserInfo.setRentCarOrderId(null);
+            franchiseeUserInfo.setBindCarModelId(null);
+            franchiseeUserInfo.setBindCarId(null);
+            franchiseeUserInfo.setRentCarCardId(null);
+            franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+            franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
+            return R.ok();
+        }
+
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryCountByOrderId(eleDepositOrder.getOrderId());
+        if (refundCount > 0) {
+            return R.fail("ELECTRICITY.0047", "请勿重复退款");
+        }
+
+        String orderId = generateOrderId(user.getUid());
+
+        //生成退款订单
+        EleRefundOrder eleRefundOrder = EleRefundOrder.builder()
+                .orderId(eleDepositOrder.getOrderId())
+                .refundOrderNo(orderId)
+                .payAmount(payAmount)
+                .refundAmount(payAmount)
+                .status(EleRefundOrder.STATUS_INIT)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(eleDepositOrder.getTenantId())
+                .refundOrderType(EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER).build();
+        eleRefundOrderService.insert(eleRefundOrder);
+
+        //等到后台同意退款
+        return R.ok();
+    }
+
+    @Override
+    public R queryRentCarDeposit() {
+        Map<String, String> map = new HashMap<>();
+        //用户信息
+        Long uid = SecurityUtils.getUid();
+        if (Objects.isNull(uid)) {
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        User user = userService.queryByUidFromCache(uid);
+        if (Objects.isNull(user)) {
+            log.error("queryRentCarDeposit  ERROR! not found user! userId:{}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //用户是否缴纳押金
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("queryRentCarDeposit  ERROR! not found userInfo! userId:{}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("queryRentCarDeposit  ERROR! not found user! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+
+        if ((Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_DEPOSIT)
+                || Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR))
+                && Objects.nonNull(franchiseeUserInfo.getRentCarDeposit()) && Objects.nonNull(franchiseeUserInfo.getRentCarOrderId())) {
+
+            if (Objects.equals(franchiseeUserInfo.getRentCarOrderId(), "-1")) {
+                map.put("store", null);
+                map.put("carModel", null);
+                map.put("refundStatus", null);
+                map.put("deposit", franchiseeUserInfo.getRentCarDeposit().toString());
+                map.put("time", String.valueOf(System.currentTimeMillis()));
+            } else {
+                //是否退款
+                Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getRentCarOrderId());
+                if (Objects.nonNull(refundStatus)) {
+                    map.put("refundStatus", refundStatus.toString());
+                } else {
+                    map.put("refundStatus", null);
+                }
+
+                EleDepositOrder eleDepositOrder = queryByOrderId(franchiseeUserInfo.getRentCarOrderId());
+
+                if (Objects.isNull(eleDepositOrder)) {
+                    map.put("store", null);
+                    map.put("carModel", null);
+                    map.put("payType", null);
+                } else {
+                    map.put("payType", eleDepositOrder.getPayType().toString());
+                    Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+                    if (Objects.nonNull(store)) {
+                        map.put("store", store.getName());
+                    } else {
+                        map.put("store", null);
+                    }
+                    ElectricityCarModel electricityCarModel = electricityCarModelService.queryByIdFromCache(franchiseeUserInfo.getBindCarModelId());
+                    if (Objects.nonNull(electricityCarModel)) {
+                        map.put("carModel", electricityCarModel.getName());
+                    } else {
+                        map.put("carModel", null);
+                    }
+                }
+
+                map.put("deposit", franchiseeUserInfo.getRentCarDeposit().toString());
+                //最后一次缴纳押金时间
+                map.put("time", this.queryByOrderId(franchiseeUserInfo.getRentCarOrderId()).getUpdateTime().toString());
+            }
+            return R.ok(map);
+
+        }
+        return R.ok(null);
+    }
+
+    @Override
+    public BigDecimal queryTurnOver(Integer tenantId) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
