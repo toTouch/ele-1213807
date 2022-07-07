@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.vo.UserBatteryInfoVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
@@ -24,7 +25,7 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
      */
     List<UserInfo> queryList( @Param("query") UserInfoQuery userInfoQuery);
 
-    List<UserInfo> queryListForBatteryService(@Param("query") UserInfoQuery userInfoQuery);
+    List<UserBatteryInfoVO> queryListForBatteryService(@Param("query") UserInfoQuery userInfoQuery);
 
 
     List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("tenantId")Integer tenantId);

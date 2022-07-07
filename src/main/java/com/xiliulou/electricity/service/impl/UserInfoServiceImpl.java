@@ -24,6 +24,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
 import com.xiliulou.electricity.vo.UserAuthInfoVo;
+import com.xiliulou.electricity.vo.UserBatteryInfoVO;
 import com.xiliulou.electricity.vo.UserInfoVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -126,21 +127,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
-        List<UserInfo> userInfoList = userInfoMapper.queryListForBatteryService(userInfoQuery);
-        if (ObjectUtil.isEmpty(userInfoList)) {
-            return R.ok(userInfoList);
+        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
+            return R.ok(userBatteryInfoVOS);
         }
 
-//        for(){
-//            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-//            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-//                franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
-//            }
-//        }
-//
-//        return R.ok(userInfoVOList);
-
-        return null;
+        for(UserBatteryInfoVO userBatteryInfoVO:userBatteryInfoVOS){
+            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryInfoVO.getCardId());
+            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                userBatteryInfoVO.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+            }
+        }
+        return R.ok(userBatteryInfoVOS);
     }
 
     @Override
