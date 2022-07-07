@@ -365,7 +365,11 @@ public class JsonAdminElectricityCabinetController {
         return R.ok(electricityCabinetService.queryNameList(size, offset, eleIdList, tenantId));
     }
 
-    //列表查询
+    /**
+     * 读取柜机配置信息
+     * @param id
+     * @return
+     */
     @GetMapping(value = "/admin/electricityCabinet/queryConfig")
     public R queryConfig(@RequestParam("id") Integer id) {
 
@@ -373,12 +377,16 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        String result = redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
-        if (StringUtils.isEmpty(result)) {
-            return R.ok();
-        }
-        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
-        return R.ok(map);
+//        String result = redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+//        if (StringUtils.isEmpty(result)) {
+//            return R.ok();
+//        }
+//        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
+//        return R.ok(map);
+
+
+        Map configMap = redisService.getWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), Map.class);
+        return R.ok(configMap);
     }
 
     //列表查询

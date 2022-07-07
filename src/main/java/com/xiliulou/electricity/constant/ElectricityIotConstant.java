@@ -100,7 +100,8 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_ICCID_GET_RSP)
                 || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, OFFLINE_EXCHANGE_ORDER_ACK_RSP)
-                || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS);
+                || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS)
+                || Objects.equals(command, ELE_OTHER_SETTING);
 
     }
 
@@ -186,8 +187,6 @@ public class ElectricityIotConstant {
 
     public static final String ELE_COMMAND_CUPBOARD_REQUEST_LOG = "cupboard_request_log";
 
-    public static final String ELE_COMMAND_OTHER_CONFIG = "other_config";
-
     //重新上报电池
     public static final String ELE_COMMAND_BATTERY_SYNC_INFO = "battery_sync_info";
 
@@ -208,9 +207,10 @@ public class ElectricityIotConstant {
 
     //解锁换电柜
     public static final String ELE_COMMAND_UNLOCK_CABINET = "unlock_cabinet";
-
-    //读其他配置，下发命令
-    public static final String ELE_COMMAND_OTHER_CONFIG_READ = "other_config_read";
+    /**
+     * 修改柜机配置
+     */
+    public static final String ELE_COMMAND_OTHER_CONFIG = "other_config";
 
     //上报其他配置
     public static final String ELE_COMMAND_OTHER_CONFIG_RSP = "other_config_rsp";
@@ -262,6 +262,20 @@ public class ElectricityIotConstant {
      */
     public static final String BATTERY_CHANGE_REPORT = "battery_change_report";
 
+    /**
+     * 柜机其他设置（新）
+     */
+    public static final String ELE_OTHER_SETTING="other_setting";
+    /**
+     * 读柜机其他设置
+     */
+    public static final String ELE_COMMAND_OTHER_CONFIG_READ = "other_config_read";
+    /**
+     * 读柜机其他设置上报
+     */
+    public static final String ELE_OTHER_CONFIG_RSP_V2 = "other_config_rsp_v2";
+
+
 
 
 
@@ -291,7 +305,8 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_POWER_CONSUMPTION, NORMAL_POWER_CONSUMPTION_HANDLER);
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_POWER_CONSUMPTION_RSP, NORMAL_POWER_CONSUMPTION_HANDLER);
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_WARN_MSG_RSP, NORMAL_WARN_HANDLER);
-        COMMAND_HANDLER_MAPS.put( ELE_COMMAND_OTHER_CONFIG_READ,NORMAL_OTHER_CONFIG_HANDLER );
+//        COMMAND_HANDLER_MAPS.put( ELE_COMMAND_OTHER_CONFIG_READ,NORMAL_OTHER_CONFIG_HANDLER );
+        COMMAND_HANDLER_MAPS.put( ELE_OTHER_CONFIG_RSP_V2,NORMAL_OTHER_CONFIG_HANDLER );
         COMMAND_HANDLER_MAPS.put( ELE_COMMAND_OTHER_CONFIG_RSP,NORMAL_OTHER_CONFIG_HANDLER );
 
 
