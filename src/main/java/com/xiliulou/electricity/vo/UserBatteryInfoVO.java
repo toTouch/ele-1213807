@@ -89,5 +89,7 @@ public class UserBatteryInfoVO {
      */
     private Double power;
 
+    private Long uid;
+
 
 }

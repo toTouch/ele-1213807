@@ -132,6 +132,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok(userBatteryInfoVOS);
         }
 
+        //TODO 并行去查用户的套餐次数和用户绑定的车辆型号
         for(UserBatteryInfoVO userBatteryInfoVO:userBatteryInfoVOS){
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryInfoVO.getCardId());
             if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
