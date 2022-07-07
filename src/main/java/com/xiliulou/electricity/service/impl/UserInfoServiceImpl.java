@@ -131,27 +131,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok(userInfoList);
         }
 
-        List<UserInfoVO> userInfoVOList = new ArrayList<>();
-        for (UserInfo userInfo : userInfoList) {
-            UserInfoVO userInfoVO = new UserInfoVO();
-            FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
-            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
-            }
+//        for(){
+//            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
+//            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+//                franchiseeUserInfo.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+//            }
+//        }
+//
+//        return R.ok(userInfoVOList);
 
-            if (Objects.nonNull(franchiseeUserInfo)) {
-                BeanUtil.copyProperties(franchiseeUserInfo, userInfoVO);
-                if (!Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-                    userInfo.setServiceStatus(franchiseeUserInfo.getServiceStatus());
-                }
-            }
-            BeanUtil.copyProperties(userInfo, userInfoVO);
-
-            userInfoVOList.add(userInfoVO);
-        }
-
-        return R.ok(userInfoVOList);
+        return null;
     }
 
     @Override
