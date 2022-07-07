@@ -7,13 +7,16 @@ import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 
 /**
@@ -62,13 +65,10 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
                 falg = ObjectUtil.isEmpty(history.getSeq()) || ObjectUtil.isEmpty(history.getResult());
             }
 
-            //若上报的操作记录数据没有操作顺序或操作结果（即旧数据），手动排序 设置操作结果
+            //若上报的操作记录数据没有操作顺序或操作结果（即旧数据）
             if (falg) {
-                for (int i = 0; i < historyList.size(); i++) {
-                    historyList.get(i).setSeq(i + 1);
-
-                    historyList.get(i).setResult(checkOrderOperResult(historyList.get(i)) ? ElectricityCabinetOrderOperHistory.OPERATE_RESULT_FAIL : ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS);
-                }
+                List<ElectricityCabinetOrderOperHistory> operHistoryList = historyList.stream().sorted(Comparator.comparing(ElectricityCabinetOrderOperHistory::getCreateTime).reversed()).collect(Collectors.toList());
+                return R.ok(operHistoryList);
             }
         }
 
@@ -80,22 +80,5 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
         return R.ok(electricityCabinetOrderOperHistoryMapper.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery));
     }
 
-
-    private boolean checkOrderOperResult(ElectricityCabinetOrderOperHistory history) {
-        if (StringUtils.isNotBlank(history.getMsg())) {
-            return history.getMsg().contains("不合法") ||
-                    history.getMsg().contains("没有关闭") ||
-                    history.getMsg().contains("不存在") ||
-                    history.getMsg().contains("无法进行") ||
-                    history.getMsg().contains("失败") ||
-                    history.getMsg().contains("未关闭") ||
-                    history.getMsg().contains("不匹配") ||
-                    history.getMsg().contains("不属于") ||
-                    history.getMsg().contains("无法") ||
-                    history.getMsg().contains("超时");
-        }
-
-        return Boolean.FALSE;
-    }
 
 }

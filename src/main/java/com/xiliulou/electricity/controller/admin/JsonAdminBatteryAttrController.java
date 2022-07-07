@@ -4,6 +4,7 @@ import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryAlert;
 import com.xiliulou.electricity.entity.BatteryAttr;
+import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import jodd.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
@@ -86,6 +87,35 @@ public class JsonAdminBatteryAttrController {
 
 		String sql = "select * from t_battery_warn where devId=? and createTime>=? AND createTime<=? order by  createTime desc limit ?,? ";
 		return R.ok(clickHouseService.query(BatteryAlert.class, sql, sn, begin, end, offset, size));
+	}
+
+
+	/**
+	 * 柜机电池变化分页列表
+	 * @return
+	 */
+	@GetMapping(value = "/admin/battery/change/list")
+	public R batteryChangeInfoPage(@RequestParam("beginTime") Long beginTime,
+								   @RequestParam("endTime") Long endTime,
+								   @RequestParam(value = "offset") Long offset,
+								   @RequestParam(value = "size") Long size,
+								   @RequestParam(value = "productKey", required = false) String productKey) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+		LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+		String begin = formatter.format(beginLocalDateTime);
+		String end = formatter.format(endLocalDateTime);
+
+		String sql = "select * from t_battery_change where productKey=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+		return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, productKey, begin, end, offset, size));
+
 	}
 
 }
