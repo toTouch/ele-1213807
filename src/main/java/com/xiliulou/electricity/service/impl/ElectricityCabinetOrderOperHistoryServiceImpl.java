@@ -75,7 +75,7 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
                 result.setHistoryList(historyList);
                 result.setType(EleOrderOperHistoryDetailVO.TYPE_STATUS_OLD);
 
-                return R.ok(operHistoryList);
+                return R.ok(result);
             }
         }
 
