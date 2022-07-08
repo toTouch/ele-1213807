@@ -70,10 +70,11 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             //电池检测上报数据保存到ClickHouse
             saveReportDataToClickHouse(batteryChangeReportVO);
 
-        }else{
+        }
+//else好像没执行
 
 
-
+        if(ElectricityIotConstant.ELE_COMMAND_BATTERY_REPORT_INFO.equals(receiverMessage.getType())){
         EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
         if (Objects.isNull(eleBatteryVo)) {
             log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
