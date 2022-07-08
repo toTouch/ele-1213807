@@ -8,6 +8,8 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -22,10 +24,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.OwnMemberCardInfoVo;
-import com.xiliulou.electricity.vo.UserAuthInfoVo;
-import com.xiliulou.electricity.vo.UserBatteryInfoVO;
-import com.xiliulou.electricity.vo.UserInfoVO;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -36,6 +35,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -73,6 +73,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     EleDepositOrderService eleDepositOrderService;
     @Autowired
     FranchiseeService franchiseeService;
+
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
+
 
 
     /**
@@ -131,6 +134,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
             return R.ok(userBatteryInfoVOS);
         }
+
+
+//        CompletableFuture<List<WeekTurnoverStatisticVo>> depositAndMemberCardTurnOver = CompletableFuture.supplyAsync(() -> {
+//            return queryWeekMemberCardAndDepositTurnOver(tenantId, beginTime);
+//        }, threadPool).exceptionally(e -> {
+//            log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
+//            return null;
+//        });
 
         //TODO 并行去查用户的套餐次数和用户绑定的车辆型号
         for(UserBatteryInfoVO userBatteryInfoVO:userBatteryInfoVOS){
