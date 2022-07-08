@@ -79,6 +79,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     ElectricityCarService electricityCarService;
 
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
 
@@ -158,7 +161,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryElectricityCar = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.parallelStream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
-                    ElectricityCar electricityCar=electricityCarService.queryInfoByUid(item.getUid());
+                    ElectricityCar electricityCar = electricityCarService.queryInfoByUid(item.getUid());
                     item.setCarSn(electricityCar.getSn());
                 }
             });
@@ -167,7 +170,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard,queryElectricityCar);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -760,5 +763,41 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R queryUserBelongFranchisee(Long franchiseeId) {
         return R.ok(franchiseeService.queryByIdFromDB(franchiseeId));
+    }
+
+    @Override
+    public R queryUserAllConsumption(Long uid) {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        BigDecimal turnover = BigDecimal.valueOf(0);
+
+
+        //用户总套餐消费额
+        CompletableFuture<BigDecimal> queryMemberCardPayAmount = CompletableFuture.supplyAsync(() -> {
+            return electricityMemberCardOrderService.queryTurnOver(tenantId, uid);
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+
+        //用户总套餐消费额
+        CompletableFuture<BigDecimal> queryBatteryServiceFeePayAmount = CompletableFuture.supplyAsync(() -> {
+            return eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, uid);
+        }, threadPool).exceptionally(e -> {
+            log.error("The carSn list ERROR! query carSn error!", e);
+            return null;
+        });
+
+        //计算总消费额
+        CompletableFuture<Void> payAmountSumFuture = queryMemberCardPayAmount
+                .thenAcceptBoth(queryBatteryServiceFeePayAmount, (memberCardSumAmount, batteryServiceFeeSumAmount) -> {
+                    BigDecimal result = memberCardSumAmount.add(batteryServiceFeeSumAmount);
+                }).exceptionally(e -> {
+                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
+                    return null;
+                });
+
+        return R.ok(turnover);
     }
 }

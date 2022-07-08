@@ -32,5 +32,5 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     Integer queryCount(@Param("query")  MemberCardOrderQuery memberCardOrderQuery);
 
-    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
+    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId,@Param("uid") Long uid);
 }

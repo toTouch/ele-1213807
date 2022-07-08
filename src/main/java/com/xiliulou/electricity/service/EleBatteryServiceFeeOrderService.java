@@ -48,4 +48,12 @@ public interface EleBatteryServiceFeeOrderService {
      * @return
      */
     R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status);
+
+    /**
+     * 用户的总消费额
+     * @param tenantId
+     * @param uid
+     * @return
+     */
+    BigDecimal queryUserTurnOver(Integer tenantId,Long uid);
 }

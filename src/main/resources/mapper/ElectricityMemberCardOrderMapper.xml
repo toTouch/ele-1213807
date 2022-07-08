@@ -141,6 +141,9 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
+        <if test="uid != null">
+            and uid = #{uid}
+        </if>
     </select>
 
 

@@ -172,12 +172,21 @@ public class JsonAdminUserInfoController {
     /**
      * 查询用户所属加盟商
      *
-     * @param franchiseeId
+     * @param id
      * @return
      */
     @GetMapping(value = "/admin/queryUserBelongFranchisee/{id}")
-    public R queryUserBelongFranchisee(@PathVariable("franchiseeId") Long franchiseeId) {
-        return userInfoService.queryUserBelongFranchisee(franchiseeId);
+    public R queryUserBelongFranchisee(@PathVariable("id") Long id) {
+        return userInfoService.queryUserBelongFranchisee(id);
+    }
+
+    /**
+     * 用户的总消费金额
+     * @return
+     */
+    @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
+    public R queryUserAllConsumption(@PathVariable("uid") Long uid){
+        return userInfoService.queryUserAllConsumption(uid);
     }
 
 }
