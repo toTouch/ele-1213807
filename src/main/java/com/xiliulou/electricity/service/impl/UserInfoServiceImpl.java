@@ -4,6 +4,7 @@ import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -74,8 +75,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Autowired
     FranchiseeService franchiseeService;
 
-    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
+    @Autowired
+    ElectricityCarService electricityCarService;
 
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
 
 
     /**
@@ -136,20 +139,36 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
 
-//        CompletableFuture<List<WeekTurnoverStatisticVo>> depositAndMemberCardTurnOver = CompletableFuture.supplyAsync(() -> {
-//            return queryWeekMemberCardAndDepositTurnOver(tenantId, beginTime);
-//        }, threadPool).exceptionally(e -> {
-//            log.error("DATA SUMMARY BROWSING ERROR! query depositTurnOver error!", e);
-//            return null;
-//        });
+        CompletableFuture<Void> queryMemberCard = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.parallelStream().forEach(item -> {
+                if (Objects.nonNull(item.getCardId())) {
+                    ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
+                    if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                        item.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+                    }
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The member list ERROR! query memberCard error!", e);
+            return null;
+        });
 
         //TODO 并行去查用户的套餐次数和用户绑定的车辆型号
-        for(UserBatteryInfoVO userBatteryInfoVO:userBatteryInfoVOS){
-            ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(userBatteryInfoVO.getCardId());
-            if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                userBatteryInfoVO.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
-            }
-        }
+        CompletableFuture<Void> queryElectricityCar = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.parallelStream().forEach(item -> {
+                if (Objects.nonNull(item.getUid())) {
+                    ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
+                    if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
+                        item.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
+                    }
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("The member list ERROR! query memberCard error!", e);
+            return null;
+        });
+
+
         return R.ok(userBatteryInfoVOS);
     }
 
