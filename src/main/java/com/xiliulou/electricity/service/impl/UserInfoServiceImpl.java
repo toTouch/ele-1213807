@@ -766,7 +766,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public R queryUserAllConsumption(Long uid) {
+    public R queryUserAllConsumption(Long id) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
 
@@ -774,7 +774,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //用户总套餐消费额
         CompletableFuture<BigDecimal> queryMemberCardPayAmount = CompletableFuture.supplyAsync(() -> {
-            return electricityMemberCardOrderService.queryTurnOver(tenantId, uid);
+            return electricityMemberCardOrderService.queryTurnOver(tenantId, id);
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;
@@ -782,7 +782,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //用户总套餐消费额
         CompletableFuture<BigDecimal> queryBatteryServiceFeePayAmount = CompletableFuture.supplyAsync(() -> {
-            return eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, uid);
+            return eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
         }, threadPool).exceptionally(e -> {
             log.error("The carSn list ERROR! query carSn error!", e);
             return null;

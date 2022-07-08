@@ -185,8 +185,8 @@ public class JsonAdminUserInfoController {
      * @return
      */
     @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
-    public R queryUserAllConsumption(@PathVariable("uid") Long uid){
-        return userInfoService.queryUserAllConsumption(uid);
+    public R queryUserAllConsumption(@PathVariable("id") Long id){
+        return userInfoService.queryUserAllConsumption(id);
     }
 
 }

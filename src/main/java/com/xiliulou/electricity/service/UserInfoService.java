@@ -85,6 +85,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
 	R queryUserBelongFranchisee(Long franchiseeId);
 
-	R queryUserAllConsumption(Long uid);
+	R queryUserAllConsumption(Long id);
 
 }
