@@ -1,13 +1,14 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.date.DateUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.BatteryAlert;
 import com.xiliulou.electricity.entity.BatteryAttr;
 import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import jodd.util.StringUtil;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -113,9 +114,25 @@ public class JsonAdminBatteryAttrController {
 		String begin = formatter.format(beginLocalDateTime);
 		String end = formatter.format(endLocalDateTime);
 
+		if (verifyTime(begin, end, 5)) {
+			return R.failMsg("查询时间区间不能超过5天!");
+		}
+
 		String sql = "select * from t_battery_change where productKey=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
 		return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, productKey, begin, end, offset, size));
 
+	}
+
+	/**
+	 * 判断间隔时间
+	 * @return
+	 */
+	private boolean verifyTime(String begin, String end, int dayNumber) {
+		if (StringUtils.isNotBlank(begin) && StringUtils.isNotBlank(end)) {
+			long day = DateUtil.betweenDay(DateUtil.parse(begin), DateUtil.parse(end), true);
+			return day > dayNumber;
+		}
+		return Boolean.FALSE;
 	}
 
 }
