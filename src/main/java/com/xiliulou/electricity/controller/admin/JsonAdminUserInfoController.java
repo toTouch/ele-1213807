@@ -169,4 +169,15 @@ public class JsonAdminUserInfoController {
         return userInfoService.userMove(userMoveHistory);
     }
 
+    /**
+     * 查询用户所属加盟商
+     *
+     * @param franchiseeId
+     * @return
+     */
+    @GetMapping(value = "/admin/queryUserBelongFranchisee/{id}")
+    public R queryUserBelongFranchisee(@PathVariable("franchiseeId") Long franchiseeId) {
+        return userInfoService.queryUserBelongFranchisee(franchiseeId);
+    }
+
 }

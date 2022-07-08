@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -81,5 +82,7 @@ public interface UserInfoService extends IService<UserInfo> {
 	R userMove(UserMoveHistory userMoveHistory);
 
 	Integer deleteByUid(Long uid);
+
+	R queryUserBelongFranchisee(Long franchiseeId);
 
 }

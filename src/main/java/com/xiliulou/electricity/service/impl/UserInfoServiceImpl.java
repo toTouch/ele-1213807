@@ -757,5 +757,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
     }
 
-
+    @Override
+    public R queryUserBelongFranchisee(Long franchiseeId) {
+        return R.ok(franchiseeService.queryByIdFromDB(franchiseeId));
+    }
 }
