@@ -91,5 +91,7 @@ public class UserBatteryInfoVO {
 
     private Long uid;
 
+    private String carSn;
+
 
 }

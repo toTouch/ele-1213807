@@ -37,6 +37,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 /**
@@ -153,21 +154,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        //TODO 并行去查用户的套餐次数和用户绑定的车辆型号
+
         CompletableFuture<Void> queryElectricityCar = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.parallelStream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
-                    ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
-                    if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
-                        item.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
-                    }
+                    ElectricityCar electricityCar=electricityCarService.queryInfoByUid(item.getUid());
+                    item.setCarSn(electricityCar.getSn());
                 }
             });
         }, threadPool).exceptionally(e -> {
-            log.error("The member list ERROR! query memberCard error!", e);
+            log.error("The carSn list ERROR! query carSn error!", e);
             return null;
         });
 
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard,queryElectricityCar);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
 
         return R.ok(userBatteryInfoVOS);
     }
