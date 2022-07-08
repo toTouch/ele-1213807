@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.vo.EleOrderOperHistoryDetailVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -56,23 +57,32 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
 
     @Override
     public R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
+        EleOrderOperHistoryDetailVO result = new EleOrderOperHistoryDetailVO();
+
         List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
 
         if (ObjectUtil.isNotEmpty(historyList)) {
             boolean falg = Boolean.FALSE;
             //判断上报的操作记录数据是否有操作顺序及操作结果
             for (ElectricityCabinetOrderOperHistory history : historyList) {
-                falg = ObjectUtil.isEmpty(history.getSeq()) || ObjectUtil.isEmpty(history.getResult());
+                falg = ObjectUtil.isEmpty(history.getSeq()) || ObjectUtil.isEmpty(history.getResult()) || ObjectUtil.equal(history.getSeq(), -1) || ObjectUtil.equal(history.getResult(), -1);
             }
 
             //若上报的操作记录数据没有操作顺序或操作结果（即旧数据）
             if (falg) {
                 List<ElectricityCabinetOrderOperHistory> operHistoryList = historyList.stream().sorted(Comparator.comparing(ElectricityCabinetOrderOperHistory::getCreateTime).reversed()).collect(Collectors.toList());
+
+                result.setHistoryList(historyList);
+                result.setType(EleOrderOperHistoryDetailVO.TYPE_STATUS_OLD);
+
                 return R.ok(operHistoryList);
             }
         }
 
-        return R.ok(historyList);
+        result.setHistoryList(historyList);
+        result.setType(EleOrderOperHistoryDetailVO.TYPE_STATUS_NEW);
+
+        return R.ok(result);
     }
 
     @Override
