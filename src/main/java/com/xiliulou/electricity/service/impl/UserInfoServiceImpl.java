@@ -772,7 +772,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         BigDecimal turnover = BigDecimal.valueOf(0);
 
-
         //用户总套餐消费额
         CompletableFuture<BigDecimal> queryMemberCardPayAmount = CompletableFuture.supplyAsync(() -> {
             return electricityMemberCardOrderService.queryTurnOver(tenantId, uid);
@@ -793,6 +792,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> payAmountSumFuture = queryMemberCardPayAmount
                 .thenAcceptBoth(queryBatteryServiceFeePayAmount, (memberCardSumAmount, batteryServiceFeeSumAmount) -> {
                     BigDecimal result = memberCardSumAmount.add(batteryServiceFeeSumAmount);
+                    turnover.add(result);
                 }).exceptionally(e -> {
                     log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
                     return null;
