@@ -5,8 +5,7 @@
 
     <select id="queryListByOrderId" resultType="com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory">
 		select
-		id ,order_id ,type , msg , create_time,seq,result
-		tenant_id
+		id ,order_id ,type , msg , create_time,seq,result,tenant_id
 		from t_electricity_cabinet_order_oper_history
 		where order_id = #{query.orderId}
 		AND type =#{query.type}
