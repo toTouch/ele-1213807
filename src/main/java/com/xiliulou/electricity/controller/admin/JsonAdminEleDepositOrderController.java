@@ -190,7 +190,7 @@ public class JsonAdminEleDepositOrderController {
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
     }
 
-    //缴纳租车押金
+    //缴纳电池押金
     @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
     public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
 
