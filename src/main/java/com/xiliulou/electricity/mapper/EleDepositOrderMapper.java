@@ -19,17 +19,20 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2021-02-22 10:16:44
  */
-public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder>{
+public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     /**
      * 查询指定行数据
-     *
      */
     List<EleDepositOrderVO> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
-	Integer queryCount(@Param("query")  EleDepositOrderQuery eleDepositOrderQuery);
+    Integer queryCount(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
-	List<EleDepositOrderVO> queryListForUser(@Param("query")EleDepositOrderQuery eleDepositOrderQuery);
+    List<EleDepositOrderVO> queryListForUser(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
-	BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
+    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
+
+    EleDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid);
+
+
 }

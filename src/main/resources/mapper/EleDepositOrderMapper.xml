@@ -139,4 +139,8 @@
             and tenant_id = #{tenantId}
         </if>
     </select>
+
+    <select id="queryLastPayDepositTimeByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
+        select * from t_ele_deposit_order where uid=#{uid} limit 1
+    </select>
 </mapper>

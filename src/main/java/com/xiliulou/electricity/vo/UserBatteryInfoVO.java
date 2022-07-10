@@ -76,6 +76,11 @@ public class UserBatteryInfoVO {
     private Long remainingNumber;
 
     /**
+     * 月卡剩余天数
+     */
+    private Long cardDays;
+
+    /**
      * 当前电池编号
      */
     private String nowElectricityBatterySn;
@@ -93,5 +98,9 @@ public class UserBatteryInfoVO {
 
     private String carSn;
 
+    /**
+     * 缴纳押金时间
+     */
+    private Long payDepositTime;
 
 }

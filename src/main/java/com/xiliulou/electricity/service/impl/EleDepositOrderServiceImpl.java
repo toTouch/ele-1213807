@@ -817,8 +817,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         return R.fail("ELECTRICITY.0099", "下单失败");
     }
 
+    @Override
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid);
+    }
 
-	@Override
+
+    @Override
 	public BigDecimal queryTurnOver(Integer tenantId) {
 		return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
 	}

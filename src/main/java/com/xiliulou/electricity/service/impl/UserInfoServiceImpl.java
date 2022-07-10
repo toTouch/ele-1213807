@@ -142,6 +142,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.ok(userBatteryInfoVOS);
         }
 
+        CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
+            userBatteryInfoVOS.parallelStream().forEach(item -> {
+                if (Objects.nonNull(item.getMemberCardExpireTime())) {
+                    item.setCardDays((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
+                }
+                if (Objects.nonNull(item.getServiceStatus()) && Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid());
+                    item.setPayDepositTime(eleDepositOrder.getCreateTime());
+                }
+            });
+        }, threadPool).exceptionally(e -> {
+            log.error("payDepositTime list ERROR! query memberCard error!", e);
+            return null;
+        });
+
 
         CompletableFuture<Void> queryMemberCard = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.parallelStream().forEach(item -> {
@@ -170,7 +185,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(queryMemberCard, queryElectricityCar, queryPayDepositTime);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
