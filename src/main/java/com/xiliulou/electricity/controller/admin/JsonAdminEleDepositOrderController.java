@@ -4,18 +4,19 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -187,6 +188,24 @@ public class JsonAdminEleDepositOrderController {
                 .tenantId(tenantId)
                 .franchiseeId(franchiseeId).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
+    }
+
+    //缴纳租车押金
+    @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
+    public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
+
     }
 
 

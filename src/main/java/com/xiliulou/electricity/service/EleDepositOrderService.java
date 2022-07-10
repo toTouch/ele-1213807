@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -48,5 +49,7 @@ public interface EleDepositOrderService {
 	R payBatteryServiceFee(HttpServletRequest request);
 
     EleDepositOrder queryLastPayDepositTimeByUid(Long uid);
+
+    R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
 
 }
