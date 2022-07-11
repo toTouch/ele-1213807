@@ -47,6 +47,9 @@ public interface EleRefundOrderService {
 
     R handleRefund(String refundOrderNo,String errMsg,Integer status, BigDecimal refundAmount,HttpServletRequest request);
 
+
+    R batteryOffLineRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
+
     R queryList(EleRefundQuery eleRefundQuery);
 
     Integer queryCountByOrderId(String orderId);

@@ -319,6 +319,89 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 	}
 
 	@Override
+	public R batteryOffLineRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
+
+		EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
+		if (Objects.isNull(eleRefundOrder)) {
+			log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+			return R.fail("未找到退款订单!");
+		}
+
+		FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
+		if (Objects.isNull(franchiseeUserInfo)) {
+			log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+
+		if (Objects.nonNull(refundAmount)) {
+			if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
+				log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
+				return R.fail("退款金额不能大于支付金额!");
+			}
+
+			//插入修改记录
+			EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+			eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+			eleRefundOrderHistory.setRefundAmount(refundAmount);
+			eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+			eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+			eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+
+
+		} else {
+			refundAmount = eleRefundOrder.getRefundAmount();
+		}
+
+		EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+		eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+		eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+		eleRefundOrderUpdate.setErrMsg(errMsg);
+
+		//同意退款
+		if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND)) {
+			//修改订单状态
+			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
+			eleRefundOrderUpdate.setRefundAmount(refundAmount);
+			eleRefundOrderService.update(eleRefundOrderUpdate);
+
+			//退款0元，不捕获异常，成功退款
+			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+			eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+			eleRefundOrderService.update(eleRefundOrderUpdate);
+
+			//查询押金绑定表的id
+			Long id = eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
+
+			FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+			updateFranchiseeUserInfo.setUserInfoId(id);
+			updateFranchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+			updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+			updateFranchiseeUserInfo.setBatteryDeposit(null);
+			updateFranchiseeUserInfo.setOrderId(null);
+			updateFranchiseeUserInfo.setFranchiseeId(null);
+			updateFranchiseeUserInfo.setModelType(null);
+			updateFranchiseeUserInfo.setBatteryType(null);
+			updateFranchiseeUserInfo.setCardId(null);
+			updateFranchiseeUserInfo.setCardName(null);
+			updateFranchiseeUserInfo.setCardType(null);
+			updateFranchiseeUserInfo.setMemberCardExpireTime(null);
+			updateFranchiseeUserInfo.setRemainingNumber(null);
+			franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+			return R.ok();
+		}
+
+
+		//拒绝退款
+		if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+			//修改订单状态
+			eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+			eleRefundOrderService.update(eleRefundOrderUpdate);
+		}
+		return R.ok();
+	}
+
+	@Override
 	public R queryList(EleRefundQuery eleRefundQuery) {
 		return R.ok(eleRefundOrderMapper.queryList(eleRefundQuery));
 	}

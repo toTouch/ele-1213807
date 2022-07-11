@@ -99,5 +99,16 @@ public class JsonAdminEleRefundOrderController {
 		return eleRefundOrderService.handleRefund(refundOrderNo,errMsg, status, refundAmount,request);
 	}
 
+	//后台电池线下退款处理
+	@PostMapping("/admin/batteryOffLineRefund")
+	public R batteryOffLineRefund(@RequestParam("refundOrderNo") String refundOrderNo,
+								 @RequestParam("status") Integer status,
+								 @RequestParam(value = "errMsg", required = false) String errMsg,
+								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+								 @RequestParam("uid") Long uid,
+								 HttpServletRequest request) {
+		return eleRefundOrderService.batteryOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+	}
+
 
 }
