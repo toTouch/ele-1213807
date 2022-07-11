@@ -49,8 +49,8 @@
     </select>
 
 
-	<select id="queryCount" resultType="java.lang.Integer">
-        select  COUNT(1)
+    <select id="queryCount" resultType="java.lang.Integer">
+        select COUNT(1)
         from t_ele_deposit_order edo left join t_franchisee f on f.id = edo.franchisee_id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
@@ -82,10 +82,6 @@
             </if>
         </where>
     </select>
-
-
-
-
 
 
     <select id="queryListForUser" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
@@ -142,11 +138,11 @@
 
     <select id="queryLastPayDepositTimeByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
         select * from t_ele_deposit_order where uid=#{uid}
-        <if test="query.tenantId != null">
-            and tenant_id = #{query.tenantId}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
         </if>
-        <if test="query.franchiseeId != null">
-            and franchisee_id = #{query.franchiseeId}
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
         </if>
         limit 1
     </select>
