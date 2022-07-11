@@ -99,15 +99,19 @@ public class JsonAdminEleRefundOrderController {
 		return eleRefundOrderService.handleRefund(refundOrderNo,errMsg, status, refundAmount,request);
 	}
 
+	//用户电池押金缴纳方式
+	@GetMapping("/admin/queryUserDepositPayType")
+	public R queryUserDepositPayType( @RequestParam("uid") Long uid){
+		return R.ok(eleRefundOrderService.queryUserDepositPayType(uid));
+	}
+
 	//后台电池线下退款处理
 	@PostMapping("/admin/batteryOffLineRefund")
-	public R batteryOffLineRefund(@RequestParam("refundOrderNo") String refundOrderNo,
-								 @RequestParam("status") Integer status,
-								 @RequestParam(value = "errMsg", required = false) String errMsg,
+	public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
 								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
 								 @RequestParam("uid") Long uid,
-								 HttpServletRequest request) {
-		return eleRefundOrderService.batteryOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
+								  @RequestParam("refundType") Integer refundType) {
+		return eleRefundOrderService.batteryOffLineRefund( errMsg,refundAmount, uid, refundType);
 	}
 
 

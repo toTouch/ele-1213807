@@ -48,7 +48,7 @@ public interface EleDepositOrderService {
 
 	R payBatteryServiceFee(HttpServletRequest request);
 
-    EleDepositOrder queryLastPayDepositTimeByUid(Long uid);
+    EleDepositOrder queryLastPayDepositTimeByUid(Long uid,Long franchiseeId,Integer tenantId);
 
     R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
 

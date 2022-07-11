@@ -22,7 +22,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     /**
-     * 查询指定行数据
+     * 查询指定行数据2
      */
     List<EleDepositOrderVO> queryList(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
@@ -32,7 +32,7 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
 
-    EleDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid);
+    EleDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid,@Param("franchiseeId")Long franchiseeId,@Param("tenantId")Integer tenantId);
 
 
 }

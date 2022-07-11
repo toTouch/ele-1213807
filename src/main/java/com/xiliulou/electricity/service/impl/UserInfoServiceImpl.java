@@ -148,7 +148,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardDays((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
                 }
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid());
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(),item.getFranchiseeId(),item.getTenantId());
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
                 }
             });

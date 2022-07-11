@@ -53,7 +53,7 @@ public class UserBatteryInfoVO {
     /**
      * 加盟商id
      */
-    private Integer franchiseeId;
+    private Long franchiseeId;
     /**
      * 套餐id
      */
