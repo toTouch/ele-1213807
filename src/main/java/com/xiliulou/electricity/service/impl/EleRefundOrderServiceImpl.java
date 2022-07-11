@@ -341,7 +341,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId());
-        return R.ok(eleDepositOrder.getPayType());
+        return R.ok(eleDepositOrder);
     }
 
     @Override
