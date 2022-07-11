@@ -886,6 +886,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(franchiseeUserInfo.getTenantId())
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
+                .payType(EleDepositOrder.)
                 .modelType(batteryDepositAdd.getModelType()).build();
         if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
