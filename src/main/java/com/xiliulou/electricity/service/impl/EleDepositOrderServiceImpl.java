@@ -428,7 +428,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
-        if (Objects.equals(eleDepositOrder.getPayType, EleDepositOrder.OFFLINE_PAYMENT)) {
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
             return R.fail("ELECTRICITY.00115", "请线下退押");
         }
 
@@ -892,7 +892,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
                 .modelType(batteryDepositAdd.getModelType()).build();
-        if (Objects.equals(franchisee.getModelType(), Franchi see.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
