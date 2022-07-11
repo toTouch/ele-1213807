@@ -144,6 +144,6 @@
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
-        limit 1
+        ORDER BY id DESC limit 1
     </select>
 </mapper>
