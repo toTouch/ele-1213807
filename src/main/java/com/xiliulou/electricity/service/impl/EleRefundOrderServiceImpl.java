@@ -329,11 +329,15 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("NOTIFY  ERROR! not found user! uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
+            log.error("user batteryDeposit not pay ERROR! not found batteryDeposit,uid:{} ", uid);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId());
