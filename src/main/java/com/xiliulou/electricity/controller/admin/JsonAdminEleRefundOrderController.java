@@ -102,7 +102,7 @@ public class JsonAdminEleRefundOrderController {
 	//用户电池押金缴纳方式
 	@GetMapping("/admin/queryUserDepositPayType")
 	public R queryUserDepositPayType( @RequestParam("uid") Long uid){
-		return R.ok(eleRefundOrderService.queryUserDepositPayType(uid));
+		return eleRefundOrderService.queryUserDepositPayType(uid);
 	}
 
 	//后台电池线下退款处理
