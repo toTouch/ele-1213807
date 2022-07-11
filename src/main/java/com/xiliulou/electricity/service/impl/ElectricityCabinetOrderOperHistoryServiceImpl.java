@@ -28,6 +28,11 @@ import java.util.stream.Collectors;
  */
 @Service("electricityCabinetOrderOperHistoryService")
 public class ElectricityCabinetOrderOperHistoryServiceImpl implements ElectricityCabinetOrderOperHistoryService {
+
+    //上报数据类型 0：旧版本，1：新版本
+    private static final Integer  TYPE_STATUS_OLD = 0;
+    private static final Integer  TYPE_STATUS_NEW = 1;
+
     @Resource
     private ElectricityCabinetOrderOperHistoryMapper electricityCabinetOrderOperHistoryMapper;
 
@@ -57,8 +62,6 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
 
     @Override
     public R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
-        EleOrderOperHistoryDetailVO result = new EleOrderOperHistoryDetailVO();
-
         List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(electricityCabinetOrderOperHistoryQuery);
 
         if (ObjectUtil.isNotEmpty(historyList)) {
@@ -71,24 +74,45 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
             //若上报的操作记录数据没有操作顺序或操作结果（即旧数据）
             if (falg) {
                 List<ElectricityCabinetOrderOperHistory> operHistoryList = historyList.stream().sorted(Comparator.comparing(ElectricityCabinetOrderOperHistory::getCreateTime).reversed()).collect(Collectors.toList());
-
-                result.setHistoryList(historyList);
-                result.setType(EleOrderOperHistoryDetailVO.TYPE_STATUS_OLD);
-
-                return R.ok(result);
+                return R.ok(operHistoryList);
             }
         }
 
-        result.setHistoryList(historyList);
-        result.setType(EleOrderOperHistoryDetailVO.TYPE_STATUS_NEW);
+        return R.ok(historyList);
+    }
 
-        return R.ok(result);
+    /**
+     * 查询操作记录为旧数据还是新数据，方便前端页面跳转判断
+     * @param orderId
+     * @param type
+     * @return
+     */
+    @Override
+    public R selectOperateDataType(String orderId, Integer type) {
+        ElectricityCabinetOrderOperHistoryQuery historyQuery = ElectricityCabinetOrderOperHistoryQuery.builder().orderId(orderId).type(type).build();
+
+        List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(historyQuery);
+        if (ObjectUtil.isNotEmpty(historyList)) {
+            boolean falg = Boolean.FALSE;
+            //判断上报的操作记录数据是否有操作顺序及操作结果
+            for (ElectricityCabinetOrderOperHistory history : historyList) {
+                falg = ObjectUtil.isEmpty(history.getSeq()) || ObjectUtil.isEmpty(history.getResult()) || ObjectUtil.equal(history.getSeq(), -1) || ObjectUtil.equal(history.getResult(), -1);
+            }
+
+            //若上报的操作记录数据没有操作顺序或操作结果（即旧数据）
+            if (falg) {
+                return R.ok(TYPE_STATUS_OLD);
+            }
+        }
+
+        return R.ok(TYPE_STATUS_NEW);
     }
 
     @Override
     public R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery) {
         return R.ok(electricityCabinetOrderOperHistoryMapper.queryCountByOrderId(electricityCabinetOrderOperHistoryQuery));
     }
+
 
 
 }

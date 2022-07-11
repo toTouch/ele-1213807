@@ -10,7 +10,9 @@
 		where order_id = #{query.orderId}
 		AND type =#{query.type}
 		order by seq asc
-		limit #{query.offset}, #{query.size}
+        <if test="query.offset != null and query.size != null">
+            limit #{query.offset}, #{query.size}
+        </if>
 	</select>
 
     <select id="queryCountByOrderId" resultType="java.lang.Integer">

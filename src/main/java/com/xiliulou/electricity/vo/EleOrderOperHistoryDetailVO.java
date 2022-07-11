@@ -21,8 +21,6 @@ public class EleOrderOperHistoryDetailVO {
      */
     private int type;
 
-    //报数据类型 0：旧版本，1：新版本
-    public static final Integer  TYPE_STATUS_OLD = 0;
-    public static final Integer  TYPE_STATUS_NEW = 1;
+
 
 }
