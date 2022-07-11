@@ -241,6 +241,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(tenantId)
                 .franchiseeId(franchisee.getId())
+                .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .modelType(franchisee.getModelType()).build();
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
@@ -425,6 +426,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     }
                 }
             }
+        }
+
+        if (Objects.equals(eleDepositOrder.getPayType, EleDepositOrder.OFFLINE_PAYMENT)) {
+            return R.fail("ELECTRICITY.00115", "请线下退押");
         }
 
         //判断是否退电池
@@ -750,7 +755,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(),Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)){
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
 
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
@@ -825,9 +830,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 
     @Override
-	public BigDecimal queryTurnOver(Integer tenantId) {
-		return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
-	}
+    public BigDecimal queryTurnOver(Integer tenantId) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
 
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
@@ -838,7 +843,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Transactional(rollbackFor = Exception.class)
     public R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd) {
 
-        UserInfo userInfo=userInfoService.queryByUid(batteryDepositAdd.getUid());
+        UserInfo userInfo = userInfoService.queryByUid(batteryDepositAdd.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -865,7 +870,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
 
-
         BigDecimal payAmount = batteryDepositAdd.getPayAmount();
 
         if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
@@ -888,7 +892,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
                 .modelType(batteryDepositAdd.getModelType()).build();
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchi see.MEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
