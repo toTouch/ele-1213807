@@ -387,6 +387,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setTenantId(franchiseeUserInfo.getTenantId());
         eleRefundOrder.setCreateTime(System.currentTimeMillis());
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setErrMsg(errMsg);
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
