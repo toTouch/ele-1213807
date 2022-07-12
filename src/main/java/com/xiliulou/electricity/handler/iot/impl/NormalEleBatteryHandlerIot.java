@@ -553,10 +553,6 @@ else{
      */
     private void saveReportDataToClickHouse(EleBatteryChangeReportVO batteryChangeReport) {
 
-        if (StringUtils.isBlank(batteryChangeReport.getChangeBatteryName())) {
-            return;
-        }
-
         LocalDateTime now = LocalDateTime.now();
         String createTime = formatter.format(now);
 
