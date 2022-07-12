@@ -100,6 +100,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    EleRefundOrderService eleRefundOrderService;
 
     /**
      * 创建月卡订单
@@ -669,6 +671,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("DISABLE MEMBER CARD ERROR!not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        //是否有正在进行中的退款
+        Integer refundCount = eleRefundOrderService.queryIsRefundingCountByOrderId(franchiseeUserInfo.getOrderId());
+        if (refundCount > 0) {
+            return R.fail("100018", "押金退款审核中");
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW)) {
