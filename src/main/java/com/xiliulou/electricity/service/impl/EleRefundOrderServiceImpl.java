@@ -384,10 +384,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         EleRefundOrder eleRefundOrder=new EleRefundOrder();
         eleRefundOrder.setOrderId(franchiseeUserInfo.getOrderId());
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
-        eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setTenantId(franchiseeUserInfo.getTenantId());
         eleRefundOrder.setCreateTime(System.currentTimeMillis());
         eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrder.setErrMsg(errMsg);
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
@@ -419,7 +419,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             if (refundAmount.compareTo(BigDecimal.ZERO) == 0) {
 
 
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_INIT);
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrderService.insert(eleRefundOrder);
 
