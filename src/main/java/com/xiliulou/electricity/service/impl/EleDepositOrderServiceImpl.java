@@ -55,8 +55,6 @@ import java.util.*;
 public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Resource
     EleDepositOrderMapper eleDepositOrderMapper;
-    @Resource
-    EleRefundOrderMapper eleRefundOrderMapper;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -89,6 +87,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     ElectricityBatteryService electricityBatteryService;
     @Resource
     EleBatteryServiceFeeOrderMapper eleBatteryServiceFeeOrderMapper;
+    @Autowired
+    EleUserOperateRecordService eleUserOperateRecordService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -897,6 +897,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
 
+
+        //生成后台操作记录
+        EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
+
+
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
 
         //用户缴纳押金
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
