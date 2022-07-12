@@ -394,7 +394,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
 
-            eleRefundOrder.setRefundAmount(refundAmount);
+            eleRefundOrder.setRefundAmount(eleDepositOrder.getPayAmount());
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrder.setCreateTime(System.currentTimeMillis());
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
@@ -419,7 +419,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             if (refundAmount.compareTo(BigDecimal.ZERO) == 0) {
 
 
-                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_INIT);
                 eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
@@ -465,10 +465,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
             return R.fail("ELECTRICITY.00100", "退款失败");
-            return R.ok();
         }
-
-
     }
 
     @Override
