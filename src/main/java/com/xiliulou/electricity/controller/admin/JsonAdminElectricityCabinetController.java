@@ -377,16 +377,12 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-//        String result = redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
-//        if (StringUtils.isEmpty(result)) {
-//            return R.ok();
-//        }
-//        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
-//        return R.ok(map);
-
-
-        Map configMap = redisService.getWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), Map.class);
-        return R.ok(configMap);
+        String result = redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+        if (StringUtils.isEmpty(result)) {
+            return R.ok();
+        }
+        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
+        return R.ok(map);
     }
 
     //列表查询

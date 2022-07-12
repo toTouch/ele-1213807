@@ -38,8 +38,8 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
             return ;
         }
         //上报的数据放入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
-//        redisService.saveWithString(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
+//        redisService.saveWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
+        redisService.saveWithString(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
     }
 
 }
