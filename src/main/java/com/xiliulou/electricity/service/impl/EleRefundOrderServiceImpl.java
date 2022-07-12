@@ -386,6 +386,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
         eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
         eleRefundOrder.setTenantId(franchiseeUserInfo.getTenantId());
+        eleRefundOrder.setCreateTime(System.currentTimeMillis());
+        eleRefundOrder.setUpdateTime(System.currentTimeMillis());
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
@@ -396,8 +398,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
             eleRefundOrder.setRefundAmount(eleDepositOrder.getPayAmount());
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
-            eleRefundOrder.setCreateTime(System.currentTimeMillis());
-            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
 
             updateFranchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
@@ -421,7 +421,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_INIT);
                 eleRefundOrder.setRefundAmount(refundAmount);
-                eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
 
                 franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
@@ -438,7 +437,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 franchiseeUserInfo.setRemainingNumber(null);
                 franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
                 return R.ok();
-
             }
 
             //调起退款
@@ -448,12 +446,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                         .orderId(eleRefundOrder.getOrderId())
                         .refundOrderNo(eleRefundOrder.getRefundOrderNo())
                         .payAmount(eleRefundOrder.getPayAmount())
-                        .refundAmount(refundAmount).build();
+                        .refundAmount(eleRefundOrder.getRefundAmount()).build();
 
 
                 eleRefundOrderService.commonCreateRefundOrder(refundOrder, null);
                 //提交成功
                 eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
+                eleRefundOrder.setRefundAmount(refundAmount);
                 eleRefundOrder.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.insert(eleRefundOrder);
                 return R.ok();
