@@ -843,6 +843,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Transactional(rollbackFor = Exception.class)
     public R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         UserInfo userInfo = userInfoService.queryByUid(batteryDepositAdd.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
@@ -901,8 +911,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
-
-
+                .operateContent(EleUserOperateRecord.DEPOSIT_MODEL)
+                .uid(user.getUid())
+                .name(user.getUsername())
+                .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
+                .newBatteryDeposit(batteryDepositAdd.getPayAmount())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
 
         //用户缴纳押金

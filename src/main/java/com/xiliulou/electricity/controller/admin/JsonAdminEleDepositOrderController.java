@@ -193,19 +193,7 @@ public class JsonAdminEleDepositOrderController {
     //缴纳电池押金
     @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
     public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        //用户
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
         return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
-
     }
 
 
