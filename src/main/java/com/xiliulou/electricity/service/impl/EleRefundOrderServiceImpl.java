@@ -445,8 +445,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 RefundOrder refundOrder = RefundOrder.builder()
                         .orderId(eleRefundOrder.getOrderId())
                         .refundOrderNo(eleRefundOrder.getRefundOrderNo())
-                        .payAmount(eleRefundOrder.getPayAmount())
-                        .refundAmount(eleRefundOrder.getRefundAmount()).build();
+                        .payAmount(eleDepositOrder.getPayAmount())
+                        .refundAmount(refundAmount).build();
 
 
                 eleRefundOrderService.commonCreateRefundOrder(refundOrder, null);
