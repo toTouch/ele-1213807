@@ -42,6 +42,7 @@ public class JsonAdminUserInfoController {
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                       @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "memberCardId",required = false) Long memberCardId) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -63,6 +64,7 @@ public class JsonAdminUserInfoController {
                 .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
+                .uid(uid)
                 .memberCardId(memberCardId)
                 .tenantId(tenantId).build();
 

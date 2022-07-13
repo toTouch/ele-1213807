@@ -64,6 +64,21 @@
         <if test="query.phone != null and query.phone != ''">
             and tui.phone = #{query.phone}
         </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
+        </if>
+        <if test="query.memberCardId != null ">
+            and tfui.card_id = #{query.memberCardId}
+        </if>
+        <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
+            and tui.service_status =#{query.serviceStatus}
+        </if>
+        <if test="query.serviceStatus == 1">
+            and tfui.service_status =#{query.serviceStatus}
+        </if>
+        <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
+            and tfui.service_status =#{query.serviceStatus}
+        </if>
         order by tfui.member_card_expire_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -81,6 +96,9 @@
         </if>
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.memberCardId != null ">
+            and tfui.card_id = #{query.memberCardId}
         </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}

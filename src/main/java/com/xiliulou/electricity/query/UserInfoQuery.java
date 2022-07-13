@@ -32,4 +32,6 @@ public class UserInfoQuery {
      * 套餐id
      */
     private Long memberCardId;
+
+    private Long uid;
 }
