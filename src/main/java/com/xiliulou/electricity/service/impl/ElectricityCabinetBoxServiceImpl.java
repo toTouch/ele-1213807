@@ -15,6 +15,7 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -91,13 +92,15 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         }
 
         List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>(electricityCabinetBoxVOList.size());
-        electricityCabinetBoxVOList.parallelStream().forEach(item->{
-            ElectricityBatteryVO electricityBatteryVO=electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
-            if (Objects.nonNull(electricityBatteryVO)) {
-                item.setPower(electricityBatteryVO.getPower());
-                item.setChargeStatus(electricityBatteryVO.getChargeStatus());
-                item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
-                item.setBatteryV(electricityBatteryVO.getBatteryV());
+        electricityCabinetBoxVOList.parallelStream().forEach(item -> {
+            if (StringUtils.isNotBlank(item.getSn())) {
+                ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
+                if (Objects.nonNull(electricityBatteryVO)) {
+                    item.setPower(electricityBatteryVO.getPower());
+                    item.setChargeStatus(electricityBatteryVO.getChargeStatus());
+                    item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
+                    item.setBatteryV(electricityBatteryVO.getBatteryV());
+                }
             }
         });
 
