@@ -70,6 +70,21 @@
         <if test="query.memberCardId != null ">
             and tfui.card_id = #{query.memberCardId}
         </if>
+        <if test="query.beginTime != null">
+            and tui.create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and tui.create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.authStatus !=null">
+            and tui.auth_status =#{query.authStatus}
+        </if>
+        <if test="query.memberCardExpireTimeBegin !=null">
+            and tfui.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+        </if>
+        <if test="query.memberCardExpireTimeEnd !=null">
+            and tfui.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
