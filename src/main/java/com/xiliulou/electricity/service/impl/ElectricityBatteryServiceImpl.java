@@ -304,6 +304,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
+    public ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn) {
+        return electricitybatterymapper.selectBatteryDetailInfoBySN(sn);
+    }
+
+    @Override
     public Integer updateByOrder(ElectricityBattery electricityBattery) {
         return electricitybatterymapper.updateByOrder(electricityBattery);
     }

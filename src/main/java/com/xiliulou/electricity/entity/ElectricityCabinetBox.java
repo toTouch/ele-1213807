@@ -93,11 +93,14 @@ public class ElectricityCabinetBox {
      * 电池电量
      */
     private Double power;
-
     /**
      * 充电器电压
      */
     private Double chargeV;
+    /**
+     * 充电器电流
+     */
+    private Double chargeA;
 
 
     public static final Integer DEL_NORMAL = 0;
