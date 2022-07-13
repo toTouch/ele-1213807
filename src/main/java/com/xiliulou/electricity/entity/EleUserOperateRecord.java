@@ -29,6 +29,11 @@ public class EleUserOperateRecord {
     /**
      * 操作人
      */
+    private Long operateUid;
+
+    /**
+     * 被操作用户
+     */
     private Long uid;
 
     /**

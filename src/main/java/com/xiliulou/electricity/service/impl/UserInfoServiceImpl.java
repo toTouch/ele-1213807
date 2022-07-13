@@ -80,6 +80,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     ElectricityCarService electricityCarService;
 
     @Autowired
+    EleUserOperateRecordService eleUserOperateRecordService;
+
+    @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
     XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors.newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
@@ -526,6 +529,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         //查找用户
         UserInfo oldUserInfo = queryByUid(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.isNull(oldUserInfo)) {
@@ -593,6 +603,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
 
+            //生成后台操作记录
+            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.BATTERY_MODEL)
+                    .operateContent(EleUserOperateRecord.BIND_BATTERY_CONTENT)
+                    .operateUid(user.getUid())
+                    .uid(oldUserInfo.getUid())
+                    .name(user.getUsername())
+                    .initElectricityBatterySn(oldFranchiseeUserInfo.getNowElectricityBatterySn())
+                    .nowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
+
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
@@ -610,6 +633,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional
     public R webUnBindBattery(Long uid) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
         //查找用户
         UserInfo oldUserInfo = queryByUid(uid);
         if (Objects.isNull(oldUserInfo)) {
@@ -671,6 +701,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
+
+            //生成后台操作记录
+            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.BATTERY_MODEL)
+                    .operateContent(EleUserOperateRecord.UN_BIND_BATTERY_CONTENT)
+                    .operateUid(user.getUid())
+                    .uid(oldUserInfo.getUid())
+                    .name(user.getUsername())
+                    .initElectricityBatterySn(oldFranchiseeUserInfo.getNowElectricityBatterySn())
+                    .nowElectricityBatterySn(null)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
 
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
