@@ -21,8 +21,10 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表服务实现类
@@ -100,12 +102,14 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     item.setChargeStatus(electricityBatteryVO.getChargeStatus());
                     item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
                     item.setBatteryV(electricityBatteryVO.getBatteryV());
-                    electricityCabinetBoxVOs.add(item);
                 }
             }
+            electricityCabinetBoxVOs.add(item);
         });
 
-        return R.ok(electricityCabinetBoxVOs);
+        List<ElectricityCabinetBoxVO> result = electricityCabinetBoxVOs.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+
+        return R.ok(result);
     }
 
     @Override
