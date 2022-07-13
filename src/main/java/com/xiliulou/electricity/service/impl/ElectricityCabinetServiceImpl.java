@@ -24,6 +24,7 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -1994,10 +1995,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
             return result;
         }
-        List<LowBatteryExchangeModel> list = JsonUtil.fromJson(electricityConfig.getLowBatteryExchangeModel(), List.class);
+        List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
         Long now = System.currentTimeMillis();
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
-            boolean isInExchangeTime = timeCalendar(new Date(now), new Date(lowBatteryExchangeModel.getExchangeBeginTime()), new Date(lowBatteryExchangeModel.getExchangeEndTime()));
+            boolean isInExchangeTime = DateUtils.timeCalendar(new Date(now), new Date(lowBatteryExchangeModel.getExchangeBeginTime()), new Date(lowBatteryExchangeModel.getExchangeEndTime()));
             if (isInExchangeTime) {
                 result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
                 return result;
@@ -2006,29 +2007,4 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return result;
     }
 
-
-    /**
-     * @param nowTime
-     * @param beginTime
-     * @param endTime
-     * @return boolean
-     */
-    //判断是否在规定的时间内签到 nowTime 当前时间 beginTime规定开始时间 endTime规定结束时间
-    public static boolean timeCalendar(Date nowTime, Date beginTime, Date endTime) {
-        //设置当前时间
-        Calendar date = Calendar.getInstance();
-        date.setTime(nowTime);
-        //设置开始时间
-        Calendar begin = Calendar.getInstance();
-        begin.setTime(beginTime);//开始时间
-        //设置结束时间
-        Calendar end = Calendar.getInstance();
-        end.setTime(endTime);//上午结束时间
-        //处于开始时间之后，和结束时间之前的判断
-        if ((date.after(begin) && date.before(end))) {
-            return true;
-        } else {
-            return false;
-        }
-    }
 }

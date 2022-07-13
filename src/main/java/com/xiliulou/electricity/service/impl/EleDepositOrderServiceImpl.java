@@ -843,9 +843,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Transactional(rollbackFor = Exception.class)
     public R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {

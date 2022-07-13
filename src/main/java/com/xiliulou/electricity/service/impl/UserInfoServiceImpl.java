@@ -143,7 +143,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.parallelStream().forEach(item -> {
+            userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     item.setCardDays((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
                 }
@@ -157,9 +157,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-
         CompletableFuture<Void> queryMemberCard = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.parallelStream().forEach(item -> {
+            userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getCardId())) {
                     ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
                     if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
@@ -173,9 +172,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-
         CompletableFuture<Void> queryElectricityCar = CompletableFuture.runAsync(() -> {
-            userBatteryInfoVOS.parallelStream().forEach(item -> {
+            userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
                     ElectricityCar electricityCar = electricityCarService.queryInfoByUid(item.getUid());
                     item.setCarSn(electricityCar.getSn());
