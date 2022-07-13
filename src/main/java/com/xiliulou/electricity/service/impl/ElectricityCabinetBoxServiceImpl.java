@@ -100,6 +100,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     item.setChargeStatus(electricityBatteryVO.getChargeStatus());
                     item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
                     item.setBatteryV(electricityBatteryVO.getBatteryV());
+                    electricityCabinetBoxVOs.add(item);
                 }
             }
         });
