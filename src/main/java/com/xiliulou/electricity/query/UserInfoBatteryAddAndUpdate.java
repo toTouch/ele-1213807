@@ -17,13 +17,14 @@ public class UserInfoBatteryAddAndUpdate {
     @NotNull(message = "uId不能为空!", groups = {UpdateGroup.class})
     private Long uid;
     /**
-    * 初始电池编号
-    */
+     * 初始电池编号
+     */
     @NotEmpty(message = "初始电池编号不能为空!", groups = {UpdateGroup.class})
     private String initElectricityBatterySn;
 
+    private Integer ediType;
 
-
-
+    public static final Integer BIND_TYPE = 0;
+    public static final Integer EDIT_TYPE = 1;
 
 }

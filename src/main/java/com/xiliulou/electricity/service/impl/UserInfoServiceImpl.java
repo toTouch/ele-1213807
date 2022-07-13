@@ -151,7 +151,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardDays((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
                 }
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(),item.getFranchiseeId(),item.getTenantId());
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
                 }
             });
@@ -566,7 +566,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //已绑定电池
-        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
             log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
@@ -603,10 +603,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
 
+            Integer operateContent = EleUserOperateRecord.BIND_BATTERY_CONTENT;
+            if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(),UserInfoBatteryAddAndUpdate.EDIT_TYPE)){
+                operateContent=EleUserOperateRecord.UN_BIND_BATTERY_CONTENT;
+            }
             //生成后台操作记录
-            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.BATTERY_MODEL)
-                    .operateContent(EleUserOperateRecord.BIND_BATTERY_CONTENT)
+                    .operateContent(operateContent)
                     .operateUid(user.getUid())
                     .uid(oldUserInfo.getUid())
                     .name(user.getUsername())
@@ -703,7 +707,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrderService.insert(rentBatteryOrder);
 
             //生成后台操作记录
-            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.BATTERY_MODEL)
                     .operateContent(EleUserOperateRecord.UN_BIND_BATTERY_CONTENT)
                     .operateUid(user.getUid())
