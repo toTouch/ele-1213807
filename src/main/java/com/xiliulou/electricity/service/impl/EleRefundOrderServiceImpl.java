@@ -335,7 +335,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_INIT)){
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
             log.error("user batteryDeposit not pay ERROR! not found batteryDeposit,uid:{} ", uid);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
@@ -364,6 +364,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
+        //退款中
+        Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
+        if (Objects.nonNull(refundStatus) && Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)) {
+            return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
+        }
+
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
                 log.error("REFUND_ORDER ERROR ,refundAmount > payAmount uid:{}", uid);
@@ -381,7 +387,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             refundAmount = franchiseeUserInfo.getBatteryDeposit();
         }
 
-        EleRefundOrder eleRefundOrder=new EleRefundOrder();
+        EleRefundOrder eleRefundOrder = new EleRefundOrder();
         eleRefundOrder.setOrderId(franchiseeUserInfo.getOrderId());
         eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
         eleRefundOrder.setTenantId(franchiseeUserInfo.getTenantId());
