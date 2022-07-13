@@ -40,4 +40,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBattery> queryNotBindList(@Param("offset")Long offset, @Param("size")Long size, @Param("franchiseeId")Integer franchiseeId, @Param("tenantId")Integer tenantId);
 
 	ElectricityBattery queryByUid(@Param("uid") Long uid);
+
+    ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
 }

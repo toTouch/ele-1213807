@@ -13,6 +13,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,6 +43,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     UserInfoService userInfoService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    BatteryOtherPropertiesService batteryOtherPropertiesService;
 
 
     /**
@@ -86,18 +89,18 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
             return R.ok(electricityCabinetBoxVOList);
         }
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>();
 
-        if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
-            for (ElectricityCabinetBoxVO electricityCabinetBoxVO : electricityCabinetBoxVOList) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxVO.getSn());
-                if (Objects.nonNull(electricityBattery)) {
-                    electricityCabinetBoxVO.setPower(electricityBattery.getPower());
-                    electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
-                }
-                electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>(electricityCabinetBoxVOList.size());
+        electricityCabinetBoxVOList.parallelStream().forEach(item->{
+            ElectricityBatteryVO electricityBatteryVO=electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
+            if (Objects.nonNull(electricityBatteryVO)) {
+                item.setPower(electricityBatteryVO.getPower());
+                item.setChargeStatus(electricityBatteryVO.getChargeStatus());
+                item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
+                item.setBatteryV(electricityBatteryVO.getBatteryV());
             }
-        }
+        });
+
         return R.ok(electricityCabinetBoxVOs);
     }
 
