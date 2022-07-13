@@ -7,7 +7,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,charge_v
+        update_time, del_flag,tenant_id,temperature,battery_type,charge_v,charge_a
         from t_electricity_cabinet_box
         where del_flag=0
         <if test="query.electricityCabinetId != null">
@@ -56,6 +56,9 @@
         </if>
         <if test="chargeV != null">
             charge_v= #{chargeV},
+        </if>
+        <if test="chargeA != null">
+            charge_a= #{chargeA},
         </if>
         update_time = #{updateTime},
         battery_type = #{batteryType},
