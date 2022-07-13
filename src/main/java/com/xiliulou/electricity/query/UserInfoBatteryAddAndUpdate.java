@@ -14,8 +14,8 @@ import javax.validation.constraints.NotNull;
  */
 @Data
 public class UserInfoBatteryAddAndUpdate {
-    @NotNull(message = "Id不能为空!", groups = {UpdateGroup.class})
-    private Long id;
+    @NotNull(message = "uId不能为空!", groups = {UpdateGroup.class})
+    private Long uid;
     /**
     * 初始电池编号
     */

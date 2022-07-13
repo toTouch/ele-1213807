@@ -77,7 +77,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
-    R webUnBindBattery(Long id);
+    R webUnBindBattery(Long uid);
 
 	R userMove(UserMoveHistory userMoveHistory);
 

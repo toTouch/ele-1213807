@@ -113,4 +113,9 @@ public class UserBatteryInfoVO {
      */
     private String model;
 
+    /**
+     * 用户认证时间
+     */
+    private Long userCertificationTime;
+
 }

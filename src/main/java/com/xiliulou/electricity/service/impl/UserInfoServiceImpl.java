@@ -527,7 +527,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
         //查找用户
-        UserInfo oldUserInfo = queryByIdFromDB(userInfoBatteryAddAndUpdate.getId());
+        UserInfo oldUserInfo = queryByUid(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
@@ -609,9 +609,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     @Transactional
-    public R webUnBindBattery(Long id) {
+    public R webUnBindBattery(Long uid) {
         //查找用户
-        UserInfo oldUserInfo = queryByIdFromDB(id);
+        UserInfo oldUserInfo = queryByUid(uid);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
@@ -652,7 +652,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //解绑电池
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        franchiseeUserInfo.setId(id);
+        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfo.setNowElectricityBatterySn(null);
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());

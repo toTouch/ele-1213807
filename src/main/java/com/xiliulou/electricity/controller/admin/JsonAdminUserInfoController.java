@@ -168,9 +168,9 @@ public class JsonAdminUserInfoController {
     }
 
     //解绑电池
-    @PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
-    public R webUnBindBattery(@PathVariable("id") Long id) {
-        return userInfoService.webUnBindBattery(id);
+    @PutMapping(value = "/admin/userInfo/unBindBattery/{uid}")
+    public R webUnBindBattery(@PathVariable("uid") Long uid) {
+        return userInfoService.webUnBindBattery(uid);
     }
 
     //迁移用户数据

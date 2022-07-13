@@ -14,6 +14,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -195,7 +196,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
-	public R addUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
+	public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
 		return electricityMemberCardOrderService.addUserMemberCard(memberCardOrderAddAndUpdate);
 	}
 
@@ -204,7 +205,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
-	public R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
+	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
 		return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
 	}
 
