@@ -14,10 +14,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -206,7 +203,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * 编辑用户套餐
 	 * @return
 	 */
-	@PostMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
+	@PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
 	public R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
 		return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
 	}

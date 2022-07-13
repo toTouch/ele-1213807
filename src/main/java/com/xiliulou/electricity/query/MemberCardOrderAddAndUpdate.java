@@ -16,12 +16,10 @@ public class MemberCardOrderAddAndUpdate {
     private Integer memberCardId;
 
     /**
-     * 用户金额
+     * 用户Id
      */
     @NotNull(message = "用户id不能为空!")
     private Long uid;
-
-    private Long memberCardExpireTime;
 
     /**
      * 月卡剩余天数
