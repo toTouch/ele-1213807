@@ -103,4 +103,14 @@ public class UserBatteryInfoVO {
      */
     private Long payDepositTime;
 
+    /**
+     * 套餐购买时间
+     */
+    private Long memberCardCreateTime;
+
+    /**
+     * 电池型号
+     */
+    private String model;
+
 }

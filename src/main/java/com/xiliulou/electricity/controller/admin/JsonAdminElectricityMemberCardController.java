@@ -239,4 +239,5 @@ public class JsonAdminElectricityMemberCardController {
         return eleDisableMemberCardRecordService.reviewDisableMemberCard(disableMemberCardNo, errMsg, status);
     }
 
+
 }

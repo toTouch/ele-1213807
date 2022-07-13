@@ -47,14 +47,14 @@ public class EleUserOperateRecord {
     private Integer operateContent;
 
     /**
-     * 初始月卡过期时间
+     * 初始月卡可用天数
      */
-    private Long oldMemberCardExpireTime;
+    private Integer oldValidDays;
 
     /**
-     * 操作后月卡过期时间
+     * 操作后月卡可用天数
      */
-    private Long newMemberCardExpireTime;
+    private Integer newValidDays;
 
     /**
      * 初始电池编号
@@ -70,7 +70,6 @@ public class EleUserOperateRecord {
      */
     private BigDecimal oldBatteryDeposit;
 
-
     /**
      * 操作后电池押金
      */
@@ -80,13 +79,19 @@ public class EleUserOperateRecord {
     private Integer tenantId;
 
     /**
-     * 创建时间
+     * 创建时间t_ele_user_operate_record
      */
     private Long createTime;
     /**
      * 更新时间
      */
     private Long updateTime;
+
+    //初始使用次数
+    private Long oldMaxUseCount;
+
+    //操作后使用次数
+    private Long newMaxUseCount;
 
     public static final Integer BATTERY_MODEL = 0;
     public static final Integer DEPOSIT_MODEL = 1;
