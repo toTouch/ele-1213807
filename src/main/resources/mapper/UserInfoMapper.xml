@@ -109,6 +109,9 @@
         <if test="query.phone != null and query.phone != ''">
             and tui.phone = #{query.phone}
         </if>
+        <if test="query.uid != null ">
+            and tui.uid = #{query.uid}
+        </if>
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
         </if>

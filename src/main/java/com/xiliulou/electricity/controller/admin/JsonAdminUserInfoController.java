@@ -81,6 +81,8 @@ public class JsonAdminUserInfoController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
 
@@ -92,6 +94,8 @@ public class JsonAdminUserInfoController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .uid(uid)
+                .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
                 .tenantId(tenantId).build();
