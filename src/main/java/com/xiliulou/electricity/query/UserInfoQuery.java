@@ -28,6 +28,9 @@ public class UserInfoQuery {
     private String batterySn;
     private Long franchiseeId;
 
+    private Long memberCardExpireTimeBegin;
+    private Long memberCardExpireTimeEnd;
+
     /**
      * 套餐id
      */
