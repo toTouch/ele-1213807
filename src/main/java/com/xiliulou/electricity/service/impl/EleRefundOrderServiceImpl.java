@@ -353,6 +353,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //判断是否退电池
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+            log.error("battery deposit OffLine Refund ERROR! not return battery! uid:{} ", uid);
+            return R.fail("ELECTRICITY.0046", "未退还电池");
+        }
+
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(franchiseeUserInfo.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {

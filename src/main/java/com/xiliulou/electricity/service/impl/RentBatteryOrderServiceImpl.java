@@ -935,7 +935,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         Double fullCharged = electricityCabinet.getFullyCharged();
         if (Objects.nonNull(orderSource) && Objects.equals(orderSource, OrderQuery.LOW_BATTERY_ORDER)) {
             ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinet.getTenantId());
-            List<LowBatteryExchangeModel> list = JsonUtil.fromJson(electricityConfig.getLowBatteryExchangeModel(), List.class);
+            List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
             if (Objects.nonNull(list) && list.size() > 0) {
                 fullCharged = list.get(0).getBatteryPowerStandard();
             }
