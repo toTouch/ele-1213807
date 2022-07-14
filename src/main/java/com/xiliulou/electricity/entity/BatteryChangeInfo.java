@@ -12,6 +12,7 @@ import lombok.Data;
 public class BatteryChangeInfo {
 
     private String electricityCabinetId;
+    private Integer cellNo;
     private String sessionId;
     private String preBatteryName;
     private String changeBatteryName;

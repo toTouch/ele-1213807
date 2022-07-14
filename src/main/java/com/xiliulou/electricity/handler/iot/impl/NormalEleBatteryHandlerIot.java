@@ -324,10 +324,10 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(batteryChangeReport.getCreateTime()) ? 0L : batteryChangeReport.getCreateTime());
         String reportTime = formatter.format(reportDateTime);
 
-        String sql = "insert into t_battery_change (electricityCabinetId,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?,?);";
+        String sql = "insert into t_battery_change (electricityCabinetId,cellNo,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(),receiverMessage.getSessionId(), batteryChangeReport.getPreBatteryName(), batteryChangeReport.getChangeBatteryName(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), batteryChangeReport.getCellNo(), receiverMessage.getSessionId(), batteryChangeReport.getPreBatteryName(), batteryChangeReport.getChangeBatteryName(),
                     reportTime, createTime);
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert sql error!", e);
@@ -396,6 +396,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
     @Data
     class EleBatteryChangeReportVO {
+        private Integer cellNo;
         private String sessionId;
         private String productKey;
         private String preBatteryName;
