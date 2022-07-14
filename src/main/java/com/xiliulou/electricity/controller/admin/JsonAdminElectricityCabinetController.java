@@ -8,18 +8,16 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.UserTypeFactory;
-import com.xiliulou.electricity.service.UserTypeService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -67,6 +65,8 @@ public class JsonAdminElectricityCabinetController {
     RedisService redisService;
     @Autowired
     UserTypeFactory userTypeFactory;
+    @Autowired
+    EleCabinetCoreDataService eleCabinetCoreDataService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -439,6 +439,38 @@ public class JsonAdminElectricityCabinetController {
                 .name(name).build();
 
         return electricityCabinetService.queryAllElectricityCabinet(electricityCabinetQuery);
+    }
+
+
+
+    //核心板上报数据分页
+    @GetMapping(value = "/admin/electricityCabinet/core_data_list")
+    public R queryEleCabinetCoreDataList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "id", required = false) Integer id) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        EleCabinetCoreDataQuery eleCabinetCoreDataQuery = EleCabinetCoreDataQuery.builder()
+                .offset(offset)
+                .size(size)
+                .id(id).build();
+
+        List<EleCabinetCoreData> eleCabinetCoreData = eleCabinetCoreDataService.selectListByQuery(eleCabinetCoreDataQuery);
+        return R.ok(eleCabinetCoreData);
+    }
+
+    //核心板上报数据详情
+    @GetMapping(value = "/admin/electricityCabinet/core_data_list/{electricityCabinetId}")
+    public R queryEleCabinetCoreDataList(@PathVariable(value = "electricityCabinetId") Integer electricityCabinetId) {
+
+        EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(electricityCabinetId);
+        return R.ok(eleCabinetCoreData);
     }
 
 }

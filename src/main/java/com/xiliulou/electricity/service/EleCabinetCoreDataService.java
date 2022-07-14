@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
+import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 
 import java.util.List;
 
@@ -67,4 +68,8 @@ public interface EleCabinetCoreDataService {
      * @return
      */
     int atomicUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
+
+    List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
+
+    EleCabinetCoreData selectByEleCabinetId(Integer id);
 }

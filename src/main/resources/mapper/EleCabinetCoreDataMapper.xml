@@ -189,4 +189,18 @@
     </insert>
 
 
+    <select id="selectListByQuery" resultMap="EleCabinetCoreDataMap">
+        select
+          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
+        from t_ele_cabinet_core_data
+        <if test="electricityCabinetId != null and electricityCabinetId != ''">
+            and electricity_cabinet_id = #{electricityCabinetId}
+        </if>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+
+
 </mapper>

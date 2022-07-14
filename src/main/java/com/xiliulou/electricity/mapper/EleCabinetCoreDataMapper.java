@@ -4,6 +4,7 @@ import com.xiliulou.electricity.entity.EleCabinetCoreData;
 
 import java.util.List;
 
+import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -66,4 +67,6 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
     int deleteById(Long id);
 
     int atomicUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
+
+    List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
 }

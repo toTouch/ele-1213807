@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper;
+import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
 import com.xiliulou.electricity.service.EleCabinetCoreDataService;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,16 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     @Override
     public int atomicUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
         return eleCabinetCoreDataMapper.atomicUpdateCabinetCoreData(cabinetCoreData);
+    }
+
+    @Override
+    public List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery) {
+        return eleCabinetCoreDataMapper.selectListByQuery(eleCabinetCoreDataQuery);
+    }
+
+    @Override
+    public EleCabinetCoreData selectByEleCabinetId(Integer id) {
+        return eleCabinetCoreDataMapper.selectOne(new LambdaQueryWrapper<EleCabinetCoreData>().eq(EleCabinetCoreData::getId,id));
     }
 
     /**
