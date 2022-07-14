@@ -37,6 +37,9 @@ public class UserBatteryInfoVO {
      */
     private Integer serviceStatus;
 
+    //审核状态(0--等待审核中,1--审核被拒绝,2--审核通过,3--活体检测失败,4--活体检测成功)
+    private Integer authStatus;
+
     /**
      * 创建时间
      */
@@ -88,6 +91,7 @@ public class UserBatteryInfoVO {
      * 租电池押金
      */
     private BigDecimal batteryDeposit;
+
 
     /**
      * 电量
