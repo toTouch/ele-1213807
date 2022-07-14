@@ -846,7 +846,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("admin payRentCarDeposit  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
@@ -860,19 +860,19 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+            log.error("admin payRentCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(batteryDepositAdd.getFranchiseeId());
         if (Objects.isNull(franchisee)) {
-            log.error("payDeposit  ERROR! not found Franchisee ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
+            log.error("admin payRentCarDeposit ERROR! not found Franchisee ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT) || Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("payCarDeposit  ERROR! user is rent deposit! ,uid:{} ", userInfo.getUid());
+            log.error("admin payRentCarDeposit ERROR! user is rent deposit! ,uid:{} ", userInfo.getUid());
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 

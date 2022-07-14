@@ -323,7 +323,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     public R queryUserDepositPayType(Long uid) {
         UserInfo userInfo = userInfoService.queryByUid(uid);
         if (Objects.isNull(userInfo)) {
-            log.error("user deposit pay type  ERROR! not found user,uid:{} ", uid);
+            log.error("admin query user deposit pay type  ERROR! not found user,uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -331,12 +331,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("NOTIFY  ERROR! not found user! uid:{} ", uid);
+            log.error("admin query user deposit pay type ERROR! not found user! uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-            log.error("user batteryDeposit not pay ERROR! not found batteryDeposit,uid:{} ", uid);
+            log.error("admin query user deposit pay type ERROR! not found batteryDeposit,uid:{} ", uid);
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
@@ -349,30 +349,33 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid:{}", uid);
+            log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //查找缴纳押金订单
         EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(franchiseeUserInfo.getOrderId());
         if (Objects.isNull(eleDepositOrder)) {
+            log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid:{}", uid);
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
 
         BigDecimal deposit = franchiseeUserInfo.getBatteryDeposit();
         if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
+            log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid:{}", uid);
             return R.fail("ELECTRICITY.0044", "退款金额不符");
         }
 
         //退款中
         Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
         if (Objects.nonNull(refundStatus) && Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)) {
+            log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid:{}", uid);
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
 
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
-                log.error("REFUND_ORDER ERROR ,refundAmount > payAmount uid:{}", uid);
+                log.error("battery deposit OffLine Refund ERROR ,refundAmount > payAmount uid:{}", uid);
                 return R.fail("退款金额不能大于支付金额!");
             }
 
@@ -464,7 +467,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 eleRefundOrderService.insert(eleRefundOrder);
                 return R.ok();
             } catch (WechatPayException e) {
-                log.error("handleRefund ERROR! wechat v3 refund  error! ", e);
+                log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
             }
             //提交失败
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_FAIL);
