@@ -36,5 +36,7 @@ public class UserInfoQuery {
      */
     private Long memberCardId;
 
+    private String memberCardName;
+
     private Long uid;
 }
