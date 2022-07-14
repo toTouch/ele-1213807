@@ -70,8 +70,8 @@
         <if test="query.memberCardId != null ">
             and tfui.card_id = #{query.memberCardId}
         </if>
-        <if test="query.memberCardName != null and query.memberCardName != ''">
-            and tfui.card_name = #{query.memberCardName}
+        <if test="query.cardName != null and query.cardName != ''">
+            and tfui.card_name = #{query.cardName}
         </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}
