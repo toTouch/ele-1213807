@@ -53,7 +53,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R queryList(UserInfoQuery userInfoQuery);
 
-    R updateStatus(Long id,Integer usableStatus);
+    R updateStatus(Long uid,Integer usableStatus);
 
     UserInfo queryByUid(Long uid);
 

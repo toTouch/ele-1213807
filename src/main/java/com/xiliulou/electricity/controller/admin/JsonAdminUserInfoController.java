@@ -107,8 +107,8 @@ public class JsonAdminUserInfoController {
 
     //禁/启用
     @PutMapping(value = "/admin/userInfo/updateStatus")
-    public R updateStatus(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
-        return userInfoService.updateStatus(id, usableStatus);
+    public R updateStatus(@RequestParam("uid") Long uid, @RequestParam("usableStatus") Integer usableStatus) {
+        return userInfoService.updateStatus(uid, usableStatus);
     }
 
     //后台审核实名认证
