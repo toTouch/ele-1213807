@@ -31,9 +31,13 @@ public class JsonAdminEleUserOperateRecordController {
 	EleUserOperateRecordService eleUserOperateRecordService;
 
 	@GetMapping(value = "/admin/eleUserOperateRecord/list")
-	public R attrList(@RequestParam(value = "uid", required = false) Long uid) {
-
+	public R queryList(@RequestParam(value = "uid") Long uid) {
 		return eleUserOperateRecordService.queryList(uid);
+	}
+
+	@GetMapping(value = "/admin/eleUserOperateRecord/queryCount")
+	public R queryCount(@RequestParam(value = "uid") Long uid) {
+		return eleUserOperateRecordService.queryCount(uid);
 	}
 
 

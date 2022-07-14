@@ -56,4 +56,9 @@ public class EleUserOperateRecordServiceImpl extends ServiceImpl<EleUserOperateR
     public R queryList(Long uid) {
         return R.ok(eleUserOperateRecordMapper.selectList(new LambdaQueryWrapper<EleUserOperateRecord>().eq(EleUserOperateRecord::getUid, uid)));
     }
+
+    @Override
+    public R queryCount(Long uid) {
+        return R.ok(eleUserOperateRecordMapper.selectCount(new LambdaQueryWrapper<EleUserOperateRecord>().eq(EleUserOperateRecord::getUid, uid)));
+    }
 }

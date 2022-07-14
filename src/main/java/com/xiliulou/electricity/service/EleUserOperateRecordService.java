@@ -20,5 +20,7 @@ public interface EleUserOperateRecordService extends IService<EleUserOperateReco
 
     R queryList(Long uid);
 
+    R queryCount(Long uid);
+
 
 }
