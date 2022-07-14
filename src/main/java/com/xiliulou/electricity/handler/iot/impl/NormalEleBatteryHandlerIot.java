@@ -316,7 +316,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
      * 检测电池数据保存到clickhouse
      * @param batteryChangeReport
      */
-    private void saveReportDataToClickHouse(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage,EleBatteryChangeReportVO batteryChangeReport) {
+    private void saveReportDataToClickHouse(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage, EleBatteryChangeReportVO batteryChangeReport) {
 
         LocalDateTime now = LocalDateTime.now();
         String createTime = formatter.format(now);
@@ -324,7 +324,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(batteryChangeReport.getCreateTime()) ? 0L : batteryChangeReport.getCreateTime());
         String reportTime = formatter.format(reportDateTime);
 
-        String sql = "insert into t_battery_change (electricityCabinetId,cellNo,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?,?);";
+        String sql = "insert into t_battery_change (electricityCabinetId,cellNo,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?,?,?);";
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), batteryChangeReport.getCellNo(), receiverMessage.getSessionId(), batteryChangeReport.getPreBatteryName(), batteryChangeReport.getChangeBatteryName(),
