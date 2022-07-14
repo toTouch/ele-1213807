@@ -50,7 +50,7 @@
 
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
-        tui.phone,tui.name,tui.uid,tui.create_time as userCertificationTime,tui.auth_status,tfui.now_electricity_battery_sn,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
+        tui.phone,tui.name,tui.uid,tui.create_time as userCertificationTime,tui.auth_status,tui.usable_status,tfui.now_electricity_battery_sn,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
         tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.model from t_user_info tui
         left join t_franchisee_user_info tfui on tfui.user_info_id=tui.id
         left join t_electricity_battery teb on tfui.now_electricity_battery_sn=teb.sn
@@ -69,6 +69,9 @@
         </if>
         <if test="query.memberCardId != null ">
             and tfui.card_id = #{query.memberCardId}
+        </if>
+        <if test="query.memberCardName != null and query.memberCardName != ''">
+            and tfui.card_name = #{query.memberCardName}
         </if>
         <if test="query.beginTime != null">
             and tui.create_time &gt;=#{query.beginTime}

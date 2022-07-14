@@ -44,6 +44,7 @@ public class JsonAdminUserInfoController {
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
+                       @RequestParam(value = "memberCardName",required = false) String memberCardName,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
@@ -70,6 +71,7 @@ public class JsonAdminUserInfoController {
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .uid(uid)
                 .memberCardId(memberCardId)
+                .memberCardName(memberCardName)
                 .tenantId(tenantId).build();
 
         return userInfoService.queryList(userInfoQuery);

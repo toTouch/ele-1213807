@@ -179,7 +179,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getUid())) {
                     ElectricityCar electricityCar = electricityCarService.queryInfoByUid(item.getUid());
-                    item.setCarSn(electricityCar.getSn());
+                    if (Objects.nonNull(electricityCar)) {
+                        item.setCarSn(electricityCar.getSn());
+                    }
                 }
             });
         }, threadPool).exceptionally(e -> {
