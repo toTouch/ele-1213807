@@ -11,7 +11,8 @@ import lombok.Data;
 @Data
 public class BatteryChangeInfo {
 
-    private String productKey;
+    private String electricityCabinetId;
+    private String sessionId;
     private String preBatteryName;
     private String changeBatteryName;
     private Long reportTime;
