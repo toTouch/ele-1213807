@@ -164,7 +164,13 @@ public class JsonAdminElectricityMemberCardController {
     //查询换电套餐根据加盟商
     @GetMapping(value = "/admin/electricityMemberCard/queryByFranchisee/{id}")
     public R getElectricityBatteryList(@PathVariable("id") Long id) {
-        return R.ok(electricityMemberCardService.queryByFranchisee(id));
+        return R.ok(electricityMemberCardService.selectByFranchiseeId(id));
+    }
+
+    //查询未删除并且启用换电套餐根据加盟商
+    @GetMapping(value = "/admin/electricityMemberCard/queryUsableByFranchisee/{id}")
+    public R getElectricityUsableBatteryList(@PathVariable("id") Long id) {
+        return R.ok(electricityMemberCardService.getElectricityUsableBatteryList(id));
     }
 
     /**
