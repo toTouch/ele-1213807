@@ -4,7 +4,7 @@
 
     <resultMap type="com.xiliulou.electricity.entity.EleCabinetCoreData" id="EleCabinetCoreDataMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
-        <result property="productKey" column="product_key" jdbcType="VARCHAR"/>
+        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="VARCHAR"/>
         <result property="lockOpen" column="lock_open" jdbcType="INTEGER"/>
         <result property="smokeSensorOpen" column="smoke_sensor_open" jdbcType="INTEGER"/>
         <result property="lightOpen" column="light_open" jdbcType="INTEGER"/>
@@ -27,7 +27,7 @@
     <!--查询单个-->
     <select id="queryById" resultMap="EleCabinetCoreDataMap">
         select
-          id, product_key, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
+          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
         from t_ele_cabinet_core_data
         where id = #{id}
     </select>
@@ -35,7 +35,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EleCabinetCoreDataMap">
         select
-          id, product_key, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
+          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
         from t_ele_cabinet_core_data
         limit #{offset}, #{limit}
     </select>
@@ -43,7 +43,7 @@
     <!--通过实体作为筛选条件查询-->
     <select id="queryAll" resultMap="EleCabinetCoreDataMap">
         select
-        id, product_key, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power,
+        id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power,
         power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity,
         water_leaching_warning, create_time, update_time
         from t_ele_cabinet_core_data
@@ -51,8 +51,8 @@
             <if test="id != null">
                 and id = #{id}
             </if>
-            <if test="productKey != null and productKey != ''">
-                and product_key = #{productKey}
+            <if test="electricityCabinetId != null and electricityCabinetId != ''">
+                and electricity_cabinet_id = #{electricityCabinetId}
             </if>
             <if test="lockOpen != null">
                 and lock_open = #{lockOpen}
@@ -110,16 +110,16 @@
 
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_cabinet_core_data(product_key, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
-        values (#{productKey}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
     </insert>
 
     <!--通过主键修改数据-->
     <update id="update">
         update t_ele_cabinet_core_data
         <set>
-            <if test="productKey != null and productKey != ''">
-                product_key = #{productKey},
+            <if test="electricityCabinetId != null and electricityCabinetId != ''">
+                electricity_cabinet_id = #{electricityCabinetId},
             </if>
             <if test="lockOpen != null">
                 lock_open = #{lockOpen},
@@ -183,8 +183,8 @@
 
     <!--原子更新-->
     <insert id="atomicUpdateCabinetCoreData" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_cabinet_core_data(product_key, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
-        values (#{productKey}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
          on duplicate key update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open = #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power = #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open = #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity = #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime}
     </insert>
 

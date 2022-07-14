@@ -39,16 +39,16 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
             return;
         }
 
-        this.atomicUpdateCabinetCoreData(eleCabinetCoreDataVO);
+        this.atomicUpdateCabinetCoreData(electricityCabinet,eleCabinetCoreDataVO);
     }
 
     /**
      * 原子更新核心板上报数据
      */
-    private void atomicUpdateCabinetCoreData(EleCabinetCoreDataVO eleCabinetCoreDataVO) {
+    private void atomicUpdateCabinetCoreData(ElectricityCabinet electricityCabinet,EleCabinetCoreDataVO eleCabinetCoreDataVO) {
 
         EleCabinetCoreData cabinetCoreData = EleCabinetCoreData.builder()
-                .productKey(eleCabinetCoreDataVO.getProductKey()).
+                .electricityCabinetId(electricityCabinet.getId().longValue()).
                         lockOpen(eleCabinetCoreDataVO.isLockOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
                         smokeSensorOpen(eleCabinetCoreDataVO.isSmokeSensorOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
                         lightOpen(eleCabinetCoreDataVO.isLightOpen() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).

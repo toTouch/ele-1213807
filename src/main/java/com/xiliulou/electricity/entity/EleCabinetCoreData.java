@@ -24,9 +24,9 @@ public class EleCabinetCoreData {
      */
     private Long id;
     /**
-     * product_key
+     * 柜机id
      */
-    private String productKey;
+    private Long electricityCabinetId;
     /**
      * 仓门是否开启;0：开启，1：关闭
      */
