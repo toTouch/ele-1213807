@@ -324,7 +324,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(batteryChangeReport.getCreateTime()) ? 0L : batteryChangeReport.getCreateTime());
         String reportTime = formatter.format(reportDateTime);
 
-        String sql = "insert into t_battery_change (electricityCabinetId,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?);";
+        String sql = "insert into t_battery_change (electricityCabinetId,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?,?);";
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(),receiverMessage.getSessionId(), batteryChangeReport.getPreBatteryName(), batteryChangeReport.getChangeBatteryName(),
