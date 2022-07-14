@@ -47,6 +47,9 @@
 		<if test="tenantId != null ">
 			and tenant_id = #{tenantId}
 		</if>
+		<if test="name != null and name!=''">
+			and name = #{name}
+		</if>
 	</select>
 
 
