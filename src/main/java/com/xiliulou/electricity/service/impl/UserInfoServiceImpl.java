@@ -142,10 +142,17 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @DS("slave_1")
     public R queryList(UserInfoQuery userInfoQuery) {
+
+
+        System.out.println("列表请求参数======================="+userInfoQuery);
+
         List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
         if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
             return R.ok(userBatteryInfoVOS);
         }
+
+        System.out.println("查询的列表长度========================"+userBatteryInfoVOS.size());
+
 
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
@@ -584,6 +591,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public R queryCount(UserInfoQuery userInfoQuery) {
+
+        System.out.println("count请求参数======================"+userInfoQuery);
+
         return R.ok(userInfoMapper.queryCount(userInfoQuery));
     }
 
