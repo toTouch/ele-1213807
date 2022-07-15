@@ -3,6 +3,35 @@
 <mapper namespace="com.xiliulou.electricity.mapper.UserMapper">
 
 
+
+	<!--通过主键修改数据-->
+	<update id="updateUserById">
+		update t_user
+		<set>
+			<if test="phone != null">
+				phone = #{phone},
+			</if>
+			<if test="name != null">
+				name = #{name},
+			</if>
+			<if test="gender != null">
+				gender = #{gender},
+			</if>
+			<if test="delFlag != null">
+				del_flag = #{delFlag},
+			</if>
+			<if test="createTime != null">
+				create_time = #{createTime},
+			</if>
+			<if test="updateTime != null">
+				update_time = #{updateTime},
+			</if>
+		</set>
+		where uid = #{uid}
+	</update>
+
+
+
 	<select id="queryListUserByCriteria" resultType="com.xiliulou.electricity.entity.User">
 		select uid, phone, avatar, name, gender, del_flag, lock_flag, user_type, create_time, update_time,
 		city,province,address,cid,ref_id,lang,tenant_id
