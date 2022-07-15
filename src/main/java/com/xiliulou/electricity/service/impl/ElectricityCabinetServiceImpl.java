@@ -1448,6 +1448,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (Objects.isNull(tripleResult)) {
+
+            System.out.println("换电柜暂无满电===========================电池");
+
             return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池",checkIsLowBatteryExchange(electricityCabinet.getTenantId()));
         }
 
@@ -2004,10 +2007,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private Integer checkIsLowBatteryExchange(Integer tenantId) {
 
-
+        System.out.println("检测方法========================="+tenantId);
 
         ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
         Integer result = null;
+
+        System.out.println("低电量配置文件======================"+electricityConfig);
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
             return result;
         }
