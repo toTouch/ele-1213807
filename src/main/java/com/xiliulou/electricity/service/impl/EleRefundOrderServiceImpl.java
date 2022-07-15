@@ -8,28 +8,17 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.EleRefundOrderHistory;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.RefundOrder;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -77,6 +66,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     WechatConfig wechatConfig;
     @Autowired
     EleRefundOrderHistoryService eleRefundOrderHistoryService;
+    @Autowired
+    EleUserOperateRecordService eleUserOperateRecordService;
 
 
     /**
@@ -469,6 +460,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType) {
 
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid:{}", uid);
@@ -551,6 +549,20 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             updateFranchiseeUserInfo.setMemberCardExpireTime(null);
             updateFranchiseeUserInfo.setRemainingNumber(null);
             franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+
+
+            //生成后台操作记录
+            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
+                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
+                    .operateUid(user.getUid())
+                    .uid(uid)
+                    .name(user.getUsername())
+                    .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
+                    .newBatteryDeposit(eleDepositOrder.getPayAmount())
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
             return R.ok();
         } else {
             //退款0元，不捕获异常，成功退款

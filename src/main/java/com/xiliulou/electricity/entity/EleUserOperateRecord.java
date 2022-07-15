@@ -104,6 +104,7 @@ public class EleUserOperateRecord {
 
     public static final Integer MEMBER_CARD_EXPIRE_CONTENT = 0;
     public static final Integer DEPOSIT_EDIT_CONTENT = 1;
+    public static final Integer REFUND_DEPOSIT__CONTENT = 4;
     public static final Integer BIND_BATTERY_CONTENT = 2;
     public static final Integer UN_BIND_BATTERY_CONTENT = 3;
 
