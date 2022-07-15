@@ -38,7 +38,7 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
 
     @Override
     public EleCabinetCoreData selectByEleCabinetId(Integer id) {
-        return eleCabinetCoreDataMapper.selectOne(new LambdaQueryWrapper<EleCabinetCoreData>().eq(EleCabinetCoreData::getId,id));
+        return eleCabinetCoreDataMapper.selectOne(new LambdaQueryWrapper<EleCabinetCoreData>().eq(EleCabinetCoreData::getElectricityCabinetId,id));
     }
 
     /**
