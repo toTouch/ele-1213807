@@ -1296,13 +1296,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryByOrder(String productKey, String deviceName) {
 
-
-        System.out.println("换电前置检测============================");
-
-
-
-
-
         //登录用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -1448,10 +1441,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (Objects.isNull(tripleResult)) {
-
-            System.out.println("换电柜暂无满电===========================电池");
-
-            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池",checkIsLowBatteryExchange(electricityCabinet.getTenantId()));
+            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", checkIsLowBatteryExchange(electricityCabinet.getTenantId()));
         }
 
         if (!tripleResult.getLeft()) {
@@ -2007,20 +1997,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private Integer checkIsLowBatteryExchange(Integer tenantId) {
 
-        System.out.println("检测方法========================="+tenantId);
-
         ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
         Integer result = null;
-
-        System.out.println("低电量配置文件======================"+electricityConfig);
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
             return result;
         }
         List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
-
-
-        System.out.println(tenantId+"租户解析出得低电量数============================"+list);
-
         Long now = System.currentTimeMillis();
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             boolean isInExchangeTime = DateUtils.timeCalendar(new Date(now), new Date(lowBatteryExchangeModel.getExchangeBeginTime()), new Date(lowBatteryExchangeModel.getExchangeEndTime()));
@@ -2029,9 +2011,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return result;
             }
         }
-
-
-        System.out.println("result==================="+result);
         return result;
     }
 
@@ -2068,7 +2047,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //排序
             if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
-                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item->Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
             }
 
         }
