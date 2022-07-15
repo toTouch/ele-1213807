@@ -15,25 +15,25 @@ public interface ElectricityMemberCardService {
 
     ElectricityMemberCard queryByCache(Integer id);
 
-    R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId);
+    R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId);
 
-	R queryUserList(Long offset, Long size,String productKey, String deviceName,Long franchiseeId);
+    R queryUserList(Long offset, Long size, String productKey, String deviceName, Long franchiseeId);
 
-	List<ElectricityMemberCard> queryByFranchisee(Long id);
+    List<ElectricityMemberCard> queryByFranchisee(Long id);
 
-	List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id);
+    List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id);
 
-	List<ElectricityMemberCard> selectByFranchiseeId(Long id);
+    List<ElectricityMemberCard> selectByFranchiseeId(Long id);
 
-	R queryCount(Integer status, Integer type, Integer tenantId);
+    R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId);
 
-	R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
+    R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
-	R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId);
+    R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
-	ElectricityMemberCard queryByStatus(Integer id);
+    ElectricityMemberCard queryByStatus(Integer id);
 
-	void unbindActivity(Integer id);
+    void unbindActivity(Integer id);
 
-	R queryDisableMemberCardList(Long offset, Long size);
+    R queryDisableMemberCardList(Long offset, Long size);
 }
