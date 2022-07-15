@@ -100,7 +100,8 @@ public class JsonAdminBatteryAttrController {
 								   @RequestParam("endTime") Long endTime,
 								   @RequestParam(value = "offset") Long offset,
 								   @RequestParam(value = "size") Long size,
-								   @RequestParam(value = "electricityCabinetId") String electricityCabinetId) {
+								   @RequestParam(value = "electricityCabinetId") String electricityCabinetId,
+								   @RequestParam(value = "cellNo") String cellNo) {
 		if (size < 0 || size > 50) {
 			size = 10L;
 		}
@@ -118,9 +119,8 @@ public class JsonAdminBatteryAttrController {
 			return R.failMsg("查询时间区间不能超过5天!");
 		}
 
-		String sql = "select * from t_battery_change where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
-		return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, electricityCabinetId, begin, end, offset, size));
-
+		String sql = "select * from t_battery_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+		return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
 	}
 
 	/**
