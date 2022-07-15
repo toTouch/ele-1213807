@@ -63,6 +63,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R getMemberCardInfo(Long uid);
 
+    R getRentCarMemberCardInfo(Long uid);
+
     R queryUserInfo();
 
     R verifyAuth(Long id,Integer authStatus);
@@ -86,5 +88,7 @@ public interface UserInfoService extends IService<UserInfo> {
 	R queryUserBelongFranchisee(Long franchiseeId);
 
 	R queryUserAllConsumption(Long id);
+
+	UserInfo queryUserInfoByPhone(String phone,Integer tenantId);
 
 }

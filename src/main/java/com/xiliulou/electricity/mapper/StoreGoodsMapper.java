@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.StoreGoods;
 import com.xiliulou.electricity.query.StoreShopsQuery;
+import com.xiliulou.electricity.vo.StoreGoodsVO;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
  */
 public interface StoreGoodsMapper extends BaseMapper<StoreGoods> {
 
-	List<StoreGoods> queryList(@Param("query") StoreShopsQuery storeShopsQuery);
+	List<StoreGoodsVO> queryList(@Param("query") StoreShopsQuery storeShopsQuery);
 
 	Integer queryCount(@Param("query") StoreShopsQuery storeShopsQuery);
 }

@@ -45,184 +45,182 @@ import lombok.extern.slf4j.Slf4j;
 @Service("shareActivityRecordService")
 @Slf4j
 public class ShareActivityRecordServiceImpl implements ShareActivityRecordService {
-	@Resource
-	private ShareActivityRecordMapper shareActivityRecordMapper;
+    @Resource
+    private ShareActivityRecordMapper shareActivityRecordMapper;
 
-	@Autowired
-	RedisService redisService;
+    @Autowired
+    RedisService redisService;
 
-	@Autowired
-	GenerateShareUrlService generateShareUrlService;
+    @Autowired
+    GenerateShareUrlService generateShareUrlService;
 
-	@Autowired
-	ElectricityPayParamsService electricityPayParamsService;
+    @Autowired
+    ElectricityPayParamsService electricityPayParamsService;
 
-	@Autowired
-	ShareActivityService shareActivityService;
+    @Autowired
+    ShareActivityService shareActivityService;
 
-	@Autowired
-	UserService userService;
-
-
-	/**
-	 * 通过ID查询单条数据从DB
-	 *
-	 * @param id 主键
-	 * @return 实例对象
-	 */
-	@Override
-	public ShareActivityRecord queryByIdFromDB(Long id) {
-		return this.shareActivityRecordMapper.selectById(id);
-	}
-
-	/**
-	 * 新增数据
-	 *
-	 * @param shareActivityRecord 实例对象
-	 * @return 实例对象
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public ShareActivityRecord insert(ShareActivityRecord shareActivityRecord) {
-		this.shareActivityRecordMapper.insert(shareActivityRecord);
-		return shareActivityRecord;
-	}
-
-	/**
-	 * 修改数据
-	 *
-	 * @param shareActivityRecord 实例对象
-	 * @return 实例对象
-	 */
-	@Override
-	@Transactional(rollbackFor = Exception.class)
-	public Integer update(ShareActivityRecord shareActivityRecord) {
-		return this.shareActivityRecordMapper.updateById(shareActivityRecord);
-
-	}
-
-	/**
-	 * 1、判断是否分享过
-	 * 2、生成分享记录
-	 * 3、加密scene
-	 * 4、调起微信
-	 *
-	 */
-	@Override
-	public R generateSharePicture(Integer activityId, String page) {
-
-		//用户
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("order  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		//限频
-		boolean result = redisService.setNx(ElectricityCabinetConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
-		if (!result) {
-			return R.fail("ELECTRICITY.0034", "操作频繁");
-		}
-
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
-
-		//获取小程序appId
-		ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
-		if (Objects.isNull(electricityPayParams)) {
-			log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
-			return R.failMsg("未配置支付参数!");
-		}
-
-		//参数page
-		if (Objects.isNull(page)) {
-			page = "pages/start/index";
-		}
-
-		//1、判断是否分享过
-		ShareActivityRecord oldShareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
-				.eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
+    @Autowired
+    UserService userService;
 
 
-		//第一次分享
-		if (Objects.isNull(oldShareActivityRecord)) {
-			//2、生成分享记录
-			//2.1 、生成code
-			String code = RandomUtil.randomNumbers(6);
+    /**
+     * 通过ID查询单条数据从DB
+     *
+     * @param id 主键
+     * @return 实例对象
+     */
+    @Override
+    public ShareActivityRecord queryByIdFromDB(Long id) {
+        return this.shareActivityRecordMapper.selectById(id);
+    }
 
-			//2.2、生成分享记录
-			ShareActivityRecord shareActivityRecord = new ShareActivityRecord();
-			shareActivityRecord.setActivityId(activityId);
-			shareActivityRecord.setUid(user.getUid());
-			shareActivityRecord.setTenantId(tenantId);
-			shareActivityRecord.setCode(code);
-			shareActivityRecord.setCreateTime(System.currentTimeMillis());
-			shareActivityRecord.setUpdateTime(System.currentTimeMillis());
-			shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
-			shareActivityRecordMapper.insert(shareActivityRecord);
-		}
+    /**
+     * 新增数据
+     *
+     * @param shareActivityRecord 实例对象
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public ShareActivityRecord insert(ShareActivityRecord shareActivityRecord) {
+        this.shareActivityRecordMapper.insert(shareActivityRecord);
+        return shareActivityRecord;
+    }
 
-		ShareActivityRecord shareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
-				.eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
+    /**
+     * 修改数据
+     *
+     * @param shareActivityRecord 实例对象
+     * @return 实例对象
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Integer update(ShareActivityRecord shareActivityRecord) {
+        return this.shareActivityRecordMapper.updateById(shareActivityRecord);
 
-		//3、scene
-		String scene = "uid:"+user.getUid()+",id:"+activityId+",code:"+shareActivityRecord.getCode()+",type:1";
+    }
+
+    /**
+     * 1、判断是否分享过
+     * 2、生成分享记录
+     * 3、加密scene
+     * 4、调起微信
+     */
+    @Override
+    public R generateSharePicture(Integer activityId, String page) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("order  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //限频
+        boolean result = redisService.setNx(ElectricityCabinetConstant.SHARE_ACTIVITY_UID + user.getUid(), "1", 5 * 1000L, false);
+        if (!result) {
+            return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //获取小程序appId
+        ElectricityPayParams electricityPayParams = electricityPayParamsService.queryFromCache(tenantId);
+        if (Objects.isNull(electricityPayParams)) {
+            log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND PAY_PARAMS");
+            return R.failMsg("未配置支付参数!");
+        }
+
+        //参数page
+        if (Objects.isNull(page)) {
+            page = "pages/start/index";
+        }
+
+        //1、判断是否分享过
+        ShareActivityRecord oldShareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
+                .eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
 
 
-		//修改分享状态
-		ShareActivityRecord newShareActivityRecord = new ShareActivityRecord();
-		newShareActivityRecord.setId(shareActivityRecord.getId());
-		newShareActivityRecord.setUpdateTime(System.currentTimeMillis());
+        //第一次分享
+        if (Objects.isNull(oldShareActivityRecord)) {
+            //2、生成分享记录
+            //2.1 、生成code
+            String code = RandomUtil.randomNumbers(6);
+
+            //2.2、生成分享记录
+            ShareActivityRecord shareActivityRecord = new ShareActivityRecord();
+            shareActivityRecord.setActivityId(activityId);
+            shareActivityRecord.setUid(user.getUid());
+            shareActivityRecord.setTenantId(tenantId);
+            shareActivityRecord.setCode(code);
+            shareActivityRecord.setCreateTime(System.currentTimeMillis());
+            shareActivityRecord.setUpdateTime(System.currentTimeMillis());
+            shareActivityRecord.setStatus(ShareActivityRecord.STATUS_INIT);
+            shareActivityRecordMapper.insert(shareActivityRecord);
+        }
+
+        ShareActivityRecord shareActivityRecord = shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
+                .eq(ShareActivityRecord::getUid, user.getUid()).eq(ShareActivityRecord::getActivityId, activityId));
+
+        //3、scene
+        String scene = "uid:" + user.getUid() + ",id:" + activityId + ",type:1";
+
+        //修改分享状态
+        ShareActivityRecord newShareActivityRecord = new ShareActivityRecord();
+        newShareActivityRecord.setId(shareActivityRecord.getId());
+        newShareActivityRecord.setUpdateTime(System.currentTimeMillis());
 
 
-		//4、调起微信
-		SharePicture sharePicture = new SharePicture();
-		sharePicture.setPage(page);
-		sharePicture.setScene(scene);
-		sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
-		sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
-		Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
+        //4、调起微信
+        SharePicture sharePicture = new SharePicture();
+        sharePicture.setPage(page);
+        sharePicture.setScene(scene);
+        sharePicture.setAppId(electricityPayParams.getMerchantMinProAppId());
+        sharePicture.setAppSecret(electricityPayParams.getMerchantMinProAppSecert());
+        Pair<Boolean, Object> getShareUrlPair = generateShareUrlService.generateSharePicture(sharePicture);
 
-		//分享失败
-		if (!getShareUrlPair.getLeft()) {
-			newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_FAIL);
-			shareActivityRecordMapper.updateById(newShareActivityRecord);
-			return R.fail(getShareUrlPair.getRight());
-		}
+        //分享失败
+        if (!getShareUrlPair.getLeft()) {
+            newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_FAIL);
+            shareActivityRecordMapper.updateById(newShareActivityRecord);
+            return R.fail(getShareUrlPair.getRight());
+        }
 
-		//分享成功
-		newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_SUCCESS);
-		shareActivityRecordMapper.updateById(newShareActivityRecord);
-		return R.ok(getShareUrlPair.getRight());
+        //分享成功
+        newShareActivityRecord.setStatus(ShareActivityRecord.STATUS_SUCCESS);
+        shareActivityRecordMapper.updateById(newShareActivityRecord);
+        return R.ok(getShareUrlPair.getRight());
 
-	}
+    }
 
-	@Override
-	public ShareActivityRecord queryByUid(Long uid,Integer activityId) {
-		return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
-				.eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId,activityId));
-	}
+    @Override
+    public ShareActivityRecord queryByUid(Long uid, Integer activityId) {
+        return shareActivityRecordMapper.selectOne(new LambdaQueryWrapper<ShareActivityRecord>()
+                .eq(ShareActivityRecord::getUid, uid).eq(ShareActivityRecord::getActivityId, activityId));
+    }
 
-	@Override
-	public void addCountByUid(Long uid) {
-		shareActivityRecordMapper.addCountByUid(uid);
-	}
+    @Override
+    public void addCountByUid(Long uid) {
+        shareActivityRecordMapper.addCountByUid(uid);
+    }
 
-	@Override
-	public void reduceAvailableCountByUid(Long uid, Integer count) {
-		shareActivityRecordMapper.reduceAvailableCountByUid(uid,count);
-	}
+    @Override
+    public void reduceAvailableCountByUid(Long uid, Integer count) {
+        shareActivityRecordMapper.reduceAvailableCountByUid(uid, count);
+    }
 
-	@Override
-	public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
+    @Override
+    public R queryList(ShareActivityRecordQuery shareActivityRecordQuery) {
 
-		List<ShareActivityRecordVO> shareActivityRecordVOList= shareActivityRecordMapper.queryList(shareActivityRecordQuery);
-		return R.ok(shareActivityRecordVOList);
-	}
+        List<ShareActivityRecordVO> shareActivityRecordVOList = shareActivityRecordMapper.queryList(shareActivityRecordQuery);
+        return R.ok(shareActivityRecordVOList);
+    }
 
-	@Override
-	public R queryCount(ShareActivityRecordQuery shareActivityRecordQuery) {
-		return R.ok(shareActivityRecordMapper.queryCount(shareActivityRecordQuery));
-	}
+    @Override
+    public R queryCount(ShareActivityRecordQuery shareActivityRecordQuery) {
+        return R.ok(shareActivityRecordMapper.queryCount(shareActivityRecordQuery));
+    }
 
 }

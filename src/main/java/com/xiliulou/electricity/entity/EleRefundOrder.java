@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
@@ -22,41 +23,41 @@ import java.math.BigDecimal;
 @TableName("t_ele_refund_order")
 public class EleRefundOrder {
     /**
-    * 退款Id
-    */
-    @TableId(value = "id",type = IdType.AUTO)
+     * 退款Id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
     /**
-    * 退款单号
-    */
+     * 退款单号
+     */
     private String refundOrderNo;
     /**
-    * 支付单号
-    */
+     * 支付单号
+     */
     private String orderId;
     /**
-    * 支付金额,单位元
-    */
+     * 支付金额,单位元
+     */
     private BigDecimal payAmount;
     /**
-    * 退款金额,单位元
-    */
+     * 退款金额,单位元
+     */
     private BigDecimal refundAmount;
     /**
-    * 退款状态
-    */
+     * 退款状态
+     */
     private Integer status;
     /**
-    * 错误原因
-    */
+     * 错误原因
+     */
     private String errMsg;
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
     /**
-    * 更新时间
-    */
+     * 更新时间
+     */
     private Long updateTime;
 
     //租户id
@@ -66,6 +67,11 @@ public class EleRefundOrder {
      * 套餐欠费次数
      */
     private Integer memberCardOweNumber;
+
+    /**
+     * 退款类型 0--电池押金退款 1--租车押金退款
+     */
+    private Integer refundOrderType;
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
@@ -82,5 +88,8 @@ public class EleRefundOrder {
     public static final Integer STATUS_SUCCESS = 4;
     //退款失败
     public static final Integer STATUS_FAIL = -1;
+
+    public static final Integer BATTERY_DEPOSIT_REFUND_ORDER = 0;
+    public static final Integer RENT_CAR_DEPOSIT_REFUND_ORDER = 1;
 
 }

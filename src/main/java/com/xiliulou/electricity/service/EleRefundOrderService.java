@@ -8,6 +8,7 @@ import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import org.apache.commons.lang3.tuple.Pair;
+
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
 import java.util.Map;
@@ -40,12 +41,14 @@ public interface EleRefundOrderService {
 
     //调起退款
     WechatJsapiRefundResultDTO commonCreateRefundOrder(RefundOrder refundOrder,
-                                                  HttpServletRequest request) throws WechatPayException;
+                                                       HttpServletRequest request) throws WechatPayException;
 
 
     Pair<Boolean, Object> notifyDepositRefundOrder(WechatJsapiRefundOrderCallBackResource callBackResource);
 
-    R handleRefund(String refundOrderNo,String errMsg,Integer status, BigDecimal refundAmount,HttpServletRequest request);
+    R handleRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
+
+    R handleOffLineRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request);
 
     R queryUserDepositPayType(Long uid);
 
@@ -55,16 +58,19 @@ public interface EleRefundOrderService {
 
     Integer queryCountByOrderId(String orderId);
 
+    Integer queryIsRefundingCountByOrderId(String orderId);
+
     Integer queryStatusByOrderId(String orderId);
 
-	R queryCount(EleRefundQuery eleRefundQuery);
+    R queryCount(EleRefundQuery eleRefundQuery);
 
     /**
      * 根据押金退款订单号查询用户的UserInfoId
+     *
      * @param refundOrderNo
      * @return
      */
-	Long queryUserInfoIdByRefundOrderNo(String refundOrderNo);
+    Long queryUserInfoIdByRefundOrderNo(String refundOrderNo);
 
-	BigDecimal queryTurnOver(Integer tenantId);
+    BigDecimal queryTurnOver(Integer tenantId);
 }

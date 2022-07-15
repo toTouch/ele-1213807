@@ -93,4 +93,11 @@ public class ElectricityCabinetBoxVO {
      */
     private Double chargeA;
 
+    /**
+     * 是否可换电 0:是；1:否
+     */
+    private Integer exchange;
+
+    public static final Integer EXCHANGE_YES=0;
+    public static final Integer EXCHANGE_NO=1;
 }

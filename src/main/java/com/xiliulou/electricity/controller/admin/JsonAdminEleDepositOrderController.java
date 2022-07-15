@@ -2,13 +2,17 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.EleDepositOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
@@ -40,6 +44,9 @@ public class JsonAdminEleDepositOrderController {
     @Autowired
     FranchiseeService franchiseeService;
 
+    @Autowired
+    StoreService storeService;
+
     //列表查询
     @GetMapping(value = "/admin/eleDepositOrder/list")
     public R queryList(@RequestParam("size") Long size,
@@ -50,7 +57,10 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "orderId", required = false) String orderId,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime) {
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "depositType", required = false) Integer depositType,
+                       @RequestParam(value = "carModel", required = false) String carModel,
+                       @RequestParam(value = "payType", required = false) Integer payType) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -70,15 +80,25 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //隔离门店租车数据
+        Long storeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                storeId = store.getId();
+            }
+        }
+
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(),User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
-                return R.ok(new ArrayList<>());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
             }
-            franchiseeId = franchisee.getId();
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -90,10 +110,13 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
+                .storeId(storeId)
                 .tenantId(tenantId)
+                .carModel(carModel)
                 .franchiseeName(franchiseeName)
+                .depositType(depositType)
+                .payType(payType)
                 .franchiseeId(franchiseeId).build();
-
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
@@ -105,7 +128,10 @@ public class JsonAdminEleDepositOrderController {
                         @RequestParam(value = "orderId", required = false) String orderId,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
-                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
+                        @RequestParam(value = "depositType", required = false) Integer depositType,
+                        @RequestParam(value = "carModel", required = false) String carModel,
+                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName,
+                        @RequestParam(value = "payType", required = false) Integer payType) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -117,15 +143,25 @@ public class JsonAdminEleDepositOrderController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
+        //隔离门店租车数据
+        Long storeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            depositType = EleDepositOrder.RENT_CAR_DEPOSIT;
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                storeId = store.getId();
+            }
+        }
+
         Long franchiseeId = null;
         if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+                && !Objects.equals(user.getType(),User.TYPE_USER_STORE)) {
             //加盟商
             Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.isNull(franchisee)) {
-                return R.ok(0);
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
             }
-            franchiseeId = franchisee.getId();
         }
 
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
@@ -135,6 +171,10 @@ public class JsonAdminEleDepositOrderController {
                 .endTime(endTime)
                 .status(status)
                 .orderId(orderId)
+                .storeId(storeId)
+                .carModel(carModel)
+                .depositType(depositType)
+                .payType(payType)
                 .tenantId(tenantId)
                 .franchiseeName(franchiseeName)
                 .franchiseeId(franchiseeId).build();
@@ -194,6 +234,25 @@ public class JsonAdminEleDepositOrderController {
     @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
     public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
         return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
+    }
+
+    //缴纳租车押金
+    @PostMapping(value = "/admin/eleDepositOrder/rentCarDeposit")
+    public R rentCarDeposit(@RequestBody @Validated(value = CreateGroup.class) RentCarDepositAdd rentCarDepositAdd) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        rentCarDepositAdd.setTenantId(tenantId);
+
+        return eleDepositOrderService.adminPayRentCarDeposit(rentCarDepositAdd);
+
     }
 
 

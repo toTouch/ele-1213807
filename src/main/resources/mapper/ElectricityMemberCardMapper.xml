@@ -3,103 +3,118 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityMemberCardMapper">
 
 
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityMemberCardVO">
+        SELECT
+        temc.id,temc.name,temc.type,temc.holiday_price,temc.price,temc.valid_days,temc.max_use_count,temc.status,temc.create_time,temc.update_time,
+        temc.limit_count,temc.franchisee_id,temc.del_flag,temc.tenant_id,temc.model_type,temc.battery_Type,temc.is_bind_activity,temc.activity_id,
+        temc.card_model,tecm.name as carModel,temc.car_model_id,tf.name as franchiseeName
+        FROM t_electricity_member_card temc left join t_electricity_car_model tecm on temc.car_model_id=tecm.id
+        left join t_franchisee tf on temc.franchisee_id=tf.id
+        where temc.del_flag=0
+        <if test="status != null">
+            AND temc.status = #{status}
+        </if>
+        <if test="type != null">
+            AND temc.type = #{type}
+        </if>
+        <if test="tenantId != null ">
+            and temc.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and temc.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="cardModel != null ">
+            and temc.card_model = #{cardModel}
+        </if>
+        <if test="carModelId != null ">
+            and temc.car_model_id = #{carModelId}
+        </if>
+        ORDER BY temc.create_time DESC
+        limit #{offset}, #{size}
+    </select>
 
-	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
-		SELECT *
-		FROM t_electricity_member_card
-		where del_flag=0
-		<if test="status != null">
-			AND status = #{status}
-		</if>
-		<if test="type != null">
-			AND type = #{type}
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-		ORDER BY create_time DESC
-		limit #{offset}, #{size}
-	</select>
 
-
-	<select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+    <select id="queryUserList" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
         SELECT *
         FROM t_electricity_member_card
         where status=0 and franchisee_id=#{id} and del_flag=0
-		<if test="batteryType != null and batteryType != ''">
-			and battery_type = #{batteryType}
-		</if>
+        <if test="batteryType != null and batteryType != ''">
+            and battery_type = #{batteryType}
+        </if>
+        <if test="cardModel != null ">
+            and card_model = #{cardModel}
+        </if>
         ORDER BY create_time DESC
         limit #{offset}, #{size}
     </select>
 
 
-	<select id="queryCount" resultType="java.lang.Integer">
-		SELECT COUNT(1)
-		FROM t_electricity_member_card
-		where del_flag=0
-		<if test="status != null">
-			AND status = #{status}
-		</if>
-		<if test="type != null">
-			AND type = #{type}
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-		<if test="cardModel != null ">
-			and temc.card_model = #{cardModel}
-		</if>
-		<if test="franchiseeId != null ">
-			and temc.franchisee_id = #{franchiseeId}
-		</if>
-		<if test="name != null and name!=''">
-			and name = #{name}
-		</if>
-	</select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM t_electricity_member_card temc left join t_electricity_car_model tecm on temc.car_model_id=tecm.id
+        where temc.del_flag=0
+        <if test="status != null">
+            AND temc.status = #{status}
+        </if>
+        <if test="type != null">
+            AND temc.type = #{type}
+        </if>
+        <if test="cardModel != null ">
+            and temc.card_model = #{cardModel}
+        </if>
+        <if test="tenantId != null ">
+            and temc.tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and temc.franchisee_id = #{franchiseeId}
+        </if>
+        <if test="name != null and name!=''">
+            and temc.name = #{name}
+        </if>
+    </select>
 
 
-	<select id="listByFranchisee" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
-		SELECT *
-		FROM t_electricity_member_card
-		where del_flag=0
-		<if test="status != null">
-			AND status = #{status}
-		</if>
-		<if test="type != null">
-			AND type = #{type}
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-		<if test="franchiseeId != null ">
-			and franchisee_id = #{franchiseeId}
-		</if>
-		ORDER BY create_time DESC
-		limit #{offset}, #{size}
-	</select>
+    <select id="listByFranchisee" resultType="com.xiliulou.electricity.entity.ElectricityMemberCard">
+        SELECT *
+        FROM t_electricity_member_card
+        where del_flag=0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY create_time DESC
+        limit #{offset}, #{size}
+    </select>
 
 
-	<select id="listCountByFranchisee" resultType="java.lang.Integer">
-		SELECT COUNT(1)
-		FROM t_electricity_member_card
-		where del_flag=0
-		<if test="status != null">
-			AND status = #{status}
-		</if>
-		<if test="type != null">
-			AND type = #{type}
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-		<if test="franchiseeId != null ">
-			and franchisee_id = #{franchiseeId}
-		</if>
-	</select>
+    <select id="listCountByFranchisee" resultType="java.lang.Integer">
+        SELECT COUNT(1)
+        FROM t_electricity_member_card
+        where del_flag=0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="type != null">
+            AND type = #{type}
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and franchisee_id = #{franchiseeId}
+        </if>
+    </select>
 
 
-	<update id="unbindActivity">
+    <update id="unbindActivity">
        update t_electricity_member_card
        set is_bind_activity=0,
        activity_id=null

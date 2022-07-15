@@ -52,6 +52,21 @@ public class StoreGoodsVO {
 
     private Integer tenantId;
 
+    /**
+     * 车辆型号
+     */
+    private String carModel;
+
+    /**
+     * 车辆型号Id
+     */
+    private Integer carModelId;
+
+    /**
+     * 车辆库存
+     */
+    private Integer carInventory;
+
     List<ElectricityCabinetFile> electricityCabinetFiles;
 
 }

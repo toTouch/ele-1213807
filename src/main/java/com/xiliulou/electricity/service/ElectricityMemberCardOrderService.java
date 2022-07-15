@@ -44,4 +44,6 @@ public interface ElectricityMemberCardOrderService {
     R addUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
 
     R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
+
+    R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 }

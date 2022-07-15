@@ -3,13 +3,12 @@
 <mapper namespace="com.xiliulou.electricity.mapper.StoreMapper">
 
 
-
     <!--查询指定行数据-->
     <select id="queryList"
             resultType="com.xiliulou.electricity.vo.StoreVO">
         select
         id, uid, name, address, longitude, latitude, del_flag,
-        create_time, update_time,usable_status,service_phone, business_time,franchisee_id,percent
+        create_time, update_time,usable_status,service_phone, business_time,franchisee_id,percent,pay_type
         from t_store
         where del_flag=0
         <if test="query.name != null and query.name != ''">
@@ -29,6 +28,9 @@
         </if>
         <if test="query.franchiseeId != null">
             and franchisee_id = #{query.franchiseeId}
+        </if>
+        <if test="query.uid != null">
+            and uid = #{query.uid}
         </if>
         <if test="query.tenantId != null ">
             and tenant_id = #{query.tenantId}
@@ -65,6 +67,9 @@
         <if test="query.franchiseeId != null">
             and franchisee_id = #{query.franchiseeId}
         </if>
+        <if test="query.uid != null">
+            and uid = #{query.uid}
+        </if>
         <if test="query.tenantId != null ">
             and tenant_id = #{query.tenantId}
         </if>
@@ -79,7 +84,7 @@
 
     <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.StoreVO">
         select id, uid, name, address, longitude, latitude, del_flag,
-        create_time, update_time,usable_status, service_phone, business_time, ROUND(
+        create_time, update_time,usable_status, service_phone, business_time,pay_type, ROUND(
         6378.138 * 2 * ASIN(
         SQRT(
         POW(
@@ -130,7 +135,7 @@
     </select>
 
 
-	<select id="homeThree" resultType="java.util.HashMap">
+    <select id="homeThree" resultType="java.util.HashMap">
         select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
         from t_store where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
         <if test="storeIdList!=null and storeIdList!=''">
@@ -148,12 +153,12 @@
 
     <select id="queryCountGroupByProvinceId" resultType="com.xiliulou.electricity.vo.MapVo">
         select
-        count(  case when #{tenantId} is null
-                then case s.id when s.id then case s.del_flag when 0 then s.id end end
-                else case tenant_id when #{tenantId} then
-                case  s.id when s.id then case s.del_flag when 0 then s.id end end
-                end
-               end ) as storeCount,
+        count( case when #{tenantId} is null
+        then case s.id when s.id then case s.del_flag when 0 then s.id end end
+        else case tenant_id when #{tenantId} then
+        case s.id when s.id then case s.del_flag when 0 then s.id end end
+        end
+        end ) as storeCount,
         p.id as pid,
         p.name
         from t_province p
@@ -182,10 +187,10 @@
     <select id="queryCountGroupByCityId" resultType="com.xiliulou.electricity.vo.MapVo">
         select
         count( case when #{tenantId} is null
-                    then case s.id when s.id then case s.del_flag when 0 then s.id end end
-                    else case tenant_id when #{tenantId} then
-                    case  s.id when s.id then case s.del_flag when 0 then s.id end end
-                    end end ) as storeCount,
+        then case s.id when s.id then case s.del_flag when 0 then s.id end end
+        else case tenant_id when #{tenantId} then
+        case s.id when s.id then case s.del_flag when 0 then s.id end end
+        end end ) as storeCount,
         c.pid as pid,
         c.id as cid,
         c.name

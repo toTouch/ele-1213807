@@ -15,11 +15,13 @@ public interface ElectricityMemberCardService {
 
     ElectricityMemberCard queryByCache(Integer id);
 
-    R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId);
+    R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Integer cardModel,Long franchiseeId);
 
     R queryUserList(Long offset, Long size, String productKey, String deviceName, Long franchiseeId);
 
-    List<ElectricityMemberCard> queryByFranchisee(Long id);
+	R queryRentCarMemberCardList(Long offset, Long size);
+
+	List<ElectricityMemberCard> queryByFranchisee(Long id);
 
     List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id);
 

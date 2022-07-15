@@ -22,4 +22,6 @@ public class FranchiseeQuery {
 	private Long endTime;
 	private Integer tenantId;
 
+	private Long uid;
+
 }

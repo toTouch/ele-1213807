@@ -8,6 +8,8 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.json.Json;
+import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -27,6 +29,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
@@ -42,6 +45,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
@@ -2007,4 +2011,43 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return result;
     }
 
+
+    @Override
+    public R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId) {
+        List<ElectricityCabinetBoxVO> resultList = Lists.newArrayList();
+
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(electricityCabinetId);
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("ELE ERROR! not found eletricity cabinet,electricityCabinetId={}", electricityCabinetId);
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        Double fullyCharged = electricityCabinet.getFullyCharged();
+
+//        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
+        if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
+            List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
+
+            electricityCabinetBoxList.parallelStream().forEach(item -> {
+                ElectricityCabinetBoxVO electricityCabinetBoxVO = new ElectricityCabinetBoxVO();
+                BeanUtils.copyProperties(item, electricityCabinetBoxVO);
+
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(item.getSn());
+                if (!Objects.isNull(electricityBattery)) {
+                    electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+                    electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
+                }
+
+                electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+            });
+
+            //排序
+            if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item->Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+            }
+
+        }
+        return R.ok(resultList);
+    }
 }

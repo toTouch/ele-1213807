@@ -88,7 +88,7 @@
                 temperature = #{temperature},
             </if>
             <if test="isHeat!= null ">
-                is_fan = #{isHeat},
+                is_heat = #{isHeat},
             </if>
             <if test="isLight!= null ">
                 is_light = #{isLight},

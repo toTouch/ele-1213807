@@ -8,11 +8,9 @@
         select
         edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
         edo.order_id, edo.status, edo.name, edo.phone, f.name as franchiseeName,
-        ero.refund_amount as refundAmount,ero.err_msg as errMsg
+        edo.deposit_type,edo.pay_type
         from t_ele_deposit_order edo left join t_franchisee f on f.id = edo.franchisee_id
-        left join t_ele_refund_order as ero on ero.order_id= edo.order_id
         <where>
-
             <if test="query.orderId != null and query.orderId != ''">
                 and edo.order_id = #{query.orderId}
             </if>
@@ -43,6 +41,69 @@
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}
             </if>
+            <if test="query.depositType != null">
+                and edo.deposit_type = #{query.depositType}
+            </if>
+            <if test="query.payType != null">
+                and edo.pay_type = #{query.payType}
+            </if>
+            <if test="query.storeId != null">
+                and edo.store_id = #{query.storeId}
+            </if>
+        </where>
+        order by edo.create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
+
+
+    <select id="queryListForRentCar" resultType="com.xiliulou.electricity.vo.EleDepositOrderVO">
+        select
+        edo.id, edo.pay_amount, edo.create_time, edo.update_time, edo.uid,
+        edo.order_id, edo.status, edo.name, edo.phone, ts.name as storeName,tecm.name as carModel,
+        edo.deposit_type,edo.pay_type
+        from t_ele_deposit_order edo
+        left join t_store ts on edo.store_id=ts.id
+        left join t_electricity_car_model tecm on edo.car_model_id=tecm.id
+        <where>
+            <if test="query.orderId != null and query.orderId != ''">
+                and edo.order_id = #{query.orderId}
+            </if>
+            <if test="query.status != null">
+                and edo.status = #{query.status}
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and edo.name = #{query.name}
+            </if>
+            <if test="query.phone != null and query.phone != ''">
+                and edo.phone = #{query.phone}
+            </if>
+            <if test="query.beginTime != null">
+                and edo.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and edo.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.tenantId != null">
+                and edo.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.franchiseeId != null">
+                and edo.franchisee_id = #{query.franchiseeId}
+            </if>
+            <if test="query.uid != null">
+                and edo.uid = #{query.uid}
+            </if>
+            <if test="query.depositType != null">
+                and edo.deposit_type = #{query.depositType}
+            </if>
+            <if test="query.payType != null">
+                and edo.pay_type = #{query.payType}
+            </if>
+            <if test="query.storeId != null">
+                and edo.store_id = #{query.storeId}
+            </if>
+            <if test="query.carModel != null and query.carModel != ''">
+                and tecm.name = #{query.carModel}
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
@@ -52,6 +113,7 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select COUNT(1)
         from t_ele_deposit_order edo left join t_franchisee f on f.id = edo.franchisee_id
+        left join t_electricity_car_model tecm on edo.car_model_id=tecm.id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
                 and edo.order_id = #{query.orderId}
@@ -79,6 +141,18 @@
             </if>
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}
+            </if>
+            <if test="query.storeId != null">
+                and edo.store_id = #{query.storeId}
+            </if>
+            <if test="query.depositType != null">
+                and edo.deposit_type = #{query.depositType}
+            </if>
+            <if test="query.carModel != null and query.carModel != ''">
+                and tecm.name = #{query.carModel}
+            </if>
+            <if test="query.payType != null">
+                and edo.pay_type = #{query.payType}
             </if>
         </where>
     </select>
@@ -119,6 +193,9 @@
             </if>
             <if test="query.uid != null">
                 and edo.uid = #{query.uid}
+            </if>
+            <if test="query.refundOrderType != null">
+                and ero.refund_order_type = #{query.refundOrderType}
             </if>
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}

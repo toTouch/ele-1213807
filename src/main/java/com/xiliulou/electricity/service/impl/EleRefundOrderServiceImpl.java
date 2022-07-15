@@ -185,23 +185,34 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         }
 
-
         if (Objects.equals(refundOrderStatus, EleRefundOrder.STATUS_SUCCESS)) {
             FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
             franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-            franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfo.setBatteryDeposit(null);
-            franchiseeUserInfo.setOrderId(null);
-            franchiseeUserInfo.setFranchiseeId(null);
-            franchiseeUserInfo.setModelType(null);
-            franchiseeUserInfo.setBatteryType(null);
-            franchiseeUserInfo.setCardId(null);
-            franchiseeUserInfo.setCardName(null);
-            franchiseeUserInfo.setCardType(null);
-            franchiseeUserInfo.setMemberCardExpireTime(null);
-            franchiseeUserInfo.setRemainingNumber(null);
-            franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
+            if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+                franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+                franchiseeUserInfo.setBatteryDeposit(null);
+                franchiseeUserInfo.setOrderId(null);
+                franchiseeUserInfo.setFranchiseeId(null);
+                franchiseeUserInfo.setModelType(null);
+                franchiseeUserInfo.setBatteryType(null);
+                franchiseeUserInfo.setCardId(null);
+                franchiseeUserInfo.setCardName(null);
+                franchiseeUserInfo.setCardType(null);
+                franchiseeUserInfo.setMemberCardExpireTime(null);
+                franchiseeUserInfo.setRemainingNumber(null);
+                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+                franchiseeUserInfoService.updateByOrder(franchiseeUserInfo);
+            } else {
+                franchiseeUserInfo.setRentCarOrderId(null);
+                franchiseeUserInfo.setRentCarDeposit(null);
+                franchiseeUserInfo.setBindCarId(null);
+                franchiseeUserInfo.setBindCarModelId(null);
+                franchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+                franchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+                franchiseeUserInfo.setRentCarCardId(null);
+                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+                franchiseeUserInfoService.modifyRentCarStatus(franchiseeUserInfo);
+            }
         }
 
         EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
@@ -213,11 +224,22 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     @Override
-    public R handleRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, HttpServletRequest request) {
+    public R handleRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
         EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
         if (Objects.isNull(eleRefundOrder)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("未找到退款订单!");
+        }
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
+            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
+            return R.fail("100012", "用户绑定车辆");
         }
 
 
@@ -256,7 +278,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             //退款0元，不捕获异常，成功退款
             if (refundAmount.compareTo(BigDecimal.ZERO) == 0) {
 
-
                 eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
                 eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
                 eleRefundOrderService.update(eleRefundOrderUpdate);
@@ -264,21 +285,34 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                 //查询押金绑定表的id
                 Long id = eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
 
-                FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-                franchiseeUserInfo.setUserInfoId(id);
-                franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-                franchiseeUserInfo.setBatteryDeposit(null);
-                franchiseeUserInfo.setOrderId(null);
-                franchiseeUserInfo.setFranchiseeId(null);
-                franchiseeUserInfo.setModelType(null);
-                franchiseeUserInfo.setBatteryType(null);
-                franchiseeUserInfo.setCardId(null);
-                franchiseeUserInfo.setCardName(null);
-                franchiseeUserInfo.setCardType(null);
-                franchiseeUserInfo.setMemberCardExpireTime(null);
-                franchiseeUserInfo.setRemainingNumber(null);
-                franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
+                FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+                updateFranchiseeUserInfo.setUserInfoId(id);
+                if (Objects.equals(eleRefundOrder.getRefundOrderType(), EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER)) {
+                    updateFranchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+                    updateFranchiseeUserInfo.setBatteryDeposit(null);
+                    updateFranchiseeUserInfo.setOrderId(null);
+                    updateFranchiseeUserInfo.setFranchiseeId(null);
+                    updateFranchiseeUserInfo.setModelType(null);
+                    updateFranchiseeUserInfo.setBatteryType(null);
+                    updateFranchiseeUserInfo.setCardId(null);
+                    updateFranchiseeUserInfo.setCardName(null);
+                    updateFranchiseeUserInfo.setCardType(null);
+                    updateFranchiseeUserInfo.setMemberCardExpireTime(null);
+                    updateFranchiseeUserInfo.setRemainingNumber(null);
+                    updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+                    franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+                } else {
+                    updateFranchiseeUserInfo.setRentCarOrderId(null);
+                    updateFranchiseeUserInfo.setRentCarDeposit(null);
+                    updateFranchiseeUserInfo.setBindCarId(null);
+                    updateFranchiseeUserInfo.setBindCarModelId(null);
+                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+                    updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+                    updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+                    updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+                    updateFranchiseeUserInfo.setRentCarCardId(null);
+                    franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
+                }
                 return R.ok();
 
             }
@@ -318,6 +352,94 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
         return R.ok();
     }
+
+
+    @Override
+    public R handleOffLineRefund(String refundOrderNo, String errMsg, Integer status, BigDecimal refundAmount, Long uid, HttpServletRequest request) {
+
+        EleRefundOrder eleRefundOrder = eleRefundOrderMapper.selectOne(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getRefundOrderNo, refundOrderNo).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_REFUSE_REFUND));
+        if (Objects.isNull(eleRefundOrder)) {
+            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            return R.fail("未找到退款订单!");
+        }
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
+            log.error("returnRentCarDeposit  ERROR! user is bind car! ,uid:{} ", refundOrderNo);
+            return R.fail("100012", "用户绑定车辆");
+        }
+
+        if (Objects.nonNull(refundAmount)) {
+            if (refundAmount.compareTo(eleRefundOrder.getRefundAmount()) > 0) {
+                log.error("REFUND_ORDER ERROR ,refundAmount > payAmount ORDER_NO:{}", refundOrderNo);
+                return R.fail("退款金额不能大于支付金额!");
+            }
+
+            //插入修改记录
+            EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+            eleRefundOrderHistory.setRefundOrderNo(eleRefundOrder.getRefundOrderNo());
+            eleRefundOrderHistory.setRefundAmount(refundAmount);
+            eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+            eleRefundOrderHistory.setTenantId(eleRefundOrder.getTenantId());
+            eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+
+
+        } else {
+            refundAmount = eleRefundOrder.getRefundAmount();
+        }
+
+        EleRefundOrder eleRefundOrderUpdate = new EleRefundOrder();
+        eleRefundOrderUpdate.setId(eleRefundOrder.getId());
+        eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrderUpdate.setErrMsg(errMsg);
+
+
+        //同意退款
+        if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND)) {
+            //修改订单状态
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_AGREE_REFUND);
+            eleRefundOrderUpdate.setRefundAmount(refundAmount);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+
+            //退款0元，不捕获异常，成功退款
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+
+            //查询押金绑定表的id
+            Long id = eleRefundOrderService.queryUserInfoIdByRefundOrderNo(refundOrderNo);
+
+            FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+            updateFranchiseeUserInfo.setUserInfoId(id);
+            updateFranchiseeUserInfo.setRentCarOrderId(null);
+            updateFranchiseeUserInfo.setRentCarDeposit(null);
+            updateFranchiseeUserInfo.setBindCarId(null);
+            updateFranchiseeUserInfo.setBindCarModelId(null);
+            updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+            updateFranchiseeUserInfo.setRentCarStatus(FranchiseeUserInfo.RENT_CAR_STATUS_INIT);
+            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateFranchiseeUserInfo.setRentCarMemberCardExpireTime(null);
+            updateFranchiseeUserInfo.setRentCarCardId(null);
+            franchiseeUserInfoService.modifyRentCarStatusByUserInfoId(updateFranchiseeUserInfo);
+            return R.ok();
+        }
+
+
+        //拒绝退款
+        if (Objects.equals(status, EleRefundOrder.STATUS_REFUSE_REFUND)) {
+            //修改订单状态
+            eleRefundOrderUpdate.setStatus(EleRefundOrder.STATUS_REFUSE_REFUND);
+            eleRefundOrderService.update(eleRefundOrderUpdate);
+        }
+        return R.ok();
+    }
+
+
 
     @Override
     public R queryUserDepositPayType(Long uid) {
@@ -491,6 +613,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public Integer queryCountByOrderId(String orderId) {
         return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_AGREE_REFUND, EleRefundOrder.STATUS_REFUND, EleRefundOrder.STATUS_SUCCESS));
+    }
+
+    @Override
+    public Integer queryIsRefundingCountByOrderId(String orderId) {
+        return eleRefundOrderMapper.selectCount(new LambdaQueryWrapper<EleRefundOrder>().eq(EleRefundOrder::getOrderId, orderId).in(EleRefundOrder::getStatus, EleRefundOrder.STATUS_INIT, EleRefundOrder.STATUS_AGREE_REFUND, EleRefundOrder.STATUS_REFUND));
     }
 
     @Override

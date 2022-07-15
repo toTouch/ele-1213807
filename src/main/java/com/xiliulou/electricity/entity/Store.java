@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
@@ -20,38 +21,38 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @TableName("t_store")
 public class Store {
     /**
-    * 门店Id
-    */
-    @TableId(value = "id",type = IdType.AUTO)
+     * 门店Id
+     */
+    @TableId(value = "id", type = IdType.AUTO)
     private Long id;
 
     /**
-    * 门店名称
-    */
+     * 门店名称
+     */
     private String name;
     /**
-    * 门店地址
-    */
+     * 门店地址
+     */
     private String address;
     /**
-    * 地址经度
-    */
+     * 地址经度
+     */
     private Double longitude;
     /**
-    * 地址纬度
-    */
+     * 地址纬度
+     */
     private Double latitude;
     /**
-    * 0--正常 1--删除
-    */
+     * 0--正常 1--删除
+     */
     private Object delFlag;
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
     /**
-    * 更新时间
-    */
+     * 更新时间
+     */
     private Long updateTime;
     /**
      * 可用状态(0--启用，1--禁用)
@@ -77,13 +78,18 @@ public class Store {
 
     /**
      * 门店分润比例
-     * */
+     */
     private Integer percent;
 
     /**
      * 城市id
      */
     private Integer cid;
+
+    /**
+     * 缴纳押金方式 0--线上 1--线下
+     */
+    private Integer payType;
 
 
     public static final Integer DEL_NORMAL = 0;
@@ -98,5 +104,9 @@ public class Store {
     public static final Integer SUPPORT = 0;
     //不支持
     public static final Integer UN_SUPPORT = 1;
+
+
+    public static final Integer ONLINE_PAYMENT = 0;
+    public static final Integer OFFLINE_PAYMENT = 1;
 
 }
