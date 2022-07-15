@@ -426,7 +426,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public List<ElectricityMemberCard> selectByFranchiseeId(Long id) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
-                .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL));
+                .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL)
+                .eq(ElectricityMemberCard::getCardModel,ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
 
     @Override
