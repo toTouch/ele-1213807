@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
@@ -93,10 +94,28 @@ public class JsonAdminElectricityMemberCardController {
      */
     @GetMapping("admin/electricityMemberCard/queryCount")
     public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type,
-                                          @RequestParam(value = "status", required = false) Integer status) {
+                                          @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "cardModel", required = false) Integer cardModel) {
 
         Integer tenantId = TenantContextHolder.getTenantId();
-        return electricityMemberCardService.queryCount(status, type, tenantId);
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Long franchiseeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+
+        return electricityMemberCardService.queryCount(status, type, tenantId,cardModel,franchiseeId);
     }
 
 
