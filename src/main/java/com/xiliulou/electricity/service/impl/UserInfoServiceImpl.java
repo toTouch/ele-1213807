@@ -150,7 +150,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
-                    item.setCardDays((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24);
+                    long carDays = 0;
+                    Long now = System.currentTimeMillis();
+                    if (item.getMemberCardExpireTime() > now) {
+                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
+                    }
+                    item.setCardDays(carDays);
                 }
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
@@ -672,8 +677,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrderService.insert(rentBatteryOrder);
 
             Integer operateContent = EleUserOperateRecord.BIND_BATTERY_CONTENT;
-            if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(),UserInfoBatteryAddAndUpdate.EDIT_TYPE)){
-                operateContent=EleUserOperateRecord.UN_BIND_BATTERY_CONTENT;
+            if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
+                operateContent = EleUserOperateRecord.UN_BIND_BATTERY_CONTENT;
             }
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
@@ -929,6 +934,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return R.ok(turnover);
     }
+
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId));
