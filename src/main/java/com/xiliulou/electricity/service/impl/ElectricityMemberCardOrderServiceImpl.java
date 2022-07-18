@@ -916,7 +916,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Long memberCardExpireTime = System.currentTimeMillis() +
                 memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
-        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) &&(oldFranchiseeUserInfo.getMemberCardExpireTime() / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
+        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) &&((oldFranchiseeUserInfo.getMemberCardExpireTime()-System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
             memberCardExpireTime=oldFranchiseeUserInfo.getMemberCardExpireTime();
         }
 
