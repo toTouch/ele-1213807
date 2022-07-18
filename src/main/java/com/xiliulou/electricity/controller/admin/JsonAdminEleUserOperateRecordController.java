@@ -34,11 +34,6 @@ public class JsonAdminEleUserOperateRecordController {
 	public R queryList(@RequestParam(value = "uid") Long uid,
 					   @RequestParam("size") Long size,
 					   @RequestParam("offset") Long offset) {
-
-		System.out.println("用户uid======================="+uid);
-		System.out.println("size==================="+size);
-		System.out.println("offset===================="+offset);
-
 		return eleUserOperateRecordService.queryList(uid,size,offset);
 	}
 

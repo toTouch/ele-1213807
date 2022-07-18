@@ -19,7 +19,7 @@ import java.util.List;
 public interface EleUserOperateRecordMapper extends BaseMapper<EleUserOperateRecord> {
 
 
-    List<EleUserOperateRecord> queryList(@Param("uid") Long uid, @Param("offset") Long offset, @Param("size") Long size);
+    List<EleUserOperateRecord> queryList(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset);
 
 
 }
