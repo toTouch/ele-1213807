@@ -1441,7 +1441,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (Objects.isNull(tripleResult)) {
-            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", checkIsLowBatteryExchange(electricityCabinet.getTenantId()));
+
+            System.out.println("查询低电量换电配置开关----------========================");
+
+            Integer value=checkIsLowBatteryExchange(electricityCabinet.getTenantId());
+
+
+
+            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池",value);
         }
 
         if (!tripleResult.getLeft()) {
@@ -2003,6 +2010,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return result;
         }
         List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
+
+        System.out.println("低电量换电模式==================="+list);
+
         Long now = System.currentTimeMillis();
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             boolean isInExchangeTime = DateUtils.timeCalendar(new Date(now), new Date(lowBatteryExchangeModel.getExchangeBeginTime()), new Date(lowBatteryExchangeModel.getExchangeEndTime()));
