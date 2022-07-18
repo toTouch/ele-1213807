@@ -436,7 +436,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
-            return R.fail("ELECTRICITY.00115", "请线下退押");
+            return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
 
         //判断是否退电池

@@ -1085,6 +1085,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     }
 
+    @Override
+    public ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
+        return baseMapper.queryLastPayMemberCardTimeByUid(uid,franchiseeId,tenantId);
+    }
+
     private String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
                 RandomUtil.randomNumbers(6);

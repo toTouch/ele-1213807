@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
@@ -33,4 +34,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     Integer queryCount(@Param("query")  MemberCardOrderQuery memberCardOrderQuery);
 
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId,@Param("uid") Long uid);
+
+    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(@Param("uid") Long uid, @Param("franchiseeId")Long franchiseeId, @Param("tenantId")Integer tenantId);
 }
