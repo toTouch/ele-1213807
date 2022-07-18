@@ -1441,18 +1441,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (Objects.isNull(tripleResult)) {
-
-            System.out.println("查询低电量换电配置开关----------========================");
-
             Integer value=checkIsLowBatteryExchange(electricityCabinet.getTenantId());
-
-
-
             return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池",value);
         }
 
         if (!tripleResult.getLeft()) {
-            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
+
+            System.out.println("检测低电量换电==========================");
+            Integer value=checkIsLowBatteryExchange(electricityCabinet.getTenantId());
+            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(),value);
         }
 
         //查满仓空仓数
@@ -2011,7 +2008,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
 
-        System.out.println("低电量换电模式==================="+list);
+        System.out.println("解析低电量换电模式=================================="+list);
 
         Long now = System.currentTimeMillis();
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
