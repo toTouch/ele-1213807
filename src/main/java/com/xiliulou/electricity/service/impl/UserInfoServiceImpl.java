@@ -173,8 +173,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(item.getCardId());
                     if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                         item.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
-                    }else {
-                        item.setRemainingNumber(electricityMemberCard.getMaxUseCount());
                     }
                     item.setMemberCardCreateTime(electricityMemberCard.getCreateTime());
                 }
