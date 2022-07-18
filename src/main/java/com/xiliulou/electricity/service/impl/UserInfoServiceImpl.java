@@ -652,6 +652,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
+        if (Objects.nonNull(oldElectricityBattery.getUid())) {
+            log.error("webBindBattery  ERROR! battery is bind user! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            return R.fail("100019", "该电池已经绑定用户");
+        }
 
         //绑定电池
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
