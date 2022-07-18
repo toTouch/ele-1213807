@@ -151,12 +151,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     Long now = System.currentTimeMillis();
-                    if (item.getMemberCardExpireTime() > now){
-                        item.setMemberCardExpireTime(null);
-                        item.setCardDays(null);
-                        item.setCardId(null);
-                        item.setCardName(null);
-                    }
                     long carDays = 0;
                     if (item.getMemberCardExpireTime() > now) {
                         carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
