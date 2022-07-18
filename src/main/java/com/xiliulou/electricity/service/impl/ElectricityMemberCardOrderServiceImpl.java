@@ -807,11 +807,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardOrderAddAndUpdate.getMemberCardId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("admin saveUserMemberCard ERROR ,NOT FOUND MEMBER_CARD BY ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(),memberCardOrderAddAndUpdate.getUid());
+            log.error("admin saveUserMemberCard ERROR ,NOT FOUND MEMBER_CARD BY ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("admin saveUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(),memberCardOrderAddAndUpdate.getUid());
+            log.error("admin saveUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
@@ -903,22 +903,26 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(memberCardOrderAddAndUpdate.getMemberCardId());
         if (Objects.isNull(electricityMemberCard)) {
-            log.error("admin editUserMemberCard ERROR ,NOT FOUND MEMBER_CARD BY ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(),memberCardOrderAddAndUpdate.getUid());
+            log.error("admin editUserMemberCard ERROR ,NOT FOUND MEMBER_CARD BY ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0087", "未找到月卡套餐!");
         }
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
-            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(),memberCardOrderAddAndUpdate.getUid());
+            log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
         }
 
         //用户
+        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
 
         Long memberCardExpireTime = System.currentTimeMillis() +
                 memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
+        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) &&(oldFranchiseeUserInfo.getMemberCardExpireTime() / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
+            memberCardExpireTime=oldFranchiseeUserInfo.getMemberCardExpireTime();
+        }
+
         if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD)) {
             memberCardExpireTime = null;
         }
-        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
