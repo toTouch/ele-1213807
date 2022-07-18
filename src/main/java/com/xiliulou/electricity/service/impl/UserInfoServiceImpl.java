@@ -171,7 +171,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
                     }
                 }
-
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
