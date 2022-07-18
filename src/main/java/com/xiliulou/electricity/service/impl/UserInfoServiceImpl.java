@@ -150,12 +150,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
-                    Long now = System.currentTimeMillis();
-                    long carDays = 0;
-                    if (item.getMemberCardExpireTime() > now) {
-                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
+                    if (item.getMemberCardExpireTime()>System.currentTimeMillis()) {
+                        Long now = System.currentTimeMillis();
+                        long carDays = 0;
+                        if (item.getMemberCardExpireTime() > now) {
+                            carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
+                        }
+                        item.setCardDays(carDays);
+                    }else {
+                        item.setMemberCardExpireTime(null);
+                        item.setCardId(null);
+                        item.setRemainingNumber(null);
+                        item.setCardName(null);
+                        item.setCardDays(null);
                     }
-                    item.setCardDays(carDays);
                 }
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
@@ -174,7 +182,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (Objects.nonNull(electricityMemberCard) && Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                         item.setRemainingNumber(FranchiseeUserInfo.UN_LIMIT_COUNT_REMAINING_NUMBER);
                     }
-                    item.setMemberCardCreateTime(electricityMemberCard.getCreateTime());
                 }
             });
         }, threadPool).exceptionally(e -> {
