@@ -18,7 +18,7 @@ public interface EleUserOperateRecordService extends IService<EleUserOperateReco
 
     void insert(EleUserOperateRecord eleUserOperateRecord);
 
-    R queryList(Long uid);
+    R queryList(Long uid,Long size,Long offset);
 
     R queryCount(Long uid);
 

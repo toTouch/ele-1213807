@@ -31,8 +31,10 @@ public class JsonAdminEleUserOperateRecordController {
 	EleUserOperateRecordService eleUserOperateRecordService;
 
 	@GetMapping(value = "/admin/eleUserOperateRecord/list")
-	public R queryList(@RequestParam(value = "uid") Long uid) {
-		return eleUserOperateRecordService.queryList(uid);
+	public R queryList(@RequestParam(value = "uid") Long uid,
+					   @RequestParam("size") Long size,
+					   @RequestParam("offset") Long offset) {
+		return eleUserOperateRecordService.queryList(uid,size,offset);
 	}
 
 	@GetMapping(value = "/admin/eleUserOperateRecord/queryCount")
