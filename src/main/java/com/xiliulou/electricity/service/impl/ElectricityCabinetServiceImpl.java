@@ -29,6 +29,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import com.xiliulou.iot.entity.AliIotRsp;
@@ -1441,12 +1442,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (Objects.isNull(tripleResult)) {
-            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId());
+            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", value);
         }
 
         if (!tripleResult.getLeft()) {
-            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId());
+            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
 
@@ -1997,7 +1998,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return update;
     }
 
-    private Integer checkIsLowBatteryExchange(Integer tenantId) {
+    private Integer checkIsLowBatteryExchange(Integer tenantId, Integer electricityCabinetId, Long franchiseeId) {
 
         ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
         Integer result = null;
@@ -2007,8 +2008,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
         Long now = System.currentTimeMillis();
+
+        Double power = null;
+        //先查询缓存
+        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinetId, BigEleBatteryVo.class);
+        if (Objects.nonNull(bigEleBatteryVo)) {
+            //1、查仓门
+            ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetId, bigEleBatteryVo.getCellNo());
+            if (Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getSn())) {
+                //2、查电池
+                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
+                if (Objects.nonNull(electricityBattery)) {
+
+                    //3、查加盟商是否绑定电池
+                    FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                    if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                        power = bigEleBatteryVo.getPower();
+                    }
+                }
+            }
+        }
+
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
-            if (Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
+            if (Objects.nonNull(power) && power > lowBatteryExchangeModel.getBatteryPowerStandard() && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
                 return result;
             }
