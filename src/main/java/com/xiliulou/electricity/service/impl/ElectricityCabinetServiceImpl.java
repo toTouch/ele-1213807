@@ -2009,33 +2009,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
         Long now = System.currentTimeMillis();
-
-        Double power = 0.0;
-        Long batteryId = null;
-
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.queryWareHouseByElectricityCabinetId(electricityCabinetId);
-        if (Objects.nonNull(electricityBatteries)) {
-            for (ElectricityBattery electricityBattery : electricityBatteries) {
-                if (Objects.nonNull(electricityBattery.getPower()) && electricityBattery.getPower()>power) {
-                    power = electricityBattery.getPower();
-                    batteryId=electricityBattery.getId();
-                }
-            }
-            //3、查加盟商是否绑定电池
-            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(batteryId, franchiseeId);
-
-            System.out.println("最终的电量=================="+power);
-            System.out.println("最终绑定的加盟商=================="+franchiseeId+"=="+batteryId+"==="+franchiseeBindElectricityBattery);
-
-            if (Objects.isNull(franchiseeBindElectricityBattery)) {
-                power = null;
-            }
-        }
 
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
-            if (Objects.nonNull(power) && power > lowBatteryExchangeModel.getBatteryPowerStandard() && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
-                result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
-                return result;
+            if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
+                for (ElectricityBattery electricityBattery : electricityBatteries) {
+                    if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
+                        //3、查加盟商是否绑定电池
+                        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                        if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                            result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
+                            return result;
+                        }
+                    }
+                }
             }
         }
         return result;
