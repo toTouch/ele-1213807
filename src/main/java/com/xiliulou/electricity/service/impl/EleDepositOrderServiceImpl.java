@@ -363,7 +363,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer memberCardOweNumber = null;
         ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(oldFranchiseeUserInfo.getCardId());
         if (Objects.nonNull(bindElectricityMemberCard)) {
-            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
+            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(oldFranchiseeUserInfo.getRemainingNumber()) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
                 memberCardOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
                 packageOwe = FranchiseeUserInfo.MEMBER_CARD_OWE;
             }

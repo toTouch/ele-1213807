@@ -2023,7 +2023,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             //3、查加盟商是否绑定电池
             FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(batteryId, franchiseeId);
-            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+            if (Objects.isNull(franchiseeBindElectricityBattery)) {
                 power = null;
             }
         }
