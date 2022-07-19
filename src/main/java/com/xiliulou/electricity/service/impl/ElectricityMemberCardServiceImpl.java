@@ -121,8 +121,14 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public R update(ElectricityMemberCard electricityMemberCard) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityMemberCard oldElectricityMemberCard = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()));
-        if (Objects.nonNull(oldElectricityMemberCard) && Objects.equals(oldElectricityMemberCard.getName(), electricityMemberCard.getName())) {
+
+        Integer count = baseMapper.queryCount(null, electricityMemberCard.getType(), tenantId,null,null, electricityMemberCard.getName());
+
+        if (Objects.nonNull(oldElectricityMemberCard) && count > 0 && !Objects.equals(oldElectricityMemberCard.getName(), electricityMemberCard.getName())) {
             log.error("ELE ERROR! create memberCard fail,there are same memberCardName,memberCardName={}", electricityMemberCard.getName());
             return R.fail("100104", "套餐名称已存在！");
         }

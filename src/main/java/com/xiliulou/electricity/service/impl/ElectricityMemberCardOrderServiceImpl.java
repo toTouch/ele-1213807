@@ -636,7 +636,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public BigDecimal queryTurnOver(Integer tenantId, Long uid) {
-        return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(new BigDecimal("0"));
+        return Optional.ofNullable(baseMapper.queryTurnOver(tenantId, uid)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override

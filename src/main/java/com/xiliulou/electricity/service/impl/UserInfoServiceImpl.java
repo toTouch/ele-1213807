@@ -933,7 +933,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return null;
         });
 
-        //用户总套餐消费额
+        //用户电池服务费消费额
         CompletableFuture<BigDecimal> queryBatteryServiceFeePayAmount = CompletableFuture.supplyAsync(() -> {
             return eleBatteryServiceFeeOrderService.queryUserTurnOver(tenantId, id);
         }, threadPool).exceptionally(e -> {
