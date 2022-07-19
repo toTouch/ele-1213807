@@ -60,5 +60,5 @@ public interface ElectricityCabinetBoxService {
 
     List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer electricityCabinetId);
 
-    ElectricityCabinetBox queryBySn(String sn);
+    ElectricityCabinetBox queryBySn(String sn,Integer electricityCabinetId);
 }
