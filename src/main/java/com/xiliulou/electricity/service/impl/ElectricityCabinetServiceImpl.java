@@ -527,21 +527,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
             Double fullyCharged = checkLowBatteryExchangeMinimumBatteryPowerStandard(tenantId, id);
             ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType, fullyCharged);
-
-            if (ObjectUtils.isNotEmpty(ids)) {
-
-                for (Long item : ids) {
-                    FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
-                    if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-                        count++;
-                    }
-                }
-
-                if (count < 1) {
-                    return Triple.of(false, "0", "加盟商未绑定满电电池");
-                }else {
-                    return Triple.of(false, "0", "换电柜暂无满电电池");
-                }
+            if (ObjectUtils.isEmpty(ids)) {
+                return Triple.of(false, "0", "换电柜暂无满电电池");
             }else {
                 for (Long item : ids) {
                     FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
@@ -554,18 +541,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     return Triple.of(false, "0", "加盟商未绑定满电电池");
                 }
             }
+        }
 
-
-            for (Long item : ids) {
-                FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
-                if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-                    count++;
-                }
+        for (Long item : ids) {
+            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
+            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                count++;
             }
+        }
 
-            if (count < 1) {
-                return Triple.of(false, "0", "加盟商未绑定满电电池");
-            }
+        if (count < 1) {
+            return Triple.of(false, "0", "加盟商未绑定满电电池");
         }
 
         return Triple.of(true, count.toString(), null);

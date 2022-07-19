@@ -295,7 +295,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
         if (Objects.isNull(franchiseeBindElectricityBattery)) {
             log.error("ele battery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
-            electricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
+//            electricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
             electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
         } else {
 
@@ -308,7 +308,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
             if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
                 log.error("ele battery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
-                electricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
+//                electricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
                 electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             }
         }
