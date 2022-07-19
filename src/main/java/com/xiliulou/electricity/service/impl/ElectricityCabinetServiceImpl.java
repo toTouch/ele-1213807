@@ -530,7 +530,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
             Double fullyCharged = checkLowBatteryExchangeMinimumBatteryPowerStandard(tenantId, id);
             ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType, fullyCharged);
+
+
+            System.out.println("低电量花点的电池========================="+ids);
+
             if (ObjectUtils.isNotEmpty(ids)) {
+
                 for (Long item : ids) {
                     FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
                     if (Objects.nonNull(franchiseeBindElectricityBattery)) {
