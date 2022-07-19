@@ -164,6 +164,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setCardName(null);
                         item.setCardDays(null);
                     }
+                }else {
+                    item.setCardName(null);
                 }
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
                     ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
