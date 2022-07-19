@@ -2014,19 +2014,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 for (ElectricityBattery electricityBattery : electricityBatteries) {
-                    if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
-                        //3、查加盟商是否绑定电池
-                        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                        System.out.println("电池电量========================="+electricityBattery.getPower());
-                        System.out.println("电池ID======================="+electricityBattery.getId());
-
-                        if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-
-                            System.out.println("最终电池电量========================="+electricityBattery.getPower());
-                            System.out.println("最中电池ID======================="+electricityBattery.getId());
-
-                            result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
-                            return result;
+                    //电池所在仓门非禁用
+                    ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.queryBySn(electricityBattery.getSn());
+                    if (Objects.nonNull(electricityCabinetBox)) {
+                        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
+                            //3、查加盟商是否绑定电池
+                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                                result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
+                                return result;
+                            }
                         }
                     }
                 }
