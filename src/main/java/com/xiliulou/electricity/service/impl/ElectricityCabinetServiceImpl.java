@@ -52,6 +52,7 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.nio.file.LinkOption;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -2009,26 +2010,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
         Long now = System.currentTimeMillis();
 
-        Double power = null;
-        //先查询缓存
-        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinetId, BigEleBatteryVo.class);
+        Double power = 0.0;
+        Long batteryId = null;
 
-        System.out.println("最大电池================="+bigEleBatteryVo);
-
-        if (Objects.nonNull(bigEleBatteryVo)) {
-            //1、查仓门
-            ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetId, bigEleBatteryVo.getCellNo());
-            if (Objects.nonNull(electricityCabinetBox) && Objects.nonNull(electricityCabinetBox.getSn())) {
-                //2、查电池
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBox.getSn());
-                if (Objects.nonNull(electricityBattery)) {
-
-                    //3、查加盟商是否绑定电池
-                    FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                    if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-                        power = electricityBattery.getPower();
-                    }
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.queryWareHouseByElectricityCabinetId(electricityCabinetId);
+        if (Objects.nonNull(electricityBatteries)) {
+            for (ElectricityBattery electricityBattery : electricityBatteries) {
+                if (Objects.nonNull(electricityBattery.getPower()) && electricityBattery.getPower()>power) {
+                    power = electricityBattery.getPower();
+                    batteryId=electricityBattery.getId();
                 }
+            }
+            //3、查加盟商是否绑定电池
+            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(batteryId, franchiseeId);
+            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                power = null;
             }
         }
 
