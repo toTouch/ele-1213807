@@ -918,16 +918,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
         if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
             memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
-
-            System.out.println("之前的过期时间=============================");
         }
 
-        if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD)) {
-            System.out.println("处理0天=------==================================");
+        if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
             memberCardExpireTime = null;
         }
-
-        System.out.println("最终的过期时间==================="+memberCardExpireTime);
 
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
