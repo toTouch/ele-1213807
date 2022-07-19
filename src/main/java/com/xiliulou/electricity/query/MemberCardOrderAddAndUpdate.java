@@ -33,4 +33,6 @@ public class MemberCardOrderAddAndUpdate {
 
     public static final Integer ZERO_VALIdDAY_MEMBER_CARD = 0;
 
+    public static final Long ZERO_USER_COUNT = 0L;
+
 }
