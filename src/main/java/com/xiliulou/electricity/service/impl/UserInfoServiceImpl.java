@@ -150,14 +150,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
-                    if (item.getMemberCardExpireTime()>System.currentTimeMillis()) {
+                    if (item.getMemberCardExpireTime() > System.currentTimeMillis()) {
                         Long now = System.currentTimeMillis();
                         long carDays = 0;
                         if (item.getMemberCardExpireTime() > now) {
                             carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
                         }
                         item.setCardDays(carDays);
-                    }else {
+                    } else {
                         item.setMemberCardExpireTime(null);
                         item.setCardId(null);
                         item.setRemainingNumber(null);
@@ -165,9 +165,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setCardDays(null);
                     }
                 }
-                if(Objects.nonNull(item.getMemberCardExpireTime())){
-                    ElectricityMemberCardOrder electricityMemberCardOrder=electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(),item.getFranchiseeId(),item.getTenantId());
-                    if (Objects.nonNull(electricityMemberCardOrder)){
+                if (Objects.nonNull(item.getMemberCardExpireTime())) {
+                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                    if (Objects.nonNull(electricityMemberCardOrder)) {
                         item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
                     }
                 }

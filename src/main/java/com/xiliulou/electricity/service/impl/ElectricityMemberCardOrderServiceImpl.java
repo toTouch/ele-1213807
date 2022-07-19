@@ -916,13 +916,19 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         Long memberCardExpireTime = System.currentTimeMillis() +
                 memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
-        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) &&((oldFranchiseeUserInfo.getMemberCardExpireTime()-System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
-            memberCardExpireTime=oldFranchiseeUserInfo.getMemberCardExpireTime();
+        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
+            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
+
+            System.out.println("之前的过期时间=============================");
         }
 
         if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD)) {
+            System.out.println("处理0天=------==================================");
             memberCardExpireTime = null;
         }
+
+        System.out.println("最终的过期时间==================="+memberCardExpireTime);
+
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
@@ -1087,7 +1093,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
-        return baseMapper.queryLastPayMemberCardTimeByUid(uid,franchiseeId,tenantId);
+        return baseMapper.queryLastPayMemberCardTimeByUid(uid, franchiseeId, tenantId);
     }
 
     private String generateOrderId(Long uid) {
