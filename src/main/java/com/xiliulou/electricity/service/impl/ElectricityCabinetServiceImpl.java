@@ -522,6 +522,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
 
+
+        System.out.println("无满电电池测试====================="+ids);
+
         Integer count = 0;
         if (ObjectUtils.isEmpty(ids)) {
             //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
@@ -553,6 +556,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
         }
+
+        System.out.println("不为空================================");
 
         for (Long item : ids) {
             FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
