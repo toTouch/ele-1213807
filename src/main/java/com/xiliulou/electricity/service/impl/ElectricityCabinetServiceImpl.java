@@ -2012,6 +2012,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Double power = null;
         //先查询缓存
         BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinetId, BigEleBatteryVo.class);
+
+        System.out.println("最大电池================="+bigEleBatteryVo);
+
         if (Objects.nonNull(bigEleBatteryVo)) {
             //1、查仓门
             ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetId, bigEleBatteryVo.getCellNo());
@@ -2028,8 +2031,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 }
             }
         }
-
-        System.out.println("计算出的电池电量===================="+power);
 
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             if (Objects.nonNull(power) && power > lowBatteryExchangeModel.getBatteryPowerStandard() && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
