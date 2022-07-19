@@ -913,31 +913,24 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
-
+        Long remainingNumber = memberCardOrderAddAndUpdate.getMaxUseCount();
         Long memberCardExpireTime = System.currentTimeMillis() +
                 memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
         if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
             memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
-            System.out.println("之前过期时间================================");
         }
-
         if (Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
-
-            System.out.println("为0==============================================");
-
+            remainingNumber = null;
             memberCardExpireTime = null;
-        }
 
-        System.out.println("月卡过期时间================"+memberCardExpireTime);
+        }
 
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
-        franchiseeUserInfoUpdate.setRemainingNumber(memberCardOrderAddAndUpdate.getMaxUseCount());
+        franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-
-        System.out.println("更新用户================="+franchiseeUserInfoUpdate.getMemberCardExpireTime());
-        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        franchiseeUserInfoService.updateMemberCardExpire(franchiseeUserInfoUpdate);
 
         Long now = System.currentTimeMillis();
         Long oldCardDay = null;

@@ -149,6 +149,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateMemberCardExpire(franchiseeUserInfo);
+    }
+
+    @Override
     public R queryBattery() {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();

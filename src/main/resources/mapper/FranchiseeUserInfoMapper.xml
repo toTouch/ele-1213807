@@ -121,4 +121,13 @@
             rent_car_member_card_expire_time=#{rentCarMemberCardExpireTime}
         where user_info_id = #{userInfoId} and del_flag=0
     </update>
+
+    <update id="updateMemberCardExpire">
+          update t_franchisee_user_info
+        set member_card_expire_time = #{memberCardExpireTime},
+		    remaining_number = #{remainingNumber},
+		    update_time = #{updateTime},
+		    battery_service_fee_generate_time=#{batteryServiceFeeGenerateTime}
+        where id = #{id} and del_flag=0
+    </update>
 </mapper>
