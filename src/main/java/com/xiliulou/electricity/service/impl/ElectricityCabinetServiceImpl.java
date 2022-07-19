@@ -526,10 +526,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtils.isEmpty(ids)) {
             //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
             Double fullyCharged = checkLowBatteryExchangeMinimumBatteryPowerStandard(tenantId, id);
-
-            System.out.println("查询低电量换电最终的电量标准===================="+fullyCharged);
-
-
             ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType, fullyCharged);
             if (ObjectUtils.isEmpty(ids)) {
                 return Triple.of(false, "0", "换电柜暂无满电电池");
@@ -1492,10 +1488,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         if (!tripleResult.getLeft()) {
-
-
-            System.out.println("走到这个方法中=========================");
-
             Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
             return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
@@ -2078,10 +2070,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
         Long now = System.currentTimeMillis();
         List<ElectricityBattery> electricityBatteries = electricityBatteryService.queryWareHouseByElectricityCabinetId(electricityCabinetId);
-
-
-        System.out.println("输出两个电池===================="+electricityBatteries);
-
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 for (ElectricityBattery electricityBattery : electricityBatteries) {
@@ -2092,9 +2080,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             //3、查加盟商是否绑定电池
                             FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
                             if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-
-                                System.out.println("输出最终的电池====================="+electricityBattery);
-
                                 result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
                                 return result;
                             }
