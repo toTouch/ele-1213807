@@ -2056,7 +2056,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
         Long now = System.currentTimeMillis();
 
+        System.out.println("输出最终的电量标准======================================="+fullyCharged);
+
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
+
+            System.out.println("循环中的电量标准===================="+lowBatteryExchangeModel.getBatteryPowerStandard());
+
             if (Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime())) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && lowBatteryExchangeModel.getBatteryPowerStandard() < fullyCharged) {
                 fullyCharged = lowBatteryExchangeModel.getBatteryPowerStandard();
             }
