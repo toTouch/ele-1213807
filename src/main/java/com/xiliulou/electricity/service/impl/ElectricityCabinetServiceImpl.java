@@ -529,18 +529,19 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType, fullyCharged);
             if (ObjectUtils.isEmpty(ids)) {
                 return Triple.of(false, "0", "换电柜暂无满电电池");
-            }else {
-                for (Long item : ids) {
-                    FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
-                    if (Objects.nonNull(franchiseeBindElectricityBattery)) {
-                        count++;
-                    }
-                }
-
-                if (count < 1) {
-                    return Triple.of(false, "0", "加盟商未绑定满电电池");
+            }
+            for (Long item : ids) {
+                FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
+                if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                    count++;
                 }
             }
+
+            if (count < 1) {
+                return Triple.of(false, "0", "加盟商未绑定满电电池");
+            }
+
+            return Triple.of(false, "0", "换电柜暂无满电电池");
         }
 
         for (Long item : ids) {
