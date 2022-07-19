@@ -526,6 +526,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (ObjectUtils.isEmpty(ids)) {
             //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
             Double fullyCharged = checkLowBatteryExchangeMinimumBatteryPowerStandard(tenantId, id);
+
+            System.out.println("查询低电量换电最终的电量标准===================="+fullyCharged);
+
+
             ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType, fullyCharged);
             if (ObjectUtils.isEmpty(ids)) {
                 return Triple.of(false, "0", "换电柜暂无满电电池");
