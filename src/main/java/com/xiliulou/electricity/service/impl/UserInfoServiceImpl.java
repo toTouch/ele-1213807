@@ -165,6 +165,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                         item.setCardDays(null);
                     }
                 }else {
+                    item.setCardDays(null);
+                    item.setCardId(null);
                     item.setCardName(null);
                 }
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
