@@ -2017,6 +2017,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
                         //3、查加盟商是否绑定电池
                         FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                        System.out.println("电池电量========================="+electricityBattery.getPower());
+                        System.out.println("电池ID======================="+electricityBattery.getId());
+
                         if (Objects.nonNull(franchiseeBindElectricityBattery)) {
                             result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
                             return result;
