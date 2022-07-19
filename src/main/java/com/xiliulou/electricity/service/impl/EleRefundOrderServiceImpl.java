@@ -559,7 +559,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
                     .uid(uid)
                     .name(user.getUsername())
                     .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
-                    .newBatteryDeposit(eleDepositOrder.getPayAmount())
+                    .newBatteryDeposit(null)
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
             eleUserOperateRecordService.insert(eleUserOperateRecord);
