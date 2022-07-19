@@ -2021,6 +2021,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         System.out.println("电池ID======================="+electricityBattery.getId());
 
                         if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+
+                            System.out.println("最终电池电量========================="+electricityBattery.getPower());
+                            System.out.println("最中电池ID======================="+electricityBattery.getId());
+
                             result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
                             return result;
                         }
