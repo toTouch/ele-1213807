@@ -1449,6 +1449,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         if (!tripleResult.getLeft()) {
             Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+
+            System.out.println("低电量==============="+tripleResult.getRight().toString()+"==========="+value);
+
             return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
 
