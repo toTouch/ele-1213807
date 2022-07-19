@@ -2029,6 +2029,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
 
+        System.out.println("计算出的电池电量===================="+power);
+
         for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
             if (Objects.nonNull(power) && power > lowBatteryExchangeModel.getBatteryPowerStandard() && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
