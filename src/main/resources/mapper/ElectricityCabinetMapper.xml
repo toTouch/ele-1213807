@@ -130,6 +130,19 @@
 		</if>
 	</select>
 
+	<select id="queryFullyElectricityBatteryForLowBatteryExchange" resultType="java.lang.Long">
+		select eb.id from t_electricity_cabinet as ec
+		left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
+		left join t_electricity_battery as eb on ecb.sn is not null and ecb.sn=eb.sn
+		where eb.power&gt;=#{fullyCharged} and ec.id = #{id} and ecb.usable_status =0
+		<if test="batteryType != null and batteryType != '-1' ">
+			and ecb.battery_type = #{batteryType}
+		</if>
+		<if test="batteryType == null ">
+			and ecb.battery_type is null
+		</if>
+	</select>
+
 
 	<select id="queryNameList" resultType="java.util.Map">
 		select

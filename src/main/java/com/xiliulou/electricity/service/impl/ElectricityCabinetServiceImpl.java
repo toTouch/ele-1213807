@@ -518,8 +518,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return totalCount;
     }
 
-    public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id, String batteryType, Long franchiseeId) {
-        List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
+    public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id, String batteryType, Long franchiseeId, Double fullyCharged) {
+        List<Long> ids = null;
+        if (Objects.nonNull(fullyCharged)) {
+            ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType,fullyCharged);
+        } else {
+            ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
+        }
 
         if (ObjectUtils.isEmpty(ids)) {
             return Triple.of(false, "0", "换电柜暂无满电电池");
@@ -1434,12 +1439,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
+
+        //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
+        Double fullyCharged = checkLowBatteryExchangeMinimumBatteryPowerStandard(electricityCabinet.getTenantId(), electricityCabinet.getId());
+
         //查满仓空仓数
         Triple<Boolean, String, Object> tripleResult;
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(),fullyCharged);
         } else {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId(),fullyCharged);
         }
 
         if (Objects.isNull(tripleResult)) {
@@ -1449,9 +1458,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         if (!tripleResult.getLeft()) {
             Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
-
-            System.out.println("低电量==============="+tripleResult.getRight().toString()+"==========="+value);
-
             return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
 
@@ -1617,9 +1623,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Triple<Boolean, String, Object> tripleResult;
         //查满仓空仓数
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(),null);
         } else {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId(),null);
         }
 
         //已租电池则还电池
@@ -2002,6 +2008,27 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return update;
     }
 
+    private Double checkLowBatteryExchangeMinimumBatteryPowerStandard(Integer tenantId, Integer electricityCabinetId) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+
+        Double fullyCharged = electricityCabinet.getFullyCharged();
+
+        if (Objects.isNull(fullyCharged) || Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
+            return fullyCharged;
+        }
+        List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
+        Long now = System.currentTimeMillis();
+
+        for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
+            if (Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime())) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && lowBatteryExchangeModel.getBatteryPowerStandard() < fullyCharged) {
+                fullyCharged = lowBatteryExchangeModel.getBatteryPowerStandard();
+            }
+        }
+        return fullyCharged;
+    }
+
     private Integer checkIsLowBatteryExchange(Integer tenantId, Integer electricityCabinetId, Long franchiseeId) {
 
         ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
@@ -2018,7 +2045,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 for (ElectricityBattery electricityBattery : electricityBatteries) {
                     //电池所在仓门非禁用
-                    ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.queryBySn(electricityBattery.getSn());
+                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn());
                     if (Objects.nonNull(electricityCabinetBox)) {
                         if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
                             //3、查加盟商是否绑定电池
