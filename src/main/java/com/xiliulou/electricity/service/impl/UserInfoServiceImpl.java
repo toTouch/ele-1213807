@@ -944,12 +944,23 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         //计算总消费额
         CompletableFuture<Void> payAmountSumFuture = queryMemberCardPayAmount
                 .thenAcceptBoth(queryBatteryServiceFeePayAmount, (memberCardSumAmount, batteryServiceFeeSumAmount) -> {
+
+
+                    System.out.println("套餐消费金===================="+memberCardSumAmount);
+                    System.out.println("fuwufei消费金===================="+batteryServiceFeeSumAmount);
+
                     BigDecimal result = memberCardSumAmount.add(batteryServiceFeeSumAmount);
+
+                    System.out.println("两个相加===================="+result);
+
                     turnover.add(result);
                 }).exceptionally(e -> {
                     log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
                     return null;
                 });
+
+
+        System.out.println("消费金额======================"+turnover);
 
         //等待所有线程停止 thenAcceptBoth方法会等待a,b线程结束后获取结果
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(payAmountSumFuture);
