@@ -115,29 +115,19 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         Long franchiseeId=null;
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-
-            System.out.println("门店权限===================");
-
             Store store = storeService.queryByUid(user.getUid());
             if (Objects.nonNull(store)) {
                 franchiseeId = store.getFranchiseeId();
             }
         }
         if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
-
-            System.out.println("加盟商权限===================");
-
             Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();
             }
         }
 
-        System.out.println("加盟商Id==============="+franchiseeId);
         if (Objects.nonNull(franchiseeId)){
-
-            System.out.println("绑定==================");
-
             FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
             franchiseeBindElectricityBattery.setFranchiseeId(franchiseeId.intValue());
             franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBattery.getId());
