@@ -435,14 +435,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
-        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
-            return R.fail("ELECTRICITY.00115", "请前往门店退押金");
-        }
-
         //判断是否退电池
         if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
             log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0046", "未退还电池");
+        }
+
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+            return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
 
 
