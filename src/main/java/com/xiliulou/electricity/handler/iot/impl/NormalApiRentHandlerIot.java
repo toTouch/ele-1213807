@@ -1,29 +1,25 @@
-package com.xiliulou.electricity.handler;
+package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ApiRentOrder;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ThirdCallBackUrl;
+import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ApiRentOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.ThirdCallBackUrlService;
-import com.xiliulou.electricity.service.retrofilt.api.ApiExchangeOrderRetrofitService;
 import com.xiliulou.electricity.service.retrofilt.api.ApiRentOrderRetrofitService;
 import com.xiliulou.electricity.service.retrofilt.api.RetrofitThirdApiService;
 import com.xiliulou.electricity.web.query.ApiRentOrderCallQuery;
-import com.xiliulou.electricity.web.query.ApiReturnOrderCallQuery;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xiliulou.iot.entity.SendHardwareMessage;
-import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import retrofit2.Call;
@@ -39,9 +35,9 @@ import java.util.Optional;
  * @Date: 2020/12/28 17:02
  * @Description:
  */
-@Service
+@Service(value= ElectricityIotConstant.NORMAL_API_RENT_HANDLER)
 @Slf4j
-public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
+public class NormalApiRentHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
     @Autowired
@@ -50,41 +46,25 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
     ApiRentOrderService apiRentOrderService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-
     @Autowired
     RetrofitThirdApiService retrofitThirdApiService;
     @Autowired
     ThirdCallBackUrlService thirdCallBackUrlService;
 
-    @Override
-    protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
-        String sessionId = generateSessionId(hardwareCommandQuery);
-        SendHardwareMessage message = SendHardwareMessage.builder()
-                .sessionId(sessionId)
-                .type(hardwareCommandQuery.getCommand())
-                .data(hardwareCommandQuery.getData()).build();
-        return Pair.of(message, sessionId);
-    }
 
     @Override
-    protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+    public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         ApiRentBatteryOrderRsp apiRentBatteryOrderRsp = JsonUtil.fromJson(receiverMessage.getOriginContent(), ApiRentBatteryOrderRsp.class);
         if (Objects.isNull(apiRentBatteryOrderRsp)) {
             log.error("API RENT ORDER ERROR! originData is null! requestId={}", receiverMessage.getSessionId());
-            return false;
-        }
-
-        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByProductAndDeviceName(receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-        if (Objects.isNull(electricityCabinet)) {
-            log.error("API RENT ORDER ERROR! electricityCabinet is null! requestId={} p={},d={}", receiverMessage.getSessionId(), receiverMessage.getProductKey(), receiverMessage.getDeviceName());
-            return false;
+            return ;
         }
 
         ApiRentOrder apiRentOrder = apiRentOrderService.queryByOrderId(apiRentBatteryOrderRsp.getOrderId(), electricityCabinet.getTenantId());
         if (Objects.isNull(apiRentOrder)) {
             electricityCabinetService.unlockElectricityCabinet(electricityCabinet.getId());
             log.error("API RENT ORDER ERROR! rentOrder not found !requestId={},orderId={}", receiverMessage.getSessionId(), apiRentBatteryOrderRsp.getOrderId());
-            return false;
+            return ;
         }
 
         if (apiRentBatteryOrderRsp.getIsException()) {
@@ -93,7 +73,7 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
 
         if (apiRentOrder.getOrderSeq() > apiRentBatteryOrderRsp.getOrderSeq()) {
             log.error("API RENT ORDER ERROR! rsp order seq is lower order! requestId={},orderId={}", receiverMessage.getSessionId(), apiRentBatteryOrderRsp.getOrderId());
-            return false;
+            return ;
         }
 
         apiRentOrder.setOrderSeq(apiRentBatteryOrderRsp.getOrderSeq());
@@ -122,20 +102,10 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
         ThirdCallBackUrl thirdCallBackUrl = thirdCallBackUrlService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(thirdCallBackUrl) || StrUtil.isEmpty(thirdCallBackUrl.getRentUrl())) {
             log.warn("CUPBOARD WARN! tenantId={} hasn't callback!", electricityCabinet.getTenantId());
-            return true;
+            return ;
         }
 
-        ApiRentOrderCallQuery apiRentOrderCallQuery = new ApiRentOrderCallQuery();
-        apiRentOrderCallQuery.setIsException(apiRentBatteryOrderRsp.getIsException());
-        apiRentOrderCallQuery.setMsg(apiRentBatteryOrderRsp.getMsg());
-        apiRentOrderCallQuery.setOrderId(apiRentBatteryOrderRsp.getOrderId());
-        apiRentOrderCallQuery.setDeviceName(receiverMessage.getDeviceName());
-        apiRentOrderCallQuery.setCellNo(apiRentOrder.getCellNo());
-        apiRentOrderCallQuery.setProductKey(receiverMessage.getProductKey());
-        apiRentOrderCallQuery.setStatus(apiRentBatteryOrderRsp.getOrderStatus());
-        apiRentOrderCallQuery.setTimestamp(System.currentTimeMillis());
-        apiRentOrderCallQuery.setRequestId(receiverMessage.getSessionId());
-
+        ApiRentOrderCallQuery apiRentOrderCallQuery = buildApiRentOrderCallQuery( apiRentBatteryOrderRsp, receiverMessage, apiRentOrder);
 
         Call<R> rCall = retrofitThirdApiService.getRetrofitService(ApiRentOrderRetrofitService.class).apiCall(apiRentOrderCallQuery, apiRentOrder.getTenantId(), ThirdCallBackUrl.RENT_URL);
         rCall.enqueue(new Callback<R>() {
@@ -149,19 +119,31 @@ public class NormalApiRentHandlerIot extends AbstractIotMessageHandler {
                 log.error("ELE API ERROR! sessionId={} call error!", receiverMessage.getSessionId(), throwable);
             }
         });
-        return true;
+    }
+
+    private ApiRentOrderCallQuery buildApiRentOrderCallQuery(ApiRentBatteryOrderRsp apiRentBatteryOrderRsp,ReceiverMessage receiverMessage,ApiRentOrder apiRentOrder){
+        return ApiRentOrderCallQuery.builder()
+                .isException(apiRentBatteryOrderRsp.getIsException())
+                .msg(apiRentBatteryOrderRsp.getMsg())
+                .orderId(apiRentBatteryOrderRsp.getOrderId())
+                .cellNo(apiRentOrder.getCellNo())
+                .deviceName(receiverMessage.getDeviceName())
+                .productKey(receiverMessage.getProductKey())
+                .status(apiRentBatteryOrderRsp.getOrderStatus())
+                .timestamp(System.currentTimeMillis())
+                .requestId(receiverMessage.getSessionId()).build();
     }
 
 
+    @Data
+    class ApiRentBatteryOrderRsp {
+        private String orderId;
+        private String msg;
+        private String orderStatus;
+        private Double orderSeq;
+        private Boolean isException;
+        private Long reportTime;
+        private String rentBatteryName;
+    }
 }
 
-@Data
-class ApiRentBatteryOrderRsp {
-    private String orderId;
-    private String msg;
-    private String orderStatus;
-    private Double orderSeq;
-    private Boolean isException;
-    private Long reportTime;
-    private String rentBatteryName;
-}

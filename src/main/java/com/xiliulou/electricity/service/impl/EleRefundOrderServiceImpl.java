@@ -1,33 +1,24 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.RandomUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.EleRefundOrderHistory;
-import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.FranchiseeUserInfo;
-import com.xiliulou.electricity.entity.RefundOrder;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
-import com.xiliulou.electricity.service.EleDepositOrderService;
-import com.xiliulou.electricity.service.EleRefundOrderHistoryService;
-import com.xiliulou.electricity.service.EleRefundOrderService;
-import com.xiliulou.electricity.service.ElectricityPayParamsService;
-import com.xiliulou.electricity.service.ElectricityTradeOrderService;
-import com.xiliulou.electricity.service.FranchiseeUserInfoService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.pay.weixinv3.query.WechatV3RefundQuery;
 import com.xiliulou.pay.weixinv3.service.WechatV3JsapiService;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -75,6 +66,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     WechatConfig wechatConfig;
     @Autowired
     EleRefundOrderHistoryService eleRefundOrderHistoryService;
+    @Autowired
+    EleUserOperateRecordService eleUserOperateRecordService;
 
 
     /**
@@ -438,6 +431,192 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
 
+
+    @Override
+    public R queryUserDepositPayType(Long uid) {
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("admin query user deposit pay type  ERROR! not found user,uid:{} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("admin query user deposit pay type ERROR! not found user! uid:{} ", uid);
+            return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+            log.error("admin query user deposit pay type ERROR! not found batteryDeposit,uid:{} ", uid);
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId());
+        return R.ok(eleDepositOrder.getPayType());
+    }
+
+    @Override
+    public R batteryOffLineRefund(String errMsg, BigDecimal refundAmount, Long uid, Integer refundType) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid:{}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //判断是否退电池
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+            log.error("battery deposit OffLine Refund ERROR! not return battery! uid:{} ", uid);
+            return R.fail("ELECTRICITY.0046", "未退还电池");
+        }
+
+        //查找缴纳押金订单
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(franchiseeUserInfo.getOrderId());
+        if (Objects.isNull(eleDepositOrder)) {
+            log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid:{}", uid);
+            return R.fail("ELECTRICITY.0015", "未找到订单");
+        }
+
+        BigDecimal deposit = franchiseeUserInfo.getBatteryDeposit();
+        if (!Objects.equals(eleDepositOrder.getPayAmount(), deposit)) {
+            log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid:{}", uid);
+            return R.fail("ELECTRICITY.0044", "退款金额不符");
+        }
+
+        //退款中
+        Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
+        if (Objects.nonNull(refundStatus) && Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)) {
+            log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid:{}", uid);
+            return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
+        }
+
+        if (Objects.nonNull(refundAmount)) {
+            if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
+                log.error("battery deposit OffLine Refund ERROR ,refundAmount > payAmount uid:{}", uid);
+                return R.fail("退款金额不能大于支付金额!");
+            }
+
+            //插入修改记录
+            EleRefundOrderHistory eleRefundOrderHistory = new EleRefundOrderHistory();
+            eleRefundOrderHistory.setRefundOrderNo(generateOrderId(uid));
+            eleRefundOrderHistory.setRefundAmount(refundAmount);
+            eleRefundOrderHistory.setCreateTime(System.currentTimeMillis());
+            eleRefundOrderHistory.setTenantId(franchiseeUserInfo.getTenantId());
+            eleRefundOrderHistoryService.insert(eleRefundOrderHistory);
+        } else {
+            refundAmount = franchiseeUserInfo.getBatteryDeposit();
+        }
+
+        EleRefundOrder eleRefundOrder = new EleRefundOrder();
+        eleRefundOrder.setOrderId(franchiseeUserInfo.getOrderId());
+        eleRefundOrder.setRefundOrderNo(generateOrderId(uid));
+        eleRefundOrder.setTenantId(franchiseeUserInfo.getTenantId());
+        eleRefundOrder.setCreateTime(System.currentTimeMillis());
+        eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+        eleRefundOrder.setPayAmount(eleDepositOrder.getPayAmount());
+        eleRefundOrder.setErrMsg(errMsg);
+
+        FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
+        updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
+
+
+        if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
+            //生成退款订单
+
+            eleRefundOrder.setRefundAmount(eleDepositOrder.getPayAmount());
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+            eleRefundOrderService.insert(eleRefundOrder);
+
+            updateFranchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+            updateFranchiseeUserInfo.setBatteryDeposit(null);
+            updateFranchiseeUserInfo.setOrderId(null);
+            updateFranchiseeUserInfo.setFranchiseeId(null);
+            updateFranchiseeUserInfo.setModelType(null);
+            updateFranchiseeUserInfo.setBatteryType(null);
+            updateFranchiseeUserInfo.setCardId(null);
+            updateFranchiseeUserInfo.setCardName(null);
+            updateFranchiseeUserInfo.setCardType(null);
+            updateFranchiseeUserInfo.setMemberCardExpireTime(null);
+            updateFranchiseeUserInfo.setRemainingNumber(null);
+            franchiseeUserInfoService.updateOrderByUserInfoId(updateFranchiseeUserInfo);
+
+
+            //生成后台操作记录
+            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+                    .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
+                    .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
+                    .operateUid(user.getUid())
+                    .uid(uid)
+                    .name(user.getUsername())
+                    .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
+                    .newBatteryDeposit(null)
+                    .createTime(System.currentTimeMillis())
+                    .updateTime(System.currentTimeMillis()).build();
+            eleUserOperateRecordService.insert(eleUserOperateRecord);
+            return R.ok();
+        } else {
+            //退款0元，不捕获异常，成功退款
+            if (refundAmount.compareTo(BigDecimal.ZERO) == 0) {
+
+
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
+                eleRefundOrder.setRefundAmount(refundAmount);
+                eleRefundOrderService.insert(eleRefundOrder);
+
+                franchiseeUserInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
+                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+                franchiseeUserInfo.setBatteryDeposit(null);
+                franchiseeUserInfo.setOrderId(null);
+                franchiseeUserInfo.setFranchiseeId(null);
+                franchiseeUserInfo.setModelType(null);
+                franchiseeUserInfo.setBatteryType(null);
+                franchiseeUserInfo.setCardId(null);
+                franchiseeUserInfo.setCardName(null);
+                franchiseeUserInfo.setCardType(null);
+                franchiseeUserInfo.setMemberCardExpireTime(null);
+                franchiseeUserInfo.setRemainingNumber(null);
+                franchiseeUserInfoService.updateOrderByUserInfoId(franchiseeUserInfo);
+                return R.ok();
+            }
+
+            //调起退款
+            try {
+
+                RefundOrder refundOrder = RefundOrder.builder()
+                        .orderId(eleRefundOrder.getOrderId())
+                        .refundOrderNo(eleRefundOrder.getRefundOrderNo())
+                        .payAmount(eleDepositOrder.getPayAmount())
+                        .refundAmount(refundAmount).build();
+
+
+                eleRefundOrderService.commonCreateRefundOrder(refundOrder, null);
+                //提交成功
+                eleRefundOrder.setStatus(EleRefundOrder.STATUS_REFUND);
+                eleRefundOrder.setRefundAmount(refundAmount);
+                eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+                eleRefundOrderService.insert(eleRefundOrder);
+                return R.ok();
+            } catch (WechatPayException e) {
+                log.error("battery deposit OffLine Refund ERROR! wechat v3 refund  error! ", e);
+            }
+            //提交失败
+            eleRefundOrder.setStatus(EleRefundOrder.STATUS_FAIL);
+            eleRefundOrder.setUpdateTime(System.currentTimeMillis());
+            eleRefundOrderService.insert(eleRefundOrder);
+            return R.fail("ELECTRICITY.00100", "退款失败");
+        }
+    }
+
     @Override
     public R queryList(EleRefundQuery eleRefundQuery) {
         return R.ok(eleRefundOrderMapper.queryList(eleRefundQuery));
@@ -475,6 +654,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {
         return Optional.ofNullable(eleRefundOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
+
+    public String generateOrderId(Long uid) {
+        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
+                RandomUtil.randomNumbers(6);
     }
 
 

@@ -1,16 +1,16 @@
-package com.xiliulou.electricity.handler;
+package com.xiliulou.electricity.handler.iot.impl;
 
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xiliulou.iot.entity.SendHardwareMessage;
-import com.xiliulou.iot.service.AbstractIotMessageHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -20,28 +20,18 @@ import java.util.concurrent.TimeUnit;
  * @Date: 2020/12/28 17:02
  * @Description:
  */
-@Service
+@Service(value= ElectricityIotConstant.NORMAL_ELE_OPERATE_HANDLER)
 @Slf4j
-public class NormalEleOperateHandlerIot extends AbstractIotMessageHandler {
+public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
 
     @Override
-    protected Pair<SendHardwareMessage, String> generateMsg(HardwareCommandQuery hardwareCommandQuery) {
-        String sessionId = generateSessionId(hardwareCommandQuery);
-        SendHardwareMessage message = SendHardwareMessage.builder()
-                .sessionId(sessionId)
-                .type(hardwareCommandQuery.getCommand())
-                .data(hardwareCommandQuery.getData()).build();
-        return Pair.of(message, sessionId);
-    }
-
-    @Override
-    protected boolean receiveMessageProcess(ReceiverMessage receiverMessage) {
+    public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         String sessionId = receiverMessage.getSessionId();
         if (StrUtil.isEmpty(sessionId)) {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
-            return false;
+            return ;
         }
         //操作回调的放在redis中
         if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
@@ -49,7 +39,6 @@ public class NormalEleOperateHandlerIot extends AbstractIotMessageHandler {
         } else {
             redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
         }
-        return true;
     }
 
 }

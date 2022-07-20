@@ -21,4 +21,6 @@ public interface UserMapper extends BaseMapper<User> {
     List<User> queryListUserByCriteria(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime,@Param("tenantId") Integer tenantId);
 
 	Integer queryCount(@Param("uid") Long uid, @Param("name") String name, @Param("phone") String phone, @Param("type") Integer type, @Param("startTime") Long startTime, @Param("endTime") Long endTime,@Param("tenantId") Integer tenantId);
+
+    int updateUserById(User updateUser);
 }

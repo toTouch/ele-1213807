@@ -38,10 +38,13 @@ public class JsonAdminUserInfoController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "beginTime", required = false) Long beginTime,
-                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "batterySn",required = false) String batterySn,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                       @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "memberCardId",required = false) Long memberCardId,
+                       @RequestParam(value = "cardName",required = false) String cardName,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
@@ -60,12 +63,15 @@ public class JsonAdminUserInfoController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
+                .batterySn(batterySn)
+                .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
-				.memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+                .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .uid(uid)
+                .memberCardId(memberCardId)
+                .cardName(cardName)
                 .tenantId(tenantId).build();
 
         return userInfoService.queryList(userInfoQuery);
@@ -77,6 +83,8 @@ public class JsonAdminUserInfoController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
 
@@ -88,6 +96,8 @@ public class JsonAdminUserInfoController {
                 .phone(phone)
                 .beginTime(beginTime)
                 .endTime(endTime)
+                .uid(uid)
+                .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
                 .tenantId(tenantId).build();
@@ -97,8 +107,8 @@ public class JsonAdminUserInfoController {
 
     //禁/启用
     @PutMapping(value = "/admin/userInfo/updateStatus")
-    public R updateStatus(@RequestParam("id") Long id, @RequestParam("usableStatus") Integer usableStatus) {
-        return userInfoService.updateStatus(id, usableStatus);
+    public R updateStatus(@RequestParam("uid") Long uid, @RequestParam("usableStatus") Integer usableStatus) {
+        return userInfoService.updateStatus(uid, usableStatus);
     }
 
     //后台审核实名认证
@@ -160,15 +170,35 @@ public class JsonAdminUserInfoController {
     }
 
     //解绑电池
-    @PutMapping(value = "/admin/userInfo/unBindBattery/{id}")
-    public R webUnBindBattery(@PathVariable("id") Long id) {
-        return userInfoService.webUnBindBattery(id);
+    @PutMapping(value = "/admin/userInfo/unBindBattery/{uid}")
+    public R webUnBindBattery(@PathVariable("uid") Long uid) {
+        return userInfoService.webUnBindBattery(uid);
     }
 
     //迁移用户数据
     @PostMapping(value = "/admin/userInfo/userMove")
     public R userMove(@RequestBody UserMoveHistory userMoveHistory) {
         return userInfoService.userMove(userMoveHistory);
+    }
+
+    /**
+     * 查询用户所属加盟商
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping(value = "/admin/queryUserBelongFranchisee/{id}")
+    public R queryUserBelongFranchisee(@PathVariable("id") Long id) {
+        return userInfoService.queryUserBelongFranchisee(id);
+    }
+
+    /**
+     * 用户的总消费金额
+     * @return
+     */
+    @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
+    public R queryUserAllConsumption(@PathVariable("id") Long id){
+        return userInfoService.queryUserAllConsumption(id);
     }
 
 }

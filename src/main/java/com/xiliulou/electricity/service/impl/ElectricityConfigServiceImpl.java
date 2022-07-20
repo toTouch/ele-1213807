@@ -1,11 +1,14 @@
 package com.xiliulou.electricity.service.impl;
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.mapper.ElectricityConfigMapper;
+import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -33,7 +36,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 
 
     @Override
-    public R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw, Integer isOpenDoorLock,Integer isBatteryReview) {
+    public R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -50,30 +53,44 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+//        if (ObjectUtil.isEmpty(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList())) {
+//            return R.fail("ELECTRICITY.0007", "不合法的参数");
+//        }
+
+//        //封装型号押金
+//        String lowBatteryExchangeModel = JsonUtil.toJson(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList());
+//        electricityConfigAddAndUpdateQuery.setLowBatteryExchangeModel(lowBatteryExchangeModel);
+
 
         ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId,tenantId));
         if(Objects.isNull(electricityConfig)){
             electricityConfig=new ElectricityConfig();
-            electricityConfig.setName(name);
-            electricityConfig.setOrderTime(orderTime);
-            electricityConfig.setIsManualReview(isManualReview);
-            electricityConfig.setIsWithdraw(isWithdraw);
+            electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
+            electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
+            electricityConfig.setIsManualReview(electricityConfigAddAndUpdateQuery.getIsManualReview());
+            electricityConfig.setIsWithdraw(electricityConfigAddAndUpdateQuery.getIsWithdraw());
             electricityConfig.setCreateTime(System.currentTimeMillis());
             electricityConfig.setUpdateTime(System.currentTimeMillis());
             electricityConfig.setTenantId(tenantId);
-            electricityConfig.setIsOpenDoorLock(isOpenDoorLock);
-            electricityConfig.setIsBatteryReview(isBatteryReview);
+            electricityConfig.setIsOpenDoorLock(electricityConfigAddAndUpdateQuery.getIsOpenDoorLock());
+            electricityConfig.setIsBatteryReview(electricityConfigAddAndUpdateQuery.getIsBatteryReview());
+            electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
+            electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
+            electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
 
-        electricityConfig.setName(name);
-        electricityConfig.setOrderTime(orderTime);
-        electricityConfig.setIsManualReview(isManualReview);
-        electricityConfig.setIsWithdraw(isWithdraw);
-        electricityConfig.setIsOpenDoorLock(isOpenDoorLock);
-        electricityConfig.setIsBatteryReview(isBatteryReview);
+        electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
+        electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
+        electricityConfig.setIsManualReview(electricityConfigAddAndUpdateQuery.getIsManualReview());
+        electricityConfig.setIsWithdraw(electricityConfigAddAndUpdateQuery.getIsWithdraw());
+        electricityConfig.setIsOpenDoorLock(electricityConfigAddAndUpdateQuery.getIsOpenDoorLock());
+        electricityConfig.setIsBatteryReview(electricityConfigAddAndUpdateQuery.getIsBatteryReview());
         electricityConfig.setUpdateTime(System.currentTimeMillis());
+        electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
+        electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
+        electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
         electricityConfigMapper.updateById(electricityConfig);
         return R.ok();
     }

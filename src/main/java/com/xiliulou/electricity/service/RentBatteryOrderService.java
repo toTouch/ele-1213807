@@ -46,7 +46,7 @@ public interface RentBatteryOrderService {
 
 	R queryNewStatus(String orderId);
 
-    Triple<Boolean, String, Object> findUsableBatteryCellNo(ElectricityCabinet electricityCabinet, String cellNo,String batteryType,Long franchiseeId);
+    Triple<Boolean, String, Object> findUsableBatteryCellNo(ElectricityCabinet electricityCabinet, String cellNo,String batteryType,Long franchiseeId,Integer OrderSource);
 
     R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery);
 

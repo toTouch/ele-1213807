@@ -212,4 +212,15 @@
             and tenant_id = #{tenantId}
         </if>
     </select>
+
+    <select id="queryLastPayDepositTimeByUid" resultType="com.xiliulou.electricity.entity.EleDepositOrder">
+        select * from t_ele_deposit_order where uid=#{uid}
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY id DESC limit 1
+    </select>
 </mapper>

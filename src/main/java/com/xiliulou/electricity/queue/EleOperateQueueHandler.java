@@ -3,13 +3,13 @@ package com.xiliulou.electricity.queue;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleExceptionLockStorehouseDoorConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import lombok.extern.slf4j.Slf4j;
@@ -109,8 +109,8 @@ public class EleOperateQueueHandler {
 
 
         //查找订单
-        if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)
-                || Objects.equals(type, HardwareCommand.ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)) {
+        if (Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)
+                || Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)) {
 
 
             ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(orderId);
@@ -127,11 +127,11 @@ public class EleOperateQueueHandler {
 
             //若app订单状态大于云端订单状态则处理
             if (Objects.isNull(orderSeq) || orderSeq - electricityCabinetOrder.getOrderSeq() >= 1 || Math.abs(orderSeq - electricityCabinetOrder.getOrderSeq()) < 1) {
-                if (Objects.equals(type, HardwareCommand.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)) {
+                if (Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)) {
                     handelInitExchangeOrder(electricityCabinetOrder, finalOpenDTO);
                 }
 
-                if (Objects.equals(type, HardwareCommand.ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)) {
+                if (Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)) {
                     handelCompleteExchangeOrder(electricityCabinetOrder, finalOpenDTO);
                 }
             }
@@ -221,7 +221,7 @@ public class EleOperateQueueHandler {
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+                .command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)
                 .build();
 
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
@@ -350,9 +350,9 @@ public class EleOperateQueueHandler {
                 //分配电池 --只分配满电电池
                 Triple<Boolean, String, Object> tripleResult;
                 if (Objects.equals(oldFranchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), oldFranchiseeUserInfo.getBatteryType(), oldFranchiseeUserInfo.getFranchiseeId());
+                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), oldFranchiseeUserInfo.getBatteryType(), oldFranchiseeUserInfo.getFranchiseeId(),electricityCabinetOrder.getSource());
                 } else {
-                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), null, oldFranchiseeUserInfo.getFranchiseeId());
+                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), null, oldFranchiseeUserInfo.getFranchiseeId(),electricityCabinetOrder.getSource());
                 }
 
                 if (Objects.isNull(tripleResult)) {
@@ -406,7 +406,7 @@ public class EleOperateQueueHandler {
                         .data(dataMap)
                         .productKey(electricityCabinet.getProductKey())
                         .deviceName(electricityCabinet.getDeviceName())
-                        .command(HardwareCommand.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
+                        .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_NEW_DOOR).build();
                 eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             } catch (Exception e) {
                 log.error("e", e);

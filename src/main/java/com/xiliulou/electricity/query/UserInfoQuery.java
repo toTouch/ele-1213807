@@ -25,6 +25,18 @@ public class UserInfoQuery {
 
     private Integer serviceStatus;
 
+    private String batterySn;
+    private Long franchiseeId;
+
     private Long memberCardExpireTimeBegin;
     private Long memberCardExpireTimeEnd;
+
+    /**
+     * 套餐id
+     */
+    private Long memberCardId;
+
+    private String cardName;
+
+    private Long uid;
 }

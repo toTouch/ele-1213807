@@ -8,19 +8,23 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜仓门表(TElectricityCabinetBox)表服务实现类
@@ -42,6 +46,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     UserInfoService userInfoService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    BatteryOtherPropertiesService batteryOtherPropertiesService;
 
 
     /**
@@ -86,19 +92,24 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         if (ObjectUtil.isEmpty(electricityCabinetBoxVOList)) {
             return R.ok(electricityCabinetBoxVOList);
         }
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>();
 
-        if (ObjectUtil.isNotEmpty(electricityCabinetBoxVOList)) {
-            for (ElectricityCabinetBoxVO electricityCabinetBoxVO : electricityCabinetBoxVOList) {
-                ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetBoxVO.getSn());
-                if (Objects.nonNull(electricityBattery)) {
-                    electricityCabinetBoxVO.setPower(electricityBattery.getPower());
-                    electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>(electricityCabinetBoxVOList.size());
+        electricityCabinetBoxVOList.parallelStream().forEach(item -> {
+            if (StringUtils.isNotBlank(item.getSn())) {
+                ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
+                if (Objects.nonNull(electricityBatteryVO)) {
+                    item.setPower(electricityBatteryVO.getPower());
+                    item.setChargeStatus(electricityBatteryVO.getChargeStatus());
+                    item.setBatteryA(electricityBatteryVO.getBatteryChargeA());
+                    item.setBatteryV(electricityBatteryVO.getBatteryV());
                 }
-                electricityCabinetBoxVOs.add(electricityCabinetBoxVO);
             }
-        }
-        return R.ok(electricityCabinetBoxVOs);
+            electricityCabinetBoxVOs.add(item);
+        });
+
+        List<ElectricityCabinetBoxVO> result = electricityCabinetBoxVOs.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+
+        return R.ok(result);
     }
 
     @Override
@@ -117,6 +128,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer id) {
         return electricityCabinetBoxMapper.selectList(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getElectricityCabinetId, id)
                 .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL));
+    }
+
+    @Override
+    public ElectricityCabinetBox queryBySn(String sn,Integer electricityCabinetId) {
+        return electricityCabinetBoxMapper.selectOne(Wrappers.<ElectricityCabinetBox>lambdaQuery().eq(ElectricityCabinetBox::getSn, sn)
+                .eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL).eq(ElectricityCabinetBox::getElectricityCabinetId,electricityCabinetId).eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
     }
 
     @Override

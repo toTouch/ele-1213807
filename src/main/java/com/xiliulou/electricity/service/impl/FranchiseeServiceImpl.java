@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 import org.springframework.util.ObjectUtils;
 
 import javax.annotation.Resource;
@@ -73,6 +74,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 
     @Autowired
     ElectricityConfigService electricityConfigService;
+
+    @Autowired
+    ElectricityMemberCardService electricityMemberCardService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -203,15 +207,36 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
 
-        //查询加盟商是否绑定门店，绑定门店则不能删除
-        Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
+        //查询加盟商是否绑定的有套餐
+        List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id);
+        if(!CollectionUtils.isEmpty(electricityMemberCardList)){
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}",id);
+            return R.fail(id,"100101", "删除失败，该加盟商已绑定套餐！");
+        }
+
+        //查询加盟商是否绑定门店
+        List<Store> storeList=storeService.selectByFranchiseeId(id);
+        if(!CollectionUtils.isEmpty(storeList)){
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding store,franchiseeId={}",id);
+            return R.fail(id,"100102", "删除失败，该加盟商已绑定门店！");
+        }
 
         //查询加盟商是否绑定普通用户
-        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
-
-        if (count1 > 0 || count2 > 0) {
-            return R.fail("加盟商已绑定门店或用户");
+        List<FranchiseeUserInfo> franchiseeUserInfoList=franchiseeUserInfoService.selectByFranchiseeId(id);
+        if(!CollectionUtils.isEmpty(franchiseeUserInfoList)){
+            log.error("ELE ERROR! delete franchisee fail,franchisee has binding user,franchiseeId={}",id);
+            return R.fail(id,"100103", "删除失败，该加盟商已绑定用户！");
         }
+
+        //查询加盟商是否绑定门店，绑定门店则不能删除
+//        Integer count1 = storeService.queryCountByFranchiseeId(franchisee.getId());
+
+        //查询加盟商是否绑定普通用户
+//        Integer count2 = franchiseeUserInfoService.queryCountByFranchiseeId(franchisee.getId());
+
+//        if (count1 > 0 || count2 > 0) {
+//            return R.fail("加盟商已绑定门店或用户");
+//        }
 
         //再删除加盟商
         franchisee.setUpdateTime(System.currentTimeMillis());

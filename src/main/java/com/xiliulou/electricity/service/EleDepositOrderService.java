@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
+import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
@@ -55,4 +56,9 @@ public interface EleDepositOrderService {
     R refundRentCarDeposit(HttpServletRequest request);
 
     R queryRentCarDeposit();
+
+    EleDepositOrder queryLastPayDepositTimeByUid(Long uid,Long franchiseeId,Integer tenantId);
+
+    R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
+
 }

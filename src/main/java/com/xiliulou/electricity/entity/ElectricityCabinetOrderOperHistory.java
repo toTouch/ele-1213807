@@ -34,6 +34,15 @@ public class ElectricityCabinetOrderOperHistory {
     private String msg;
 
     /**
+     * 操作步骤序号
+     */
+    private Integer seq;
+    /**
+     * 操作结果 0：成功，1：失败
+     */
+    private Integer result;
+
+    /**
      * 创建时间
      */
     private Long createTime;
@@ -47,6 +56,8 @@ public class ElectricityCabinetOrderOperHistory {
     //换电
     public static final Integer  ORDER_TYPE_EXCHANGE = 2;
 
-
+    //操作结果 0：成功，1：失败
+    public static final Integer  OPERATE_RESULT_SUCCESS = 0;
+    public static final Integer  OPERATE_RESULT_FAIL = 1;
 
 }

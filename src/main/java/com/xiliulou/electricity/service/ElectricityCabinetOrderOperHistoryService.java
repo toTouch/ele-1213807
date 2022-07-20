@@ -32,4 +32,6 @@ public interface ElectricityCabinetOrderOperHistoryService {
     R queryListByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
 
     R queryCountByOrderId(ElectricityCabinetOrderOperHistoryQuery electricityCabinetOrderOperHistoryQuery);
+
+    R selectOperateDataType(String orderId, Integer type);
 }

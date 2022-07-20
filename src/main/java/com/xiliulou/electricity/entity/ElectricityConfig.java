@@ -63,6 +63,21 @@ public class ElectricityConfig {
      */
     private Integer isBatteryReview;
 
+    /**
+     * 是否开始暂停月卡功能 （0--关闭 1--开启）
+     */
+    private Integer disableMemberCard;
+
+    /**
+     * 是否开启低电量换电 （0--是 1--否）
+     */
+    private Integer isLowBatteryExchange;
+
+    /**
+     * 低电量换电模式
+     */
+    private String lowBatteryExchangeModel;
+
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
     //自动审核
@@ -79,5 +94,11 @@ public class ElectricityConfig {
 
     public static Integer BATTERY_REVIEW = 0;
     public static Integer NON_BATTERY_REVIEW = 1;
+
+    public static Integer NOT_DISABLE_MEMBER_CARD = 0;
+    public static Integer DISABLE_MEMBER_CARD = 1;
+
+    public static Integer LOW_BATTERY_EXCHANGE = 0;
+    public static Integer NOT_LOW_BATTERY_EXCHANGE = 1;
 
 }

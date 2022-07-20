@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityConfig;
+import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 
 
 /**
@@ -12,9 +13,9 @@ import com.xiliulou.electricity.entity.ElectricityConfig;
  */
 public interface ElectricityConfigService extends IService<ElectricityConfig> {
 
-    R edit(String name,Integer orderTime,Integer isManualReview,Integer isWithdraw,Integer isOpenDoorLock,Integer isBatteryReview);
+    R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery);
 
     ElectricityConfig queryOne(Integer tenantId);
 
-    public void insertElectricityConfig(ElectricityConfig electricityConfig);
+    void insertElectricityConfig(ElectricityConfig electricityConfig);
 }

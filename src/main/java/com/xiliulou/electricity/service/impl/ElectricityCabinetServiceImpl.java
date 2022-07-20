@@ -11,28 +11,27 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.api.client.json.Json;
 import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
-import com.google.gson.JsonObject;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetMapper;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -53,6 +52,7 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
+import java.nio.file.LinkOption;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -357,7 +357,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetList.parallelStream().forEach(e -> {
 
 
-
                 //营业时间
                 if (Objects.nonNull(e.getBusinessTime())) {
                     String businessTime = e.getBusinessTime();
@@ -519,9 +518,49 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return totalCount;
     }
 
-    public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id, String batteryType, Long franchiseeId) {
+    public Triple<Boolean, String, Object> queryFullyElectricityBatteryByExchangeOrder(Integer id, String batteryType, Long franchiseeId, Integer tenantId) {
+
         List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
 
+        Integer count = 0;
+        if (ObjectUtils.isEmpty(ids)) {
+            //检测是否开启低电量换电并且查询到符合标准的最低换电电量标准
+            Double fullyCharged = checkLowBatteryExchangeMinimumBatteryPowerStandard(tenantId, id);
+            ids = electricityCabinetMapper.queryFullyElectricityBatteryForLowBatteryExchange(id, batteryType, fullyCharged);
+            if (ObjectUtils.isEmpty(ids)) {
+                return Triple.of(false, "0", "换电柜暂无满电电池");
+            }
+            for (Long item : ids) {
+                FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
+                if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                    count++;
+                }
+            }
+
+            if (count < 1) {
+                return Triple.of(false, "0", "加盟商未绑定满电电池");
+            }
+
+            return Triple.of(false, "0", "换电柜暂无满电电池");
+        }
+
+        for (Long item : ids) {
+            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(item, franchiseeId);
+            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                count++;
+            }
+        }
+
+        if (count < 1) {
+            return Triple.of(false, "0", "加盟商未绑定满电电池");
+        }
+
+        return Triple.of(true, count.toString(), null);
+    }
+
+    public Triple<Boolean, String, Object> queryFullyElectricityBatteryByOrder(Integer id, String batteryType, Long franchiseeId) {
+
+        List<Long> ids = electricityCabinetMapper.queryFullyElectricityBattery(id, batteryType);
         if (ObjectUtils.isEmpty(ids)) {
             return Triple.of(false, "0", "换电柜暂无满电电池");
         }
@@ -1109,11 +1148,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //不合法的命令
-        if (!HardwareCommand.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
+//        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
+        if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
 
-        if (Objects.equals(HardwareCommand.ELE_COMMAND_CELL_ALL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
+        if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_ALL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
             List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
             if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
                 return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
@@ -1297,6 +1337,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R queryByOrder(String productKey, String deviceName) {
+
         //登录用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -1434,6 +1475,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
         //查满仓空仓数
+//        Triple<Boolean, String, Object> tripleResult;
+//        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+//            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(), electricityCabinet.getTenantId());
+//        } else {
+//            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId(), electricityCabinet.getTenantId());
+//        }
+//
+//        if (Objects.isNull(tripleResult)) {
+//            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+//            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", value);
+//        }
+//
+//        if (!tripleResult.getLeft()) {
+//            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+//            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
+//        }
         Triple<Boolean, String, Object> tripleResult;
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
@@ -1996,6 +2053,59 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return update;
     }
 
+    private Double checkLowBatteryExchangeMinimumBatteryPowerStandard(Integer tenantId, Integer electricityCabinetId) {
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+        ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+
+        Double fullyCharged = electricityCabinet.getFullyCharged();
+
+        if (Objects.isNull(fullyCharged) || Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
+            return fullyCharged;
+        }
+        List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
+        Long now = System.currentTimeMillis();
+        for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
+            if (Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime())) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && lowBatteryExchangeModel.getBatteryPowerStandard() < fullyCharged) {
+                fullyCharged = lowBatteryExchangeModel.getBatteryPowerStandard();
+            }
+        }
+        return fullyCharged;
+    }
+
+    private Integer checkIsLowBatteryExchange(Integer tenantId, Integer electricityCabinetId, Long franchiseeId) {
+
+        ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+        Integer result = null;
+        if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
+            return result;
+        }
+        List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("HHmmss");
+        Long now = System.currentTimeMillis();
+        List<ElectricityBattery> electricityBatteries = electricityBatteryService.queryWareHouseByElectricityCabinetId(electricityCabinetId);
+        for (LowBatteryExchangeModel lowBatteryExchangeModel : list) {
+            if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
+                for (ElectricityBattery electricityBattery : electricityBatteries) {
+                    //电池所在仓门非禁用
+                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(),electricityCabinetId);
+                    if (Objects.nonNull(electricityCabinetBox)) {
+                        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
+                            //3、查加盟商是否绑定电池
+                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+                                result = ElectricityConfig.LOW_BATTERY_EXCHANGE;
+                                return result;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        return result;
+    }
+
+
     @Override
     public R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId) {
         List<ElectricityCabinetBoxVO> resultList = Lists.newArrayList();
@@ -2028,7 +2138,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //排序
             if (!CollectionUtils.isEmpty(electricityCabinetBoxVOList)) {
-                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item->Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
+                resultList = electricityCabinetBoxVOList.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
             }
 
         }

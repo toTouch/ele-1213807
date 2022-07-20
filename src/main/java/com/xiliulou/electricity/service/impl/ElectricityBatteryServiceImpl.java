@@ -340,6 +340,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
+    public ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn) {
+        return electricitybatterymapper.selectBatteryDetailInfoBySN(sn);
+    }
+
+    @Override
+    public List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId) {
+        return electricitybatterymapper.selectList(new LambdaQueryWrapper<ElectricityBattery>().
+                eq(ElectricityBattery::getElectricityCabinetId, electricityCabinetId).eq(ElectricityBattery::getStatus, ElectricityBattery.WARE_HOUSE_STATUS).
+                eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
+    }
+
+    @Override
     public Integer updateByOrder(ElectricityBattery electricityBattery) {
         return electricitybatterymapper.updateByOrder(electricityBattery);
     }

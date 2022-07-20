@@ -34,6 +34,9 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
     List<Long> queryFullyElectricityBattery(@Param("id") Integer id,@Param("batteryType") String batteryType);
 
 
+    List<Long> queryFullyElectricityBatteryForLowBatteryExchange(@Param("id") Integer id,@Param("batteryType") String batteryType,@Param("fullyCharged") Double fullyCharged);
+
+
     List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList, @Param("tenantId")Integer tenantId);
 
     List<ElectricityCabinet> homeOne(@Param("eleIdList") List<Integer> eleIdList,@Param("tenantId") Integer tenantId);

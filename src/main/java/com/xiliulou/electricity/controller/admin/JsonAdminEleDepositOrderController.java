@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
@@ -227,6 +228,12 @@ public class JsonAdminEleDepositOrderController {
                 .tenantId(tenantId)
                 .franchiseeId(franchiseeId).build();
         eleDepositOrderService.exportExcel(eleDepositOrderQuery, response);
+    }
+
+    //缴纳电池押金
+    @PostMapping(value = "/admin/eleDepositOrder/batteryDeposit")
+    public R batteryDeposit(@RequestBody @Validated(value = CreateGroup.class) BatteryDepositAdd batteryDepositAdd) {
+        return eleDepositOrderService.adminPayBatteryDeposit(batteryDepositAdd);
     }
 
     //缴纳租车押金

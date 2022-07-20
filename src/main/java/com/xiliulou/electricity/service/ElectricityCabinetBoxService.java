@@ -59,4 +59,6 @@ public interface ElectricityCabinetBoxService {
     Integer disableCell(Integer cellNo,Integer electricityCabinetId);
 
     List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer electricityCabinetId);
+
+    ElectricityCabinetBox queryBySn(String sn,Integer electricityCabinetId);
 }

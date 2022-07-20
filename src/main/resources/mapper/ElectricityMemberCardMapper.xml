@@ -68,6 +68,9 @@
         <if test="franchiseeId != null ">
             and temc.franchisee_id = #{franchiseeId}
         </if>
+        <if test="name != null and name!=''">
+            and temc.name = #{name}
+        </if>
     </select>
 
 

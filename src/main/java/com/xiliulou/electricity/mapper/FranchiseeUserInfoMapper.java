@@ -43,4 +43,6 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 	void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo);
 
 	void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+
+	void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 }

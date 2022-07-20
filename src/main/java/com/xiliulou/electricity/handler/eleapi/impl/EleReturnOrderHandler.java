@@ -9,8 +9,8 @@ import com.xiliulou.electricity.constant.EleApiConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ApiReturnOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.HardwareCommand;
-import com.xiliulou.electricity.handler.EleHardwareHandlerManager;
+import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.handler.eleapi.EleApiHandler;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.query.api.ReturnQuery;
@@ -123,7 +123,7 @@ public class EleReturnOrderHandler implements EleApiHandler {
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                .command(HardwareCommand.API_RETURN_ORDER).build();
+                .command(ElectricityIotConstant.API_RETURN_ORDER).build();
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
             log.error("ELE RETURN ORDER ERROR! send command error! requestId={}", apiRequestQuery.getRequestId());

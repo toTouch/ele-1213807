@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleUserOperateRecordMapper">
+
+
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.EleUserOperateRecord">
+        SELECT * FROM
+        t_ele_user_operate_record
+        WHERE uid =#{uid}
+        order by create_time desc
+        limit #{offset},#{size}
+    </select>
+
+</mapper>

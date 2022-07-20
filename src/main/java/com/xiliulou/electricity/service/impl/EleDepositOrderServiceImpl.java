@@ -16,6 +16,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
+import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -55,8 +56,6 @@ import java.util.*;
 public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Resource
     EleDepositOrderMapper eleDepositOrderMapper;
-    @Resource
-    EleRefundOrderMapper eleRefundOrderMapper;
     @Autowired
     RedisService redisService;
     @Autowired
@@ -95,6 +94,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     StoreGoodsService storeGoodsService;
     @Autowired
     ElectricityCarService electricityCarService;
+    @Autowired
+    EleUserOperateRecordService eleUserOperateRecordService;
 
     @Override
     public EleDepositOrder queryByOrderId(String orderNo) {
@@ -247,6 +248,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .updateTime(System.currentTimeMillis())
                 .tenantId(tenantId)
                 .franchiseeId(franchisee.getId())
+                .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .modelType(franchisee.getModelType()).build();
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
@@ -361,7 +363,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer memberCardOweNumber = null;
         ElectricityMemberCard bindElectricityMemberCard = electricityMemberCardService.queryByCache(oldFranchiseeUserInfo.getCardId());
         if (Objects.nonNull(bindElectricityMemberCard)) {
-            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
+            if (!Objects.equals(bindElectricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) && Objects.nonNull(oldFranchiseeUserInfo.getRemainingNumber()) && oldFranchiseeUserInfo.getRemainingNumber() < 0) {
                 memberCardOweNumber = Math.abs(oldFranchiseeUserInfo.getRemainingNumber().intValue());
                 packageOwe = FranchiseeUserInfo.MEMBER_CARD_OWE;
             }
@@ -437,6 +439,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
             log.error("returnDeposit  ERROR! not return battery! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0046", "未退还电池");
+        }
+
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
+            return R.fail("ELECTRICITY.00115", "请前往门店退押金");
         }
 
 
@@ -1222,6 +1228,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         return R.ok(null);
     }
+    @Override
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid,Long franchiseeId,Integer tenantId) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid,franchiseeId,tenantId);
+    }
+
 
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {
@@ -1231,5 +1242,100 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
                 RandomUtil.randomNumbers(6);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUid(batteryDepositAdd.getUid());
+        if (Objects.isNull(userInfo)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+        //未找到用户
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("admin payRentCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+
+        }
+
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(batteryDepositAdd.getFranchiseeId());
+        if (Objects.isNull(franchisee)) {
+            log.error("admin payRentCarDeposit ERROR! not found Franchisee ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
+            return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT) || Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+            log.error("admin payRentCarDeposit ERROR! user is rent deposit! ,uid:{} ", userInfo.getUid());
+            return R.fail("ELECTRICITY.0049", "已缴纳押金");
+        }
+
+
+        BigDecimal payAmount = batteryDepositAdd.getPayAmount();
+
+        if (payAmount.compareTo(BigDecimal.valueOf(0.01)) < 0) {
+            payAmount = BigDecimal.valueOf(0);
+        }
+
+        String orderId = generateOrderId(userInfo.getUid());
+
+        //生成订单
+        EleDepositOrder eleDepositOrder = EleDepositOrder.builder()
+                .orderId(orderId)
+                .uid(batteryDepositAdd.getUid())
+                .phone(userInfo.getPhone())
+                .name(userInfo.getName())
+                .payAmount(payAmount)
+                .status(EleDepositOrder.STATUS_SUCCESS)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(franchiseeUserInfo.getTenantId())
+                .franchiseeId(batteryDepositAdd.getFranchiseeId())
+                .payType(EleDepositOrder.OFFLINE_PAYMENT)
+                .modelType(batteryDepositAdd.getModelType()).build();
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+            eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
+        }
+        eleDepositOrderMapper.insert(eleDepositOrder);
+
+
+        //生成后台操作记录
+        EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
+                .operateContent(EleUserOperateRecord.DEPOSIT_MODEL)
+                .operateUid(user.getUid())
+                .uid(batteryDepositAdd.getUid())
+                .name(user.getUsername())
+                .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
+                .newBatteryDeposit(batteryDepositAdd.getPayAmount())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
+
+        //用户缴纳押金
+        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+        franchiseeUserInfoUpdate.setId(userInfo.getId());
+        franchiseeUserInfoUpdate.setFranchiseeId(eleDepositOrder.getFranchiseeId());
+        franchiseeUserInfoUpdate.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
+        franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        franchiseeUserInfoUpdate.setBatteryDeposit(batteryDepositAdd.getPayAmount());
+        franchiseeUserInfoUpdate.setOrderId(orderId);
+        franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
+        if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+            franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
+        }
+        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+        return R.ok();
     }
 }

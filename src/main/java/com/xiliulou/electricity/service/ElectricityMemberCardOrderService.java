@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
+import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 
 import javax.servlet.http.HttpServletRequest;
@@ -19,26 +21,32 @@ public interface ElectricityMemberCardOrderService {
 
     R queryUserList(Long offset, Long size, Long startTime, Long endTime);
 
-    BigDecimal homeOne(Long first, Long now,List<Integer> cardIdList,Integer tenantId);
+    BigDecimal homeOne(Long first, Long now, List<Integer> cardIdList, Integer tenantId);
 
-    List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay,List<Integer> cardIdList,Integer tenantId);
+    List<HashMap<String, String>> homeTwo(long startTimeMilliDay, Long endTimeMilliDay, List<Integer> cardIdList, Integer tenantId);
 
     R getMemberCardOrderCount(Long uid, Long startTime, Long endTime);
 
 
     R queryList(MemberCardOrderQuery memberCardOrderQuery);
 
-	void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
+    void exportExcel(MemberCardOrderQuery memberCardOrderQuery, HttpServletResponse response);
 
     R queryCount(MemberCardOrderQuery memberCardOrderQuery);
 
     Integer queryCountForScreenStatistic(MemberCardOrderQuery memberCardOrderQuery);
 
-    BigDecimal queryTurnOver(Integer tenantId);
+    BigDecimal queryTurnOver(Integer tenantId, Long uid);
 
     R openOrDisableMemberCard(Integer usableStatus);
 
     R getDisableMemberCardList(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
+    R addUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
+
+    R editUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
+
     R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
+
+    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
 }

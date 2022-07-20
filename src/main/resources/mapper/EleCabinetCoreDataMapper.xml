@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleCabinetCoreDataMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.EleCabinetCoreData" id="EleCabinetCoreDataMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="VARCHAR"/>
+        <result property="lockOpen" column="lock_open" jdbcType="INTEGER"/>
+        <result property="smokeSensorOpen" column="smoke_sensor_open" jdbcType="INTEGER"/>
+        <result property="lightOpen" column="light_open" jdbcType="INTEGER"/>
+        <result property="fanOpen" column="fan_open" jdbcType="INTEGER"/>
+        <result property="extinguisherOpen" column="extinguisher_open" jdbcType="INTEGER"/>
+        <result property="v" column="v" jdbcType="NUMERIC"/>
+        <result property="a" column="a" jdbcType="NUMERIC"/>
+        <result property="power" column="power" jdbcType="NUMERIC"/>
+        <result property="powerFactor" column="power_factor" jdbcType="NUMERIC"/>
+        <result property="activeElectricalEnergy" column="active_electrical_energy" jdbcType="NUMERIC"/>
+        <result property="waterPumpOpen" column="water_pump_open" jdbcType="INTEGER"/>
+        <result property="waterLevelWarning" column="water_level_warning" jdbcType="INTEGER"/>
+        <result property="temp" column="temp" jdbcType="NUMERIC"/>
+        <result property="humidity" column="humidity" jdbcType="NUMERIC"/>
+        <result property="waterLeachingWarning" column="water_leaching_warning" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="EleCabinetCoreDataMap">
+        select
+          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
+        from t_ele_cabinet_core_data
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="EleCabinetCoreDataMap">
+        select
+          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
+        from t_ele_cabinet_core_data
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="EleCabinetCoreDataMap">
+        select
+        id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power,
+        power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity,
+        water_leaching_warning, create_time, update_time
+        from t_ele_cabinet_core_data
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="electricityCabinetId != null and electricityCabinetId != ''">
+                and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="lockOpen != null">
+                and lock_open = #{lockOpen}
+            </if>
+            <if test="smokeSensorOpen != null">
+                and smoke_sensor_open = #{smokeSensorOpen}
+            </if>
+            <if test="lightOpen != null">
+                and light_open = #{lightOpen}
+            </if>
+            <if test="fanOpen != null">
+                and fan_open = #{fanOpen}
+            </if>
+            <if test="extinguisherOpen != null">
+                and extinguisher_open = #{extinguisherOpen}
+            </if>
+            <if test="v != null">
+                and v = #{v}
+            </if>
+            <if test="a != null">
+                and a = #{a}
+            </if>
+            <if test="power != null">
+                and power = #{power}
+            </if>
+            <if test="powerFactor != null">
+                and power_factor = #{powerFactor}
+            </if>
+            <if test="activeElectricalEnergy != null">
+                and active_electrical_energy = #{activeElectricalEnergy}
+            </if>
+            <if test="waterPumpOpen != null">
+                and water_pump_open = #{waterPumpOpen}
+            </if>
+            <if test="waterLevelWarning != null">
+                and water_level_warning = #{waterLevelWarning}
+            </if>
+            <if test="temp != null">
+                and temp = #{temp}
+            </if>
+            <if test="humidity != null">
+                and humidity = #{humidity}
+            </if>
+            <if test="waterLeachingWarning != null">
+                and water_leaching_warning = #{waterLeachingWarning}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ele_cabinet_core_data
+        <set>
+            <if test="electricityCabinetId != null and electricityCabinetId != ''">
+                electricity_cabinet_id = #{electricityCabinetId},
+            </if>
+            <if test="lockOpen != null">
+                lock_open = #{lockOpen},
+            </if>
+            <if test="smokeSensorOpen != null">
+                smoke_sensor_open = #{smokeSensorOpen},
+            </if>
+            <if test="lightOpen != null">
+                light_open = #{lightOpen},
+            </if>
+            <if test="fanOpen != null">
+                fan_open = #{fanOpen},
+            </if>
+            <if test="extinguisherOpen != null">
+                extinguisher_open = #{extinguisherOpen},
+            </if>
+            <if test="v != null">
+                v = #{v},
+            </if>
+            <if test="a != null">
+                a = #{a},
+            </if>
+            <if test="power != null">
+                power = #{power},
+            </if>
+            <if test="powerFactor != null">
+                power_factor = #{powerFactor},
+            </if>
+            <if test="activeElectricalEnergy != null">
+                active_electrical_energy = #{activeElectricalEnergy},
+            </if>
+            <if test="waterPumpOpen != null">
+                water_pump_open = #{waterPumpOpen},
+            </if>
+            <if test="waterLevelWarning != null">
+                water_level_warning = #{waterLevelWarning},
+            </if>
+            <if test="temp != null">
+                temp = #{temp},
+            </if>
+            <if test="humidity != null">
+                humidity = #{humidity},
+            </if>
+            <if test="waterLeachingWarning != null">
+                water_leaching_warning = #{waterLeachingWarning},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ele_cabinet_core_data where id = #{id}
+    </delete>
+
+    <!--原子更新-->
+    <insert id="atomicUpdateCabinetCoreData" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time)
+        values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime})
+         on duplicate key update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open = #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power = #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open = #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity = #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime}
+    </insert>
+
+
+    <select id="selectListByQuery" resultMap="EleCabinetCoreDataMap">
+        select
+          id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time
+        from t_ele_cabinet_core_data
+        <if test="electricityCabinetId != null and electricityCabinetId != ''">
+            and electricity_cabinet_id = #{electricityCabinetId}
+        </if>
+        <if test="offset != null and limit != null">
+            limit #{offset}, #{limit}
+        </if>
+    </select>
+
+
+
+</mapper>

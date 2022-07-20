@@ -137,6 +137,23 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public List<FranchiseeUserInfo> selectByMemberCardId(Integer memberCardId) {
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId)
+                .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public List<FranchiseeUserInfo> selectByFranchiseeId(Long id) {
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId,id)
+        .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo) {
+        franchiseeUserInfoMapper.updateMemberCardExpire(franchiseeUserInfo);
+    }
+
+    @Override
     public R queryBattery() {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();

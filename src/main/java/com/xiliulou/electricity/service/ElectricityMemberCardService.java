@@ -17,21 +17,25 @@ public interface ElectricityMemberCardService {
 
     R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Integer cardModel,Long franchiseeId);
 
-	R queryUserList(Long offset, Long size,String productKey, String deviceName,Long franchiseeId);
+    R queryUserList(Long offset, Long size, String productKey, String deviceName, Long franchiseeId);
 
 	R queryRentCarMemberCardList(Long offset, Long size);
 
 	List<ElectricityMemberCard> queryByFranchisee(Long id);
 
-	R queryCount(Integer status, Integer type, Integer tenantId,Integer cardModel,Long franchiseeId);
+    List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id);
 
-	R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
+    List<ElectricityMemberCard> selectByFranchiseeId(Long id);
 
-	R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId);
+    R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId);
 
-	ElectricityMemberCard queryByStatus(Integer id);
+    R listByFranchisee(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
-	void unbindActivity(Integer id);
+    R listCountByFranchisee(Integer status, Integer type, Integer tenantId, Long franchiseeId);
 
-	R queryDisableMemberCardList(Long offset, Long size);
+    ElectricityMemberCard queryByStatus(Integer id);
+
+    void unbindActivity(Integer id);
+
+    R queryDisableMemberCardList(Long offset, Long size);
 }

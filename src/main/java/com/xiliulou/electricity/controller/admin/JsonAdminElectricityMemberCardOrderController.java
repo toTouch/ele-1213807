@@ -4,6 +4,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.service.ElectricityMemberCardOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -13,9 +14,8 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.checkerframework.checker.units.qual.A;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
@@ -193,6 +193,24 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.tenantId(tenantId)
 				.franchiseeId(franchiseeId).build();
 		electricityMemberCardOrderService.exportExcel(memberCardOrderQuery,response);
+	}
+
+	/**
+	 * 新增用户套餐
+	 * @return
+	 */
+	@PostMapping(value = "/admin/electricityMemberCard/addUserMemberCard")
+	public R addUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
+		return electricityMemberCardOrderService.addUserMemberCard(memberCardOrderAddAndUpdate);
+	}
+
+	/**
+	 * 编辑用户套餐
+	 * @return
+	 */
+	@PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
+	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
+		return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
 	}
 
 }

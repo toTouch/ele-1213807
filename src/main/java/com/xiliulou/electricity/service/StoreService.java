@@ -64,4 +64,5 @@ public interface StoreService {
 
     List<MapVo> queryCountGroupByCityId(Integer tenantId,Integer pid);
 
+    List<Store> selectByFranchiseeId(Long id);
 }

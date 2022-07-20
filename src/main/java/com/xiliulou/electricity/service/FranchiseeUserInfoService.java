@@ -62,4 +62,15 @@ public interface FranchiseeUserInfoService {
     void modifyRentCarStatus(FranchiseeUserInfo franchiseeUserInfo);
 
     void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+
+    /**
+     * 根据套餐id查询用户
+     * @param id
+     * @return
+     */
+    List<FranchiseeUserInfo> selectByMemberCardId(Integer id);
+
+    List<FranchiseeUserInfo> selectByFranchiseeId(Long id);
+
+    void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 }

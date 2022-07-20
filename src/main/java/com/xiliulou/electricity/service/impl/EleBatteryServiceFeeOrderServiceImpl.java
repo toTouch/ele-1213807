@@ -23,6 +23,7 @@ import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 
 /**
@@ -81,5 +82,10 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
         }
         return R.ok(eleBatteryServiceFeeOrders);
+    }
+
+    @Override
+    public BigDecimal queryUserTurnOver(Integer tenantId, Long uid) {
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId,uid)).orElse(new BigDecimal("0"));
     }
 }

@@ -198,7 +198,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
         //购买月卡
         CompletableFuture<Void> payMemberCard = CompletableFuture.runAsync(() -> {
-            BigDecimal memberCardTurnover = electricityMemberCardOrderService.queryTurnOver(tenantId);
+            BigDecimal memberCardTurnover = electricityMemberCardOrderService.queryTurnOver(tenantId,null);
             dataBrowsingVo.setMemberCardTurnover(memberCardTurnover);
         }, threadPool).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -462,7 +462,7 @@ public class DataScreenServiceImpl implements DataScreenService {
 
     private BigDecimal queryTurnOverForMemberCardAndDeposit(Integer tenantId) {
         //统计套餐营业额
-        BigDecimal memberCardTurnOver = electricityMemberCardOrderService.queryTurnOver(tenantId);
+        BigDecimal memberCardTurnOver = electricityMemberCardOrderService.queryTurnOver(tenantId,null);
         //统计押金营业额
         BigDecimal depositTurnOver = eleDepositOrderService.queryTurnOver(tenantId);
 

@@ -1,12 +1,12 @@
 package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.ElectricityConfigAddAndUpdateQuery;
 import com.xiliulou.electricity.service.ElectricityConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.validator.CreateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.annotation.*;
 
 /**
  * 门店表(TStore)表控制层
@@ -24,10 +24,8 @@ public class JsonAdminElectricityConfigController {
 
     //编辑平台名称
     @PutMapping(value = "/admin/electricityConfig")
-    public R edit(@RequestParam("name") String name,@RequestParam(value = "orderTime", required = false) Integer orderTime,
-            @RequestParam("isManualReview") Integer isManualReview,@RequestParam("isWithdraw") Integer isWithdraw,
-            @RequestParam("isOpenDoorLock") Integer isOpenDoorLock,@RequestParam("isBatteryReview") Integer isBatteryReview) {
-        return electricityConfigService.edit(name,orderTime,isManualReview,isWithdraw,isOpenDoorLock,isBatteryReview);
+    public R edit(@RequestBody @Validated(value = CreateGroup.class)ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery) {
+        return electricityConfigService.edit(electricityConfigAddAndUpdateQuery);
     }
 
     //查询平台名称

@@ -9,6 +9,7 @@ import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import org.apache.ibatis.annotations.Param;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 /**
@@ -25,4 +26,6 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
 
     List<EleBatteryServiceFeeOrderVo> queryListForAdmin(@Param("uid") Long uid,
                                                         @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime,@Param("status") Integer status);
+
+    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 }

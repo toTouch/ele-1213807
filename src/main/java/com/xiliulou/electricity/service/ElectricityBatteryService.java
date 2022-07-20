@@ -51,4 +51,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
+
+    ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn);
+
+    List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId);
 }
