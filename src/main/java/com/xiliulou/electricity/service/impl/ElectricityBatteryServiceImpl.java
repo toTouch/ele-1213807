@@ -115,29 +115,29 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         Long franchiseeId=null;
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+
+            System.out.println("门店权限===================");
+
             Store store = storeService.queryByUid(user.getUid());
             if (Objects.nonNull(store)) {
                 franchiseeId = store.getFranchiseeId();
             }
         }
         if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
+
+            System.out.println("加盟商权限===================");
+
             Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();
             }
         }
-        if (Objects.nonNull(franchiseeId)){
-            //先删除
-            franchiseeBindElectricityBatteryService.deleteByFranchiseeId(franchiseeId.intValue());
-            if (ObjectUtil.isEmpty(electricityBattery.getId())) {
-                return R.ok();
-            }
-            //判断电池是否绑定加盟商
-            Integer bindCount = franchiseeBindElectricityBatteryService.queryCountByBattery(electricityBattery.getId());
 
-            if (bindCount > 0) {
-                return R.fail("SYSTEM.00113", "绑定失败，电池已绑定其他加盟商");
-            }
+        System.out.println("加盟商Id==============="+franchiseeId);
+        if (Objects.nonNull(franchiseeId)){
+
+            System.out.println("绑定==================");
+
             FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
             franchiseeBindElectricityBattery.setFranchiseeId(franchiseeId.intValue());
             franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBattery.getId());
