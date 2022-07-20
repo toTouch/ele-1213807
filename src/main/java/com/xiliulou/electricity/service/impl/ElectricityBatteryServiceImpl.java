@@ -23,15 +23,19 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
@@ -85,9 +89,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      * @return
      */
     @Override
+    @Transactional
     public R saveElectricityBattery(ElectricityBattery electricityBattery) {
+
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("dataScreen  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
         Integer count = electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, electricityBattery.getSn())
                 .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL));
@@ -98,7 +110,41 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBattery.setTenantId(tenantId);
-        return R.ok(electricitybatterymapper.insert(electricityBattery));
+        electricitybatterymapper.insert(electricityBattery);
+
+
+        Long franchiseeId=null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            Store store = storeService.queryByUid(user.getUid());
+            if (Objects.nonNull(store)) {
+                franchiseeId = store.getFranchiseeId();
+            }
+        }
+        if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
+            Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+        if (Objects.nonNull(franchiseeId)){
+            //先删除
+            franchiseeBindElectricityBatteryService.deleteByFranchiseeId(franchiseeId.intValue());
+            if (ObjectUtil.isEmpty(electricityBattery.getId())) {
+                return R.ok();
+            }
+            //判断电池是否绑定加盟商
+            Integer bindCount = franchiseeBindElectricityBatteryService.queryCountByBattery(electricityBattery.getId());
+
+            if (bindCount > 0) {
+                return R.fail("SYSTEM.00113", "绑定失败，电池已绑定其他加盟商");
+            }
+            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
+            franchiseeBindElectricityBattery.setFranchiseeId(franchiseeId.intValue());
+            franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBattery.getId());
+            franchiseeBindElectricityBatteryService.insert(franchiseeBindElectricityBattery);
+        }
+
+        return R.ok();
     }
 
     /**
