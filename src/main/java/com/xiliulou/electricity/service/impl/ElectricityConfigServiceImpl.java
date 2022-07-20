@@ -53,13 +53,13 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (ObjectUtil.isEmpty(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList())) {
-            return R.fail("ELECTRICITY.0007", "不合法的参数");
-        }
+//        if (ObjectUtil.isEmpty(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList())) {
+//            return R.fail("ELECTRICITY.0007", "不合法的参数");
+//        }
 
-        //封装型号押金
-        String lowBatteryExchangeModel = JsonUtil.toJson(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList());
-        electricityConfigAddAndUpdateQuery.setLowBatteryExchangeModel(lowBatteryExchangeModel);
+//        //封装型号押金
+//        String lowBatteryExchangeModel = JsonUtil.toJson(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModelList());
+//        electricityConfigAddAndUpdateQuery.setLowBatteryExchangeModel(lowBatteryExchangeModel);
 
 
         ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId,tenantId));
