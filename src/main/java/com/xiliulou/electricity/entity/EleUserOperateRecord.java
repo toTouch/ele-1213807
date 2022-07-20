@@ -107,6 +107,7 @@ public class EleUserOperateRecord {
     public static final Integer REFUND_DEPOSIT__CONTENT = 4;
     public static final Integer BIND_BATTERY_CONTENT = 2;
     public static final Integer UN_BIND_BATTERY_CONTENT = 3;
+    public static final Integer EDIT_BATTERY_CONTENT = 5;
 
 }
 

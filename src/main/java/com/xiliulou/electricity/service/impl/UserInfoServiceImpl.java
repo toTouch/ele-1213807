@@ -699,7 +699,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             Integer operateContent = EleUserOperateRecord.BIND_BATTERY_CONTENT;
             if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
-                operateContent = EleUserOperateRecord.UN_BIND_BATTERY_CONTENT;
+                operateContent = EleUserOperateRecord.EDIT_BATTERY_CONTENT;
             }
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
