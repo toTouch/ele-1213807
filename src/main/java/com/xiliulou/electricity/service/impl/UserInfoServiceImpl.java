@@ -667,7 +667,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
-        if (Objects.nonNull(oldElectricityBattery.getUid())) {
+        if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(),userInfoBatteryAddAndUpdate)) {
             log.error("webBindBattery  ERROR! battery is bind user! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("100019", "该电池已经绑定用户");
         }
@@ -720,7 +720,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
             electricityBattery.setElectricityCabinetId(null);
             electricityBattery.setElectricityCabinetName(null);
-            electricityBattery.setUid(rentBatteryOrder.getUid());
+            electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateByOrder(electricityBattery);
             return null;
