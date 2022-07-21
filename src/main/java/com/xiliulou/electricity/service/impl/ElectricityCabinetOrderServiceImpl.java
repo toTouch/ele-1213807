@@ -83,6 +83,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     FranchiseeService franchiseeService;
     @Autowired
     ElectricityBatteryService electricityBatteryService;
+    @Autowired
+    ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
 
     /**
      * 修改数据
@@ -851,12 +853,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             status = electricityCabinetOrder.getOldCellNo() + "号仓门开门成功，电池检测中";
         }
 
-        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
-                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)
-                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_FAIL)
-                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS)) {
-            map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
-        }
 
         //旧电池检测成功
         if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
@@ -896,6 +892,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //error
         if (electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_CANCEL)
                 || electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
+
+            ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord=electricityExceptionOrderStatusRecordService.queryByOrderId(orderId);
+            if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(),ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)){
+                map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+            }
 
             picture = 3;
         }

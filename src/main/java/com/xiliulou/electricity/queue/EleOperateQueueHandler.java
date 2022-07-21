@@ -67,6 +67,8 @@ public class EleOperateQueueHandler {
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
     @Autowired
     EleExceptionLockStorehouseDoorConfig eleExceptionLockStorehouseDoorConfig;
+    @Autowired
+    ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
 
     @EventListener({WebServerInitializedEvent.class})
     public void startHandleElectricityCabinetOperate() {
@@ -258,6 +260,14 @@ public class EleOperateQueueHandler {
                 newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
                 newElectricityCabinetOrder.setOldElectricityBatterySn(finalOpenDTO.getBatterySn());
                 electricityCabinetOrderService.update(newElectricityCabinetOrder);
+
+                ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord=new ElectricityExceptionOrderStatusRecord();
+                electricityExceptionOrderStatusRecord.setOrderId(electricityCabinetOrder.getOrderId());
+                electricityExceptionOrderStatusRecord.setTenantId(electricityCabinetOrder.getTenantId());
+                electricityExceptionOrderStatusRecord.setStatus(electricityCabinetOrder.getStatus());
+                electricityExceptionOrderStatusRecord.setOrderSeq(electricityCabinetOrder.getOrderSeq());
+                electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
+                electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
 
                 //清除柜机锁定缓存
                 redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
