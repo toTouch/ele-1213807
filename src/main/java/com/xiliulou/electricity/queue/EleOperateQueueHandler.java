@@ -264,8 +264,8 @@ public class EleOperateQueueHandler {
                 ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord=new ElectricityExceptionOrderStatusRecord();
                 electricityExceptionOrderStatusRecord.setOrderId(electricityCabinetOrder.getOrderId());
                 electricityExceptionOrderStatusRecord.setTenantId(electricityCabinetOrder.getTenantId());
-                electricityExceptionOrderStatusRecord.setStatus(electricityCabinetOrder.getStatus());
-                electricityExceptionOrderStatusRecord.setOrderSeq(electricityCabinetOrder.getOrderSeq());
+                electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
+                electricityExceptionOrderStatusRecord.setOrderSeq(finalOpenDTO.getOrderSeq());
                 electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
                 electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
 
