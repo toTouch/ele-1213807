@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -62,5 +63,7 @@ public interface ElectricityCabinetOrderService {
     String findUsableCellNo(Integer id);
 
 	R queryNewStatus(String orderId);
+
+    R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
 }

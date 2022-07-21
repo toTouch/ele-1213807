@@ -19,6 +19,7 @@ import com.xiliulou.electricity.mapper.ElectricityCabinetOrderMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -850,6 +851,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             status = electricityCabinetOrder.getOldCellNo() + "号仓门开门成功，电池检测中";
         }
 
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_FAIL)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS)) {
+            map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+        }
 
         //旧电池检测成功
         if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
@@ -921,6 +928,43 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         map.put("isTry", isTry);
         log.info("map is -->{}", map);
         return R.ok(map);
+    }
+
+    @Override
+    public R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("order  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        //是否存在未完成的租电池订单
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(user.getUid());
+        if (Objects.nonNull(rentBatteryOrder)) {
+            if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+                return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0013", "存在未完成租电订单，不能下单");
+            } else if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                return R.fail((Object) rentBatteryOrder.getOrderId(), "ELECTRICITY.0095", "存在未完成还电订单，不能下单");
+            }
+        }
+
+        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(orderSelfOpenCellQuery.getOrderId());
+
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_CHECK_BATTERY_NOT_EXISTS)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.ORDER_CANCEL)
+                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+            return R.ok();
+        }
+
+
+        return null;
     }
 
     public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {

@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
 import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -103,6 +104,13 @@ public class JsonUserElectricityCabinetOrderController {
 	@GetMapping("/user/electricityCabinetOrder/queryNewStatus")
 	public R queryNewStatus(@RequestParam("orderId") String orderId) {
 		return electricityCabinetOrderService.queryNewStatus(orderId);
+	}
+
+
+	//换电柜自助开仓
+	@PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
+	public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
+		return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
 	}
 
 }
