@@ -56,7 +56,7 @@ public class ElectricityExceptionOrderStatusRecord {
     /**
      * 仓门号
      */
-    private Integer cellNO;
+    private Integer cellNo;
 
     public static final Integer SELF_OPEN_CELL = 1;
     public static final Integer NOT_SELF_OPEN_CELL = 0;

@@ -1082,7 +1082,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(orderSelfOpenCellQuery.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNO() + "");
+        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(orderSelfOpenCellQuery.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
         if (Objects.isNull(electricityCabinetBox)){
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not find cellNO! uid:{} ", user.getUid());
@@ -1112,7 +1112,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
             dataMap.put("orderId",orderSelfOpenCellQuery.getOrderId());
-            dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNO());
+            dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName",franchiseeUserInfo.getNowElectricityBatterySn());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -1127,7 +1127,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "自助开仓失败");
         } finally {
-            redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderSelfOpenCellQuery.getElectricityCabinetId() + "_" + electricityExceptionOrderStatusRecord.getCellNO());
+            redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderSelfOpenCellQuery.getElectricityCabinetId() + "_" + electricityExceptionOrderStatusRecord.getCellNo());
         }
 
     }
