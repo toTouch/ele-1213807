@@ -900,10 +900,10 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(orderId);
             if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
                 ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo() + "");
-                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
-                    if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(),ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)){
-                        map.put("selfOpenCell",ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
-                    }
+                map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+                if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
+                }
             }
 
             picture = 3;
@@ -964,8 +964,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return R.fail((Object) oldElectricityCabinetOrder.getOrderId(), "100022", "存在未完成换电订单，不能自助开仓");
         }
 
-        ElectricityCabinetOrder electricityCabinetOrder=queryByOrderId(orderSelfOpenCellQuery.getOrderId());
-        if (Objects.isNull(electricityCabinetOrder)){
+        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(orderSelfOpenCellQuery.getOrderId());
+        if (Objects.isNull(electricityCabinetOrder)) {
             log.error("self open cell ERROR! not found order,orderId{} ", orderSelfOpenCellQuery.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
         }
@@ -997,9 +997,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(orderSelfOpenCellQuery.getOrderId());
+
+        Long now = System.currentTimeMillis();
         if (Objects.isNull(electricityExceptionOrderStatusRecord) || !Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
             log.error("self open cell ERROR! not old cell exception ！orderId{}", orderSelfOpenCellQuery.getOrderId());
             return R.fail("100020", "非旧仓门异常无法自主开仓");
+        }
+
+        if ((now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
+            log.error("self open cell ERROR! self open cell timeout ！orderId{}", orderSelfOpenCellQuery.getOrderId());
+            return R.fail("100026", "自助开仓超时");
         }
 
         if (Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
@@ -1083,16 +1090,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(orderSelfOpenCellQuery.getElectricityCabinetId(), electricityExceptionOrderStatusRecord.getCellNo() + "");
-        if (Objects.isNull(electricityCabinetBox)){
+        if (Objects.isNull(electricityCabinetBox)) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! not find cellNO! uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
 
-        if (Objects.equals(electricityCabinetBox.getUsableStatus(),ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)){
+        if (Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
             redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
             log.error("self open cell order  ERROR! cellNO unUsable! uid:{} ", user.getUid());
-            return R.fail("100025","此仓门已被禁用");
+            return R.fail("100025", "此仓门已被禁用");
         }
 
         try {
@@ -1111,9 +1118,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             //发送自助开仓命令
             //发送命令
             HashMap<String, Object> dataMap = Maps.newHashMap();
-            dataMap.put("orderId",orderSelfOpenCellQuery.getOrderId());
+            dataMap.put("orderId", orderSelfOpenCellQuery.getOrderId());
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
-            dataMap.put("batteryName",franchiseeUserInfo.getNowElectricityBatterySn());
+            dataMap.put("batteryName", franchiseeUserInfo.getNowElectricityBatterySn());
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
@@ -1123,7 +1130,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .command(ElectricityIotConstant.SELF_OPEN_CELL).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             return R.ok(orderSelfOpenCellQuery.getOrderId());
-        } catch (Exception e){
+        } catch (Exception e) {
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "自助开仓失败");
         } finally {
