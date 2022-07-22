@@ -197,6 +197,8 @@ public class ElectricityCabinetOrder {
     //年卡
     public static final Integer PAYMENT_METHOD_YEAR_CARD = 2;
 
-    public static final Integer SELF_EXCHANGE_ELECTRICITY = 0;
+    public static final Integer SELF_EXCHANGE_ELECTRICITY = 1;
+
+    public static final Integer SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL = 2;
 
 }

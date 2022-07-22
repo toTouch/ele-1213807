@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 
 
 /**
- * 订单的操作历史记录(TElectricityExceptionOrderStatusRecord)表服务实现类
+ * 订单异常状态记录表(TElectricityExceptionOrderStatusRecord)表服务实现类
  *
  * @author makejava
  * @since 2022-07-21 17:57:22
@@ -41,5 +41,10 @@ public class ElectricityExceptionOrderStatusRecordServiceImpl implements Electri
     @Override
     public ElectricityExceptionOrderStatusRecord queryByOrderId(String orderId) {
         return electricityExceptionOrderStatusRecordMapper.selectOne(new LambdaQueryWrapper<ElectricityExceptionOrderStatusRecord>().eq(ElectricityExceptionOrderStatusRecord::getOrderId, orderId));
+    }
+
+    @Override
+    public void update(ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord) {
+        electricityExceptionOrderStatusRecordMapper.updateById(electricityExceptionOrderStatusRecord);
     }
 }

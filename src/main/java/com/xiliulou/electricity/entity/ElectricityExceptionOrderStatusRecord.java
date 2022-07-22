@@ -40,7 +40,27 @@ public class ElectricityExceptionOrderStatusRecord {
      */
     private Long createTime;
 
+    /**
+     * 更新时间
+     */
+    private Long updateTime;
+
     //租户id
     private Integer tenantId;
+
+    /**
+     * 是否已自助开仓 0--未自助开仓 1--自助开仓
+     */
+    private Integer isSelfOpenCell;
+
+    /**
+     * 仓门号
+     */
+    private Integer cellNO;
+
+    public static final Integer SELF_OPEN_CELL = 1;
+    public static final Integer NOT_SELF_OPEN_CELL = 0;
+
+    public static String STATUS_SUCCESS = "SUCCESS";
 
 }

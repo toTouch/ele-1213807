@@ -6,7 +6,7 @@ import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 
 /**
- * 订单的操作历史记录(TElectricityExceptionOrderStatusRecord)表服务接口
+ * 订单异常状态记录表(TElectricityExceptionOrderStatusRecord)表服务接口
  *
  * @author makejava
  * @since 2022-07-21 17:57:22
@@ -17,5 +17,7 @@ public interface ElectricityExceptionOrderStatusRecordService {
     void insert(ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord);
 
     ElectricityExceptionOrderStatusRecord queryByOrderId(String orderId);
+
+    void update(ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord);
 
 }

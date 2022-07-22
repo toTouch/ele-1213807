@@ -267,6 +267,7 @@ public class EleOperateQueueHandler {
                 electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
                 electricityExceptionOrderStatusRecord.setOrderSeq(finalOpenDTO.getOrderSeq());
                 electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
+                electricityExceptionOrderStatusRecord.setCellNO(electricityCabinetOrder.getOldCellNo());
                 electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
 
                 //清除柜机锁定缓存

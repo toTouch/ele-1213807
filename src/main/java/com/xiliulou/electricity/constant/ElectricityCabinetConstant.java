@@ -61,6 +61,9 @@ public interface ElectricityCabinetConstant {
     //离线换电
     String OFFLINE_ELE_RECEIVER_CACHE_KEY = "offline_ele_receiver";
 
+    //自助开仓
+    String SELF_OPEN_CALL_CACHE_KEY = "self_open_cell_cache_key";
+
 
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";

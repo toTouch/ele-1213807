@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.query;
 
 import com.xiliulou.electricity.validator.CreateGroup;
+import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
 import javax.validation.constraints.NotNull;
@@ -13,8 +14,15 @@ import javax.validation.constraints.NotNull;
 @Data
 public class OrderSelfOpenCellQuery {
 
+
     /**
      * 换电柜id
+     */
+    @NotNull(message = "换电柜id不能为空!", groups = {UpdateGroup.class})
+    private Integer electricityCabinetId;
+
+    /**
+     * 订单id
      */
     @NotNull(message = "换电订单id不能为空!", groups = {CreateGroup.class})
     private String orderId;
