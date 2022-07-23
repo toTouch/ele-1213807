@@ -7,7 +7,6 @@ import lombok.Data;
 import javax.validation.constraints.NotNull;
 
 /**
- *
  * @author makejava
  * @since 2022-07-20 16:00:45
  */
@@ -26,6 +25,7 @@ public class OrderSelfOpenCellQuery {
      */
     @NotNull(message = "换电订单id不能为空!", groups = {CreateGroup.class})
     private String orderId;
+
 
     //微信公众号来源
     public static final Integer SOURCE_WX_MP = 1;

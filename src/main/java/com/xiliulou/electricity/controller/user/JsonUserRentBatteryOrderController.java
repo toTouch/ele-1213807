@@ -1,9 +1,12 @@
 package com.xiliulou.electricity.controller.user;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
 import com.xiliulou.electricity.service.RentBatteryOrderService;
+import com.xiliulou.electricity.validator.CreateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -46,6 +49,12 @@ public class JsonUserRentBatteryOrderController {
     @GetMapping("/user/rentBatteryOrder/queryNewStatus")
     public R queryNewStatus(@RequestParam("orderId") String orderId) {
         return rentBatteryOrderService.queryNewStatus(orderId);
+    }
+
+    //换电柜自助开仓
+    @PostMapping("/user/rentBatteryOrder/orderSelfOpenCell")
+    public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
+        return rentBatteryOrderService.selfOpenCell(orderSelfOpenCellQuery);
     }
 
 }

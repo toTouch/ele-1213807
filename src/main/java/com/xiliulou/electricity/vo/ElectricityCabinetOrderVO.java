@@ -94,5 +94,7 @@ public class ElectricityCabinetOrderVO {
     */
     private Long updateTime;
 
+    private Integer selfOpenCell;
+
 
 }

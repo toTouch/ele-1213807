@@ -579,6 +579,21 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     e.setElectricityCabinetName(electricityCabinet.getName());
                 }
 
+                if (e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL)
+                        || e.getStatus().equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+                    ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(e.getOrderId());
+                    if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) && Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.NOT_SELF_OPEN_CELL)) {
+                        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(e.getElectricityCabinetId(), e.getOldCellNo() + "");
+                        e.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+                        if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+                            e.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
+                        }
+                        if (Objects.isNull(e.getOldElectricityBatterySn())) {
+                            e.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
+                        }
+                    }
+                }
+
                 UserInfo userInfo = userInfoService.selectUserByUid(e.getUid());
                 if (Objects.nonNull(userInfo)) {
                     e.setUName(userInfo.getName());
@@ -904,8 +919,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
                     map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
                 }
-                if(Objects.isNull(electricityCabinetOrder.getOldElectricityBatterySn())){
-                    map.put("selfOpenCell",ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
+                if (Objects.isNull(electricityCabinetOrder.getOldElectricityBatterySn())) {
+                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
                 }
             }
 
@@ -1117,7 +1132,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
 
-            ElectricityCabinetOrder electricityCabinetOrderUpdate=new ElectricityCabinetOrder();
+            ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
             electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
             electricityCabinetOrderUpdate.setSource(ElectricityCabinetOrder.ORDER_SOURCE_FOR_SELF_OPEN_CELL);

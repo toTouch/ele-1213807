@@ -85,6 +85,11 @@ public class RentBatteryOrder {
 
     public static final Integer TYPE_WEB_UNBIND = 4;
 
+    /**
+     * 订单来源 自助开仓
+     */
+    public static final Integer RETURN_ORDER_SOURCE_FOR_SELF_OPEN_CELL = 5;
+
 
     //初始化
     public static final Double STATUS_INIT = 0.0;

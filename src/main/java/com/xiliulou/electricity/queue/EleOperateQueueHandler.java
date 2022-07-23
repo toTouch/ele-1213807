@@ -261,7 +261,7 @@ public class EleOperateQueueHandler {
                 newElectricityCabinetOrder.setOldElectricityBatterySn(finalOpenDTO.getBatterySn());
                 electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
-                ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord=new ElectricityExceptionOrderStatusRecord();
+                ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = new ElectricityExceptionOrderStatusRecord();
                 electricityExceptionOrderStatusRecord.setOrderId(electricityCabinetOrder.getOrderId());
                 electricityExceptionOrderStatusRecord.setTenantId(electricityCabinetOrder.getTenantId());
                 electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
@@ -362,9 +362,9 @@ public class EleOperateQueueHandler {
                 //分配电池 --只分配满电电池
                 Triple<Boolean, String, Object> tripleResult;
                 if (Objects.equals(oldFranchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), oldFranchiseeUserInfo.getBatteryType(), oldFranchiseeUserInfo.getFranchiseeId(),electricityCabinetOrder.getSource());
+                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), oldFranchiseeUserInfo.getBatteryType(), oldFranchiseeUserInfo.getFranchiseeId(), electricityCabinetOrder.getSource());
                 } else {
-                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), null, oldFranchiseeUserInfo.getFranchiseeId(),electricityCabinetOrder.getSource());
+                    tripleResult = rentBatteryOrderService.findUsableBatteryCellNo(electricityCabinet, electricityCabinetOrder.getOldCellNo().toString(), null, oldFranchiseeUserInfo.getFranchiseeId(), electricityCabinetOrder.getSource());
                 }
 
                 if (Objects.isNull(tripleResult)) {
@@ -534,6 +534,18 @@ public class EleOperateQueueHandler {
                 newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
                 rentBatteryOrderService.update(newRentBatteryOrder);
 
+                if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+                    ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = new ElectricityExceptionOrderStatusRecord();
+                    electricityExceptionOrderStatusRecord.setOrderId(rentBatteryOrder.getOrderId());
+                    electricityExceptionOrderStatusRecord.setTenantId(rentBatteryOrder.getTenantId());
+                    electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
+                    electricityExceptionOrderStatusRecord.setOrderSeq(finalOpenDTO.getOrderSeq());
+                    electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
+                    electricityExceptionOrderStatusRecord.setUpdateTime(System.currentTimeMillis());
+                    electricityExceptionOrderStatusRecord.setCellNo(rentBatteryOrder.getCellNo());
+                    electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
+                }
+
                 //清除柜机锁定缓存
                 redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
                 return;
@@ -567,7 +579,6 @@ public class EleOperateQueueHandler {
                 && Objects.equals(rentBatteryOrder.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_SUCCESS)) {
             checkReturnBatteryDoor(rentBatteryOrder);
         }
-
     }
 
     //检测租电池
