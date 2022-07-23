@@ -200,5 +200,11 @@ public class ElectricityCabinetOrder {
     public static final Integer SELF_EXCHANGE_ELECTRICITY = 1;
 
     public static final Integer SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL = 2;
+    public static final Integer SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN = 3;
+
+    /**
+     * 订单来源 自助开仓
+     */
+    public static final Integer ORDER_SOURCE_FOR_SELF_OPEN_CELL = 4;
 
 }

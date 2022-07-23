@@ -62,7 +62,8 @@ public class ElectricityCabinetOrderOperHistory {
     public static final Integer OPERATE_RESULT_SUCCESS = 0;
     public static final Integer OPERATE_RESULT_FAIL = 1;
 
-    public static final Integer SELF_OPEN_CELL_SEQ = 0;
+    public static final Integer SELF_OPEN_CELL_SEQ = 5;
+    public static final Integer SELF_OPEN_CELL_SEQ_COMPLETE = 6;
 
     /**
      * 自助开仓

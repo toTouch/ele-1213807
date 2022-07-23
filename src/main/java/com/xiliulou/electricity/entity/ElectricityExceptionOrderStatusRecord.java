@@ -58,9 +58,21 @@ public class ElectricityExceptionOrderStatusRecord {
      */
     private Integer cellNo;
 
+
+    /**
+     * 自助开仓状态  0--成功 1--失败
+     */
+    private Integer openCellStatus;
+
+    public static final Integer OPEN_CELL_SUCCESS = 0;
+    public static final Integer OPEN_CELL_FAIL = 1;
+
+
     public static final Integer SELF_OPEN_CELL = 1;
     public static final Integer NOT_SELF_OPEN_CELL = 0;
 
     public static String STATUS_SUCCESS = "SUCCESS";
+    public static String STATUS_OPEN_FAIL = "OPEN_FAIL";
+    public static String BATTERY_NOT_MATCH = "BATTERY_NOT_MATCH";
 
 }

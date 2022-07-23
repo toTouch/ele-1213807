@@ -33,10 +33,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandler {
 
-    /**
-     * 订单来源 自助开仓
-     */
-    private static final Integer ORDER_SOURCE_FOR_SELF_OPEN_CELL = 4;
+
     @Autowired
     RedisService redisService;
     @Autowired
@@ -73,24 +70,19 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
 
         ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleSelfOPenCellOrderVo.getOrderId());
-        if (Objects.isNull(electricityCabinet)){
-			log.error("SELF OPEN CELL ERROR! not found order! orderId:{}", eleSelfOPenCellOrderVo.getOrderId());
-			return;
-		}
+        if (Objects.isNull(electricityCabinet)) {
+            log.error("SELF OPEN CELL ERROR! not found order! orderId:{}", eleSelfOPenCellOrderVo.getOrderId());
+            return;
+        }
 
-		if (Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.STATUS_SUCCESS)) {
-			ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecordUpdate = new ElectricityExceptionOrderStatusRecord();
-			electricityExceptionOrderStatusRecordUpdate.setId(electricityExceptionOrderStatusRecord.getId());
-			electricityExceptionOrderStatusRecordUpdate.setUpdateTime(System.currentTimeMillis());
-			electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
-			electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
-
-			ElectricityCabinetOrder electricityCabinetOrderUpdate=new ElectricityCabinetOrder();
-			electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
-			electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
-			electricityCabinetOrderUpdate.setSource(ORDER_SOURCE_FOR_SELF_OPEN_CELL);
-			electricityCabinetOrderService.update(electricityCabinetOrderUpdate);
-		}
+        ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecordUpdate = new ElectricityExceptionOrderStatusRecord();
+        electricityExceptionOrderStatusRecordUpdate.setId(electricityExceptionOrderStatusRecord.getId());
+        electricityExceptionOrderStatusRecordUpdate.setUpdateTime(System.currentTimeMillis());
+        if (Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.STATUS_OPEN_FAIL) || Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.BATTERY_NOT_MATCH)) {
+            electricityExceptionOrderStatusRecordUpdate.setOpenCellStatus(ElectricityExceptionOrderStatusRecord.OPEN_CELL_FAIL);
+        }
+        electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
+        electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
     }
 
     @Data

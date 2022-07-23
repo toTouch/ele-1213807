@@ -904,6 +904,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
                     map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
                 }
+                if(Objects.isNull(electricityCabinetOrder.getOldElectricityBatterySn())){
+                    map.put("selfOpenCell",ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
+                }
             }
 
             picture = 3;
@@ -1107,13 +1110,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                     .createTime(System.currentTimeMillis())
                     .orderId(orderSelfOpenCellQuery.getOrderId())
-                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                     .tenantId(electricityCabinet.getTenantId())
                     .msg("旧电池检测失败，自助开仓")
                     .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_SELF_OPEN)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
+
+            ElectricityCabinetOrder electricityCabinetOrderUpdate=new ElectricityCabinetOrder();
+            electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
+            electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityCabinetOrderUpdate.setSource(ElectricityCabinetOrder.ORDER_SOURCE_FOR_SELF_OPEN_CELL);
+            update(electricityCabinetOrderUpdate);
 
             //发送自助开仓命令
             //发送命令
