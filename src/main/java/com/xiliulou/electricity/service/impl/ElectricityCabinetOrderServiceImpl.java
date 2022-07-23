@@ -1113,7 +1113,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .tenantId(electricityCabinet.getTenantId())
                     .msg("旧电池检测失败，自助开仓")
                     .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
-                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_SELF_OPEN)
+                    .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
 
