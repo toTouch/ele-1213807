@@ -264,6 +264,9 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return;
         }
 
+
+        System.out.println("发送消息=====================================");
+
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
         phones.forEach(p -> {
