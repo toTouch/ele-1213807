@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.MaintenanceRecordListQuery;
 import com.xiliulou.electricity.query.UserMaintenanceQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceRecordService;
+import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -56,6 +57,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
     @Qualifier("aliyunOssService")
     @Autowired
     StorageService storageService;
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -127,6 +130,8 @@ public class MaintenanceRecordServiceImpl implements MaintenanceRecordService {
                 .tenantId(tenantId)
                 .build();
         insert(build);
+
+        maintenanceUserNotifyConfigService.sendUserUploadExceptionMsg(build,electricityCabinet);
         return Triple.of(true, null, null);
     }
 

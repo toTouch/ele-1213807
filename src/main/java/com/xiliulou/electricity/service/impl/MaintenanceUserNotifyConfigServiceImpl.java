@@ -251,6 +251,43 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     }
 
     @Override
+    public void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet) {
+
+        System.out.println("发送用户上报异常消息=============================");
+
+        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
+            return;
+        }
+
+        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) {
+            return;
+        }
+
+        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
+
+        phones.forEach(p -> {
+            MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
+            query.setPhone(p);
+            query.setTime(System.currentTimeMillis());
+            query.setType(MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION);
+
+            MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
+            mqHardwareNotify.setDeviceName(electricityCabinet.getName());
+            mqHardwareNotify.setOccurTime(maintenanceRecord.getCreateTime().toString());
+            mqHardwareNotify.setErrMsg(maintenanceRecord.getRemark());
+            mqHardwareNotify.setProjectTitle(MqHardwareNotify.USER_UPLOAD_EXCEPTION);
+            query.setData(mqHardwareNotify);
+
+            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 3);
+            if (!result.getLeft()) {
+                log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
+            }
+        });
+
+    }
+
+    @Override
     public Pair<Boolean, Object> testSendMsg() {
         Integer tenantId = TenantContextHolder.getTenantId();
         MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(tenantId);

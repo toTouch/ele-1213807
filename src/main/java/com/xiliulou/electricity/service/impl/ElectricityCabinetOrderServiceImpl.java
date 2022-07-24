@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
@@ -1145,14 +1146,16 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
 
+            String sessionId=ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId())
+                    .sessionId(sessionId)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(ElectricityIotConstant.SELF_OPEN_CELL).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            return R.ok(orderSelfOpenCellQuery.getOrderId());
+            return R.ok(sessionId);
         } catch (Exception e) {
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "自助开仓失败");
@@ -1160,6 +1163,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             redisService.delete(ElectricityCabinetConstant.ELECTRICITY_CABINET_CACHE_OCCUPY_CELL_NO_KEY + orderSelfOpenCellQuery.getElectricityCabinetId() + "_" + electricityExceptionOrderStatusRecord.getCellNo());
         }
 
+    }
+
+    @Override
+    public R checkOpenSessionId(String sessionId) {
+        String s = redisService.get(ElectricityCabinetConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId);
+        if (StrUtil.isEmpty(s)) {
+            return R.ok("0001");
+        }
+        if ("true".equalsIgnoreCase(s)) {
+            return R.ok("0002");
+        } else {
+            return R.ok("0003");
+        }
     }
 
     public static List<Integer> rebuildByCellCircleForDevice(List<Integer> cellNos, Integer lastCellNo) {

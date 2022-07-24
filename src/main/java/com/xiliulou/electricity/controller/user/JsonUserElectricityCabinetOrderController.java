@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.user;
 
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.OpenDoorQuery;
@@ -111,6 +112,15 @@ public class JsonUserElectricityCabinetOrderController {
 	@PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
 	public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
 		return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
+	}
+
+	//查看开门结果
+	@GetMapping("/user/electricityCabinet/open/check")
+	public R checkOpenSession(@RequestParam("sessionId") String sessionId) {
+		if (StrUtil.isEmpty(sessionId)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		return electricityCabinetOrderService.checkOpenSessionId(sessionId);
 	}
 
 }

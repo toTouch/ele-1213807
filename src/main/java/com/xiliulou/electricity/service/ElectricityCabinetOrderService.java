@@ -66,4 +66,6 @@ public interface ElectricityCabinetOrderService {
 
     R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
 
+    R checkOpenSessionId(String sessionId);
+
 }

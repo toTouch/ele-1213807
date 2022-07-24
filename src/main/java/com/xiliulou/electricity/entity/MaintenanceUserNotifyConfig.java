@@ -42,6 +42,11 @@ public class MaintenanceUserNotifyConfig {
      * 设备上下线
      */
     public static Integer P_DEVICE = 1;
+
+    /**
+     * 用户上报异常
+     */
+    public static Integer P_USER_UPLOAD_EXCEPTION = 3;
     /**
      * 设备消息通知
      */

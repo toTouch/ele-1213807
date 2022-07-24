@@ -50,6 +50,8 @@ public interface ElectricityCabinetConstant {
 
     String ELE_OPERATOR_CACHE_KEY = "ele_oper:";
 
+    String ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY = "ele_ope_self_open_cell:";
+
     //换电柜开门的前缀
     String ELE_OPERATOR_SESSION_PREFIX = "ele";
 

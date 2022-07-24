@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.MaintenanceRecord;
 import com.xiliulou.electricity.entity.MaintenanceUserNotifyConfig;
 import com.xiliulou.electricity.query.MaintenanceUserNotifyConfigQuery;
 import org.apache.commons.lang3.tuple.Pair;
@@ -73,6 +74,8 @@ public interface MaintenanceUserNotifyConfigService {
     void sendDeviceNotifyMq(ElectricityCabinet electricityCabinet, String status, String time);
 
     void sendCellLockMsg(String sessionId, ElectricityCabinet electricityCabinet, Integer cellNo, String s);
+
+    void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet);
 
     Pair<Boolean, Object> testSendMsg();
 
