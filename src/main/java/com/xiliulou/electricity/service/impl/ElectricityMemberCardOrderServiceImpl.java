@@ -820,7 +820,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
+        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_FAIL);
         electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
@@ -844,9 +844,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setRemainingNumber(memberCardOrderAddAndUpdate.getMaxUseCount());
         franchiseeUserInfoUpdate.setMemberCardDisableStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
-        franchiseeUserInfoUpdate.setCardName(electricityMemberCardOrder.getCardName());
-        franchiseeUserInfoUpdate.setCardId(electricityMemberCardOrder.getMemberCardId());
-        franchiseeUserInfoUpdate.setCardType(electricityMemberCardOrder.getMemberCardType());
+        franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
+        franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+        franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
         franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
@@ -909,6 +909,28 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (ObjectUtil.equal(ElectricityMemberCard.STATUS_UN_USEABLE, electricityMemberCard.getStatus())) {
             log.error("admin editUserMemberCard ERROR ,MEMBER_CARD IS UN_USABLE ID:{},uid:{}", memberCardOrderAddAndUpdate.getMemberCardId(), memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0088", "月卡已禁用!");
+        }
+
+        if (!Objects.equals(memberCardOrderAddAndUpdate.getMemberCardId(), oldFranchiseeUserInfo.getCardId())) {
+            //套餐订单
+            ElectricityMemberCardOrder electricityMemberCardOrder = new ElectricityMemberCardOrder();
+            electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
+            electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
+            electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
+            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_FAIL);
+            electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+            electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
+            electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
+            electricityMemberCardOrder.setMemberCardType(electricityMemberCard.getType());
+            electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
+            electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
+            electricityMemberCardOrder.setUserName(userInfo.getUserName());
+            electricityMemberCardOrder.setValidDays(memberCardOrderAddAndUpdate.getValidDays());
+            electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
+            electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
+            electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
+            electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+            baseMapper.insert(electricityMemberCardOrder);
         }
 
         //用户
