@@ -920,9 +920,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
                     map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
                 }
-                if (Objects.isNull(electricityCabinetOrder.getOldElectricityBatterySn())) {
-                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
-                }
+//                if (Objects.isNull(electricityCabinetOrder.getOldElectricityBatterySn())) {
+//                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
+//                }
             }
 
             picture = 3;
