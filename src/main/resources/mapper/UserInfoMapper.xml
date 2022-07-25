@@ -170,6 +170,15 @@
         <if test="query.endTime != null">
             and tui.create_time &lt;=#{query.endTime}
         </if>
+        <if test="query.memberCardExpireTimeBegin !=null">
+            and tfui.member_card_expire_time &gt;=#{query.memberCardExpireTimeBegin}
+        </if>
+        <if test="query.memberCardExpireTimeEnd !=null">
+            and tfui.member_card_expire_time &lt;=#{query.memberCardExpireTimeEnd}
+        </if>
+        <if test="query.cardName != null and query.cardName != ''">
+            and tfui.card_name = #{query.cardName}
+        </if>
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>

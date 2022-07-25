@@ -81,9 +81,10 @@ public class JsonAdminUserInfoController {
     @GetMapping(value = "/admin/userInfo/queryCount")
     public R queryCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                        @RequestParam(value = "endTime", required = false) Long endTime,
+                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "cardName",required = false) String cardName,
                         @RequestParam(value = "memberCardId",required = false) Long memberCardId,
                         @RequestParam(value = "authStatus", required = false) Integer authStatus,
                         @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
@@ -94,8 +95,9 @@ public class JsonAdminUserInfoController {
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .name(name)
                 .phone(phone)
-                .beginTime(beginTime)
-                .endTime(endTime)
+                .beginTime(memberCardExpireTimeBegin)
+                .endTime(memberCardExpireTimeEnd)
+                .cardName(cardName)
                 .uid(uid)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
