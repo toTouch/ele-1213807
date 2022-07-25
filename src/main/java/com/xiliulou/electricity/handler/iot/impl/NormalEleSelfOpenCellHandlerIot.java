@@ -76,7 +76,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
 
         //操作回调的放在redis中
-        if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
+        if (Objects.nonNull(eleSelfOPenCellOrderVo.getResult()) && eleSelfOPenCellOrderVo.getResult()) {
             redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
         } else {
             redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
