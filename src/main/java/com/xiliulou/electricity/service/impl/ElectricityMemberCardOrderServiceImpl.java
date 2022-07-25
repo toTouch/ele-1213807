@@ -820,7 +820,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
         electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
         electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_FAIL);
+        electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
         electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
         electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
@@ -833,6 +833,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
         electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+        electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         baseMapper.insert(electricityMemberCardOrder);
 
         //用户
@@ -917,7 +918,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setOrderId(String.valueOf(System.currentTimeMillis()));
             electricityMemberCardOrder.setCreateTime(System.currentTimeMillis());
             electricityMemberCardOrder.setUpdateTime(System.currentTimeMillis());
-            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_FAIL);
+            electricityMemberCardOrder.setStatus(ElectricityMemberCardOrder.STATUS_SUCCESS);
             electricityMemberCardOrder.setMemberCardId(memberCardOrderAddAndUpdate.getMemberCardId());
             electricityMemberCardOrder.setUid(memberCardOrderAddAndUpdate.getUid());
             electricityMemberCardOrder.setMaxUseCount(electricityMemberCard.getMaxUseCount());
@@ -930,6 +931,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
+            electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
             baseMapper.insert(electricityMemberCardOrder);
         }
 
