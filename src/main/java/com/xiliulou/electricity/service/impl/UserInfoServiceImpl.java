@@ -150,21 +150,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
-                    if (item.getMemberCardExpireTime() > System.currentTimeMillis()) {
-                        Long now = System.currentTimeMillis();
-                        long carDays = 0;
-                        if (item.getMemberCardExpireTime() > now) {
-                            carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
-                        }
-                        item.setCardDays(carDays);
-                    } else {
-                        item.setMemberCardExpireTime(null);
-                        item.setCardId(null);
-                        item.setRemainingNumber(null);
-                        item.setCardName(null);
-                        item.setCardDays(null);
+//                    if (item.getMemberCardExpireTime() > System.currentTimeMillis()) {
+                    Long now = System.currentTimeMillis();
+                    long carDays = 0;
+                    if (item.getMemberCardExpireTime() > now) {
+                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
                     }
-                }else {
+                    item.setCardDays(carDays);
+//                    } else {
+//                        item.setMemberCardExpireTime(null);
+//                        item.setCardId(null);
+//                        item.setRemainingNumber(null);
+//                        item.setCardName(null);
+//                        item.setCardDays(null);
+//                    }
+                } else {
                     item.setCardDays(null);
                     item.setCardId(null);
                     item.setCardName(null);
@@ -667,7 +667,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
-        if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(),userInfoBatteryAddAndUpdate.getUid())) {
+        if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfoBatteryAddAndUpdate.getUid())) {
             log.error("webBindBattery  ERROR! battery is bind user! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("100019", "该电池已经绑定用户");
         }
