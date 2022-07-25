@@ -923,6 +923,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             memberCardExpireTime = System.currentTimeMillis();
         }
 
+        franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
+        franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
+        franchiseeUserInfoUpdate.setCardType(electricityMemberCard.getType());
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
