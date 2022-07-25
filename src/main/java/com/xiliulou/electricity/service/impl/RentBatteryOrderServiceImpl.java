@@ -1108,9 +1108,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(orderSelfOpenCellQuery.getOrderId());
 
         Long now = System.currentTimeMillis();
-        if (Objects.isNull(electricityExceptionOrderStatusRecord) || !Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
+        if (Objects.isNull(electricityExceptionOrderStatusRecord) || !Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
             log.error("self open cell ERROR! not old cell exception ！orderId{}", orderSelfOpenCellQuery.getOrderId());
-            return R.fail("100020", "非旧仓门异常无法自主开仓");
+            return R.fail("100020", "非退电池仓门异常无法自主开仓");
         }
 
         if ((now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
@@ -1183,13 +1183,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0096", "换电柜加盟商和用户加盟商不一致，请联系客服处理");
         }
 
-        //判断是否缴纳押金
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
-                || Objects.isNull(franchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(franchiseeUserInfo.getOrderId())) {
-            redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId());
-            log.error("self open cell order  ERROR! not pay deposit! uid:{} ", user.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
-        }
 
         //未租电池
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
