@@ -5,14 +5,17 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ApiOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ApiOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +37,8 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     @Autowired
     ApiOrderOperHistoryService apiOrderOperHistoryService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -54,14 +59,18 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                     .build();
             apiOrderOperHistoryService.insert(history);
         } else {
-
             Integer type = eleOrderOperateVO.getOrderType();
             Integer seq = eleOrderOperateVO.getSeq();
             if (Objects.equals(type, ElectricityCabinetOrderOperHistory.ORDER_TYPE_SELF_OPEN)) {
-                type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE;
-                seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE;
+                ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleOrderOperateVO.getOrderId());
+                if (Objects.nonNull(electricityCabinetOrder)) {
+                    type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE;
+                    seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE;
+                } else {
+                    type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK;
+                    seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
+                }
             }
-
 
             //加入操作记录表
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()

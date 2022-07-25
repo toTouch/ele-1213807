@@ -1073,7 +1073,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail((Object) oldElectricityCabinetOrder.getOrderId(), "100022", "存在未完成换电订单，不能自助开仓");
         }
 
-        RentBatteryOrder rentBatteryOrder=queryByOrderId(orderSelfOpenCellQuery.getOrderId());
+        RentBatteryOrder rentBatteryOrder = queryByOrderId(orderSelfOpenCellQuery.getOrderId());
         if (Objects.isNull(rentBatteryOrder)) {
             log.error("self open cell ERROR! not found order,orderId{} ", orderSelfOpenCellQuery.getOrderId());
             return R.fail("ELECTRICITY.0015", "未找到订单");
@@ -1211,12 +1211,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                     .orderId(orderSelfOpenCellQuery.getOrderId())
                     .tenantId(electricityCabinet.getTenantId())
                     .msg("退电池检测失败，自助开仓")
-                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                    .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY)
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
 
-            RentBatteryOrder rentBatteryOrderUpdate =new RentBatteryOrder();
+            RentBatteryOrder rentBatteryOrderUpdate = new RentBatteryOrder();
             rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
             rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrderUpdate.setType(RentBatteryOrder.RETURN_ORDER_SOURCE_FOR_SELF_OPEN_CELL);
@@ -1229,14 +1229,16 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName", rentBatteryOrder.getElectricityBatterySn());
 
+            String sessionId = ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId();
+
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                    .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + rentBatteryOrder.getId())
+                    .sessionId(sessionId)
                     .data(dataMap)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
                     .command(ElectricityIotConstant.SELF_OPEN_CELL).build();
             eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
-            return R.ok(orderSelfOpenCellQuery.getOrderId());
+            return R.ok(sessionId);
         } catch (Exception e) {
             log.error("order is error" + e);
             return R.fail("ELECTRICITY.0025", "自助开仓失败");
