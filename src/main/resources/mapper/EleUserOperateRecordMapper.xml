@@ -7,8 +7,31 @@
         SELECT * FROM
         t_ele_user_operate_record
         WHERE uid =#{uid}
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+        <if test="operateModel != null">
+            and operate_model =#{operateModel}
+        </if>
         order by create_time desc
         limit #{offset},#{size}
+    </select>
+
+    <select id="queryCount" resultType="integer">
+        select count(1) from t_ele_user_operate_record
+        where uid=#{uid}
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+        <if test="operateModel != null">
+            and operate_model =#{operateModel}
+        </if>
     </select>
 
 </mapper>
