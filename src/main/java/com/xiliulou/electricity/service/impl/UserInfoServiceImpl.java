@@ -150,21 +150,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         CompletableFuture<Void> queryPayDepositTime = CompletableFuture.runAsync(() -> {
             userBatteryInfoVOS.stream().forEach(item -> {
                 if (Objects.nonNull(item.getMemberCardExpireTime())) {
-                    if (item.getMemberCardExpireTime() > System.currentTimeMillis()) {
-                        Long now = System.currentTimeMillis();
-                        long carDays = 0;
-                        if (item.getMemberCardExpireTime() > now) {
-                            carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
-                        }
-                        item.setCardDays(carDays);
-                    } else {
-                        item.setMemberCardExpireTime(null);
-                        item.setCardId(null);
-                        item.setRemainingNumber(null);
-                        item.setCardName(null);
-                        item.setCardDays(null);
+                    Long now = System.currentTimeMillis();
+                    long carDays = 0;
+                    if (item.getMemberCardExpireTime() > now) {
+                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
                     }
-                }else {
+                    item.setCardDays(carDays);
+                } else {
                     item.setCardDays(null);
                     item.setCardId(null);
                     item.setCardName(null);
@@ -667,7 +659,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("webBindBattery  ERROR! not found Battery! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
-        if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(),userInfoBatteryAddAndUpdate.getUid())) {
+        if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfoBatteryAddAndUpdate.getUid())) {
             log.error("webBindBattery  ERROR! battery is bind user! sn:{} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("100019", "该电池已经绑定用户");
         }
@@ -682,6 +674,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
         Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);
+
+        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
+            ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
+            if (Objects.nonNull(isBindElectricityBattery)) {
+                ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
+                notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+                notBindOldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+                notBindOldElectricityBattery.setElectricityCabinetId(null);
+                notBindOldElectricityBattery.setElectricityCabinetName(null);
+                notBindOldElectricityBattery.setUid(null);
+                notBindOldElectricityBattery.setBorrowExpireTime(null);
+                notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBatteryService.updateByOrder(notBindOldElectricityBattery);
+            }
+        }
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
@@ -723,6 +730,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateByOrder(electricityBattery);
+
+//            //修改旧电池状态
+//            ElectricityBattery oldElectricityBattery = new ElectricityBattery();
+//
             return null;
         });
         return R.ok();

@@ -53,6 +53,7 @@ public class ElectricityMemberCardOrder {
 
     private Integer isBindActivity;
 
+    private Integer payType;
 
     /**
      * 活动id
@@ -74,4 +75,6 @@ public class ElectricityMemberCardOrder {
     public static final Integer BATTERY_MEMBER_CARD = 0;
     public static final Integer RENT_CAR_MEMBER_CARD = 1;
 
+    public static final Integer ONLINE_PAYMENT = 0;
+    public static final Integer OFFLINE_PAYMENT = 1;
 }

@@ -33,13 +33,19 @@ public class JsonAdminEleUserOperateRecordController {
 	@GetMapping(value = "/admin/eleUserOperateRecord/list")
 	public R queryList(@RequestParam(value = "uid") Long uid,
 					   @RequestParam("size") Long size,
-					   @RequestParam("offset") Long offset) {
-		return eleUserOperateRecordService.queryList(uid,size,offset);
+					   @RequestParam("offset") Long offset,
+					   @RequestParam(value = "beginTime", required = false) Long beginTime,
+					   @RequestParam(value = "endTime", required = false) Long endTime,
+					   @RequestParam(value = "operateModel",required = false) Integer operateModel) {
+		return eleUserOperateRecordService.queryList(uid,size,offset,beginTime,endTime,operateModel);
 	}
 
 	@GetMapping(value = "/admin/eleUserOperateRecord/queryCount")
-	public R queryCount(@RequestParam(value = "uid") Long uid) {
-		return eleUserOperateRecordService.queryCount(uid);
+	public R queryCount(@RequestParam(value = "uid") Long uid,
+						@RequestParam(value = "beginTime", required = false) Long beginTime,
+						@RequestParam(value = "endTime", required = false) Long endTime,
+						@RequestParam(value = "operateModel",required = false) Integer operateModel) {
+		return eleUserOperateRecordService.queryCount(uid,beginTime,endTime,operateModel);
 	}
 
 

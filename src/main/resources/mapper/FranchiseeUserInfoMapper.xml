@@ -126,6 +126,9 @@
           update t_franchisee_user_info
         set member_card_expire_time = #{memberCardExpireTime},
 		    remaining_number = #{remainingNumber},
+		    card_id = #{cardId},
+		    card_name = #{cardName},
+		    card_type = #{cardType},
 		    update_time = #{updateTime},
 		    battery_service_fee_generate_time=#{batteryServiceFeeGenerateTime}
         where id = #{id} and del_flag=0
