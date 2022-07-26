@@ -912,7 +912,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         //error
         if (electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_CANCEL)
                 || electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
-
             ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(orderId);
             if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
                 ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo() + "");
@@ -920,9 +919,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
                     map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
                 }
-//                if (Objects.isNull(electricityCabinetOrder.getOldElectricityBatterySn())) {
-//                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_NOT_BATTERY_SN);
-//                }
             }
 
             picture = 3;
@@ -1010,7 +1006,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //下单锁住柜机
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
+        boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1",  60 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.00105", "该柜机有人正在下单，请稍等片刻");
         }
@@ -1025,7 +1021,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         if ((now - electricityExceptionOrderStatusRecord.getCreateTime()) / 1000 / 60 > 3) {
             log.error("self open cell ERROR! self open cell timeout ！orderId{}", orderSelfOpenCellQuery.getOrderId());
-            return R.fail("100026", "自助开仓超时");
+            return R.fail("100026", "自助开仓已超开仓时间");
         }
 
         if (Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL)) {
@@ -1146,7 +1142,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             dataMap.put("cellNo", electricityExceptionOrderStatusRecord.getCellNo());
             dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
 
-            String sessionId=ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
+            String sessionId = ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
                     .sessionId(sessionId)

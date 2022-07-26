@@ -22,6 +22,7 @@ public class UserInfoBatteryAddAndUpdate {
     @NotEmpty(message = "初始电池编号不能为空!", groups = {UpdateGroup.class})
     private String initElectricityBatterySn;
 
+    @NotNull(message = "操作类型不能为空!", groups = {UpdateGroup.class})
     private Integer ediType;
 
     public static final Integer BIND_TYPE = 0;
