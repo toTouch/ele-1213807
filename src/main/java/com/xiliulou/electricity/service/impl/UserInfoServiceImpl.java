@@ -677,14 +677,15 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
             ElectricityBattery isBindElectricityBattery=electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
+
             ElectricityBattery notBindOldElectricityBattery=new ElectricityBattery();
-            oldElectricityBattery.setId(isBindElectricityBattery.getId());
-            oldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-            oldElectricityBattery.setElectricityCabinetId(null);
-            oldElectricityBattery.setElectricityCabinetName(null);
-            oldElectricityBattery.setUid(null);
-            oldElectricityBattery.setBorrowExpireTime(null);
-            oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+            notBindOldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            notBindOldElectricityBattery.setElectricityCabinetId(null);
+            notBindOldElectricityBattery.setElectricityCabinetName(null);
+            notBindOldElectricityBattery.setUid(null);
+            notBindOldElectricityBattery.setBorrowExpireTime(null);
+            notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateByOrder(notBindOldElectricityBattery);
         }
 
