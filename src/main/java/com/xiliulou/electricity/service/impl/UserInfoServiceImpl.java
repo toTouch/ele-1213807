@@ -675,6 +675,19 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
         Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);
 
+        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
+            ElectricityBattery isBindElectricityBattery=electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
+            ElectricityBattery notBindOldElectricityBattery=new ElectricityBattery();
+            oldElectricityBattery.setId(isBindElectricityBattery.getId());
+            oldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            oldElectricityBattery.setElectricityCabinetId(null);
+            oldElectricityBattery.setElectricityCabinetName(null);
+            oldElectricityBattery.setUid(null);
+            oldElectricityBattery.setBorrowExpireTime(null);
+            oldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.updateByOrder(notBindOldElectricityBattery);
+        }
+
         DbUtils.dbOperateSuccessThen(update, () -> {
             RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
 
@@ -715,6 +728,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateByOrder(electricityBattery);
+
+//            //修改旧电池状态
+//            ElectricityBattery oldElectricityBattery = new ElectricityBattery();
+//
             return null;
         });
         return R.ok();
