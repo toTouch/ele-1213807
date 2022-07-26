@@ -676,17 +676,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);
 
         if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
-            ElectricityBattery isBindElectricityBattery=electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
-
-            ElectricityBattery notBindOldElectricityBattery=new ElectricityBattery();
-            notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
-            notBindOldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-            notBindOldElectricityBattery.setElectricityCabinetId(null);
-            notBindOldElectricityBattery.setElectricityCabinetName(null);
-            notBindOldElectricityBattery.setUid(null);
-            notBindOldElectricityBattery.setBorrowExpireTime(null);
-            notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateByOrder(notBindOldElectricityBattery);
+            ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
+            if (Objects.nonNull(isBindElectricityBattery)) {
+                ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
+                notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+                notBindOldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+                notBindOldElectricityBattery.setElectricityCabinetId(null);
+                notBindOldElectricityBattery.setElectricityCabinetName(null);
+                notBindOldElectricityBattery.setUid(null);
+                notBindOldElectricityBattery.setBorrowExpireTime(null);
+                notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBatteryService.updateByOrder(notBindOldElectricityBattery);
+            }
         }
 
         DbUtils.dbOperateSuccessThen(update, () -> {
