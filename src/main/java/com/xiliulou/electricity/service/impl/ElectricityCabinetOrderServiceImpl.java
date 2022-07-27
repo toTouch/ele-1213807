@@ -1132,7 +1132,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
             electricityCabinetOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            electricityCabinetOrderUpdate.setSource(ElectricityCabinetOrder.ORDER_SOURCE_FOR_SELF_OPEN_CELL);
+            electricityCabinetOrderUpdate.setRemark("自助开仓");
             update(electricityCabinetOrderUpdate);
 
             //发送自助开仓命令
