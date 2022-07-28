@@ -257,13 +257,23 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
+
+
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+
+            System.out.println("计算暂停月卡的电池时间============================"+cardDays);
+
+
+
             //不足一天按一天计算
             double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
             if (time < 24) {
                 cardDays = 1;
             }
         }
+
+        System.out.println("时间===================================="+cardDays);
+
 
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
