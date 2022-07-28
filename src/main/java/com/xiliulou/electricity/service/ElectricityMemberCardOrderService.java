@@ -40,6 +40,8 @@ public interface ElectricityMemberCardOrderService {
 
     R openOrDisableMemberCard(Integer usableStatus);
 
+    R adminOpenOrDisableMemberCard(Integer usableStatus,Long uid);
+
     R getDisableMemberCardList(ElectricityMemberCardRecordQuery electricityMemberCardRecordQuery);
 
     R addUserMemberCard(MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate);
