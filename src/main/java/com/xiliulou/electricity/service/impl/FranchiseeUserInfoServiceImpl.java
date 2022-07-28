@@ -236,7 +236,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         Integer modelType = franchisee.getModelType();
-        if (Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0))) {
+        if (Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), BigDecimal.valueOf(0))) {
             return eleBatteryServiceFeeVO;
         }
 
@@ -251,6 +251,17 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         Long now = System.currentTimeMillis();
         long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
+
+            cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+
+            //不足一天按一天计算
+            double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1;
+            }
+
+        }
 
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
