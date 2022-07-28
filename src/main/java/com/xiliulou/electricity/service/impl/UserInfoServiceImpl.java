@@ -279,6 +279,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         Long memberCardExpireTime = franchiseeUserInfo.getMemberCardExpireTime();
+        //算出暂停月卡时套餐剩余的天数
+        Long validDays = null;
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            memberCardExpireTime = System.currentTimeMillis() + (memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime());
+            validDays = (memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L);
+        }
+
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.isNull(electricityMemberCard)) {
@@ -305,13 +312,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     || System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime() || franchiseeUserInfo.getRemainingNumber() == 0) {
                 return R.ok();
             }
-        }
-
-        //算出暂停月卡时套餐剩余的天数
-        Long validDays = null;
-        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            memberCardExpireTime = System.currentTimeMillis() + (memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime());
-            validDays = (memberCardExpireTime - franchiseeUserInfo.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L);
         }
 
         OwnMemberCardInfoVo ownMemberCardInfoVo = new OwnMemberCardInfoVo();
