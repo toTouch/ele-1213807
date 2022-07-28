@@ -292,9 +292,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 return R.ok();
             }
             if ((Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
-                    System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime()) ||
+                    System.currentTimeMillis() >= memberCardExpireTime) ||
                     (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
-                            franchiseeUserInfo.getRemainingNumber() > 0 && System.currentTimeMillis() >= franchiseeUserInfo.getMemberCardExpireTime()) ||
+                            franchiseeUserInfo.getRemainingNumber() > 0 && System.currentTimeMillis() >= memberCardExpireTime) ||
                     (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE) &&
                             franchiseeUserInfo.getRemainingNumber() == 0) ||
                     Objects.isNull(franchiseeUserInfo.getRemainingNumber()) || Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())) {
