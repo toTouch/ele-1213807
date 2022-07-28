@@ -248,8 +248,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             return eleBatteryServiceFeeVO;
         }
 
-        System.out.println("查询用户状态-============================="+franchiseeUserInfo);
-
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
 
         Long now = System.currentTimeMillis();
@@ -263,8 +261,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
-            System.out.println("计算暂停月卡的电池时间============================"+cardDays);
-
 
 
             //不足一天按一天计算
@@ -273,8 +269,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 cardDays = 1;
             }
         }
-
-        System.out.println("时间===================================="+cardDays);
 
 
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
