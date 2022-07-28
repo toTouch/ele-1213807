@@ -156,6 +156,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (item.getMemberCardExpireTime() > now) {
                         carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
                     }
+                    if (Objects.equals(item.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+                        carDays = (item.getMemberCardExpireTime() - item.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L);
+                    }
+
                     item.setCardDays(carDays);
                 } else {
                     item.setCardDays(null);
