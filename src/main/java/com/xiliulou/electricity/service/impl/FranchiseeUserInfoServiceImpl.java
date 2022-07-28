@@ -248,6 +248,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             return eleBatteryServiceFeeVO;
         }
 
+        System.out.println("查询用户状态-============================="+franchiseeUserInfo);
+
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
 
         Long now = System.currentTimeMillis();
