@@ -783,6 +783,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
+
+
+            System.out.println("计算暂停月卡的电池时间============================"+cardDays);
+
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             //不足一天按一天计算
             double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
@@ -790,6 +794,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 cardDays = 1;
             }
         }
+
+
+        System.out.println("时间===================================="+cardDays);
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
             batteryServiceFee = franchisee.getBatteryServiceFee();
