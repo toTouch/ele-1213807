@@ -101,6 +101,8 @@ public class EleUserOperateRecord {
 
     private Integer memberCardDisableStatus;
 
+    private BigDecimal batteryServiceFee;
+
     public static final Integer BATTERY_MODEL = 0;
     public static final Integer DEPOSIT_MODEL = 1;
     public static final Integer MEMBER_CARD_MODEL = 2;
@@ -112,6 +114,7 @@ public class EleUserOperateRecord {
     public static final Integer UN_BIND_BATTERY_CONTENT = 3;
     public static final Integer EDIT_BATTERY_CONTENT = 5;
     public static final Integer MEMBER_CARD_DISABLE = 6;
+    public static final Integer CLEAN_BATTERY_SERVICE_FEE = 7;
 
 }
 

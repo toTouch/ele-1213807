@@ -18,14 +18,12 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
-import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
-import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
-import com.xiliulou.electricity.vo.OldUserActivityVO;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.ibatis.ognl.ObjectElementsAccessor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -898,6 +896,59 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);
         return R.ok();
+    }
+
+    @Override
+    public R cleanBatteryServiceFee(Long uid) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("admin saveUserMemberCard ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //是否缴纳押金，是否绑定电池
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
+
+        //未缴纳押金
+        if (Objects.isNull(franchiseeUserInfo)) {
+            log.error("DISABLE MEMBER CARD ERROR!not found user! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+        }
+
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVO = franchiseeUserInfoService.queryUserBatteryServiceFee(uid);
+
+        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
+        franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            franchiseeUserInfoUpdate.setDisableMemberCardTime(System.currentTimeMillis() + (1000L * 60 * 60 * 24));
+        } else {
+            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
+        }
+        franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+        franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+
+        //生成后台操作记录
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
+                .operateContent(EleUserOperateRecord.CLEAN_BATTERY_SERVICE_FEE)
+                .operateUid(user.getUid())
+                .uid(uid)
+                .name(user.getUsername())
+                .batteryServiceFee(eleBatteryServiceFeeVO.getUserBatteryServiceFee())
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
+
+
+        return null;
     }
 
     @Override

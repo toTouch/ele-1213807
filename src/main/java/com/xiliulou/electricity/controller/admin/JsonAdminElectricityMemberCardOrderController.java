@@ -220,8 +220,18 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@PutMapping("/admin/memberCard/openOrDisableMemberCard")
-	public R openOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam( "uid") Long uid){
+	public R adminOpenOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam( "uid") Long uid){
 		return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus,uid);
+	}
+
+	/**
+	 * 	清除用户电池服务费
+	 * @param uid
+	 * @return
+	 */
+	@PutMapping("/admin/memberCard/cleanBatteryServiceFee")
+	public R cleanBatteryServiceFee(@RequestParam( "uid") Long uid){
+		return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
 	}
 
 }
