@@ -254,10 +254,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         long cardDays = 0;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
-
-
-            System.out.println("走进过期服务费方法============================="+cardDays);
-
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
@@ -270,7 +266,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 }
             }
         }
-
 
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费

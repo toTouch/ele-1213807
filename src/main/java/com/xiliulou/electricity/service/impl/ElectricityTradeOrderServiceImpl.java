@@ -485,7 +485,11 @@ public class ElectricityTradeOrderServiceImpl extends
             FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
             franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
             franchiseeUserInfoUpdate.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_IS_SERVICE_FEE);
-            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
+            if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+                franchiseeUserInfoUpdate.setDisableMemberCardTime(System.currentTimeMillis() + (1000L * 60 * 60 * 24));
+            } else {
+                franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
+            }
             franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         }

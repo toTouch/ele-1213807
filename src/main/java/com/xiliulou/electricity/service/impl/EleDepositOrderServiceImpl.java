@@ -785,9 +785,11 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             //不足一天按一天计算
-            double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
-            if (time < 24) {
-                cardDays = 1;
+            if (now > franchiseeUserInfo.getDisableMemberCardTime()) {
+                double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+                if (time < 24) {
+                    cardDays = 1;
+                }
             }
         }
 
