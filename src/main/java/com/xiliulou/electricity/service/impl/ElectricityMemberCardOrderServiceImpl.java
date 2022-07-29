@@ -872,7 +872,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            usableStatus = FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW;
+            usableStatus = FranchiseeUserInfo.MEMBER_CARD_DISABLE;
         }
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
