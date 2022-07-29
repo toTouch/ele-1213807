@@ -856,7 +856,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
 
         if (Objects.equals(usableStatus, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
-            usableStatus = EleDisableMemberCardRecord.MEMBER_CARD_DISABLE_REVIEW;
+            usableStatus = EleDisableMemberCardRecord.MEMBER_CARD_DISABLE;
         }
 
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
@@ -871,9 +871,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
-        if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            usableStatus = FranchiseeUserInfo.MEMBER_CARD_DISABLE;
-        }
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
