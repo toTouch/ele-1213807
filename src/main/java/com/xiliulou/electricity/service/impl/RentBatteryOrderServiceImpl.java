@@ -1219,7 +1219,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             RentBatteryOrder rentBatteryOrderUpdate = new RentBatteryOrder();
             rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
             rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            rentBatteryOrderUpdate.setType(RentBatteryOrder.RETURN_ORDER_SOURCE_FOR_SELF_OPEN_CELL);
+            rentBatteryOrderUpdate.setRemark("自助开仓");
             update(rentBatteryOrderUpdate);
 
             //发送自助开仓命令

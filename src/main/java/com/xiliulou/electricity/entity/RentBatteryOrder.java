@@ -76,6 +76,11 @@ public class RentBatteryOrder {
     //租户id
     private Integer tenantId;
 
+    /**
+     * 备注
+     */
+    private String remark;
+
     //租电池
     public static final Integer TYPE_USER_RENT = 1;
     //还电池
