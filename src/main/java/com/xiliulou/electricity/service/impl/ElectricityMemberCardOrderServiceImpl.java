@@ -926,21 +926,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
         franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
-        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            franchiseeUserInfoUpdate.setDisableMemberCardTime(System.currentTimeMillis() + (1000L * 60 * 60 * 24));
-        } else {
-            franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
-        }
+        franchiseeUserInfoUpdate.setDisableMemberCardTime(System.currentTimeMillis() + (1000L * 60 * 60 * 24));
+        franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
-
-
-        System.out.println("清除月卡当前用户状态==================="+franchiseeUserInfoUpdate);
-
         franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
-
-
-        EleBatteryServiceFeeVO eleBatteryServiceFeeVOEnd = franchiseeUserInfoService.queryUserBatteryServiceFee(uid);
-
 
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
