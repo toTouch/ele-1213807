@@ -750,10 +750,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
-        if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            usableStatus = FranchiseeUserInfo.MEMBER_CARD_DISABLE_REVIEW;
-        }
-
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
             updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
@@ -854,11 +850,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
         }
 
-
-        if (Objects.equals(usableStatus, EleDisableMemberCardRecord.MEMBER_CARD_DISABLE)) {
-            usableStatus = EleDisableMemberCardRecord.MEMBER_CARD_DISABLE;
-        }
-
         EleDisableMemberCardRecord eleDisableMemberCardRecord = EleDisableMemberCardRecord.builder()
                 .disableMemberCardNo(generateOrderId(uid))
                 .memberCardName(franchiseeUserInfo.getCardName())
@@ -871,11 +862,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .updateTime(System.currentTimeMillis()).build();
         eleDisableMemberCardRecordService.save(eleDisableMemberCardRecord);
 
-
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
             updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
+        }else {
+            updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
         updateFranchiseeUserInfo.setMemberCardDisableStatus(usableStatus);
