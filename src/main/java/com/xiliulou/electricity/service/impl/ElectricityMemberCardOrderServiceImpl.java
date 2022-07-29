@@ -804,6 +804,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.00116", "新用户体验卡，不支持停卡服务");
         }
 
+        Long now = System.currentTimeMillis();
+        if (now > franchiseeUserInfo.getMemberCardExpireTime()) {
+            log.error("DISABLE MEMBER CARD ERROR! uid:{} ", user.getUid());
+            return R.fail("100013", "用户套餐已经过期");
+        }
 
         //启用月卡时判断用户是否有电池，收取服务费
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
@@ -812,7 +817,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
 
                     //判断用户是否产生电池服务费
-                    Long now = System.currentTimeMillis();
                     long cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
 
                     //不足一天按一天计算
@@ -866,7 +870,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
             updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
-        }else {
+        } else {
             updateFranchiseeUserInfo.setDisableMemberCardTime(System.currentTimeMillis());
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
