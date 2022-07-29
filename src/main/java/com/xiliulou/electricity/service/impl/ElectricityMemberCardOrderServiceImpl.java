@@ -932,7 +932,14 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(System.currentTimeMillis());
         }
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+
+
+        System.out.println("清除月卡当前用户状态==================="+franchiseeUserInfoUpdate);
+
         franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
+
+
+        EleBatteryServiceFeeVO eleBatteryServiceFeeVOEnd = franchiseeUserInfoService.queryUserBatteryServiceFee(uid);
 
 
         //生成后台操作记录
@@ -948,7 +955,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         eleUserOperateRecordService.insert(eleUserOperateRecord);
 
 
-        return null;
+        return R.ok();
     }
 
     @Override
