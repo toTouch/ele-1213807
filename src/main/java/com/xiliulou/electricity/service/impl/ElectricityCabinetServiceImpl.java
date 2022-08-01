@@ -1935,7 +1935,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged) {
+    public Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged, Long franchiseeId) {
         List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, null, fullyCharged);
         if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
             return Triple.of(false, "100216", "换电柜暂无满电电池");
@@ -1943,10 +1943,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         if (StrUtil.isNotEmpty(batteryType)) {
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> e.getBatteryType().equals(batteryType)).collect(Collectors.toList());
-            if(!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
-                return Triple.of(false, "100217", "换电柜暂无满电电池");
+            if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
+                return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
             }
         }
+
+        List<Long> batteryIds = usableBatteryCellNos.stream().map(ElectricityCabinetBox::getBId).collect(Collectors.toList());
+        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteries = franchiseeBindElectricityBatteryService.queryByBatteryIds(batteryIds);
+        if (!DataUtil.collectionIsUsable(franchiseeBindElectricityBatteries)) {
+            return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
+        }
+
         return Triple.of(true, null, usableBatteryCellNos.get(0));
     }
 

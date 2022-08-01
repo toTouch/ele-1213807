@@ -145,6 +145,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setPower(null);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetBox.setCellNo(cellNo);
+            electricityCabinetBox.setBId(null);
             electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
@@ -289,6 +290,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
         //修改仓门
         electricityCabinetBox.setSn(electricityBattery.getSn());
+        electricityCabinetBox.setBId(electricityBattery.getId());
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
 
         //查电池所属加盟商

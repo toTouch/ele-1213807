@@ -65,7 +65,7 @@ public interface UserInfoService extends IService<UserInfo> {
     R getMemberCardInfo(Long uid);
 
     R getRentCarMemberCardInfo(Long uid);
-
+    @Deprecated
     R queryUserInfo();
 
     R verifyAuth(Long id,Integer authStatus);

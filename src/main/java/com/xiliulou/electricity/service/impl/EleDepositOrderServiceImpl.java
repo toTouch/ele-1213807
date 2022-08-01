@@ -204,7 +204,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //型号押金计算
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.isNull(model)) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
@@ -248,7 +248,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .modelType(franchisee.getModelType()).build();
 
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(model));
         }
 
@@ -267,7 +267,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfoUpdate.setOrderId(orderId);
             franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
 
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
             }
 
@@ -409,7 +409,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
-                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                     Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
                     List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                     for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
@@ -666,7 +666,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //根据类型分押金
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //型号押金
             List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
             return R.ok(modelBatteryDepositList);
@@ -1329,7 +1329,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         franchiseeUserInfoUpdate.setBatteryDeposit(batteryDepositAdd.getPayAmount());
         franchiseeUserInfoUpdate.setOrderId(orderId);
         franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-        if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
         }
         franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
