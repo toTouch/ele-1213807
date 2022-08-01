@@ -902,8 +902,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
         //rent
-        if (electricityCabinetOrder.getOrderSeq() > ElectricityCabinetOrder.STATUS_CHECK_OLD_AND_NEW
-                || Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
             picture = 2;
         }
 
