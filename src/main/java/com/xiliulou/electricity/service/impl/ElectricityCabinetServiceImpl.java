@@ -2088,7 +2088,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 for (ElectricityBattery electricityBattery : electricityBatteries) {
                     //电池所在仓门非禁用
-                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(),electricityCabinetId);
+                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), electricityCabinetId);
                     if (Objects.nonNull(electricityCabinetBox)) {
                         if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
                             //3、查加盟商是否绑定电池
@@ -2162,24 +2162,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         long todayStartTime = DateUtils.getTodayStartTime();
         //购买换电月卡
-        CompletableFuture<BigDecimal> batteryMemberCard = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, null);
             BigDecimal todayBatteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, todayStartTime);
             homePageTurnOverVo.setBatteryMemberCardTurnover(batteryMemberCardTurnover);
-//            homePageTurnOverVo.setTodayBatteryMemberCardTurnover(todayBatteryMemberCardTurnover);
-            return todayBatteryMemberCardTurnover;
+            homePageTurnOverVo.setTodayBatteryMemberCardTurnover(todayBatteryMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
 
         //购买租车月卡
-        CompletableFuture<BigDecimal> carMemberCard = CompletableFuture.supplyAsync(() -> {
+        CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, null);
             BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime);
             homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
-//            homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
-            return todayCarMemberCardTurnover;
+            homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -2195,18 +2193,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
-//
-//        //计算总营业额
-//        CompletableFuture<Void> payAmountSumFuture = depositAndMemberCardTurnOver
-//                .thenAcceptBoth(refundTurnOver, (memberCardAndDepositSumAmount, depositSumAmount) -> {
-//                    BigDecimal turnover = memberCardAndDepositSumAmount.subtract(depositSumAmount);
-//                    dataBrowsingVo.setSumTurnover(turnover);
-//                }).exceptionally(e -> {
-//                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
-//                    return null;
-//                });
 
+        //等待所有线程停止
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee);
+        try {
+            homePageTurnOverVo.setSumTurnover(homePageTurnOverVo.getBatteryMemberCardTurnover().add(homePageTurnOverVo.getBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getCarMemberCardTurnover()));
+            homePageTurnOverVo.setTodayTurnover(homePageTurnOverVo.getTodayBatteryMemberCardTurnover().add(homePageTurnOverVo.getTodayBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getTodayCarMemberCardTurnover()));
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
 
-        return null;
+        return R.ok(homePageTurnOverVo);
     }
 }
