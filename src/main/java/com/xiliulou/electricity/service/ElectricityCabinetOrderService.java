@@ -2,10 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.query.OpenDoorQuery;
-import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
+import com.xiliulou.electricity.query.*;
+import org.apache.commons.lang3.tuple.Triple;
 
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
@@ -32,6 +30,7 @@ public interface ElectricityCabinetOrderService {
 
     void insertOrder(ElectricityCabinetOrder electricityCabinetOrder);
 
+    @Deprecated
     R order(OrderQuery orderQuery);
 
     R openDoor(OpenDoorQuery openDoorQuery);
@@ -68,4 +67,5 @@ public interface ElectricityCabinetOrderService {
 
     R checkOpenSessionId(String sessionId);
 
+    Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
 }

@@ -13,7 +13,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserMapper;
 import com.xiliulou.electricity.service.*;
@@ -101,7 +101,7 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public User queryByUidFromCache(Long uid) {
-        User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_UID + uid, User.class);
+        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_UID + uid, User.class);
         if (Objects.nonNull(cacheUser)) {
             return cacheUser;
         }
@@ -111,8 +111,8 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + uid, user);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_UID + uid, user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
 
         return user;
     }
@@ -129,8 +129,8 @@ public class UserServiceImpl implements UserService {
     public User insert(User user) {
         int insert = this.userMapper.insert(user);
         DbUtils.dbOperateSuccessThen(insert, () -> {
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
+            redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
+            redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType(), user);
             return user;
         });
 
@@ -278,7 +278,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User queryByUserPhone(String phone, Integer type, Integer tenantId) {
-        User cacheUser = redisService.getWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + tenantId + phone + ":" + type, User.class);
+        User cacheUser = redisService.getWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + phone + ":" + type, User.class);
         if (Objects.nonNull(cacheUser)) {
             return cacheUser;
         }
@@ -288,8 +288,8 @@ public class UserServiceImpl implements UserService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_UID + user.getUid(), user);
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType(), user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_UID + user.getUid(), user);
+        redisService.saveWithHash(CacheConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType(), user);
 
         return user;
     }
@@ -363,12 +363,13 @@ public class UserServiceImpl implements UserService {
         int i = updateUser(updateUser, user);
         //更新userInfo
         if (i > 0) {
-            UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
+            UserInfo oldUserInfo = userInfoService.queryByUidFromCache(user.getUid());
             if (Objects.nonNull(oldUserInfo)) {
                 UserInfo userInfo = new UserInfo();
                 userInfo.setId(oldUserInfo.getId());
                 userInfo.setUpdateTime(System.currentTimeMillis());
                 userInfo.setPhone(updateUser.getPhone());
+                userInfo.setUid(oldUserInfo.getUid());
                 userInfoService.update(userInfo);
             }
         }
@@ -412,8 +413,8 @@ public class UserServiceImpl implements UserService {
         }
 
         if (deleteById(uid)) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
-            redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+            redisService.delete(CacheConstant.CACHE_USER_UID + uid);
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
 
             //删除加盟商或门店
             if (Objects.equals(user.getUserType(), User.TYPE_USER_FRANCHISEE)) {
@@ -459,8 +460,8 @@ public class UserServiceImpl implements UserService {
     public Integer updateUser(User updateUser, User oldUser) {
         Integer update = update(updateUser);
         if (update > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + oldUser.getUid());
-            redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
+            redisService.delete(CacheConstant.CACHE_USER_UID + oldUser.getUid());
+            redisService.delete(CacheConstant.CACHE_USER_PHONE + oldUser.getPhone() + ":" + oldUser.getUserType());
         }
         return update;
     }
@@ -528,11 +529,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public R endLimitUser(Long uid) {
-        String orderLimit = redisService.get(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
+        String orderLimit = redisService.get(CacheConstant.ORDER_TIME_UID + uid);
         if (Objects.isNull(orderLimit)) {
             return R.fail("ELECTRICITY.0062", "用户未被限制");
         }
-        redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
+        redisService.delete(CacheConstant.ORDER_TIME_UID + uid);
         return R.ok();
     }
 
@@ -636,8 +637,8 @@ public class UserServiceImpl implements UserService {
         User user = queryByUidFromCache(uid);
         if (Objects.nonNull(user)) {
             if (deleteById(uid)) {
-                redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
-                redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_UID + uid);
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + user.getPhone() + ":" + user.getUserType());
             }
         }
     }
@@ -670,7 +671,7 @@ public class UserServiceImpl implements UserService {
             delUserOauthBindAndClearToken(userOauthBinds);
         }
         //删除套餐
-        UserInfo userInfo1 = userInfoService.queryByUid(uid);
+        UserInfo userInfo1 = userInfoService.queryByUidFromCache(uid);
         franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
         //删除用户
         deleteWxProUser(uid,userInfo1.getTenantId());
@@ -707,10 +708,10 @@ public class UserServiceImpl implements UserService {
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {
         userOauthBinds.parallelStream().forEach(e -> {
             String thirdId = e.getThirdId();
-            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + ElectricityCabinetConstant.CLIENT_ID + e.getTenantId() + ":" + thirdId, String.class);
+            List<String> tokens = redisService.getWithList(TokenConstant.CACHE_LOGIN_TOKEN_LIST_KEY + CacheConstant.CLIENT_ID + e.getTenantId() + ":" + thirdId, String.class);
             if (DataUtil.collectionIsUsable(tokens)) {
                 tokens.stream().forEach(s -> {
-                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + ElectricityCabinetConstant.CLIENT_ID + s);
+                    redisService.delete(TokenConstant.CACHE_LOGIN_TOKEN_KEY + CacheConstant.CLIENT_ID + s);
                 });
             }
             userOauthBindService.deleteById(e.getId());
@@ -722,8 +723,8 @@ public class UserServiceImpl implements UserService {
         User user = queryByUidFromCache(uid);
         if (Objects.nonNull(user)) {
             if (deleteById(uid)) {
-                redisService.delete(ElectricityCabinetConstant.CACHE_USER_UID + uid);
-                redisService.delete(ElectricityCabinetConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType());
+                redisService.delete(CacheConstant.CACHE_USER_UID + uid);
+                redisService.delete(CacheConstant.CACHE_USER_PHONE + tenantId + user.getPhone() + ":" + user.getUserType());
             }
         }
     }

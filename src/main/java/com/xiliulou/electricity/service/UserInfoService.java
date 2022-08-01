@@ -33,6 +33,7 @@ public interface UserInfoService extends IService<UserInfo> {
      * @param id 主键
      * @return 实例对象
      */
+    @Deprecated
     UserInfo selectUserByUid(Long id);
 
     /**
@@ -55,7 +56,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R updateStatus(Long uid,Integer usableStatus);
 
-    UserInfo queryByUid(Long uid);
+    UserInfo queryByUidFromCache(Long uid);
 
     Integer homeOne(Long first, Long now,Integer tenantId);
 

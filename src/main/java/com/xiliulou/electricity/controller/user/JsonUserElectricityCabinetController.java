@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
@@ -133,7 +133,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	public R getServicePhone() {
 		//租户
 		Integer tenantId = TenantContextHolder.getTenantId();
-		String phone = redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId);
+		String phone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE+tenantId);
 		if(StrUtil.isBlank(phone)){
 			List<User> userList = userService.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
 			if(CollectionUtils.isNotEmpty(userList)){

@@ -3,7 +3,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.EleOpenDTO;
 import com.xiliulou.electricity.dto.EleOpenDTO.EleOpenDTOBuilder;
@@ -41,7 +41,7 @@ public class NormalEleOrderHandlerIot extends AbstractElectricityIotHandler {
 		}
 		EleOrderVo eleOrderVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderVo.class);
 		//幂等加锁
-		Boolean result = redisService.setNx(ElectricityCabinetConstant.ELE_RECEIVER_CACHE_KEY + sessionId + eleOrderVo.getOrderStatus() + receiverMessage.getType(), "true", 10 * 1000L, true);
+		Boolean result = redisService.setNx(CacheConstant.ELE_RECEIVER_CACHE_KEY + sessionId + eleOrderVo.getOrderStatus() + receiverMessage.getType(), "true", 10 * 1000L, true);
 		if (!result) {
 			log.error("sessionId is lock,{}", sessionId);
 			return ;
@@ -54,7 +54,7 @@ public class NormalEleOrderHandlerIot extends AbstractElectricityIotHandler {
 			WarnMsgVo warnMsgVo = new WarnMsgVo();
 			warnMsgVo.setIsNeedEndOrder(eleOrderVo.getIsNeedEndOrder());
 			warnMsgVo.setMsg(eleOrderVo.getMsg());
-			redisService.set(ElectricityCabinetConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 5L, TimeUnit.MINUTES);
+			redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + eleOrderVo.getOrderId(), JsonUtil.toJson(warnMsgVo), 5L, TimeUnit.MINUTES);
 		}
 
 		EleOpenDTOBuilder builder = EleOpenDTO.builder();

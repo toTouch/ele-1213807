@@ -4,25 +4,21 @@ import cn.hutool.core.bean.BeanUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.ShareMoneyActivityRecord;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.ShareActivityMapper;
 import com.xiliulou.electricity.mapper.ShareMoneyActivityMapper;
-import com.xiliulou.electricity.query.ShareActivityQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.ShareMoneyActivityQuery;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityRecordService;
 import com.xiliulou.electricity.service.ShareMoneyActivityService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ShareActivityVO;
 import com.xiliulou.electricity.vo.ShareMoneyActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -71,7 +67,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 	@Override
 	public ShareMoneyActivity queryByIdFromCache(Integer id) {
 		//先查缓存
-		ShareMoneyActivity shareMoneyActivityCache = redisService.getWithHash(ElectricityCabinetConstant.SHARE_MONEY_ACTIVITY_CACHE + id, ShareMoneyActivity.class);
+		ShareMoneyActivity shareMoneyActivityCache = redisService.getWithHash(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE + id, ShareMoneyActivity.class);
 		if (Objects.nonNull(shareMoneyActivityCache)) {
 			return shareMoneyActivityCache;
 		}
@@ -83,7 +79,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 		}
 
 		//放入缓存
-		redisService.saveWithHash(ElectricityCabinetConstant.SHARE_MONEY_ACTIVITY_CACHE + id, shareMoneyActivity);
+		redisService.saveWithHash(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE + id, shareMoneyActivity);
 		return shareMoneyActivity;
 	}
 
@@ -129,7 +125,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 		int insert = shareMoneyActivityMapper.insert(shareMoneyActivity);
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//放入缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.SHARE_MONEY_ACTIVITY_CACHE + shareMoneyActivity.getId(), shareMoneyActivity);
+			redisService.saveWithHash(CacheConstant.SHARE_MONEY_ACTIVITY_CACHE + shareMoneyActivity.getId(), shareMoneyActivity);
 			return null;
 		});
 
@@ -173,7 +169,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 		int update = shareMoneyActivityMapper.updateById(shareMoneyActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
-			redisService.delete(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + oldShareMoneyActivity.getId());
+			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + oldShareMoneyActivity.getId());
 			return null;
 		});
 
@@ -228,7 +224,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//用户是否可用
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");
@@ -284,7 +280,7 @@ public class ShareMoneyActivityServiceImpl implements ShareMoneyActivityService 
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//用户是否可用
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");

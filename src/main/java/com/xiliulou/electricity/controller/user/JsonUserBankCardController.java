@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BankNoConstants;
-import com.xiliulou.electricity.constant.CommonConstants;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
@@ -61,7 +61,7 @@ public class JsonUserBankCardController {
 		if (ObjectUtil.isEmpty(BankNoConstants.BankNoMap.get(bankCard.getEncBankCode()))) {
 			return R.fail("PAY_TRANSFER.0006", "不支持此银行卡");
 		}
-		Boolean getLockSuccess = redisService.setNx(CommonConstants.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L, false);
+		Boolean getLockSuccess = redisService.setNx(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L, false);
 		if (!getLockSuccess) {
 			return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
 		}
@@ -70,7 +70,7 @@ public class JsonUserBankCardController {
 		bankCard.setUid(uid);
 		R result=bankCardService.bindBank(bankCard);
 
-		redisService.delete(CommonConstants.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
+		redisService.delete(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
 		return  result;
 	}
 
@@ -85,7 +85,7 @@ public class JsonUserBankCardController {
 			return R.fail("LOCKER.10017", "没有查询到相关用户");
 		}
 
-		Boolean getLockSuccess = redisService.setNx(CommonConstants.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L,false);
+		Boolean getLockSuccess = redisService.setNx(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid(), IdUtil.simpleUUID(), 10L,false);
 		if (!getLockSuccess) {
 			return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
 		}
@@ -93,7 +93,7 @@ public class JsonUserBankCardController {
 
 		R result=bankCardService.unBindBank(id);
 
-		redisService.delete(CommonConstants.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
+		redisService.delete(CacheConstant.BIND_BANK_OPER_USER_LOCK + SecurityUtils.getUid());
 		return result;
 	}
 

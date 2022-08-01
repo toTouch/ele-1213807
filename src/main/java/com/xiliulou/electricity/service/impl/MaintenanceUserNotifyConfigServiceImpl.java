@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper;
@@ -62,7 +62,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
      */
     @Override
     public MaintenanceUserNotifyConfig queryByTenantIdFromCache(Integer id) {
-        MaintenanceUserNotifyConfig cacheConfig = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, MaintenanceUserNotifyConfig.class);
+        MaintenanceUserNotifyConfig cacheConfig = redisService.getWithHash(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, MaintenanceUserNotifyConfig.class);
         if (Objects.nonNull(cacheConfig)) {
             return cacheConfig;
         }
@@ -72,7 +72,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, maintenanceUserNotifyConfig);
+        redisService.saveWithHash(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, maintenanceUserNotifyConfig);
         return maintenanceUserNotifyConfig;
     }
 
@@ -112,7 +112,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     @Transactional(rollbackFor = Exception.class)
     public Integer update(MaintenanceUserNotifyConfig maintenanceUserNotifyConfig) {
         return DbUtils.dbOperateSuccessThen(this.maintenanceUserNotifyConfigMapper.update(maintenanceUserNotifyConfig), () -> {
-            redisService.delete(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + maintenanceUserNotifyConfig.getTenantId());
+            redisService.delete(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + maintenanceUserNotifyConfig.getTenantId());
             return 1;
         });
 
@@ -301,7 +301,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return Pair.of(false, "请先配置手机号");
         }
 
-        if (!redisService.setNx(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST + tenantId, "ok", TimeUnit.MINUTES.toMillis(5), false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST + tenantId, "ok", TimeUnit.MINUTES.toMillis(5), false)) {
             return Pair.of(false, "5分钟之内只能测试一次");
         }
 

@@ -1,39 +1,25 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
-import cn.hutool.core.codec.Base64;
-import cn.hutool.core.util.RandomUtil;
-import cn.hutool.core.util.StrUtil;
-import cn.hutool.crypto.Mode;
-import cn.hutool.crypto.Padding;
-import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.RolePermissionConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.TenantMapper;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
-import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
-import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang.RandomStringUtils;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.crypto.spec.IvParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -97,7 +83,7 @@ public class TenantServiceImpl implements TenantService {
         }
 
         //限频
-        boolean lockResult = redisService.setNx(ElectricityCabinetConstant.ELE_ADD_TENANT_CACHE + tenantAddAndUpdateQuery.getId(), "1", 5 * 1000L, false);
+        boolean lockResult = redisService.setNx(CacheConstant.ELE_ADD_TENANT_CACHE + tenantAddAndUpdateQuery.getId(), "1", 5 * 1000L, false);
         if (!lockResult) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -117,16 +103,16 @@ public class TenantServiceImpl implements TenantService {
 
         //3.构建三大角色，运营商，代理商，门店
         Role operateRole = new Role();
-        operateRole.setName(ElectricityCabinetConstant.OPERATE_NAME);
-        operateRole.setCode(ElectricityCabinetConstant.OPERATE_CODE);
+        operateRole.setName(CommonConstant.OPERATE_NAME);
+        operateRole.setCode(CommonConstant.OPERATE_CODE);
 
         Role franchiseeRole = new Role();
-        franchiseeRole.setName(ElectricityCabinetConstant.FRANCHISEE_NAME);
-        franchiseeRole.setCode(ElectricityCabinetConstant.FRANCHISEE_CODE);
+        franchiseeRole.setName(CommonConstant.FRANCHISEE_NAME);
+        franchiseeRole.setCode(CommonConstant.FRANCHISEE_CODE);
 
         Role storeRole = new Role();
-        storeRole.setName(ElectricityCabinetConstant.STORE_NAME);
-        storeRole.setCode(ElectricityCabinetConstant.STORE_CODE);
+        storeRole.setName(CommonConstant.STORE_NAME);
+        storeRole.setCode(CommonConstant.STORE_CODE);
 
         ArrayList<Role> roleList = new ArrayList<>();
         roleList.add(operateRole);
@@ -223,7 +209,7 @@ public class TenantServiceImpl implements TenantService {
         tenant.setName(tenantAddAndUpdateQuery.getName());
         tenantMapper.updateById(tenant);
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenant.getId(), tenant);
+        redisService.saveWithHash(CacheConstant.CACHE_TENANT_ID + tenant.getId(), tenant);
         return R.ok();
     }
 
@@ -234,7 +220,7 @@ public class TenantServiceImpl implements TenantService {
 
     @Override
     public Tenant queryByIdFromCache(Integer tenantId) {
-        Tenant cacheTenant = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, Tenant.class);
+        Tenant cacheTenant = redisService.getWithHash(CacheConstant.CACHE_TENANT_ID + tenantId, Tenant.class);
         if (Objects.nonNull(cacheTenant)) {
             return cacheTenant;
         }
@@ -244,7 +230,7 @@ public class TenantServiceImpl implements TenantService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_ID + tenantId, tenant);
+        redisService.saveWithHash(CacheConstant.CACHE_TENANT_ID + tenantId, tenant);
         return tenant;
     }
 

@@ -4,7 +4,7 @@ import cn.hutool.core.util.IdUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.service.EleAuthEntryService;
 import com.xiliulou.electricity.service.EleUserAuthService;
@@ -50,7 +50,7 @@ public class JsonUserEleUserAuthController {
 		}
 
 		//限频
-		Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+		Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_AUTH_LOCK_KEY + uid, IdUtil.fastSimpleUUID(), 3 * 1000L, false);
 		if (!getLockSuccess) {
 			return R.fail("ELECTRICITY.0034", "操作频繁");
 		}

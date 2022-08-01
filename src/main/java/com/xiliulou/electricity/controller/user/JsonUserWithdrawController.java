@@ -3,7 +3,7 @@ package com.xiliulou.electricity.controller.user;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CommonConstants;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.query.CheckQuery;
 import com.xiliulou.electricity.query.WithdrawQuery;
 import com.xiliulou.electricity.query.WithdrawRecordQuery;
@@ -66,7 +66,7 @@ public class JsonUserWithdrawController extends BaseController {
 
 
 		//限频
-		Boolean getLockSuccess = redisService.setNx(CommonConstants.CACHE_WITHDRAW_USER_UID + user.getUid(), "1", 5L, false);
+		Boolean getLockSuccess = redisService.setNx(CacheConstant.CACHE_WITHDRAW_USER_UID + user.getUid(), "1", 5L, false);
 		if (!getLockSuccess) {
 			return R.fail("PAY_TRANSFER.0007", "请求频繁,请稍后再试");
 		}

@@ -1,11 +1,9 @@
 package com.xiliulou.electricity.controller.user;
 
 import cn.hutool.core.util.StrUtil;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.query.OpenDoorQuery;
-import com.xiliulou.electricity.query.OrderQuery;
-import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -26,7 +24,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonUserElectricityCabinetOrderController {
+public class JsonUserElectricityCabinetOrderController extends BaseController {
 	/**
 	 * 服务对象
 	 */
@@ -34,9 +32,20 @@ public class JsonUserElectricityCabinetOrderController {
 	ElectricityCabinetOrderService electricityCabinetOrderService;
 
 	//换电柜下单
+	@Deprecated
 	@PostMapping("/user/electricityCabinetOrder/order")
 	public R order(@RequestBody @Validated(value = CreateGroup.class) OrderQuery orderQuery) {
 		return electricityCabinetOrderService.order(orderQuery);
+	}
+
+	/**
+	 * 换电柜下单，用新的命令
+	 * @param orderQuery
+	 * @return
+	 */
+	@PostMapping("/user/electricityCabinetOrder/order/v2")
+	public R orderV2(@RequestBody @Validated OrderQueryV2 orderQuery) {
+		return returnTripleResult(electricityCabinetOrderService.orderV2(orderQuery));
 	}
 
 	//换电柜再次开门

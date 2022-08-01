@@ -7,7 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -320,9 +320,9 @@ public class JsonAdminElectricityCabinetController {
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //删除缓存
-        redisService.delete(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        redisService.delete(CacheConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
 
-        redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + id);
+        redisService.delete(CacheConstant.ORDER_ELE_ID + id);
         return R.ok();
     }
 
@@ -377,7 +377,7 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        String result = redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+        String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
         if (StringUtils.isEmpty(result)) {
             return R.ok();
         }

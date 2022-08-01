@@ -2,7 +2,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
@@ -43,8 +43,8 @@ public class NormalEleExchangeHandlerIot extends AbstractElectricityIotHandler {
             newElectricityCabinet.setId(electricityCabinet.getId());
             newElectricityCabinet.setVersion(receiverMessage.getVersion());
             if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName()+electricityCabinet.getTenantId());
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName()+electricityCabinet.getTenantId());
             }
             log.error("type is exchange_cabinet,{}", receiverMessage.getOriginContent());
         });

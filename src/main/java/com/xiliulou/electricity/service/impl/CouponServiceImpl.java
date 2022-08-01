@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.bean.BeanUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.CouponMapper;
@@ -19,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -47,7 +46,7 @@ public class CouponServiceImpl implements CouponService {
     @Override
     public Coupon queryByIdFromCache(Integer id) {
         //先查缓存
-        Coupon couponCache = redisService.getWithHash(ElectricityCabinetConstant.COUPON_CACHE + id, Coupon.class);
+        Coupon couponCache = redisService.getWithHash(CacheConstant.COUPON_CACHE + id, Coupon.class);
         if (Objects.nonNull(couponCache)) {
             return couponCache;
         }
@@ -61,7 +60,7 @@ public class CouponServiceImpl implements CouponService {
 
 
         //放入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.COUPON_CACHE + id, coupon);
+        redisService.saveWithHash(CacheConstant.COUPON_CACHE + id, coupon);
         return coupon;
     }
 
@@ -172,7 +171,7 @@ public class CouponServiceImpl implements CouponService {
         int update = couponMapper.updateById(oldCoupon);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
+            redisService.saveWithHash(CacheConstant.COUPON_CACHE + oldCoupon.getId(), oldCoupon);
             return null;
         });
 
