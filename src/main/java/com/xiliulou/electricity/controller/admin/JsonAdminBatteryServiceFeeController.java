@@ -87,7 +87,7 @@ public class JsonAdminBatteryServiceFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        UserInfo userInfo = userInfoService.queryByUid(uid);
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
