@@ -30,6 +30,7 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.HomePageDepositVo;
 import com.xiliulou.electricity.vo.HomePageTurnOverVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
@@ -117,7 +118,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     private IotAcsService iotAcsService;
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
-
+    @Autowired
+    EleDepositOrderService eleDepositOrderService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -1943,7 +1945,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         if (StrUtil.isNotEmpty(batteryType)) {
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> e.getBatteryType().equals(batteryType)).collect(Collectors.toList());
-            if(!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
+            if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
                 return Triple.of(false, "100217", "换电柜暂无满电电池");
             }
         }
@@ -2235,6 +2237,34 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return null;
+
+        HomePageDepositVo homePageDepositVo = new HomePageDepositVo();
+
+        long todayStartTime = DateUtils.getTodayStartTime();
+
+        //缴纳电池押金
+        CompletableFuture<Void> batteryDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null,EleDepositOrder.ELECTRICITY_DEPOSIT);
+            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime,EleDepositOrder.ELECTRICITY_DEPOSIT);
+            homePageDepositVo.setBatteryDeposit(batteryDepositTurnover);
+            homePageDepositVo.setTodayBatteryDeposit(todayBatteryDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //缴纳租车押金
+        CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null,EleDepositOrder.RENT_CAR_DEPOSIT);
+            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime,EleDepositOrder.RENT_CAR_DEPOSIT);
+            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
+            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+
+        return R.ok(homePageDepositVo);
     }
 }

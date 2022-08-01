@@ -1335,4 +1335,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         return R.ok();
     }
+
+    @Override
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime,Integer depositType) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId,todayStartTime,depositType)).orElse(BigDecimal.valueOf(0));
+    }
 }
