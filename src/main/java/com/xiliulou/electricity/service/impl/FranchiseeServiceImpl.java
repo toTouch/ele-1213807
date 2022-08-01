@@ -190,6 +190,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         Franchisee newFranchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, newFranchisee);
         newFranchisee.setUpdateTime(System.currentTimeMillis());
+        newFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
         int update = franchiseeMapper.updateById(newFranchisee);
 
         if (update > 0) {
