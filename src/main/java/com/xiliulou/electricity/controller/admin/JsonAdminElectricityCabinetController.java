@@ -479,4 +479,10 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.homepageTurnover();
     }
 
+    //首页押金统计
+    @GetMapping(value = "/admin/electricityCabinet/homepageDeposit")
+    public R homepageDeposit() {
+        return electricityCabinetService.homepageDeposit();
+    }
+
 }
