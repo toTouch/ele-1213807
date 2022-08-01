@@ -164,5 +164,27 @@
         ORDER BY id DESC limit 1
     </select>
 
+    <select id="queryBatteryMemberCardTurnOver" resultType="decimal">
+        select sum(pay_amount) from t_electricity_member_card_order
+        where status=1 and pay_type=0 and member_card_model=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="todayStartTime != null">
+            and create_time  &gt;=#{todayStartTime}
+        </if>
+    </select>
+
+    <select id="queryCarMemberCardTurnOver" resultType="decimal">
+        select sum(pay_amount) from t_electricity_member_card_order
+        where status=1 and pay_type=0 and member_card_model=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="todayStartTime != null">
+            and create_time  &gt;=#{todayStartTime}
+        </if>
+    </select>
+
 
 </mapper>

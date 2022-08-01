@@ -88,4 +88,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     public BigDecimal queryUserTurnOver(Integer tenantId, Long uid) {
         return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId,uid)).orElse(new BigDecimal("0"));
     }
+
+    @Override
+    public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime) {
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId,todayStartTime)).orElse(new BigDecimal("0"));
+    }
 }

@@ -473,4 +473,10 @@ public class JsonAdminElectricityCabinetController {
         return R.ok(eleCabinetCoreData);
     }
 
+    //首页营业额统计
+    @GetMapping(value = "/admin/electricityCabinet/homepageTurnover")
+    public R homepageTurnover() {
+        return electricityCabinetService.homepageTurnover();
+    }
+
 }
