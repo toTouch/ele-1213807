@@ -93,8 +93,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             return R.ok(electricityCabinetBoxVOList);
         }
 
-        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = new ArrayList<>(electricityCabinetBoxVOList.size());
-        electricityCabinetBoxVOList.parallelStream().forEach(item -> {
+        List<ElectricityCabinetBoxVO> electricityCabinetBoxVOs = electricityCabinetBoxVOList.parallelStream().peek(item -> {
             if (StringUtils.isNotBlank(item.getSn())) {
                 ElectricityBatteryVO electricityBatteryVO = electricityBatteryService.selectBatteryDetailInfoBySN(item.getSn());
                 if (Objects.nonNull(electricityBatteryVO)) {
@@ -104,8 +103,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                     item.setBatteryV(electricityBatteryVO.getBatteryV());
                 }
             }
-            electricityCabinetBoxVOs.add(item);
-        });
+        }).collect(Collectors.toList());
 
         List<ElectricityCabinetBoxVO> result = electricityCabinetBoxVOs.stream().sorted(Comparator.comparing(item -> Integer.parseInt(item.getCellNo()))).collect(Collectors.toList());
 
