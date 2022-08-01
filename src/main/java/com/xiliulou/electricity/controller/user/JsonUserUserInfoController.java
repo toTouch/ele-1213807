@@ -23,6 +23,7 @@ public class JsonUserUserInfoController {
 
     //查看用户状态
     @GetMapping(value = "/user/userInfo/queryUserInfo")
+    @Deprecated
     public R queryUserInfo() {
         return userInfoService.queryUserInfo();
     }

@@ -242,7 +242,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
-            if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+            if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
                 eleBatteryServiceFeeVO.setModel(model);
                 List<ModelBatteryDeposit> list = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);

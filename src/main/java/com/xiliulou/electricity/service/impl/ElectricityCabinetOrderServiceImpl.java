@@ -5,6 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
+import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.google.common.collect.Maps;
@@ -13,6 +14,7 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -1305,9 +1307,9 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             //判断用户有没有条件下单（套餐，月卡）
             FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-            Triple<Boolean, String, String> checkConditionResult = checkUserHasConditionOrder(franchiseeUserInfo, store, user);
+            Triple<Boolean, String, Object> checkConditionResult = checkUserHasConditionOrder(franchiseeUserInfo, store, user);
             if (!checkConditionResult.getLeft()) {
-                return Triple.of(false, checkConditionResult.getMiddle(), checkConditionResult.getRight());
+                return checkConditionResult;
             }
 
             //默认是小程序下单
@@ -1320,7 +1322,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100215", "换电柜暂无空仓");
             }
 
-            Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged());
+            Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged(), franchiseeUserInfo.getFranchiseeId());
             if (!usableBatteryCellNoResult.getLeft()) {
                 return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
             }
@@ -1370,7 +1372,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
             Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             if (!result.getLeft()) {
-                return Triple.of(false,"100218","下单消息发送失败");
+                return Triple.of(false, "100218", "下单消息发送失败");
             }
             return Triple.of(true, null, null);
         } finally {
@@ -1396,7 +1398,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(true, null, null);
     }
 
-    private Triple<Boolean, String, String> checkUserHasConditionOrder(FranchiseeUserInfo franchiseeUserInfo, Store store, TokenUser user) {
+    private Triple<Boolean, String, Object> checkUserHasConditionOrder(FranchiseeUserInfo franchiseeUserInfo, Store store, TokenUser user) {
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("ORDER ERROR! not found franchiseeUser! uid={}", user.getUid());
             return Triple.of(false, "100207", "用户加盟商信息未找到");
@@ -1444,12 +1446,61 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
         }
 
+        if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            return Triple.of(true, null, null);
+        }
+
+        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        if (Objects.isNull(franchiseeUserInfo.getNowElectricityBatterySn()) || cardDays < 1) {
+            return Triple.of(true, null, null);
+        }
+
+        //这里开始计费用户电池服务费
+        Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+            Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
+            List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+
+            Optional<ModelBatteryDeposit> modelBatteryDepositOptional = modelBatteryDepositList.stream().filter(m -> model.equals(m.getModel())).findFirst();
+            if (modelBatteryDepositOptional.isEmpty()) {
+                log.error("ORDER ERROR! modelBattery is null ,uid={},cardId={}", user.getUid(), franchiseeUserInfo.getCardType());
+                return Triple.of(true, null, null);
+            }
+
+            //计算服务费
+            BigDecimal batteryServiceFee = modelBatteryDepositOptional.get().getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                return Triple.of(false, "100220", batteryServiceFee);
+            }
+        } else {
+            BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+            //计算服务费
+            BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+            if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                return Triple.of(false, "100220", batteryServiceFee);
+            }
+        }
+
         return Triple.of(true, null, null);
+
+
     }
 
-    // TODO: 2022/7/28
     private Triple<Boolean, String, String> checkUserExistsUnFinishOrder(Long uid) {
-        return null;
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);
+        if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
+            return Triple.of(true,"100200", "存在未完成租电订单，不能下单");
+        } else if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
+            return Triple.of(true,"100202", "存在未完成租电订单，不能下单");
+        }
+
+        //是否存在未完成的换电订单
+        ElectricityCabinetOrder oldElectricityCabinetOrder = queryByUid(uid);
+        if (Objects.nonNull(oldElectricityCabinetOrder)) {
+            return Triple.of(true,"100201", "存在未完成换电订单，不能下单");
+        }
+
+        return Triple.of(false,null,null);
     }
 
 }

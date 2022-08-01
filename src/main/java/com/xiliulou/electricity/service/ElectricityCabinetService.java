@@ -8,7 +8,6 @@ import com.xiliulou.electricity.query.EleOuterCommandQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
-import com.xiliulou.electricity.vo.MapVo;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -80,7 +79,7 @@ public interface ElectricityCabinetService {
     R queryByDeviceOuter(String productKey, String deviceName);
 
     R showInfoByStoreId(Long storeId);
-
+    @Deprecated
     R queryByOrder(String productKey, String deviceName);
 
     R queryByRentBattery(String productKey, String deviceName);
@@ -107,7 +106,7 @@ public interface ElectricityCabinetService {
 
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
-    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged);
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
 
     void unlockElectricityCabinet(Integer eid);
 

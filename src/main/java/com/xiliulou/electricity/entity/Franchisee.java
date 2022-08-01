@@ -82,7 +82,7 @@ public class Franchisee {
     public static final Integer DEL_DEL = 1;
 
     public static final Integer OLD_MODEL_TYPE = 1;
-    public static final Integer MEW_MODEL_TYPE = 2;
+    public static final Integer NEW_MODEL_TYPE = 2;
 
     public static final Integer DISABLE_MEMBER_CARD_PAY_TYPE = 1;
 
