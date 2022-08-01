@@ -20,7 +20,6 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.StorageService;
-import io.netty.util.internal.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -104,7 +103,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//用户
-		UserInfo oldUserInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo oldUserInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(oldUserInfo)) {
 			log.error("ELECTRICITY  ERROR! not found user！uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -173,7 +172,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 	@Override
 	public R getEleUserAuthSpecificStatus(Long uid) {
 
-		UserInfo userInfo = userInfoService.queryByUid(uid);
+		UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
 		if (Objects.isNull(userInfo)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
 			return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -211,7 +210,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 			return R.fail("ELECTRICITY.0001", "未找到用户");
 		}
 
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", user.getUid());
 			return R.fail("ELECTRICITY.0001", "未找到用户");

@@ -3,10 +3,8 @@ package com.xiliulou.electricity.handler.iot.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.dto.EleOpenDTO;
-import com.xiliulou.electricity.dto.EleOpenDTO.EleOpenDTOBuilder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
@@ -14,7 +12,6 @@ import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.queue.EleOperateQueueHandler;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
-import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -63,7 +60,7 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
 
         //幂等加锁
-        Boolean result = redisService.setNx(ElectricityCabinetConstant.SELF_OPEN_CALL_CACHE_KEY + eleSelfOPenCellOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
+        Boolean result = redisService.setNx(CacheConstant.SELF_OPEN_CALL_CACHE_KEY + eleSelfOPenCellOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
         if (!result) {
             log.error("OFFLINE EXCHANGE orderId is lock,{}", eleSelfOPenCellOrderVo.getOrderId());
             return;
@@ -77,9 +74,9 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
 
         //操作回调的放在redis中,记录开门结果
         if (Objects.nonNull(eleSelfOPenCellOrderVo.getResult()) && eleSelfOPenCellOrderVo.getResult()) {
-            redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
+            redisService.set(CacheConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
         } else {
-            redisService.set(ElectricityCabinetConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
+            redisService.set(CacheConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "false", 30L, TimeUnit.SECONDS);
         }
 
         ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecordUpdate = new ElectricityExceptionOrderStatusRecord();

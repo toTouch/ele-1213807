@@ -18,7 +18,7 @@
 package com.xiliulou.electricity.filter;
 
 import cn.hutool.core.util.StrUtil;
-import com.xiliulou.electricity.constant.CommonConstants;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
@@ -47,13 +47,13 @@ public class TenantContextHolderFilter extends GenericFilterBean {
 		HttpServletRequest request = (HttpServletRequest) servletRequest;
 		HttpServletResponse response = (HttpServletResponse) servletResponse;
 
-		String tenantId = request.getHeader(CommonConstants.TENANT_ID);
+		String tenantId = request.getHeader(CommonConstant.TENANT_ID);
 		log.debug("获取header中的租户ID为:{}", tenantId);
 
 		if (StrUtil.isNotBlank(tenantId)) {
 			TenantContextHolder.setTenantId(Integer.parseInt(tenantId));
 		} else {
-			TenantContextHolder.setTenantId(CommonConstants.TENANT_ID_DEFAULT);
+			TenantContextHolder.setTenantId(CommonConstant.TENANT_ID_DEFAULT);
 		}
 
 		try {

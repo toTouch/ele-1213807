@@ -12,18 +12,15 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.constant.BankNoConstants;
-import com.xiliulou.electricity.constant.CommonConstants;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BankCard;
-import com.xiliulou.electricity.entity.EleUserAuth;
 import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.PayTransferRecord;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserAmount;
 import com.xiliulou.electricity.entity.UserAmountHistory;
-import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.mapper.WithdrawRecordMapper;
@@ -42,17 +39,14 @@ import com.xiliulou.electricity.service.WithdrawPasswordService;
 import com.xiliulou.electricity.service.WithdrawRecordService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DesensitizationUtil;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.WithdrawRecordVO;
 import com.xiliulou.pay.weixin.query.PayTransferQuery;
 import com.xiliulou.pay.weixin.transferPay.TransferPayHandlerService;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
-import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.security.SecurityProperties;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -67,7 +61,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -198,7 +191,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			return R.ok();
 
 		} finally {
-			redisService.delete(CommonConstants.CACHE_WITHDRAW_USER_UID + query.getUid());
+			redisService.delete(CacheConstant.CACHE_WITHDRAW_USER_UID + query.getUid());
 		}
 
 	}

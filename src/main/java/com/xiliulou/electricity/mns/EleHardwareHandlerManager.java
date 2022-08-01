@@ -1,18 +1,16 @@
 package com.xiliulou.electricity.mns;
 
-import cn.hutool.core.util.StrUtil;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.config.TenantConfig;
-import com.xiliulou.electricity.constant.CommonConstants;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
-import com.xiliulou.electricity.handler.iot.impl.*;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
@@ -189,11 +187,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             //在线状态修改
             ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
             newElectricityCabinet.setId(electricityCabinet.getId());
-            newElectricityCabinet.setOnlineStatus(CommonConstants.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
+            newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
 
             if (electricityCabinetService.update(newElectricityCabinet) > 0) {
-                redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
-                redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
+                redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
             }
 
             log.error("ELE ERROR! type is null,{}", receiverMessage.getOriginContent());
@@ -279,12 +277,12 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     }
 
     private String acquireAccessToken() throws FeishuException {
-        String token = redisService.get(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN);
+        String token = redisService.get(CacheConstant.CACHE_FEISHU_ACCESS_TOKEN);
 
         if (StringUtils.isBlank(token)) {
             FeishuTokenRsp feishuTokenRsp = feishuTokenService.acquireAccessToken();
             token = feishuTokenRsp.getTenantAccessToken();
-            redisService.set(ElectricityCabinetConstant.CACHE_FEISHU_ACCESS_TOKEN,
+            redisService.set(CacheConstant.CACHE_FEISHU_ACCESS_TOKEN,
                     token, 1800L, TimeUnit.SECONDS);
         }
 
@@ -294,10 +292,10 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     private String getOnlineStatus(String status) {
         String str = "";
         switch (status) {
-            case CommonConstants.STATUS_ONLINE:
+            case CommonConstant.STATUS_ONLINE:
                 str = "上线";
                 break;
-            case CommonConstants.STATUS_OFFLINE:
+            case CommonConstant.STATUS_OFFLINE:
                 str = "下线";
                 break;
         }

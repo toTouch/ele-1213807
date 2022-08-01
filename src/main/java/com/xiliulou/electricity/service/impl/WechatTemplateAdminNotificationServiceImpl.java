@@ -3,15 +3,13 @@ package com.xiliulou.electricity.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.WechatTemplateAdminNotification;
 import com.xiliulou.electricity.mapper.WechatTemplateAdminNotificationMapper;
 import com.xiliulou.electricity.query.WechatTemplateAdminNotificationQuery;
 import com.xiliulou.electricity.service.WechatTemplateAdminNotificationService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.WechatTemplateAdminNotificationVo;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -57,14 +55,14 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
     public  WechatTemplateAdminNotification queryByIdFromCache(Long id) {
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        WechatTemplateAdminNotification wechatTemplateAdminNotification = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ADMIN_NOTIFICATION+tenantId, WechatTemplateAdminNotification.class );
+        WechatTemplateAdminNotification wechatTemplateAdminNotification = redisService.getWithHash(CacheConstant.CACHE_ADMIN_NOTIFICATION+tenantId, WechatTemplateAdminNotification.class );
         if(Objects.nonNull(wechatTemplateAdminNotification)){
             return wechatTemplateAdminNotification;
         }
 
         wechatTemplateAdminNotification = this.queryByIdFromDB(id);
         if(Objects.nonNull(wechatTemplateAdminNotification)){
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ADMIN_NOTIFICATION + wechatTemplateAdminNotification.getTenantId(), wechatTemplateAdminNotification);
+            redisService.saveWithHash(CacheConstant.CACHE_ADMIN_NOTIFICATION + wechatTemplateAdminNotification.getTenantId(), wechatTemplateAdminNotification);
             return wechatTemplateAdminNotification;
         }
 
@@ -145,7 +143,7 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         wechatTemplateAdminNotification.setDelFlag(WechatTemplateAdminNotification.DEL_NORMAL);
         this.insert(wechatTemplateAdminNotification);
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ADMIN_NOTIFICATION + tenantId, wechatTemplateAdminNotification);
+        redisService.saveWithHash(CacheConstant.CACHE_ADMIN_NOTIFICATION + tenantId, wechatTemplateAdminNotification);
         return R.ok();
     }
 
@@ -168,20 +166,20 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         wechatTemplateAdminNotification.setUpdateTime(System.currentTimeMillis());
         this.update(wechatTemplateAdminNotification);
 
-        redisService.delete(ElectricityCabinetConstant.CACHE_ADMIN_NOTIFICATION + tenantId);
+        redisService.delete(CacheConstant.CACHE_ADMIN_NOTIFICATION + tenantId);
         return R.ok();
     }
 
     @Override
     public WechatTemplateAdminNotification queryByTenant(Integer tenantId) {
-        WechatTemplateAdminNotification wechatTemplateAdminNotification = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ADMIN_NOTIFICATION+tenantId, WechatTemplateAdminNotification.class );
+        WechatTemplateAdminNotification wechatTemplateAdminNotification = redisService.getWithHash(CacheConstant.CACHE_ADMIN_NOTIFICATION+tenantId, WechatTemplateAdminNotification.class );
         if(Objects.nonNull(wechatTemplateAdminNotification)){
             return wechatTemplateAdminNotification;
         }
 
         wechatTemplateAdminNotification = wechatTemplateAdminNotificationMapper.queryByTenant(tenantId);
         if(Objects.nonNull(wechatTemplateAdminNotification)){
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ADMIN_NOTIFICATION + tenantId, wechatTemplateAdminNotification);
+            redisService.saveWithHash(CacheConstant.CACHE_ADMIN_NOTIFICATION + tenantId, wechatTemplateAdminNotification);
             return wechatTemplateAdminNotification;
         }
 

@@ -8,7 +8,7 @@ import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.CommonConstants;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.mapper.WithdrawPasswordMapper;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
@@ -51,7 +51,7 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 	@Override
 	public WithdrawPassword queryFromCache() {
 		//先查缓存
-		WithdrawPassword cacheWithdrawPassword = redisService.getWithHash(CommonConstants.CACHE_WITHDRAW_PASSWORD, WithdrawPassword.class);
+		WithdrawPassword cacheWithdrawPassword = redisService.getWithHash(CacheConstant.CACHE_WITHDRAW_PASSWORD, WithdrawPassword.class);
 		if (Objects.nonNull(cacheWithdrawPassword)) {
 			return cacheWithdrawPassword;
 		}
@@ -61,7 +61,7 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 			return null;
 		}
 		//放入缓存
-		redisService.saveWithHash(CommonConstants.CACHE_WITHDRAW_PASSWORD, withdrawPassword);
+		redisService.saveWithHash(CacheConstant.CACHE_WITHDRAW_PASSWORD, withdrawPassword);
 		return withdrawPassword;
 	}
 
@@ -91,7 +91,7 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 			withdrawPassword.setPassword(customPasswordEncoder.encode(decryptPassword));
 			withdrawPassword.setUpdateTime(System.currentTimeMillis());
 			withdrawPasswordMapper.updateById(withdrawPassword);
-			redisService.delete(CommonConstants.CACHE_WITHDRAW_PASSWORD);
+			redisService.delete(CacheConstant.CACHE_WITHDRAW_PASSWORD);
 		}
 		return R.ok();
 	}

@@ -3,7 +3,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.mapper.EleAuthEntryMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
@@ -38,11 +38,11 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
      */
     @Override
     public EleAuthEntry queryByIdFromCache(Integer id) {
-        EleAuthEntry eleAuthEntry =redisService.getWithHash(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY  + id, EleAuthEntry.class);
+        EleAuthEntry eleAuthEntry =redisService.getWithHash(CacheConstant.ELE_CACHE_AUTH_ENTRY  + id, EleAuthEntry.class);
         if (Objects.isNull(eleAuthEntry)) {
             eleAuthEntry = this.eleAuthEntryMapper.selectById(id);
             if (Objects.nonNull(eleAuthEntry)) {
-                redisService.saveWithHash(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY  + id, eleAuthEntry);
+                redisService.saveWithHash(CacheConstant.ELE_CACHE_AUTH_ENTRY  + id, eleAuthEntry);
             }
         }
         return eleAuthEntry;
@@ -60,7 +60,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
             eleAuthEntryMapper.updateById(eleAuthEntry);
-            redisService.delete(ElectricityCabinetConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
+            redisService.delete(CacheConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
         }
         return R.ok();
     }
