@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -211,6 +212,26 @@ public class JsonAdminElectricityMemberCardOrderController {
 	@PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
 	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
 		return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
+	}
+
+	/**
+	 * 暂停用户套餐
+	 * @param usableStatus
+	 * @return
+	 */
+	@PutMapping("/admin/memberCard/openOrDisableMemberCard")
+	public R adminOpenOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam( "uid") Long uid){
+		return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus,uid);
+	}
+
+	/**
+	 * 	清除用户电池服务费
+	 * @param uid
+	 * @return
+	 */
+	@PutMapping("/admin/memberCard/cleanBatteryServiceFee")
+	public R cleanBatteryServiceFee(@RequestParam( "uid") Long uid){
+		return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
 	}
 
 }

@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -30,6 +32,9 @@ public class JsonAdminBatteryServiceFeeController {
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
+
+    @Autowired
+    UserInfoService userInfoService;
 
 
     /**
@@ -66,6 +71,28 @@ public class JsonAdminBatteryServiceFeeController {
         }
 
         return eleBatteryServiceFeeOrderService.queryListForAdmin(offset, size, queryStartTime, queryEndTime, uid, status);
+    }
+
+    /**
+     * 查询电池服务费
+     *
+     * @return
+     */
+    @GetMapping("/admin/batteryServiceFee/query")
+    public R queryBatteryServiceFee(@RequestParam("uid") Long uid) {
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        UserInfo userInfo = userInfoService.queryByUid(uid);
+        if (Objects.isNull(userInfo)) {
+            log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
     }
 
 }
