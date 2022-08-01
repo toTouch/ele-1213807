@@ -2207,12 +2207,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee);
         try {
+            System.out.println("营业额======================="+homePageTurnOverVo.getSumTurnover()+"==="+homePageTurnOverVo.getTodayTurnover());
+            resultFuture.get(10, TimeUnit.SECONDS);
             homePageTurnOverVo.setSumTurnover(homePageTurnOverVo.getBatteryMemberCardTurnover().add(homePageTurnOverVo.getBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getCarMemberCardTurnover()));
             homePageTurnOverVo.setTodayTurnover(homePageTurnOverVo.getTodayBatteryMemberCardTurnover().add(homePageTurnOverVo.getTodayBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getTodayCarMemberCardTurnover()));
-
-            System.out.println("营业额======================="+homePageTurnOverVo.getSumTurnover()+"==="+homePageTurnOverVo.getTodayTurnover());
-
-            resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
