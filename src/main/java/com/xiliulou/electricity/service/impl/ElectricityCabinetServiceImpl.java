@@ -2195,17 +2195,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee).whenComplete((a, b) -> {
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
             homePageTurnOverVo.setSumTurnover(homePageTurnOverVo.getBatteryMemberCardTurnover().add(homePageTurnOverVo.getBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getCarMemberCardTurnover()));
             homePageTurnOverVo.setTodayTurnover(homePageTurnOverVo.getTodayBatteryMemberCardTurnover().add(homePageTurnOverVo.getTodayBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getTodayCarMemberCardTurnover()));
-        });
-//        try {
-////            resultFuture.get(10, TimeUnit.SECONDS);
-//            homePageTurnOverVo.setSumTurnover(homePageTurnOverVo.getBatteryMemberCardTurnover().add(homePageTurnOverVo.getBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getCarMemberCardTurnover()));
-//            homePageTurnOverVo.setTodayTurnover(homePageTurnOverVo.getTodayBatteryMemberCardTurnover().add(homePageTurnOverVo.getTodayBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getTodayCarMemberCardTurnover()));
-//        } catch (Exception e) {
-//            log.error("DATA SUMMARY BROWSING ERROR!", e);
-//        }
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
 
         return R.ok(homePageTurnOverVo);
     }
