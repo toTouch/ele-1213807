@@ -128,4 +128,6 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId);
 
     R homepageTurnover();
+
+    R homepageDeposit();
 }
