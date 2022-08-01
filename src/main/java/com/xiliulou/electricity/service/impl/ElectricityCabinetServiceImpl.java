@@ -2167,10 +2167,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             BigDecimal todayBatteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, todayStartTime);
             homePageTurnOverVo.setBatteryMemberCardTurnover(batteryMemberCardTurnover);
             homePageTurnOverVo.setTodayBatteryMemberCardTurnover(todayBatteryMemberCardTurnover);
-
-
-            System.out.println("换电套餐营业额======================="+homePageTurnOverVo.getBatteryMemberCardTurnover()+"==="+homePageTurnOverVo.getTodayBatteryMemberCardTurnover());
-
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -2182,9 +2178,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime);
             homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
             homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
-
-            System.out.println("租车套餐营业额======================="+homePageTurnOverVo.getCarMemberCardTurnover()+"==="+homePageTurnOverVo.getTodayCarMemberCardTurnover());
-
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -2196,9 +2189,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             BigDecimal todayBatteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, todayStartTime);
             homePageTurnOverVo.setTodayBatteryServiceFeeTurnover(todayBatteryServiceFeeTurnover);
             homePageTurnOverVo.setBatteryServiceFeeTurnover(batteryServiceFeeTurnover);
-
-            System.out.println("服务费套餐营业额======================="+homePageTurnOverVo.getBatteryServiceFeeTurnover()+"==="+homePageTurnOverVo.getTodayBatteryServiceFeeTurnover());
-
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
@@ -2207,8 +2197,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //等待所有线程停止
         CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee);
         try {
-            System.out.println("营业额======================="+homePageTurnOverVo.getSumTurnover()+"==="+homePageTurnOverVo.getTodayTurnover());
-            resultFuture.get(10, TimeUnit.SECONDS);
+//            resultFuture.get(10, TimeUnit.SECONDS);
             homePageTurnOverVo.setSumTurnover(homePageTurnOverVo.getBatteryMemberCardTurnover().add(homePageTurnOverVo.getBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getCarMemberCardTurnover()));
             homePageTurnOverVo.setTodayTurnover(homePageTurnOverVo.getTodayBatteryMemberCardTurnover().add(homePageTurnOverVo.getTodayBatteryServiceFeeTurnover()).add(homePageTurnOverVo.getTodayCarMemberCardTurnover()));
         } catch (Exception e) {
