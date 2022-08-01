@@ -123,4 +123,6 @@ public interface ElectricityCabinetService {
     int idempotentUpdateCupboard(ElectricityCabinet electricityCabinet, ElectricityCabinet updateElectricityCabinet);
 
     R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId);
+
+    R homepageTurnover();
 }

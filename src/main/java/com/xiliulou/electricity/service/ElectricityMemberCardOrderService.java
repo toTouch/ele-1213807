@@ -49,4 +49,8 @@ public interface ElectricityMemberCardOrderService {
     R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
+
+    BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId,Long todayStartTime);
+
+    BigDecimal queryCarMemberCardTurnOver(Integer tenantId,Long todayStartTime);
 }

@@ -56,4 +56,12 @@ public interface EleBatteryServiceFeeOrderService {
      * @return
      */
     BigDecimal queryUserTurnOver(Integer tenantId,Long uid);
+
+    /**
+     * 总消费额
+     * @param tenantId
+     * @param todayStartTime
+     * @return
+     */
+    BigDecimal queryTurnOver(Integer tenantId,Long todayStartTime);
 }

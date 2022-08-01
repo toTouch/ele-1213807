@@ -1117,6 +1117,16 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return baseMapper.queryLastPayMemberCardTimeByUid(uid, franchiseeId, tenantId);
     }
 
+    @Override
+    public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime) {
+        return Optional.ofNullable(baseMapper.queryBatteryMemberCardTurnOver(tenantId, todayStartTime)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime) {
+        return Optional.ofNullable(baseMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime)).orElse(BigDecimal.valueOf(0));
+    }
+
     private String generateOrderId(Long uid) {
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
                 RandomUtil.randomNumbers(6);

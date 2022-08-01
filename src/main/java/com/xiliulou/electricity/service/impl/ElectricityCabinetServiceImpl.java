@@ -32,6 +32,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -117,6 +118,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     TenantService tenantService;
     @Autowired
     private IotAcsService iotAcsService;
+    @Autowired
+    EleBatteryServiceFeeOrderService eleBatteryServiceFeeOrderService;
 
 
     /**
@@ -2143,5 +2146,70 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         }
         return R.ok(resultList);
+    }
+
+    @Override
+    public R homepageTurnover() {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        HomePageTurnOverVo homePageTurnOverVo = new HomePageTurnOverVo();
+
+        long todayStartTime = DateUtils.getTodayStartTime();
+        //购买换电月卡
+        CompletableFuture<BigDecimal> batteryMemberCard = CompletableFuture.supplyAsync(() -> {
+            BigDecimal batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, null);
+            BigDecimal todayBatteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOver(tenantId, todayStartTime);
+            homePageTurnOverVo.setBatteryMemberCardTurnover(batteryMemberCardTurnover);
+//            homePageTurnOverVo.setTodayBatteryMemberCardTurnover(todayBatteryMemberCardTurnover);
+            return todayBatteryMemberCardTurnover;
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //购买租车月卡
+        CompletableFuture<BigDecimal> carMemberCard = CompletableFuture.supplyAsync(() -> {
+            BigDecimal carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, null);
+            BigDecimal todayCarMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOver(tenantId, todayStartTime);
+            homePageTurnOverVo.setCarMemberCardTurnover(carMemberCardTurnover);
+//            homePageTurnOverVo.setTodayCarMemberCardTurnover(todayCarMemberCardTurnover);
+            return todayCarMemberCardTurnover;
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //电池服务费
+        CompletableFuture<Void> batteryServiceFee = CompletableFuture.runAsync(() -> {
+            BigDecimal batteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, null);
+            BigDecimal todayBatteryServiceFeeTurnover = eleBatteryServiceFeeOrderService.queryTurnOver(tenantId, todayStartTime);
+            homePageTurnOverVo.setTodayBatteryServiceFeeTurnover(todayBatteryServiceFeeTurnover);
+            homePageTurnOverVo.setBatteryServiceFeeTurnover(batteryServiceFeeTurnover);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+//
+//        //计算总营业额
+//        CompletableFuture<Void> payAmountSumFuture = depositAndMemberCardTurnOver
+//                .thenAcceptBoth(refundTurnOver, (memberCardAndDepositSumAmount, depositSumAmount) -> {
+//                    BigDecimal turnover = memberCardAndDepositSumAmount.subtract(depositSumAmount);
+//                    dataBrowsingVo.setSumTurnover(turnover);
+//                }).exceptionally(e -> {
+//                    log.error("DATA SUMMARY BROWSING ERROR! statistics pay amount sum error!", e);
+//                    return null;
+//                });
+
+
+        return null;
     }
 }
