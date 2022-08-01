@@ -310,7 +310,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         //分配电池 --只分配满电电池
         Triple<Boolean, String, Object> tripleResult;
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             tripleResult = findUsableBatteryCellNo(electricityCabinet, null, franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(), null);
         } else {
             tripleResult = findUsableBatteryCellNo(electricityCabinet, null, null, franchiseeUserInfo.getFranchiseeId(), null);

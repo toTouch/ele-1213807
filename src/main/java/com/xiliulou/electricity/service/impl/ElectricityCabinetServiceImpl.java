@@ -1488,7 +1488,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 //            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
 //        }
         Triple<Boolean, String, Object> tripleResult;
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
         } else {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
@@ -1663,7 +1663,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         Triple<Boolean, String, Object> tripleResult;
         //查满仓空仓数
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
         } else {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
@@ -1922,12 +1922,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged) {
-        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, batteryType, fullyCharged);
+        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, null, fullyCharged);
         if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
             return Pair.of(false, null);
         }
 
         return Pair.of(true, usableBatteryCellNos.get(0));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged) {
+        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, null, fullyCharged);
+        if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
+            return Triple.of(false, "100216", "换电柜暂无满电电池");
+        }
+
+        if (StrUtil.isNotEmpty(batteryType)) {
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> e.getBatteryType().equals(batteryType)).collect(Collectors.toList());
+            if(!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
+                return Triple.of(false, "100217", "换电柜暂无满电电池");
+            }
+        }
+        return Triple.of(true, null, usableBatteryCellNos.get(0));
     }
 
     @Override
@@ -2084,7 +2100,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             if (Objects.nonNull(electricityBatteries) && Integer.parseInt(simpleDateFormat.format(now)) > Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeBeginTime())) && Integer.parseInt(simpleDateFormat.format(now)) < Integer.parseInt(simpleDateFormat.format(lowBatteryExchangeModel.getExchangeEndTime()))) {
                 for (ElectricityBattery electricityBattery : electricityBatteries) {
                     //电池所在仓门非禁用
-                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(),electricityCabinetId);
+                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryBySn(electricityBattery.getSn(), electricityCabinetId);
                     if (Objects.nonNull(electricityCabinetBox)) {
                         if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(lowBatteryExchangeModel.getBatteryPowerStandard()) && electricityBattery.getPower() > lowBatteryExchangeModel.getBatteryPowerStandard()) {
                             //3、查加盟商是否绑定电池

@@ -77,28 +77,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
 
     public Pair<Boolean, String> chooseCommandHandlerProcessSend(HardwareCommandQuery hardwareCommandQuery) {
-//        if (hardwareCommandQuery.getCommand().contains("cell") || hardwareCommandQuery.getCommand().contains("order")
-//                || hardwareCommandQuery.getCommand().contains("cupboard")
-//                || hardwareCommandQuery.getCommand().contains("rent")
-//                || hardwareCommandQuery.getCommand().contains("return")
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.EXCHANGE_CABINET)
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_OPERATE)
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_CELL_CONFIG)
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_POWER_CONSUMPTION)
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_OTHER_CONFIG)
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_BATTERY_SYNC_INFO)
-//                || hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_CUPBOARD_RESTART)
-//                || (hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_UNLOCK_CABINET))
-//                || (hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.API_EXCHANGE_ORDER))
-//                || (hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.ELE_COMMAND_OTHER_CONFIG_READ))
-//                || (hardwareCommandQuery.getCommand().equals(ElectricityIotConstant.GET_CARD_NUM_ICCID))) {
-//            return normalEleOrderHandlerIot.handleSendHardwareCommand(hardwareCommandQuery);
-//        } else {
-//            log.error("command not support handle,command:{}", hardwareCommandQuery.getCommand());
-//            return Pair.of(false, "");
-//        }
-        
-
         IElectricityHandler electricityHandler = electricityHandlerMap.get(ElectricityIotConstant.acquireChargeHandlerName(hardwareCommandQuery.getCommand()));
         if (Objects.isNull(electricityHandler)) {
             log.error("ELE ERROR! command not support handle,command:{}", hardwareCommandQuery.getCommand());

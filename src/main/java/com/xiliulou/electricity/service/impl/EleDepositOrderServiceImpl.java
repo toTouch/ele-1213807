@@ -1301,7 +1301,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
                 .modelType(batteryDepositAdd.getModelType()).build();
-        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
         }
         eleDepositOrderMapper.insert(eleDepositOrder);

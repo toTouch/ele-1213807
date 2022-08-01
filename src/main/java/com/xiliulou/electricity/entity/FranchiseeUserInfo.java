@@ -170,11 +170,17 @@ public class FranchiseeUserInfo {
 
 
     public static final Integer OLD_MODEL_TYPE = 1;
-    public static final Integer MEW_MODEL_TYPE = 2;
+    public static final Integer NEW_MODEL_TYPE = 2;
 
     public static final Integer MEMBER_CARD_NOT_DISABLE = 0;
     public static final Integer MEMBER_CARD_DISABLE = 1;
+    /**
+     * 月卡审核中
+     */
     public static final Integer MEMBER_CARD_DISABLE_REVIEW = 2;
+    /**
+     * 月卡审核被拒
+     */
     public static final Integer MEMBER_CARD_DISABLE_REVIEW_REFUSE = 3;
 
     public static final Integer RENT_CAR_STATUS_INIT = 0;
@@ -183,7 +189,7 @@ public class FranchiseeUserInfo {
 
 
     //送次数卡
-    public static final Integer TYPE_COUNT = 3;
+    public static final Integer TYPE_COUNT = ElectricityMemberCard.TYPE_COUNT;
 
     public static final Integer MEMBER_CARD_OWE = 1;
 

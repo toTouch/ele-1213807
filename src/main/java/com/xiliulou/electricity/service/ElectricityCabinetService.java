@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import com.xiliulou.electricity.vo.MapVo;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashMap;
 import java.util.List;
@@ -106,6 +107,8 @@ public interface ElectricityCabinetService {
 
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged);
+
     void unlockElectricityCabinet(Integer eid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
@@ -114,7 +117,7 @@ public interface ElectricityCabinetService {
 
     Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery);
 
-    Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds);
+    Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds);
 
     R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery);
 

@@ -317,7 +317,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
         //多电池型号查询套餐
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             if (Objects.isNull(franchiseeUserInfo.getBatteryType())) {
                 return R.ok();
             }
