@@ -1368,7 +1368,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .data(commandData)
                     .productKey(electricityCabinet.getProductKey())
                     .deviceName(electricityCabinet.getDeviceName())
-                    .command(ElectricityIotConstant.ELE_COMMAND_ORDER_OPEN_OLD_DOOR).build();
+                    .command(ElectricityIotConstant.ELE_COMMAND_NEW_EXCHANGE_ORDER).build();
             Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
             if (!result.getLeft()) {
                 return Triple.of(false, "100218", "下单消息发送失败");
