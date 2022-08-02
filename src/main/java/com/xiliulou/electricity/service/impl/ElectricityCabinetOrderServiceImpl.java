@@ -1512,6 +1512,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         String status = electricityCabinetOrder.getStatus();
         ExchangeOrderMsgShowVO showVo = new ExchangeOrderMsgShowVO();
+        showVo.setType(ExchangeOrderMsgShowVO.TYPE_SUCCESS);
 
         if (isOpenPlaceCellStatus(status)) {
             showVo.setStatus(electricityCabinetOrder.getOldCellNo() + "号仓门开门中");
@@ -1548,6 +1549,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             showVo.setPicture(ExchangeOrderMsgShowVO.EXCEPTION_IMG);
             //检查这里是否需要自助开仓
             checkIsNeedSelfOpenCell(electricityCabinetOrder, showVo);
+            showVo.setType(ExchangeOrderMsgShowVO.TYPE_FAIL);
+            showVo.setStatus(redisService.get(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId));
         }
 
 

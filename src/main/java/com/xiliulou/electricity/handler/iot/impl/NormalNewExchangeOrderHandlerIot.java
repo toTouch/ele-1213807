@@ -3,10 +3,12 @@ package com.xiliulou.electricity.handler.iot.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
@@ -213,6 +216,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityExceptionOrderStatusRecord.setCellNo(electricityCabinetOrder.getOldCellNo());
             electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
         }
+
+        //错误信息保存到缓存里，方便前端显示
+        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);
     }
 
     private boolean allowSelfOpenStatus(String orderStatus, ElectricityConfig electricityConfig) {
