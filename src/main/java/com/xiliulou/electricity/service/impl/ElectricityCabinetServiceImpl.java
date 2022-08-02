@@ -2271,6 +2271,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
+        //退押金
+        CompletableFuture<Void> refundDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal batteryDepositTurnover = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, null,EleDepositOrder.RENT_CAR_DEPOSIT);
+            BigDecimal todayBatteryDeposit = eleDepositOrderService.queryDepositTurnOverByDepositType(tenantId, todayStartTime,EleDepositOrder.RENT_CAR_DEPOSIT);
+            homePageDepositVo.setCarDeposit(batteryDepositTurnover);
+            homePageDepositVo.setTodayCarDeposit(todayBatteryDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
 
         return R.ok(homePageDepositVo);
     }
