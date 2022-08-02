@@ -1373,7 +1373,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             if (!result.getLeft()) {
                 return Triple.of(false, "100218", "下单消息发送失败");
             }
-            return Triple.of(true, null, null);
+            return Triple.of(true, null, electricityCabinetOrder.getOrderId());
         } finally {
             redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId());
             redisService.delete(CacheConstant.ORDER_TIME_UID + user.getUid());
