@@ -30,7 +30,7 @@ public class JsonOuterElectricityConfigController {
     @GetMapping(value = "/outer/electricityConfig")
     public R queryOne() {
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(electricityConfigService.queryOne(tenantId));
+        return R.ok(electricityConfigService.queryFromCacheByTenantId(tenantId));
     }
 
     /**

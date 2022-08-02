@@ -1216,7 +1216,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //换电柜名称换成平台名称
         String name = null;
-        ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinet.getTenantId());
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinet.getTenantId());
         if (Objects.nonNull(electricityConfig)) {
             name = electricityConfig.getName();
         }
@@ -2080,7 +2080,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private Double checkLowBatteryExchangeMinimumBatteryPowerStandard(Integer tenantId, Integer electricityCabinetId) {
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
-        ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
 
         Double fullyCharged = electricityCabinet.getFullyCharged();
 
@@ -2100,7 +2100,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     private Integer checkIsLowBatteryExchange(Integer tenantId, Integer electricityCabinetId, Long franchiseeId) {
 
-        ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
         Integer result = null;
         if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsLowBatteryExchange(), ElectricityConfig.NOT_LOW_BATTERY_EXCHANGE)) {
             return result;

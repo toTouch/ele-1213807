@@ -126,7 +126,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
 		//是否需要人工审核
 		Integer status = EleUserAuth.STATUS_PENDING_REVIEW;
-		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
 		if (Objects.nonNull(electricityConfig)) {
 			if (Objects.equals(electricityConfig.getIsManualReview(), ElectricityConfig.AUTO_REVIEW)) {
 				status = EleUserAuth.STATUS_REVIEW_PASSED;

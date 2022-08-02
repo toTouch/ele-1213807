@@ -298,7 +298,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		}
 
 		//线下提现
-		ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+		ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
 		if (Objects.nonNull(electricityConfig)) {
 			if (Objects.equals(electricityConfig.getIsWithdraw(), ElectricityConfig.NON_WITHDRAW)) {
 				//修改提现表
