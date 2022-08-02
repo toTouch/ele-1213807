@@ -1938,7 +1938,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged, Long franchiseeId) {
-        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, null, fullyCharged);
+        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, batteryType, fullyCharged);
         if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
             return Triple.of(false, "100216", "换电柜暂无满电电池");
         }
