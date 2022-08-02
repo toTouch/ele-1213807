@@ -1351,7 +1351,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             HashMap<String, Object> commandData = Maps.newHashMap();
             commandData.put("orderId", electricityCabinetOrder.getOrderId());
-            commandData.put("placeCellNo", franchiseeUserInfo.getModelType());
+            commandData.put("placeCellNo", electricityCabinetOrder.getOldCellNo());
             commandData.put("takeCellNo", electricityCabinetOrder.getNewCellNo());
 
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
