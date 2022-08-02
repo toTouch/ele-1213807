@@ -1489,18 +1489,33 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     private Triple<Boolean, String, String> checkUserExistsUnFinishOrder(Long uid) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);
         if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
-            return Triple.of(true,"100200", "存在未完成租电订单，不能下单");
+            return Triple.of(true, "100200", "存在未完成租电订单，不能下单");
         } else if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-            return Triple.of(true,"100202", "存在未完成租电订单，不能下单");
+            return Triple.of(true, "100202", "存在未完成租电订单，不能下单");
         }
 
         //是否存在未完成的换电订单
         ElectricityCabinetOrder oldElectricityCabinetOrder = queryByUid(uid);
         if (Objects.nonNull(oldElectricityCabinetOrder)) {
-            return Triple.of(true,"100201", "存在未完成换电订单，不能下单");
+            return Triple.of(true, "100201", "存在未完成换电订单，不能下单");
         }
 
-        return Triple.of(false,null,null);
+        return Triple.of(false, null, null);
     }
 
+    @Override
+    public Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId) {
+        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(orderId);
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.error("ORDER ERROR! query order not found,uid={},orderId={}", SecurityUtils.getUid(), orderId);
+            return Triple.of(false, "100221", "未能查找到订单");
+        }
+
+        String status = electricityCabinetOrder.getStatus();
+
+
+
+
+        return null;
+    }
 }

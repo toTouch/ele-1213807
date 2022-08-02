@@ -110,13 +110,22 @@ public class JsonUserElectricityCabinetOrderController extends BaseController {
 		return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
 	}
 
-	//查订单状态（新）
+	//查订单状态
 	@GetMapping("/user/electricityCabinetOrder/queryNewStatus")
+	@Deprecated
 	public R queryNewStatus(@RequestParam("orderId") String orderId) {
 		return electricityCabinetOrderService.queryNewStatus(orderId);
 	}
 
-
+	/**
+	 * 根据订单id查询状态在前端换电过程中显示
+	 * @param orderId
+	 * @return
+	 */
+	@GetMapping("/user/order/status/show")
+	public R queryOrderStatusForShow(@RequestParam("orderId")String orderId) {
+		return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShow(orderId));
+	}
 	//换电柜自助开仓
 	@PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
 	public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
