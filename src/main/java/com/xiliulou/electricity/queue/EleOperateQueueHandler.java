@@ -121,7 +121,7 @@ public class EleOperateQueueHandler {
             }
 
             //是否开启异常仓门锁仓
-            ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinetOrder.getTenantId());
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
             if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                 lockExceptionDoor(electricityCabinetOrder, null, finalOpenDTO);
             }
@@ -146,7 +146,7 @@ public class EleOperateQueueHandler {
             }
 
             //换电柜异常
-            ElectricityConfig electricityConfig = electricityConfigService.queryOne(rentBatteryOrder.getTenantId());
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(rentBatteryOrder.getTenantId());
             if (Objects.isNull(electricityConfig) || Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)) {
                 lockExceptionDoor(null, rentBatteryOrder, finalOpenDTO);
             }

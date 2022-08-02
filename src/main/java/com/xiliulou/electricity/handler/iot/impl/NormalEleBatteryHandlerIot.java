@@ -248,6 +248,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power * 100);
+            electricityCabinetBox.setPower(power * 100);
         }
 
 

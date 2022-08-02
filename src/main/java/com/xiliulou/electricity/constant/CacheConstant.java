@@ -182,4 +182,5 @@ public interface CacheConstant {
      * userInfo的缓存
      */
     String CACHE_USER_INFO = "user_info:";
+    String CACHE_ELE_SET_CONFIG = "ele_set_config:";
 }

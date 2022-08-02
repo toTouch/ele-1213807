@@ -545,7 +545,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
 
             //是否开启电池检测
-            ElectricityConfig electricityConfig = electricityConfigService.queryOne(tenantId);
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
@@ -664,7 +664,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             dataMap.put("orderId", rentBatteryOrder.getOrderId());
 
             //是否开启电池检测
-            ElectricityConfig electricityConfig = electricityConfigService.queryOne(user.getTenantId());
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(user.getTenantId());
             if (Objects.nonNull(electricityConfig)) {
                 UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
                 FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -953,7 +953,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
         Double fullCharged = electricityCabinet.getFullyCharged();
         if (Objects.nonNull(orderSource) && Objects.equals(orderSource, OrderQuery.LOW_BATTERY_ORDER)) {
-            ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinet.getTenantId());
+            ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinet.getTenantId());
             List<LowBatteryExchangeModel> list = JsonUtil.fromJsonArray(electricityConfig.getLowBatteryExchangeModel(), LowBatteryExchangeModel.class);
             if (Objects.nonNull(list) && list.size() > 0) {
                 fullCharged = list.get(0).getBatteryPowerStandard();

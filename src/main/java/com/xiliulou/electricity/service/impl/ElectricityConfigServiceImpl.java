@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.service.impl;
+
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
@@ -14,6 +15,7 @@ import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -60,9 +62,9 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
 //        electricityConfigAddAndUpdateQuery.setLowBatteryExchangeModel(lowBatteryExchangeModel);
 
 
-        ElectricityConfig electricityConfig=electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId,tenantId));
-        if(Objects.isNull(electricityConfig)){
-            electricityConfig=new ElectricityConfig();
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>().eq(ElectricityConfig::getTenantId, tenantId));
+        if (Objects.isNull(electricityConfig)) {
+            electricityConfig = new ElectricityConfig();
             electricityConfig.setName(electricityConfigAddAndUpdateQuery.getName());
             electricityConfig.setOrderTime(electricityConfigAddAndUpdateQuery.getOrderTime());
             electricityConfig.setIsManualReview(electricityConfigAddAndUpdateQuery.getIsManualReview());
@@ -75,6 +77,7 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
             electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
             electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
             electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
+            electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
             electricityConfigMapper.insert(electricityConfig);
             return R.ok();
         }
@@ -89,17 +92,33 @@ public class ElectricityConfigServiceImpl extends ServiceImpl<ElectricityConfigM
         electricityConfig.setDisableMemberCard(electricityConfigAddAndUpdateQuery.getDisableMemberCard());
         electricityConfig.setIsLowBatteryExchange(electricityConfigAddAndUpdateQuery.getIsLowBatteryExchange());
         electricityConfig.setLowBatteryExchangeModel(electricityConfigAddAndUpdateQuery.getLowBatteryExchangeModel());
-        electricityConfigMapper.updateById(electricityConfig);
+        electricityConfig.setIsEnableSelfOpen(electricityConfigAddAndUpdateQuery.getIsEnableSelfOpen());
+        int updateResult = electricityConfigMapper.updateById(electricityConfig);
+        if (updateResult > 0) {
+            redisService.delete(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId);
+        }
         return R.ok();
     }
 
     @Override
-    public ElectricityConfig queryOne(Integer tenantId) {
-        return electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>()
-                .eq(ElectricityConfig::getTenantId,tenantId));
+    public ElectricityConfig queryFromCacheByTenantId(Integer tenantId) {
+        ElectricityConfig cache = redisService.getWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, ElectricityConfig.class);
+        if (Objects.nonNull(cache)) {
+            return cache;
+        }
+
+        ElectricityConfig electricityConfig = electricityConfigMapper.selectOne(new LambdaQueryWrapper<ElectricityConfig>()
+                .eq(ElectricityConfig::getTenantId, tenantId));
+        if (Objects.isNull(electricityConfig)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_ELE_SET_CONFIG + tenantId, electricityConfig);
+        return electricityConfig;
     }
 
-    public void insertElectricityConfig(ElectricityConfig electricityConfig){
+    @Override
+    public void insertElectricityConfig(ElectricityConfig electricityConfig) {
         this.electricityConfigMapper.insert(electricityConfig);
     }
 }

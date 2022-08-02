@@ -1,29 +1,22 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.service.retrofilt.api.ApiExchangeOrderRetrofitService;
-import com.xiliulou.electricity.service.retrofilt.api.RetrofitThirdApiService;
-import com.xiliulou.electricity.web.query.ApiExchangeOrderCallQuery;
+import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
 
 import java.util.Objects;
-import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 
 @Service(value = ElectricityIotConstant.NORMAL_NEW_EXCHANGE_ORDER_HANDLER)
@@ -53,7 +46,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
 
 
-
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         ExchangeOrderRsp exchangeOrderRsp = JsonUtil.fromJson(receiverMessage.getOriginContent(), ExchangeOrderRsp.class);
@@ -74,7 +66,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         //是否开启异常仓门锁仓
-        ElectricityConfig electricityConfig = electricityConfigService.queryOne(electricityCabinetOrder.getTenantId());
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
         if (Objects.nonNull(electricityConfig)
                 && Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)
                 && exchangeOrderRsp.getIsException()) {
@@ -82,7 +74,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         if (exchangeOrderRsp.getIsException()) {
-            handleOrderException(electricityCabinetOrder, exchangeOrderRsp);
+            handleOrderException(electricityCabinetOrder, exchangeOrderRsp, electricityConfig);
             return;
         }
 
@@ -204,7 +196,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     }
 
 
-    private void handleOrderException(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderRsp exchangeOrderRsp) {
+    private void handleOrderException(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderRsp exchangeOrderRsp, ElectricityConfig electricityConfig) {
         ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
         newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
@@ -213,7 +205,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
         //判断是否满足可以自助开仓
-        if (allowSelfOpenStatus(exchangeOrderRsp.orderStatus)) {
+        if (allowSelfOpenStatus(exchangeOrderRsp.orderStatus, electricityConfig)) {
             ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = new ElectricityExceptionOrderStatusRecord();
             electricityExceptionOrderStatusRecord.setOrderId(electricityCabinetOrder.getOrderId());
             electricityExceptionOrderStatusRecord.setTenantId(electricityCabinetOrder.getTenantId());
@@ -224,10 +216,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             electricityExceptionOrderStatusRecord.setCellNo(electricityCabinetOrder.getOldCellNo());
             electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
         }
+
+        //错误信息保存到缓存里，方便前端显示
+        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);
     }
 
-    private boolean allowSelfOpenStatus(String orderStatus) {
-        return orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL);
+    private boolean allowSelfOpenStatus(String orderStatus, ElectricityConfig electricityConfig) {
+        return orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) && Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableSelfOpen(), ElectricityConfig.ENABLE_SELF_OPEN);
     }
 
     // TODO: 2022/8/1 异常锁定格挡

@@ -21,6 +21,10 @@ public class ExchangeOrderMsgShowVO {
      * 是否需要自助开仓
      */
     private Integer selfOpenCell;
+    /**
+     * 是否出现错误  0--正常  1--出错
+     */
+    private Integer type;
 
     /**
      * 1--放电池过程图片
@@ -30,4 +34,7 @@ public class ExchangeOrderMsgShowVO {
     public static final Integer PLACE_BATTERY_IMG = 1;
     public static final Integer TAKE_BATTERY_IMG = 2;
     public static final Integer EXCEPTION_IMG = 3;
+
+    public static final Integer TYPE_SUCCESS = 0;
+    public static final Integer TYPE_FAIL = 1;
 }
