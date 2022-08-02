@@ -60,7 +60,7 @@ public interface ElectricityCabinetOrderService {
     ElectricityCabinetOrder queryByCellNoAndEleId(Integer eleId,Integer cellNo);
 
     String findUsableCellNo(Integer id);
-
+    @Deprecated
 	R queryNewStatus(String orderId);
 
     R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
@@ -68,4 +68,6 @@ public interface ElectricityCabinetOrderService {
     R checkOpenSessionId(String sessionId);
 
     Triple<Boolean, String, Object> orderV2(OrderQueryV2 orderQuery);
+
+    Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId);
 }

@@ -1505,4 +1505,19 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         return Triple.of(false, null, null);
     }
 
+    @Override
+    public Triple<Boolean, String, Object> queryOrderStatusForShow(String orderId) {
+        ElectricityCabinetOrder electricityCabinetOrder = queryByOrderId(orderId);
+        if (Objects.isNull(electricityCabinetOrder)) {
+            log.error("ORDER ERROR! query order not found,uid={},orderId={}", SecurityUtils.getUid(), orderId);
+            return Triple.of(false, "100221", "未能查找到订单");
+        }
+
+        String status = electricityCabinetOrder.getStatus();
+
+
+
+
+        return null;
+    }
 }
