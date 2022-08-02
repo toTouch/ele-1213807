@@ -12,9 +12,33 @@ import java.math.BigDecimal;
 @Data
 public class HomePageDepositVo {
 
+    /**
+     * 电池押金
+     */
     private BigDecimal batteryDeposit;
 
+    /**
+     * 车辆押金
+     */
     private BigDecimal carDeposit;
 
-//    private
+    /**
+     * 今日电池押金
+     */
+    private BigDecimal todayBatteryDeposit;
+
+    /**
+     * 今日车辆押金
+     */
+    private BigDecimal todayCarDeposit;
+
+    /**
+     * 今日缴纳押金
+     */
+    private BigDecimal todayPayDeposit;
+
+    /**
+     * 今日退押金
+     */
+    private BigDecimal todayRefundDeposit;
 }
