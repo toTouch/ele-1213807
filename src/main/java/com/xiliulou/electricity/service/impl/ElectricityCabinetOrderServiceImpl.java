@@ -4,6 +4,7 @@ import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
+import com.alibaba.csp.sentinel.slots.block.degrade.circuitbreaker.ExceptionCircuitBreaker;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
@@ -24,10 +25,7 @@ import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderExcelVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
-import com.xiliulou.electricity.vo.ElectricityCabinetVO;
-import com.xiliulou.electricity.vo.WarnMsgVo;
+import com.xiliulou.electricity.vo.*;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
@@ -1511,10 +1509,81 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         String status = electricityCabinetOrder.getStatus();
+        ExchangeOrderMsgShowVO showVo = new ExchangeOrderMsgShowVO();
+
+        if (isOpenPlaceCellStatus(status)) {
+            showVo.setStatus(electricityCabinetOrder.getOldCellNo() + "号仓门开门中");
+        }
+
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_OPEN_SUCCESS)) {
+            showVo.setStatus(electricityCabinetOrder.getOldCellNo() + "号仓门开门成功，电池检测中");
+        }
+
+        //旧电池检测成功
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)) {
+            showVo.setStatus("旧电池已存入," + electricityCabinetOrder.getNewCellNo() + "号仓门开门中");
+        }
+
+        //订单状态新门成功
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)) {
+            showVo.setStatus(electricityCabinetOrder.getNewCellNo() + "号仓门开门成功，电池检测中");
+        }
+
+        //订单状态新电池取走
+        if (Objects.equals(electricityCabinetOrder.getStatus(), ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)) {
+            showVo.setStatus("新电池已取走,订单完成");
+        }
+
+        if (isPlaceBatteryAllStatus(status)) {
+            showVo.setPicture(ExchangeOrderMsgShowVO.PLACE_BATTERY_IMG);
+        }
+
+        if (isTakeBatteryAllStatus(status)) {
+            showVo.setPicture(ExchangeOrderMsgShowVO.PLACE_BATTERY_IMG);
+        }
+
+        if (isExceptionOrder(status)) {
+            showVo.setPicture(ExchangeOrderMsgShowVO.EXCEPTION_IMG);
+            //检查这里是否需要自助开仓
+            checkIsNeedSelfOpenCell(electricityCabinetOrder, showVo);
+        }
 
 
+        return Triple.of(true, null, showVo);
+    }
 
+    private void checkIsNeedSelfOpenCell(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderMsgShowVO showVo) {
+        ElectricityExceptionOrderStatusRecord statusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(electricityCabinetOrder.getOrderId());
+        if (Objects.isNull(statusRecord)) {
+            return;
+        }
 
-        return null;
+        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo() + "");
+        if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
+            showVo.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
+        } else {
+            showVo.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
+        }
+
+    }
+
+    private boolean isExceptionOrder(String status) {
+        return status.equals(ElectricityCabinetOrder.ORDER_CANCEL)
+                || status.equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL);
+    }
+
+    private boolean isTakeBatteryAllStatus(String status) {
+        return false;
+    }
+
+    private boolean isPlaceBatteryAllStatus(String status) {
+        return status.equals(ElectricityCabinetOrder.INIT)
+                || status.equals(ElectricityCabinetOrder.INIT_OPEN_SUCCESS);
+    }
+
+    private boolean isOpenPlaceCellStatus(String status) {
+        return status.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS)
+                || status.equals(ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)
+                || status.equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
     }
 }
