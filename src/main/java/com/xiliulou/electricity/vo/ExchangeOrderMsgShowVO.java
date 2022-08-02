@@ -29,5 +29,5 @@ public class ExchangeOrderMsgShowVO {
      */
     public static final Integer PLACE_BATTERY_IMG = 1;
     public static final Integer TAKE_BATTERY_IMG = 2;
-    public static final Integer EXCEPTION_IMG = 2;
+    public static final Integer EXCEPTION_IMG = 3;
 }
