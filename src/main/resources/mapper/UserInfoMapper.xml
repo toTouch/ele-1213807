@@ -221,5 +221,14 @@
         </if>
     </select>
 
+    <select id="queryAuthenticationUserCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_user_info
+        where del_flag=0 and service_status=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
 
 </mapper>

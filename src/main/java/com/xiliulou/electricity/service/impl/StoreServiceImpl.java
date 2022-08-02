@@ -94,8 +94,8 @@ public class StoreServiceImpl implements StoreService {
     @Transactional(rollbackFor = Exception.class)
     public R save(StoreAddAndUpdate storeAddAndUpdate) {
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
 
         //新增加盟商新增用户
@@ -124,9 +124,9 @@ public class StoreServiceImpl implements StoreService {
         Long uid = (Long) result.getData();
 
 
-		Store store = new Store();
-		BeanUtil.copyProperties(storeAddAndUpdate, store);
-		store.setCid(storeAddAndUpdate.getCityId());
+        Store store = new Store();
+        BeanUtil.copyProperties(storeAddAndUpdate, store);
+        store.setCid(storeAddAndUpdate.getCityId());
 
         //校验参数
         if (checkParam(storeAddAndUpdate, store)) {
@@ -388,20 +388,20 @@ public class StoreServiceImpl implements StoreService {
         return R.ok(storeMapper.queryCount(storeQuery));
     }
 
-	@Override
-	public List<Long> queryStoreIdsByProvinceIdOrCityId(Integer tenantId, Integer pid,Integer cid) {
-		return storeMapper.queryStoreIdsByProvinceId(tenantId,pid,cid);
-	}
+    @Override
+    public List<Long> queryStoreIdsByProvinceIdOrCityId(Integer tenantId, Integer pid, Integer cid) {
+        return storeMapper.queryStoreIdsByProvinceId(tenantId, pid, cid);
+    }
 
-	@Override
-	public List<MapVo> queryCountGroupByCityId(Integer tenantId, Integer pid) {
-		return storeMapper.queryCountGroupByCityId(tenantId,pid);
-	}
+    @Override
+    public List<MapVo> queryCountGroupByCityId(Integer tenantId, Integer pid) {
+        return storeMapper.queryCountGroupByCityId(tenantId, pid);
+    }
 
-	@Override
-	public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
-		return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
-	}
+    @Override
+    public List<HashMap<String, String>> homeThree(Long startTimeMilliDay, Long endTimeMilliDay, List<Long> storeIdList, Integer tenantId) {
+        return storeMapper.homeThree(startTimeMilliDay, endTimeMilliDay, storeIdList, tenantId);
+    }
 
     @Override
     public void deleteByUid(Long uid) {
@@ -449,29 +449,39 @@ public class StoreServiceImpl implements StoreService {
         });
     }
 
-	@Override
-	public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
-		return storeMapper.queryCountGroupByProvinceId(tenantId);
-	}
+    @Override
+    public List<MapVo> queryCountGroupByProvinceId(Integer tenantId) {
+        return storeMapper.queryCountGroupByProvinceId(tenantId);
+    }
 
     @Override
     public List<Store> selectByFranchiseeId(Long id) {
-        return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId,id).eq(Store::getDelFlag,Store.DEL_NORMAL));
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().eq(Store::getFranchiseeId, id).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+
+    @Override
+    public Integer queryCountForHomePage(StoreQuery storeQuery) {
+        return storeMapper.queryCount(storeQuery);
+    }
+
+    @Override
+    public List<Long> queryStoreIdByFranchiseeId(Long id) {
+        return storeMapper.queryStoreIdByFranchiseeId(id);
     }
 
     public Long getTime(Long time) {
-		Date date1 = new Date(time);
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-		String format = dateFormat.format(date1);
-		Date date2 = null;
-		try {
-			date2 = dateFormat.parse(format);
-		} catch (ParseException e) {
-			e.printStackTrace();
-		}
-		Long ts = date2.getTime();
-		return time - ts;
-	}
+        Date date1 = new Date(time);
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String format = dateFormat.format(date1);
+        Date date2 = null;
+        try {
+            date2 = dateFormat.parse(format);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        Long ts = date2.getTime();
+        return time - ts;
+    }
 
     private boolean checkParam(StoreAddAndUpdate storeAddAndUpdate, Store store) {
         if (Objects.equals(storeAddAndUpdate.getBusinessTimeType(), ElectricityCabinetAddAndUpdate.ALL_DAY)) {

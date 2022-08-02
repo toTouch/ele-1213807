@@ -9,6 +9,7 @@ import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -81,11 +82,16 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
     @Override
     public BigDecimal queryUserTurnOver(Integer tenantId, Long uid) {
-        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId,uid)).orElse(new BigDecimal("0"));
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId, uid)).orElse(new BigDecimal("0"));
     }
 
     @Override
-    public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime) {
-        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId,todayStartTime)).orElse(new BigDecimal("0"));
+    public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+        return eleBatteryServiceFeeOrderMapper.queryTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 }

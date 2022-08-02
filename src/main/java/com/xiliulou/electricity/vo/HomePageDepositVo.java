@@ -41,4 +41,14 @@ public class HomePageDepositVo {
      * 今日退押金
      */
     private BigDecimal todayRefundDeposit;
+
+    /**
+     * 历史退押金
+     */
+    private BigDecimal historyRefundDeposit;
+
+    /**
+     * 总营业额
+     */
+    private BigDecimal sumDepositTurnover;
 }

@@ -92,4 +92,6 @@ public interface UserInfoService extends IService<UserInfo> {
 
 	UserInfo queryUserInfoByPhone(String phone,Integer tenantId);
 
+	Integer queryAuthenticationUserCount(Integer tenantId);
+
 }

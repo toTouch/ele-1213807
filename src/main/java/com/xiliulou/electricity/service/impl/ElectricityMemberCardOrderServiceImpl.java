@@ -20,6 +20,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderExcelVO;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -1116,13 +1117,23 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     }
 
     @Override
-    public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime) {
-        return Optional.ofNullable(baseMapper.queryBatteryMemberCardTurnOver(tenantId, todayStartTime)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
+        return Optional.ofNullable(baseMapper.queryBatteryMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime) {
-        return Optional.ofNullable(baseMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
+        return Optional.ofNullable(baseMapper.queryCarMemberCardTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+        return baseMapper.queryBatteryMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+        return baseMapper.queryCarMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
 
     private String generateOrderId(Long uid) {

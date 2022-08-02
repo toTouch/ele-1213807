@@ -6,11 +6,13 @@ import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务接口
@@ -61,6 +63,8 @@ public interface EleDepositOrderService {
 
     R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
 
-    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime,Integer depositType);
+    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime);
 
 }

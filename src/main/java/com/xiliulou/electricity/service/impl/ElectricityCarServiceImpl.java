@@ -361,5 +361,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getUid, uid));
     }
 
-
+    @Override
+    public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
+        return electricityCarMapper.queryCountByStoreIds(tenantId,storeIds);
+    }
 }

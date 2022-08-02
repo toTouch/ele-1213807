@@ -990,4 +990,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId));
     }
+
+    @Override
+    public Integer queryAuthenticationUserCount(Integer tenantId) {
+        return userInfoMapper.queryAuthenticationUserCount(tenantId);
+    }
 }

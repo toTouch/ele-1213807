@@ -52,6 +52,29 @@
         <if test="todayStartTime != null">
             and create_time  &gt;=#{todayStartTime}
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id =#{franchiseeId}
+        </if>
+    </select>
+
+    <select id="queryTurnOverByCreateTime" resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+        select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
+        weekDate from t_ele_battery_service_fee_order
+        where status=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id =#{franchiseeId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        GROUP BY
+        weekDate
     </select>
 
 

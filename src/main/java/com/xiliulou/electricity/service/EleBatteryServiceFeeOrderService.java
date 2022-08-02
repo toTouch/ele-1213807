@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
 import com.xiliulou.electricity.query.EleRefundQuery;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
@@ -12,6 +13,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 退款订单表(TEleBatteryServiceFeeOrder)表服务接口
@@ -51,17 +53,23 @@ public interface EleBatteryServiceFeeOrderService {
 
     /**
      * 用户的总消费额
+     *
      * @param tenantId
      * @param uid
      * @return
      */
-    BigDecimal queryUserTurnOver(Integer tenantId,Long uid);
+    BigDecimal queryUserTurnOver(Integer tenantId, Long uid);
 
     /**
      * 总消费额
+     *
      * @param tenantId
      * @param todayStartTime
      * @return
      */
-    BigDecimal queryTurnOver(Integer tenantId,Long todayStartTime);
+    BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+
+
 }

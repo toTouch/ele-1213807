@@ -430,7 +430,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
 
-
     @Override
     public R queryUserDepositPayType(Long uid) {
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
@@ -551,7 +550,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 
             //生成后台操作记录
-            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                     .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
                     .operateUid(user.getUid())
@@ -653,6 +652,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {
         return Optional.ofNullable(eleRefundOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
+
+    @Override
+    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime) {
+        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId,todayStartTime)).orElse(BigDecimal.valueOf(0));
     }
 
     public String generateOrderId(Long uid) {

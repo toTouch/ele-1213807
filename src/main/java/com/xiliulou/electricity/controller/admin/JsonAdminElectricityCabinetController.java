@@ -485,4 +485,23 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.homepageDeposit();
     }
 
+    //首页概述详情统计
+    @GetMapping(value = "/admin/electricityCabinet/homepageOverviewDetail")
+    public R homepageOverviewDetail() {
+        return electricityCabinetService.homepageOverviewDetail();
+    }
+
+    //首页收益分析
+    @GetMapping(value = "/admin/electricityCabinet/homepageBenefitAnalysis")
+    public R homepageBenefitAnalysis( @RequestParam(value = "beginTime", required = false) Long beginTime,
+                                      @RequestParam(value = "endTime", required = false) Long endTime) {
+        return electricityCabinetService.homepageBenefitAnalysis(beginTime,endTime);
+    }
+
+    //首页柜机分析
+    @GetMapping(value = "/admin/electricityCabinet/homepageElectricityCabinetAnalysis")
+    public R homepageElectricityCabinetAnalysis() {
+        return electricityCabinetService.homepageElectricityCabinetAnalysis();
+    }
+
 }

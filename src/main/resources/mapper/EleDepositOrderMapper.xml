@@ -236,5 +236,31 @@
         <if test="depositType != null">
             and deposit_type = #{depositType}
         </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+    </select>
+
+    <select id="queryDepositTurnOverAnalysisByDepositType" resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
+        select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
+        weekDate from t_ele_deposit_order
+        where status=1 and pay_type=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        GROUP BY
+        weekDate
     </select>
 </mapper>

@@ -50,5 +50,7 @@ public interface ElectricityCarService {
 
     ElectricityCar queryInfoByUid(Long uid);
 
+    Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds);
+
 
 }

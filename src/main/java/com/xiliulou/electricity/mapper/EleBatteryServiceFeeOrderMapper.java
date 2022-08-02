@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.math.BigDecimal;
@@ -18,16 +19,18 @@ import java.util.List;
  * @author makejava
  * @since 2021-02-22 10:16:44
  */
-public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatteryServiceFeeOrder>{
+public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatteryServiceFeeOrder> {
 
 
     List<EleBatteryServiceFeeOrder> queryUserList(@Param("uid") Long uid,
-                                                   @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+                                                  @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
     List<EleBatteryServiceFeeOrderVo> queryListForAdmin(@Param("uid") Long uid,
-                                                        @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime,@Param("status") Integer status);
+                                                        @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("status") Integer status);
 
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
-    BigDecimal queryTenantTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime);
+    BigDecimal queryTenantTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeId") Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 }

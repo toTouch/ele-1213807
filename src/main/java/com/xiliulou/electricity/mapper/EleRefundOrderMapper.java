@@ -16,19 +16,20 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author makejava
  * @since 2021-02-22 10:17:06
  */
-public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder>{
+public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
 
 
     /**
      * 查询指定行数据
-     *
      */
 
-    List<Map<String,Object>> queryList(@Param("query") EleRefundQuery eleRefundQuery);
+    List<Map<String, Object>> queryList(@Param("query") EleRefundQuery eleRefundQuery);
 
-	Integer queryCount(@Param("query") EleRefundQuery eleRefundQuery);
+    Integer queryCount(@Param("query") EleRefundQuery eleRefundQuery);
 
-	Long queryUserInfoId(@Param("refundOrderNo") String refundOrderNo);
+    Long queryUserInfoId(@Param("refundOrderNo") String refundOrderNo);
 
-	BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
+    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
+
+    BigDecimal queryTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime);
 }

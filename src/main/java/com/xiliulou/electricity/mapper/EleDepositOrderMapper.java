@@ -10,6 +10,7 @@ import java.util.List;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -28,15 +29,17 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     List<EleDepositOrderVO> queryListForRentCar(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
-	Integer queryCount(@Param("query")  EleDepositOrderQuery eleDepositOrderQuery);
+    Integer queryCount(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
     List<EleDepositOrderVO> queryListForUser(@Param("query") EleDepositOrderQuery eleDepositOrderQuery);
 
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
 
-    EleDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid,@Param("franchiseeId")Long franchiseeId,@Param("tenantId")Integer tenantId);
+    EleDepositOrder queryLastPayDepositTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
-    BigDecimal queryDepositTurnOverByDepositType(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime,@Param("depositType") Integer depositType);
+    BigDecimal queryDepositTurnOverByDepositType(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("depositType") Integer depositType, @Param("franchiseeId") Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(@Param("tenantId") Integer tenantId, @Param("depositType") Integer depositType, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
 
 }

@@ -24,6 +24,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
@@ -489,10 +490,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = null;
-        if (Objects.equals(eleDepositOrderQuery.getDepositType(),EleDepositOrder.ELECTRICITY_DEPOSIT)){
-            eleDepositOrderVOS=eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-        }else {
-            eleDepositOrderVOS=eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
+        if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
+            eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+        } else {
+            eleDepositOrderVOS = eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
         }
         return R.ok(eleDepositOrderVOS);
     }
@@ -1225,9 +1226,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         return R.ok(null);
     }
+
     @Override
-    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid,Long franchiseeId,Integer tenantId) {
-        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid,franchiseeId,tenantId);
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
     }
 
 
@@ -1308,7 +1310,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
 
         //生成后台操作记录
-        EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                 .operateContent(EleUserOperateRecord.DEPOSIT_MODEL)
                 .operateUid(user.getUid())
@@ -1337,7 +1339,12 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime,Integer depositType) {
-        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId,todayStartTime,depositType)).orElse(BigDecimal.valueOf(0));
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType,franchiseeId)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo>  queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
+        return null;
     }
 }

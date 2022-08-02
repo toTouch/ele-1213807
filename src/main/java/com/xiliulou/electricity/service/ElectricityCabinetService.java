@@ -79,6 +79,7 @@ public interface ElectricityCabinetService {
     R queryByDeviceOuter(String productKey, String deviceName);
 
     R showInfoByStoreId(Long storeId);
+
     @Deprecated
     R queryByOrder(String productKey, String deviceName);
 
@@ -118,6 +119,8 @@ public interface ElectricityCabinetService {
 
     Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds);
 
+    Integer queryCountByStoreIdsAndStatus(Integer tenantId, List<Long> storeIds,Integer status);
+
     R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery);
 
     R queryAllElectricityCabinet(ElectricityCabinetQuery electricityCabinetQuery);
@@ -129,4 +132,12 @@ public interface ElectricityCabinetService {
     R homepageTurnover();
 
     R homepageDeposit();
+
+    R homepageOverviewDetail();
+
+    R homepageBenefitAnalysis(Long beginTime, Long enTime);
+
+    R homepageElectricityCabinetAnalysis();
+
+
 }

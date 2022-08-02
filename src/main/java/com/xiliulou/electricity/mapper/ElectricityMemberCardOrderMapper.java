@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
 import com.xiliulou.electricity.vo.ElectricityMemberCardOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -20,24 +21,29 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
     ElectricityMemberCardOrder selectByOrderNo(@Param("orderId") String orderNo);
 
     List<ElectricityMemberCardOrder> queryUserList(@Param("uid") Long uid,
-                                                            @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+                                                   @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
-    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now,@Param("cardIdList") List<Integer> cardIdList,@Param("tenantId")Integer tenantId);
+    BigDecimal homeOne(@Param("first") Long first, @Param("now") Long now, @Param("cardIdList") List<Integer> cardIdList, @Param("tenantId") Integer tenantId);
 
 
-    List<HashMap<String, String>> homeTwo(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("cardIdList") List<Integer> cardIdList,@Param("tenantId")Integer tenantId);
+    List<HashMap<String, String>> homeTwo(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("cardIdList") List<Integer> cardIdList, @Param("tenantId") Integer tenantId);
 
     List<ElectricityMemberCardOrderVO> queryList(@Param("query") MemberCardOrderQuery memberCardOrderQuery);
 
     Long getMemberCardOrderCount(@Param("uid") Long uid, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
-    Integer queryCount(@Param("query")  MemberCardOrderQuery memberCardOrderQuery);
+    Integer queryCount(@Param("query") MemberCardOrderQuery memberCardOrderQuery);
 
-    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId,@Param("uid") Long uid);
+    BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
-    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(@Param("uid") Long uid, @Param("franchiseeId")Long franchiseeId, @Param("tenantId")Integer tenantId);
+    ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(@Param("uid") Long uid, @Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
-    BigDecimal queryBatteryMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime);
+    BigDecimal queryBatteryMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeId") Long franchiseeId);
 
-    BigDecimal queryCarMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime);
+    List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
+    BigDecimal queryCarMemberCardTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeId") Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
 }
