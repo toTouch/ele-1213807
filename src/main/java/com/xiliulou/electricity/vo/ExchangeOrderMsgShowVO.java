@@ -22,6 +22,11 @@ public class ExchangeOrderMsgShowVO {
      */
     private Integer selfOpenCell;
 
+    /**
+     * 1--放电池过程图片
+     * 2--取电池过程图片
+     * 3--异常图片
+     */
     public static final Integer PLACE_BATTERY_IMG = 1;
     public static final Integer TAKE_BATTERY_IMG = 2;
     public static final Integer EXCEPTION_IMG = 2;
