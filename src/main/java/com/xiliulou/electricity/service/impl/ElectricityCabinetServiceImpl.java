@@ -1939,15 +1939,21 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer id, String batteryType, Double fullyCharged, Long franchiseeId) {
-        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, batteryType, fullyCharged);
+        //这里查所有电池
+        List<ElectricityCabinetBox> usableBatteryCellNos = electricityCabinetBoxService.queryUsableBatteryCellNo(id, null, fullyCharged);
         if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
             return Triple.of(false, "100216", "换电柜暂无满电电池");
         }
 
         if (StrUtil.isNotEmpty(batteryType)) {
-            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> e.getBatteryType().equals(batteryType)).collect(Collectors.toList());
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> StrUtil.equalsIgnoreCase(e.getBatteryType(), batteryType)).collect(Collectors.toList());
             if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
                 return Triple.of(false, "100217", "换电柜暂无可用型号的满电电池");
+            }
+        } else {
+            usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> !StrUtil.equalsIgnoreCase(e.getBatteryType(), batteryType)).collect(Collectors.toList());
+            if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
+                return Triple.of(false, "100223", "换电柜暂无可用型号的满电电池");
             }
         }
 
@@ -1957,6 +1963,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
         }
 
+        List<Long> bindingBatteryIds = franchiseeBindElectricityBatteries.stream().map(FranchiseeBindElectricityBattery::getElectricityBatteryId).collect(Collectors.toList());
+        //把加盟商绑定的电池过滤出来
+        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e->bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
         return Triple.of(true, null, usableBatteryCellNos.get(0));
     }
 

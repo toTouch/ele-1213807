@@ -36,7 +36,7 @@ public class FranchiseeUserInfo {
      */
     private Long franchiseeId;
     /**
-     * 套餐id
+     * 套餐id 这个值只有真的购买套餐才会有值，送的会为null
      */
     private Integer cardId;
     /**

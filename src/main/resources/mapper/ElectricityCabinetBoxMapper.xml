@@ -122,7 +122,7 @@
             and status = 0
             and power &gt;= #{fullV}
             <if test="type != null and type!= ''">
-                battery_type = #{type}
+               and battery_type = #{type}
             </if>
         </where>
         order by power desc

@@ -1427,11 +1427,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
             log.warn("ORDER WARN! user not rent battery! uid={}", user.getUid());
-            return Triple.of(false, "100210", "用户还没有租借电池");
+            return Triple.of(false, "100222", "用户还没有租借电池");
         }
 
         //判断套餐
-        if (Objects.isNull(franchiseeUserInfo.getCardId())) {
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
             log.warn("ORDER WARN! user haven't memberCard uid={}", user.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
@@ -1554,7 +1555,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         if (isTakeBatteryAllStatus(status)) {
-            showVo.setPicture(ExchangeOrderMsgShowVO.PLACE_BATTERY_IMG);
+            showVo.setPicture(ExchangeOrderMsgShowVO.TAKE_BATTERY_IMG);
         }
 
         if (isExceptionOrder(status)) {
@@ -1595,7 +1596,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     private boolean isTakeBatteryAllStatus(String status) {
-        return false;
+        return status.equals(ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)
+                || status.equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
     }
 
     private boolean isPlaceBatteryAllStatus(String status) {
