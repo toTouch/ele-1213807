@@ -156,8 +156,10 @@
 		<if test="model != null">
 			model =#{model},
 		</if>
+		<if test="exchangeCount != null">
+			exchange_count =#{exchangeCount},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
-		exchange_count=#{exchangeCount},
 		electricity_cabinet_id=#{electricityCabinetId},
 		uid=#{uid},status=#{status},
 		last_deposit_cell_no=#{lastDepositCellNo},
