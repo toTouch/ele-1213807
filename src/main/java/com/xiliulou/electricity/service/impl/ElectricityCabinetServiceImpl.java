@@ -2596,6 +2596,48 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
 
+        CompletableFuture<Void> exchangeFrequency = CompletableFuture.runAsync(() -> {
+            List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService.homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
+            homepageExchangeFrequency.parallelStream().forEach(item -> {
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
+                if (Objects.nonNull(store)) {
+                    item.setStoreName(store.getName());
+                }
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getEleId());
+                if (Objects.nonNull(electricityCabinet)) {
+                    item.setElectricityName(electricityCabinet.getName());
+                }
+            });
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
+        //等待所有线程停止
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSumCount, exchangeFrequency);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(homepageElectricityExchangeFrequencyQuery);
+    }
+
+    @Override
+    public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+
+
+        HomepageBatteryFrequencyVo homepageBatteryFrequencyVo=new HomepageBatteryFrequencyVo();
+
+//        electricityBatteryService.queryList();
+
         return null;
+
+
+
+
+
+
     }
 }

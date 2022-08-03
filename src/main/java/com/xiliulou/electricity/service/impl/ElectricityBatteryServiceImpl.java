@@ -20,6 +20,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -496,6 +497,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
     }
 
+    @Override
+    public List<ElectricityBattery> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+//        return electricitybatterymapper.;
+        return null;
+    }
 
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
