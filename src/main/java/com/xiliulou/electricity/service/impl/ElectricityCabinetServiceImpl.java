@@ -1953,7 +1953,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         } else {
             usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> !StrUtil.equalsIgnoreCase(e.getBatteryType(), batteryType)).collect(Collectors.toList());
             if (!DataUtil.collectionIsUsable(usableBatteryCellNos)) {
-                return Triple.of(false, "100223", "换电柜暂无可用型号的满电电池");
+                return Triple.of(false, "100223", "换电柜没有非标准型号电池");
             }
         }
 
