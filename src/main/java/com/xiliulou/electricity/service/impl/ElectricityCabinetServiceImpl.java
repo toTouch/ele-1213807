@@ -2517,11 +2517,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        HomePageUserAnalysisVo homePageUserAnalysisVo=new HomePageUserAnalysisVo();
+        HomePageUserAnalysisVo homePageUserAnalysisVo = new HomePageUserAnalysisVo();
 
         //实名认证用户
         CompletableFuture<Void> authenticationUser = CompletableFuture.runAsync(() -> {
-            List<HomePageUserByWeekDayVo> list=userInfoService.queryUserAnalysisByUserStatus(tenantId,UserInfo.STATUS_IS_AUTH,beginTime,enTime);
+            List<HomePageUserByWeekDayVo> list = userInfoService.queryUserAnalysisByUserStatus(tenantId, UserInfo.STATUS_IS_AUTH, beginTime, enTime);
             homePageUserAnalysisVo.setAuthenticationUserAnalysis(list);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2530,7 +2530,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //普通用户
         CompletableFuture<Void> normalUser = CompletableFuture.runAsync(() -> {
-            List<HomePageUserByWeekDayVo> list=userInfoService.queryUserAnalysisByUserStatus(tenantId,UserInfo.STATUS_INIT,beginTime,enTime);
+            List<HomePageUserByWeekDayVo> list = userInfoService.queryUserAnalysisByUserStatus(tenantId, UserInfo.STATUS_INIT, beginTime, enTime);
             homePageUserAnalysisVo.setNormalUserAnalysis(list);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2538,7 +2538,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(authenticationUser,normalUser);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(authenticationUser, normalUser);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -2653,7 +2653,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         CompletableFuture<Void> exchangeFrequency = CompletableFuture.runAsync(() -> {
             List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService.homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
+            List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos=new ArrayList<>();
             homepageExchangeFrequency.parallelStream().forEach(item -> {
+                HomepageElectricityExchangeVo homepageElectricityExchangeVo=new HomepageElectricityExchangeVo();
                 Store store = storeService.queryByIdFromCache(item.getStoreId());
                 if (Objects.nonNull(store)) {
                     item.setStoreName(store.getName());
@@ -2662,7 +2664,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 if (Objects.nonNull(electricityCabinet)) {
                     item.setElectricityName(electricityCabinet.getName());
                 }
+                homepageElectricityExchangeVo.setElectricityName(item.getElectricityName());
+                homepageElectricityExchangeVo.setStoreName(item.getStoreName());
+                homepageElectricityExchangeVo.setExchangeFrequency(item.getExchangeFrequency());
+                homepageElectricityExchangeVos.add(homepageElectricityExchangeVo);
             });
+            homepageElectricityExchangeFrequencyVo.setHomepageElectricityExchangeVos(homepageElectricityExchangeVos);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
             return null;
@@ -2676,7 +2683,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("DATA SUMMARY BROWSING ERROR!", e);
         }
 
-        return R.ok(homepageElectricityExchangeFrequencyQuery);
+        return R.ok(homepageElectricityExchangeFrequencyVo);
     }
 
     @Override

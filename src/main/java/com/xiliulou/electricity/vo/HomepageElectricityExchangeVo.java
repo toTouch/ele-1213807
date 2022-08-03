@@ -1,8 +1,7 @@
 package com.xiliulou.electricity.vo;
 
+import groovyjarjarantlr.collections.List;
 import lombok.Data;
-
-import java.util.List;
 
 /**
  * @author hrp
@@ -10,12 +9,8 @@ import java.util.List;
  * @mood 首页换电频次分析
  */
 @Data
-public class HomepageElectricityExchangeFrequencyVo {
+public class HomepageElectricityExchangeVo {
 
-    /**
-     * 换电总频次
-     */
-    private Integer sumFrequency;
 
     /**
      * 换电柜名称
@@ -32,15 +27,5 @@ public class HomepageElectricityExchangeFrequencyVo {
      */
     private Integer exchangeFrequency;
 
-    /**
-     * 换电柜Id
-     */
-    private Integer eleId;
 
-    /**
-     * 门店Id
-     */
-    private Long storeId;
-
-    private List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos;
 }
