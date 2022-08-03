@@ -26,6 +26,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -498,9 +499,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public List<ElectricityBattery> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
-//        return electricitybatterymapper.;
-        return null;
+    public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+        return electricitybatterymapper.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
     }
 
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {

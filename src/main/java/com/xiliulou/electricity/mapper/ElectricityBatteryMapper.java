@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -44,5 +45,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
 
-    List<ElectricityBattery> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 }

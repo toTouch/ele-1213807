@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 
 import java.util.List;
 
@@ -57,5 +58,5 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId);
 
-    List<ElectricityBattery> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 }

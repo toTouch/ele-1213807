@@ -1965,7 +1965,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<Long> bindingBatteryIds = franchiseeBindElectricityBatteries.stream().map(FranchiseeBindElectricityBattery::getElectricityBatteryId).collect(Collectors.toList());
         //把加盟商绑定的电池过滤出来
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e->bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
+        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
         return Triple.of(true, null, usableBatteryCellNos.get(0));
     }
 
@@ -2635,18 +2635,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
-
-
-        HomepageBatteryFrequencyVo homepageBatteryFrequencyVo=new HomepageBatteryFrequencyVo();
-
-//        electricityBatteryService.queryList();
-
-        return null;
-
-
-
-
-
+        return R.ok(electricityBatteryService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery));
 
     }
 }
