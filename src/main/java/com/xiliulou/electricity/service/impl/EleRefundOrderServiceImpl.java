@@ -497,6 +497,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
 
+        System.out.println("退款金额======================="+refundAmount);
+
+        System.out.println("用户押金-------------------------"+franchiseeUserInfo.getBatteryDeposit());
+
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
                 log.error("battery deposit OffLine Refund ERROR ,refundAmount > payAmount uid:{}", uid);
@@ -527,8 +531,13 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
 
 
+
+        System.out.println("退款金额======================="+refundAmount);
+
         if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
+
+            System.out.println("退款金额======================="+refundAmount);
 
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
