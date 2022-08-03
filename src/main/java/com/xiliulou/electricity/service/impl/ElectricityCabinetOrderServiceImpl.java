@@ -1422,7 +1422,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
             log.warn("ORDER WARN! user not rent battery! uid={}", user.getUid());
-            return Triple.of(false, "100210", "用户还没有租借电池");
+            return Triple.of(false, "100222", "用户还没有租借电池");
         }
 
         //判断套餐
