@@ -1503,7 +1503,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
             return Triple.of(true, "100200", "存在未完成租电订单，不能下单");
         } else if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-            return Triple.of(true, "100202", "存在未完成租电订单，不能下单");
+            return Triple.of(true, "100202", "存在未完成退电订单，不能下单");
         }
 
         //是否存在未完成的换电订单
