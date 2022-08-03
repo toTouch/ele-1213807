@@ -2709,7 +2709,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        CompletableFuture<Void> Count = CompletableFuture.runAsync(() -> {
+        CompletableFuture<Void> count = CompletableFuture.runAsync(() -> {
             List<HomepageBatteryFrequencyVo> list = electricityBatteryService.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
             if (Objects.nonNull(list)) {
                 homepageBatteryVo.setCount(list.size());
@@ -2720,7 +2720,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
 
-        return R.ok();
+        //等待所有线程停止
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSumCount, count);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(homepageBatteryVo);
 
     }
 }
