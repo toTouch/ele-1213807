@@ -805,9 +805,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         Long now = System.currentTimeMillis();
-        if (((now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24) > 1 || Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-            log.error("webUnBindBattery  ERROR! user have BatterySrviceFee! userId:{} ", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.100000", "用户存在电池服务费");
+        if (!Objects.equals(oldFranchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
+            if (((now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24) > 1 || Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+                log.error("webUnBindBattery  ERROR! user have BatterySrviceFee! userId:{} ", oldUserInfo.getUid());
+                return R.fail("ELECTRICITY.100000", "用户存在电池服务费");
+            }
         }
 
         //解绑电池
