@@ -2448,7 +2448,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Long finalFranchiseeId = franchiseeId;
         CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeId, beginTime, endTime);
-            homePageTurnOverAnalysisVo.setBatteryDepositAnalysis(batteryMemberCardTurnover);
+            homePageTurnOverAnalysisVo.setBatteryMemberCardAnalysis(batteryMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;

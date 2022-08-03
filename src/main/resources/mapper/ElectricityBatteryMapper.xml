@@ -177,6 +177,12 @@
 		<if test="query.batterySn != null and query.batterySn !=''">
 			and b.sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%')
 		</if>
+		<if test="query.beginTime != null">
+			and b.create_time &gt;=#{query.beginTime}
+		</if>
+		<if test="query.endTime != null">
+			and b.create_time &lt;=#{query.endTime}
+		</if>
 		<if test="query.franchiseeId != null">
 			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
 		</if>
@@ -191,6 +197,12 @@
 		</if>
 		<if test="query.batterySn != null and query.batterySn !=''">
 			and b.sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.beginTime != null">
+			and b.create_time &gt;=#{query.beginTime}
+		</if>
+		<if test="query.endTime != null">
+			and b.create_time &lt;=#{query.endTime}
 		</if>
 		<if test="query.franchiseeId != null">
 			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
