@@ -2502,6 +2502,53 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    public R homepageUserAnalysis(Long beginTime, Long enTime) {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        HomePageUserAnalysisVo homePageUserAnalysisVo=new HomePageUserAnalysisVo();
+
+        //实名认证用户
+        CompletableFuture<Void> authenticationUser = CompletableFuture.runAsync(() -> {
+            List<HomePageUserByWeekDayVo> list=userInfoService.queryUserAnalysisByUserStatus(tenantId,UserInfo.STATUS_IS_AUTH,beginTime,enTime);
+            homePageUserAnalysisVo.setAuthenticationUserAnalysis(list);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //普通用户
+        CompletableFuture<Void> normalUser = CompletableFuture.runAsync(() -> {
+            List<HomePageUserByWeekDayVo> list=userInfoService.queryUserAnalysisByUserStatus(tenantId,UserInfo.STATUS_INIT,beginTime,enTime);
+            homePageUserAnalysisVo.setNormalUserAnalysis(list);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //等待所有线程停止
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(authenticationUser,normalUser);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(homePageUserAnalysisVo);
+    }
+
+    @Override
     public R homepageElectricityCabinetAnalysis() {
 
         //用户区分

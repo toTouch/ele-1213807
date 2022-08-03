@@ -134,6 +134,8 @@ public interface ElectricityCabinetService {
 
     R homepageBenefitAnalysis(Long beginTime, Long enTime);
 
+    R homepageUserAnalysis(Long beginTime, Long enTime);
+
     R homepageElectricityCabinetAnalysis();
 
     R homepageExchangeOrderFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);

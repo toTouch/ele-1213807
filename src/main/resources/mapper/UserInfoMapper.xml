@@ -230,5 +230,26 @@
         </if>
     </select>
 
+    <select id="queryUserAnalysisByUserStatus" resultType="com.xiliulou.electricity.vo.HomePageUserByWeekDayVo">
+        select count(1) as userCount,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
+        weekDate
+        from t_user_info
+        where del_flag=0
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="userStatus != null">
+            and service_status = #{userStatus}
+        </if>
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+        GROUP BY
+        weekDate
+    </select>
+
 
 </mapper>

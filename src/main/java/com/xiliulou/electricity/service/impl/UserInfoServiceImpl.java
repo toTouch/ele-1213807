@@ -995,4 +995,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public Integer queryAuthenticationUserCount(Integer tenantId) {
         return userInfoMapper.queryAuthenticationUserCount(tenantId);
     }
+
+    @Override
+    public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
+        return userInfoMapper.queryUserAnalysisByUserStatus(tenantId,userStatus,beginTime,endTime);
+    }
 }

@@ -7,6 +7,8 @@ import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
+import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 
 import java.util.HashMap;
 import java.util.List;
@@ -54,44 +56,47 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R queryList(UserInfoQuery userInfoQuery);
 
-    R updateStatus(Long uid,Integer usableStatus);
+    R updateStatus(Long uid, Integer usableStatus);
 
     UserInfo queryByUidFromCache(Long uid);
 
-    Integer homeOne(Long first, Long now,Integer tenantId);
+    Integer homeOne(Long first, Long now, Integer tenantId);
 
-    List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay,Integer tenantId);
+    List<HashMap<String, String>> homeThree(long startTimeMilliDay, Long endTimeMilliDay, Integer tenantId);
 
     R getMemberCardInfo(Long uid);
 
     R getRentCarMemberCardInfo(Long uid);
+
     @Deprecated
     R queryUserInfo();
 
-    R verifyAuth(Long id,Integer authStatus);
+    R verifyAuth(Long id, Integer authStatus);
 
     R updateAuth(UserInfo userInfo);
 
     R queryUserAuthInfo(UserInfoQuery userInfoQuery);
 
-	R queryCount(UserInfoQuery userInfoQuery);
+    R queryCount(UserInfoQuery userInfoQuery);
 
-	Integer querySumCount(UserInfoQuery userInfoQuery);
+    Integer querySumCount(UserInfoQuery userInfoQuery);
 
     R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
 
     R webUnBindBattery(Long uid);
 
-	R userMove(UserMoveHistory userMoveHistory);
+    R userMove(UserMoveHistory userMoveHistory);
 
-	Integer deleteByUid(Long uid);
+    Integer deleteByUid(Long uid);
 
-	R queryUserBelongFranchisee(Long franchiseeId);
+    R queryUserBelongFranchisee(Long franchiseeId);
 
-	R queryUserAllConsumption(Long id);
+    R queryUserAllConsumption(Long id);
 
-	UserInfo queryUserInfoByPhone(String phone,Integer tenantId);
+    UserInfo queryUserInfoByPhone(String phone, Integer tenantId);
 
-	Integer queryAuthenticationUserCount(Integer tenantId);
+    Integer queryAuthenticationUserCount(Integer tenantId);
+
+    List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
 
 }
