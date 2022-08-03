@@ -1372,7 +1372,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             }
 
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
-                commandData.put("multiBatteryModelName", franchiseeUserInfo.getModelType());
+                commandData.put("multiBatteryModelName", franchiseeUserInfo.getBatteryType());
             }
 
             HardwareCommandQuery comm = HardwareCommandQuery.builder()
