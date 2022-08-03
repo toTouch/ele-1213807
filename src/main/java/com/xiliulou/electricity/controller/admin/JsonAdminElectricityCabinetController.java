@@ -579,14 +579,12 @@ public class JsonAdminElectricityCabinetController {
 
         Long franchiseeId = null;
         Franchisee franchisee = null;
-        List<Integer> eleIdList = null;
         if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
             UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
             if (Objects.isNull(userTypeService)) {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
             franchisee = franchiseeService.queryByUid(user.getUid());
         }
         if (Objects.nonNull(franchisee)) {

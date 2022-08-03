@@ -43,4 +43,6 @@ public class HomepageElectricityExchangeFrequencyVo {
     private Long storeId;
 
     private List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos;
+
+    private Integer count;
 }

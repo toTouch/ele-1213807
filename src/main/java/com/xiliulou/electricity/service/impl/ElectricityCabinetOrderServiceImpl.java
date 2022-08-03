@@ -619,6 +619,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     @Override
+    public List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequencyCount(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery) {
+        return electricityCabinetOrderMapper.homepageExchangeFrequencyCount(homepageElectricityExchangeFrequencyQuery);
+    }
+
+    @Override
     public Integer queryCountForScreenStatistic(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery);
     }

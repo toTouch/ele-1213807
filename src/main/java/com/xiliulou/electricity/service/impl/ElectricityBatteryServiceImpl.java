@@ -503,6 +503,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
     }
 
+    @Override
+    public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+        return electricitybatterymapper.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
+    }
+
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
         appTemplateQuery.setAppId(appId);

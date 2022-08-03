@@ -2653,9 +2653,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         CompletableFuture<Void> exchangeFrequency = CompletableFuture.runAsync(() -> {
             List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService.homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
-            List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos=new ArrayList<>();
+            List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos = new ArrayList<>();
             homepageExchangeFrequency.parallelStream().forEach(item -> {
-                HomepageElectricityExchangeVo homepageElectricityExchangeVo=new HomepageElectricityExchangeVo();
+                HomepageElectricityExchangeVo homepageElectricityExchangeVo = new HomepageElectricityExchangeVo();
                 Store store = storeService.queryByIdFromCache(item.getStoreId());
                 if (Objects.nonNull(store)) {
                     item.setStoreName(store.getName());
@@ -2675,8 +2675,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
+        CompletableFuture<Void> count = CompletableFuture.runAsync(() -> {
+            List<HomepageElectricityExchangeFrequencyVo> sumCount = electricityCabinetOrderService.homepageExchangeFrequencyCount(homepageElectricityExchangeFrequencyQuery);
+            if (Objects.nonNull(sumCount)) {
+                homepageElectricityExchangeFrequencyVo.setCount(sumCount.size());
+            }
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSumCount, exchangeFrequency);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSumCount, exchangeFrequency, count);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -2688,7 +2698,29 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
-        return R.ok(electricityBatteryService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery));
+
+        HomepageBatteryVo homepageBatteryVo = new HomepageBatteryVo();
+
+        CompletableFuture<Void> electricityOrderSumCount = CompletableFuture.runAsync(() -> {
+            List<HomepageBatteryFrequencyVo> list = electricityBatteryService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
+            homepageBatteryVo.setHomepageBatteryFrequencyVos(list);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> Count = CompletableFuture.runAsync(() -> {
+            List<HomepageBatteryFrequencyVo> list = electricityBatteryService.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
+            if (Objects.nonNull(list)) {
+                homepageBatteryVo.setCount(list.size());
+            }
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
+
+        return R.ok();
 
     }
 }

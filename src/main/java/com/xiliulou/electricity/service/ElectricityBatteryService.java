@@ -59,4 +59,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 }
