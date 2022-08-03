@@ -497,9 +497,6 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
 
-        System.out.println("退款金额======================="+refundAmount);
-
-        System.out.println("用户押金-------------------------"+franchiseeUserInfo.getBatteryDeposit());
 
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
@@ -530,14 +527,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
 
-
-
-        System.out.println("退款金额======================="+refundAmount);
-
         if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
-
-            System.out.println("退款金额======================="+refundAmount);
 
             eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
@@ -618,6 +609,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
             //提交失败
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_FAIL);
+            eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
             return R.fail("ELECTRICITY.00100", "退款失败");
