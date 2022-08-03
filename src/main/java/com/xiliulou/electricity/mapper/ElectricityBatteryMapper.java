@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -42,4 +44,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 	ElectricityBattery queryByUid(@Param("uid") Long uid);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
+
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 }

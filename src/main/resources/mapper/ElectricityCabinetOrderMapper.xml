@@ -99,16 +99,41 @@
 
     <select id="homepageExchangeOrderSumCount" resultType="java.lang.Integer">
         select count(1)
-        from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
+        from t_electricity_cabinet_order teco
         <where>
             <if test="query.beginTime != null">
                 and teco.create_time &gt;=#{query.beginTime}
             </if>
-			<if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-				and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')
-			</if>
             <if test="query.endTime != null">
                 and teco.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.tenantId != null">
+                and teco.tenant_id = #{query.tenantId}
+            </if>
+            <if test="query.electricityCabinetId != null">
+                and teco.electricity_cabinet_id = #{query.electricityCabinetId}
+            </if>
+            <if test="query.eleIdList!=null and query.eleIdList!=''">
+                and teco.electricity_cabinet_id in
+                <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="homepageExchangeFrequency" resultType="com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo">
+        select count(1) as exchangeFrequency, teco.electricity_cabinet_id as eleId,teco.store_id
+        from t_electricity_cabinet_order teco
+        <where>
+            <if test="query.beginTime != null">
+                and teco.create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and teco.create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.electricityCabinetId != null">
+                and teco.electricity_cabinet_id = #{query.electricityCabinetId}
             </if>
             <if test="query.tenantId != null">
                 and teco.tenant_id = #{query.tenantId}
@@ -120,6 +145,8 @@
                 </foreach>
             </if>
         </where>
+            group by teco.electricity_cabinet_id ,teco.store_id
+            order by exchangeFrequency desc
         limit #{query.offset}, #{query.size}
     </select>
 

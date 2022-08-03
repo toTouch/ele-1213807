@@ -29,4 +29,14 @@ public class HomepageElectricityExchangeFrequencyVo {
      * 换电频次
      */
     private Integer exchangeFrequency;
+
+    /**
+     * 换电柜Id
+     */
+    private Integer eleId;
+
+    /**
+     * 门店Id
+     */
+    private Long storeId;
 }

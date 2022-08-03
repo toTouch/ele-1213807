@@ -11,18 +11,18 @@ import java.util.List;
  */
 @Data
 @Builder
-public class HomepageElectricityExchangeFrequencyQuery {
+public class HomepageBatteryFrequencyQuery {
     private Long size;
     private Long offset;
 
     private Integer tenantId;
 
-    private Integer electricityCabinetId;
 
     private Long beginTime;
     private Long endTime;
 
-    private Long franchiseeId;
 
-    private List<Integer> eleIdList;
+    private String batterySn;
+
+    private Long franchiseeId;
 }

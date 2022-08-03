@@ -138,5 +138,7 @@ public interface ElectricityCabinetService {
 
     R homepageExchangeOrderFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
 
+    R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
 
 }

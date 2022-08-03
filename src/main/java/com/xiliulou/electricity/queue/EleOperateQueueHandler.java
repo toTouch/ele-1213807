@@ -510,6 +510,7 @@ public class EleOperateQueueHandler {
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUid(electricityCabinetOrder.getUid());
+            newElectricityBattery.setExchangeCount(electricityBattery.getExchangeCount() + 1);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
             electricityBatteryService.updateByOrder(newElectricityBattery);

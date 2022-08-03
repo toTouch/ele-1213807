@@ -1965,7 +1965,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         List<Long> bindingBatteryIds = franchiseeBindElectricityBatteries.stream().map(FranchiseeBindElectricityBattery::getElectricityBatteryId).collect(Collectors.toList());
         //把加盟商绑定的电池过滤出来
-        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e->bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
+        usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
         return Triple.of(true, null, usableBatteryCellNos.get(0));
     }
 
@@ -2605,6 +2605,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
 
-        return null;
+        CompletableFuture<Void> exchangeFrequency = CompletableFuture.runAsync(() -> {
+            List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService.homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
+            homepageExchangeFrequency.parallelStream().forEach(item -> {
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
+                if (Objects.nonNull(store)) {
+                    item.setStoreName(store.getName());
+                }
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(item.getEleId());
+                if (Objects.nonNull(electricityCabinet)) {
+                    item.setElectricityName(electricityCabinet.getName());
+                }
+            });
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
+
+        //等待所有线程停止
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSumCount, exchangeFrequency);
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("DATA SUMMARY BROWSING ERROR!", e);
+        }
+
+        return R.ok(homepageElectricityExchangeFrequencyQuery);
+    }
+
+    @Override
+    public R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+        return R.ok(electricityBatteryService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery));
+
     }
 }
