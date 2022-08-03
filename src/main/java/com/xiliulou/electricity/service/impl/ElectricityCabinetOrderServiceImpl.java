@@ -1550,7 +1550,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         if (isTakeBatteryAllStatus(status)) {
-            showVo.setPicture(ExchangeOrderMsgShowVO.PLACE_BATTERY_IMG);
+            showVo.setPicture(ExchangeOrderMsgShowVO.TAKE_BATTERY_IMG);
         }
 
         if (isExceptionOrder(status)) {
@@ -1591,7 +1591,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     }
 
     private boolean isTakeBatteryAllStatus(String status) {
-        return false;
+        return status.equals(ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)
+                || status.equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
     }
 
     private boolean isPlaceBatteryAllStatus(String status) {
