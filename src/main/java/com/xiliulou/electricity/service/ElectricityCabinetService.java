@@ -3,10 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -138,6 +135,8 @@ public interface ElectricityCabinetService {
     R homepageBenefitAnalysis(Long beginTime, Long enTime);
 
     R homepageElectricityCabinetAnalysis();
+
+    R homepageExchangeOrderFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
 
 
 }

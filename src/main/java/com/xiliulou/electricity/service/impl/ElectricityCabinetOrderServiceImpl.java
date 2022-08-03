@@ -370,6 +370,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .paymentMethod(franchiseeUserInfo.getCardType())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
+                    .storeId(electricityCabinet.getStoreId())
                     .tenantId(tenantId).build();
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 
@@ -605,6 +606,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
     @Override
     public R queryCount(ElectricityCabinetOrderQuery electricityCabinetOrderQuery) {
         return R.ok(electricityCabinetOrderMapper.queryCount(electricityCabinetOrderQuery));
+    }
+
+    @Override
+    public Integer homepageExchangeOrderSumCount(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery) {
+        return electricityCabinetOrderMapper.homepageExchangeOrderSumCount(homepageElectricityExchangeFrequencyQuery);
     }
 
     @Override
@@ -1345,6 +1351,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .paymentMethod(franchiseeUserInfo.getCardType())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis())
+                    .storeId(electricityCabinet.getStoreId())
                     .tenantId(TenantContextHolder.getTenantId()).build();
             electricityCabinetOrderMapper.insert(electricityCabinetOrder);
 

@@ -2028,7 +2028,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public Integer queryCountByStoreIdsAndStatus(Integer tenantId, List<Long> storeIds, Integer status) {
-        return electricityCabinetMapper.queryCountByStoreIdsAndStatus(tenantId,storeIds,status);
+        return electricityCabinetMapper.queryCountByStoreIdsAndStatus(tenantId, storeIds, status);
     }
 
     @Override
@@ -2555,7 +2555,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //换电柜在线总数统计
         CompletableFuture<Void> electricityOnlineCabinetCount = CompletableFuture.runAsync(() -> {
-            Integer onLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, stores,ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
+            Integer onLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, stores, ElectricityCabinet.ELECTRICITY_CABINET_ONLINE_STATUS);
             homePageElectricityOrderVo.setOnlineElectricityCabinet(onLineCount);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
@@ -2564,7 +2564,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //换电柜离线总数统计
         CompletableFuture<Void> electricityOfflineCabinetCount = CompletableFuture.runAsync(() -> {
-            Integer offLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, stores,ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
+            Integer offLineCount = electricityCabinetService.queryCountByStoreIdsAndStatus(tenantId, stores, ElectricityCabinet.ELECTRICITY_CABINET_OFFLINE_STATUS);
             homePageElectricityOrderVo.setOfflineElectricityCabinet(offLineCount);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricityCabinetTurnOver error!", e);
@@ -2572,7 +2572,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSuccessCount,electricitySunOrderCount,electricityOnlineCabinetCount,electricityOfflineCabinetCount);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(electricityOrderSuccessCount, electricitySunOrderCount, electricityOnlineCabinetCount, electricityOfflineCabinetCount);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -2580,7 +2580,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return R.ok(homePageElectricityOrderVo);
+    }
+
+    @Override
+    public R homepageExchangeOrderFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery) {
+
+        HomepageElectricityExchangeFrequencyVo homepageElectricityExchangeFrequencyVo = new HomepageElectricityExchangeFrequencyVo();
+
+        CompletableFuture<Void> electricityOrderSumCount = CompletableFuture.runAsync(() -> {
+            Integer sumCount = electricityCabinetOrderService.homepageExchangeOrderSumCount(homepageElectricityExchangeFrequencyQuery);
+            homepageElectricityExchangeFrequencyVo.setSumFrequency(sumCount);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
+            return null;
+        });
 
 
+        return null;
     }
 }
