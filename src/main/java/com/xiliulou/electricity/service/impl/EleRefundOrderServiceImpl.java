@@ -530,7 +530,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
 
-            eleRefundOrder.setRefundAmount(eleDepositOrder.getPayAmount());
+            eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrderService.insert(eleRefundOrder);
 
