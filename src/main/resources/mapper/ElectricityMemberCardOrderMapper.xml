@@ -190,11 +190,11 @@
         <if test="franchiseeId != null">
             and franchisee_id =#{franchiseeId}
         </if>
-        <if test="query.beginTime != null">
-            and create_time &gt;=#{query.beginTime}
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
         </if>
-        <if test="query.endTime != null">
-            and create_time &lt;=#{query.endTime}
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
         </if>
         GROUP BY
         weekDate
@@ -224,11 +224,11 @@
         <if test="franchiseeId != null">
             and franchisee_id =#{franchiseeId}
         </if>
-        <if test="query.beginTime != null">
-            and create_time &gt;=#{query.beginTime}
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
         </if>
-        <if test="query.endTime != null">
-            and create_time &lt;=#{query.endTime}
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
         </if>
         GROUP BY
         weekDate
