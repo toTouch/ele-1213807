@@ -2701,8 +2701,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         HomepageBatteryVo homepageBatteryVo = new HomepageBatteryVo();
 
+        System.out.println("参数==========================="+homepageBatteryFrequencyQuery);
+
         CompletableFuture<Void> electricityOrderSumCount = CompletableFuture.runAsync(() -> {
             List<HomepageBatteryFrequencyVo> list = electricityBatteryService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
+
+            System.out.println("查询出来的list======================================="+list);
+
             homepageBatteryVo.setHomepageBatteryFrequencyVos(list);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
@@ -2711,7 +2716,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         CompletableFuture<Void> count = CompletableFuture.runAsync(() -> {
             List<HomepageBatteryFrequencyVo> list = electricityBatteryService.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
+
+
             if (Objects.nonNull(list)) {
+                System.out.println("查询count======================="+list.size());
                 homepageBatteryVo.setCount(list.size());
             }
         }, executorService).exceptionally(e -> {
