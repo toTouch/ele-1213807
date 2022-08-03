@@ -489,6 +489,12 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.homepageOverviewDetail();
     }
 
+//    //首页用户统计
+//    @GetMapping(value = "/admin/electricityCabinet/homepageOverviewDetail")
+//    public R homepageOverviewDetail() {
+//        return electricityCabinetService.homepageOverviewDetail();
+//    }
+
     //首页收益分析
     @GetMapping(value = "/admin/electricityCabinet/homepageBenefitAnalysis")
     public R homepageBenefitAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,

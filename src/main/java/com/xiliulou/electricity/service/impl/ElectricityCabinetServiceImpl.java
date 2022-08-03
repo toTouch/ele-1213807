@@ -2445,10 +2445,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         HomePageTurnOverAnalysisVo homePageTurnOverAnalysisVo = new HomePageTurnOverAnalysisVo();
 
+        System.out.println("入餐============="+beginTime+"=="+endTime);
+
         //购买换电月卡
         Long finalFranchiseeId = franchiseeId;
         CompletableFuture<Void> batteryMemberCard = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> batteryMemberCardTurnover = electricityMemberCardOrderService.queryBatteryMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeId, beginTime, endTime);
+
+            System.out.println("收益分析=================电池套餐===="+batteryMemberCardTurnover);
+
             homePageTurnOverAnalysisVo.setBatteryDepositAnalysis(batteryMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2458,6 +2463,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //购买租车月卡
         CompletableFuture<Void> carMemberCard = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carMemberCardTurnover = electricityMemberCardOrderService.queryCarMemberCardTurnOverByCreateTime(tenantId, finalFranchiseeId, beginTime, endTime);
+            System.out.println("收益分析=================电池套餐===="+carMemberCardTurnover);
             homePageTurnOverAnalysisVo.setCarMemberCardAnalysis(carMemberCardTurnover);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
