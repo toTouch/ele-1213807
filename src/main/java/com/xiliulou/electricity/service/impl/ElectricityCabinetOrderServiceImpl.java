@@ -1426,7 +1426,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         //判断套餐
-        if (Objects.isNull(franchiseeUserInfo.getCardId())) {
+        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
             log.warn("ORDER WARN! user haven't memberCard uid={}", user.getUid());
             return Triple.of(false, "100210", "用户未开通套餐");
         }
