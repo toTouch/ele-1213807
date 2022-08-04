@@ -105,7 +105,7 @@
             and tenant_id = #{tenantId}
         </if>
         <if test="todayStartTime != null">
-            and create_time = #{todayStartTime}
+            and create_time &gt;=#{todayStartTime}
         </if>
         <if test="refundOrderType != null">
             and refund_order_type = #{refundOrderType}
