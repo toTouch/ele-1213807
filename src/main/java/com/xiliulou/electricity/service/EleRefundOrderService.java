@@ -74,5 +74,5 @@ public interface EleRefundOrderService {
 
     BigDecimal queryTurnOver(Integer tenantId);
 
-    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime);
+    BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType);
 }

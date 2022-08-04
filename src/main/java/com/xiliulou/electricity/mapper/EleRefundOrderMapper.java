@@ -31,5 +31,5 @@ public interface EleRefundOrderMapper extends BaseMapper<EleRefundOrder> {
 
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId);
 
-    BigDecimal queryTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime);
+    BigDecimal queryTurnOverByTime(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime,@Param("refundOrderType") Integer refundOrderType);
 }

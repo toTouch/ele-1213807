@@ -2316,22 +2316,33 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //退押金
-        CompletableFuture<Void> refundDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime);
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null);
+        //退换电押金
+        CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime,null);
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
-            homePageDepositVo.setHistoryRefundDeposit(historyRefundDeposit);
+            homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //退换电押金
+        CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
+            homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
 
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryDeposit, carDeposit, refundDeposit);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryDeposit, carDeposit, refundBatteryDeposit,refundCarDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
-            homePageDepositVo.setSumDepositTurnover(homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()).subtract(homePageDepositVo.getHistoryRefundDeposit()));
+            homePageDepositVo.setBatteryDeposit(homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
+            homePageDepositVo.setCarDeposit(homePageDepositVo.getCarDeposit().subtract(homePageDepositVo.getHistoryRefundCarDeposit()));
+            homePageDepositVo.setSumDepositTurnover(homePageDepositVo.getBatteryDeposit().add(homePageDepositVo.getCarDeposit()));
             homePageDepositVo.setTodayPayDeposit(homePageDepositVo.getTodayBatteryDeposit().add(homePageDepositVo.getTodayCarDeposit()));
         } catch (Exception e) {
             log.error("DATA SUMMARY BROWSING ERROR!", e);

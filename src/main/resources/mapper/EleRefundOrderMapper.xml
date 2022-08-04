@@ -107,6 +107,9 @@
         <if test="todayStartTime != null">
             and create_time = #{todayStartTime}
         </if>
+        <if test="refundOrderType != null">
+            and refund_order_type = #{refundOrderType}
+        </if>
     </select>
 
 
