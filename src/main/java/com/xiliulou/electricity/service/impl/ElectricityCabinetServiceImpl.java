@@ -2696,10 +2696,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         CompletableFuture<Void> exchangeFrequency = CompletableFuture.runAsync(() -> {
             List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency = electricityCabinetOrderService.homepageExchangeFrequency(homepageElectricityExchangeFrequencyQuery);
-
-            System.out.println("查询的换电柜子数量======================"+homepageExchangeFrequency.size()+"============="+homepageExchangeFrequency);
-
-
             List<HomepageElectricityExchangeVo> homepageElectricityExchangeVos = new ArrayList<>();
             homepageExchangeFrequency.parallelStream().forEach(item -> {
                 HomepageElectricityExchangeVo homepageElectricityExchangeVo = new HomepageElectricityExchangeVo();

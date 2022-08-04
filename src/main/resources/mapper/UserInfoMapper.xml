@@ -50,8 +50,10 @@
 
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
-        tui.phone,tui.name,tui.uid,tui.create_time as userCertificationTime,tui.auth_status,tui.usable_status,tfui.now_electricity_battery_sn,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
-        tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.model from t_user_info tui
+        tui.phone,tui.name,tui.uid,tui.create_time as
+        userCertificationTime,tui.auth_status,tui.usable_status,tfui.now_electricity_battery_sn,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
+        tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.model from t_user_info
+        tui
         left join t_franchisee_user_info tfui on tfui.user_info_id=tui.id
         left join t_electricity_battery teb on tfui.now_electricity_battery_sn=teb.sn
         where tui.del_flag=0
@@ -234,8 +236,8 @@
     <select id="queryUserAnalysisForAuthUser" resultType="com.xiliulou.electricity.vo.HomePageUserByWeekDayVo">
         select count(1) as userCount,FROM_UNIXTIME( tfui.create_time / 1000, '%Y-%m-%d' ) as
         weekDate
-        from t_franchisee_user_info as tfui
-        where tfui.del_flag=0 and tfui.service_status in (1,2,3)
+        from t_user_info as tfui
+        where tfui.del_flag=0 and tfui.service_status=1
         <if test="tenantId != null">
             and tfui.tenant_id = #{tenantId}
         </if>
