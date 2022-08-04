@@ -58,4 +58,6 @@ public interface ElectricityMemberCardOrderService {
     List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
 
     List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+
+    BigDecimal querySumMemberCardTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
 }

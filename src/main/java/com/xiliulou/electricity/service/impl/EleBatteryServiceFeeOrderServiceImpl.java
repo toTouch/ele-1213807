@@ -94,4 +94,9 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     public List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
         return eleBatteryServiceFeeOrderMapper.queryTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
+
+    @Override
+    public BigDecimal queryAllTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+        return eleBatteryServiceFeeOrderMapper.queryAllTurnOver(tenantId, franchiseeId, beginTime, endTime);
+    }
 }

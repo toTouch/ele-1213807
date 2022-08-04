@@ -77,5 +77,21 @@
         weekDate
     </select>
 
+    <select id="queryAllTurnOver" resultType="decimal">
+        select sum(pay_amount)  from t_ele_battery_service_fee_order
+        where status=1
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null">
+            and franchisee_id =#{franchiseeId}
+        </if>
+        <if test="beginTime != null">
+            and create_time &gt;=#{beginTime}
+        </if>
+        <if test="endTime != null">
+            and create_time &lt;=#{endTime}
+        </if>
+    </select>
 
 </mapper>

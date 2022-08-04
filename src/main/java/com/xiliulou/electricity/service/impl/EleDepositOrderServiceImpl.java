@@ -1347,4 +1347,9 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     public List<HomePageTurnOverGroupByWeekDayVo>  queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, franchiseeId, beginTime, enTime);
     }
+
+    @Override
+    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId,  Long franchiseeId, Long beginTime, Long enTime) {
+        return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
+    }
 }

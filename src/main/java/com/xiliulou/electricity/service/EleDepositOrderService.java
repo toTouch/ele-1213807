@@ -67,4 +67,6 @@ public interface EleDepositOrderService {
 
     List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime);
 
+    BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, Long franchiseeId, Long beginTime, Long enTime);
+
 }

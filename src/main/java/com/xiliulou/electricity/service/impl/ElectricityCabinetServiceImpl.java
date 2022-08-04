@@ -2490,8 +2490,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
+        //总套餐营业额统计
+        CompletableFuture<Void> sumMemberCard = CompletableFuture.runAsync(() -> {
+            BigDecimal sumMemberCardTurnOver = electricityMemberCardOrderService.querySumMemberCardTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
+            BigDecimal sumBatteryService = eleBatteryServiceFeeOrderService.queryAllTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
+            homePageTurnOverAnalysisVo.setMemberCardTurnOver(sumMemberCardTurnOver.add(sumBatteryService));
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+        //总押金营业额统计
+        CompletableFuture<Void> sumDeposit = CompletableFuture.runAsync(() -> {
+            BigDecimal sumDepositTurnOver = eleDepositOrderService.querySumDepositTurnOverAnalysis(tenantId, finalFranchiseeId, beginTime, endTime);
+            homePageTurnOverAnalysisVo.setDepositTurnOver(sumDepositTurnOver);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
+
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee, batteryDeposit, carDeposit);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee, batteryDeposit, carDeposit,sumMemberCard,sumDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

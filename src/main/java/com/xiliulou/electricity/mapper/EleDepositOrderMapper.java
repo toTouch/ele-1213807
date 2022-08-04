@@ -41,5 +41,7 @@ public interface EleDepositOrderMapper extends BaseMapper<EleDepositOrder> {
 
     List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(@Param("tenantId") Integer tenantId, @Param("depositType") Integer depositType, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
+    BigDecimal querySumDepositTurnOverAnalysis(@Param("tenantId") Integer tenantId,  @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
 
 }

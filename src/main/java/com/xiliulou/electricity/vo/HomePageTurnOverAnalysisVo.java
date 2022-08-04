@@ -23,5 +23,9 @@ public class HomePageTurnOverAnalysisVo {
 
    private List<HomePageTurnOverGroupByWeekDayVo> carDepositAnalysis;
 
+   private BigDecimal memberCardTurnOver;
+
+   private BigDecimal depositTurnOver;
+
 
 }

@@ -71,5 +71,7 @@ public interface EleBatteryServiceFeeOrderService {
 
     List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
 
+    BigDecimal queryAllTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+
 
 }

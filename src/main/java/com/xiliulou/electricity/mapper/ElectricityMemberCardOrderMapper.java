@@ -46,4 +46,6 @@ public interface ElectricityMemberCardOrderMapper extends BaseMapper<Electricity
 
     List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
+    BigDecimal querySumMemberCardTurnOverByCreateTime(@Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
 }
