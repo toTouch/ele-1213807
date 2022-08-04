@@ -173,7 +173,6 @@
             </if>
         </where>
         group by teco.electricity_cabinet_id ,teco.store_id
-        order by exchangeFrequency desc
     </select>
 
 
