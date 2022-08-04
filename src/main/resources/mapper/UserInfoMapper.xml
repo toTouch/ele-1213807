@@ -232,7 +232,7 @@
     </select>
 
     <select id="queryUserAnalysisForAuthUser" resultType="com.xiliulou.electricity.vo.HomePageUserByWeekDayVo">
-        select count(1),FROM_UNIXTIME( tfui.create_time / 1000, '%Y-%m-%d' ) as
+        select count(1) as userCount,FROM_UNIXTIME( tfui.create_time / 1000, '%Y-%m-%d' ) as
         weekDate
         from t_franchisee_user_info as tfui
         where tfui.del_flag=0 and tfui.service_status in (1,2,3)
