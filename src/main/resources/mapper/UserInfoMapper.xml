@@ -257,7 +257,7 @@
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
-        <if test="type != null ">
+        <if test="userType != null ">
             and user_type =#{userType}
         </if>
         <if test="beginTime != null">

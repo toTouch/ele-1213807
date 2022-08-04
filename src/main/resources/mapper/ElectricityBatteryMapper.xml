@@ -186,6 +186,7 @@
 		<if test="query.franchiseeId != null">
 			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
 		</if>
+		order by exchange_count desc
 		limit #{query.offset}, #{query.size}
     </select>
 
