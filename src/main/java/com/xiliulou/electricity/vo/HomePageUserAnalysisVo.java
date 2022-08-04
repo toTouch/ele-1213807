@@ -16,5 +16,7 @@ public class HomePageUserAnalysisVo {
 
    private List<HomePageUserByWeekDayVo> normalUserAnalysis;
 
+   private Integer userCount;
+
 
 }

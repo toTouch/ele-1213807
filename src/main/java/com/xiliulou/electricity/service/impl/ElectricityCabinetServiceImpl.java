@@ -122,6 +122,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     ElectricityCarService electricityCarService;
 
+    @Autowired
+    UserService userService;
+
     /**
      * 通过ID查询单条数据从缓存
      *
@@ -2511,7 +2514,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
 
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee, batteryDeposit, carDeposit,sumMemberCard,sumDeposit);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryMemberCard, carMemberCard, batteryServiceFee, batteryDeposit, carDeposit, sumMemberCard, sumDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {
@@ -2541,7 +2544,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //实名认证用户
         CompletableFuture<Void> authenticationUser = CompletableFuture.runAsync(() -> {
-            List<HomePageUserByWeekDayVo> list = userInfoService.queryUserAnalysisByUserStatus(tenantId, UserInfo.STATUS_IS_AUTH, beginTime, enTime);
+            List<HomePageUserByWeekDayVo> list = userInfoService.queryUserAnalysisForAuthUser(tenantId, beginTime, enTime);
             homePageUserAnalysisVo.setAuthenticationUserAnalysis(list);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2550,15 +2553,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //普通用户
         CompletableFuture<Void> normalUser = CompletableFuture.runAsync(() -> {
-            List<HomePageUserByWeekDayVo> list = userInfoService.queryUserAnalysisByUserStatus(tenantId, UserInfo.STATUS_INIT, beginTime, enTime);
+            List<HomePageUserByWeekDayVo> list = userInfoService.queryUserAnalysisByUserStatus(tenantId, User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime);
             homePageUserAnalysisVo.setNormalUserAnalysis(list);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
             return null;
         });
 
+        //用户总数
+        CompletableFuture<Void> userCount = CompletableFuture.runAsync(() -> {
+            Integer count = userService.queryHomePageCount(User.TYPE_USER_NORMAL_WX_PRO, beginTime, enTime, tenantId);
+            homePageUserAnalysisVo.setUserCount(count);
+        }, executorService).exceptionally(e -> {
+            log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
+            return null;
+        });
+
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(authenticationUser, normalUser);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(authenticationUser, normalUser, userCount);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
         } catch (Exception e) {

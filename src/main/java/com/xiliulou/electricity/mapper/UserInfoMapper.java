@@ -42,6 +42,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
 	Integer queryAuthenticationUserCount(@Param("tenantId") Integer tenantId);
 
-    List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(@Param("tenantId") Integer tenantId, @Param("userStatus") Integer userStatus,  @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+	List<HomePageUserByWeekDayVo> queryUserAnalysisForAuthUser(@Param("tenantId") Integer tenantId,  @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
+    List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(@Param("tenantId") Integer tenantId, @Param("userType") Integer userType,  @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
 }

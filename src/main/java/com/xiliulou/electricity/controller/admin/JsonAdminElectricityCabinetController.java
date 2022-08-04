@@ -559,7 +559,7 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.homepageExchangeOrderFrequency(homepageElectricityExchangeFrequencyQuery);
     }
 
-    //首页柜机分析
+    //首页电池分析
     @GetMapping(value = "/admin/electricityCabinet/homepageBatteryAnalysis")
     public R homepageBatteryAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,
                                      @RequestParam(value = "endTime", required = false) Long endTime,

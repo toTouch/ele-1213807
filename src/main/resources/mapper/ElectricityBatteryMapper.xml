@@ -178,15 +178,16 @@
 			and b.sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%')
 		</if>
 		<if test="query.beginTime != null">
-			and b.create_time &gt;=#{query.beginTime}
+			and b.update_time &gt;=#{query.beginTime}
 		</if>
 		<if test="query.endTime != null">
-			and b.create_time &lt;=#{query.endTime}
+			and b.update_time &lt;=#{query.endTime}
 		</if>
 		<if test="query.franchiseeId != null">
 			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
 		</if>
 		limit #{query.offset}, #{query.size}
+		order by exchange_count desc
     </select>
 
 	<select id="homepageBatteryAnalysisCount" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">

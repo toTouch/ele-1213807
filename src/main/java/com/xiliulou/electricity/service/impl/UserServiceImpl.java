@@ -646,7 +646,11 @@ public class UserServiceImpl implements UserService {
     @Override
     public Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
         return Pair.of(true, this.userMapper.queryCount(uid, name, phone, type, startTime, endTime, tenantId));
+    }
 
+    @Override
+    public Integer queryHomePageCount( Integer type, Long startTime, Long endTime, Integer tenantId) {
+        return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
 
     @Override

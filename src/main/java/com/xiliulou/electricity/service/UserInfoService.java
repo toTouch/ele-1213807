@@ -97,6 +97,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer queryAuthenticationUserCount(Integer tenantId);
 
+    List<HomePageUserByWeekDayVo>  queryUserAnalysisForAuthUser(Integer tenantId, Long beginTime, Long endTime);
+
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
 
 }
