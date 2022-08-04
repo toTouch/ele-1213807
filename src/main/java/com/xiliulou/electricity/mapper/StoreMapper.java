@@ -40,4 +40,6 @@ public interface StoreMapper extends BaseMapper<Store> {
     List<Long> queryStoreIdsByProvinceId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid,@Param("cid") Integer cid);
 
     List<MapVo> queryCountGroupByCityId(@Param("tenantId") Integer tenantId,@Param("pid") Integer pid);
+
+    List<Long> queryStoreIdByFranchiseeId(@Param("franchiseeId")Long franchiseeId);
 }

@@ -113,7 +113,6 @@
     </select>
 
 
-
 	<select id="queryBorrowExpireBattery" resultMap="queryBorrowExpireBatteryMap">
         select b.sn, b.electricity_cabinet_name, b.borrow_expire_time, u.name, u.phone, b.status, b.tenant_id
         FROM t_electricity_battery b left join t_user_info u on b.uid = u.uid
@@ -157,6 +156,9 @@
 		<if test="model != null">
 			model =#{model},
 		</if>
+		<if test="exchangeCount != null">
+			exchange_count =#{exchangeCount},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
 		uid=#{uid},status=#{status},
@@ -165,6 +167,48 @@
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>
+
+	<select id="homepageBatteryAnalysis" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">
+       select sn,exchange_count as useCount,status from t_electricity_battery b
+       where b.del_flag = 0
+		<if test="query.tenantId != null">
+			and b.tenant_id =#{query.tenantId}
+		</if>
+		<if test="query.batterySn != null and query.batterySn !=''">
+			and b.sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.beginTime != null">
+			and b.update_time &gt;=#{query.beginTime}
+		</if>
+		<if test="query.endTime != null">
+			and b.update_time &lt;=#{query.endTime}
+		</if>
+		<if test="query.franchiseeId != null">
+			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
+		</if>
+		limit #{query.offset}, #{query.size}
+		order by useCount desc
+    </select>
+
+	<select id="homepageBatteryAnalysisCount" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">
+		select sn,exchange_count as useCount,status from t_electricity_battery b
+		where b.del_flag = 0
+		<if test="query.tenantId != null">
+			and b.tenant_id =#{query.tenantId}
+		</if>
+		<if test="query.batterySn != null and query.batterySn !=''">
+			and b.sn like concat('%',#{query.batterySn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.beginTime != null">
+			and b.update_time &gt;=#{query.beginTime}
+		</if>
+		<if test="query.endTime != null">
+			and b.update_time &lt;=#{query.endTime}
+		</if>
+		<if test="query.franchiseeId != null">
+			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
+		</if>
+	</select>
 
 
 </mapper>

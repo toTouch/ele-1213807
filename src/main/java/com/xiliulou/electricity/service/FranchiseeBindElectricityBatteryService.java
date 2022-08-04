@@ -22,4 +22,7 @@ public interface FranchiseeBindElectricityBatteryService {
 	FranchiseeBindElectricityBattery queryByBatteryId(Long id);
 
 	FranchiseeBindElectricityBattery queryByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
+
+    List<FranchiseeBindElectricityBattery> queryByBatteryIds(List<Long> batteryIds);
+
 }

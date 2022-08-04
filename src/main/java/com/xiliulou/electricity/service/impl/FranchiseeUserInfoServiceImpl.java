@@ -1,19 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.json.JSON;
-import cn.hutool.json.JSONArray;
-import cn.hutool.json.JSONString;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.google.api.client.json.Json;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -26,9 +16,7 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import org.springframework.beans.factory.annotation.Autowired;
-import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -163,7 +151,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         //用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("queryBattery  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -192,7 +180,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         //用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("queryBattery  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -254,7 +242,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
             //查询用户是否存在电池服务费
-            if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+            if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
                 eleBatteryServiceFeeVO.setModel(model);
                 List<ModelBatteryDeposit> list = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);

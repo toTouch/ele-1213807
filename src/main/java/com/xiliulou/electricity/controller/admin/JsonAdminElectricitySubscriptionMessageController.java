@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.query.ServicePhoneQuery;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
@@ -47,7 +47,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone() {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(redisService.get(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId));
+        return R.ok(redisService.get(CacheConstant.CACHE_SERVICE_PHONE+tenantId));
     }
 
     /**
@@ -59,7 +59,7 @@ public class JsonAdminElectricitySubscriptionMessageController {
     public R getServicePhone(@RequestBody ServicePhoneQuery servicePhoneQuery) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        redisService.set(ElectricityCabinetConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
+        redisService.set(CacheConstant.CACHE_SERVICE_PHONE+tenantId, servicePhoneQuery.getPhone());
         return R.ok();
     }
 

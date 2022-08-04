@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -21,25 +23,29 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
 
     List<ElectricityBattery> queryList(@Param("query") ElectricityBatteryQuery electricityBatteryQuery,
-                                    @Param("offset") Long offset, @Param("size") Long size);
+                                       @Param("offset") Long offset, @Param("size") Long size);
 
-	Integer queryCount(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
+    Integer queryCount(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 
-	ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
+    ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
 
-	Integer updateByOrder(ElectricityBattery electricityBattery);
+    Integer updateByOrder(ElectricityBattery electricityBattery);
 
 
-    List<BorrowExpireBatteryVo>queryBorrowExpireBattery(@Param("curTime")long curTime, @Param("offset")Integer offset, @Param("size")Integer size);
+    List<BorrowExpireBatteryVo> queryBorrowExpireBattery(@Param("curTime") long curTime, @Param("offset") Integer offset, @Param("size") Integer size);
 
     //@Select("select count(1) from t_electricity_battery where power < #{batteryLevel} and report_type = 1 and status = 2")
     //Long queryLowBatteryCount(@Param("batteryLevel")String batteryLevel);
 
-    List<ElectricityBattery> queryLowBattery(@Param("offset")Integer offset, @Param("size")Integer size, @Param("batteryLevel")String batteryLevel);
+    List<ElectricityBattery> queryLowBattery(@Param("offset") Integer offset, @Param("size") Integer size, @Param("batteryLevel") String batteryLevel);
 
-    List<ElectricityBattery> queryNotBindList(@Param("offset")Long offset, @Param("size")Long size, @Param("franchiseeId")Integer franchiseeId, @Param("tenantId")Integer tenantId);
+    List<ElectricityBattery> queryNotBindList(@Param("offset") Long offset, @Param("size") Long size, @Param("franchiseeId") Integer franchiseeId, @Param("tenantId") Integer tenantId);
 
-	ElectricityBattery queryByUid(@Param("uid") Long uid);
+    ElectricityBattery queryByUid(@Param("uid") Long uid);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
+
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 }

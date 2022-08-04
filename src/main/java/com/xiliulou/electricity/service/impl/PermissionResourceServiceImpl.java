@@ -7,7 +7,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.config.RolePermissionConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.PermissionResourceTree;
 import com.xiliulou.electricity.entity.Role;
@@ -68,7 +68,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	@Override
 	public PermissionResource queryByIdFromCache(Long id) {
 
-		PermissionResource withHash = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PERMISSION + id, PermissionResource.class);
+		PermissionResource withHash = redisService.getWithHash(CacheConstant.CACHE_PERMISSION + id, PermissionResource.class);
 		if (Objects.nonNull(withHash)) {
 			return withHash;
 		}
@@ -78,7 +78,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			return null;
 		}
 
-		redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PERMISSION + id, permissionResource);
+		redisService.saveWithHash(CacheConstant.CACHE_PERMISSION + id, permissionResource);
 		return permissionResource;
 	}
 
@@ -94,7 +94,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	public PermissionResource insert(PermissionResource permissionResource) {
 		this.permissionResourceMapper.insertOne(permissionResource);
 		if (Objects.nonNull(permissionResource.getId())) {
-			redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId(), permissionResource);
+			redisService.saveWithHash(CacheConstant.CACHE_PERMISSION + permissionResource.getId(), permissionResource);
 		}
 		return permissionResource;
 	}
@@ -110,7 +110,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	public Integer update(PermissionResource permissionResource) {
 		int update = this.permissionResourceMapper.update(permissionResource);
 		if (update > 0) {
-			redisService.delete(ElectricityCabinetConstant.CACHE_PERMISSION + permissionResource.getId());
+			redisService.delete(CacheConstant.CACHE_PERMISSION + permissionResource.getId());
 		}
 		return update;
 
@@ -127,7 +127,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 	public Boolean deleteById(Long id) {
 		int i = this.permissionResourceMapper.deleteById(id);
 		if (i > 0) {
-			redisService.delete(ElectricityCabinetConstant.CACHE_PERMISSION + id);
+			redisService.delete(CacheConstant.CACHE_PERMISSION + id);
 			return true;
 		}
 		return false;
@@ -243,7 +243,7 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		});
 
 		//找缓存,过滤重复元素
-		redisService.set(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + role.getId(), JsonUtil.toJson(result));
+		redisService.set(CacheConstant.CACHE_ROLE_PERMISSION_RELATION + role.getId(), JsonUtil.toJson(result));
 
 		return Pair.of(true, null);
 	}

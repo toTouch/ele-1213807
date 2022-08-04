@@ -7,7 +7,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.EleRefundQuery;
@@ -431,10 +430,9 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
 
-
     @Override
     public R queryUserDepositPayType(Long uid) {
-        UserInfo userInfo = userInfoService.queryByUid(uid);
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("admin query user deposit pay type  ERROR! not found user,uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -499,6 +497,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
 
+
         if (Objects.nonNull(refundAmount)) {
             if (refundAmount.compareTo(eleDepositOrder.getPayAmount()) > 0) {
                 log.error("battery deposit OffLine Refund ERROR ,refundAmount > payAmount uid:{}", uid);
@@ -528,11 +527,10 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
 
-
         if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
 
-            eleRefundOrder.setRefundAmount(eleDepositOrder.getPayAmount());
+            eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_SUCCESS);
             eleRefundOrderService.insert(eleRefundOrder);
 
@@ -552,7 +550,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
 
             //生成后台操作记录
-            EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                     .operateContent(EleUserOperateRecord.REFUND_DEPOSIT__CONTENT)
                     .operateUid(user.getUid())
@@ -611,6 +609,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             }
             //提交失败
             eleRefundOrder.setStatus(EleRefundOrder.STATUS_FAIL);
+            eleRefundOrder.setRefundAmount(refundAmount);
             eleRefundOrder.setUpdateTime(System.currentTimeMillis());
             eleRefundOrderService.insert(eleRefundOrder);
             return R.fail("ELECTRICITY.00100", "退款失败");
@@ -654,6 +653,11 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     @Override
     public BigDecimal queryTurnOver(Integer tenantId) {
         return Optional.ofNullable(eleRefundOrderMapper.queryTurnOver(tenantId)).orElse(new BigDecimal("0"));
+    }
+
+    @Override
+    public BigDecimal queryTurnOverByTime(Integer tenantId, Long todayStartTime,Integer refundOrderType) {
+        return Optional.ofNullable(eleRefundOrderMapper.queryTurnOverByTime(tenantId,todayStartTime,refundOrderType)).orElse(BigDecimal.valueOf(0));
     }
 
     public String generateOrderId(Long uid) {

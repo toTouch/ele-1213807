@@ -81,7 +81,7 @@ public class JoinShareMoneyActivityRecordServiceImpl implements JoinShareMoneyAc
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//用户是否可用
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("joinActivity  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");

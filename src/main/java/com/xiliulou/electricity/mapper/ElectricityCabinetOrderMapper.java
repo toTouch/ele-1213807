@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
+import com.xiliulou.electricity.query.HomepageElectricityExchangeFrequencyQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetOrderVO;
+import com.xiliulou.electricity.vo.HomepageElectricityExchangeFrequencyVo;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.HashMap;
@@ -27,6 +29,12 @@ public interface ElectricityCabinetOrderMapper extends BaseMapper<ElectricityCab
     List<ElectricityCabinetOrderVO> queryList( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
 
     Integer queryCount( @Param("query") ElectricityCabinetOrderQuery electricityCabinetOrderQuery);
+
+    Integer homepageExchangeOrderSumCount( @Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
+
+    List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequency(@Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
+
+    List<HomepageElectricityExchangeFrequencyVo> homepageExchangeFrequencyCount(@Param("query") HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
 
     Integer homeOneCount(@Param("first") Long first, @Param("now") Long now, @Param("eleIdList") List<Integer> eleIdList,@Param("tenantId")Integer tenantId);
 

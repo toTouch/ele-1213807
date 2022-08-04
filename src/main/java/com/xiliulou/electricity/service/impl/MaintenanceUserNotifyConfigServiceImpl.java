@@ -4,7 +4,7 @@ import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper;
@@ -62,7 +62,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
      */
     @Override
     public MaintenanceUserNotifyConfig queryByTenantIdFromCache(Integer id) {
-        MaintenanceUserNotifyConfig cacheConfig = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, MaintenanceUserNotifyConfig.class);
+        MaintenanceUserNotifyConfig cacheConfig = redisService.getWithHash(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, MaintenanceUserNotifyConfig.class);
         if (Objects.nonNull(cacheConfig)) {
             return cacheConfig;
         }
@@ -72,7 +72,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, maintenanceUserNotifyConfig);
+        redisService.saveWithHash(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + id, maintenanceUserNotifyConfig);
         return maintenanceUserNotifyConfig;
     }
 
@@ -112,7 +112,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     @Transactional(rollbackFor = Exception.class)
     public Integer update(MaintenanceUserNotifyConfig maintenanceUserNotifyConfig) {
         return DbUtils.dbOperateSuccessThen(this.maintenanceUserNotifyConfigMapper.update(maintenanceUserNotifyConfig), () -> {
-            redisService.delete(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + maintenanceUserNotifyConfig.getTenantId());
+            redisService.delete(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG + maintenanceUserNotifyConfig.getTenantId());
             return 1;
         });
 
@@ -251,6 +251,49 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     }
 
     @Override
+    public void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet) {
+
+        System.out.println("发送用户上报异常消息=============================");
+
+        MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
+            return;
+        }
+
+        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) {
+            return;
+        }
+
+
+        System.out.println("发送消息=====================================");
+
+        List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
+
+        phones.forEach(p -> {
+
+            System.out.println("发送的手机号===================="+p);
+
+            MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
+            query.setPhone(p);
+            query.setTime(System.currentTimeMillis());
+            query.setType(MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION);
+
+            MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
+            mqHardwareNotify.setDeviceName(electricityCabinet.getName());
+            mqHardwareNotify.setOccurTime(maintenanceRecord.getCreateTime().toString());
+            mqHardwareNotify.setErrMsg(maintenanceRecord.getRemark());
+            mqHardwareNotify.setProjectTitle(MqHardwareNotify.USER_UPLOAD_EXCEPTION);
+            query.setData(mqHardwareNotify);
+
+            Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 3);
+            if (!result.getLeft()) {
+                log.error("SEND MQ ERROR! d={} reason={}", electricityCabinet.getDeviceName(), result.getRight());
+            }
+        });
+
+    }
+
+    @Override
     public Pair<Boolean, Object> testSendMsg() {
         Integer tenantId = TenantContextHolder.getTenantId();
         MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(tenantId);
@@ -258,7 +301,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return Pair.of(false, "请先配置手机号");
         }
 
-        if (!redisService.setNx(ElectricityCabinetConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST + tenantId, "ok", TimeUnit.MINUTES.toMillis(5), false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_TENANT_MAINTENANCE_USER_CONFIG_TEST + tenantId, "ok", TimeUnit.MINUTES.toMillis(5), false)) {
             return Pair.of(false, "5分钟之内只能测试一次");
         }
 

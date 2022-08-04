@@ -7,6 +7,7 @@ import com.xiliulou.electricity.query.ElectricityMemberCardOrderQuery;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
 import com.xiliulou.electricity.query.MemberCardOrderQuery;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -49,4 +50,14 @@ public interface ElectricityMemberCardOrderService {
     R payRentCarMemberCard(ElectricityMemberCardOrderQuery electricityMemberCardOrderQuery, HttpServletRequest request);
 
     ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
+
+    BigDecimal queryBatteryMemberCardTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId);
+
+    BigDecimal queryCarMemberCardTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryBatteryMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryCarMemberCardTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
+
+    BigDecimal querySumMemberCardTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
 }

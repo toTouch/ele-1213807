@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityCarMapper;
 import com.xiliulou.electricity.query.*;
@@ -14,7 +14,6 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import javax.servlet.http.HttpServletRequest;
 import java.util.*;
 
 /**
@@ -57,7 +55,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public ElectricityCar queryByIdFromCache(Integer id) {
         //先查缓存
-        ElectricityCar cacheElectricityCar = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR + id, ElectricityCar.class);
+        ElectricityCar cacheElectricityCar = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + id, ElectricityCar.class);
         if (Objects.nonNull(cacheElectricityCar)) {
             return cacheElectricityCar;
         }
@@ -67,7 +65,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return null;
         }
         //放入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR + id, electricityCar);
+        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + id, electricityCar);
         return electricityCar;
     }
 
@@ -82,7 +80,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         }
 
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.CAR_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CAR_SAVE_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -114,7 +112,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         int insert = electricityCarMapper.insert(electricityCar);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //新增缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId(), electricityCar);
+            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId(), electricityCar);
             return electricityCar;
         });
         return R.ok(electricityCar.getId());
@@ -134,7 +132,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //操作频繁
-        boolean result = redisService.setNx(ElectricityCabinetConstant.CAR_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.CAR_EDIT_UID + user.getUid(), "1", 3 * 1000L, false);
         if (!result) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -167,7 +165,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         int update = electricityCarMapper.updateById(electricityCar);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId());
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + electricityCar.getId());
             return null;
         });
         return R.ok();
@@ -190,7 +188,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         DbUtils.dbOperateSuccessThen(update, () -> {
 
             //删除缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR + id);
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR + id);
             return null;
         });
         return R.ok();
@@ -222,7 +220,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到操作用户");
         }
 
-        UserInfo userInfo = userInfoService.queryByUid(electricityCarBindUser.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -305,7 +303,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到操作用户");
         }
 
-        UserInfo userInfo = userInfoService.queryByUid(electricityCarBindUser.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCarBindUser.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -363,5 +361,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         return electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getUid, uid));
     }
 
-
+    @Override
+    public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
+        return electricityCarMapper.queryCountByStoreIds(tenantId,storeIds);
+    }
 }

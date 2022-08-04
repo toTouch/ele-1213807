@@ -80,6 +80,8 @@ public interface UserService {
 
 	Pair<Boolean, Object> queryCount(Long uid, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId);
 
+	Integer queryHomePageCount( Integer type, Long startTime, Long endTime, Integer tenantId);
+
 	String decryptPassword(String encryptPassword);
 
 	List<User> queryByTenantIdAndType(Integer tenantId, Integer status);

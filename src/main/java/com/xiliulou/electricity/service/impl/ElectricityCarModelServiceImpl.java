@@ -1,14 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
-import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
 import com.xiliulou.electricity.mapper.ElectricityCarModelMapper;
-import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -51,7 +48,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
     @Override
     public ElectricityCarModel queryByIdFromCache(Integer id) {
         //先查缓存
-        ElectricityCarModel cacheElectricityCarModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR_MODEL + id, ElectricityCarModel.class);
+        ElectricityCarModel cacheElectricityCarModel = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id, ElectricityCarModel.class);
         if (Objects.nonNull(cacheElectricityCarModel)) {
             return cacheElectricityCarModel;
         }
@@ -61,7 +58,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return null;
         }
         //插入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR_MODEL + id, electricityCarModel);
+        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id, electricityCarModel);
         return electricityCarModel;
     }
 
@@ -86,7 +83,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         int insert = electricityCarModelMapper.insert(electricityCarModel);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
+            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
             return null;
         });
         return R.ok();
@@ -110,7 +107,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         int update = electricityCarModelMapper.updateById(electricityCarModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
+            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + electricityCarModel.getId(), electricityCarModel);
             return null;
         });
         return R.ok();
@@ -134,7 +131,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
         int update = electricityCarModelMapper.updateById(electricityCarModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CAR_MODEL + id);
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CAR_MODEL + id);
             return null;
         });
         return R.ok();

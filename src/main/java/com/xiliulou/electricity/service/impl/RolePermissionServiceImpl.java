@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.RolePermission;
 import com.xiliulou.electricity.mapper.RolePermissionMapper;
 import com.xiliulou.electricity.service.RolePermissionService;
@@ -49,7 +49,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 
 	@Override
 	public List<Long> queryPidsByRid(Long rid) {
-		String pids = redisService.get(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + rid);
+		String pids = redisService.get(CacheConstant.CACHE_ROLE_PERMISSION_RELATION + rid);
 		if (StrUtil.isNotEmpty(pids)) {
 			return JsonUtil.fromJsonArray(pids, Long.class);
 		}
@@ -60,7 +60,7 @@ public class RolePermissionServiceImpl implements RolePermissionService {
 		}
 
 		List<Long> pidsResult = rolePermissions.stream().map(RolePermission::getPId).collect(Collectors.toList());
-		redisService.set(ElectricityCabinetConstant.CACHE_ROLE_PERMISSION_RELATION + rid, JsonUtil.toJson(pidsResult));
+		redisService.set(CacheConstant.CACHE_ROLE_PERMISSION_RELATION + rid, JsonUtil.toJson(pidsResult));
 		return pidsResult;
 	}
 

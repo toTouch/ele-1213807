@@ -11,14 +11,12 @@ import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
 import com.xiliulou.electricity.mapper.EleDepositOrderMapper;
-import com.xiliulou.electricity.mapper.EleRefundOrderMapper;
 import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
-import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
 import com.xiliulou.electricity.service.*;
@@ -26,11 +24,11 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -116,7 +114,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -136,7 +134,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //判断是否实名认证
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 
         //用户是否可用
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -207,7 +205,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //型号押金计算
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (Objects.isNull(model)) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
@@ -251,7 +249,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
                 .modelType(franchisee.getModelType()).build();
 
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(model));
         }
 
@@ -270,7 +268,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             franchiseeUserInfoUpdate.setOrderId(orderId);
             franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
 
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
             }
 
@@ -311,13 +309,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
         }
 
         //用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("returnDeposit  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -412,7 +410,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
-                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                     Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
                     List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                     for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
@@ -492,10 +490,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     public R queryList(EleDepositOrderQuery eleDepositOrderQuery) {
         List<EleDepositOrderVO> eleDepositOrderVOS = null;
-        if (Objects.equals(eleDepositOrderQuery.getDepositType(),EleDepositOrder.ELECTRICITY_DEPOSIT)){
-            eleDepositOrderVOS=eleDepositOrderMapper.queryList(eleDepositOrderQuery);
-        }else {
-            eleDepositOrderVOS=eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
+        if (Objects.equals(eleDepositOrderQuery.getDepositType(), EleDepositOrder.ELECTRICITY_DEPOSIT)) {
+            eleDepositOrderVOS = eleDepositOrderMapper.queryList(eleDepositOrderQuery);
+        } else {
+            eleDepositOrderVOS = eleDepositOrderMapper.queryListForRentCar(eleDepositOrderQuery);
         }
         return R.ok(eleDepositOrderVOS);
     }
@@ -525,7 +523,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //用户是否缴纳押金
-        UserInfo userInfo = userInfoService.queryByUid(uid);
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found userInfo! userId:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -669,7 +667,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //根据类型分押金
-        if (Objects.equals(franchisee.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             //型号押金
             List modelBatteryDepositList = JsonUtil.fromJson(franchisee.getModelBatteryDeposit(), List.class);
             return R.ok(modelBatteryDepositList);
@@ -738,7 +736,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_BATTERY_SERVICE_FEE_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -758,7 +756,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //判断是否实名认证
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
 
@@ -911,7 +909,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         Integer tenantId = TenantContextHolder.getTenantId();
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
         }
@@ -931,7 +929,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //判断是否实名认证
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 
         //用户是否可用
         if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
@@ -1056,13 +1054,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //限频
-        Boolean getLockSuccess = redisService.setNx(ElectricityCabinetConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
+        Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
         if (!getLockSuccess) {
             return R.fail("ELECTRICITY.000000", "操作频繁,请稍后再试!");
         }
 
         //用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("returnRentCarDeposit  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -1161,7 +1159,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         //用户是否缴纳押金
-        UserInfo userInfo = userInfoService.queryByUid(uid);
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
             log.error("queryRentCarDeposit  ERROR! not found userInfo! userId:{}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -1228,9 +1226,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
         return R.ok(null);
     }
+
     @Override
-    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid,Long franchiseeId,Integer tenantId) {
-        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid,franchiseeId,tenantId);
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
     }
 
 
@@ -1255,7 +1254,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        UserInfo userInfo = userInfoService.queryByUid(batteryDepositAdd.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(batteryDepositAdd.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -1304,14 +1303,14 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
                 .modelType(batteryDepositAdd.getModelType()).build();
-        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));
         }
         eleDepositOrderMapper.insert(eleDepositOrder);
 
 
         //生成后台操作记录
-        EleUserOperateRecord eleUserOperateRecord=EleUserOperateRecord.builder()
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.DEPOSIT_MODEL)
                 .operateContent(EleUserOperateRecord.DEPOSIT_MODEL)
                 .operateUid(user.getUid())
@@ -1332,10 +1331,25 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         franchiseeUserInfoUpdate.setBatteryDeposit(batteryDepositAdd.getPayAmount());
         franchiseeUserInfoUpdate.setOrderId(orderId);
         franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
-        if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
         }
         franchiseeUserInfoService.update(franchiseeUserInfoUpdate);
         return R.ok();
+    }
+
+    @Override
+    public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId) {
+        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType,franchiseeId)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo>  queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
+        return eleDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, franchiseeId, beginTime, enTime);
+    }
+
+    @Override
+    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId,  Long franchiseeId, Long beginTime, Long enTime) {
+        return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
     }
 }

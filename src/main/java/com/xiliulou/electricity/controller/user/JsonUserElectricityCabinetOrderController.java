@@ -1,9 +1,9 @@
 package com.xiliulou.electricity.controller.user;
 
+import cn.hutool.core.util.StrUtil;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
-import com.xiliulou.electricity.query.OpenDoorQuery;
-import com.xiliulou.electricity.query.OrderQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -24,7 +24,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonUserElectricityCabinetOrderController {
+public class JsonUserElectricityCabinetOrderController extends BaseController {
 	/**
 	 * 服务对象
 	 */
@@ -32,9 +32,20 @@ public class JsonUserElectricityCabinetOrderController {
 	ElectricityCabinetOrderService electricityCabinetOrderService;
 
 	//换电柜下单
+	@Deprecated
 	@PostMapping("/user/electricityCabinetOrder/order")
 	public R order(@RequestBody @Validated(value = CreateGroup.class) OrderQuery orderQuery) {
 		return electricityCabinetOrderService.order(orderQuery);
+	}
+
+	/**
+	 * 换电柜下单，用新的命令
+	 * @param orderQuery
+	 * @return
+	 */
+	@PostMapping("/user/electricityCabinetOrder/order/v2")
+	public R orderV2(@RequestBody @Validated OrderQueryV2 orderQuery) {
+		return returnTripleResult(electricityCabinetOrderService.orderV2(orderQuery));
 	}
 
 	//换电柜再次开门
@@ -99,10 +110,35 @@ public class JsonUserElectricityCabinetOrderController {
 		return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
 	}
 
-	//查订单状态（新）
+	//查订单状态
 	@GetMapping("/user/electricityCabinetOrder/queryNewStatus")
+	@Deprecated
 	public R queryNewStatus(@RequestParam("orderId") String orderId) {
 		return electricityCabinetOrderService.queryNewStatus(orderId);
+	}
+
+	/**
+	 * 根据订单id查询状态在前端换电过程中显示
+	 * @param orderId
+	 * @return
+	 */
+	@GetMapping("/user/order/status/show")
+	public R queryOrderStatusForShow(@RequestParam("orderId")String orderId) {
+		return returnTripleResult(electricityCabinetOrderService.queryOrderStatusForShow(orderId));
+	}
+	//换电柜自助开仓
+	@PostMapping("/user/electricityCabinetOrder/orderSelfOpenCell")
+	public R orderSelfOpenCellQuery(@RequestBody @Validated(value = CreateGroup.class) OrderSelfOpenCellQuery orderSelfOpenCellQuery) {
+		return electricityCabinetOrderService.selfOpenCell(orderSelfOpenCellQuery);
+	}
+
+	//查看开门结果
+	@GetMapping("/user/electricityCabinet/open/check")
+	public R checkOpenSession(@RequestParam("sessionId") String sessionId) {
+		if (StrUtil.isEmpty(sessionId)) {
+			return R.fail("ELECTRICITY.0007", "不合法的参数");
+		}
+		return electricityCabinetOrderService.checkOpenSessionId(sessionId);
 	}
 
 }

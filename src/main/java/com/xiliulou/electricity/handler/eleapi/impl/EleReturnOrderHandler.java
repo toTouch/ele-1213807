@@ -6,7 +6,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.EleApiConstant;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ApiReturnOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -84,7 +84,7 @@ public class EleReturnOrderHandler implements EleApiHandler {
             return Triple.of(false, "API.10002", "订单号重复！");
         }
 
-        boolean result = redisService.setNx(ElectricityCabinetConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
+        boolean result = redisService.setNx(CacheConstant.ORDER_ELE_ID + electricityCabinet.getId(), "1", 3 * 60 * 1000L, false);
         if (!result) {
             log.error("ELE RENT ORDER ERROR! cabinet is busy! requestId={}", apiRequestQuery.getRequestId());
             return Triple.of(false, "AUTH.1006", "柜机在使用中，请勿重复下单！");

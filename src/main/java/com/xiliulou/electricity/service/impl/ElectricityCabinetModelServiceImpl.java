@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
@@ -45,7 +45,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     public ElectricityCabinetModel queryByIdFromCache(Integer id) {
         //先查缓存
-        ElectricityCabinetModel cacheElectricityCabinetModel = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, ElectricityCabinetModel.class);
+        ElectricityCabinetModel cacheElectricityCabinetModel = redisService.getWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, ElectricityCabinetModel.class);
         if (Objects.nonNull(cacheElectricityCabinetModel)) {
             return cacheElectricityCabinetModel;
         }
@@ -55,7 +55,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
             return null;
         }
         //插入缓存
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, electricityCabinetModel);
+        redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + id, electricityCabinetModel);
         return electricityCabinetModel;
     }
 
@@ -73,7 +73,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         int insert = electricityCabinetModelMapper.insert(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(insert, () -> {
             //插入缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
+            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
             return null;
         });
         return R.ok();
@@ -97,7 +97,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
+            redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
             return null;
         });
         return R.ok();
@@ -121,7 +121,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
+            redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
             return null;
         });
         return R.ok();

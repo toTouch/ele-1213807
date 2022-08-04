@@ -6,7 +6,7 @@ import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.EleCommonConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
@@ -128,7 +128,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         }
 
         //缓存存换电柜中电量最多的电池
-        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), BigEleBatteryVo.class);
+        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(CacheConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), BigEleBatteryVo.class);
 
         //不存在电池
         if (Objects.nonNull(existsBattery) && !existsBattery && StrUtil.isNotEmpty(batteryName)) {
@@ -145,6 +145,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setPower(null);
             electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
             electricityCabinetBox.setCellNo(cellNo);
+            electricityCabinetBox.setBId(null);
             electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
             electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
@@ -247,6 +248,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power * 100);
+            electricityCabinetBox.setPower(power * 100);
         }
 
 
@@ -277,18 +279,19 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             newBigEleBatteryVo.setCellNo(cellNo);
             if (Objects.isNull(bigEleBatteryVo)) {
                 newBigEleBatteryVo.setPower(nowPower);
-                redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+                redisService.saveWithHash(CacheConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
             } else {
                 Double oldPower = bigEleBatteryVo.getPower();
                 if (Objects.nonNull(oldPower) && Objects.nonNull(nowPower) && nowPower > oldPower) {
                     newBigEleBatteryVo.setPower(nowPower);
-                    redisService.saveWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
+                    redisService.saveWithHash(CacheConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId().toString(), newBigEleBatteryVo);
                 }
             }
         }
 
         //修改仓门
         electricityCabinetBox.setSn(electricityBattery.getSn());
+        electricityCabinetBox.setBId(electricityBattery.getId());
         electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
 
         //查电池所属加盟商
@@ -296,7 +299,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         if (Objects.isNull(franchiseeBindElectricityBattery)) {
             log.error("ele battery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
             electricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
-            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+//            electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
         } else {
 
             // 查换电柜所属加盟商
@@ -309,7 +312,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
                 log.error("ele battery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
                 electricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
-                electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
+//                electricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
             }
         }
 

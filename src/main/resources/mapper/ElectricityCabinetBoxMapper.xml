@@ -60,6 +60,7 @@
         <if test="chargeA != null">
             charge_a= #{chargeA},
         </if>
+        b_id = #{bId},
         update_time = #{updateTime},
         battery_type = #{batteryType},
         power = #{power}
@@ -99,6 +100,9 @@
             <if test="chargeV != null">
                 charge_v= #{chargeV},
             </if>
+            <if test="bId != null">
+                b_id = #{bId},
+            </if>
         </set>
         where cell_no = #{cellNo}
         and electricity_cabinet_id = #{electricityCabinetId}
@@ -109,7 +113,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,power,charge_v
+        update_time, del_flag,tenant_id,temperature,battery_type,power,charge_v,b_id
         from t_electricity_cabinet_box
         <where>
             electricity_cabinet_id = #{eid}
@@ -117,8 +121,8 @@
             and del_flag = 0
             and status = 0
             and power &gt;= #{fullV}
-            <if test="type != null">
-                battery_type = #{type}
+            <if test="type != null and type!= ''">
+               and battery_type = #{type}
             </if>
         </where>
         order by power desc
@@ -140,7 +144,11 @@
     </select>
 
     <update id="modifyCellUsableStatus">
-        update t_electricity_cabinet_box set usable_status=1 where electricity_cabinet_id=#{electricityCabinetId} and cell_no=#{cellNo} and del_flag=0
+        update t_electricity_cabinet_box
+        set usable_status=1
+        where electricity_cabinet_id = #{electricityCabinetId}
+          and cell_no = #{cellNo}
+          and del_flag = 0
     </update>
 
 </mapper>

@@ -70,7 +70,6 @@ public class UserInfo {
     private Integer tenantId;
 
 
-
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;
 
@@ -78,7 +77,7 @@ public class UserInfo {
     //用户状态--初始化
     public static final Integer STATUS_INIT = 0;
     //已实名认证
-    public static final Integer STATUS_IS_AUTH=1;
+    public static final Integer STATUS_IS_AUTH = 1;
 
 
     //可用
