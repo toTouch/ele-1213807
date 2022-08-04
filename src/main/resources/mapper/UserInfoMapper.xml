@@ -234,11 +234,10 @@
     <select id="queryUserAnalysisForAuthUser" resultType="com.xiliulou.electricity.vo.HomePageUserByWeekDayVo">
         select count(1),FROM_UNIXTIME( tfui.create_time / 1000, '%Y-%m-%d' ) as
         weekDate
-        from t_user_info as tui
-        left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
-        where tui.del_flag=0 and tfui.service_status in (1,2,3)
+        from t_franchisee_user_info as tfui
+        where tfui.del_flag=0 and tfui.service_status in (1,2,3)
         <if test="tenantId != null">
-            and tui.tenant_id = #{tenantId}
+            and tfui.tenant_id = #{tenantId}
         </if>
         <if test="beginTime != null">
             and tfui.create_time &gt;=#{beginTime}
