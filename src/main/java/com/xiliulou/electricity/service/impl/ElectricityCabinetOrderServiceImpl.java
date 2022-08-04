@@ -1269,7 +1269,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return Triple.of(false, "100001", "未能找到用户");
         }
 
-        Triple<Boolean, String, String> checkExistsOrderResult = checkUserExistsUnFinishOrder(user.getUid());
+        Triple<Boolean, String, Object> checkExistsOrderResult = checkUserExistsUnFinishOrder(user.getUid());
         if (checkExistsOrderResult.getLeft()) {
             log.warn("ORDER WARN! user exists unFinishOrder! uid={}", user.getUid());
             return Triple.of(false, checkExistsOrderResult.getMiddle(), checkExistsOrderResult.getRight());
@@ -1503,18 +1503,18 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     }
 
-    private Triple<Boolean, String, String> checkUserExistsUnFinishOrder(Long uid) {
+    private Triple<Boolean, String, Object> checkUserExistsUnFinishOrder(Long uid) {
         RentBatteryOrder rentBatteryOrder = rentBatteryOrderService.queryByUidAndType(uid);
         if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
-            return Triple.of(true, "100200", "存在未完成租电订单，不能下单");
+            return Triple.of(true, "100200", new ExchangeUnFinishOrderVo(rentBatteryOrder.getOrderId()));
         } else if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-            return Triple.of(true, "100202", "存在未完成退电订单，不能下单");
+            return Triple.of(true, "100202",  new ExchangeUnFinishOrderVo(rentBatteryOrder.getOrderId()));
         }
 
         //是否存在未完成的换电订单
         ElectricityCabinetOrder oldElectricityCabinetOrder = queryByUid(uid);
         if (Objects.nonNull(oldElectricityCabinetOrder)) {
-            return Triple.of(true, "100201", "存在未完成换电订单，不能下单");
+            return Triple.of(true, "100201",  new ExchangeUnFinishOrderVo(oldElectricityCabinetOrder.getOrderId()));
         }
 
         return Triple.of(false, null, null);
