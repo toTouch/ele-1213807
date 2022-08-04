@@ -187,7 +187,7 @@
 			and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb where fbeb.franchisee_id=#{query.franchiseeId})
 		</if>
 		limit #{query.offset}, #{query.size}
-		order by exchange_count desc
+		order by b.exchange_count desc
     </select>
 
 	<select id="homepageBatteryAnalysisCount" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">
