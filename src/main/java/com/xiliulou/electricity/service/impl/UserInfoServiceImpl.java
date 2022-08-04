@@ -170,6 +170,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
                 }
+
+                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_PASS)){
+                    item.setServiceStatus(UserInfo.STATUS_INIT);
+                }
             });
         }, threadPool).exceptionally(e -> {
             log.error("payDepositTime list ERROR! query memberCard error!", e);

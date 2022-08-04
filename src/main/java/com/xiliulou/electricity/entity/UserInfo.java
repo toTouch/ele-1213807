@@ -79,6 +79,8 @@ public class UserInfo {
     //已实名认证
     public static final Integer STATUS_IS_AUTH = 1;
 
+    public static final Integer STATUS_PASS = 2;
+
 
     //可用
     public static final Integer USER_USABLE_STATUS = 0;
