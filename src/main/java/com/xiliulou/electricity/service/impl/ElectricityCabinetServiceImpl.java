@@ -2507,13 +2507,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //总套餐营业额统计
         CompletableFuture<Void> sumMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal sumMemberCardTurnOver = electricityMemberCardOrderService.querySumMemberCardTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
-            System.out.println("总月卡营业额======================" + sumMemberCardTurnOver);
-
             BigDecimal sumBatteryService = eleBatteryServiceFeeOrderService.queryAllTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
-
-            System.out.println("总服务费营业额============================"+sumBatteryService);
-
-            System.out.println("相加========================="+sumMemberCardTurnOver.add(sumBatteryService));
+            if (Objects.isNull(sumMemberCardTurnOver)) {
+                sumMemberCardTurnOver = BigDecimal.valueOf(0);
+            }
+            if (Objects.isNull(sumBatteryService)) {
+                sumBatteryService = BigDecimal.valueOf(0);
+            }
             homePageTurnOverAnalysisVo.setMemberCardTurnOver(sumMemberCardTurnOver.add(sumBatteryService));
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
