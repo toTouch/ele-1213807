@@ -244,7 +244,7 @@
     <select id="queryDepositTurnOverAnalysisByDepositType" resultType="com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo">
         select sum(pay_amount) as turnOver,FROM_UNIXTIME( create_time / 1000, '%Y-%m-%d' ) as
         weekDate from t_ele_deposit_order
-        where status=1 and pay_type=0
+        where status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>
@@ -266,7 +266,7 @@
 
     <select id="querySumDepositTurnOverAnalysis" resultType="decimal">
         select sum(pay_amount)  from t_ele_deposit_order
-        where status=1 and pay_type=0
+        where status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
         </if>

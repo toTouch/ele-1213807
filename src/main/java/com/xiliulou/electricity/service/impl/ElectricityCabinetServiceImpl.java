@@ -2318,8 +2318,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //退电池押金
         CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime,null);
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
+            BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime, null);
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);
             homePageDepositVo.setTodayRefundDeposit(todayRefundDeposit);
             homePageDepositVo.setHistoryRefundBatteryDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
@@ -2329,7 +2329,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //退租车押金
         CompletableFuture<Void> refundCarDeposit = CompletableFuture.runAsync(() -> {
-            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
+            BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null, EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER);
             homePageDepositVo.setHistoryRefundCarDeposit(historyRefundDeposit);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
@@ -2337,7 +2337,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         });
 
         //等待所有线程停止
-        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryDeposit, carDeposit, refundBatteryDeposit,refundCarDeposit);
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(batteryDeposit, carDeposit, refundBatteryDeposit, refundCarDeposit);
         try {
             resultFuture.get(10, TimeUnit.SECONDS);
             homePageDepositVo.setBatteryDeposit(homePageDepositVo.getBatteryDeposit().subtract(homePageDepositVo.getHistoryRefundBatteryDeposit()));
@@ -2495,7 +2495,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //电池押金
+        //租车押金
         CompletableFuture<Void> carDeposit = CompletableFuture.runAsync(() -> {
             List<HomePageTurnOverGroupByWeekDayVo> carDepositTurnOver = eleDepositOrderService.queryDepositTurnOverAnalysisByDepositType(tenantId, EleDepositOrder.RENT_CAR_DEPOSIT, finalFranchiseeId, beginTime, endTime);
             homePageTurnOverAnalysisVo.setCarDepositAnalysis(carDepositTurnOver);
@@ -2507,7 +2507,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //总套餐营业额统计
         CompletableFuture<Void> sumMemberCard = CompletableFuture.runAsync(() -> {
             BigDecimal sumMemberCardTurnOver = electricityMemberCardOrderService.querySumMemberCardTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
+            System.out.println("总月卡营业额======================" + sumMemberCardTurnOver);
+
             BigDecimal sumBatteryService = eleBatteryServiceFeeOrderService.queryAllTurnOver(tenantId, finalFranchiseeId, beginTime, endTime);
+
+            System.out.println("总服务费营业额============================"+sumBatteryService);
+
+            System.out.println("相加========================="+sumMemberCardTurnOver.add(sumBatteryService));
             homePageTurnOverAnalysisVo.setMemberCardTurnOver(sumMemberCardTurnOver.add(sumBatteryService));
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query TenantTurnOver error!", e);
