@@ -583,7 +583,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
         List<UserInfo> userInfos = userInfoMapper.queryList(userInfoQuery);
 
-        System.out.println("查询出的用户审核=================="+userInfos.size()+"=============="+userInfos);
 
         if (!DataUtil.collectionIsUsable(userInfos)) {
             return R.ok(Collections.emptyList());
@@ -609,7 +608,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
             });
 
-            System.out.println("================"+userAuthInfoVo);
 
             return userAuthInfoVo;
         }).collect(Collectors.toList());
