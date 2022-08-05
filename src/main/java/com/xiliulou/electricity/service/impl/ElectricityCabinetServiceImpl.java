@@ -2316,7 +2316,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return null;
         });
 
-        //退换电押金
+        //退电池押金
         CompletableFuture<Void> refundBatteryDeposit = CompletableFuture.runAsync(() -> {
             BigDecimal todayRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, todayStartTime,null);
             BigDecimal historyRefundDeposit = refundOrderService.queryTurnOverByTime(tenantId, null,EleRefundOrder.BATTERY_DEPOSIT_REFUND_ORDER);

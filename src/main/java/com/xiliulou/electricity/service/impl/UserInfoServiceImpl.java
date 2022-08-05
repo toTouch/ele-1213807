@@ -171,7 +171,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
                 }
 
-                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_PASS)){
+                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
                     item.setServiceStatus(UserInfo.STATUS_INIT);
                 }
             });
@@ -582,6 +582,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
         List<UserInfo> userInfos = userInfoMapper.queryList(userInfoQuery);
+
+        System.out.println("查询出的用户审核=================="+userInfos.size()+"=============="+userInfos);
+
         if (!DataUtil.collectionIsUsable(userInfos)) {
             return R.ok(Collections.emptyList());
         }
@@ -605,6 +608,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
             });
+
+            System.out.println("================"+userAuthInfoVo);
 
             return userAuthInfoVo;
         }).collect(Collectors.toList());
