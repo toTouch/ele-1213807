@@ -3,13 +3,10 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
-import com.xiliulou.electricity.query.BatteryReportQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.query.api.ApiRequestQuery;
-import com.xiliulou.electricity.vo.MapVo;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.HashMap;
 import java.util.List;
@@ -80,6 +77,7 @@ public interface ElectricityCabinetService {
 
     R showInfoByStoreId(Long storeId);
 
+    @Deprecated
     R queryByOrder(String productKey, String deviceName);
 
     R queryByRentBattery(String productKey, String deviceName);
@@ -106,6 +104,8 @@ public interface ElectricityCabinetService {
 
     Pair<Boolean, ElectricityCabinetBox> findUsableBatteryCellNo(Integer id, String batteryType, Double fullyCharged);
 
+    Triple<Boolean, String, Object> findUsableBatteryCellNoV2(Integer eid, String batteryType, Double fullyCharged, Long franchiseeId);
+
     void unlockElectricityCabinet(Integer eid);
 
     Pair<Boolean, Integer> findUsableEmptyCellNo(Integer id);
@@ -114,7 +114,9 @@ public interface ElectricityCabinetService {
 
     Integer querySumCount(ElectricityCabinetQuery electricityCabinetQuery);
 
-    Integer queryCountByStoreIds(Integer tenantId,List<Long> storeIds);
+    Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds);
+
+    Integer queryCountByStoreIdsAndStatus(Integer tenantId, List<Long> storeIds,Integer status);
 
     R queryDeviceIsUnActiveFStatus(ApiRequestQuery apiRequestQuery);
 
@@ -123,4 +125,22 @@ public interface ElectricityCabinetService {
     int idempotentUpdateCupboard(ElectricityCabinet electricityCabinet, ElectricityCabinet updateElectricityCabinet);
 
     R queryElectricityCabinetBoxInfoById(Integer electricityCabinetId);
+
+    R homepageTurnover();
+
+    R homepageDeposit();
+
+    R homepageOverviewDetail();
+
+    R homepageBenefitAnalysis(Long beginTime, Long enTime);
+
+    R homepageUserAnalysis(Long beginTime, Long enTime);
+
+    R homepageElectricityCabinetAnalysis();
+
+    R homepageExchangeOrderFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
+
+    R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+
 }

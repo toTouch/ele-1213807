@@ -95,7 +95,22 @@
         where id=#{id}
     </update>
 
-
+    <select id="queryCountByStoreIds" resultType="integer">
+        select count(1)
+        from t_electricity_car
+        <where>
+            del_flag=0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeIds != null and storeIds.size() > 0">
+                and store_id in
+                <foreach collection="storeIds" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
 
 
 </mapper>

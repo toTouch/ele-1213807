@@ -2,7 +2,7 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
@@ -39,7 +39,7 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
         }
         //上报的数据放入缓存
 //        redisService.saveWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
-        redisService.saveWithString(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
+        redisService.saveWithString(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
     }
 
 }

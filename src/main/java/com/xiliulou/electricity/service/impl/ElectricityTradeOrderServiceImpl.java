@@ -408,7 +408,7 @@ public class ElectricityTradeOrderServiceImpl extends
 
             franchiseeUserInfoUpdate.setModelType(eleDepositOrder.getModelType());
 
-            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+            if (Objects.equals(eleDepositOrder.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 franchiseeUserInfoUpdate.setBatteryType(eleDepositOrder.getBatteryType());
             }
             franchiseeUserInfoService.update(franchiseeUserInfoUpdate);

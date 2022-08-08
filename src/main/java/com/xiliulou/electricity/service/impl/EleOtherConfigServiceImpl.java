@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleOtherConfig;
 import com.xiliulou.electricity.mapper.EleOtherConfigMapper;
 import com.xiliulou.electricity.service.EleOtherConfigService;
@@ -55,7 +55,7 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
     public Integer update(EleOtherConfig  eleOtherConfig) {
         int update = this.eleOtherConfigMapper.updateById(eleOtherConfig);
         if (update > 0){
-            redisService.delete(ElectricityCabinetConstant.CACHE_ELE_OTHER_CONFIG + eleOtherConfig.getEid());
+            redisService.delete(CacheConstant.CACHE_ELE_OTHER_CONFIG + eleOtherConfig.getEid());
         }
         return update;
     }
@@ -63,7 +63,7 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
 
     @Override
     public EleOtherConfig queryByEidFromCache(Integer eid) {
-        EleOtherConfig eleOtherConfigCache = redisService.getWithHash(ElectricityCabinetConstant.CACHE_ELE_OTHER_CONFIG + eid, EleOtherConfig.class);
+        EleOtherConfig eleOtherConfigCache = redisService.getWithHash(CacheConstant.CACHE_ELE_OTHER_CONFIG + eid, EleOtherConfig.class);
 
         if (Objects.nonNull(eleOtherConfigCache)){
             return eleOtherConfigCache;
@@ -76,7 +76,7 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_ELE_OTHER_CONFIG + eid,eleOtherConfig);
+        redisService.saveWithHash(CacheConstant.CACHE_ELE_OTHER_CONFIG + eid,eleOtherConfig);
         return eleOtherConfig;
     }
 

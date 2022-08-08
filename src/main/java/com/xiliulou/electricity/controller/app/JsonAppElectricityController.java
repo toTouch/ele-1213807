@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.app;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CommonConstant;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.storage.config.StorageConfig;
@@ -40,7 +40,7 @@ public class JsonAppElectricityController extends BaseController {
     @GetMapping("/outer/oss/config")
     public R getOssConfig(){
         Map<String, Object> result = new HashMap<>(3);
-        result.put("appId", ElectricityCabinetConstant.APP_ID);
+        result.put("appId", CommonConstant.APP_ID);
         result.put("ossAccessKeyId", storageConfig.getAccessKeyId());
         result.put("ossAccessKeySecret", storageConfig.getAccessKeySecret());
         return R.ok(result);

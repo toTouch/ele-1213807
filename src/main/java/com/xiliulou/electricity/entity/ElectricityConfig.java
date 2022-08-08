@@ -77,6 +77,10 @@ public class ElectricityConfig {
      * 低电量换电模式
      */
     private String lowBatteryExchangeModel;
+    /**
+     * 是否可以自主开仓
+     */
+    private Integer isEnableSelfOpen;
 
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
@@ -100,5 +104,12 @@ public class ElectricityConfig {
 
     public static Integer LOW_BATTERY_EXCHANGE = 0;
     public static Integer NOT_LOW_BATTERY_EXCHANGE = 1;
+
+    /**
+     * 0--开启
+     * 1--关闭
+     */
+    public static Integer ENABLE_SELF_OPEN = 0;
+    public static Integer DISABLE_SELF_OPEN = 1;
 
 }

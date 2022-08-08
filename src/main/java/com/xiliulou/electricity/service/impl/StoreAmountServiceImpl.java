@@ -3,12 +3,9 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.FranchiseeAmount;
-import com.xiliulou.electricity.entity.FranchiseeSplitAccountHistory;
 import com.xiliulou.electricity.entity.SplitAccountFailRecord;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.StoreAmount;
@@ -16,15 +13,12 @@ import com.xiliulou.electricity.entity.StoreSplitAccountHistory;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.StoreAmountMapper;
 import com.xiliulou.electricity.query.StoreAccountQuery;
-import com.xiliulou.electricity.service.FranchiseeSplitAccountHistoryService;
 import com.xiliulou.electricity.service.SplitAccountFailRecordService;
 import com.xiliulou.electricity.service.StoreAmountService;
 import com.xiliulou.electricity.service.StoreSplitAccountHistoryService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.FranchiseeAmountVO;
 import com.xiliulou.electricity.vo.StoreAmountVO;
-import com.xiliulou.pay.weixinv3.dto.Amount;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -72,7 +66,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
      */
     @Override
     public StoreAmount queryByStoreIdFromCache(Long id) {
-        StoreAmount cacheStoreAmount = redisService.getWithHash(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + id, StoreAmount.class);
+        StoreAmount cacheStoreAmount = redisService.getWithHash(CacheConstant.CACHE_STORE_AMOUNT + id, StoreAmount.class);
         if (Objects.nonNull(cacheStoreAmount)) {
             return cacheStoreAmount;
         }
@@ -82,7 +76,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + id, storeAmount);
+        redisService.saveWithHash(CacheConstant.CACHE_STORE_AMOUNT + id, storeAmount);
         return storeAmount;
     }
 
@@ -98,7 +92,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     public StoreAmount insert(StoreAmount storeAmount) {
         int i = this.storeAmountMapper.insert(storeAmount);
         if (i > 0) {
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + storeAmount.getStoreId(), storeAmount);
+            redisService.saveWithHash(CacheConstant.CACHE_STORE_AMOUNT + storeAmount.getStoreId(), storeAmount);
         }
         return storeAmount;
     }
@@ -114,7 +108,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     public Integer update(StoreAmount storeAmount) {
         int result = this.storeAmountMapper.updateById(storeAmount);
         if (result > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_STORE_AMOUNT + storeAmount.getStoreId());
+            redisService.delete(CacheConstant.CACHE_STORE_AMOUNT + storeAmount.getStoreId());
         }
         return result;
 

@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCardOrder;
 import com.xiliulou.electricity.entity.ElectricityTradeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
@@ -67,7 +67,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
      */
     @Override
     public FranchiseeAmount queryByFranchiseeIdFromCache(Long franchiseeId) {
-        FranchiseeAmount cacheFranchiseeAmount = redisService.getWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, FranchiseeAmount.class);
+        FranchiseeAmount cacheFranchiseeAmount = redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, FranchiseeAmount.class);
         if (Objects.nonNull(cacheFranchiseeAmount)) {
             return cacheFranchiseeAmount;
         }
@@ -77,7 +77,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, franchiseeAmount);
+        redisService.saveWithHash(CacheConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeId, franchiseeAmount);
         return franchiseeAmount;
     }
 
@@ -94,7 +94,7 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
     public Integer update(FranchiseeAmount franchiseeAmount) {
         int update = this.franchiseeAmountMapper.updateById(franchiseeAmount);
         if (update > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeAmount.getFranchiseeId());
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE_AMOUNT + franchiseeAmount.getFranchiseeId());
 
         }
         return update;

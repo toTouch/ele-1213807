@@ -3,7 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.AppSignatureUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.TenantAppInfo;
 import com.xiliulou.electricity.mapper.TenantAppInfoMapper;
 import com.xiliulou.electricity.service.TenantAppInfoService;
@@ -121,7 +121,7 @@ public class TenantAppInfoServiceImpl implements TenantAppInfoService {
             return Triple.of(false, "CUPBOARD.10001", "无法重复创建appId");
         }
 
-        if (!redisService.setNx(ElectricityCabinetConstant.CACHE_APP_INFO_LIMIT + tenantId, "1", 3000L, false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_APP_INFO_LIMIT + tenantId, "1", 3000L, false)) {
             return Triple.of(false, "SYSTEM.0004Te", "调用频繁，请稍后再试！");
         }
 
@@ -139,12 +139,12 @@ public class TenantAppInfoServiceImpl implements TenantAppInfoService {
 
     @Override
     public String generateAppCacheKey(Integer tenantId, String appType) {
-        return ElectricityCabinetConstant.CACHE_APP_INFO_BASE + appType + "_" + tenantId;
+        return CacheConstant.CACHE_APP_INFO_BASE + appType + "_" + tenantId;
     }
 
     @Override
     public String generateAppCacheKey(String appId, String appType) {
-        return ElectricityCabinetConstant.CACHE_APP_INFO + appType + "_" + appId;
+        return CacheConstant.CACHE_APP_INFO + appType + "_" + appId;
     }
 
     @Override

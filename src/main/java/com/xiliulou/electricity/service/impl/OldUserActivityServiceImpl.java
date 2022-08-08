@@ -5,10 +5,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.UserCoupon;
 import com.xiliulou.electricity.mapper.OldUserActivityMapper;
 import com.xiliulou.electricity.query.OldUserActivityAddAndUpdateQuery;
 import com.xiliulou.electricity.query.OldUserActivityQuery;
@@ -62,7 +61,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 	@Override
 	public OldUserActivity queryByIdFromCache(Integer id) {
 		//先查缓存
-		OldUserActivity oldUserActivityCache = redisService.getWithHash(ElectricityCabinetConstant.OLD_USER_ACTIVITY_CACHE + id, OldUserActivity.class);
+		OldUserActivity oldUserActivityCache = redisService.getWithHash(CacheConstant.OLD_USER_ACTIVITY_CACHE + id, OldUserActivity.class);
 		if (Objects.nonNull(oldUserActivityCache)) {
 			return oldUserActivityCache;
 		}
@@ -74,7 +73,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		}
 
 		//放入缓存
-		redisService.saveWithHash(ElectricityCabinetConstant.OLD_USER_ACTIVITY_CACHE + id, oldUserActivity);
+		redisService.saveWithHash(CacheConstant.OLD_USER_ACTIVITY_CACHE + id, oldUserActivity);
 		return oldUserActivity;
 	}
 
@@ -114,7 +113,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.OLD_USER_ACTIVITY_CACHE + oldUserActivity.getId(),oldUserActivity);
+			redisService.saveWithHash(CacheConstant.OLD_USER_ACTIVITY_CACHE + oldUserActivity.getId(),oldUserActivity);
 			return null;
 		});
 
@@ -147,7 +146,7 @@ public class OldUserActivityServiceImpl implements OldUserActivityService {
 		int update = oldUserActivityMapper.updateById(oldUserActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
-			redisService.delete(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + oldOldUserActivity.getId());
+			redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + oldOldUserActivity.getId());
 
 			//解绑套餐活动
 			electricityMemberCardService.unbindActivity(oldUserActivity.getId());

@@ -31,6 +31,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_OTHER_CONFIG_HANDLER = "normalOtherConfigHandler";
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
+    public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     /**
      * 核心板上报数据处理
      */
@@ -104,7 +105,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, OFFLINE_EXCHANGE_ORDER_ACK_RSP)
                 || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS)
-                || Objects.equals(command, ELE_OTHER_SETTING);
+                || Objects.equals(command, ELE_OTHER_SETTING)
+                || Objects.equals(command,ELE_COMMAND_NEW_EXCHANGE_ORDER)
+                || Objects.equals(command,ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP);
 
     }
 
@@ -165,8 +168,10 @@ public class ElectricityIotConstant {
 
     //新命令
     //旧电池
+    @Deprecated
     public static final String ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP = "init_exchange_order_rsp";
     //新电池
+    @Deprecated
     public static final String ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP = "complete_exchange_order_rsp";
     //租电池
     public static final String ELE_COMMAND_RENT_ORDER_RSP = "rent_order_rsp";
@@ -174,6 +179,11 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_RETURN_ORDER_RSP = "return_order_rsp";
 
     public static final String ELE_COMMAND_SELF_OPEN_CELL_RSP = "self_open_cell_rsp";
+    /**
+     * 新换电命令
+     */
+    public static final String ELE_COMMAND_NEW_EXCHANGE_ORDER = "exchange_order";
+    public static final String ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP = "exchange_order_rsp";
 
 
     //物理操作
@@ -365,6 +375,12 @@ public class ElectricityIotConstant {
          * 核心板数据上报
          */
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CORE_REPORT, NORMAL_CABINET_CORE_DATA_HANDLER);
+
+        /**
+         * 换电新命令，替代以前换电命令
+         */
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER,NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP,NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
 
 
     }

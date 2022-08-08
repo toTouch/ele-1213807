@@ -98,6 +98,8 @@ public class ElectricityCabinetOrder {
     //租户id
     private Integer tenantId;
 
+    //门店id
+    private Long storeId;
 
     /**
      * 换电订单生成 0.0

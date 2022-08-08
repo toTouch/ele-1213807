@@ -5,32 +5,28 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import cn.hutool.core.util.StrUtil;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.thread.XllExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.core.wp.entity.AppTemplateQuery;
 import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
-import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
-import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,8 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -194,7 +188,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 
             if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
-                UserInfo userInfo = userInfoService.queryByUid(electricityBattery.getUid());
+                UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
                 if (Objects.nonNull(userInfo)) {
                     electricityBatteryVO.setUserName(userInfo.getName());
                 }
@@ -281,7 +275,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 
         if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
-            UserInfo userInfo = userInfoService.queryByUid(electricityBattery.getUid());
+            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
             if (Objects.nonNull(userInfo)) {
                 electricityBatteryVO.setUserName(userInfo.getName());
             }
@@ -363,7 +357,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public R batteryOutTimeInfo(Long tenantId) {
-        String json = redisService.get(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId);
+        String json = redisService.get(CacheConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId);
         List<BorrowExpireBatteryVo> list = null;
         if (StrUtil.isNotBlank(json)) {
             list = JSON.parseArray(json, BorrowExpireBatteryVo.class);
@@ -390,7 +384,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             borrowExpireBatteryList.parallelStream().forEach(electricityBattery -> {
                 Long uid = electricityBattery.getUid();
                 Integer tenantId = electricityBattery.getTenantId();
-                boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
+                boolean isOutTime = redisService.setNx(CacheConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);
                 if (!isOutTime) {
                     return;
                 }
@@ -460,7 +454,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 Integer tenantId = entry.getKey();
                 List<BorrowExpireBatteryVo> batteryList = entry.getValue();
 
-                boolean isOutTime = redisService.setNx(ElectricityCabinetConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
+                boolean isOutTime = redisService.setNx(CacheConstant.CACHE_ADMIN_ALREADY_NOTIFICATION + tenantId, JSON.toJSONString(batteryList), frequency, false);
                 if (!isOutTime) {
                     return;
                 }
@@ -504,6 +498,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
     }
 
+    @Override
+    public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+        return electricitybatterymapper.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
+    }
+
+    @Override
+    public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
+        return electricitybatterymapper.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
+    }
 
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();

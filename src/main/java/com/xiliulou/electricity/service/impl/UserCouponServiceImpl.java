@@ -1,12 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
 import com.xiliulou.electricity.entity.ShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivityRule;
@@ -30,13 +28,11 @@ import com.xiliulou.electricity.vo.UserCouponVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -156,7 +152,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 		}
 
 		//2.判断用户
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo)) {
 			log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -206,7 +202,7 @@ public class UserCouponServiceImpl implements UserCouponService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//判断是否实名认证
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		//用户是否可用
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("getShareCoupon  ERROR! not found userInfo,uid:{} ", user.getUid());

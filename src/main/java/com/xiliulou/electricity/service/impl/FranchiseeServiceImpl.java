@@ -89,7 +89,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             }
         }
 
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
@@ -176,7 +176,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             }
         }
 
-        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
             if (ObjectUtil.isEmpty(franchiseeAddAndUpdate.getModelBatteryDepositList())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
@@ -190,6 +190,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         Franchisee newFranchisee = new Franchisee();
         BeanUtil.copyProperties(franchiseeAddAndUpdate, newFranchisee);
         newFranchisee.setUpdateTime(System.currentTimeMillis());
+        newFranchisee.setCid(franchiseeAddAndUpdate.getCityId());
         int update = franchiseeMapper.updateById(newFranchisee);
 
         if (update > 0) {
@@ -289,7 +290,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 }
 
                 //加盟商押金
-                if (Objects.equals(e.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+                if (Objects.equals(e.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
 
                     //封装型号押金
                     List modelBatteryDepositList = JsonUtil.fromJson(e.getModelBatteryDeposit(), List.class);

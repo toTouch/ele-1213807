@@ -107,11 +107,13 @@ public class ElectricityMemberCard {
     public static final Integer TYPE_MONTH = 0;
     public static final Integer TYPE_QUARTERLY = 1;
     public static final Integer TYPE_YEAR = 2;
+    public static final Integer TYPE_COUNT = 3;
     //无限制使用次数
     public static final Long UN_LIMITED_COUNT = -1L;
 
 
     public static final Integer UN_LIMITED_COUNT_TYPE = 0;
+    public static final Integer LIMITED_COUNT_TYPE = 1;
 
     public static final Integer BIND_ACTIVITY = 1;
     public static final Integer UNBIND_ACTIVITY = 0;

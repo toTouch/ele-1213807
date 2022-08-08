@@ -30,4 +30,6 @@ public interface ElectricityCarMapper extends BaseMapper<ElectricityCar> {
 
     Integer updateBindUser(ElectricityCar electricityCar);
 
+    Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds);
+
 }

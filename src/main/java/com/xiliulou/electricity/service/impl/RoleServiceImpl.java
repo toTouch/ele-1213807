@@ -1,14 +1,13 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.StrUtil;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.PermissionResource;
 import com.xiliulou.electricity.entity.PermissionResourceTree;
 import com.xiliulou.electricity.entity.Role;
@@ -181,7 +180,7 @@ public class RoleServiceImpl implements RoleService {
 
 		HashSet<Long> result = Sets.newHashSet();
 		result.addAll(roleIds);
-		redisService.set(ElectricityCabinetConstant.CACHE_USER_ROLE_RELATION + uid, JsonUtil.toJson(result));
+		redisService.set(CacheConstant.CACHE_USER_ROLE_RELATION + uid, JsonUtil.toJson(result));
 
 		return Pair.of(true, "绑定成功!");
 	}
@@ -221,7 +220,7 @@ public class RoleServiceImpl implements RoleService {
 //
 	@Override
 	public List<Long> queryRidsByUid(Long uid) {
-		String jsonRoles = redisService.get(ElectricityCabinetConstant.CACHE_USER_ROLE_RELATION + uid);
+		String jsonRoles = redisService.get(CacheConstant.CACHE_USER_ROLE_RELATION + uid);
 		if (!StrUtil.isEmpty(jsonRoles)) {
 			return JsonUtil.fromJsonArray(jsonRoles, Long.class);
 		}
@@ -229,7 +228,7 @@ public class RoleServiceImpl implements RoleService {
 		List<Role> roles = userRoleService.queryByUid(uid);
 		if (DataUtil.collectionIsUsable(roles)) {
 			List<Long> rolesIds = roles.stream().map(Role::getId).collect(Collectors.toList());
-			redisService.set(ElectricityCabinetConstant.CACHE_USER_ROLE_RELATION + uid, JsonUtil.toJson(rolesIds));
+			redisService.set(CacheConstant.CACHE_USER_ROLE_RELATION + uid, JsonUtil.toJson(rolesIds));
 			return rolesIds;
 		}
 

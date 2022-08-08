@@ -1,7 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ThirdCallBackUrl;
 import com.xiliulou.electricity.mapper.ThirdCallBackUrlMapper;
 import com.xiliulou.electricity.service.ThirdCallBackUrlService;
@@ -51,7 +51,7 @@ public class ThirdCallBackUrlServiceImpl implements ThirdCallBackUrlService {
      */
     @Override
     public ThirdCallBackUrl queryByTenantIdFromCache(Integer id) {
-        ThirdCallBackUrl cache = redisService.getWithHash(ElectricityCabinetConstant.CACHE_THIRD_CALL_BACK_URL + id, ThirdCallBackUrl.class);
+        ThirdCallBackUrl cache = redisService.getWithHash(CacheConstant.CACHE_THIRD_CALL_BACK_URL + id, ThirdCallBackUrl.class);
         if (Objects.nonNull(cache)) {
             return cache;
         }
@@ -61,7 +61,7 @@ public class ThirdCallBackUrlServiceImpl implements ThirdCallBackUrlService {
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_THIRD_CALL_BACK_URL + id, thirdCallBackUrl);
+        redisService.saveWithHash(CacheConstant.CACHE_THIRD_CALL_BACK_URL + id, thirdCallBackUrl);
         return thirdCallBackUrl;
     }
 
@@ -124,7 +124,7 @@ public class ThirdCallBackUrlServiceImpl implements ThirdCallBackUrlService {
     public Integer update(ThirdCallBackUrl thirdCallBackUrl) {
         int update = this.thirdCallBackUrlMapper.update(thirdCallBackUrl);
         if (update > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_THIRD_CALL_BACK_URL + thirdCallBackUrl.getTenantId());
+            redisService.delete(CacheConstant.CACHE_THIRD_CALL_BACK_URL + thirdCallBackUrl.getTenantId());
         }
         return update;
 
@@ -155,7 +155,7 @@ public class ThirdCallBackUrlServiceImpl implements ThirdCallBackUrlService {
             return Pair.of(true, null);
         }
 
-        if (!redisService.setNx(ElectricityCabinetConstant.CACHE_TENANT_ID_OPERATE + TenantContextHolder.getTenantId(), "1", 2000L, false)) {
+        if (!redisService.setNx(CacheConstant.CACHE_TENANT_ID_OPERATE + TenantContextHolder.getTenantId(), "1", 2000L, false)) {
             return Pair.of(false, "操作频繁");
         }
 

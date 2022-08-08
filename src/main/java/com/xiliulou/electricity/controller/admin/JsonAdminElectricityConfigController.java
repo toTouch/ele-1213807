@@ -32,7 +32,7 @@ public class JsonAdminElectricityConfigController {
     @GetMapping(value = "/admin/electricityConfig")
     public R queryOne() {
         Integer tenantId = TenantContextHolder.getTenantId();
-        return R.ok(electricityConfigService.queryOne(tenantId));
+        return R.ok(electricityConfigService.queryFromCacheByTenantId(tenantId));
     }
 
 }

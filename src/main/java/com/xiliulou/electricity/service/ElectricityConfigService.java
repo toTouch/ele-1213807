@@ -15,7 +15,7 @@ public interface ElectricityConfigService extends IService<ElectricityConfig> {
 
     R edit(ElectricityConfigAddAndUpdateQuery electricityConfigAddAndUpdateQuery);
 
-    ElectricityConfig queryOne(Integer tenantId);
+    ElectricityConfig queryFromCacheByTenantId(Integer tenantId);
 
     void insertElectricityConfig(ElectricityConfig electricityConfig);
 }

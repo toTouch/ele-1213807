@@ -92,9 +92,23 @@
 
     <select id="queryTurnOver" resultType="decimal">
         select ifnull(sum(pay_amount),0) from t_ele_refund_order
-        where status=2
+        where status=4
         <if test="tenantId != null">
             and tenant_id = #{tenantId}
+        </if>
+    </select>
+
+    <select id="queryTurnOverByTime" resultType="decimal">
+        select sum(refund_amount) from t_ele_refund_order
+        where status=4
+        <if test="tenantId != null">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="todayStartTime != null">
+            and create_time &gt;=#{todayStartTime}
+        </if>
+        <if test="refundOrderType != null">
+            and refund_order_type = #{refundOrderType}
         </if>
     </select>
 

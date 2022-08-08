@@ -101,6 +101,10 @@ public class ElectricityCabinetBox {
      * 充电器电流
      */
     private Double chargeA;
+    /**
+     * 电池id
+     */
+    private Long bId;
 
 
     public static final Integer DEL_NORMAL = 0;
