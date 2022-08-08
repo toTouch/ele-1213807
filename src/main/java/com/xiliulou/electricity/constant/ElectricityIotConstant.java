@@ -106,8 +106,10 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, OFFLINE_EXCHANGE_ORDER_ACK_RSP)
                 || Objects.equals(command, OFFLINE_ELE_EXCHANGE_ORDER_MANAGE_SUCCESS)
                 || Objects.equals(command, ELE_OTHER_SETTING)
-                || Objects.equals(command,ELE_COMMAND_NEW_EXCHANGE_ORDER)
-                || Objects.equals(command,ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP);
+                || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
+                || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
+                || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE);
 
     }
 
@@ -291,6 +293,14 @@ public class ElectricityIotConstant {
      * 读柜机其他设置上报
      */
     public static final String ELE_OTHER_CONFIG_RSP_V2 = "other_config_rsp_v2";
+    /**
+     * 打开充电器
+     */
+    public static final String ELE_CELL_OPEN_CHARGE = "cell_open_charge";
+    /**
+     * 关闭充电器
+     */
+    public static final String ELE_CELL_CLOSE_CHARGE = "cell_close_charge";
 
 
     static {
@@ -313,6 +323,8 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_CUPBOARD_RESTART, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_UNLOCK_CABINET, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OPERATE, NORMAL_ELE_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_CELL_OPEN_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_CELL_CLOSE_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
@@ -379,8 +391,8 @@ public class ElectricityIotConstant {
         /**
          * 换电新命令，替代以前换电命令
          */
-        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER,NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
-        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP,NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
 
 
     }
