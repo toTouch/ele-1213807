@@ -58,46 +58,46 @@
 
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1)
-        from t_electricity_cabinet_order
+        from t_electricity_cabinet_order teco left join t_electricity_cabinet tec on teco.electricity_cabinet_id=tec.id
         <where>
             <if test="query.orderId != null and query.orderId != ''">
-                and order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
+                and teco.order_id like concat('%',#{query.orderId,jdbcType=VARCHAR},'%')
             </if>
             <if test="query.phone != null and query.phone != ''">
-                and phone = #{query.phone}
+                and teco.phone = #{query.phone}
             </if>
             <if test="query.electricityCabinetName != null and query.electricityCabinetName != ''">
-                and name = #{query.electricityCabinetName}
+                and tec.name = #{query.electricityCabinetName}
             </if>
             <if test="query.oldCellNo != null">
-                and old_cell_no = #{query.oldCellNo}
+                and teco.old_cell_no = #{query.oldCellNo}
             </if>
             <if test="query.status != null and query.status != ''">
-                and status = #{query.status}
+                and teco.status = #{query.status}
             </if>
             <if test="query.beginTime != null">
-                and create_time &gt;=#{query.beginTime}
+                and teco.create_time &gt;=#{query.beginTime}
             </if>
             <if test="query.endTime != null">
-                and create_time &lt;=#{query.endTime}
+                and teco.create_time &lt;=#{query.endTime}
             </if>
             <if test="query.paymentMethod != null">
-                and payment_method = #{query.paymentMethod}
+                and teco.payment_method = #{query.paymentMethod}
             </if>
             <if test="query.source != null">
-                and source = #{query.source}
+                and teco.source = #{query.source}
             </if>
             <if test="query.uid != null">
-                and uid = #{query.uid}
+                and teco.uid = #{query.uid}
             </if>
             <if test="query.eleIdList!=null and query.eleIdList!=''">
-                and electricity_cabinet_id in
+                and teco.electricity_cabinet_id in
                 <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
                     #{id}
                 </foreach>
             </if>
             <if test="query.tenantId != null">
-                and tenant_id = #{query.tenantId}
+                and teco.tenant_id = #{query.tenantId}
             </if>
         </where>
     </select>
