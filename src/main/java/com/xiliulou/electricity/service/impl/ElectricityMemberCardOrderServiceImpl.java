@@ -828,7 +828,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                         //查询用户是否存在电池服务费
                         Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
                         Integer modelType = franchisee.getModelType();
-                        if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                        if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                             Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
                             List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                             for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
