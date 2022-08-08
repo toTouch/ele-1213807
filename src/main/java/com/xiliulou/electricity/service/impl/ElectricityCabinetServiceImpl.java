@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.date.DatePattern;
 import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
@@ -1073,12 +1074,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             battery = electricityBattery.getPower();
         }
 
+        //套餐到期时间
+        String memberCardExpireTime = Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) ? DateUtil.format(DateUtil.date(franchiseeUserInfo.getMemberCardExpireTime()), DatePattern.NORM_DATE_FORMAT) : "";
+        homeInfo.put("memberCardExpireTime", memberCardExpireTime);
         //月卡剩余天数
         homeInfo.put("monthCount", monthCount.toString());
         homeInfo.put("totalCount", totalCount.toString());
         homeInfo.put("serviceStatus", String.valueOf(serviceStatus));
         homeInfo.put("cardDay", String.valueOf(cardDay));
         homeInfo.put("battery", String.valueOf(battery));
+
         return R.ok(homeInfo);
     }
 
