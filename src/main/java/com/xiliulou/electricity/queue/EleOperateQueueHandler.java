@@ -130,7 +130,7 @@ public class EleOperateQueueHandler {
             //若app订单状态大于云端订单状态则处理
             if (Objects.isNull(orderSeq) || orderSeq - electricityCabinetOrder.getOrderSeq() >= 1 || Math.abs(orderSeq - electricityCabinetOrder.getOrderSeq()) < 1) {
                 if (Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_INIT_EXCHANGE_ORDER_RSP)) {
-                    handelInitExchangeOrder(electricityCabinetOrder, finalOpenDTO);
+                    handelInitExchangeOrder(electricityCabinetOrder, finalOpenDTO, electricityConfig);
                 }
 
                 if (Objects.equals(type, ElectricityIotConstant.ELE_COMMAND_COMPLETE_EXCHANGE_ORDER_RSP)) {
@@ -247,7 +247,7 @@ public class EleOperateQueueHandler {
     }
 
     //开旧门通知
-    public void handelInitExchangeOrder(ElectricityCabinetOrder electricityCabinetOrder, EleOpenDTO finalOpenDTO) {
+    public void handelInitExchangeOrder(ElectricityCabinetOrder electricityCabinetOrder, EleOpenDTO finalOpenDTO, ElectricityConfig electricityConfig) {
 
         //开门失败
         if (finalOpenDTO.getIsProcessFail()) {
@@ -261,15 +261,17 @@ public class EleOperateQueueHandler {
                 newElectricityCabinetOrder.setOldElectricityBatterySn(finalOpenDTO.getBatterySn());
                 electricityCabinetOrderService.update(newElectricityCabinetOrder);
 
-                ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = new ElectricityExceptionOrderStatusRecord();
-                electricityExceptionOrderStatusRecord.setOrderId(electricityCabinetOrder.getOrderId());
-                electricityExceptionOrderStatusRecord.setTenantId(electricityCabinetOrder.getTenantId());
-                electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
-                electricityExceptionOrderStatusRecord.setOrderSeq(finalOpenDTO.getOrderSeq());
-                electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
-                electricityExceptionOrderStatusRecord.setUpdateTime(System.currentTimeMillis());
-                electricityExceptionOrderStatusRecord.setCellNo(electricityCabinetOrder.getOldCellNo());
-                electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
+                if (allowSelfOpenStatus(finalOpenDTO.getOrderStatus(), electricityConfig)) {
+                    ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = new ElectricityExceptionOrderStatusRecord();
+                    electricityExceptionOrderStatusRecord.setOrderId(electricityCabinetOrder.getOrderId());
+                    electricityExceptionOrderStatusRecord.setTenantId(electricityCabinetOrder.getTenantId());
+                    electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
+                    electricityExceptionOrderStatusRecord.setOrderSeq(finalOpenDTO.getOrderSeq());
+                    electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
+                    electricityExceptionOrderStatusRecord.setUpdateTime(System.currentTimeMillis());
+                    electricityExceptionOrderStatusRecord.setCellNo(electricityCabinetOrder.getOldCellNo());
+                    electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
+                }
 
                 //清除柜机锁定缓存
                 redisService.delete(CacheConstant.ORDER_ELE_ID + electricityCabinetOrder.getElectricityCabinetId());
@@ -689,5 +691,9 @@ public class EleOperateQueueHandler {
             redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
         }
 
+    }
+
+    private boolean allowSelfOpenStatus(String orderStatus, ElectricityConfig electricityConfig) {
+        return orderStatus.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) && Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsEnableSelfOpen(), ElectricityConfig.ENABLE_SELF_OPEN);
     }
 }
