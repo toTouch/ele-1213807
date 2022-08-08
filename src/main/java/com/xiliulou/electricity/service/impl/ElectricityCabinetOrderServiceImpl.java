@@ -579,7 +579,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 }
 
                 if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL)
-                        || e.getStatus().equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+                        || Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
                     ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(e.getOrderId());
                     if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL) && Objects.equals(electricityExceptionOrderStatusRecord.getIsSelfOpenCell(), ElectricityExceptionOrderStatusRecord.NOT_SELF_OPEN_CELL)) {
                         ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(e.getElectricityCabinetId(), e.getOldCellNo() + "");
