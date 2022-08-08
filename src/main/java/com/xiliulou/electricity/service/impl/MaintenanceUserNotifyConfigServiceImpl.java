@@ -253,8 +253,6 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     @Override
     public void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet) {
 
-        System.out.println("发送用户上报异常消息=============================");
-
         MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
             return;
@@ -265,13 +263,9 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
         }
 
 
-        System.out.println("发送消息=====================================");
-
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
         phones.forEach(p -> {
-
-            System.out.println("发送的手机号===================="+p);
 
             MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
