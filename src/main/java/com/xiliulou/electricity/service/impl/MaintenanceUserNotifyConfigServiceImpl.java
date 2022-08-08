@@ -265,6 +265,9 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
 
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
+
+        System.out.println("可以发送消息======================");
+
         phones.forEach(p -> {
 
             MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
