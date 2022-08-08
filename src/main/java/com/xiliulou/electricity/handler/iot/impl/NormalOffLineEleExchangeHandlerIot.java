@@ -142,6 +142,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .paymentMethod(oldFranchiseeUserInfo.getCardType())
                 .createTime(offlineEleOrderVo.getStartTime())
                 .updateTime(offlineEleOrderVo.getEndTime())
+                .storeId(electricityCabinet.getStoreId())
                 .tenantId(electricityCabinet.getTenantId()).build();
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
 
