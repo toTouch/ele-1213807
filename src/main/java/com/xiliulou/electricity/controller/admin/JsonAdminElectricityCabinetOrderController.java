@@ -111,7 +111,9 @@ public class JsonAdminElectricityCabinetOrderController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "source", required = false) Integer source,
-                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod) {
+                        @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                        @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
@@ -146,6 +148,8 @@ public class JsonAdminElectricityCabinetOrderController {
                 .paymentMethod(paymentMethod)
                 .eleIdList(eleIdList)
                 .source(source)
+                .electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo)
                 .tenantId(tenantId).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
