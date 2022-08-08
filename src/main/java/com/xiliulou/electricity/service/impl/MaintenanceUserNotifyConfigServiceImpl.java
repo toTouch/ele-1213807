@@ -258,22 +258,18 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return;
         }
 
-        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) {
+        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION) {
             return;
         }
 
-
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
-
-
-        System.out.println("可以发送消息======================");
 
         phones.forEach(p -> {
 
             MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION);
+            query.setType(MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION);
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
