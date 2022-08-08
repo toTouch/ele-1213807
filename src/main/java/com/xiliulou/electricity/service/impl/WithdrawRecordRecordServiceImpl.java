@@ -209,9 +209,11 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 			//查询身份证号
 			BankCard bankCard = bankCardService.queryByUid(withdrawRecordVO.getUid());
 			if (Objects.nonNull(bankCard)) {
-				withdrawRecordVO.setIdNumber(DesensitizationUtil.idCard(bankCard.getEncBindIdNumber()));
+//				withdrawRecordVO.setIdNumber(DesensitizationUtil.idCard(bankCard.getEncBindIdNumber()));
+				withdrawRecordVO.setIdNumber(bankCard.getEncBindIdNumber());
 			}
-			withdrawRecordVO.setBankNumber(DesensitizationUtil.bankCard(withdrawRecordVO.getBankNumber()));
+//			withdrawRecordVO.setBankNumber(DesensitizationUtil.bankCard(withdrawRecordVO.getBankNumber()));
+			withdrawRecordVO.setBankNumber(withdrawRecordVO.getBankNumber());
 
 			//查询用户名称
 			User user = userService.queryByUidFromCache(withdrawRecordVO.getUid());
