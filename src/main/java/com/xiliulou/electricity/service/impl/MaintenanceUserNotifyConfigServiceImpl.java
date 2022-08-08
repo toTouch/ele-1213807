@@ -264,12 +264,14 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
 
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
+        System.out.println("发送故障消息=============================");
+
         phones.forEach(p -> {
 
             MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION);
+            query.setType(MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD);
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
