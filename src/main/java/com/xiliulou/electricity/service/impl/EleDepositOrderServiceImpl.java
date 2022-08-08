@@ -1280,6 +1280,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             return R.fail("ELECTRICITY.0049", "已缴纳押金");
         }
 
+        if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE) && Objects.isNull(batteryDepositAdd.getModel())) {
+            log.error("admin payRentCarDeposit ERROR! not select batteyType ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
+            return R.fail("100027", "未选择电池型号");
+        }
 
         BigDecimal payAmount = batteryDepositAdd.getPayAmount();
 
@@ -1340,16 +1344,16 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
     @Override
     public BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId) {
-        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType,franchiseeId)).orElse(BigDecimal.valueOf(0));
+        return Optional.ofNullable(eleDepositOrderMapper.queryDepositTurnOverByDepositType(tenantId, todayStartTime, depositType, franchiseeId)).orElse(BigDecimal.valueOf(0));
     }
 
     @Override
-    public List<HomePageTurnOverGroupByWeekDayVo>  queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
+    public List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.queryDepositTurnOverAnalysisByDepositType(tenantId, depositType, franchiseeId, beginTime, enTime);
     }
 
     @Override
-    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId,  Long franchiseeId, Long beginTime, Long enTime) {
+    public BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, Long franchiseeId, Long beginTime, Long enTime) {
         return eleDepositOrderMapper.querySumDepositTurnOverAnalysis(tenantId, franchiseeId, beginTime, enTime);
     }
 }

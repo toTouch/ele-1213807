@@ -174,6 +174,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
                     item.setServiceStatus(UserInfo.STATUS_INIT);
                 }
+
+                if (Objects.nonNull(item.getModel())){
+                    item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
+                }
             });
         }, threadPool).exceptionally(e -> {
             log.error("payDepositTime list ERROR! query memberCard error!", e);

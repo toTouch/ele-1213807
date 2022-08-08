@@ -127,4 +127,5 @@ public class UserBatteryInfoVO {
      */
     private Integer usableStatus;
 
+    private Integer modelType;
 }
