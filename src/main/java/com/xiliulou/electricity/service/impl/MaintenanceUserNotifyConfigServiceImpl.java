@@ -258,7 +258,7 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
             return;
         }
 
-        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION) {
+        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD) != MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD) {
             return;
         }
 
