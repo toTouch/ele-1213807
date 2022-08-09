@@ -28,6 +28,10 @@ public class ElectricityIotConstant {
      * 电池变化
      */
     public static final String NORMAL_ELE_BATTERY_CHANGE_HANDLER = "normalEleBatteryChangeHandler";
+    /**
+     * 邮箱上报告警
+     */
+    public static final String NORMAL_ELE_EMAIL_WARN_MSG_HANDLER = "normalEleEmailWarnMsgHandler";
     public static final String NORMAL_ELE_CELL_HANDLER = "normalEleCellHandler";
     public static final String NORMAL_ELE_EXCHANGE_HANDLER = "normalEleExchangeHandler";
     public static final String NORMAL_ELE_OPERATE_HANDLER = "normalEleOperateHandler";
@@ -308,6 +312,10 @@ public class ElectricityIotConstant {
      * 关闭充电器
      */
     public static final String ELE_CELL_CLOSE_CHARGE = "cell_close_charge";
+    /**
+     * 邮箱上报告警
+     */
+    public static final String ELE_EMAIL_WARN_MSG = "email_warn_msg";
 
 
     static {
