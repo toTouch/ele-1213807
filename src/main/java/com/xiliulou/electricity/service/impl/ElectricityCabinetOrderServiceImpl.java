@@ -924,18 +924,14 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
 
         //error
-        if (electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_CANCEL )
+        if (electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_CANCEL)
                 || electricityCabinetOrder.getOrderSeq().equals(ElectricityCabinetOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrder.getTenantId());
 
             if (Objects.nonNull(electricityConfig) && Objects.equals(ElectricityConfig.ENABLE_SELF_OPEN, electricityConfig.getIsEnableSelfOpen())) {
                 ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(orderId);
                 if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
-                    ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo() + "");
                     map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
-                    if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
-                        map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
-                    }
                 }
             }
 
@@ -1512,13 +1508,13 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RENT)) {
             return Triple.of(true, "100200", new ExchangeUnFinishOrderVo(rentBatteryOrder.getOrderId()));
         } else if (Objects.nonNull(rentBatteryOrder) && Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-            return Triple.of(true, "100202",  new ExchangeUnFinishOrderVo(rentBatteryOrder.getOrderId()));
+            return Triple.of(true, "100202", new ExchangeUnFinishOrderVo(rentBatteryOrder.getOrderId()));
         }
 
         //是否存在未完成的换电订单
         ElectricityCabinetOrder oldElectricityCabinetOrder = queryByUid(uid);
         if (Objects.nonNull(oldElectricityCabinetOrder)) {
-            return Triple.of(true, "100201",  new ExchangeUnFinishOrderVo(oldElectricityCabinetOrder.getOrderId()));
+            return Triple.of(true, "100201", new ExchangeUnFinishOrderVo(oldElectricityCabinetOrder.getOrderId()));
         }
 
         return Triple.of(false, null, null);
