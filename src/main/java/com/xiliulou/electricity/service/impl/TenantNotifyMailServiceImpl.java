@@ -16,6 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -127,9 +128,13 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
 
 
     @Override
-    public List<TenantNotifyMail> selectByTenantId() {
+    public List<String> selectByTenantId() {
         List<TenantNotifyMail> tenantNotifyMails = this.tenantNotifyMailMapper.selectList(new LambdaQueryWrapper<TenantNotifyMail>().eq(TenantNotifyMail::getTenantId, TenantContextHolder.getTenantId()));
-        return tenantNotifyMails;
+        if(CollectionUtils.isNotEmpty(tenantNotifyMails)){
+            return tenantNotifyMails.stream().map(TenantNotifyMail::getMail).collect(Collectors.toList());
+        }
+
+        return null;
     }
 
     @Override

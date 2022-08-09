@@ -63,7 +63,7 @@ public interface TenantNotifyMailService {
      */
     Boolean deleteById(Long id);
 
-    List<TenantNotifyMail> selectByTenantId();
+    List<String> selectByTenantId();
 
     List<TenantNotifyMail> selectByTenantId(Long tenantId);
 
