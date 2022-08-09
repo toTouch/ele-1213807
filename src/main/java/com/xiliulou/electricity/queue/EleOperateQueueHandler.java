@@ -537,18 +537,6 @@ public class EleOperateQueueHandler {
                 newRentBatteryOrder.setStatus(RentBatteryOrder.ORDER_CANCEL);
                 rentBatteryOrderService.update(newRentBatteryOrder);
 
-                if (Objects.equals(rentBatteryOrder.getType(), RentBatteryOrder.TYPE_USER_RETURN)) {
-                    ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = new ElectricityExceptionOrderStatusRecord();
-                    electricityExceptionOrderStatusRecord.setOrderId(rentBatteryOrder.getOrderId());
-                    electricityExceptionOrderStatusRecord.setTenantId(rentBatteryOrder.getTenantId());
-                    electricityExceptionOrderStatusRecord.setStatus(finalOpenDTO.getOrderStatus());
-                    electricityExceptionOrderStatusRecord.setOrderSeq(finalOpenDTO.getOrderSeq());
-                    electricityExceptionOrderStatusRecord.setCreateTime(System.currentTimeMillis());
-                    electricityExceptionOrderStatusRecord.setUpdateTime(System.currentTimeMillis());
-                    electricityExceptionOrderStatusRecord.setCellNo(rentBatteryOrder.getCellNo());
-                    electricityExceptionOrderStatusRecordService.insert(electricityExceptionOrderStatusRecord);
-                }
-
                 //清除柜机锁定缓存
                 redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
                 return;

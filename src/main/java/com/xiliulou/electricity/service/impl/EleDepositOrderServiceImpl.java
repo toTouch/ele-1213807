@@ -406,12 +406,15 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
         }
 
+        Long disableMemberCardTime = oldFranchiseeUserInfo.getDisableMemberCardTime();
+
         //判断用户是否产生电池服务费
-        if (Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE)) {
-            cardDays = (now - oldFranchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+        if (Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+
+            cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
 
             //不足一天按一天计算
-            double time = Math.ceil((now - oldFranchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+            double time = Math.ceil(disableMemberCardTime / 1000L / 60 / 60.0);
             if (time < 24) {
                 cardDays = 1;
             }
