@@ -26,7 +26,7 @@ public class JsonAdminTenantNotifyMailController {
     }
 
     @PostMapping("insert")
-    public R insert(@Validated UpgradeNotifyMailQuery upgradeNotifyMailQuery) {
+    public R insert(@RequestBody @Validated UpgradeNotifyMailQuery upgradeNotifyMailQuery) {
         return this.tenantNotifyMailService.insert(upgradeNotifyMailQuery);
     }
 
