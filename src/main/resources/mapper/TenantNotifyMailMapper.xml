@@ -24,7 +24,6 @@
     <!--查询指定行数据-->
     <select id="selectByPage" resultMap="TenantNotifyMailMap">
         <include refid="selectTenantNotifyMail"/>
-        from t_tenant_notify_mail
         limit #{offset}, #{limit}
     </select>
 
