@@ -78,13 +78,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
             return;
         }
 
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(electricityCabinetOrder.getUid());
-        if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("SELF OPEN CELL ERROR! not found user! orderId:{}", eleSelfOPenCellOrderVo.getOrderId());
-            return;
-        }
-
-
         //操作回调的放在redis中,记录开门结果
         if (Objects.nonNull(eleSelfOPenCellOrderVo.getResult()) && eleSelfOPenCellOrderVo.getResult()) {
             redisService.set(CacheConstant.ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);
@@ -100,26 +93,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         }
         electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
         electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
-
-        //用户绑新电池
-        if (StrUtil.isNotEmpty(eleSelfOPenCellOrderVo.getBatteryName())) {
-            FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
-            updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
-            updateFranchiseeUserInfo.setNowElectricityBatterySn(eleSelfOPenCellOrderVo.getBatteryName());
-            updateFranchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoService.updateByUserInfoId(updateFranchiseeUserInfo);
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleSelfOPenCellOrderVo.getBatteryName());
-            if (Objects.nonNull(electricityBattery)) {
-                ElectricityBattery newElectricityBattery = new ElectricityBattery();
-                newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
-                newElectricityBattery.setElectricityCabinetId(null);
-                newElectricityBattery.setElectricityCabinetName(null);
-                newElectricityBattery.setUid(electricityCabinetOrder.getUid());
-                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateByOrder(newElectricityBattery);
-            }
-        }
     }
 
     @Data

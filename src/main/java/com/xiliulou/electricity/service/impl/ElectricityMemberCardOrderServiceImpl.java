@@ -910,8 +910,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //未缴纳押金
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("DISABLE MEMBER CARD ERROR!not found user! userId:{}", user.getUid());
-            return R.fail("ELECTRICITY.0042", "未缴纳押金");
+            log.error("DISABLE MEMBER CARD ERROR!not found deposit! userId:{}", user.getUid());
+            return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         EleBatteryServiceFeeVO eleBatteryServiceFeeVO = franchiseeUserInfoService.queryUserBatteryServiceFee(uid);
