@@ -231,6 +231,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
         eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
+        eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
 
         if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             return eleBatteryServiceFeeVO;
@@ -244,7 +245,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
         }
 
-        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), Franchisee.DISABLE_MEMBER_CARD_PAY_TYPE) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(),FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(),FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+            eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE);
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             //不足一天按一天计算
             double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
