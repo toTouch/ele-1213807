@@ -79,11 +79,11 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
         List<TenantNotifyMail> list = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(upgradeNotifyMailQuery.getMail())) {
             for (String mail : upgradeNotifyMailQuery.getMail()) {
-                if (Validator.isEmail(mail)) {
+                if (!Validator.isEmail(mail.trim())) {
                     return R.fail("SYSTEM.0002", "邮箱格式不合法！");
                 }
                 TenantNotifyMail tenantNotifyMail = new TenantNotifyMail();
-                tenantNotifyMail.setMail(mail);
+                tenantNotifyMail.setMail(mail.trim());
                 tenantNotifyMail.setTenantId(TenantContextHolder.getTenantId().longValue());
                 tenantNotifyMail.setCreateTime(System.currentTimeMillis());
                 tenantNotifyMail.setUpdateTime(System.currentTimeMillis());
