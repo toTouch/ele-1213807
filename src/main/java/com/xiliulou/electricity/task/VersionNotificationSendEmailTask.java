@@ -1,10 +1,10 @@
 package com.xiliulou.electricity.task;
 
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
-import com.xiliulou.electricity.entity.UpgradeNotifyMail;
+import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.service.MailService;
-import com.xiliulou.electricity.service.UpgradeNotifyMailService;
+import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.service.VersionNotificationService;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
@@ -35,7 +35,7 @@ public class VersionNotificationSendEmailTask extends IJobHandler {
     @Autowired
     private VersionNotificationService versionNotificationService;
     @Autowired
-    private UpgradeNotifyMailService upgradeNotifyMailService;
+    private TenantNotifyMailService tenantNotifyMailService;
     @Autowired
     private MailService mailService;
 
@@ -55,12 +55,12 @@ public class VersionNotificationSendEmailTask extends IJobHandler {
         //2.每次获取limit个邮箱 发送通知
         int i = 0;
         while (true) {
-            List<UpgradeNotifyMail> upgradeNotifyMailList = upgradeNotifyMailService.selectByPage(i, i += limit);
-            if (CollectionUtils.isEmpty(upgradeNotifyMailList)) {
+            List<TenantNotifyMail> tenantNotifyMailList = tenantNotifyMailService.selectByPage(i, i += limit);
+            if (CollectionUtils.isEmpty(tenantNotifyMailList)) {
                 break;
             }
 
-            List<String> mailList = upgradeNotifyMailList.stream().map(UpgradeNotifyMail::getMail).collect(Collectors.toList());
+            List<String> mailList = tenantNotifyMailList.stream().map(TenantNotifyMail::getMail).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(mailList)) {
                 log.error("ELE ERROR!mailList is empty");
                 return IJobHandler.FAIL;

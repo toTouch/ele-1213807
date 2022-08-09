@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.UpgradeNotifyMail;
+import com.xiliulou.electricity.entity.TenantNotifyMail;
 
 import java.util.List;
 
@@ -14,7 +14,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
  * @author zzlong
  * @since 2022-08-08 15:30:14
  */
-public interface UpgradeNotifyMailMapper extends BaseMapper<UpgradeNotifyMail> {
+public interface TenantNotifyMailMapper extends BaseMapper<TenantNotifyMail> {
 
     /**
      * 通过ID查询单条数据
@@ -22,7 +22,7 @@ public interface UpgradeNotifyMailMapper extends BaseMapper<UpgradeNotifyMail> {
      * @param id 主键
      * @return 实例对象
      */
-    UpgradeNotifyMail selectById(Long id);
+    TenantNotifyMail selectById(Long id);
 
     /**
      * 查询指定行数据
@@ -31,32 +31,32 @@ public interface UpgradeNotifyMailMapper extends BaseMapper<UpgradeNotifyMail> {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<UpgradeNotifyMail> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<TenantNotifyMail> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
 
 
     /**
      * 通过实体作为筛选条件查询
      *
-     * @param upgradeNotifyMail 实例对象
+     * @param tenantNotifyMail 实例对象
      * @return 对象列表
      */
-    List<UpgradeNotifyMail> selectByQuery(UpgradeNotifyMail upgradeNotifyMail);
+    List<TenantNotifyMail> selectByQuery(TenantNotifyMail tenantNotifyMail);
 
     /**
      * 新增数据
      *
-     * @param upgradeNotifyMail 实例对象
+     * @param tenantNotifyMail 实例对象
      * @return 影响行数
      */
-    int insertOne(UpgradeNotifyMail upgradeNotifyMail);
+    int insertOne(TenantNotifyMail tenantNotifyMail);
 
     /**
      * 修改数据
      *
-     * @param upgradeNotifyMail 实例对象
+     * @param tenantNotifyMail 实例对象
      * @return 影响行数
      */
-    int update(UpgradeNotifyMail upgradeNotifyMail);
+    int update(TenantNotifyMail tenantNotifyMail);
 
     /**
      * 通过主键删除数据
@@ -67,7 +67,6 @@ public interface UpgradeNotifyMailMapper extends BaseMapper<UpgradeNotifyMail> {
     int deleteById(Long id);
 
     /**
-     *
      * @param upgradeNotifyMailQuery
      * @return
      */
@@ -75,5 +74,5 @@ public interface UpgradeNotifyMailMapper extends BaseMapper<UpgradeNotifyMail> {
 
     int deleteByTenantId(Integer tenantId);
 
-    int batchInsert(List<UpgradeNotifyMail> list);
+    int batchInsert(List<TenantNotifyMail> list);
 }

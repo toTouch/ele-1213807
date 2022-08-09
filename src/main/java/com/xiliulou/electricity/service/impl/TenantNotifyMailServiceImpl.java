@@ -2,25 +2,20 @@ package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.lang.Validator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.UpgradeNotifyMail;
-import com.xiliulou.electricity.mapper.UpgradeNotifyMailMapper;
+import com.xiliulou.electricity.entity.TenantNotifyMail;
+import com.xiliulou.electricity.mapper.TenantNotifyMailMapper;
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
-import com.xiliulou.electricity.service.UpgradeNotifyMailService;
+import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.vo.UpgradeNotifyMailVO;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -32,9 +27,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Service("upgradeNotifyMailService")
 @Slf4j
-public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
+public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
     @Autowired
-    private UpgradeNotifyMailMapper upgradeNotifyMailMapper;
+    private TenantNotifyMailMapper tenantNotifyMailMapper;
 
     /**
      * 通过ID查询单条数据从DB
@@ -43,8 +38,8 @@ public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
      * @return 实例对象
      */
     @Override
-    public UpgradeNotifyMail selectByIdFromDB(Long id) {
-        return this.upgradeNotifyMailMapper.selectById(id);
+    public TenantNotifyMail selectByIdFromDB(Long id) {
+        return this.tenantNotifyMailMapper.selectById(id);
     }
 
     /**
@@ -54,7 +49,7 @@ public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
      * @return 实例对象
      */
     @Override
-    public UpgradeNotifyMail selectByIdFromCache(Long id) {
+    public TenantNotifyMail selectByIdFromCache(Long id) {
         return null;
     }
 
@@ -67,8 +62,8 @@ public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
      * @return 对象列表
      */
     @Override
-    public List<UpgradeNotifyMail> selectByPage(int offset, int limit) {
-        return this.upgradeNotifyMailMapper.selectByPage(offset, limit);
+    public List<TenantNotifyMail> selectByPage(int offset, int limit) {
+        return this.tenantNotifyMailMapper.selectByPage(offset, limit);
     }
 
     /**
@@ -81,25 +76,25 @@ public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
     @Transactional(rollbackFor = Exception.class)
     public R insert(UpgradeNotifyMailQuery upgradeNotifyMailQuery) {
 
-        List<UpgradeNotifyMail> list = new ArrayList<>();
+        List<TenantNotifyMail> list = new ArrayList<>();
         if (CollectionUtils.isNotEmpty(upgradeNotifyMailQuery.getMail())) {
             for (String mail : upgradeNotifyMailQuery.getMail()) {
                 if (Validator.isEmail(mail)) {
                     return R.fail("SYSTEM.0002", "邮箱格式不合法！");
                 }
-                UpgradeNotifyMail upgradeNotifyMail = new UpgradeNotifyMail();
-                upgradeNotifyMail.setMail(mail);
-                upgradeNotifyMail.setTenantId(TenantContextHolder.getTenantId().longValue());
-                upgradeNotifyMail.setCreateTime(System.currentTimeMillis());
-                upgradeNotifyMail.setUpdateTime(System.currentTimeMillis());
-                list.add(upgradeNotifyMail);
+                TenantNotifyMail tenantNotifyMail = new TenantNotifyMail();
+                tenantNotifyMail.setMail(mail);
+                tenantNotifyMail.setTenantId(TenantContextHolder.getTenantId().longValue());
+                tenantNotifyMail.setCreateTime(System.currentTimeMillis());
+                tenantNotifyMail.setUpdateTime(System.currentTimeMillis());
+                list.add(tenantNotifyMail);
             }
         }
 
-        this.upgradeNotifyMailMapper.deleteByTenantId(TenantContextHolder.getTenantId());
+        this.tenantNotifyMailMapper.deleteByTenantId(TenantContextHolder.getTenantId());
 
-        if(CollectionUtils.isNotEmpty(list)){
-            this.upgradeNotifyMailMapper.batchInsert(list);
+        if (CollectionUtils.isNotEmpty(list)) {
+            this.tenantNotifyMailMapper.batchInsert(list);
             return R.ok();
         }
         return R.fail("系统错误!");
@@ -108,13 +103,13 @@ public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
     /**
      * 修改数据
      *
-     * @param upgradeNotifyMail 实例对象
+     * @param tenantNotifyMail 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer update(UpgradeNotifyMail upgradeNotifyMail) {
-        return this.upgradeNotifyMailMapper.update(upgradeNotifyMail);
+    public Integer update(TenantNotifyMail tenantNotifyMail) {
+        return this.tenantNotifyMailMapper.update(tenantNotifyMail);
 
     }
 
@@ -127,23 +122,28 @@ public class UpgradeNotifyMailServiceImpl implements UpgradeNotifyMailService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
-        return this.upgradeNotifyMailMapper.deleteById(id) > 0;
+        return this.tenantNotifyMailMapper.deleteById(id) > 0;
     }
 
 
     @Override
-    public List<UpgradeNotifyMail> selectByTenantId() {
-        List<UpgradeNotifyMail> upgradeNotifyMails = this.upgradeNotifyMailMapper.selectList(new LambdaQueryWrapper<UpgradeNotifyMail>().eq(UpgradeNotifyMail::getTenantId, TenantContextHolder.getTenantId()));
-        return upgradeNotifyMails;
+    public List<TenantNotifyMail> selectByTenantId() {
+        List<TenantNotifyMail> tenantNotifyMails = this.tenantNotifyMailMapper.selectList(new LambdaQueryWrapper<TenantNotifyMail>().eq(TenantNotifyMail::getTenantId, TenantContextHolder.getTenantId()));
+        return tenantNotifyMails;
+    }
+
+    @Override
+    public List<TenantNotifyMail> selectByTenantId(Long tenantId) {
+        return this.tenantNotifyMailMapper.selectList(new LambdaQueryWrapper<TenantNotifyMail>().eq(TenantNotifyMail::getTenantId, tenantId));
     }
 
     @Override
     public Boolean checkByTenantId() {
         Boolean result = Boolean.TRUE;
-        List<UpgradeNotifyMail> upgradeNotifyMails = this.upgradeNotifyMailMapper.selectList(new LambdaQueryWrapper<UpgradeNotifyMail>().eq(UpgradeNotifyMail::getTenantId, TenantContextHolder.getTenantId()));
+        List<TenantNotifyMail> tenantNotifyMails = this.tenantNotifyMailMapper.selectList(new LambdaQueryWrapper<TenantNotifyMail>().eq(TenantNotifyMail::getTenantId, TenantContextHolder.getTenantId()));
 
-        if (CollectionUtils.isEmpty(upgradeNotifyMails)) {
-                result = Boolean.FALSE;
+        if (CollectionUtils.isEmpty(tenantNotifyMails)) {
+            result = Boolean.FALSE;
         }
         return result;
     }

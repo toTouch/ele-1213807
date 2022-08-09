@@ -1,9 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.UpgradeNotifyMail;
+import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
-import com.xiliulou.electricity.vo.UpgradeNotifyMailVO;
 
 import java.util.List;
 
@@ -13,7 +12,7 @@ import java.util.List;
  * @author zzlong
  * @since 2022-08-08 15:30:14
  */
-public interface UpgradeNotifyMailService {
+public interface TenantNotifyMailService {
 
     /**
      * 通过ID查询单条数据从数据库
@@ -21,7 +20,7 @@ public interface UpgradeNotifyMailService {
      * @param id 主键
      * @return 实例对象
      */
-    UpgradeNotifyMail selectByIdFromDB(Long id);
+    TenantNotifyMail selectByIdFromDB(Long id);
 
     /**
      * 通过ID查询单条数据从缓存
@@ -29,7 +28,7 @@ public interface UpgradeNotifyMailService {
      * @param id 主键
      * @return 实例对象
      */
-    UpgradeNotifyMail selectByIdFromCache(Long id);
+    TenantNotifyMail selectByIdFromCache(Long id);
 
     /**
      * 查询多条数据
@@ -38,7 +37,7 @@ public interface UpgradeNotifyMailService {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<UpgradeNotifyMail> selectByPage(int offset, int limit);
+    List<TenantNotifyMail> selectByPage(int offset, int limit);
 
     /**
      * 新增数据
@@ -51,10 +50,10 @@ public interface UpgradeNotifyMailService {
     /**
      * 修改数据
      *
-     * @param upgradeNotifyMail 实例对象
+     * @param tenantNotifyMail 实例对象
      * @return 实例对象
      */
-    Integer update(UpgradeNotifyMail upgradeNotifyMail);
+    Integer update(TenantNotifyMail tenantNotifyMail);
 
     /**
      * 通过主键删除数据
@@ -64,7 +63,9 @@ public interface UpgradeNotifyMailService {
      */
     Boolean deleteById(Long id);
 
-    List<UpgradeNotifyMail> selectByTenantId();
+    List<TenantNotifyMail> selectByTenantId();
+
+    List<TenantNotifyMail> selectByTenantId(Long tenantId);
 
     R insertOrUpdate(UpgradeNotifyMailQuery upgradeNotifyMailQuery);
 

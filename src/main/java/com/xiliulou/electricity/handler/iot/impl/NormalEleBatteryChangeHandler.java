@@ -27,7 +27,7 @@ import java.util.Objects;
 @Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_CHANGE_HANDLER)
 public class NormalEleBatteryChangeHandler extends AbstractElectricityIotHandler {
 
-    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     ClickHouseService clickHouseService;
@@ -37,7 +37,7 @@ public class NormalEleBatteryChangeHandler extends AbstractElectricityIotHandler
 
         EleBatteryChangeReportVO batteryChangeReportVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryChangeReportVO.class);
         if (Objects.isNull(batteryChangeReportVO)) {
-            log.error("ELE ERROR! batteryChangeReport is null,productKey={}", receiverMessage.getProductKey());
+            log.error("ELE ERROR! batteryChangeReport is null,sessionId={}", receiverMessage.getSessionId());
             return;
         }
 

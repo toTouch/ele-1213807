@@ -21,8 +21,8 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_upgrade_notify_mail")
-public class UpgradeNotifyMail {
+@TableName("t_tenant_notify_mail")
+public class TenantNotifyMail {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
