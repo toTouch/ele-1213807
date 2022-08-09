@@ -33,8 +33,6 @@ import java.util.Objects;
 @Slf4j
 public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
-    static DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
@@ -51,8 +49,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     NotExistSnService notExistSnService;
-    @Autowired
-    ClickHouseService clickHouseService;
+
 
     @Autowired
     EleCommonConfig eleCommonConfig;
@@ -64,19 +61,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
-        if (ElectricityIotConstant.BATTERY_CHANGE_REPORT.equals(receiverMessage.getType())) {
-            EleBatteryChangeReportVO batteryChangeReportVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryChangeReportVO.class);
-            if (Objects.isNull(batteryChangeReportVO)) {
-                log.error("ELE ERROR! batteryChangeReport is null,productKey={}", receiverMessage.getProductKey());
-                return;
-            }
-
-            //电池检测上报数据保存到ClickHouse
-            saveReportDataToClickHouse( electricityCabinet,  receiverMessage,batteryChangeReportVO);
-
-        } else {
-            updateBatteryInfo(electricityCabinet, receiverMessage);
-        }
+        updateBatteryInfo(electricityCabinet, receiverMessage);
     }
 
 
@@ -323,28 +308,6 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
     }
 
-    /**
-     * 检测电池数据保存到clickhouse
-     * @param batteryChangeReport
-     */
-    private void saveReportDataToClickHouse(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage, EleBatteryChangeReportVO batteryChangeReport) {
-
-        LocalDateTime now = LocalDateTime.now();
-        String createTime = formatter.format(now);
-
-        LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(batteryChangeReport.getCreateTime()) ? 0L : batteryChangeReport.getCreateTime());
-        String reportTime = formatter.format(reportDateTime);
-
-        String sql = "insert into t_battery_change (electricityCabinetId,cellNo,sessionId,preBatteryName,changeBatteryName,reportTime,createTime) values(?,?,?,?,?,?,?);";
-
-        try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), batteryChangeReport.getCellNo(), receiverMessage.getSessionId(), batteryChangeReport.getPreBatteryName(), batteryChangeReport.getChangeBatteryName(),
-                    reportTime, createTime);
-        } catch (Exception e) {
-            log.error("ELE ERROR! clickHouse insert sql error!", e);
-        }
-    }
-
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
         if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
             return "";
@@ -405,15 +368,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
     }
 
-    @Data
-    class EleBatteryChangeReportVO {
-        private Integer cellNo;
-        private String sessionId;
-        private String productKey;
-        private String preBatteryName;
-        private String changeBatteryName;
-        private Long createTime;
-    }
+
 
 }
 

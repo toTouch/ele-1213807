@@ -20,7 +20,14 @@ public class ElectricityIotConstant {
     public static final String NORMAL_API_EXCHANGE_HANDLER = "normalApiExchangeHandler";
     public static final String NORMAL_API_RENT_HANDLER = "normalApiRentHandler";
     public static final String NORMAL_API_RETURN_HANDLER = "normalApiReturnHandler";
+    /**
+     * 电池上报
+     */
     public static final String NORMAL_ELE_BATTERY_HANDLER = "normalEleBatteryHandler";
+    /**
+     * 电池变化
+     */
+    public static final String NORMAL_ELE_BATTERY_CHANGE_HANDLER = "normalEleBatteryChangeHandler";
     public static final String NORMAL_ELE_CELL_HANDLER = "normalEleCellHandler";
     public static final String NORMAL_ELE_EXCHANGE_HANDLER = "normalEleExchangeHandler";
     public static final String NORMAL_ELE_OPERATE_HANDLER = "normalEleOperateHandler";
@@ -380,9 +387,7 @@ public class ElectricityIotConstant {
         /**
          * 柜机检测电池数据上报
          */
-        COMMAND_HANDLER_MAPS.put(BATTERY_CHANGE_REPORT, NORMAL_ELE_BATTERY_HANDLER);
-
-
+        COMMAND_HANDLER_MAPS.put(BATTERY_CHANGE_REPORT, NORMAL_ELE_BATTERY_CHANGE_HANDLER);
         /**
          * 核心板数据上报
          */
