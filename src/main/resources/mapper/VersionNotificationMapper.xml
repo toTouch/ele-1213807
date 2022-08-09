@@ -8,10 +8,11 @@
         id,
         version,
         content,
+        send_mail_status,
         create_time,
         update_time
         from
-          t_version_notification
+        t_version_notification
         order by create_time desc
         <if test="offset !=null and size !=null">
             limit #{offset},#{size}
@@ -19,7 +20,7 @@
     </select>
 
     <select id="queryCreateTimeMaxTenantNotification" resultType="com.xiliulou.electricity.entity.VersionNotification">
-         select id, version, content,create_time,update_time from t_version_notification order by create_time desc limit 1
+         select id, version, content,send_mail_status,create_time,update_time from t_version_notification order by update_time desc limit 1
     </select>
 
 </mapper>

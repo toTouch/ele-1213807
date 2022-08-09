@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
@@ -25,8 +26,12 @@ import java.util.Objects;
 @Service("versionNotificationService")
 @Slf4j
 public class VersionNotificationServiceImpl implements VersionNotificationService {
+
+    private static final Integer limit = 20;
+
     @Resource
     private VersionNotificationMapper versionNotificationMapper;
+
 
     /**
      * 通过ID查询单条数据从DB
@@ -38,7 +43,6 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public VersionNotification queryByIdFromDB(Integer id) {
         return this.versionNotificationMapper.selectById(id);
     }
-
 
 
     /**
@@ -56,6 +60,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
 
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> updateNotification(VersionNotificationQuery versionNotificationQuery) {
         TokenUser userInfo = SecurityUtils.getUserInfo();
         if (Objects.isNull(userInfo) || !userInfo.getType().equals(User.TYPE_USER_SUPER)) {
@@ -66,12 +71,15 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         versionNotification.setId(versionNotificationQuery.getId());
         versionNotification.setVersion(versionNotificationQuery.getVersion());
         versionNotification.setContent(versionNotificationQuery.getContent());
-        versionNotification.setUpdateTime(System.currentTimeMillis() );
+        versionNotification.setSendMailStatus(VersionNotification.STATUS_SEND_MAIL_NO);
+        versionNotification.setUpdateTime(System.currentTimeMillis());
         update(versionNotification);
+
         return Triple.of(true, null, null);
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> insertNotification(VersionNotificationQuery versionNotificationQuery) {
         TokenUser userInfo = SecurityUtils.getUserInfo();
         if (Objects.isNull(userInfo) || !userInfo.getType().equals(User.TYPE_USER_SUPER)) {
@@ -80,19 +88,21 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         VersionNotification versionNotification = new VersionNotification();
         versionNotification.setVersion(versionNotificationQuery.getVersion());
         versionNotification.setContent(versionNotificationQuery.getContent());
+        versionNotification.setSendMailStatus(VersionNotification.STATUS_SEND_MAIL_NO);
         versionNotification.setCreateTime(System.currentTimeMillis());
         versionNotification.setUpdateTime(System.currentTimeMillis());
         insert(versionNotification);
-        return Triple.of(true,null,null);
+
+        return Triple.of(true, null, null);
     }
 
-    public Integer insert(VersionNotification versionNotification){
+    public Integer insert(VersionNotification versionNotification) {
         return this.versionNotificationMapper.insert(versionNotification);
     }
 
     @Override
-    public List<VersionNotification> queryNotificationList(Long offset,Long size) {
-        return this.versionNotificationMapper.queryVersionPage(offset,size);
+    public List<VersionNotification> queryNotificationList(Long offset, Long size) {
+        return this.versionNotificationMapper.queryVersionPage(offset, size);
     }
 
     @Override
@@ -104,4 +114,5 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     public VersionNotification queryCreateTimeMaxTenantNotification() {
         return this.versionNotificationMapper.queryCreateTimeMaxTenantNotification();
     }
+
 }
