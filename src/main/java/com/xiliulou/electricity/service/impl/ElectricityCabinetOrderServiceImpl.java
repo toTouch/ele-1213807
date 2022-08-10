@@ -1124,6 +1124,11 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
         }
 
         try {
+            ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecordUpdate = new ElectricityExceptionOrderStatusRecord();
+            electricityExceptionOrderStatusRecordUpdate.setId(electricityExceptionOrderStatusRecord.getId());
+            electricityExceptionOrderStatusRecordUpdate.setUpdateTime(System.currentTimeMillis());
+            electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
+            electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
 
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                     .createTime(System.currentTimeMillis())
@@ -1134,12 +1139,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                     .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
             electricityCabinetOrderOperHistoryService.insert(history);
-
-            ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecordUpdate = new ElectricityExceptionOrderStatusRecord();
-            electricityExceptionOrderStatusRecordUpdate.setId(electricityExceptionOrderStatusRecord.getId());
-            electricityExceptionOrderStatusRecordUpdate.setUpdateTime(System.currentTimeMillis());
-            electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
-            electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
 
             ElectricityCabinetOrder electricityCabinetOrderUpdate = new ElectricityCabinetOrder();
             electricityCabinetOrderUpdate.setId(electricityCabinetOrder.getId());
@@ -1584,8 +1583,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return;
         }
 
-        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinetOrder.getElectricityCabinetId(), electricityCabinetOrder.getOldCellNo() + "");
-        if (Objects.nonNull(electricityCabinetBox)) {
+        if (Objects.equals(statusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
             showVo.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
         }
 
