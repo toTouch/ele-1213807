@@ -1583,9 +1583,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             return;
         }
 
-        if (Objects.equals(statusRecord.getStatus(), ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)) {
-            showVo.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
-        }
+        showVo.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
 
     }
 
