@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.lang.Nullable;
 
 import java.util.Date;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -19,9 +20,9 @@ import java.util.Date;
 @Builder
 public class MQMailMessageNotify {
 
-    private String from;
+//    private String from;
 
-    private String[] to;
+    private List<EmailRecipient> to;
 
     private String[] cc;
 

@@ -8,6 +8,7 @@ import com.xiliulou.electricity.mapper.TenantNotifyMailMapper;
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -63,7 +64,7 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
      * @return 对象列表
      */
     @Override
-    public List<TenantNotifyMail> selectByPage(int offset, int limit) {
+    public List<TenantNotifyMailVO> selectByPage(int offset, int limit) {
         return this.tenantNotifyMailMapper.selectByPage(offset, limit);
     }
 

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
+import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 
 import java.util.List;
 
@@ -37,7 +38,7 @@ public interface TenantNotifyMailService {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<TenantNotifyMail> selectByPage(int offset, int limit);
+    List<TenantNotifyMailVO> selectByPage(int offset, int limit);
 
     /**
      * 新增数据

@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.TenantNotifyMail;
 import java.util.List;
 
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
+import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -31,7 +32,7 @@ public interface TenantNotifyMailMapper extends BaseMapper<TenantNotifyMail> {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<TenantNotifyMail> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<TenantNotifyMailVO> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
 
 
     /**

@@ -10,6 +10,15 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
+    <resultMap type="com.xiliulou.electricity.vo.TenantNotifyMailVO" id="TenantNotifyMailVOMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="mail" column="mail" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="tenantName" column="name" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
     <!-- 基础字段 -->
     <sql id="selectTenantNotifyMail">
        	select   id, mail, tenant_id, create_time, update_time        from t_tenant_notify_mail
@@ -22,8 +31,10 @@
     </select>
 
     <!--查询指定行数据-->
-    <select id="selectByPage" resultMap="TenantNotifyMailMap">
-        <include refid="selectTenantNotifyMail"/>
+    <select id="selectByPage" resultMap="TenantNotifyMailVOMap">
+        select   tnm.id, tnm.mail, tnm.tenant_id, tnm.create_time, tnm.update_time,tt.name
+        from t_tenant_notify_mail tnm
+        left join t_tenant tt on tnm.tenant_id=tt.id
         limit #{offset}, #{limit}
     </select>
 

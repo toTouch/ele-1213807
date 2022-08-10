@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.task;
 
+import com.xiliulou.electricity.entity.EmailRecipient;
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
 import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.service.MailService;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.service.VersionNotificationService;
+import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import com.xxl.job.core.biz.model.ReturnT;
 import com.xxl.job.core.handler.IJobHandler;
 import com.xxl.job.core.handler.annotation.JobHandler;
@@ -30,7 +32,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @JobHandler(value = "versionNotificationSendEmail")
 public class VersionNotificationSendEmailTask extends IJobHandler {
-    private static final Integer limit = 20;
+    private static final Integer limit = 5;
 
     @Autowired
     private VersionNotificationService versionNotificationService;
@@ -39,8 +41,8 @@ public class VersionNotificationSendEmailTask extends IJobHandler {
     @Autowired
     private MailService mailService;
 
-    @Value("${spring.mail.username}")
-    private String from;
+//    @Value("${spring.mail.username}")
+//    private String from;
 
     @Override
     public ReturnT<String> execute(String s) throws Exception {
@@ -55,20 +57,24 @@ public class VersionNotificationSendEmailTask extends IJobHandler {
         //2.每次获取limit个邮箱 发送通知
         int i = 0;
         while (true) {
-            List<TenantNotifyMail> tenantNotifyMailList = tenantNotifyMailService.selectByPage(i, i += limit);
+            List<TenantNotifyMailVO> tenantNotifyMailList = tenantNotifyMailService.selectByPage(i, i += limit);
             if (CollectionUtils.isEmpty(tenantNotifyMailList)) {
                 break;
             }
 
-            List<String> mailList = tenantNotifyMailList.stream().map(TenantNotifyMail::getMail).collect(Collectors.toList());
+            List<EmailRecipient> mailList = tenantNotifyMailList.stream().map(item -> {
+                EmailRecipient emailRecipient = new EmailRecipient();
+                emailRecipient.setEmail(item.getMail());
+                emailRecipient.setName(item.getTenantName());
+                return emailRecipient;
+            }).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(mailList)) {
                 log.error("ELE ERROR!mailList is empty");
                 return IJobHandler.FAIL;
             }
 
             MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
-                    .from(from)
-                    .to(mailList.toArray(new String[0]))
+                    .to(mailList)
                     .subject(versionNotification.getVersion())
                     .text(versionNotification.getContent()).build();
 
