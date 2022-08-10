@@ -38,6 +38,14 @@
         limit #{offset}, #{limit}
     </select>
 
+
+    <select id="selectByTenantId" resultMap="TenantNotifyMailVOMap">
+        select   tnm.id, tnm.mail, tnm.tenant_id, tnm.create_time, tnm.update_time,tt.name
+        from t_tenant_notify_mail tnm
+        left join t_tenant tt on tnm.tenant_id=tt.id
+        where tnm.tenant_id = #{tenantId}
+    </select>
+
     <!--通过实体作为筛选条件查询-->
     <select id="selectByQuery" resultMap="TenantNotifyMailMap">
         <include refid="selectTenantNotifyMail"/>

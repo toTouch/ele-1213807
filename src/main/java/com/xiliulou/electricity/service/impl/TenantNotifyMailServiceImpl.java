@@ -139,8 +139,8 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
     }
 
     @Override
-    public List<TenantNotifyMail> selectByTenantId(Long tenantId) {
-        return this.tenantNotifyMailMapper.selectList(new LambdaQueryWrapper<TenantNotifyMail>().eq(TenantNotifyMail::getTenantId, tenantId));
+    public List<TenantNotifyMailVO> selectByTenantId(Long tenantId) {
+        return this.tenantNotifyMailMapper.selectByTenantId(tenantId);
     }
 
     @Override

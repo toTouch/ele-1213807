@@ -2,14 +2,13 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.BatteryOtherPropertiesQuery;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.MQMailMessageNotify;
-import com.xiliulou.electricity.entity.TenantNotifyMail;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.MailService;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
+import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import com.xxl.job.core.handler.IJobHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -37,8 +36,6 @@ public class NormalEleEmailWarnMsgHandler extends AbstractElectricityIotHandler 
     @Autowired
     private MailService mailService;
 
-    @Value("${spring.mail.username}")
-    private String from;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -49,19 +46,29 @@ public class NormalEleEmailWarnMsgHandler extends AbstractElectricityIotHandler 
             return;
         }
 
-        List<TenantNotifyMail> tenantNotifyMails = tenantNotifyMailService.selectByTenantId(electricityCabinet.getTenantId().longValue());
+        //1.获取租户绑定的邮箱
+        List<TenantNotifyMailVO> tenantNotifyMails = tenantNotifyMailService.selectByTenantId(electricityCabinet.getTenantId().longValue());
         if (CollectionUtils.isEmpty(tenantNotifyMails)) {
             log.warn("ELE ERROR!,tenantNotifyMails is empty,tenantid={},sessionId={}", electricityCabinet.getTenantId(), receiverMessage.getSessionId());
             return;
         }
 
-        List<String> mailList = tenantNotifyMails.stream().map(TenantNotifyMail::getMail).collect(Collectors.toList());
+        List<EmailRecipient> mailList = tenantNotifyMails.stream().map(item -> {
+            EmailRecipient emailRecipient = new EmailRecipient();
+            emailRecipient.setEmail(item.getMail());
+            emailRecipient.setName(item.getTenantName());
+            return emailRecipient;
+        }).collect(Collectors.toList());
 
-        //发送邮件消息
+        if (CollectionUtils.isEmpty(mailList)) {
+            log.error("ELE ERROR!mailList is empty");
+            return;
+        }
+
+        //2.发送邮件消息
         MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
-                .from(from)
-                .to(mailList.toArray(new String[0]))
-                .subject(electricityCabinet.getName()+"告警")
+                .to(mailList)
+                .subject(electricityCabinet.getName() + "告警")
                 .text(emailWarnMsgVO.warnMsg).build();
 
         mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);

@@ -76,4 +76,6 @@ public interface TenantNotifyMailMapper extends BaseMapper<TenantNotifyMail> {
     int deleteByTenantId(Integer tenantId);
 
     int batchInsert(List<TenantNotifyMail> list);
+
+    List<TenantNotifyMailVO> selectByTenantId(@Param("tenantId") Long tenantId);
 }

@@ -66,7 +66,7 @@ public interface TenantNotifyMailService {
 
     List<String> selectByTenantId();
 
-    List<TenantNotifyMail> selectByTenantId(Long tenantId);
+    List<TenantNotifyMailVO> selectByTenantId(Long tenantId);
 
     R insertOrUpdate(UpgradeNotifyMailQuery upgradeNotifyMailQuery);
 
