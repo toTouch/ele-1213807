@@ -1370,7 +1370,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig) && Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
-                commandData.put("userBindingBatterySn", franchiseeUserInfo.getNowElectricityBatterySn());
+                commandData.put("userBindingBatterySn", StrUtil.isEmpty(franchiseeUserInfo.getNowElectricityBatterySn()) ? "UNKNOWN" : franchiseeUserInfo.getNowElectricityBatterySn());
             }
 
             if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
