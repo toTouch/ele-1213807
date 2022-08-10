@@ -324,6 +324,9 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
      */
     private void unbindBattery(String batteryName){
         FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowElectricityBatterySn(batteryName);
+        if(Objects.isNull(franchiseeUserInfo)){
+            return;
+        }
         FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
                 .id(franchiseeUserInfo.getId())
                 .nowElectricityBatterySn(null)
