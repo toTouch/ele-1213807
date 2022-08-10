@@ -45,4 +45,6 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 	void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
 	void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
+
+    FranchiseeUserInfo selectByNowElectricityBatterySn(@Param("batteryName") String batteryName);
 }

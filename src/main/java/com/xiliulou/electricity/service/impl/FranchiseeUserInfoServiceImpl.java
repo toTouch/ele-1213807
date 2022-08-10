@@ -142,6 +142,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public FranchiseeUserInfo selectByNowElectricityBatterySn(String batteryName) {
+        return franchiseeUserInfoMapper.selectByNowElectricityBatterySn(batteryName);
+    }
+
+    @Override
     public R queryBattery() {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();

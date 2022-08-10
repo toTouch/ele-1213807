@@ -49,6 +49,8 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
     BatteryOtherPropertiesService batteryOtherPropertiesService;
     @Autowired
     NotExistSnService notExistSnService;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
 
     @Autowired
@@ -153,6 +155,9 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                     newElectricityBattery.setUid(null);
                     newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                     electricityBatteryService.updateByOrder(newElectricityBattery);
+
+                    //给用户解绑电池
+                    this.unbindBattery(oldElectricityBattery.getSn());
                 }
             }
 
@@ -211,6 +216,10 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             newElectricityBattery.setModel(batteryModel);
         }
 
+
+        //给用户解绑电池
+        this.unbindBattery(electricityBattery.getSn());
+
         //修改电池
         newElectricityBattery.setId(electricityBattery.getId());
         newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
@@ -246,6 +255,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
         }
         electricityBatteryService.updateByOrder(newElectricityBattery);
+
 
         //电池上报是否有其他信息
         if (Objects.nonNull(eleBatteryVo.getHasOtherAttr()) && eleBatteryVo.getHasOtherAttr()) {
@@ -306,6 +316,20 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyByCellNo(electricityCabinetBox);
 
+    }
+
+    /**
+     * 解绑电池uid的同时  解绑用户绑定的电池
+     * @param batteryName
+     */
+    private void unbindBattery(String batteryName){
+        FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowElectricityBatterySn(batteryName);
+        FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
+                .id(franchiseeUserInfo.getId())
+                .nowElectricityBatterySn(null)
+                .serviceStatus(franchiseeUserInfo.getServiceStatus())
+                .updateTime(System.currentTimeMillis()).build();
+        franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
     }
 
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
