@@ -127,10 +127,4 @@ public class JsonAdminCouponController {
         return couponService.queryCount(couponQuery);
     }
 
-//    //领劵
-//    @PostMapping(value = "/admin/coupon/grantCoupon")
-//    public R grantCoupon(@RequestParam("couponId") Integer couponId, @RequestParam("uids") List<Long> uids) {
-//        return userCouponService.getShareCoupon(activityId, couponId);
-//    }
-
 }
