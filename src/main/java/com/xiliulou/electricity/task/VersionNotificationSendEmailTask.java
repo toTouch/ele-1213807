@@ -2,7 +2,6 @@ package com.xiliulou.electricity.task;
 
 import com.xiliulou.electricity.entity.EmailRecipient;
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
-import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.service.MailService;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
@@ -14,7 +13,6 @@ import com.xxl.job.core.handler.annotation.JobHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -33,6 +31,8 @@ import java.util.stream.Collectors;
 @JobHandler(value = "versionNotificationSendEmail")
 public class VersionNotificationSendEmailTask extends IJobHandler {
     private static final Integer limit = 5;
+
+    private static final String SUBJECT_PREFIX = "版本升级通知：";
 
     @Autowired
     private VersionNotificationService versionNotificationService;
@@ -75,7 +75,7 @@ public class VersionNotificationSendEmailTask extends IJobHandler {
 
             MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
                     .to(mailList)
-                    .subject(versionNotification.getVersion())
+                    .subject(SUBJECT_PREFIX + versionNotification.getVersion())
                     .text(versionNotification.getContent()).build();
 
             mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);

@@ -2,18 +2,18 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.*;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.EmailRecipient;
+import com.xiliulou.electricity.entity.MQMailMessageNotify;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.MailService;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import com.xxl.job.core.handler.IJobHandler;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,6 +29,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class NormalEleEmailWarnMsgHandler extends AbstractElectricityIotHandler {
 
+    private static final String SUBJECT_PREFIX = "柜机告警通知：";
 
     @Autowired
     private TenantNotifyMailService tenantNotifyMailService;
@@ -68,7 +69,7 @@ public class NormalEleEmailWarnMsgHandler extends AbstractElectricityIotHandler 
         //2.发送邮件消息
         MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
                 .to(mailList)
-                .subject(electricityCabinet.getName() + "告警")
+                .subject(SUBJECT_PREFIX + electricityCabinet.getName())
                 .text(emailWarnMsgVO.warnMsg).build();
 
         mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
