@@ -91,7 +91,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         if (Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.STATUS_OPEN_FAIL) || Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.BATTERY_NOT_MATCH)) {
             electricityExceptionOrderStatusRecordUpdate.setOpenCellStatus(ElectricityExceptionOrderStatusRecord.OPEN_CELL_FAIL);
         }
-        electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
         electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
     }
 
