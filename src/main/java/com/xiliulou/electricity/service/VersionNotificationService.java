@@ -51,5 +51,5 @@ public interface VersionNotificationService {
     VersionNotification queryCreateTimeMaxTenantNotification();
 
 
-
+    VersionNotification selectNotSendMailOne();
 }

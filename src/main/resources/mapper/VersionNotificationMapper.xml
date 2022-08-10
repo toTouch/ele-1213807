@@ -23,4 +23,8 @@
          select id, version, content,send_mail_status,create_time,update_time from t_version_notification order by update_time desc limit 1
     </select>
 
+
+    <select id="selectNotSendMailOne" resultType="com.xiliulou.electricity.entity.VersionNotification">
+         select id, version, content,send_mail_status,create_time,update_time from t_version_notification where send_mail_status=0 order by update_time desc limit 1
+    </select>
 </mapper>

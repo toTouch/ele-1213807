@@ -47,7 +47,7 @@ public class VersionNotificationSendEmailTask extends IJobHandler {
     @Override
     public ReturnT<String> execute(String s) throws Exception {
         //1.获取最新未发送邮件通知的版本升级记录
-        VersionNotification versionNotification = versionNotificationService.queryCreateTimeMaxTenantNotification();
+        VersionNotification versionNotification = versionNotificationService.selectNotSendMailOne();
         if (Objects.isNull(versionNotification)) {
             log.warn("ELE ERROR!versionNotification is null");
             return IJobHandler.FAIL;

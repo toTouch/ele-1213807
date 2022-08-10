@@ -115,4 +115,12 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         return this.versionNotificationMapper.queryCreateTimeMaxTenantNotification();
     }
 
+    /**
+     * 获取最新未发送邮件通知的版本升级记录
+     * @return
+     */
+    @Override
+    public VersionNotification selectNotSendMailOne() {
+        return this.versionNotificationMapper.selectNotSendMailOne();
+    }
 }
