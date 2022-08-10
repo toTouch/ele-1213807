@@ -25,6 +25,11 @@ public class MqHardwareNotify {
      */
     private String projectTitle;
 
+    /**
+     * 故障类型
+     */
+    private String type;
+
     public static final String LOCK_CELL_PROJECT_TITLE = "换电柜仓门异常";
 
     public static final String USER_UPLOAD_EXCEPTION= "用户上报柜机异常";

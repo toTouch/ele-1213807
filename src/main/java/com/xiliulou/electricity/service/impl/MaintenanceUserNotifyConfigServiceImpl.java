@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper;
 import com.xiliulou.electricity.query.MaintenanceUserNotifyConfigQuery;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.MaintenanceUserNotifyConfigVo;
 import com.xiliulou.mq.service.RocketMqService;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -273,8 +276,8 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
-
-            mqHardwareNotify.setOccurTime(maintenanceRecord.getCreateTime().toString());
+            mqHardwareNotify.setType(maintenanceRecord.getType());
+            mqHardwareNotify.setOccurTime(DateUtils.parseTimeToStringDate(maintenanceRecord.getCreateTime()));
             mqHardwareNotify.setErrMsg(maintenanceRecord.getRemark());
             mqHardwareNotify.setProjectTitle(MqHardwareNotify.USER_UPLOAD_EXCEPTION);
             query.setData(mqHardwareNotify);
