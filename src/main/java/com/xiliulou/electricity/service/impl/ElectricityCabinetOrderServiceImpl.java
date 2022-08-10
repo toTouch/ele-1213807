@@ -1567,9 +1567,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
             showVo.setType(ExchangeOrderMsgShowVO.TYPE_FAIL);
             showVo.setStatus(redisService.get(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + orderId));
         }
-
-
-        System.out.println("返回==========================="+showVo);
         return Triple.of(true, null, showVo);
     }
 
@@ -1586,8 +1583,6 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
         showVo.setSelfOpenCell(ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
 
-
-        System.out.println("检测自助开仓======================="+showVo.getSelfOpenCell());
     }
 
     private boolean isExceptionOrder(String status) {
