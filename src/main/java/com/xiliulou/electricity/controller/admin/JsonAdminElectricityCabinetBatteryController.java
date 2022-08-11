@@ -116,7 +116,7 @@ public class JsonAdminElectricityCabinetBatteryController {
 
     @GetMapping(value = "/admin/battery/bind/page")
     public R getElectricityBatteryBindPage(@RequestParam(value = "offset") Long offset,
-                                       @RequestParam(value = "size") Long size,
+                                           @RequestParam(value = "size") Long size,
                                            @RequestParam(value = "franchiseeId") Integer franchiseeId) {
         return electricityBatteryService.queryNotBindList(offset, size, franchiseeId);
     }
@@ -291,5 +291,45 @@ public class JsonAdminElectricityCabinetBatteryController {
             e.printStackTrace();
         }
         return R.ok();
+    }
+
+    /**
+     * 电池总览
+     * @param status
+     * @param sn
+     * @return
+     */
+    @GetMapping("/admin/battery/queryBatteryOverview")
+    public R queryBatteryOverview(@RequestParam(value = "status", required = false) Integer status,
+                                  @RequestParam(value = "sn", required = false) String sn) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
+                .status(status)
+                .sn(sn)
+                .tenantId(tenantId).build();
+        return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
+    }
+
+    /**
+     * 电池总览
+     * @param status
+     * @param sn
+     * @return
+     */
+    @GetMapping("/admin/battery/batteryStatistical")
+    public R batteryStatistical(@RequestParam(value = "status", required = false) Integer status,
+                                  @RequestParam(value = "sn", required = false) String sn) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
+                .status(status)
+                .sn(sn)
+                .tenantId(tenantId).build();
+        return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
     }
 }

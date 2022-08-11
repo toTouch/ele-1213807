@@ -48,4 +48,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    List<ElectricityBattery> queryBatteryOverview(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 }
