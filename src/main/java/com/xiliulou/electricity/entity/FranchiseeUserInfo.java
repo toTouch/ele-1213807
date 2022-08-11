@@ -71,7 +71,6 @@ public class FranchiseeUserInfo {
      * 押金订单编号
      */
     private String orderId;
-
     /**
      * 租车订单编号
      */
@@ -81,7 +80,6 @@ public class FranchiseeUserInfo {
      * 租车押金
      */
     private BigDecimal rentCarDeposit;
-
     /**
      * 0--正常 1--删除
      */

@@ -35,5 +35,10 @@ public class BatteryDepositAdd {
      */
     private Integer modelType;
 
+    /**
+     * 门店Id
+     */
+    @NotNull(message = "门店不能为空!", groups = {CreateGroup.class})
+    private Long storeId;
 
 }

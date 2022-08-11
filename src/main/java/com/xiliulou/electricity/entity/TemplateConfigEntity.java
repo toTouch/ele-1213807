@@ -25,6 +25,10 @@ public class TemplateConfigEntity implements Serializable {
      */
     private String electricQuantityRemindTemplate ;
     /**
+     * 套餐到期通知
+     */
+    private String memberCardExpiringTemplate;
+    /**
      * 租户id
      */
     private Integer tenantId;

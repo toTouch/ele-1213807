@@ -63,8 +63,6 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         templateConfigEntity.setTenantId(tenantId);
         templateConfigEntity.setCreateTime(System.currentTimeMillis());
         templateConfigEntity.setUpdateTime(System.currentTimeMillis());
-        templateConfigEntity.setBatteryOuttimeTemplate(templateConfigEntity.getBatteryOuttimeTemplate());
-        templateConfigEntity.setElectricQuantityRemindTemplate(templateConfigEntity.getElectricQuantityRemindTemplate());
         int insert = this.baseMapper.insert(templateConfigEntity);
         if (insert > 0) {
             redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TEMPLATE_CONFIG + tenantId, templateConfigEntity);

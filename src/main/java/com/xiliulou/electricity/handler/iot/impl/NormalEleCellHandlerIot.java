@@ -85,6 +85,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
+
+
     }
 
     @Data

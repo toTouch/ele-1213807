@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import org.apache.ibatis.annotations.Param;
@@ -42,4 +43,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 	ElectricityBattery queryByUid(@Param("uid") Long uid);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
+
+    @Select("select power, last_deposit_cell_no from t_electricity_battery where electricity_cabinet_id = #{electricityCabinetId} and del_flag = 0 order by power desc limit 1")
+    BigEleBatteryVo queryMaxPowerByElectricityCabinetId(@Param("electricityCabinetId")Integer electricityCabinetId);
 }

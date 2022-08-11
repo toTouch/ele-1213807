@@ -942,7 +942,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         //先查询缓存
-        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(ElectricityCabinetConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId(), BigEleBatteryVo.class);
+        BigEleBatteryVo bigEleBatteryVo = electricityBatteryService.queryMaxPowerByElectricityCabinetId(electricityCabinet.getId());
 
         if (Objects.nonNull(bigEleBatteryVo)) {
             if (Objects.isNull(batteryType)) {

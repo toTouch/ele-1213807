@@ -5,10 +5,13 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.core.wp.entity.AppTemplateQuery;
+import com.xiliulou.core.wp.service.WeChatAppTemplateService;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
@@ -101,6 +104,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     EleUserOperateRecordService eleUserOperateRecordService;
     @Autowired
     EleRefundOrderService eleRefundOrderService;
+    @Autowired
+    TemplateConfigService templateConfigService;
+    @Autowired
+    WeChatAppTemplateService weChatAppTemplateService;
 
     /**
      * 创建月卡订单
@@ -1115,6 +1122,66 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public ElectricityMemberCardOrder queryLastPayMemberCardTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
         return baseMapper.queryLastPayMemberCardTimeByUid(uid, franchiseeId, tenantId);
+    }
+
+    @Override
+    public void expireReminderHandler() {
+        int offset = 0;
+        int size = 50;
+        long now = System.currentTimeMillis();
+        long threeDaysLater = 24 * 3600 * 1000 * 3 + now;
+        SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        Date date = new Date();
+
+        while (true) {
+            List<MemberCardExpiringSoonQuery> franchiseeUserInfos = franchiseeUserInfoService.queryMemberCardExpiringSoon(offset, size, now, threeDaysLater);
+            if(CollectionUtils.isEmpty(franchiseeUserInfos)) {
+                break;
+            }
+
+            franchiseeUserInfos.parallelStream().forEach(item -> {
+                UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(item.getUid(), item.getTenantId());
+                if (Objects.isNull(userOauthBind)) {
+                    log.error("MemberCardExpiringSoon Error! userOauthBind is null error! uid={},tenantId={}", item.getUid(), item.getTenantId());
+                    return;
+                }
+
+                ElectricityPayParams ele = electricityPayParamsService.queryByTenantId(item.getTenantId());
+                if (Objects.isNull(ele)) {
+                    log.error("MemberCardExpiringSoon Error! ElectricityPayParams is null error! tenantId={}", item.getTenantId());
+                    return;
+                }
+
+                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(item.getTenantId());
+                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
+                    log.error("MemberCardExpiringSoon templateConfigEntity is null error! tenantId={}", item.getTenantId());
+                    return;
+                }
+
+                date.setTime(item.getMemberCardExpireTime());
+
+                AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+                appTemplateQuery.setAppId(ele.getMerchantMinProAppId());
+                appTemplateQuery.setSecret(ele.getMerchantMinProAppSecert());
+                appTemplateQuery.setTouser(userOauthBind.getThirdId());
+                appTemplateQuery.setFormId(RandomUtil.randomString(20));
+                appTemplateQuery.setTemplateId(templateConfigEntity.getMemberCardExpiringTemplate());
+                //appTemplateQuery.setEmphasisKeyword("套餐即将到期通知");
+                Map<String, Object> data = new HashMap<>(4);
+
+                data.put("thing2", item.getCardName());
+                data.put("date4", simp.format(date));
+                data.put("thing3", "套餐即将过期，请重新订购。");
+                data.put("thing5", "暂无");
+
+                appTemplateQuery.setData(data);
+                log.info("LOW BATTERY POWER MESSAGE TO USER uid={}, tenantId={}", item.getUid(), item.getTenantId());
+
+                weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+            });
+
+            offset += 50;
+        }
     }
 
     private String generateOrderId(Long uid) {

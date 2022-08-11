@@ -153,4 +153,9 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		}
 		return R.ok(electricityPayParams.getTenantId());
 	}
+
+	@Override
+	public ElectricityPayParams queryByTenantId(Integer tenantId) {
+		return baseMapper.queryByTenantId(tenantId);
+	}
 }

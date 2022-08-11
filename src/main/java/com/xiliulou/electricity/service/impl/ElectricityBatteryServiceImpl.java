@@ -27,6 +27,7 @@ import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.StoreElectricityCabinetQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import lombok.extern.slf4j.Slf4j;
@@ -235,6 +236,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return electricitybatterymapper.queryCount(electricityBatteryQuery);
+    }
+
+    @Override
+    public BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId) {
+        return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);
     }
 
     @Override

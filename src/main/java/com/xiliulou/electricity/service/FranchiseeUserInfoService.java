@@ -2,8 +2,10 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -73,4 +75,6 @@ public interface FranchiseeUserInfoService {
     List<FranchiseeUserInfo> selectByFranchiseeId(Long id);
 
     void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
+
+    List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(int offset, int size, long now, long threeDaysLater);
 }

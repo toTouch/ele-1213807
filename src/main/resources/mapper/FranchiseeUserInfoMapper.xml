@@ -133,4 +133,12 @@
 		    battery_service_fee_generate_time=#{batteryServiceFeeGenerateTime}
         where id = #{id} and del_flag=0
     </update>
+
+    <select id="queryMemberCardExpiringSoon" resultType="com.xiliulou.electricity.query.MemberCardExpiringSoonQuery">
+        select  fui.id, fui.card_name, fui.member_card_expire_time, ui.uid, fui.tenant_id
+                from t_franchisee_user_info fui
+                left join t_user_info ui on fui.user_info_id = ui.id
+                where del_flag = 0 and member_card_expire_time &gt;= #{startExpireTime} and member_card_expire_time &lt;= #{endExpireTime}
+                limit #{offset}, #{size}
+    </select>
 </mapper>
