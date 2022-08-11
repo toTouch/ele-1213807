@@ -36,7 +36,7 @@ public class JsonAdminUserInfoController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "batterySn",required = false) String batterySn,
+                       @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -61,7 +61,7 @@ public class JsonAdminUserInfoController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .batterySn(batterySn)
+                .nowElectricityBatterySn(nowElectricityBatterySn)
                 .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
@@ -81,6 +81,7 @@ public class JsonAdminUserInfoController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+                        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "cardName",required = false) String cardName,
                         @RequestParam(value = "memberCardId",required = false) Long memberCardId,
@@ -97,6 +98,7 @@ public class JsonAdminUserInfoController {
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .cardName(cardName)
                 .uid(uid)
+                .nowElectricityBatterySn(nowElectricityBatterySn)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
