@@ -166,6 +166,9 @@
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
         </if>
+        <if test="query.nowElectricityBatterySn != null and query.nowElectricityBatterySn != ''">
+            and tfui.now_electricity_battery_sn = #{query.nowElectricityBatterySn}
+        </if>
         <if test="query.memberCardId != null ">
             and tfui.card_id = #{query.memberCardId}
         </if>
