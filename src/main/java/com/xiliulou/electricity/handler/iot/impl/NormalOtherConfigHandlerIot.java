@@ -34,11 +34,10 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
 
         Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
         if (Objects.isNull(map)) {
-            log.error("other config error! no map,{}", receiverMessage.getOriginContent());
+            log.error("other config error! no sessionId={}", receiverMessage.getSessionId());
             return ;
         }
         //上报的数据放入缓存
-//        redisService.saveWithHash(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
         redisService.saveWithString(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
     }
 
