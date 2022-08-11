@@ -66,6 +66,9 @@
         <if test="query.phone != null and query.phone != ''">
             and tui.phone = #{query.phone}
         </if>
+        <if test="query.batterySn != null and query.batterySn != ''">
+            and tfui.now_electricity_battery_sn = #{query.batterySn}
+        </if>
         <if test="query.uid != null ">
             and tui.uid = #{query.uid}
         </if>
