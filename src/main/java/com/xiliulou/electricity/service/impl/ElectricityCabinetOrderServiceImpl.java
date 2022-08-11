@@ -1602,7 +1602,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
     private boolean isTakeBatteryAllStatus(String status) {
         return status.equals(ElectricityCabinetOrder.COMPLETE_OPEN_SUCCESS)
-                || status.equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS);
+                || status.equals(ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_SUCCESS)
+                || status.equals(ElectricityCabinetOrder.INIT_BATTERY_CHECK_SUCCESS);
     }
 
     private boolean isPlaceBatteryAllStatus(String status) {
