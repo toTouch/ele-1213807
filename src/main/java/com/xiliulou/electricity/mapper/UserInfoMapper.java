@@ -5,6 +5,8 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
+import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 import com.xiliulou.electricity.vo.UserBatteryInfoVO;
 import org.apache.ibatis.annotations.Param;
 
@@ -37,5 +39,11 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 	Integer queryCount( @Param("query") UserInfoQuery userInfoQuery);
 
 	Integer queryCountForBatteryService( @Param("query") UserInfoQuery userInfoQuery);
+
+	Integer queryAuthenticationUserCount(@Param("tenantId") Integer tenantId);
+
+	List<HomePageUserByWeekDayVo> queryUserAnalysisForAuthUser(@Param("tenantId") Integer tenantId,  @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
+
+    List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(@Param("tenantId") Integer tenantId, @Param("userType") Integer userType,  @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);
 
 }

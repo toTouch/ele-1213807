@@ -5,11 +5,9 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.Coupon;
 import com.xiliulou.electricity.entity.NewUserActivity;
-import com.xiliulou.electricity.entity.OldUserActivity;
-import com.xiliulou.electricity.entity.ShareMoneyActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.NewUserActivityMapper;
 import com.xiliulou.electricity.query.NewUserActivityAddAndUpdateQuery;
@@ -63,7 +61,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 	@Override
 	public NewUserActivity queryByIdFromCache(Integer id) {
 		//先查缓存
-		NewUserActivity newUserActivityCache = redisService.getWithHash(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + id, NewUserActivity.class);
+		NewUserActivity newUserActivityCache = redisService.getWithHash(CacheConstant.NEW_USER_ACTIVITY_CACHE + id, NewUserActivity.class);
 		if (Objects.nonNull(newUserActivityCache)) {
 			return newUserActivityCache;
 		}
@@ -75,7 +73,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		}
 
 		//放入缓存
-		redisService.saveWithHash(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + id, newUserActivity);
+		redisService.saveWithHash(CacheConstant.NEW_USER_ACTIVITY_CACHE + id, newUserActivity);
 		return newUserActivity;
 	}
 
@@ -121,7 +119,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 
 		DbUtils.dbOperateSuccessThen(insert, () -> {
 			//更新缓存
-			redisService.saveWithHash(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + newUserActivity.getId(), newUserActivity);
+			redisService.saveWithHash(CacheConstant.NEW_USER_ACTIVITY_CACHE + newUserActivity.getId(), newUserActivity);
 			return null;
 		});
 
@@ -165,7 +163,7 @@ public class NewUserActivityServiceImpl implements NewUserActivityService {
 		int update = newUserActivityMapper.updateById(newUserActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
-			redisService.delete(ElectricityCabinetConstant.NEW_USER_ACTIVITY_CACHE + oldNewUserActivity.getId());
+			redisService.delete(CacheConstant.NEW_USER_ACTIVITY_CACHE + oldNewUserActivity.getId());
 			return null;
 		});
 

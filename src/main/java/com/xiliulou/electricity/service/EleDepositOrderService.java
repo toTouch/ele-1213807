@@ -6,11 +6,13 @@ import com.xiliulou.electricity.query.BatteryDepositAdd;
 import com.xiliulou.electricity.query.EleDepositOrderQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.query.RentCarDepositAdd;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 缴纳押金订单表(TEleDepositOrder)表服务接口
@@ -23,7 +25,7 @@ public interface EleDepositOrderService {
 
     EleDepositOrder queryByOrderId(String orderNo);
 
-    R payDeposit(String productKey,String deviceName,Long franchiseeId,Integer model,HttpServletRequest request);
+    R payDeposit(String productKey, String deviceName, Long franchiseeId, Integer model, HttpServletRequest request);
 
     R returnDeposit(HttpServletRequest request);
 
@@ -35,30 +37,36 @@ public interface EleDepositOrderService {
 
     R queryUserDeposit();
 
-	void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
+    void exportExcel(EleDepositOrderQuery eleDepositOrderQuery, HttpServletResponse response);
 
-    R queryDeposit(String productKey,String deviceName,Long franchiseeId);
+    R queryDeposit(String productKey, String deviceName, Long franchiseeId);
 
-	R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
+    R queryCount(EleDepositOrderQuery eleDepositOrderQuery);
 
-	void insert(EleDepositOrder eleDepositOrder);
+    void insert(EleDepositOrder eleDepositOrder);
 
-	R queryModelType(String productKey, String deviceName);
+    R queryModelType(String productKey, String deviceName);
 
-	BigDecimal queryTurnOver(Integer tenantId);
+    BigDecimal queryTurnOver(Integer tenantId);
 
-	R payBatteryServiceFee(HttpServletRequest request);
+    R payBatteryServiceFee(HttpServletRequest request);
 
-	R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
+    R adminPayRentCarDeposit(RentCarDepositAdd rentCarDepositAdd);
 
-	R payRentCarDeposit(Long storeId,Integer carModelId,HttpServletRequest request);
+    R payRentCarDeposit(Long storeId, Integer carModelId, HttpServletRequest request);
 
     R refundRentCarDeposit(HttpServletRequest request);
 
     R queryRentCarDeposit();
 
-    EleDepositOrder queryLastPayDepositTimeByUid(Long uid,Long franchiseeId,Integer tenantId);
+    EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
 
     R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
+
+    BigDecimal queryDepositTurnOverByDepositType(Integer tenantId, Long todayStartTime, Integer depositType, Long franchiseeId);
+
+    List<HomePageTurnOverGroupByWeekDayVo> queryDepositTurnOverAnalysisByDepositType(Integer tenantId, Integer depositType, Long franchiseeId, Long beginTime, Long enTime);
+
+    BigDecimal querySumDepositTurnOverAnalysis(Integer tenantId, Long franchiseeId, Long beginTime, Long enTime);
 
 }

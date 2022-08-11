@@ -119,5 +119,6 @@ public class ElectricityCabinet {
 
     public static final String IOT_STATUS_ONLINE = "online";
     public static final String IOT_STATUS_OFFLINE = "offline";
+    public static final String USER_UPLOAD_EXCEPTION_STATUS = "offline";
 
 }

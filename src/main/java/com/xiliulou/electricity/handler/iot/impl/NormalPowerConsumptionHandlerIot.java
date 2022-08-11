@@ -20,11 +20,7 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Objects;
 
-/**
- * @author: lxc
- * @Date: 2020/12/28 17:02
- * @Description:
- */
+
 @Service(value= ElectricityIotConstant.NORMAL_POWER_CONSUMPTION_HANDLER)
 @Slf4j
 public class NormalPowerConsumptionHandlerIot extends AbstractElectricityIotHandler {

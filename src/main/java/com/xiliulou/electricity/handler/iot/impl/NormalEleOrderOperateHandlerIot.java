@@ -5,14 +5,17 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.ApiOrderOperHistory;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
+import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetOrderOperHistory;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.ApiOrderOperHistoryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,7 +26,7 @@ import java.util.Objects;
  * @Date: 2020/12/28 17:02
  * @Description:
  */
-@Service(value= ElectricityIotConstant.NORMAL_ELE_ORDER_OPERATE_HANDLER)
+@Service(value = ElectricityIotConstant.NORMAL_ELE_ORDER_OPERATE_HANDLER)
 @Slf4j
 public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
@@ -34,14 +37,16 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
     ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
     @Autowired
     ApiOrderOperHistoryService apiOrderOperHistoryService;
+    @Autowired
+    ElectricityCabinetOrderService electricityCabinetOrderService;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
         EleOrderOperateVO eleOrderOperateVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleOrderOperateVO.class);
         if (Objects.isNull(eleOrderOperateVO)) {
-            log.error("ELE ERROR! eleOrderOperateVO is null,sessionId={}",receiverMessage.getSessionId());
-            return ;
+            log.error("ELE ERROR! eleOrderOperateVO is null,sessionId={}", receiverMessage.getSessionId());
+            return;
         }
 
         if (receiverMessage.getType().equalsIgnoreCase(ElectricityIotConstant.API_ORDER_OPER_HISTORY)) {
@@ -54,14 +59,27 @@ public class NormalEleOrderOperateHandlerIot extends AbstractElectricityIotHandl
                     .build();
             apiOrderOperHistoryService.insert(history);
         } else {
+            Integer type = eleOrderOperateVO.getOrderType();
+            Integer seq = eleOrderOperateVO.getSeq();
+            if (Objects.equals(type, ElectricityCabinetOrderOperHistory.ORDER_TYPE_SELF_OPEN)) {
+                ElectricityCabinetOrder electricityCabinetOrder = electricityCabinetOrderService.queryByOrderId(eleOrderOperateVO.getOrderId());
+                if (Objects.nonNull(electricityCabinetOrder)) {
+                    type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE;
+                    seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ_COMPLETE;
+                } else {
+                    type = ElectricityCabinetOrderOperHistory.ORDER_TYPE_RENT_BACK;
+                    seq = ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_BY_RETURN_BATTERY_COMPLETE;
+                }
+            }
+
             //加入操作记录表
             ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                     .createTime(System.currentTimeMillis())
                     .orderId(eleOrderOperateVO.getOrderId())
-                    .type(eleOrderOperateVO.getOrderType())
+                    .type(type)
                     .tenantId(electricityCabinet.getTenantId())
                     .msg(eleOrderOperateVO.getMsg())
-                    .seq(eleOrderOperateVO.getSeq())
+                    .seq(seq)
                     .result(eleOrderOperateVO.getResult()).build();
             electricityCabinetOrderOperHistoryService.insert(history);
         }

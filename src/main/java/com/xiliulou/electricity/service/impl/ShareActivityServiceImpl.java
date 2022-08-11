@@ -5,7 +5,7 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.JoinShareActivityHistory;
 import com.xiliulou.electricity.entity.JoinShareActivityRecord;
 import com.xiliulou.electricity.entity.ShareActivity;
@@ -109,7 +109,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 	@Override
 	public ShareActivity queryByIdFromCache(Integer id) {
 		//先查缓存
-		ShareActivity shareActivityCache = redisService.getWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + id, ShareActivity.class);
+		ShareActivity shareActivityCache = redisService.getWithHash(CacheConstant.SHARE_ACTIVITY_CACHE + id, ShareActivity.class);
 		if (Objects.nonNull(shareActivityCache)) {
 			return shareActivityCache;
 		}
@@ -121,7 +121,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		}
 
 		//放入缓存
-		redisService.saveWithHash(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + id, shareActivity);
+		redisService.saveWithHash(CacheConstant.SHARE_ACTIVITY_CACHE + id, shareActivity);
 		return shareActivity;
 	}
 
@@ -224,7 +224,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		int update = shareActivityMapper.updateById(oldShareActivity);
 		DbUtils.dbOperateSuccessThen(update, () -> {
 			//更新缓存
-			redisService.delete(ElectricityCabinetConstant.SHARE_ACTIVITY_CACHE + oldShareActivity.getId());
+			redisService.delete(CacheConstant.SHARE_ACTIVITY_CACHE + oldShareActivity.getId());
 
 			//如果是下架活动，则参与邀请记录改为活动已下架
 			if (Objects.equals(shareActivityAddAndUpdateQuery.getStatus(), ShareActivity.STATUS_OFF)) {
@@ -374,7 +374,7 @@ public class ShareActivityServiceImpl implements ShareActivityService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//用户是否可用
-		UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+		UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
 		if (Objects.isNull(userInfo) || Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
 			log.error("ELECTRICITY  ERROR! not found userInfo,uid:{} ", user.getUid());
 			return R.fail("ELECTRICITY.0024", "用户已被禁用");

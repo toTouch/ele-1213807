@@ -103,6 +103,11 @@ public class ElectricityBattery {
      */
     private String iotCardNumber;
 
+    /**
+     * 换电次数
+     */
+    private Integer exchangeCount;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

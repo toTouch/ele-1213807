@@ -4,8 +4,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
+import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 
 import java.util.List;
 
@@ -36,7 +38,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     Integer updateByOrder(ElectricityBattery electricityBattery);
 
-	R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
+    R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
 
     void handlerBatteryNotInCabinetWarning();
 
@@ -44,7 +46,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void handlerLowBatteryReminder();
 
-    R queryNotBindList(Long offset, Long size,Integer franchiseeId);
+    R queryNotBindList(Long offset, Long size, Integer franchiseeId);
 
     void insert(ElectricityBattery electricityBattery);
 
@@ -58,4 +60,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn);
 
     List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId);
+
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 }

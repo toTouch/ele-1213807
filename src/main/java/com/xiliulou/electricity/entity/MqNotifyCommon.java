@@ -34,5 +34,7 @@ public class MqNotifyCommon<T> {
      */
     public static final Integer TYPE_DEVICE_LOG = 1;
 
+    public static final Integer TYPE_MALFUNCTION_INFO = 2;
+
     public static final String PROJECT_NAME = "换电柜";
 }

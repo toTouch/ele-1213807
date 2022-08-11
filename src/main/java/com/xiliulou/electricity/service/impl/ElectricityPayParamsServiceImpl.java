@@ -4,25 +4,21 @@ import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.config.WechatConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.mapper.ElectricityPayParamsMapper;
 import com.xiliulou.electricity.service.ElectricityPayParamsService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Objects;
 
 /**
@@ -51,7 +47,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	public R saveOrUpdateElectricityPayParams(ElectricityPayParams electricityPayParams) {
 		Integer tenantId = TenantContextHolder.getTenantId();
 		//加锁
-		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY + tenantId,
+		Boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId,
 				String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
 		if (!getLockerSuccess) {
 			return R.failMsg("操作频繁!");
@@ -76,10 +72,10 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 			if (ObjectUtil.notEqual(oldElectricityPayParams1.getId(), electricityPayParams.getId())) {
 				return R.fail("请求参数id,不合法!");
 			}
-			redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS + tenantId);
+			redisService.delete(CacheConstant.CACHE_PAY_PARAMS + tenantId);
 			baseMapper.updateById(electricityPayParams);
 		}
-		redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY + tenantId);
+		redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY + tenantId);
 		return R.ok();
 	}
 
@@ -92,11 +88,11 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 	@Override
 	@DS("slave_1")
 	public ElectricityPayParams queryFromCache(Integer tenantId) {
-		ElectricityPayParams electricityPayParams = redisService.getWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS + tenantId, ElectricityPayParams.class);
+		ElectricityPayParams electricityPayParams = redisService.getWithHash(CacheConstant.CACHE_PAY_PARAMS + tenantId, ElectricityPayParams.class);
 		if (Objects.isNull(electricityPayParams)) {
 			electricityPayParams = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityPayParams>().eq(ElectricityPayParams::getTenantId, tenantId));
 			if (Objects.nonNull(electricityPayParams)) {
-				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_PAY_PARAMS + tenantId, electricityPayParams);
+				redisService.saveWithHash(CacheConstant.CACHE_PAY_PARAMS + tenantId, electricityPayParams);
 			}
 		}
 		return electricityPayParams;
@@ -140,7 +136,7 @@ public class ElectricityPayParamsServiceImpl extends ServiceImpl<ElectricityPayP
 		electricityPayParams.setUpdateTime(System.currentTimeMillis());
 		baseMapper.updateById(electricityPayParams);
 
-		redisService.delete(ElectricityCabinetConstant.CACHE_PAY_PARAMS + oldElectricityPayParams.getTenantId());
+		redisService.delete(CacheConstant.CACHE_PAY_PARAMS + oldElectricityPayParams.getTenantId());
 		return R.ok();
 
 	}

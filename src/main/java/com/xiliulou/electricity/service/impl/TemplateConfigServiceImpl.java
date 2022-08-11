@@ -1,11 +1,10 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.TemplateConfigEntity;
 import com.xiliulou.electricity.mapper.TemplateConfigMapper;
 import com.xiliulou.electricity.service.TemplateConfigService;
@@ -30,7 +29,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
     @Override
     public TemplateConfigEntity queryByTenantIdFromCache(Integer tenantId) {
-        TemplateConfigEntity templateConfigFromCache = redisService.getWithHash(ElectricityCabinetConstant.CACHE_TEMPLATE_CONFIG + tenantId, TemplateConfigEntity.class);
+        TemplateConfigEntity templateConfigFromCache = redisService.getWithHash(CacheConstant.CACHE_TEMPLATE_CONFIG + tenantId, TemplateConfigEntity.class);
         if (Objects.nonNull(templateConfigFromCache)) {
             return templateConfigFromCache;
         }
@@ -40,7 +39,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
             return null;
         }
 
-        redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TEMPLATE_CONFIG + tenantId, templateConfigFromDB);
+        redisService.saveWithHash(CacheConstant.CACHE_TEMPLATE_CONFIG + tenantId, templateConfigFromDB);
         return templateConfigFromDB;
     }
 
@@ -65,7 +64,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         templateConfigEntity.setUpdateTime(System.currentTimeMillis());
         int insert = this.baseMapper.insert(templateConfigEntity);
         if (insert > 0) {
-            redisService.saveWithHash(ElectricityCabinetConstant.CACHE_TEMPLATE_CONFIG + tenantId, templateConfigEntity);
+            redisService.saveWithHash(CacheConstant.CACHE_TEMPLATE_CONFIG + tenantId, templateConfigEntity);
         }
         return R.ok();
     }
@@ -79,7 +78,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
         int i = this.baseMapper.updateById(templateConfig);
         if (i > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
+            redisService.delete(CacheConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
         }
         return R.ok();
     }
@@ -88,7 +87,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
     public R removeByIdFromDB(Long id) {
         int i = this.baseMapper.deleteById(id);
         if (i > 0) {
-            redisService.delete(ElectricityCabinetConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
+            redisService.delete(CacheConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
         }
         return R.ok();
     }

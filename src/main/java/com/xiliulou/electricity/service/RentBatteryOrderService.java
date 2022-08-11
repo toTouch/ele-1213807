@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.RentBatteryOrder;
+import com.xiliulou.electricity.query.OrderSelfOpenCellQuery;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.RentBatteryQuery;
 import com.xiliulou.electricity.query.RentOpenDoorQuery;
@@ -51,5 +52,8 @@ public interface RentBatteryOrderService {
     R queryCount(RentBatteryOrderQuery rentBatteryOrderQuery);
 
     Integer queryCountForScreenStatistic(RentBatteryOrderQuery rentBatteryOrderQuery);
+
+    R selfOpenCell(OrderSelfOpenCellQuery orderSelfOpenCellQuery);
+
 
 }

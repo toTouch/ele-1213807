@@ -7,7 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.http.resttemplate.service.RestTemplateService;
 import com.xiliulou.core.i18n.MessageUtils;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.WXMinProAuth2SessionResult;
 import com.xiliulou.electricity.dto.WXMinProPhoneResultDTO;
 import com.xiliulou.electricity.entity.EleUserAuth;
@@ -16,7 +16,6 @@ import com.xiliulou.electricity.entity.ElectricityPayParams;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.NewUserActivity;
 import com.xiliulou.electricity.entity.OldCard;
-import com.xiliulou.electricity.entity.OldUserActivity;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserInfoOld;
@@ -33,16 +32,13 @@ import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserOauthBindService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
-import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.authentication.thirdauth.ThirdAuthenticationService;
 import com.xiliulou.security.bean.SecurityUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.bouncycastle.math.ec.ScaleYPointMap;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AuthenticationServiceException;
@@ -122,7 +118,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 		log.info("tenantId is -->{}", tenantId);
 
-		if (!redisService.setNx(ElectricityCabinetConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
+		if (!redisService.setNx(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code, "1", 5000L, false)) {
 			throw new AuthenticationServiceException("操作频繁！请稍后再试！");
 		}
 
@@ -134,7 +130,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 
 		try {
 
-			String codeUrl = String.format(ElectricityCabinetConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL
+			String codeUrl = String.format(CacheConstant.WX_MIN_PRO_AUTHORIZATION_CODE_URL
 					, electricityPayParams.getMerchantMinProAppId(), electricityPayParams.getMerchantMinProAppSecert(), code);
 
 			String bodyStr = restTemplateService.getForString(codeUrl, null);
@@ -280,6 +276,7 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 					UserInfo updateUserInfo = existUserInfo.getRight();
 					if (!Objects.equals(purePhoneNumber, updateUserInfo.getPhone())) {
 						updateUserInfo.setPhone(purePhoneNumber);
+						updateUserInfo.setUid(uid);
 						updateUserInfo.setUpdateTime(System.currentTimeMillis());
 						userInfoService.update(updateUserInfo);
 					}
@@ -355,14 +352,14 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 			}
 
 		} finally {
-			redisService.delete(ElectricityCabinetConstant.CAHCE_THIRD_OAHTH_KEY + code);
+			redisService.delete(CacheConstant.CAHCE_THIRD_OAHTH_KEY + code);
 		}
 		log.error("TOKEN ERROR! SYSTEM ERROR! params={}", authMap);
 		throw new AuthenticationServiceException("系统异常！");
 	}
 
 	private Pair<Boolean, UserInfo> checkUserInfoExists(Long uid) {
-		UserInfo userInfo = userInfoService.queryByUid(uid);
+		UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
 		return Objects.nonNull(userInfo) ? Pair.of(true, userInfo) : Pair.of(false, null);
 	}
 
@@ -474,86 +471,6 @@ public class WxProThirdAuthenticationServiceImpl implements ThirdAuthenticationS
 		return createSecurityUser(insertUser, oauthBind);
 	}
 
-	private void moveUser(UserInfo userInfo, FranchiseeUserInfo franchiseeUserInfo) {
-
-		UserInfoOld userInfoOld = userInfoOldService.queryByPhone(userInfo.getPhone());
-		log.info("userInfoOld is-->{}",userInfoOld);
-		if (Objects.isNull(userInfoOld)) {
-			return;
-		}
-
-		//未实名认证直接返回
-		if (userInfoOld.getServiceStatus() < 1) {
-			return;
-		}
-
-		//套餐查询复制
-		if (Objects.nonNull(userInfoOld.getCardId())) {
-			OldCard oldCard=oldCardService.queryByOldCard(userInfoOld.getCardId());
-			if(Objects.nonNull(oldCard)) {
-				franchiseeUserInfo.setFranchiseeId(userInfoOld.getFranchiseeId());
-				franchiseeUserInfo.setCardId(oldCard.getNewCard());
-				franchiseeUserInfo.setCardName(userInfoOld.getCardName());
-				franchiseeUserInfo.setCardType(userInfoOld.getCardType());
-				franchiseeUserInfo.setMemberCardExpireTime(userInfoOld.getMemberCardExpireTime());
-				franchiseeUserInfo.setRemainingNumber(userInfoOld.getRemainingNumber());
-				franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-				franchiseeUserInfoService.update(franchiseeUserInfo);
-			}
-		}
-
-		//实名认证图片复制
-		List<EleUserAuthOld> eleUserAuthOldList=eleUserAuthOldService.queryByUid(userInfoOld.getUid());
-		if(ObjectUtils.isNotEmpty(eleUserAuthOldList)){
-			for (EleUserAuthOld eleUserAuthOld:eleUserAuthOldList) {
-				EleUserAuth eleUserAuth=new EleUserAuth();
-				BeanUtils.copyProperties(eleUserAuthOld,eleUserAuth);
-				eleUserAuth.setUid(userInfo.getUid());
-				eleUserAuth.setCreateTime(System.currentTimeMillis());
-				eleUserAuth.setUpdateTime(System.currentTimeMillis());
-				eleUserAuth.setTenantId(userInfo.getTenantId());
-				eleUserAuthService.insert(eleUserAuth);
-			}
-		}
-
-
-		//进行实名认证数据复制
-		userInfo.setUpdateTime(System.currentTimeMillis());
-		userInfo.setName(userInfoOld.getName());
-		userInfo.setIdNumber(userInfoOld.getIdNumber());
-		userInfo.setAuthStatus(UserInfo.AUTH_STATUS_REVIEW_PASSED);
-		userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
-		userInfoService.update(userInfo);
-
-
-		//仅实名认证
-		if (userInfoOld.getServiceStatus() < 2) {
-			return;
-		}
-
-
-		//押金复制
-		franchiseeUserInfo.setBatteryDeposit(userInfoOld.getBatteryDeposit());
-		franchiseeUserInfo.setOrderId("-1");
-		franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-
-
-		//仅缴纳押金
-		if(userInfoOld.getServiceStatus() < 3){
-			franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
-			franchiseeUserInfoService.update(franchiseeUserInfo);
-			return;
-		}
-
-
-		//电池复制
-		franchiseeUserInfo.setInitElectricityBatterySn(userInfoOld.getInitElectricityBatterySn());
-		franchiseeUserInfo.setNowElectricityBatterySn(userInfoOld.getNowElectricityBatterySn());
-		franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
-		franchiseeUserInfoService.update(franchiseeUserInfo);
-
-
-	}
 
 	private Pair<Boolean, User> checkPhoneExists(String purePhoneNumber, Integer tenantId) {
 		User user = userService.queryByUserPhone(purePhoneNumber, User.TYPE_USER_NORMAL_WX_PRO, tenantId);

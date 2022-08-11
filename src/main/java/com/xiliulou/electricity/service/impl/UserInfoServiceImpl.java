@@ -1,21 +1,17 @@
 package com.xiliulou.electricity.service.impl;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserInfoMapper;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
@@ -107,10 +103,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
      */
     @Override
     public UserInfo selectUserByUid(Long id) {
-        UserInfo userInfo =
-                this.userInfoMapper.selectOne(Wrappers.<UserInfo>lambdaQuery().eq(UserInfo::getUid, id));
 
-        return userInfo;
+        return queryByUidFromCache(id);
     }
 
     /**
@@ -135,7 +129,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
-        return this.userInfoMapper.updateById(userInfo);
+        int result = this.userInfoMapper.updateById(userInfo);
+        DbUtils.dbOperateSuccessThen(result, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+            return null;
+        });
+        return result;
 
     }
 
@@ -170,6 +169,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
+                }
+
+                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
+                    item.setServiceStatus(UserInfo.STATUS_INIT);
+                }
+
+                if (Objects.nonNull(item.getModel())){
+                    item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
                 }
             });
         }, threadPool).exceptionally(e -> {
@@ -218,21 +225,33 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional
     public R updateStatus(Long uid, Integer usableStatus) {
-        UserInfo oldUserInfo = queryByUid(uid);
+        UserInfo oldUserInfo = queryByUidFromCache(uid);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(oldUserInfo.getId());
+        userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(usableStatus);
-        userInfoMapper.updateById(userInfo);
+        update(userInfo);
         return R.ok();
     }
 
     @Override
-    public UserInfo queryByUid(Long uid) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+    public UserInfo queryByUidFromCache(Long uid) {
+        UserInfo cache = redisService.getWithHash(CacheConstant.CACHE_USER_INFO + uid, UserInfo.class);
+        if (Objects.nonNull(cache)) {
+            return cache;
+        }
+
+        UserInfo userInfo = userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
+        if (Objects.isNull(userInfo)) {
+            return null;
+        }
+
+        redisService.saveWithHash(CacheConstant.CACHE_USER_INFO + uid, userInfo);
+        return userInfo;
     }
 
     @Override
@@ -380,7 +399,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //2.判断用户是否有电池是否有月卡
-        UserInfo userInfo = queryByUid(user.getUid());
+        UserInfo userInfo = queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -428,7 +447,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
-                if (Objects.equals(modelType, Franchisee.MEW_MODEL_TYPE)) {
+                if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                     Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
                     List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
                     for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
@@ -498,12 +517,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
+        userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
         if (Objects.equals(authStatus, UserInfo.AUTH_STATUS_REVIEW_PASSED)) {
             userInfo.setServiceStatus(UserInfo.STATUS_IS_AUTH);
         }
-        userInfoMapper.updateById(userInfo);
+        update(userInfo);
         //修改资料项
         eleUserAuthService.updateByUid(oldUserInfo.getUid(), authStatus);
         return R.ok();
@@ -566,6 +586,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R queryUserAuthInfo(UserInfoQuery userInfoQuery) {
         List<UserInfo> userInfos = userInfoMapper.queryList(userInfoQuery);
+
+
         if (!DataUtil.collectionIsUsable(userInfos)) {
             return R.ok(Collections.emptyList());
         }
@@ -589,6 +611,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
             });
+
 
             return userAuthInfoVo;
         }).collect(Collectors.toList());
@@ -619,7 +642,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         //查找用户
-        UserInfo oldUserInfo = queryByUid(userInfoBatteryAddAndUpdate.getUid());
+        UserInfo oldUserInfo = queryByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
@@ -750,7 +773,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //查找用户
-        UserInfo oldUserInfo = queryByUid(uid);
+        UserInfo oldUserInfo = queryByUidFromCache(uid);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
@@ -851,7 +874,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
-        UserInfo userInfo = queryByUid(user.getUid());
+        UserInfo userInfo = queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -977,5 +1000,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
         return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId));
+    }
+
+    @Override
+    public Integer queryAuthenticationUserCount(Integer tenantId) {
+        return userInfoMapper.queryAuthenticationUserCount(tenantId);
+    }
+
+    @Override
+    public List<HomePageUserByWeekDayVo> queryUserAnalysisForAuthUser(Integer tenantId, Long beginTime, Long endTime) {
+        return userInfoMapper.queryUserAnalysisForAuthUser(tenantId, beginTime, endTime);
+    }
+
+    @Override
+    public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
+        return userInfoMapper.queryUserAnalysisByUserStatus(tenantId,userStatus,beginTime,endTime);
     }
 }

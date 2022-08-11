@@ -7,7 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
 import com.xiliulou.electricity.service.*;
@@ -18,7 +18,6 @@ import com.xiliulou.electricity.vo.ElectricityMemberCardVO;
 import com.xiliulou.electricity.vo.OldUserActivityVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -148,7 +147,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //先删再改
-            redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            redisService.delete(CacheConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
             return null;
         });
 
@@ -179,7 +178,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            redisService.delete(CacheConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
             return null;
         });
 
@@ -273,7 +272,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //判断用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("rentBattery  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -318,7 +317,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         List<ElectricityMemberCard> electricityMemberCardList = new ArrayList<>();
         //多电池型号查询套餐
-        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             if (Objects.isNull(franchiseeUserInfo.getBatteryType())) {
                 return R.ok();
             }
@@ -372,7 +371,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         }
 
         //判断用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("rentCar  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -470,7 +469,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             baseMapper.unbindActivity(electricityMemberCard.getId());
 
             //删除缓存
-            redisService.delete(ElectricityCabinetConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            redisService.delete(CacheConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
         }
 
     }
@@ -489,11 +488,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public ElectricityMemberCard queryByCache(Integer id) {
         ElectricityMemberCard electricityMemberCard = null;
-        electricityMemberCard = redisService.getWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id, ElectricityMemberCard.class);
+        electricityMemberCard = redisService.getWithHash(CacheConstant.CACHE_MEMBER_CARD + id, ElectricityMemberCard.class);
         if (Objects.isNull(electricityMemberCard)) {
             electricityMemberCard = baseMapper.selectById(id);
             if (Objects.nonNull(electricityMemberCard)) {
-                redisService.saveWithHash(ElectricityCabinetConstant.CACHE_MEMBER_CARD + id, electricityMemberCard);
+                redisService.saveWithHash(CacheConstant.CACHE_MEMBER_CARD + id, electricityMemberCard);
             }
         }
         return electricityMemberCard;

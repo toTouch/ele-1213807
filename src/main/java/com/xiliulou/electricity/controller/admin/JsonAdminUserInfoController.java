@@ -2,7 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
@@ -13,8 +13,6 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
 
 /**
  * 用户列表(TUserInfo)表控制层
@@ -128,7 +126,7 @@ public class JsonAdminUserInfoController {
     //订单周期删缓存
     @PostMapping(value = "/admin/userInfo/deleteOrderCache")
     public R deleteOrderCache(@RequestParam("uid") Long uid) {
-        redisService.delete(ElectricityCabinetConstant.ORDER_TIME_UID + uid);
+        redisService.delete(CacheConstant.ORDER_TIME_UID + uid);
         return R.ok();
     }
 

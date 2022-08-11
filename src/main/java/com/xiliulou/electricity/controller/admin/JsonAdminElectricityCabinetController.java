@@ -7,16 +7,14 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
-import com.xiliulou.electricity.query.EleCabinetCoreDataQuery;
-import com.xiliulou.electricity.query.EleOuterCommandQuery;
-import com.xiliulou.electricity.query.ElectricityCabinetAddAndUpdate;
-import com.xiliulou.electricity.query.ElectricityCabinetQuery;
+import com.xiliulou.electricity.query.*;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -320,9 +318,9 @@ public class JsonAdminElectricityCabinetController {
 
         eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         //删除缓存
-        redisService.delete(ElectricityCabinetConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
+        redisService.delete(CacheConstant.UNLOCK_CABINET_CACHE + electricityCabinet.getId());
 
-        redisService.delete(ElectricityCabinetConstant.ORDER_ELE_ID + id);
+        redisService.delete(CacheConstant.ORDER_ELE_ID + id);
         return R.ok();
     }
 
@@ -367,6 +365,7 @@ public class JsonAdminElectricityCabinetController {
 
     /**
      * 读取柜机配置信息
+     *
      * @param id
      * @return
      */
@@ -377,7 +376,7 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        String result = redisService.get(ElectricityCabinetConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+        String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
         if (StringUtils.isEmpty(result)) {
             return R.ok();
         }
@@ -433,7 +432,7 @@ public class JsonAdminElectricityCabinetController {
 
         }
 
-        ElectricityCabinetQuery electricityCabinetQuery=ElectricityCabinetQuery.builder()
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
                 .size(size)
                 .offset(offset)
                 .name(name).build();
@@ -442,12 +441,11 @@ public class JsonAdminElectricityCabinetController {
     }
 
 
-
     //核心板上报数据分页
     @GetMapping(value = "/admin/electricityCabinet/core_data_list")
     public R queryEleCabinetCoreDataList(@RequestParam("size") Long size,
-                       @RequestParam("offset") Long offset,
-                       @RequestParam(value = "id", required = false) Integer id) {
+                                         @RequestParam("offset") Long offset,
+                                         @RequestParam(value = "id", required = false) Integer id) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -473,4 +471,138 @@ public class JsonAdminElectricityCabinetController {
         return R.ok(eleCabinetCoreData);
     }
 
+    //首页营业额统计
+    @GetMapping(value = "/admin/electricityCabinet/homepageTurnover")
+    public R homepageTurnover() {
+        return electricityCabinetService.homepageTurnover();
+    }
+
+    //首页押金统计
+    @GetMapping(value = "/admin/electricityCabinet/homepageDeposit")
+    public R homepageDeposit() {
+        return electricityCabinetService.homepageDeposit();
+    }
+
+    //首页概述详情统计
+    @GetMapping(value = "/admin/electricityCabinet/homepageOverviewDetail")
+    public R homepageOverviewDetail() {
+        return electricityCabinetService.homepageOverviewDetail();
+    }
+
+    //首页收益分析
+    @GetMapping(value = "/admin/electricityCabinet/homepageBenefitAnalysis")
+    public R homepageBenefitAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,
+                                     @RequestParam(value = "endTime", required = false) Long endTime) {
+        return electricityCabinetService.homepageBenefitAnalysis(beginTime, endTime);
+    }
+
+    //首页用户分析
+    @GetMapping(value = "/admin/electricityCabinet/homepageUserAnalysis")
+    public R homepageUserAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,
+                                     @RequestParam(value = "endTime", required = false) Long endTime) {
+        return electricityCabinetService.homepageUserAnalysis(beginTime, endTime);
+    }
+
+    //首页柜机分析
+    @GetMapping(value = "/admin/electricityCabinet/homepageElectricityCabinetAnalysis")
+    public R homepageElectricityCabinetAnalysis() {
+        return electricityCabinetService.homepageElectricityCabinetAnalysis();
+    }
+
+    //首页换电频次
+    @GetMapping(value = "/admin/electricityCabinet/homepageExchangeOrderFrequency")
+    public R homepageExchangeOrderFrequency(@RequestParam(value = "beginTime", required = false) Long beginTime,
+                                            @RequestParam(value = "endTime", required = false) Long endTime,
+                                            @RequestParam("size") Long size,
+                                            @RequestParam("offset") Long offset,
+                                            @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId) {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        Long franchiseeId = null;
+        Franchisee franchisee = null;
+        List<Integer> eleIdList = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            franchisee = franchiseeService.queryByUid(user.getUid());
+        }
+        if (Objects.nonNull(franchisee)) {
+            franchiseeId = franchisee.getId();
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery= HomepageElectricityExchangeFrequencyQuery.builder()
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .size(size)
+                .offset(offset)
+                .electricityCabinetId(electricityCabinetId)
+                .tenantId(tenantId)
+                .eleIdList(eleIdList)
+                .franchiseeId(franchiseeId).build();
+
+        return electricityCabinetService.homepageExchangeOrderFrequency(homepageElectricityExchangeFrequencyQuery);
+    }
+
+    //首页电池分析
+    @GetMapping(value = "/admin/electricityCabinet/homepageBatteryAnalysis")
+    public R homepageBatteryAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,
+                                     @RequestParam(value = "endTime", required = false) Long endTime,
+                                     @RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "batterySn", required = false) String batterySn) {
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        Long franchiseeId = null;
+        Franchisee franchisee = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                return R.fail("ELECTRICITY.0066", "用户权限不足");
+            }
+            franchisee = franchiseeService.queryByUid(user.getUid());
+        }
+        if (Objects.nonNull(franchisee)) {
+            franchiseeId = franchisee.getId();
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery=HomepageBatteryFrequencyQuery.builder()
+                .batterySn(batterySn)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .offset(offset)
+                .size(size)
+                .franchiseeId(franchiseeId)
+                .tenantId(tenantId).build();
+
+        return electricityCabinetService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
+    }
 }

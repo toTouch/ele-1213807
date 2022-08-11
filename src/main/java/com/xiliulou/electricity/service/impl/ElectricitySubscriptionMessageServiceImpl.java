@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.ElectricitySubscriptionMessage;
 import com.xiliulou.electricity.mapper.ElectricitySubscriptionMessageMapper;
 import com.xiliulou.electricity.service.ElectricitySubscriptionMessageService;
@@ -38,7 +38,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 	@Override
 	public R saveElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage) {
 
-		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+		Boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY,
 				String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
 		if (!getLockerSuccess) {
 			return R.failMsg("操作频繁!");
@@ -56,7 +56,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 		electricitySubscriptionMessage.setTenantId(tenantId);
 		Integer raws = baseMapper.insert(electricitySubscriptionMessage);
 
-		redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+		redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY);
 		if (raws > 0) {
 			return R.ok();
 		} else {
@@ -72,13 +72,13 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 	@DS("slave_1")
 	public ElectricitySubscriptionMessage getSubscriptionMessageByType(Integer type, Integer tenantId) {
 		ElectricitySubscriptionMessage electricitySubscriptionMessage = null;
-		electricitySubscriptionMessage = redisService.getWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + tenantId + type, ElectricitySubscriptionMessage.class);
+		electricitySubscriptionMessage = redisService.getWithHash(CacheConstant.CACHE_SUBSCRIPTION_MESSAGE + tenantId + type, ElectricitySubscriptionMessage.class);
 		if (Objects.isNull(electricitySubscriptionMessage)) {
 			electricitySubscriptionMessage = baseMapper.selectOne(Wrappers.<ElectricitySubscriptionMessage>lambdaQuery()
 					.eq(ElectricitySubscriptionMessage::getType, type)
 					.eq(ElectricitySubscriptionMessage::getTenantId, tenantId));
 			if (Objects.nonNull(electricitySubscriptionMessage)) {
-				redisService.saveWithHash(ElectricityCabinetConstant.CACHE_SUBSCRIPTION_MESSAGE + tenantId + type, electricitySubscriptionMessage);
+				redisService.saveWithHash(CacheConstant.CACHE_SUBSCRIPTION_MESSAGE + tenantId + type, electricitySubscriptionMessage);
 			}
 		}
 		return electricitySubscriptionMessage;
@@ -91,7 +91,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 	@Override
 	public R updateElectricitySubscriptionMessage(ElectricitySubscriptionMessage electricitySubscriptionMessage) {
 
-		Boolean getLockerSuccess = redisService.setNx(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY,
+		Boolean getLockerSuccess = redisService.setNx(CacheConstant.ADMIN_OPERATE_LOCK_KEY,
 				String.valueOf(System.currentTimeMillis()), 20 * 1000L, true);
 		if (!getLockerSuccess) {
 			return R.failMsg("操作频繁!");
@@ -100,7 +100,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 
 		electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
 		Integer raws = baseMapper.updateById(electricitySubscriptionMessage);
-		redisService.delete(ElectricityCabinetConstant.ADMIN_OPERATE_LOCK_KEY);
+		redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY);
 		if (raws > 0) {
 			return R.ok();
 		} else {

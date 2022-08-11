@@ -4,7 +4,6 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.totp.TotpUtils;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleOffLineSecretConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -53,7 +52,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //校验用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("OffLINE ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -165,7 +164,7 @@ public class OffLineElectricityCabinetServiceImpl implements OffLineElectricityC
         }
 
         //校验用户
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             userFrontDetectionVO.setServiceStatus(UserFrontDetectionVO.NOT_FOUND_USER);
             return R.ok(userFrontDetectionVO);

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.filter;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.WebUtils;
 import com.xiliulou.electricity.web.entity.BodyReaderHttpServletRequestWrapper;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.Gauge;
@@ -108,17 +109,18 @@ public class RequestFilter implements Filter {
         }
 
         Long uid = SecurityUtils.getUid();
+        String ip = WebUtils.getIP(httpServletRequest);
 
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
-            log.info("uid={} method={} uri={} params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+            log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             filterChain.doFilter(httpServletRequest, servletResponse);
         } else {
             httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
             if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-                log.info("uid={} method={} uri={} params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
+                log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
             } else {
-                log.info("uid={} method={} uri={} params={}", uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+                log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             }
 
             filterChain.doFilter(httpServletRequest, servletResponse);

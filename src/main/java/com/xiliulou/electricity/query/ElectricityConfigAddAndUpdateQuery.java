@@ -67,6 +67,10 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 低电量换电配置模式
      */
     private String lowBatteryExchangeModel;
+    /**
+     * 是否自主开仓 0--开启， 1--关闭
+     */
+    private Integer isEnableSelfOpen;
 
 }
 

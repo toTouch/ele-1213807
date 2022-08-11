@@ -1,6 +1,6 @@
 package com.xiliulou.electricity.constant;
 
-public interface ElectricityCabinetConstant {
+public interface CacheConstant {
     //换电柜缓存
     String CACHE_ELECTRICITY_CABINET = "electricity_cabinet:";
     //换电柜缓存
@@ -50,16 +50,19 @@ public interface ElectricityCabinetConstant {
 
     String ELE_OPERATOR_CACHE_KEY = "ele_oper:";
 
+    String ELE_OPERATOR_SELF_OPEN_CEE_CACHE_KEY = "ele_ope_self_open_cell:";
+
     //换电柜开门的前缀
     String ELE_OPERATOR_SESSION_PREFIX = "ele";
 
-    //订单同步订单响应
-    String ELE_COMMAND_ORDER_SYNC_RSP = "new_order_sync_rsp";
 
     String ELE_RECEIVER_CACHE_KEY = "ele_receiver:";
 
     //离线换电
     String OFFLINE_ELE_RECEIVER_CACHE_KEY = "offline_ele_receiver";
+
+    //自助开仓
+    String SELF_OPEN_CALL_CACHE_KEY = "self_open_cell_cache_key";
 
 
     //换电柜平台修改缓存
@@ -89,19 +92,6 @@ public interface ElectricityCabinetConstant {
     String ELE_ORDER_WARN_MSG_CACHE_KEY = "ele_order_warn_msg:";
 
     String ELE_BIG_POWER_CELL_NO_CACHE_KEY = "big_power_cell_no:";
-
-    //加盟商缓存
-    String CACHE_FRANCHISEE = "franchisee:";
-
-    /**
-     * 角色名称和code
-     */
-    String OPERATE_NAME = "OPERATE_USER";
-    String OPERATE_CODE = "运营商";
-    String FRANCHISEE_NAME = "FRANCHISEE_USER";
-    String FRANCHISEE_CODE = "加盟商";
-    String STORE_NAME = "STORE_USER";
-    String STORE_CODE = "门店";
 
     String CACHE_TENANT_ID = "tenant_cache:";
 
@@ -182,5 +172,15 @@ public interface ElectricityCabinetConstant {
     //用户缴纳租车押金
     String ELE_CACHE_USER_CAR_DEPOSIT_LOCK_KEY = "ele_cache_user_car_deposit_lock_key:";
 
-    String APP_ID = "wx76159ea6aa7a64bc";
+    //操作银行卡 用户锁
+    String BIND_BANK_OPER_USER_LOCK = "bind_Bank_oper_user_lock:";
+    //提现密码缓存
+    String CACHE_WITHDRAW_PASSWORD = "withdraw_password";
+    //提现 用户锁
+    String CACHE_WITHDRAW_USER_UID = "withdraw_user_uid:";
+    /**
+     * userInfo的缓存
+     */
+    String CACHE_USER_INFO = "user_info:";
+    String CACHE_ELE_SET_CONFIG = "ele_set_config:";
 }

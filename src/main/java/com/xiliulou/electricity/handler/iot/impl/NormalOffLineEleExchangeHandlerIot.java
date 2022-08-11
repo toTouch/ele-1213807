@@ -5,7 +5,7 @@ import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
-import com.xiliulou.electricity.constant.ElectricityCabinetConstant;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
@@ -88,7 +88,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
 
         //幂等加锁
-        Boolean result = redisService.setNx(ElectricityCabinetConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
+        Boolean result = redisService.setNx(CacheConstant.OFFLINE_ELE_RECEIVER_CACHE_KEY + offlineEleOrderVo.getOrderId() + receiverMessage.getType(), "true", 10 * 1000L, true);
         if (!result) {
             senMsg(electricityCabinet, offlineEleOrderVo, user);
             log.error("OFFLINE EXCHANGE orderId is lock,{}", offlineEleOrderVo.getOrderId());
@@ -101,7 +101,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             return ;
         }
 
-        UserInfo userInfo = userInfoService.queryByUid(user.getUid());
+        UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
             log.error("OFFLINE EXCHANGE ERROR! userInfo is null! userId:{}", offlineEleOrderVo.getPhone());
             return ;
@@ -142,6 +142,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
                 .paymentMethod(oldFranchiseeUserInfo.getCardType())
                 .createTime(offlineEleOrderVo.getStartTime())
                 .updateTime(offlineEleOrderVo.getEndTime())
+                .storeId(electricityCabinet.getStoreId())
                 .tenantId(electricityCabinet.getTenantId()).build();
         electricityCabinetOrderService.insertOrder(electricityCabinetOrder);
 
@@ -238,7 +239,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         dataMap.put("status", offlineEleOrderVo.getStatus());
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
-                .sessionId(ElectricityCabinetConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + user.getUid() + "_" + offlineEleOrderVo.getOrderId())
+                .sessionId(CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + user.getUid() + "_" + offlineEleOrderVo.getOrderId())
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())

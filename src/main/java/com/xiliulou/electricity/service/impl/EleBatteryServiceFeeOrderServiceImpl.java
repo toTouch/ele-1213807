@@ -1,19 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
-import com.xiliulou.electricity.entity.EleDepositOrder;
-import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
-import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
+import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,7 +67,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
         List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryListForAdmin(uid, offset, size, startTime, endTime, status);
 
         for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
-            if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.MEW_MODEL_TYPE)) {
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
                 eleBatteryServiceFeeOrderVo.setModel(model);
             }
@@ -86,6 +82,21 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
     @Override
     public BigDecimal queryUserTurnOver(Integer tenantId, Long uid) {
-        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId,uid)).orElse(new BigDecimal("0"));
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId, uid)).orElse(new BigDecimal("0"));
+    }
+
+    @Override
+    public BigDecimal queryTurnOver(Integer tenantId, Long todayStartTime, Long franchiseeId) {
+        return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTenantTurnOver(tenantId, todayStartTime, franchiseeId)).orElse(BigDecimal.valueOf(0));
+    }
+
+    @Override
+    public List<HomePageTurnOverGroupByWeekDayVo> queryTurnOverByCreateTime(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+        return eleBatteryServiceFeeOrderMapper.queryTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
+    }
+
+    @Override
+    public BigDecimal queryAllTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
+        return eleBatteryServiceFeeOrderMapper.queryAllTurnOver(tenantId, franchiseeId, beginTime, endTime);
     }
 }

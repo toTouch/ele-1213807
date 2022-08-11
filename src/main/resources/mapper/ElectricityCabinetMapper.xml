@@ -212,6 +212,24 @@
 		</where>
 	</select>
 
-
+	<select id="queryCountByStoreIdsAndStatus" resultType="integer">
+		select count(1)
+		from t_electricity_cabinet
+		<where>
+			del_flag=0
+			<if test="tenantId != null">
+				and tenant_id = #{tenantId}
+			</if>
+			<if test="storeIds != null and storeIds.size() > 0">
+				and store_id in
+				<foreach collection="storeIds" item="id" separator="," open="(" close=")">
+					#{id}
+				</foreach>
+			</if>
+			<if test="status != null">
+				and online_status = #{status}
+			</if>
+		</where>
+	</select>
 
 </mapper>
