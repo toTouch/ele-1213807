@@ -513,6 +513,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return R.ok(electricitybatterymapper.queryBatteryOverview(electricityBatteryQuery));
     }
 
+    @Override
+    public R batteryStatistical(Integer tenantId) {
+        return R.ok(electricitybatterymapper.batteryStatistical(tenantId));
+    }
+
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
         appTemplateQuery.setAppId(appId);

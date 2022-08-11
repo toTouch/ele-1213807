@@ -224,5 +224,15 @@
 		order by create_time desc
 	</select>
 
+	<select id="batteryStatistical" resultType="com.xiliulou.electricity.vo.BatteryStatisticalVo">
+		SELECT  COUNT(1) sumCount,
+ 				sum(CASE WHEN status = 0 THEN 1 ELSE 0 END) wareHouseCount ,
+ 				sum(CASE WHEN status = 1 THEN 1 ELSE 0 END) stockCount ,
+ 				sum(CASE WHEN status = 2 THEN 1 ELSE 0 END) leaseCount ,
+ 				sum(CASE WHEN status = 3 THEN 1 ELSE 0 END) exceptionCount ,
+ 				sum(CASE WHEN status = 4 THEN 1 ELSE 0 END) exceptionFreeCount
+ 		FROM t_electricity_battery  where tenant_id=#{tenantId};
+	</select>
+
 
 </mapper>

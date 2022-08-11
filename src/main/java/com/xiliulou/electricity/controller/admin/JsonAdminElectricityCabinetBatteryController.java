@@ -314,22 +314,15 @@ public class JsonAdminElectricityCabinetBatteryController {
     }
 
     /**
-     * 电池总览
-     * @param status
-     * @param sn
+     * 电池总览--电池统计
      * @return
      */
     @GetMapping("/admin/battery/batteryStatistical")
-    public R batteryStatistical(@RequestParam(value = "status", required = false) Integer status,
-                                  @RequestParam(value = "sn", required = false) String sn) {
+    public R batteryStatistical() {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
-                .status(status)
-                .sn(sn)
-                .tenantId(tenantId).build();
-        return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
+        return electricityBatteryService.batteryStatistical(tenantId);
     }
 }
