@@ -38,6 +38,7 @@ public class MailServiceImpl implements MailService {
         query.setData(mailMessage);
 
         Pair<Boolean, String> result = rocketMqService.sendSyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(query), "", "", 0);
+        log.info("SEND EMAIL INFO! original msg:{}", JsonUtil.toJson(query));
         if (!result.getLeft()) {
             log.error("SEND SIMPLE EMAIL NOTIFY TO MQ ERROR! reason={}", result.getRight());
         }
