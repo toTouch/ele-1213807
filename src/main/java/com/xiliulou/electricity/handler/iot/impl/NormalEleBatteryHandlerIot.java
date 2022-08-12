@@ -87,7 +87,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
         Long reportTime = eleBatteryVO.getReportTime();
         //若上报时间为空  或者  上报时间小于上次上报时间，不处理
-        if (Objects.isNull(reportTime) || eleBox.getReportTime() >= reportTime) {
+        if (Objects.nonNull(reportTime) && Objects.nonNull(eleBox.getReportTime()) && eleBox.getReportTime() >= reportTime) {
             log.error("ELE BATTERY REPORT ERROR! reportTime is empty,electricityCabinetId={},sessionId={}", electricityCabinet.getId(), sessionId);
             return;
         }
