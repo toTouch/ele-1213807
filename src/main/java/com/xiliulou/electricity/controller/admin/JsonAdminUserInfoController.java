@@ -104,7 +104,7 @@ public class JsonAdminUserInfoController {
                 .serviceStatus(serviceStatus)
                 .tenantId(tenantId).build();
 
-        return userInfoService.queryAuthenticationCount(userInfoQuery);
+        return userInfoService.queryCount(userInfoQuery);
     }
 
     //禁/启用
@@ -195,7 +195,7 @@ public class JsonAdminUserInfoController {
                 .serviceStatus(serviceStatus)
                 .tenantId(tenantId).build();
 
-        return userInfoService.queryCount(userInfoQuery);
+        return userInfoService.queryAuthenticationCount(userInfoQuery);
     }
 
     //绑定电池
