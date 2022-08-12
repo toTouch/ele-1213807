@@ -190,9 +190,9 @@
         <if test="query.authStatus !=null">
             and tui.auth_status =#{query.authStatus}
         </if>
-        <if test="query.authStatus ==null or query.authStatus==''">
-            and tui.auth_status in (0,1,2)
-        </if>
+<!--        <if test="query.authStatus ==null or query.authStatus==''">-->
+<!--            and tui.auth_status in (0,1,2)-->
+<!--        </if>-->
         <if test="query.serviceStatus == 0 or query.serviceStatus == 1">
             and tui.service_status =#{query.serviceStatus}
         </if>
