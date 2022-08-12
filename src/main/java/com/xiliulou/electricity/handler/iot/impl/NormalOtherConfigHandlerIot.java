@@ -33,14 +33,14 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
 
-        Map<String, Object> map = JsonUtil.fromJson(receiverMessage.getOriginContent(), Map.class);
-        if (Objects.isNull(map)) {
-            log.error("other config error! no sessionId={}", receiverMessage.getSessionId());
+        ElectricityCabinetOtherSetting otherSetting = JsonUtil.fromJson(receiverMessage.getOriginContent(), ElectricityCabinetOtherSetting.class);
+        if (Objects.isNull(otherSetting)) {
+            log.error("OTHER CONFIG ERROR! sessionId={}", receiverMessage.getSessionId());
             return ;
         }
         //上报的数据放入缓存
 //        redisService.saveWithString(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
-        redisService.saveWithHash(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
+        redisService.saveWithHash(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), otherSetting);
     }
 
 }
