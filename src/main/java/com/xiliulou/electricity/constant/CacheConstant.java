@@ -87,7 +87,8 @@ public interface CacheConstant {
     String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";
 
     //电柜上报数据
-    String OTHER_CONFIG_CACHE = "other_config_cache:";
+//    String OTHER_CONFIG_CACHE = "other_config_cache:";
+    String OTHER_CONFIG_CACHE = "other_config_cache_v2:";
 
     String ELE_ORDER_WARN_MSG_CACHE_KEY = "ele_order_warn_msg:";
 
