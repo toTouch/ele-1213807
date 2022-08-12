@@ -1021,7 +1021,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-        HashMap<String, String> homeInfo = new HashMap<>();
+        HashMap<String, Object> homeInfo = new HashMap<>();
         Long firstMonth = DateUtil.beginOfMonth(new Date()).getTime();
         Long now = System.currentTimeMillis();
         Integer serviceStatus = 1;
@@ -1049,23 +1049,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         //套餐剩余天数
-        long cardDay = 0;
+        Double cardDay=0.0D;
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.nonNull(electricityMemberCard)) {
                 if (!Objects.equals(electricityMemberCard.getLimitCount(), ElectricityMemberCard.UN_LIMITED_COUNT_TYPE)) {
                     if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0 && franchiseeUserInfo.getMemberCardExpireTime() > now) {
-                        cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+                        cardDay = Math.ceil((franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
                     }
                 } else if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getMemberCardExpireTime() > now) {
-                    cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+                    cardDay = Math.ceil((franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
                 }
             }
         } else {
             if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0 && franchiseeUserInfo.getMemberCardExpireTime() > now) {
-                cardDay = (franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
+                cardDay = Math.ceil((franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
             }
         }
+
 
         //我的电池
         Double battery = null;
@@ -1078,11 +1079,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         String memberCardExpireTime = Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) ? DateUtil.format(DateUtil.date(franchiseeUserInfo.getMemberCardExpireTime()), DatePattern.NORM_DATE_FORMAT) : "";
         homeInfo.put("memberCardExpireTime", memberCardExpireTime);
         //月卡剩余天数
-        homeInfo.put("monthCount", monthCount.toString());
-        homeInfo.put("totalCount", totalCount.toString());
-        homeInfo.put("serviceStatus", String.valueOf(serviceStatus));
-        homeInfo.put("cardDay", String.valueOf(cardDay));
-        homeInfo.put("battery", String.valueOf(battery));
+        homeInfo.put("monthCount", monthCount);
+        homeInfo.put("totalCount", totalCount);
+        homeInfo.put("serviceStatus", serviceStatus);
+        homeInfo.put("cardDay", cardDay.intValue());
+        homeInfo.put("battery", battery);
 
         return R.ok(homeInfo);
     }

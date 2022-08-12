@@ -152,7 +152,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     Long now = System.currentTimeMillis();
                     long carDays = 0;
                     if (item.getMemberCardExpireTime() > now) {
-                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
+//                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
+                        Double carDayTemp = Math.ceil((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24.0);
+                        carDays=carDayTemp.longValue();
                     }
                     item.setCardDays(carDays);
                 } else {
