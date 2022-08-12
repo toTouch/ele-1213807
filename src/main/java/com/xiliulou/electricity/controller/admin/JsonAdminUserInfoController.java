@@ -201,4 +201,12 @@ public class JsonAdminUserInfoController {
         return userInfoService.queryUserAllConsumption(id);
     }
 
+    /**
+     * 会员列表删除
+     */
+    @DeleteMapping(value = "/admin/userInfo/{uid}")
+    public R deleteUserInfo(@PathVariable("uid") Long uid) {
+        return userInfoService.deleteUserInfo(uid);
+    }
+
 }

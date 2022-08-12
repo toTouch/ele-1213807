@@ -24,6 +24,8 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -1013,5 +1015,25 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisByUserStatus(tenantId,userStatus,beginTime,endTime);
+    }
+
+    @Override
+    public R deleteUserInfo(Long uid) {
+
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
+        if (Objects.isNull(franchiseeUserInfo)) {
+            return R.fail("ELECTRICITY.0019", "用户不存在！");
+        }
+
+        if (StringUtils.isNotBlank(franchiseeUserInfo.getNowElectricityBatterySn())) {
+            return R.fail("ELECTRICITY.0045", "已绑定电池");
+        }
+
+        Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
+        if (result.getLeft()) {
+            return R.ok();
+        }
+
+        return R.fail(result.getMiddle(), String.valueOf(result.getRight()));
     }
 }
