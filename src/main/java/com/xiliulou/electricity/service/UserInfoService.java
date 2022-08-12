@@ -79,6 +79,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R queryCount(UserInfoQuery userInfoQuery);
 
+    R queryAuthenticationCount(UserInfoQuery userInfoQuery);
+
     Integer querySumCount(UserInfoQuery userInfoQuery);
 
     R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);

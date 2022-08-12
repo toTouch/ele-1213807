@@ -646,6 +646,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
+    public R queryAuthenticationCount(UserInfoQuery userInfoQuery) {
+        return R.ok(userInfoMapper.queryAuthenticationCount(userInfoQuery));
+    }
+
+    @Override
     public Integer querySumCount(UserInfoQuery userInfoQuery) {
         return userInfoMapper.queryCount(userInfoQuery);
     }
