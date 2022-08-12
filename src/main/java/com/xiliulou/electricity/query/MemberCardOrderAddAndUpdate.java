@@ -6,6 +6,7 @@ import lombok.Data;
 
 import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 import java.math.BigDecimal;
 
 @Data
@@ -24,7 +25,7 @@ public class MemberCardOrderAddAndUpdate {
      * 月卡剩余天数
      */
     @NotNull(message = "套餐剩余天数不能为空")
-    @Min(value = 1, message = "套餐剩余天数必须为正整数")
+    @Positive(message = "套餐剩余天数必须为正整数")
     private Integer validDays;
     /**
      * 套餐到期时间
