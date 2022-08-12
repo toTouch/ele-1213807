@@ -1,13 +1,9 @@
 package com.xiliulou.electricity.query;
 
-import com.xiliulou.electricity.validator.CreateGroup;
-import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.Data;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Positive;
-import java.math.BigDecimal;
+import javax.validation.constraints.PositiveOrZero;
 
 @Data
 public class MemberCardOrderAddAndUpdate {
@@ -25,7 +21,7 @@ public class MemberCardOrderAddAndUpdate {
      * 月卡剩余天数
      */
     @NotNull(message = "套餐剩余天数不能为空")
-    @Positive(message = "套餐剩余天数必须为正整数")
+    @PositiveOrZero(message = "套餐剩余天数必须为正整数")
     private Integer validDays;
     /**
      * 套餐到期时间
@@ -35,7 +31,6 @@ public class MemberCardOrderAddAndUpdate {
      * 最大使用次数
      */
     private Long maxUseCount;
-
 
 
     public static final Integer ZERO_VALIdDAY_MEMBER_CARD = 0;
