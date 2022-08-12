@@ -40,6 +40,8 @@ public interface UserInfoMapper extends BaseMapper<UserInfo> {
 
 	Integer queryCountForBatteryService( @Param("query") UserInfoQuery userInfoQuery);
 
+	Integer queryAuthenticationCount( @Param("query") UserInfoQuery userInfoQuery);
+
 	Integer queryAuthenticationUserCount(@Param("tenantId") Integer tenantId);
 
 	List<HomePageUserByWeekDayVo> queryUserAnalysisForAuthUser(@Param("tenantId") Integer tenantId,  @Param("beginTime") Long beginTime, @Param("endTime") Long endTime);

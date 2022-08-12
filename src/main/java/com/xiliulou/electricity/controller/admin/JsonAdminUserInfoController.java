@@ -104,7 +104,7 @@ public class JsonAdminUserInfoController {
                 .serviceStatus(serviceStatus)
                 .tenantId(tenantId).build();
 
-        return userInfoService.queryCount(userInfoQuery);
+        return userInfoService.queryAuthenticationCount(userInfoQuery);
     }
 
     //禁/启用
@@ -163,6 +163,39 @@ public class JsonAdminUserInfoController {
                 .tenantId(tenantId).build();
 
         return userInfoService.queryUserAuthInfo(userInfoQuery);
+    }
+
+
+
+    @GetMapping(value = "/admin/userInfo/queryAuthenticationCount")
+    public R queryAuthenticationCount(@RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+                        @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
+                        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                        @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "cardName",required = false) String cardName,
+                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
+                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
+                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+                .name(name)
+                .phone(phone)
+                .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+                .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+                .cardName(cardName)
+                .uid(uid)
+                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .memberCardId(memberCardId)
+                .authStatus(authStatus)
+                .serviceStatus(serviceStatus)
+                .tenantId(tenantId).build();
+
+        return userInfoService.queryCount(userInfoQuery);
     }
 
     //绑定电池
