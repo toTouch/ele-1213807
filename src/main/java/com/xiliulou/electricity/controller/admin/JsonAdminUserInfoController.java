@@ -167,7 +167,7 @@ public class JsonAdminUserInfoController {
 
 
 
-    @GetMapping(value = "/admin/userInfo/queryAuthenticationCount")
+    @GetMapping(value = "/admin/authenticationUserInfo/queryCount")
     public R queryAuthenticationCount(@RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
