@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
@@ -9,6 +10,7 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.WarnMsgVo;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +18,7 @@ import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -45,6 +48,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
+    @Autowired
+    StoreService storeService;
+    @Autowired
+    FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
 
 
     @Override
@@ -161,8 +168,15 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
+        //获取放入电池
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
+
         //这里检查旧电池加盟商是否是该柜机加盟商
-        Triple<Boolean, String, Object> isSame = checkBatteryAndEleFranchisees(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
+        Boolean isSame = checkBatteryAndEleFranchisees(exchangeOrderRsp, electricityCabinetOrder.getUid(), electricityCabinet, oldElectricityBattery);
+        if(Objects.nonNull(isSame) && !isSame){
+            //handleBatteryAndEleFranchisees(electricityCabinetOrder);
+            return;
+        }
 
         //用户解绑旧电池 旧电池到底是哪块，不确定
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
@@ -185,7 +199,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         //放入电池改为在仓
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
@@ -201,20 +214,73 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
     }
 
-    private Triple<Boolean, String, Object> checkBatteryAndEleFranchisees(ExchangeOrderRsp exchangeOrderRsp, ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet) {
-        //ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
-        //electricityCabinet.getStoreId()
-        return null;
+    private Boolean checkBatteryAndEleFranchisees(ExchangeOrderRsp exchangeOrderRsp, Long uid, ElectricityCabinet electricityCabinet, ElectricityBattery oldElectricityBattery) {
+        if(Objects.isNull(oldElectricityBattery)) {
+            log.warn("EXCHANGE ORDER ERROR! electricityBattery is null error! uid={},requestId={},orderId={},batteryName={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName());
+            return null;
+        }
+
+        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(oldElectricityBattery.getId());
+        if(Objects.isNull(franchiseeBindElectricityBattery)) {
+            log.warn("EXCHANGE ORDER ERROR! franchiseeBindElectricityBattery is null error! uid={},requestId={},orderId={},batteryName={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName());
+            return false;
+        }
+
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if(Objects.isNull(store)) {
+            log.warn("EXCHANGE ORDER ERROR! store is null error! uid={},requestId={},orderId={},batteryName={},store={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName(), electricityCabinet.getStoreId());
+            return false;
+        }
+
+        if(!Objects.equals(franchiseeBindElectricityBattery.getFranchiseeId(),
+                Objects.isNull(store.getFranchiseeId()) ? null : store.getFranchiseeId().intValue())) {
+            log.error("EXCHANGE ORDER ERROR! Battery and electricityCabinet franchisee not same error! uid={},requestId={},orderId={},batteryName={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName());
+            return false;
+        }
+
+        return true;
+    }
+
+    private void handleBatteryAndEleFranchisees(ElectricityCabinet electricityCabinet, ElectricityCabinetOrder electricityCabinetOrder) {
+        //取消订单
+        cancelOrder(electricityCabinetOrder.getId());
+
+        //记录操作记录
+        ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
+                .createTime(System.currentTimeMillis())
+                .orderId(electricityCabinetOrder.getOrderId())
+                .tenantId(electricityCabinet.getTenantId())
+                .msg("电池加盟商与电柜加盟商不一致，开仓")
+                .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
+                .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
+                .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
+        //electricityCabinetOrderOperHistoryService.insert(history);
+
+        //发送加盟商不一致命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("orderId", electricityCabinetOrder.getOrderId());
+        dataMap.put("cellNo", electricityCabinetOrder.getOldCellNo());
+        dataMap.put("batteryName", electricityCabinetOrder.getOldElectricityBatterySn());
+
+        String sessionId = CacheConstant.ELE_OPERATOR_SESSION_PREFIX + "-" + System.currentTimeMillis() + ":" + electricityCabinetOrder.getId();
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(sessionId)
+                .data(dataMap)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                //.command(ElectricityIotConstant.SELF_OPEN_CELL)
+                .build();
+        //eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+
+        //错误信息保存到缓存里，方便前端显示
+        redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), "电池加盟商与电柜加盟商不一致", 5L, TimeUnit.MINUTES);
     }
 
 
     private void handleOrderException(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderRsp exchangeOrderRsp, ElectricityConfig electricityConfig) {
-        ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
-        newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
-        newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
-        newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
-        newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
-        electricityCabinetOrderService.update(newElectricityCabinetOrder);
+        //取消订单
+        cancelOrder(electricityCabinetOrder.getId());
 
         //判断是否满足可以自助开仓
         if (allowSelfOpenStatus(exchangeOrderRsp.orderStatus, electricityConfig)) {
@@ -231,6 +297,15 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getMsg(), 5L, TimeUnit.MINUTES);
+    }
+
+    private void cancelOrder(Long orderId){
+        ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
+        newElectricityCabinetOrder.setId(orderId);
+        newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());
+        newElectricityCabinetOrder.setStatus(ElectricityCabinetOrder.ORDER_CANCEL);
+        newElectricityCabinetOrder.setOrderSeq(ElectricityCabinetOrder.STATUS_ORDER_CANCEL);
+        electricityCabinetOrderService.update(newElectricityCabinetOrder);
     }
 
     private boolean allowSelfOpenStatus(String orderStatus, ElectricityConfig electricityConfig) {
