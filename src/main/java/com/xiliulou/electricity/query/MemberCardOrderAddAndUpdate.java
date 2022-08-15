@@ -20,12 +20,13 @@ public class MemberCardOrderAddAndUpdate {
     /**
      * 月卡剩余天数
      */
-    @NotNull(message = "套餐剩余天数不能为空")
-    @PositiveOrZero(message = "套餐剩余天数必须为正整数")
+//    @NotNull(message = "套餐剩余天数不能为空")
+//    @PositiveOrZero(message = "套餐剩余天数必须为正整数")
     private Integer validDays;
     /**
      * 套餐到期时间
      */
+    @NotNull(message = "套餐到期时间不能为空")
     private Long memberCardExpireTime;
     /**
      * 最大使用次数
