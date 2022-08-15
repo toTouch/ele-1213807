@@ -273,6 +273,8 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             updateBattery.setElectricityCabinetName(null);
             updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
+
+            log.info("ELE BATTERY REPORT INFO! current batteryName not equals original batteryName,currentBatteryName={},originalBatteryName={},sessionId={}", eleBatteryVO.getBatteryName(), eleBox.getSn(), sessionId);
             electricityBatteryService.updateByOrder(updateBattery);
         }
     }
