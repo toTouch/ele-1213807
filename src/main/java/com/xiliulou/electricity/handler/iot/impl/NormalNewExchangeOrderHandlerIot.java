@@ -12,6 +12,7 @@ import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -160,6 +161,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
+        //这里检查旧电池加盟商是否是该柜机加盟商
+        Triple<Boolean, String, Object> isSame = checkBatteryAndEleFranchisees(exchangeOrderRsp, electricityCabinetOrder, electricityCabinet);
+
         //用户解绑旧电池 旧电池到底是哪块，不确定
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
@@ -195,6 +199,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
 
+    }
+
+    private Triple<Boolean, String, Object> checkBatteryAndEleFranchisees(ExchangeOrderRsp exchangeOrderRsp, ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet) {
+        //ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
+        //electricityCabinet.getStoreId()
+        return null;
     }
 
 
