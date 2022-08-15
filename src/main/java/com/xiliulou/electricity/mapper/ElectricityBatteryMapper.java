@@ -46,7 +46,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
 
-    @Select("select power, last_deposit_cell_no from t_electricity_battery where electricity_cabinet_id = #{electricityCabinetId} and del_flag = 0 order by power desc limit 1")
+    @Select("select power, last_deposit_cell_no from t_electricity_battery where electricity_cabinet_id = #{electricityCabinetId} and status = 0 and del_flag = 0 order by power desc limit 1")
     BigEleBatteryVo queryMaxPowerByElectricityCabinetId(@Param("electricityCabinetId")Integer electricityCabinetId);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
