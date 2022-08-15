@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
-import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.EleCommonConfig;
@@ -10,11 +9,9 @@ import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -107,17 +104,20 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             batteryName = null;
         }
 
+        //处理电池名字为空
         if (StringUtils.isBlank(batteryName)) {
-            //处理电池名字为空
             this.handleBatteryNameIsBlank(eleBox, electricityCabinet, eleBatteryVO);
             log.warn("ELE BATTERY REPORT WARN！battery name is blank,sessionId={}", sessionId);
             return;
         }
 
+        //检查本次上报的电池与格挡原来的电池是否一致
+        this.checkBatteryNameIsEqual(eleBox, eleBatteryVO, sessionId);
+
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName);
         if (Objects.isNull(electricityBattery)) {
-            //保存为录入电池
+            //保存未录入电池
             this.saveNotExistSn(batteryName, electricityCabinet, cellNO);
             log.warn("ELE BATTERY REPORT WARN!battery not input system,batteryName={},sessionId={}", batteryName, sessionId);
             return;
@@ -175,7 +175,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         updateBattery.setChargeStatus(eleBatteryVO.getChargeStatus());
 
 
-        //格挡电池信息
+        //格挡信息
         ElectricityCabinetBox updateElectricityCabinetBox = new ElectricityCabinetBox();
         updateElectricityCabinetBox.setBatteryType(null);
         updateElectricityCabinetBox.setChargeV(eleBatteryVO.getChargeV());
@@ -235,7 +235,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                 eleBox.setSn(eleBox.getSn().substring(6));
             }
 
-            //修改电池
+            //更新原仓门中的电池
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
             if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
                 ElectricityBattery updateBattery = new ElectricityBattery();
@@ -247,6 +247,33 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                 updateBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateByOrder(updateBattery);
             }
+        }
+    }
+
+    /**
+     * 检查本次上报的电池与格挡原来的电池是否一致
+     *
+     * @param eleBox
+     * @param eleBatteryVO
+     * @param sessionId
+     * @return
+     */
+    private void checkBatteryNameIsEqual(ElectricityCabinetBox eleBox, EleBatteryVO eleBatteryVO, String sessionId) {
+        if (StringUtils.isBlank(eleBox.getSn()) || eleBox.getSn().equals(eleBatteryVO.getBatteryName())) {
+            return;
+        }
+
+        //更新原仓门中的电池状态为异常取走
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
+        if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+            ElectricityBattery updateBattery = new ElectricityBattery();
+            updateBattery.setId(electricityBattery.getId());
+            updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+            updateBattery.setElectricityCabinetId(null);
+            updateBattery.setElectricityCabinetName(null);
+            updateBattery.setUid(null);
+            updateBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.updateByOrder(updateBattery);
         }
     }
 
@@ -327,7 +354,6 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                 return power;
             }
         }
-
 
         return power;
     }
