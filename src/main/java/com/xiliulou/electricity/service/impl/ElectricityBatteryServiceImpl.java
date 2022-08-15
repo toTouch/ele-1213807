@@ -334,6 +334,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
+    public ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId) {
+        return electricitybatterymapper.selectOne(new LambdaQueryWrapper<ElectricityBattery>().
+                eq(ElectricityBattery::getSn, oldElectricityBatterySn).eq(ElectricityBattery::getTenantId, tenantId));
+    }
+
+    @Override
     public ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn) {
         return electricitybatterymapper.selectBatteryDetailInfoBySN(sn);
     }
