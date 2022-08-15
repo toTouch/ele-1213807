@@ -1966,6 +1966,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
         }
 
+        //把本柜机加盟商的绑定电池信息拿出来
+        franchiseeBindElectricityBatteries = franchiseeBindElectricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchiseeId.intValue())).collect(Collectors.toList());
+        //获取全部可用电池id
         List<Long> bindingBatteryIds = franchiseeBindElectricityBatteries.stream().map(FranchiseeBindElectricityBattery::getElectricityBatteryId).collect(Collectors.toList());
         //把加盟商绑定的电池过滤出来
         usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());

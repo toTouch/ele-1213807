@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -52,6 +53,10 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     StoreService storeService;
     @Autowired
     FranchiseeBindElectricityBatteryService franchiseeBindElectricityBatteryService;
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
+    @Autowired
+    ElectricityCabinetOrderOperHistoryService electricityCabinetOrderOperHistoryService;
 
 
     @Override
@@ -174,7 +179,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //这里检查旧电池加盟商是否是该柜机加盟商
         Boolean isSame = checkBatteryAndEleFranchisees(exchangeOrderRsp, electricityCabinetOrder.getUid(), electricityCabinet, oldElectricityBattery);
         if(Objects.nonNull(isSame) && !isSame){
-            //handleBatteryAndEleFranchisees(electricityCabinetOrder);
+            handleBatteryAndEleFranchisees(electricityCabinet, electricityCabinetOrder);
             return;
         }
 
@@ -222,13 +227,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
         FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(oldElectricityBattery.getId());
         if(Objects.isNull(franchiseeBindElectricityBattery)) {
-            log.warn("EXCHANGE ORDER ERROR! franchiseeBindElectricityBattery is null error! uid={},requestId={},orderId={},batteryName={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName());
+            log.error("EXCHANGE ORDER ERROR! franchiseeBindElectricityBattery is null error! uid={},requestId={},orderId={},batteryName={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName());
             return false;
         }
 
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if(Objects.isNull(store)) {
-            log.warn("EXCHANGE ORDER ERROR! store is null error! uid={},requestId={},orderId={},batteryName={},store={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName(), electricityCabinet.getStoreId());
+            log.error("EXCHANGE ORDER ERROR! store is null error! uid={},requestId={},orderId={},batteryName={},store={}", uid, exchangeOrderRsp.getSessionId(), exchangeOrderRsp.getOrderId(), exchangeOrderRsp.getPlaceBatteryName(), electricityCabinet.getStoreId());
             return false;
         }
 
@@ -245,7 +250,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //取消订单
         cancelOrder(electricityCabinetOrder.getId());
 
-        //记录操作记录
+        //操作记录
         ElectricityCabinetOrderOperHistory history = ElectricityCabinetOrderOperHistory.builder()
                 .createTime(System.currentTimeMillis())
                 .orderId(electricityCabinetOrder.getOrderId())
@@ -254,7 +259,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .seq(ElectricityCabinetOrderOperHistory.SELF_OPEN_CELL_SEQ)
                 .type(ElectricityCabinetOrderOperHistory.ORDER_TYPE_EXCHANGE)
                 .result(ElectricityCabinetOrderOperHistory.OPERATE_RESULT_SUCCESS).build();
-        //electricityCabinetOrderOperHistoryService.insert(history);
+        electricityCabinetOrderOperHistoryService.insert(history);
 
         //发送加盟商不一致命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
@@ -269,9 +274,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 .data(dataMap)
                 .productKey(electricityCabinet.getProductKey())
                 .deviceName(electricityCabinet.getDeviceName())
-                //.command(ElectricityIotConstant.SELF_OPEN_CELL)
+                .command(ElectricityIotConstant.FRANCHISEES_NOT_SAME_OPEN_DOOR)
                 .build();
-        //eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
 
         //错误信息保存到缓存里，方便前端显示
         redisService.set(CacheConstant.ELE_ORDER_WARN_MSG_CACHE_KEY + electricityCabinetOrder.getOrderId(), "电池加盟商与电柜加盟商不一致", 5L, TimeUnit.MINUTES);

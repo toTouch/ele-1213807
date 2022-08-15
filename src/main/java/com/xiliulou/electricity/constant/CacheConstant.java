@@ -64,6 +64,11 @@ public interface CacheConstant {
     //自助开仓
     String SELF_OPEN_CALL_CACHE_KEY = "self_open_cell_cache_key";
 
+    // 换电柜与电池加盟商不一致开门 幂等锁
+    String FRANCHISEES_NOT_SAME_OPEN_DOOR_LOCK = "franchisees_not_same_lock_cache_key:";
+
+    // 换电柜与电池加盟商不一致开门
+    String FRANCHISEES_NOT_SAME_OPEN_DOOR = "franchisees_not_same_cache_key:";
 
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
@@ -183,4 +188,6 @@ public interface CacheConstant {
      */
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
+
+    String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
 }

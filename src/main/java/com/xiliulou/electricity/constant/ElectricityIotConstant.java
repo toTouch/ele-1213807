@@ -32,6 +32,8 @@ public class ElectricityIotConstant {
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
+    public static final String NORMAL_ELE_ORDER_FRANCHISEES_NOT_SAME_HANDLER = "normalEleOrderFranchiseesNotSameHandler";
+
     /**
      * 核心板上报数据处理
      */
@@ -109,7 +111,8 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE);
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, FRANCHISEES_NOT_SAME_OPEN_DOOR);
 
     }
 
@@ -129,6 +132,8 @@ public class ElectricityIotConstant {
     public static final String ELE_EXCHANGE_ORDER_OPERATE_RECORD = "exchange_order_operate_record";
     //自助开仓
     public static final String SELF_OPEN_CELL = "self_open_cell";
+    //电池加盟商与柜机加盟商不一致
+    public static final String FRANCHISEES_NOT_SAME_OPEN_DOOR = "franchisees_not_same_open_door";
 
     //物理操作
     public static final String ELE_COMMAND_CELL_OPEN_DOOR = "cell_open_door";
@@ -394,6 +399,6 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
 
-
+        COMMAND_HANDLER_MAPS.put(FRANCHISEES_NOT_SAME_OPEN_DOOR , NORMAL_ELE_ORDER_FRANCHISEES_NOT_SAME_HANDLER);
     }
 }

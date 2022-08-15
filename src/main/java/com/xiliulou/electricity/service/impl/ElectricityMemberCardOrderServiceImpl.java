@@ -1165,6 +1165,11 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             }
 
             franchiseeUserInfos.parallelStream().forEach(item -> {
+                Long limitTime = item.getMemberCardExpireTime() - now < 0 ? 0 : item.getMemberCardExpireTime() - now;
+                if(!redisService.setNx(CacheConstant.MEMBER_CARD_EXPIRING_SOON + item.getUid(), "ok", limitTime, false)) {
+                    return;
+                }
+
                 UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(item.getUid(), item.getTenantId());
                 if (Objects.isNull(userOauthBind)) {
                     log.error("MemberCardExpiringSoon Error! userOauthBind is null error! uid={},tenantId={}", item.getUid(), item.getTenantId());

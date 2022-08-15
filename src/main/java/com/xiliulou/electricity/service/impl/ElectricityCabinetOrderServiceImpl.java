@@ -1337,7 +1337,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 return Triple.of(false, "100215", "换电柜暂无空仓");
             }
 
-            Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged(), franchiseeUserInfo.getFranchiseeId());
+            Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged(), store.getFranchiseeId());
             if (!usableBatteryCellNoResult.getLeft()) {
                 return Triple.of(false, usableBatteryCellNoResult.getMiddle(), usableBatteryCellNoResult.getRight());
             }
