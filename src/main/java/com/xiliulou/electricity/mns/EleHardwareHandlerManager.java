@@ -172,8 +172,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_DEVICE + electricityCabinet.getProductKey() + electricityCabinet.getDeviceName() + electricityCabinet.getTenantId());
             }
 
-            log.error("ELE ERROR! type is null,{}", receiverMessage.getOriginContent());
-
             feishuSendMsg(electricityCabinet, receiverMessage.getStatus(), receiverMessage.getTime());
 
             //TODO 发送MQ通知
