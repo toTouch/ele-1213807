@@ -56,7 +56,7 @@
                 and te.source =#{query.source}
             </if>
             <if test="query.startTime != null">
-                and te.create_time BETWEEN #{query.startTime} and #{query.endTime}
+                and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
             order by te.create_time desc
             limit #{offset},#{size}
@@ -83,7 +83,7 @@
                 and te.source =#{query.source}
             </if>
             <if test="query.startTime != null">
-                and te.create_time BETWEEN #{query.startTime} and #{query.endTime}
+                and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
         </where>
     </select>

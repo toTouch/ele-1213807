@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.EleOnlineLogMapper">
+
+
+    <select id="queryOnlineLogList" resultType="com.xiliulou.electricity.vo.ELeOnlineLogVO">
+        SELECT
+        a.id, a.ele_id, a.client_ip, a.status, a.msg, a.appear_time,a.create_time, b.`name`
+        FROM
+        t_ele_on_line_log a
+        LEFT JOIN t_electricity_cabinet b ON a.ele_id = b.id
+        <where>
+            a.ele_id = #{eleId}
+            <if test="type != null and type != ''">
+                and a.status = #{type}
+            </if>
+        </where>
+        order by a.create_time desc
+        limit #{offset}, #{size}
+    </select>
+
+</mapper>

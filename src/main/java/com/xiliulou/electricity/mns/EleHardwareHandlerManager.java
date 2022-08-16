@@ -172,6 +172,9 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             eleOnlineLog.setEleId(electricityCabinet.getId());
             eleOnlineLog.setClientIp(receiverMessage.getClientIp());
             eleOnlineLog.setStatus(receiverMessage.getStatus());
+            eleOnlineLog.setAppearTime(receiverMessage.getTime());
+            eleOnlineLog.setCreateTime(System.currentTimeMillis());
+            eleOnlineLog.setMsg(receiverMessage.getStatus());
 
             if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());

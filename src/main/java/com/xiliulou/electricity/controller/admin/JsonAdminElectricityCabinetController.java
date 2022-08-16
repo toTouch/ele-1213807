@@ -65,6 +65,8 @@ public class JsonAdminElectricityCabinetController {
     UserTypeFactory userTypeFactory;
     @Autowired
     EleCabinetCoreDataService eleCabinetCoreDataService;
+    @Autowired
+    EleOnlineLogService eleOnlineLogService;
 
     //新增换电柜
     @PostMapping(value = "/admin/electricityCabinet")
@@ -604,5 +606,21 @@ public class JsonAdminElectricityCabinetController {
                 .tenantId(tenantId).build();
 
         return electricityCabinetService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
+    }
+
+    @GetMapping("/admin/electricityCabinet/onlineLogList")
+    public R getOnlineLogList(@RequestParam("size") Integer size,
+                              @RequestParam("offset") Integer offset,
+                              @RequestParam(value = "type", required = false) String type,
+                              @RequestParam("eleId") Integer eleId) {
+        if (size < 0 || size > 50) {
+            size = 50;
+        }
+
+        if (offset < 0) {
+            offset = 0;
+        }
+
+        return eleOnlineLogService.queryOnlineLogList(size, offset, type, eleId);
     }
 }
