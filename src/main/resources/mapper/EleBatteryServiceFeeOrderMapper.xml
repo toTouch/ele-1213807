@@ -59,7 +59,7 @@
                 and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
             order by te.create_time desc
-            limit #{offset},#{size}
+            limit #{query.offset},#{query.size}
         </where>
     </select>
 

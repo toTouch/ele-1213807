@@ -96,7 +96,7 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
             }
 
         }
-        return R.ok(eleBatteryServiceFeeOrderMapper.queryList(batteryServiceFeeQuery));
+        return R.ok(eleBatteryServiceFeeOrders);
     }
 
     @Override
