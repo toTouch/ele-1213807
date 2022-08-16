@@ -834,7 +834,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
         electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
         //计算套餐剩余天数
-        if ( memberCardOrderAddAndUpdate.getMemberCardExpireTime()>System.currentTimeMillis()) {
+        if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
             Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
             electricityMemberCardOrder.setValidDays(validDays.intValue());
         }
@@ -844,8 +844,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         //用户
         FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
         franchiseeUserInfoUpdate.setId(oldFranchiseeUserInfo.getId());
-        Long memberCardExpireTime = System.currentTimeMillis() +
-                memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
+//        Long memberCardExpireTime = System.currentTimeMillis() + memberCardOrderAddAndUpdate.getValidDays() * (24 * 60 * 60 * 1000L);
+        Long memberCardExpireTime = memberCardOrderAddAndUpdate.getMemberCardExpireTime();
+        franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setMemberCardExpireTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setRemainingNumber(memberCardOrderAddAndUpdate.getMaxUseCount());
@@ -940,7 +941,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
 
             //计算套餐剩余天数
-            if ( memberCardOrderAddAndUpdate.getMemberCardExpireTime()>System.currentTimeMillis()) {
+            if (memberCardOrderAddAndUpdate.getMemberCardExpireTime() > System.currentTimeMillis()) {
                 Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
                 electricityMemberCardOrder.setValidDays(validDays.intValue());
             }
