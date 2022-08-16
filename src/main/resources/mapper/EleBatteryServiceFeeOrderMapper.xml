@@ -55,7 +55,7 @@
             <if test="query.source != null">
                 and te.source =#{query.source}
             </if>
-            <if test="query.startTime != null">
+            <if test="query.queryStartTime != null">
                 and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
             order by te.create_time desc
@@ -82,7 +82,7 @@
             <if test="query.source != null">
                 and te.source =#{query.source}
             </if>
-            <if test="query.startTime != null">
+            <if test="query.queryStartTime != null">
                 and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
             </if>
         </where>
