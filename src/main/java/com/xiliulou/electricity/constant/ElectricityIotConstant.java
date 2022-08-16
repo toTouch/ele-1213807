@@ -32,6 +32,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
+    public static final String CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
 
     /**
      * 核心板上报数据处理
@@ -110,7 +111,8 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE);
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, CUPBOARD_OPERATING_RECORD);
 
     }
 
@@ -302,6 +304,10 @@ public class ElectricityIotConstant {
      * 关闭充电器
      */
     public static final String ELE_CELL_CLOSE_CHARGE = "cell_close_charge";
+    /**
+     * 物理记录操作回调
+     */
+    public static final String CUPBOARD_OPERATING_RECORD = "cupboard_operating_record";
 
 
     static {
@@ -394,5 +400,9 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
+        /**
+         * 物理记录操作回调
+         */
+        COMMAND_HANDLER_MAPS.put(CUPBOARD_OPERATING_RECORD, CUPBOARD_OPERATING_RECORD_HANDLER);
     }
 }
