@@ -63,6 +63,31 @@
         </where>
     </select>
 
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM
+        t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
+        <where>
+            <if test="query.status != null">
+                and te.status =#{query.status}
+            </if>
+            <if test="query.uid != null">
+                and te.uid =#{query.uid}
+            </if>
+            <if test="query.tenantId != null">
+                and te.tenant_id =#{query.tenantId}
+            </if>
+            <if test="query.phone != null">
+                and te.phone =#{query.phone}
+            </if>
+            <if test="query.source != null">
+                and te.source =#{query.source}
+            </if>
+            <if test="query.startTime != null">
+                and te.create_time BETWEEN #{query.startTime} and #{query.endTime}
+            </if>
+        </where>
+    </select>
+
 
     <select id="queryTurnOver" resultType="decimal">
         select sum(pay_amount) from t_ele_battery_service_fee_order

@@ -31,6 +31,8 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
 
     List<EleBatteryServiceFeeOrderVo> queryList(@Param("query") BatteryServiceFeeQuery batteryServiceFeeQuery);
 
+    Integer queryCount(@Param("query") BatteryServiceFeeQuery batteryServiceFeeQuery);
+
     BigDecimal queryTurnOver(@Param("tenantId") Integer tenantId, @Param("uid") Long uid);
 
     BigDecimal queryTenantTurnOver(@Param("tenantId") Integer tenantId, @Param("todayStartTime") Long todayStartTime, @Param("franchiseeId") Long franchiseeId);

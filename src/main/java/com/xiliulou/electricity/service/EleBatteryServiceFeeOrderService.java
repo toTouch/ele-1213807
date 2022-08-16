@@ -54,6 +54,8 @@ public interface EleBatteryServiceFeeOrderService {
 
     R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery);
 
+    R queryCount(BatteryServiceFeeQuery batteryServiceFeeQuery);
+
     /**
      * 用户的总消费额
      *

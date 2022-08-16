@@ -100,6 +100,11 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
     }
 
     @Override
+    public R queryCount(BatteryServiceFeeQuery batteryServiceFeeQuery) {
+        return R.ok(eleBatteryServiceFeeOrderMapper.queryCount(batteryServiceFeeQuery));
+    }
+
+    @Override
     public BigDecimal queryUserTurnOver(Integer tenantId, Long uid) {
         return Optional.ofNullable(eleBatteryServiceFeeOrderMapper.queryTurnOver(tenantId, uid)).orElse(new BigDecimal("0"));
     }
