@@ -5,13 +5,13 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
-import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.ElectricityCabinetOrder;
-import com.xiliulou.electricity.entity.ElectricityExceptionOrderStatusRecord;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.queue.EleOperateQueueHandler;
+import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderService;
 import com.xiliulou.electricity.service.ElectricityExceptionOrderStatusRecordService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -41,6 +41,12 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
 
     @Autowired
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
+
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
+
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -85,7 +91,6 @@ public class NormalEleSelfOpenCellHandlerIot extends AbstractElectricityIotHandl
         if (Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.STATUS_OPEN_FAIL) || Objects.equals(eleSelfOPenCellOrderVo.getStatus(), ElectricityExceptionOrderStatusRecord.BATTERY_NOT_MATCH)) {
             electricityExceptionOrderStatusRecordUpdate.setOpenCellStatus(ElectricityExceptionOrderStatusRecord.OPEN_CELL_FAIL);
         }
-        electricityExceptionOrderStatusRecordUpdate.setIsSelfOpenCell(ElectricityExceptionOrderStatusRecord.SELF_OPEN_CELL);
         electricityExceptionOrderStatusRecordService.update(electricityExceptionOrderStatusRecordUpdate);
     }
 

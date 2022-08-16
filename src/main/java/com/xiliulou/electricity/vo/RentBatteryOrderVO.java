@@ -76,5 +76,10 @@ public class RentBatteryOrderVO {
     //租户id
     private Integer tenantId;
 
+    /**
+     * 备注
+     */
+    private String remark;
+
 
 }

@@ -874,19 +874,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             status = rentBatteryOrder.getCellNo() + "号仓门开门成功，电池检测中";
         }
 
-        if (rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_CANCEL)
-                || rentBatteryOrder.getOrderSeq().equals(RentBatteryOrder.STATUS_ORDER_EXCEPTION_CANCEL)) {
-
-            ElectricityExceptionOrderStatusRecord electricityExceptionOrderStatusRecord = electricityExceptionOrderStatusRecordService.queryByOrderId(orderId);
-            if (Objects.nonNull(electricityExceptionOrderStatusRecord) && Objects.equals(electricityExceptionOrderStatusRecord.getStatus(), RentBatteryOrder.RETURN_BATTERY_CHECK_TIMEOUT)) {
-                ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService.queryByCellNo(rentBatteryOrder.getElectricityCabinetId(), rentBatteryOrder.getCellNo() + "");
-                map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY);
-                if (Objects.nonNull(electricityCabinetBox) && Objects.equals(electricityCabinetBox.getUsableStatus(), ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_UN_USABLE)) {
-                    map.put("selfOpenCell", ElectricityCabinetOrder.SELF_EXCHANGE_ELECTRICITY_UNUSABLE_CELL);
-                }
-            }
-        }
-
 
         //订单状态
         map.put("status", status);
@@ -1219,7 +1206,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             RentBatteryOrder rentBatteryOrderUpdate = new RentBatteryOrder();
             rentBatteryOrderUpdate.setId(rentBatteryOrder.getId());
             rentBatteryOrderUpdate.setUpdateTime(System.currentTimeMillis());
-            rentBatteryOrderUpdate.setType(RentBatteryOrder.RETURN_ORDER_SOURCE_FOR_SELF_OPEN_CELL);
+            rentBatteryOrderUpdate.setRemark("自助开仓");
             update(rentBatteryOrderUpdate);
 
             //发送自助开仓命令

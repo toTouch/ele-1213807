@@ -132,8 +132,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     @Override
     public List<FranchiseeUserInfo> selectByFranchiseeId(Long id) {
-        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId,id)
-        .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId, id)
+                .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
     }
 
     @Override
@@ -197,7 +197,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
         }
 
-        FranchiseeUserInfo franchiseeUserInfoUpdate=new FranchiseeUserInfo();
+        FranchiseeUserInfo franchiseeUserInfoUpdate = new FranchiseeUserInfo();
         franchiseeUserInfoUpdate.setId(franchiseeUserInfo.getId());
         franchiseeUserInfoUpdate.setBatteryType(batteryType);
         update(franchiseeUserInfoUpdate);
@@ -211,8 +211,9 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     @Override
     public Integer deleteByUserInfoId(Long userInfoId) {
-        return franchiseeUserInfoMapper.delete(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getUserInfoId,userInfoId));
+        return franchiseeUserInfoMapper.delete(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getUserInfoId, userInfoId));
     }
+
     @Override
     public EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid) {
         //获取新用户所绑定的加盟商的电池服务费
@@ -224,12 +225,13 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         }
 
         Integer modelType = franchisee.getModelType();
-        if (Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), new BigDecimal(0))) {
+        if (Objects.equals(modelType, Franchisee.OLD_MODEL_TYPE) && Objects.equals(franchisee.getBatteryServiceFee(), BigDecimal.valueOf(0))) {
             return eleBatteryServiceFeeVO;
         }
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoMapper.queryFranchiseeUserInfoByUid(uid);
         eleBatteryServiceFeeVO.setBatteryServiceFee(franchisee.getBatteryServiceFee());
+        eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE);
 
         if (Objects.isNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             return eleBatteryServiceFeeVO;
@@ -238,9 +240,22 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         eleBatteryServiceFeeVO.setModelType(franchisee.getModelType());
 
         Long now = System.currentTimeMillis();
-        long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        long cardDays = 0;
+        if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        }
 
-        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1 ) {
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(),FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+            eleBatteryServiceFeeVO.setMemberCardStatus(FranchiseeUserInfo.MEMBER_CARD_DISABLE);
+            cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
+            //不足一天按一天计算
+            double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1;
+            }
+        }
+
+        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
                 Integer model = BatteryConstant.acquireBattery(franchiseeUserInfo.getBatteryType());
