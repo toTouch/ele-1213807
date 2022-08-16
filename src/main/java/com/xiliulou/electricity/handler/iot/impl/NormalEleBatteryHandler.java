@@ -2,7 +2,6 @@ package com.xiliulou.electricity.handler.iot.impl;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.electricity.config.EleCommonConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
@@ -350,7 +349,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
 
         try {
-            ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
+            ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
             if (Objects.nonNull(eleOtherSetting)) {
                 applicationMode = eleOtherSetting.getApplicationMode();
             }

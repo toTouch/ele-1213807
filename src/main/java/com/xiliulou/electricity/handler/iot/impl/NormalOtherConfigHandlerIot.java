@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
 import java.util.Objects;
 
 
@@ -40,7 +39,7 @@ public class NormalOtherConfigHandlerIot extends AbstractElectricityIotHandler {
         }
         //上报的数据放入缓存
 //        redisService.saveWithString(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), map);
-        redisService.saveWithHash(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId(), otherSetting);
+        redisService.saveWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), otherSetting);
     }
 
 }
