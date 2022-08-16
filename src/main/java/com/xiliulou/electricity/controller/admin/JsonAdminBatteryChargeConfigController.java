@@ -28,6 +28,7 @@ public class JsonAdminBatteryChargeConfigController {
 
     /**
      * 根据柜机id获取
+     *
      * @param electricityCabinetId
      * @return
      */
@@ -57,7 +58,7 @@ public class JsonAdminBatteryChargeConfigController {
     }
 
     /**
-     * 原子更新
+     * 保存或更新
      */
     @PostMapping("batteryChargeConfig/save")
     public R atomicUpdate(@RequestBody @Validated BatteryChargeConfigQuery query) {

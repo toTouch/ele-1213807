@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.query;
 
+import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotNull;
+import java.util.List;
 
 /**
  * @author zzlong
@@ -26,7 +28,7 @@ public class BatteryChargeConfigQuery {
     /**
      * 电池充电配置
      */
-    private String config;
+    private List<BatteryMultiConfigDTO> configList;
 
     @NotNull(message = "electricityCabinetId不能为空!")
     private Long electricityCabinetId;

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.xiliulou.core.json.JsonUtil;
+import com.xiliulou.electricity.dto.BatteryMultiConfigDTO;
 import com.xiliulou.electricity.entity.BatteryChargeConfig;
 import com.xiliulou.electricity.mapper.BatteryChargeConfigMapper;
 import com.xiliulou.electricity.query.BatteryChargeConfigQuery;
@@ -13,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Objects;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -70,7 +73,7 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     @Transactional(rollbackFor = Exception.class)
     public BatteryChargeConfig insert(BatteryChargeConfigQuery batteryChargeConfigQuery) {
         BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
-        BeanUtils.copyProperties(batteryChargeConfigQuery,batteryChargeConfig);
+        BeanUtils.copyProperties(batteryChargeConfigQuery, batteryChargeConfig);
         this.batteryChargeConfigMapper.insertOne(batteryChargeConfig);
         return batteryChargeConfig;
     }
@@ -82,7 +85,7 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     @Transactional(rollbackFor = Exception.class)
     public Integer update(BatteryChargeConfigQuery batteryChargeConfigQuery) {
         BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
-        BeanUtils.copyProperties(batteryChargeConfigQuery,batteryChargeConfig);
+        BeanUtils.copyProperties(batteryChargeConfigQuery, batteryChargeConfig);
         return this.batteryChargeConfigMapper.update(batteryChargeConfig);
 
     }
@@ -100,13 +103,30 @@ public class BatteryChargeConfigServiceImpl implements BatteryChargeConfigServic
     }
 
     @Override
-    public BatteryChargeConfig selectByElectricityCabinetId(Long electricityCabinetId) {
-        return this.batteryChargeConfigMapper.selectOne(new LambdaQueryWrapper<BatteryChargeConfig>()
-                .eq(BatteryChargeConfig::getElectricityCabinetId,electricityCabinetId).eq(BatteryChargeConfig::getDelFlag,BatteryChargeConfig.DEL_NORMAL));
+    public BatteryChargeConfigQuery selectByElectricityCabinetId(Long electricityCabinetId) {
+        BatteryChargeConfigQuery batteryChargeConfigQuery = new BatteryChargeConfigQuery();
+
+        BatteryChargeConfig batteryChargeConfig = this.batteryChargeConfigMapper.selectOne(new LambdaQueryWrapper<BatteryChargeConfig>()
+                .eq(BatteryChargeConfig::getElectricityCabinetId, electricityCabinetId).eq(BatteryChargeConfig::getDelFlag, BatteryChargeConfig.DEL_NORMAL));
+
+        if (Objects.isNull(batteryChargeConfig)) {
+            return batteryChargeConfigQuery;
+        }
+        BeanUtils.copyProperties(batteryChargeConfig, batteryChargeConfigQuery);
+        batteryChargeConfigQuery.setConfigList(JsonUtil.fromJsonArray(batteryChargeConfig.getConfig(), BatteryMultiConfigDTO.class));
+
+        return batteryChargeConfigQuery;
     }
 
     @Override
     public int atomicUpdate(BatteryChargeConfigQuery query) {
-        return this.batteryChargeConfigMapper.atomicUpdate(query);
+
+        BatteryChargeConfig batteryChargeConfig = new BatteryChargeConfig();
+        BeanUtils.copyProperties(query, batteryChargeConfig);
+        batteryChargeConfig.setConfig(JsonUtil.toJson(query.getConfigList()));
+        batteryChargeConfig.setCreateTime(System.currentTimeMillis());
+        batteryChargeConfig.setUpdateTime(System.currentTimeMillis());
+
+        return this.batteryChargeConfigMapper.atomicUpdate(batteryChargeConfig);
     }
 }

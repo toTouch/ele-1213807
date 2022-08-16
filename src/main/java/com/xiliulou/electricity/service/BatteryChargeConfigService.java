@@ -62,7 +62,7 @@ public interface BatteryChargeConfigService {
      */
     Boolean deleteById(Long id);
 
-    BatteryChargeConfig selectByElectricityCabinetId(Long electricityCabinetId);
+    BatteryChargeConfigQuery selectByElectricityCabinetId(Long electricityCabinetId);
 
     int atomicUpdate(BatteryChargeConfigQuery query);
 }
