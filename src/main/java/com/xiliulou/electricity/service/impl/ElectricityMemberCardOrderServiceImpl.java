@@ -925,12 +925,20 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             electricityMemberCardOrder.setCardName(electricityMemberCard.getName());
             electricityMemberCardOrder.setPayAmount(electricityMemberCard.getHolidayPrice());
             electricityMemberCardOrder.setUserName(userInfo.getUserName());
-            electricityMemberCardOrder.setValidDays(memberCardOrderAddAndUpdate.getValidDays());
+//            electricityMemberCardOrder.setValidDays(memberCardOrderAddAndUpdate.getValidDays());
+            electricityMemberCardOrder.setValidDays(0);
             electricityMemberCardOrder.setTenantId(electricityMemberCard.getTenantId());
             electricityMemberCardOrder.setFranchiseeId(oldFranchiseeUserInfo.getFranchiseeId());
             electricityMemberCardOrder.setIsBindActivity(electricityMemberCard.getIsBindActivity());
             electricityMemberCardOrder.setActivityId(electricityMemberCard.getActivityId());
             electricityMemberCardOrder.setPayType(ElectricityMemberCardOrder.OFFLINE_PAYMENT);
+
+            //计算套餐剩余天数
+            if ( memberCardOrderAddAndUpdate.getMemberCardExpireTime()>System.currentTimeMillis()) {
+                Double validDays = Math.ceil((memberCardOrderAddAndUpdate.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24.0);
+                electricityMemberCardOrder.setValidDays(validDays.intValue());
+            }
+
             baseMapper.insert(electricityMemberCardOrder);
         }
 
