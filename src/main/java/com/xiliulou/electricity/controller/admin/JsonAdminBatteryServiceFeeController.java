@@ -114,6 +114,8 @@ public class JsonAdminBatteryServiceFeeController {
                        @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                        @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                        @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "sn", required = false) String sn,
                        @RequestParam(value = "phone", required = false) String phone,
                        @RequestParam(value = "status", required = false) Integer status,
                        @RequestParam(value = "source", required = false) Integer source) {
@@ -141,6 +143,8 @@ public class JsonAdminBatteryServiceFeeController {
                 .queryEndTime(queryEndTime)
                 .offset(offset)
                 .size(size)
+                .name(name)
+                .sn(sn)
                 .status(status)
                 .tenantId(tenantId)
                 .source(source)
@@ -164,6 +168,8 @@ public class JsonAdminBatteryServiceFeeController {
     public R queryCount(@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
                         @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
                         @RequestParam(value = "uid", required = false) Long uid,
+                        @RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "sn", required = false) String sn,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "source", required = false) Integer source) {
@@ -182,6 +188,8 @@ public class JsonAdminBatteryServiceFeeController {
                 .queryStartTime(queryStartTime)
                 .queryEndTime(queryEndTime)
                 .status(status)
+                .name(name)
+                .sn(sn)
                 .tenantId(tenantId)
                 .source(source)
                 .phone(phone).build();

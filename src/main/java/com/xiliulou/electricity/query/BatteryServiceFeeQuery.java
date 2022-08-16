@@ -19,6 +19,7 @@ public class BatteryServiceFeeQuery {
 
     private String phone;
     private Long uid;
+    private String name;
 
     private Long queryStartTime;
     private Long queryEndTime;
@@ -27,6 +28,8 @@ public class BatteryServiceFeeQuery {
 
     private Integer source;
     private Integer tenantId;
+
+    private String sn;
 
 
 }

@@ -46,6 +46,12 @@
             <if test="query.uid != null">
                 and te.uid =#{query.uid}
             </if>
+            <if test="query.name != null and query.name != ''">
+                and te.name =#{query.name}
+            </if>
+            <if test="query.sn != null and query.sn != ''">
+                and te.sn =#{query.sn}
+            </if>
             <if test="query.tenantId != null">
                 and te.tenant_id =#{query.tenantId}
             </if>
@@ -72,6 +78,12 @@
             </if>
             <if test="query.uid != null">
                 and te.uid =#{query.uid}
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and te.name =#{query.name}
+            </if>
+            <if test="query.sn != null and query.sn != ''">
+                and te.sn =#{query.sn}
             </if>
             <if test="query.tenantId != null">
                 and te.tenant_id =#{query.tenantId}
