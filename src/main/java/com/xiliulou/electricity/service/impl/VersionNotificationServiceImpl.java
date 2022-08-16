@@ -1,21 +1,30 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EmailRecipient;
+import com.xiliulou.electricity.entity.MQMailMessageNotify;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.VersionNotification;
 import com.xiliulou.electricity.mapper.VersionNotificationMapper;
 import com.xiliulou.electricity.query.VersionNotificationQuery;
+import com.xiliulou.electricity.service.MailService;
+import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.service.VersionNotificationService;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import com.xiliulou.security.bean.TokenUser;
+import com.xxl.job.core.handler.IJobHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * (VersionNotification)表服务实现类
@@ -27,10 +36,16 @@ import java.util.Objects;
 @Slf4j
 public class VersionNotificationServiceImpl implements VersionNotificationService {
 
-    private static final Integer limit = 20;
+    private static final Integer limit = 5;
+
+    private static final String SUBJECT_PREFIX = "版本升级通知：";
 
     @Resource
     private VersionNotificationMapper versionNotificationMapper;
+    @Autowired
+    private TenantNotifyMailService tenantNotifyMailService;
+    @Autowired
+    private MailService mailService;
 
 
     /**
@@ -122,5 +137,52 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
     @Override
     public VersionNotification selectNotSendMailOne() {
         return this.versionNotificationMapper.selectNotSendMailOne();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void handleVersionNotificationSendEmail() {
+        //1.获取最新未发送邮件通知的版本升级记录
+        VersionNotification versionNotification = this.selectNotSendMailOne();
+        if (Objects.isNull(versionNotification)) {
+            log.warn("ELE ERROR!versionNotification is null");
+            return ;
+        }
+
+
+        //2.每次获取limit个邮箱 发送通知
+        int i = 0;
+        while (true) {
+            List<TenantNotifyMailVO> tenantNotifyMailList = tenantNotifyMailService.selectByPage(i, i += limit);
+            if (CollectionUtils.isEmpty(tenantNotifyMailList)) {
+                break;
+            }
+
+            List<EmailRecipient> mailList = tenantNotifyMailList.stream().map(item -> {
+                EmailRecipient emailRecipient = new EmailRecipient();
+                emailRecipient.setEmail(item.getMail());
+                emailRecipient.setName(item.getTenantName());
+                return emailRecipient;
+            }).collect(Collectors.toList());
+            if (CollectionUtils.isEmpty(mailList)) {
+                log.error("ELE ERROR!mailList is empty");
+                return ;
+            }
+
+            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
+                    .to(mailList)
+                    .subject(SUBJECT_PREFIX + versionNotification.getVersion())
+                    .text(versionNotification.getContent()).build();
+
+            mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
+        }
+
+
+        //3.发送完毕 更新邮件发送状态
+        VersionNotification updateVersionNotification = new VersionNotification();
+        updateVersionNotification.setId(versionNotification.getId());
+        updateVersionNotification.setSendMailStatus(VersionNotification.STATUS_SEND_MAIL_YES);
+        updateVersionNotification.setUpdateTime(System.currentTimeMillis());
+        this.update(updateVersionNotification);
     }
 }
