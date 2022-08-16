@@ -7,6 +7,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.CommonConstant;
+import com.xiliulou.electricity.entity.EleOnlineLog;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.Tenant;
@@ -166,6 +167,11 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             ElectricityCabinet newElectricityCabinet = new ElectricityCabinet();
             newElectricityCabinet.setId(electricityCabinet.getId());
             newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
+
+            EleOnlineLog eleOnlineLog=new EleOnlineLog();
+            eleOnlineLog.setEleId(electricityCabinet.getId());
+            eleOnlineLog.setClientIp(receiverMessage.getClientIp());
+            eleOnlineLog.setStatus(receiverMessage.getStatus());
 
             if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
