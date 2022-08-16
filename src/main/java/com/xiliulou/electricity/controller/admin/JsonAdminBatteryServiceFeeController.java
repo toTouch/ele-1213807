@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.service.EleBatteryServiceFeeOrderService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
@@ -93,6 +94,46 @@ public class JsonAdminBatteryServiceFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
+    }
+
+    @GetMapping("/admin/batteryServiceFee/queryList")
+    public R queryList(@RequestParam("offset") Long offset, @RequestParam("size") Long size,
+                       @RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+                       @RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+                       @RequestParam(value = "uid", required = false) Long uid,
+                       @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "status", required = false) Integer status,
+                       @RequestParam(value = "source", required = false) Integer source) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        BatteryServiceFeeQuery batteryServiceFeeQuery = BatteryServiceFeeQuery.builder()
+                .uid(uid)
+                .queryStartTime(queryStartTime)
+                .queryEndTime(queryEndTime)
+                .offset(offset)
+                .size(size)
+                .status(status)
+                .tenantId(tenantId)
+                .source(source)
+                .phone(phone).build();
+
+        return eleBatteryServiceFeeOrderService.queryList(batteryServiceFeeQuery);
     }
 
 }

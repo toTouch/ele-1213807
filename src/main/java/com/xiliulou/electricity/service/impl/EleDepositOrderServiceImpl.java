@@ -791,11 +791,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         BigDecimal batteryServiceFee = null;
         Long now = System.currentTimeMillis();
         long cardDays = 0;
+        Integer source = EleBatteryServiceFeeOrder.MEMBER_CARD_OVERDUE;
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
         }
 
         if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+            source = EleBatteryServiceFeeOrder.DISABLE_MEMBER_CARD;
             cardDays = (now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60 / 24;
             //不足一天按一天计算
             double time = Math.ceil((now - franchiseeUserInfo.getDisableMemberCardTime()) / 1000L / 60 / 60.0);
@@ -832,6 +834,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis())
                 .tenantId(tenantId)
+                .source(source)
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
