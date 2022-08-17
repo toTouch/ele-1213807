@@ -19,4 +19,6 @@ public interface EleOnlineLogService {
 
     R queryOnlineLogList(Integer size, Integer offset, String type, Integer eleId);
 
+    R queryOnlineLogCount(String type, Integer eleId);
+
 }

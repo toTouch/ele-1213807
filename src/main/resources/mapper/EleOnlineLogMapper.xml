@@ -19,4 +19,14 @@
         limit #{offset}, #{size}
     </select>
 
+    <select id="queryOnlineLogCount" resultType="integer">
+        select count(1) from t_ele_on_line_log a
+        <where>
+            a.electricity_id = #{eleId}
+            <if test="type != null and type != ''">
+                and a.status = #{type}
+            </if>
+        </where>
+    </select>
+
 </mapper>

@@ -623,4 +623,11 @@ public class JsonAdminElectricityCabinetController {
 
         return eleOnlineLogService.queryOnlineLogList(size, offset, type, eleId);
     }
+
+
+    @GetMapping("/admin/electricityCabinet/onlineLogCount")
+    public R getOnlineLogCount(@RequestParam(value = "type", required = false) String type,
+                              @RequestParam("eleId") Integer eleId) {
+        return eleOnlineLogService.queryOnlineLogCount(type, eleId);
+    }
 }
