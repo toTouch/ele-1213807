@@ -16,6 +16,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.config.EleIotOtaUrlConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -124,6 +125,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     UserService userService;
+    @Autowired
+    EleIotOtaUrlConfig eleIotOtaUrlConfig;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -1159,11 +1162,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
 
-        HashMap<String, Object> dataMap = Maps.newHashMap();
+        Map<String, Object> dataMap = null;
+        if(CollectionUtils.isEmpty(eleOuterCommandQuery.getData())) {
+            dataMap = Maps.newHashMap();
+        } else {
+            dataMap = eleOuterCommandQuery.getData();
+        }
+
         dataMap.put("uid", SecurityUtils.getUid());
-        dataMap.put("userName", SecurityUtils.getUserInfo().getUsername());
+        dataMap.put("username", SecurityUtils.getUserInfo().getUsername());
         eleOuterCommandQuery.setData(dataMap);
 
+        //开全部门 -->  cell_all_open_door
         if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_ALL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
             List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
             if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
@@ -1176,6 +1186,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
             dataMap.put("cell_list", cellList);
 
+        }
+
+        //ota升级 -->  ota_process
+        if(Objects.equals(ElectricityIotConstant.OTA_PROCESS, eleOuterCommandQuery.getCommand())){
+            dataMap.put("subUrl", eleIotOtaUrlConfig.getSubUrl());
+            dataMap.put("coreUrl", eleIotOtaUrlConfig.getCoreUrl());
         }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -2784,5 +2800,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(homepageBatteryVo);
 
+    }
+
+    @Override
+    public R checkOtaUpgradeSession(String sessionId) {
+        OtaRequestVo vo = redisService.getWithHash(CacheConstant.OTA_PROCESS_CACHE + sessionId, OtaRequestVo.class);
+        if(Objects.isNull(vo)) {
+            return R.fail(null,"检查超时");
+        }
+        return R.ok(vo);
     }
 }

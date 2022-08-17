@@ -32,7 +32,8 @@ public class ElectricityIotConstant {
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
-    public static final String CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
+    public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
+    public static final String NORMAL_OTA_PROCESS_HANDLER = "normalOtaProcessHandler";
 
     /**
      * 核心板上报数据处理
@@ -112,7 +113,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, CUPBOARD_OPERATING_RECORD);
+                || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
+                || Objects.equals(command, OTA_PROCESS)
+                || Objects.equals(command, OTA_PROCESS_RSP);
 
     }
 
@@ -309,6 +312,12 @@ public class ElectricityIotConstant {
      */
     public static final String CUPBOARD_OPERATING_RECORD = "cupboard_operating_record";
 
+    /**
+     * ota升级
+     */
+    public static final String OTA_PROCESS = "ota_process";
+    public static final String OTA_PROCESS_RSP = "ota_process_rsp";
+
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -403,6 +412,11 @@ public class ElectricityIotConstant {
         /**
          * 物理记录操作回调
          */
-        COMMAND_HANDLER_MAPS.put(CUPBOARD_OPERATING_RECORD, CUPBOARD_OPERATING_RECORD_HANDLER);
+        COMMAND_HANDLER_MAPS.put(CUPBOARD_OPERATING_RECORD, NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER);
+        /**
+         * oat升级
+         */
+        COMMAND_HANDLER_MAPS.put(OTA_PROCESS, NORMAL_OTA_PROCESS_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OTA_PROCESS_RSP, NORMAL_OTA_PROCESS_HANDLER);
     }
 }

@@ -190,4 +190,5 @@ public interface CacheConstant {
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
 
     String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
+    String OTA_PROCESS_CACHE = "ota_process_cache";
 }

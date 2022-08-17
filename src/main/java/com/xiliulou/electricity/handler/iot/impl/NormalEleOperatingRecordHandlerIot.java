@@ -19,7 +19,7 @@ import java.util.Objects;
  * @date 2022/8/16 14:06
  * @mood
  */
-@Service(value= ElectricityIotConstant.CUPBOARD_OPERATING_RECORD_HANDLER)
+@Service(value= ElectricityIotConstant.NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER)
 @Slf4j
 public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHandler {
 
@@ -42,7 +42,7 @@ public class NormalEleOperatingRecordHandlerIot extends AbstractElectricityIotHa
         electricityCabinetPhysicsOperRecord.setStatus(Objects.isNull(request.getResult()) || !request.getResult() ? CupboardOperatingRecordRequest.RESULT_FAIL : CupboardOperatingRecordRequest.RESULT_SUCCESS);
         electricityCabinetPhysicsOperRecord.setMsg(request.getOperateMsg());
         electricityCabinetPhysicsOperRecord.setUid(request.getUid());
-        electricityCabinetPhysicsOperRecord.setUserName(request.getUserName());
+        electricityCabinetPhysicsOperRecord.setUserName(request.getUsername());
         electricityCabinetPhysicsOperRecord.setOperateType(request.getOperateType());
         electricityCabinetPhysicsOperRecordService.insert(electricityCabinetPhysicsOperRecord);
     }
@@ -77,7 +77,7 @@ class CupboardOperatingRecordRequest {
     private Integer cellNo;
     private Long createTime;
     private Long uid;
-    private String userName;
+    private String username;
 
     public static final Integer TYPE_IOT = 1;
     public static final Integer TYPE_LOAD = 2;

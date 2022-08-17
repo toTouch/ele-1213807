@@ -265,6 +265,16 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.checkOpenSessionId(sessionId);
     }
 
+    //检查ota升级
+    //查看开门命令
+    @GetMapping("/admin/electricityCabinet/ota/upgrade/check")
+    public R checkOtaUpgradeSession(@RequestParam("sessionId") String sessionId) {
+        if (StrUtil.isEmpty(sessionId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCabinetService.checkOtaUpgradeSession(sessionId);
+    }
+
     //短信测试
     @GetMapping("/outer/sendMessage")
     public void sendMessage() {
