@@ -611,7 +611,7 @@ public class JsonAdminElectricityCabinetController {
     @GetMapping("/admin/electricityCabinet/onlineLogList")
     public R getOnlineLogList(@RequestParam("size") Integer size,
                               @RequestParam("offset") Integer offset,
-                              @RequestParam(value = "type", required = false) String type,
+                              @RequestParam(value = "status", required = false) String status,
                               @RequestParam("eleId") Integer eleId) {
         if (size < 0 || size > 50) {
             size = 50;
@@ -621,13 +621,13 @@ public class JsonAdminElectricityCabinetController {
             offset = 0;
         }
 
-        return eleOnlineLogService.queryOnlineLogList(size, offset, type, eleId);
+        return eleOnlineLogService.queryOnlineLogList(size, offset, status, eleId);
     }
 
 
     @GetMapping("/admin/electricityCabinet/onlineLogCount")
-    public R getOnlineLogCount(@RequestParam(value = "type", required = false) String type,
+    public R getOnlineLogCount(@RequestParam(value = "status", required = false) String status,
                               @RequestParam("eleId") Integer eleId) {
-        return eleOnlineLogService.queryOnlineLogCount(type, eleId);
+        return eleOnlineLogService.queryOnlineLogCount(status, eleId);
     }
 }
