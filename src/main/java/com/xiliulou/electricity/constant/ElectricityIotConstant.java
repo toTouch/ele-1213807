@@ -34,6 +34,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
     public static final String NORMAL_OTA_PROCESS_HANDLER = "normalOtaProcessHandler";
+    public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
 
     /**
      * 核心板上报数据处理
@@ -115,7 +116,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
                 || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
                 || Objects.equals(command, OTA_PROCESS)
-                || Objects.equals(command, OTA_PROCESS_RSP);
+                || Objects.equals(command, OTA_PROCESS_RSP)
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP);
 
     }
 
@@ -318,6 +321,11 @@ public class ElectricityIotConstant {
     public static final String OTA_PROCESS = "ota_process";
     public static final String OTA_PROCESS_RSP = "ota_process_rsp";
 
+    /**
+     * sim上报
+     */
+    public static final String SIM_TRAFFIC_STATISTICS = "xxx";
+    public static final String SIM_TRAFFIC_STATISTICS_RSP = "xxx";
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
