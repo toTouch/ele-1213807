@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPhysicsOperRecord;
 
 import java.util.List;
@@ -61,4 +62,5 @@ public interface ElectricityCabinetPhysicsOperRecordService {
      */
     Boolean deleteById(Long id);
 
+    R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer type, Long beginTime, Long endTime, Integer cellNo);
 }

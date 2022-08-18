@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPhysicsOperRecord;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPhysicsOperRecordMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetPhysicsOperRecordService;
@@ -92,5 +93,10 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.electricityCabinetPhysicsOperRecordMapper.deleteById(id) > 0;
+    }
+
+    @Override
+    public R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer operateType, Long beginTime, Long endTime, Integer cellNo) {
+        return R.ok(electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo));
     }
 }

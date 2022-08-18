@@ -2,6 +2,7 @@ package com.xiliulou.electricity.mapper;
 
 import java.util.List;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPhysicsOperRecord;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -64,4 +65,11 @@ public interface ElectricityCabinetPhysicsOperRecordMapper  extends BaseMapper<E
      */
     int deleteById(Long id);
 
+    List<ElectricityCabinetPhysicsOperRecord> electricityCabinetOperRecordList(@Param("size") Integer size,
+                                                                               @Param("offset") Integer offset,
+                                                                               @Param("eleId") Integer eleId,
+                                                                               @Param("operateType") Integer operateType,
+                                                                               @Param("beginTime") Long beginTime,
+                                                                               @Param("endTime") Long endTime,
+                                                                               @Param("cellNo") Integer cellNo);
 }

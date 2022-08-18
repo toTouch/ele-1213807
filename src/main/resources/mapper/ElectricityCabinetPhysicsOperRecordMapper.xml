@@ -116,4 +116,27 @@
         delete from t_electricity_cabinet_physics_oper_record where id = #{id}
     </delete>
 
+    <select id="electricityCabinetOperRecordList" resultMap="ElectricityCabinetPhysicsOperRecordMap">
+         select
+            id, electricity_cabinet_id, cell_no, status, msg, uid, user_name, operate_type, create_time, command
+         from t_electricity_cabinet_physics_oper_record
+         <where>
+             <if test="eleId != null">
+                 and electricity_cabinet_id = #{eleId}
+             </if>
+             <if test="operateType != null">
+                 and operate_type = #{operateType}
+             </if>
+             <if test="beginTime != null and endTime != null">
+                 and create_time between #{beginTime} and #{endTime}
+             </if>
+             <if test="cellNo != null">
+                 and cell_no = #{cellNo}
+             </if>
+         </where>
+         order by create_time desc
+         <if test="offset != null and size != null">
+             limit #{offset}, #{size}
+         </if>
+    </select>
 </mapper>
