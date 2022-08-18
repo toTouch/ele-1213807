@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetTrafficMapper">
+
+    <select id="queryById" resultType="com.xiliulou.electricity.entity.ElectricityCabinetTraffic">
+        select
+            id, eid, same_day_Traffic, sum_traffic, date, create_time, update_time, tenant_id
+        from t_electricity_cabinet_traffic where id = #{id}
+    </select>
+
+    <update id="updateOneById">
+        update t_electricity_cabinet_traffic
+        <set>
+            <if test="eid != null">
+                eid = #{eid},
+            </if>
+            <if test="sameDayTraffic != null">
+                same_day_Traffic = #{sameDayTraffic},
+            </if>
+            <if test="sumTraffic != null">
+                sum_traffic = #{sumTraffic},
+            </if>
+            <if test="date != null and date != ''">
+                date = #{date},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+             <if test="tenantId != null">
+                 tenant_id = #{tenantId},
+             </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_cabinet_traffic(eid, same_day_Traffic, sum_traffic, date, create_time, update_time, tenant_id)
+        valuse(#{eid}, #{sameDayTraffic}, #{sumTraffic}, #{date}, #{createTime},#{updateTime},#{tenantId})
+    </insert>
+
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetTrafficVo">
+        select
+            tect.id,
+            tect.same_day_power,
+            tect.sum_power,
+            tect.`date`,
+            tect.create_time,
+            tect.update_time,
+            tect.eid as electricity_cabinet_id,
+            tec.name as electricityCabinetName
+        from t_electricity_cabinet_traffic as tect
+        left join t_electricity_cabinet as tec on tect.eid=tec.id
+        <where>
+            <if test="electricityCabinetId != null">
+                and tecp.eid = #{electricityCabinetId}
+            </if>
+            <if test="date != null">
+                and tecp.`date` = #{date}
+            </if>
+            <if test="electricityCabinetName != null">
+                and tec.name like concat('%',#{electricityCabinetName},'%')
+            </if>
+        </where>
+        order by tecp.create_time DESC
+        limit #{offset}, #{size}
+    </select>
+</mapper>

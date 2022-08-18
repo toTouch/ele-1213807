@@ -324,8 +324,8 @@ public class ElectricityIotConstant {
     /**
      * sim上报
      */
-    public static final String SIM_TRAFFIC_STATISTICS = "xxx";
-    public static final String SIM_TRAFFIC_STATISTICS_RSP = "xxx";
+    public static final String SIM_TRAFFIC_STATISTICS = "iccid_traffic_statistics";
+    public static final String SIM_TRAFFIC_STATISTICS_RSP = "sim_card_statistics_rsp";
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
