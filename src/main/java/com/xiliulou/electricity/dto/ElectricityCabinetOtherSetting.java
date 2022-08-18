@@ -104,4 +104,16 @@ public class ElectricityCabinetOtherSetting {
      * 耗电量倍率
      * */
     private Integer powerConsumptionMultiply;
+
+    /**
+     * 显示真实电量
+     *
+     * multi_v模式
+     * */
+    private Integer realQuantity;
+    /**
+     * 满电判断标准
+     * multi——v模式
+     * */
+    private Integer maxBatteryStandard;
 }

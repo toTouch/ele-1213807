@@ -1084,6 +1084,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         homeInfo.put("serviceStatus", serviceStatus);
         homeInfo.put("cardDay", cardDay.intValue());
         homeInfo.put("battery", battery);
+        homeInfo.put("memberCardDisableStatus", franchiseeUserInfo.getMemberCardDisableStatus());
 
         return R.ok(homeInfo);
     }
