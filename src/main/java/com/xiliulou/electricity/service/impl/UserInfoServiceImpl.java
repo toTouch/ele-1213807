@@ -1020,14 +1020,12 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public R deleteUserInfo(Long uid) {
 
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.isNull(franchiseeUserInfo)) {
-            return R.fail("ELECTRICITY.0019", "用户不存在！");
-        }
 
-        if (StringUtils.isNotBlank(franchiseeUserInfo.getNowElectricityBatterySn())) {
+        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
+        if (Objects.nonNull(franchiseeUserInfo) && StringUtils.isNotBlank(franchiseeUserInfo.getNowElectricityBatterySn())) {
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
+
 
         Triple<Boolean, String, Object> result = userService.deleteNormalUser(uid);
         if (result.getLeft()) {
