@@ -123,9 +123,6 @@ public class UserBatteryInfoVO {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
-    /**
-     * 月卡停启用状态 0--启用 1--停用
-     */
-    private Integer memberCardDisableStatus;
+
 
 }
