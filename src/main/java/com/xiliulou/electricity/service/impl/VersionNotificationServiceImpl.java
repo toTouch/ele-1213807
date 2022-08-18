@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.EmailRecipient;
 import com.xiliulou.electricity.entity.MQMailMessageNotify;
 import com.xiliulou.electricity.entity.User;
@@ -13,7 +14,6 @@ import com.xiliulou.electricity.service.VersionNotificationService;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import com.xiliulou.security.bean.TokenUser;
-import com.xxl.job.core.handler.IJobHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -132,6 +132,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
 
     /**
      * 获取最新未发送邮件通知的版本升级记录
+     *
      * @return
      */
     @Override
@@ -146,12 +147,12 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
         VersionNotification versionNotification = this.selectNotSendMailOne();
         if (Objects.isNull(versionNotification)) {
             log.warn("ELE ERROR!versionNotification is null");
-            return ;
+            return;
         }
 
 
-        //2.每次获取limit个邮箱 发送通知
-        int i = 0;
+ /*        //2.每次获取limit个邮箱 发送通知
+       int i = 0;
         while (true) {
             List<TenantNotifyMailVO> tenantNotifyMailList = tenantNotifyMailService.selectByPage(i, i += limit);
             if (CollectionUtils.isEmpty(tenantNotifyMailList)) {
@@ -166,7 +167,7 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
             }).collect(Collectors.toList());
             if (CollectionUtils.isEmpty(mailList)) {
                 log.error("ELE ERROR!mailList is empty");
-                return ;
+                return;
             }
 
             MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
@@ -175,8 +176,36 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
                     .text(versionNotification.getContent()).build();
 
             mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
+        }*/
+
+        //2.根据租户ID分组 发送通知
+        List<TenantNotifyMailDTO> tenantNotifyMailDTOList = tenantNotifyMailService.selectGroupByTenantId();
+        if (CollectionUtils.isEmpty(tenantNotifyMailDTOList)) {
+            log.error("ELE ERROR!tenantNotifyMailDTOList is empty");
+            return;
         }
 
+        for (TenantNotifyMailDTO tenantNotifyMailDTO : tenantNotifyMailDTOList) {
+            List<TenantNotifyMailVO> list = tenantNotifyMailDTO.getTenantNotifyMailList();
+            if (CollectionUtils.isEmpty(list)) {
+                log.info("ELE INFO!tenantNotifyMailVOList is empty");
+                break;
+            }
+
+            List<EmailRecipient> mailList = list.stream().map(item -> {
+                EmailRecipient emailRecipient = new EmailRecipient();
+                emailRecipient.setEmail(item.getMail());
+                emailRecipient.setName(item.getTenantName());
+                return emailRecipient;
+            }).collect(Collectors.toList());
+
+            MQMailMessageNotify mailMessageNotify = MQMailMessageNotify.builder()
+                    .to(mailList)
+                    .subject(SUBJECT_PREFIX + versionNotification.getVersion())
+                    .text(versionNotification.getContent()).build();
+
+            mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
+        }
 
         //3.发送完毕 更新邮件发送状态
         VersionNotification updateVersionNotification = new VersionNotification();

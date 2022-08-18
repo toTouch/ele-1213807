@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
 import com.xiliulou.electricity.vo.TenantNotifyMailVO;
@@ -72,4 +73,5 @@ public interface TenantNotifyMailService {
 
     Boolean checkByTenantId();
 
+    List<TenantNotifyMailDTO> selectGroupByTenantId();
 }

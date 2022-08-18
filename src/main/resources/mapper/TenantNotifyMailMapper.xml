@@ -10,6 +10,11 @@
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
     </resultMap>
 
+    <resultMap type="com.xiliulou.electricity.dto.TenantNotifyMailDTO" id="TenantNotifyMailDTOListMap">
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <collection property="tenantNotifyMailList"  ofType="com.xiliulou.electricity.vo.TenantNotifyMailVO" javaType="java.util.ArrayList" resultMap="TenantNotifyMailVOMap"/>
+    </resultMap>
+
     <resultMap type="com.xiliulou.electricity.vo.TenantNotifyMailVO" id="TenantNotifyMailVOMap">
         <result property="id" column="id" jdbcType="INTEGER"/>
         <result property="mail" column="mail" jdbcType="VARCHAR"/>
@@ -23,6 +28,14 @@
     <sql id="selectTenantNotifyMail">
        	select   id, mail, tenant_id, create_time, update_time        from t_tenant_notify_mail
     </sql>
+
+    <!--根据租户ID分组-->
+    <select id="selectGroupByTenantId" resultMap="TenantNotifyMailDTOListMap">
+        select   tnm.id, tnm.mail, tnm.tenant_id, tnm.create_time, tnm.update_time,tt.name
+        from t_tenant_notify_mail tnm
+        left join t_tenant tt on tnm.tenant_id=tt.id
+
+    </select>
 
     <!--查询单个-->
     <select id="selectById" resultMap="TenantNotifyMailMap">

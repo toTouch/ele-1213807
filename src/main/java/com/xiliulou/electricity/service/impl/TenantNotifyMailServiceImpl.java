@@ -3,23 +3,22 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.lang.Validator;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.TenantNotifyMail;
 import com.xiliulou.electricity.mapper.TenantNotifyMailMapper;
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.TenantNotifyMailVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * (UpgradeNotifyMail)表服务实现类
@@ -171,5 +170,11 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
 //
 //        return R.ok(this.upgradeNotifyMailMapper.insertOrUpdate(upgradeNotifyMailQuery));
         return R.ok();
+    }
+
+
+    @Override
+    public List<TenantNotifyMailDTO> selectGroupByTenantId() {
+        return this.tenantNotifyMailMapper.selectGroupByTenantId();
     }
 }

@@ -1,13 +1,13 @@
 package com.xiliulou.electricity.mapper;
 
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.TenantNotifyMail;
-
-import java.util.List;
-
 import com.xiliulou.electricity.query.UpgradeNotifyMailQuery;
 import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import org.apache.ibatis.annotations.Param;
-import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+import java.util.List;
 
 /**
  * (UpgradeNotifyMail)表数据库访问层
@@ -78,4 +78,6 @@ public interface TenantNotifyMailMapper extends BaseMapper<TenantNotifyMail> {
     int batchInsert(List<TenantNotifyMail> list);
 
     List<TenantNotifyMailVO> selectByTenantId(@Param("tenantId") Long tenantId);
+
+    List<TenantNotifyMailDTO> selectGroupByTenantId();
 }
