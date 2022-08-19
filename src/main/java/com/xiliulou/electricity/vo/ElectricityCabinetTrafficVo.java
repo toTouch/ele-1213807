@@ -9,7 +9,7 @@ public class ElectricityCabinetTrafficVo {
     private Long id;
     private Long electricityCabinetId;
     private String electricityCabinetName;
-    private BigDecimal sameDayPower;
+    private BigDecimal sameDayTraffic;
     private BigDecimal sumPower;
     private String date;
     private Long createTime;

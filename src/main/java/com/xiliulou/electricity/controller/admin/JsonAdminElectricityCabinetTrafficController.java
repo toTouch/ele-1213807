@@ -28,6 +28,8 @@ public class JsonAdminElectricityCabinetTrafficController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                       @RequestParam(value = "beginTime",required = false) Long beginTime,
+                       @RequestParam(value = "endTime",required = false) Long endTime,
                        @RequestParam(value = "date", required = false) LocalDate date) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -37,6 +39,6 @@ public class JsonAdminElectricityCabinetTrafficController {
             offset = 0L;
         }
 
-        return electricityCabinetTrafficService.queryList(size, offset, electricityCabinetId, electricityCabinetName, date);
+        return electricityCabinetTrafficService.queryList(size, offset, electricityCabinetId, electricityCabinetName, date,beginTime,endTime);
     }
 }

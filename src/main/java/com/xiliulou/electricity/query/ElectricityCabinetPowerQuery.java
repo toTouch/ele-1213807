@@ -21,4 +21,7 @@ public class ElectricityCabinetPowerQuery {
     private LocalDate date;
 
     private String electricityCabinetName;
+
+    private Long beginTime;
+    private Long endTime;
 }

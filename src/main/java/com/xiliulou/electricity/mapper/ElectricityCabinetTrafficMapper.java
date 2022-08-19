@@ -22,6 +22,8 @@ public interface ElectricityCabinetTrafficMapper extends BaseMapper<ElectricityC
                                                 @Param("offset")Long offset,
                                                 @Param("electricityCabinetId")Integer electricityCabinetId,
                                                 @Param("electricityCabinetName")String electricityCabinetName,
+                                                @Param("beginTime")Long beginTime,
+                                                @Param("endTime")Long endTime,
                                                 @Param("date")LocalDate date);
 
     @Delete("delete from t_electricity_cabinet_traffic where create_time < #{time}")

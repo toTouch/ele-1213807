@@ -44,7 +44,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetTrafficVo">
         select
             tect.id,
-            tect.same_day_power,
+            tect.same_day_traffic,
             tect.sum_power,
             tect.`date`,
             tect.create_time,
@@ -55,10 +55,16 @@
         left join t_electricity_cabinet as tec on tect.eid=tec.id
         <where>
             <if test="electricityCabinetId != null">
-                and tecp.eid = #{electricityCabinetId}
+                and tect.eid = #{electricityCabinetId}
             </if>
             <if test="date != null">
-                and tecp.`date` = #{date}
+                and tect.`date` = #{date}
+            </if>
+            <if test="beginTime != null">
+                and tect.create_time &gt;=#{beginTime}
+            </if>
+            <if test="endTime != null">
+                and tect.create_time &lt;=#{endTime}
             </if>
             <if test="electricityCabinetName != null">
                 and tec.name like concat('%',#{electricityCabinetName},'%')
