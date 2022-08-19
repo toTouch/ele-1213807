@@ -9,7 +9,7 @@
         id, coupon_id,uid,name,phone,create_time,update_time
         from t_coupon_issue_operate_record
         <where>
-            <if test="query.couponId != null and query.couponId != ''">
+            <if test="query.couponId != null ">
                 and coupon_id = #{query.couponId}
             </if>
             <if test="query.uid != null">
@@ -37,7 +37,7 @@
         select COUNT(1)
         from t_coupon_issue_operate_record
         <where>
-            <if test="query.couponId != null and query.couponId != ''">
+            <if test="query.couponId != null ">
                 and coupon_id = #{query.couponId}
             </if>
             <if test="query.uid != null">
