@@ -37,8 +37,8 @@
     </update>
 
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_electricity_cabinet_traffic(eid, same_day_Traffic, sum_traffic, date, create_time, update_time, tenant_id)
-        valuse(#{eid}, #{sameDayTraffic}, #{sumTraffic}, #{date}, #{createTime},#{updateTime},#{tenantId})
+        insert into t_electricity_cabinet_traffic(eid, same_day_traffic, sum_traffic, date, create_time, update_time, tenant_id)
+        values(#{eid}, #{sameDayTraffic}, #{sumTraffic}, #{date}, #{createTime},#{updateTime},#{tenantId})
     </insert>
 
     <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetTrafficVo">
