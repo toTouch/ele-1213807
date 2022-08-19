@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
@@ -177,6 +178,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
                 if (Objects.nonNull(item.getModel())){
                     item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
+                }
+
+                if(StringUtils.isNotBlank(item.getOrderId())) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
+                    if(Objects.nonNull(eleDepositOrder)) {
+                        item.setStoreId(eleDepositOrder.getStoreId());
+                    }
                 }
             });
         }, threadPool).exceptionally(e -> {

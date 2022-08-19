@@ -128,4 +128,8 @@ public class UserBatteryInfoVO {
     private Integer usableStatus;
 
     private Integer modelType;
+
+    private String orderId;
+
+    private Long storeId;
 }
