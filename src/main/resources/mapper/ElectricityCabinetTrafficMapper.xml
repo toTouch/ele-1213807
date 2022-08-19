@@ -45,7 +45,7 @@
         select
             tect.id,
             tect.same_day_traffic,
-            tect.sum_power,
+            tect.sum_traffic,
             tect.`date`,
             tect.create_time,
             tect.update_time,
