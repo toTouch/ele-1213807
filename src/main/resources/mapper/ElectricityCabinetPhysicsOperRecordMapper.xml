@@ -121,7 +121,7 @@
              ecpor.id, ecpor.electricity_cabinet_id, ecpor.cell_no, ecpor.status, ecpor.msg, ecpor.uid, ecpor.user_name, ecpor.operate_type, ecpor.create_time, ecpor.command
              ec.name as electricity_cabinet_name
          from t_electricity_cabinet_physics_oper_record ecpor
-         left join t_electricity_cabinet ec
+         left join t_electricity_cabinet ec on ecpor.electricity_cabinet_id = ec.id
          <where>
              <if test="eleId != null">
                  and ecpor.electricity_cabinet_id = #{eleId}
