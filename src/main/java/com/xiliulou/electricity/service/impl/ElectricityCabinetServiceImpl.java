@@ -1050,6 +1050,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //套餐剩余天数
         Double cardDay=0.0D;
+        if (Objects.equals(franchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+            now = franchiseeUserInfo.getDisableMemberCardTime();
+        }
+
         if (!Objects.equals(franchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             ElectricityMemberCard electricityMemberCard = electricityMemberCardService.queryByCache(franchiseeUserInfo.getCardId());
             if (Objects.nonNull(electricityMemberCard)) {
@@ -1066,6 +1070,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 cardDay = Math.ceil((franchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24.0);
             }
         }
+
 
 
         //我的电池
@@ -1487,37 +1492,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
 
-        //查满仓空仓数
-//        Triple<Boolean, String, Object> tripleResult;
-//        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
-//            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId(), electricityCabinet.getTenantId());
-//        } else {
-//            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId(), electricityCabinet.getTenantId());
-//        }
-//
-//        if (Objects.isNull(tripleResult)) {
-//            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
-//            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", value);
-//        }
-//
-//        if (!tripleResult.getLeft()) {
-//            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
-//            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
-//        }
+//        查满仓空仓数
         Triple<Boolean, String, Object> tripleResult;
         if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
         } else {
-            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
+            tripleResult = queryFullyElectricityBatteryByExchangeOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId(), electricityCabinet.getTenantId());
         }
 
         if (Objects.isNull(tripleResult)) {
-            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
+            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池", value);
         }
 
         if (!tripleResult.getLeft()) {
-            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
+            Integer value = checkIsLowBatteryExchange(electricityCabinet.getTenantId(), electricityCabinet.getId(), franchiseeUserInfo.getFranchiseeId());
+            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString(), value);
         }
+//        Triple<Boolean, String, Object> tripleResult;
+//        if (Objects.equals(franchiseeUserInfo.getModelType(), FranchiseeUserInfo.MEW_MODEL_TYPE)) {
+//            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), franchiseeUserInfo.getFranchiseeId());
+//        } else {
+//            tripleResult = queryFullyElectricityBatteryByOrder(electricityCabinet.getId(), null, franchiseeUserInfo.getFranchiseeId());
+//        }
+//
+//        if (Objects.isNull(tripleResult)) {
+//            return R.fail("ELECTRICITY.0026", "换电柜暂无满电电池");
+//        }
+//
+//        if (!tripleResult.getLeft()) {
+//            return R.fail("ELECTRICITY.0026", tripleResult.getRight().toString());
+//        }
 
         //查满仓空仓数
         int electricityBatteryTotal = 0;

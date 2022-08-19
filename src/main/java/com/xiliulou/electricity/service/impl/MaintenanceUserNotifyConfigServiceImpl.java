@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.date.DateUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
@@ -11,6 +12,7 @@ import com.xiliulou.electricity.mapper.MaintenanceUserNotifyConfigMapper;
 import com.xiliulou.electricity.query.MaintenanceUserNotifyConfigQuery;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.vo.MaintenanceUserNotifyConfigVo;
 import com.xiliulou.mq.service.RocketMqService;
@@ -21,6 +23,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
@@ -253,34 +256,28 @@ public class MaintenanceUserNotifyConfigServiceImpl implements MaintenanceUserNo
     @Override
     public void sendUserUploadExceptionMsg(MaintenanceRecord maintenanceRecord, ElectricityCabinet electricityCabinet) {
 
-        System.out.println("发送用户上报异常消息=============================");
-
         MaintenanceUserNotifyConfig maintenanceUserNotifyConfig = queryByTenantIdFromCache(electricityCabinet.getTenantId());
         if (Objects.isNull(maintenanceUserNotifyConfig) || StrUtil.isEmpty(maintenanceUserNotifyConfig.getPhones())) {
             return;
         }
 
-        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION) {
+        if ((maintenanceUserNotifyConfig.getPermissions() & MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION) != MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD_EXCEPTION) {
             return;
         }
-
-
-        System.out.println("发送消息=====================================");
 
         List<String> phones = JsonUtil.fromJsonArray(maintenanceUserNotifyConfig.getPhones(), String.class);
 
         phones.forEach(p -> {
 
-            System.out.println("发送的手机号===================="+p);
-
             MqNotifyCommon<MqHardwareNotify> query = new MqNotifyCommon<>();
             query.setPhone(p);
             query.setTime(System.currentTimeMillis());
-            query.setType(MaintenanceUserNotifyConfig.P_USER_UPLOAD_EXCEPTION);
+            query.setType(MaintenanceUserNotifyConfig.TYPE_USER_UPLOAD);
 
             MqHardwareNotify mqHardwareNotify = new MqHardwareNotify();
             mqHardwareNotify.setDeviceName(electricityCabinet.getName());
-            mqHardwareNotify.setOccurTime(maintenanceRecord.getCreateTime().toString());
+            mqHardwareNotify.setType(maintenanceRecord.getType());
+            mqHardwareNotify.setOccurTime(DateUtils.parseTimeToStringDate(maintenanceRecord.getCreateTime()));
             mqHardwareNotify.setErrMsg(maintenanceRecord.getRemark());
             mqHardwareNotify.setProjectTitle(MqHardwareNotify.USER_UPLOAD_EXCEPTION);
             query.setData(mqHardwareNotify);

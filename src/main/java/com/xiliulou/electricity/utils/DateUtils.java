@@ -1,5 +1,7 @@
 package com.xiliulou.electricity.utils;
 
+import cn.hutool.core.date.DateUtil;
+
 import java.util.Calendar;
 import java.util.Date;
 
@@ -37,12 +39,17 @@ public class DateUtils {
     }
 
     //获取当天零点时间戳
-    public static long getTodayStartTime(){
-        Calendar calendar=Calendar.getInstance();
+    public static long getTodayStartTime() {
+        Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
-        calendar.set(Calendar.HOUR_OF_DAY,0);
-        calendar.set(Calendar.MINUTE,0);
-        calendar.set(Calendar.SECOND,0);
+        calendar.set(Calendar.HOUR_OF_DAY, 0);
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.set(Calendar.SECOND, 0);
         return calendar.getTime().getTime();
+    }
+
+    //时间格式化
+    public static String parseTimeToStringDate(Long timeStamp) {
+        return DateUtil.format(new Date(timeStamp), "YYYY-MM-dd HH:mm:ss");
     }
 }

@@ -46,7 +46,9 @@ public class MaintenanceUserNotifyConfig {
     /**
      * 用户上报异常
      */
-    public static Integer P_USER_UPLOAD_EXCEPTION = 3;
+    public static Integer TYPE_USER_UPLOAD_EXCEPTION = 4;
+
+    public static Integer TYPE_USER_UPLOAD = 5;
     /**
      * 设备消息通知
      */
