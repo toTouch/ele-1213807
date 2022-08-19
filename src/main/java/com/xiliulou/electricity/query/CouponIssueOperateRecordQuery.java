@@ -21,6 +21,8 @@ public class CouponIssueOperateRecordQuery {
     private Long beginTime;
     private Long endTime;
 
+    private Long uid;
+
     private Integer tenantId;
 
 }
