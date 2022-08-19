@@ -18,6 +18,9 @@
             <if test="query.phone!=null and query.phone!='' ">
                 and phone =#{query.phone}
             </if>
+            <if test="query.name!=null and query.name!='' ">
+                and name =#{query.name}
+            </if>
             <if test="query.beginTime != null">
                 and create_time &gt;=#{query.beginTime}
             </if>
@@ -45,6 +48,9 @@
             </if>
             <if test="query.phone!=null and query.phone!=''">
                 and phone =#{query.phone}
+            </if>
+            <if test="query.name!=null and query.name!='' ">
+                and name =#{query.name}
             </if>
             <if test="query.beginTime != null">
                 and create_time &gt;=#{query.beginTime}

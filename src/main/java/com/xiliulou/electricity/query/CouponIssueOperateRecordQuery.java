@@ -23,6 +23,8 @@ public class CouponIssueOperateRecordQuery {
 
     private Long uid;
 
+    private String name;
+
     private Integer tenantId;
 
 }

@@ -41,6 +41,7 @@ public class JsonAdminCouponIssueOperateRecordController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "couponId", required = false) Integer couponId,
                        @RequestParam(value = "phone", required = false) String phone,
+                       @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime) {
         if (size < 0 || size > 50) {
@@ -58,6 +59,7 @@ public class JsonAdminCouponIssueOperateRecordController {
         CouponIssueOperateRecordQuery couponIssueOperateRecordQuery = CouponIssueOperateRecordQuery.builder()
                 .couponId(couponId)
                 .phone(phone)
+                .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .offset(offset)
@@ -71,6 +73,7 @@ public class JsonAdminCouponIssueOperateRecordController {
     @GetMapping(value = "/admin/couponIssueOperateRecord/count")
     public R queryCount(@RequestParam(value = "couponId", required = false) Integer couponId,
                         @RequestParam(value = "phone", required = false) String phone,
+                        @RequestParam(value = "name", required = false) String name,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -82,6 +85,7 @@ public class JsonAdminCouponIssueOperateRecordController {
         CouponIssueOperateRecordQuery couponIssueOperateRecordQuery = CouponIssueOperateRecordQuery.builder()
                 .couponId(couponId)
                 .phone(phone)
+                .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .tenantId(tenantId).build();
