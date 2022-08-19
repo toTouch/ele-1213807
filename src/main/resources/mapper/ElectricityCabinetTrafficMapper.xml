@@ -70,7 +70,7 @@
                 and tec.name like concat('%',#{electricityCabinetName},'%')
             </if>
         </where>
-        order by tecp.create_time DESC
+        order by tect.create_time DESC
         limit #{offset}, #{size}
     </select>
 </mapper>
