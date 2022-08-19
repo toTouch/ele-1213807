@@ -44,6 +44,8 @@ public class CouponIssueOperateRecord {
      */
     private String name;
 
+    private String operateName;
+
     /**
      * 手机号
      */
