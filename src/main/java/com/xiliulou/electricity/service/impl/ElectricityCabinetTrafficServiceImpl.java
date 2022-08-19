@@ -24,7 +24,7 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
     @Override
     public int insertOrUpdate(ElectricityCabinetTraffic electricityCabinetTraffic) {
         ElectricityCabinetTraffic queryById = queryById(electricityCabinetTraffic.getId());
-        if(Objects.isNull(queryById)) {
+        if (Objects.isNull(queryById)) {
             return insertOne(electricityCabinetTraffic);
         }
         return updateById(electricityCabinetTraffic);
@@ -32,7 +32,7 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
 
     @Override
     public ElectricityCabinetTraffic queryById(Long id) {
-        if(Objects.isNull(id)) {
+        if (Objects.isNull(id)) {
             return null;
         }
         return electricityCabinetTrafficMapper.queryById(id);
@@ -44,13 +44,13 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
     }
 
     @Override
-    public int insertOne(ElectricityCabinetTraffic electricityCabinetTraffic){
+    public int insertOne(ElectricityCabinetTraffic electricityCabinetTraffic) {
         return electricityCabinetTrafficMapper.insertOne(electricityCabinetTraffic);
     }
 
     @Override
-    public R queryList(Long size, Long offset, Integer electricityCabinetId, String electricityCabinetName, LocalDate date) {
-        return R.ok(electricityCabinetTrafficMapper.queryList(size, offset, electricityCabinetId, electricityCabinetName, date));
+    public R queryList(Long size, Long offset, Integer electricityCabinetId, String electricityCabinetName, LocalDate date, Long beginTime, Long endTime) {
+        return R.ok(electricityCabinetTrafficMapper.queryList(size, offset, electricityCabinetId, electricityCabinetName, beginTime, endTime, date));
     }
 
     @Override

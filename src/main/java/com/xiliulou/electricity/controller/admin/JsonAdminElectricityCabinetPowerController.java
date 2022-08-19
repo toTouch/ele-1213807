@@ -21,36 +21,40 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminElectricityCabinetPowerController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	ElectricityCabinetPowerService electricityCabinetPowerService;
+    /**
+     * 服务对象
+     */
+    @Autowired
+    ElectricityCabinetPowerService electricityCabinetPowerService;
 
-	//列表查询
-	@GetMapping(value = "/admin/electricityCabinetPower/list")
-	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
-			@RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
-			@RequestParam(value = "date", required = false) LocalDate date) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinetPower/list")
+    public R queryList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+                       @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                       @RequestParam(value = "beginTime", required = false) Long beginTime,
+                       @RequestParam(value = "endTime", required = false) Long endTime,
+                       @RequestParam(value = "date", required = false) LocalDate date) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (offset < 0) {
-			offset = 0L;
-		}
+        if (offset < 0) {
+            offset = 0L;
+        }
 
-		ElectricityCabinetPowerQuery electricityCabinetPowerQuery = ElectricityCabinetPowerQuery.builder()
-				.offset(offset)
-				.size(size)
-				.electricityCabinetId(electricityCabinetId)
-				.electricityCabinetName(electricityCabinetName)
-				.date(date)
-				.build();
+        ElectricityCabinetPowerQuery electricityCabinetPowerQuery = ElectricityCabinetPowerQuery.builder()
+                .offset(offset)
+                .size(size)
+				.beginTime(beginTime)
+				.endTime(endTime)
+                .electricityCabinetId(electricityCabinetId)
+                .electricityCabinetName(electricityCabinetName)
+                .date(date)
+                .build();
 
-		return electricityCabinetPowerService.queryList(electricityCabinetPowerQuery);
-	}
+        return electricityCabinetPowerService.queryList(electricityCabinetPowerQuery);
+    }
 
 }
