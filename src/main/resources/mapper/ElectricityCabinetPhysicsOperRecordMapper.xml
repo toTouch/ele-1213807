@@ -116,27 +116,49 @@
         delete from t_electricity_cabinet_physics_oper_record where id = #{id}
     </delete>
 
-    <select id="electricityCabinetOperRecordList" resultMap="ElectricityCabinetPhysicsOperRecordMap">
+    <select id="electricityCabinetOperRecordList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetPhysicsOperRecordVo">
          select
-            id, electricity_cabinet_id, cell_no, status, msg, uid, user_name, operate_type, create_time, command
-         from t_electricity_cabinet_physics_oper_record
+             ecpor.id, ecpor.electricity_cabinet_id, ecpor.cell_no, ecpor.status, ecpor.msg, ecpor.uid, ecpor.user_name, ecpor.operate_type, ecpor.create_time, ecpor.command
+             ec.name as electricity_cabinet_name
+         from t_electricity_cabinet_physics_oper_record ecpor
+         left join t_electricity_cabinet ec
          <where>
              <if test="eleId != null">
-                 and electricity_cabinet_id = #{eleId}
+                 and ecpor.electricity_cabinet_id = #{eleId}
              </if>
              <if test="operateType != null">
-                 and operate_type = #{operateType}
+                 and ecpor.operate_type = #{operateType}
              </if>
              <if test="beginTime != null and endTime != null">
-                 and create_time between #{beginTime} and #{endTime}
+                 and ecpor.create_time between #{beginTime} and #{endTime}
              </if>
              <if test="cellNo != null">
-                 and cell_no = #{cellNo}
+                 and ecpor.cell_no = #{cellNo}
              </if>
          </where>
          order by create_time desc
          <if test="offset != null and size != null">
              limit #{offset}, #{size}
          </if>
+    </select>
+
+    <select id="electricityCabinetOperRecordCount" resultType="long">
+        select
+            count( * )
+        from t_electricity_cabinet_physics_oper_record
+        <where>
+            <if test="eleId != null">
+                and electricity_cabinet_id = #{eleId}
+            </if>
+            <if test="operateType != null">
+                and operate_type = #{operateType}
+            </if>
+            <if test="beginTime != null and endTime != null">
+                and create_time between #{beginTime} and #{endTime}
+            </if>
+            <if test="cellNo != null">
+                and cell_no = #{cellNo}
+            </if>
+        </where>
     </select>
 </mapper>

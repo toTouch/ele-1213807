@@ -4,6 +4,8 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPhysicsOperRecord;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPhysicsOperRecordMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetPhysicsOperRecordService;
+import com.xiliulou.electricity.vo.ElectricityCabinetPhysicsOperRecordVo;
+import com.xiliulou.electricity.vo.PageDataAndCountVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -97,6 +99,12 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
 
     @Override
     public R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer operateType, Long beginTime, Long endTime, Integer cellNo) {
-        return R.ok(electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo));
+        List<ElectricityCabinetPhysicsOperRecordVo> data = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo);
+        Long count = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordCount(eleId, operateType, beginTime, endTime, cellNo);
+
+        PageDataAndCountVo<List<ElectricityCabinetPhysicsOperRecordVo>> vo = new PageDataAndCountVo();
+        vo.setData(data);
+        vo.setCount(count);
+        return R.ok(vo);
     }
 }

@@ -10,33 +10,28 @@ import lombok.Data;
 @Data
 public class ElectricityCabinetPhysicsOperRecordVo {
     private Long id;
-    /**
-     * 餐柜id
-     */
-    private Integer cupboardId;
-    /**
-     * 创建时间
-     */
-    private Long createTime;
 
-    private Integer type;
-    /**
-     * 格挡
-     */
-    private Integer cellNo;
+    private Integer electricityCabinetId;
+
+    private String command;
+
+    private String cellNo;
     /**
      * 操作状态 0--初始化 1--成功,2--失败
      */
     private Integer status;
-    /**
-     * 消息
-     */
+
     private String msg;
 
     private Long uid;
 
-    private String username;
+    private String userName;
+    /**
+     * 操作类型 1--命令下发 2--柜机操作
+     */
+    private Integer operateType;
 
+    private Long createTime;
 
-    private String name;
+    private String electricityCabinetName;
 }
