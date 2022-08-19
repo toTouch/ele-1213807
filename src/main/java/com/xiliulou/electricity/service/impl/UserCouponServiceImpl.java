@@ -5,23 +5,10 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.ShareActivity;
-import com.xiliulou.electricity.entity.ShareActivityRecord;
-import com.xiliulou.electricity.entity.ShareActivityRule;
-import com.xiliulou.electricity.entity.UserCoupon;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.User;
-import com.xiliulou.electricity.entity.UserInfo;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.UserCouponMapper;
 import com.xiliulou.electricity.query.UserCouponQuery;
-import com.xiliulou.electricity.service.CouponService;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.ShareActivityRecordService;
-import com.xiliulou.electricity.service.ShareActivityRuleService;
-import com.xiliulou.electricity.service.ShareActivityService;
-import com.xiliulou.electricity.service.UserCouponService;
-import com.xiliulou.electricity.service.UserInfoService;
-import com.xiliulou.electricity.service.UserService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.UserCouponVO;
@@ -68,6 +55,9 @@ public class UserCouponServiceImpl implements UserCouponService {
 	@Autowired
 	ShareActivityRuleService shareActivityRuleService;
 
+	@Autowired
+	CouponIssueOperateRecordService couponIssueOperateRecordService;
+
 	@Override
 	public R queryList(UserCouponQuery userCouponQuery) {
 		List<UserCouponVO> userCouponList = userCouponMapper.queryList(userCouponQuery);
@@ -105,6 +95,14 @@ public class UserCouponServiceImpl implements UserCouponService {
 		LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
 		couponBuild.deadline(TimeUtils.convertTimeStamp(now));
 
+		//发放操作记录
+		CouponIssueOperateRecord.CouponIssueOperateRecordBuilder couponIssueOperateRecord= CouponIssueOperateRecord.builder()
+				.couponId(coupon.getId())
+				.tenantId(tenantId)
+				.createTime(System.currentTimeMillis())
+				.updateTime(System.currentTimeMillis());
+
+
 		//批量插入
 		for (Long uid : uids) {
 			//查询用户手机号
@@ -117,6 +115,12 @@ public class UserCouponServiceImpl implements UserCouponService {
 			couponBuild.phone(user.getPhone());
 			UserCoupon userCoupon = couponBuild.build();
 			userCouponMapper.insert(userCoupon);
+
+			couponIssueOperateRecord.name(user.getName());
+			couponIssueOperateRecord.uid(user.getUid());
+			couponIssueOperateRecord.phone(user.getPhone());
+			CouponIssueOperateRecord couponIssueOperateRecordBuild=couponIssueOperateRecord.build();
+			couponIssueOperateRecordService.insert(couponIssueOperateRecordBuild);
 		}
 
 		return R.ok();

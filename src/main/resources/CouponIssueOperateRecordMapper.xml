@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.CouponIssueOperateRecordMapper">
+
+
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.entity.CouponIssueOperateRecord">
+        select
+        id, coupon_id,uid,name,phone,create_time,update_time
+        from t_coupon_issue_operate_record
+        <where>
+            <if test="query.couponId != null and query.couponId != ''">
+                and coupon_id = #{query.couponId}
+            </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
+            <if test="query.phone!=null">
+                and phone =#{query.phone}
+            </if>
+            <if test="query.beginTime != null">
+                and create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
+            </if>
+        </where>
+        <if test="query.offset != null and query.size != null">
+            limit #{query.offset}, #{query.size}
+        </if>
+    </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+        select COUNT(1)
+        from t_coupon_issue_operate_record
+        <where>
+            <if test="query.couponId != null and query.couponId != ''">
+                and coupon_id = #{query.couponId}
+            </if>
+            <if test="query.uid != null">
+                and uid = #{query.uid}
+            </if>
+            <if test="query.phone!=null">
+                and phone =#{query.phone}
+            </if>
+            <if test="query.beginTime != null">
+                and create_time &gt;=#{query.beginTime}
+            </if>
+            <if test="query.endTime != null">
+                and create_time &lt;=#{query.endTime}
+            </if>
+            <if test="query.tenantId != null ">
+                and tenant_id = #{query.tenantId}
+            </if>
+        </where>
+    </select>
+
+</mapper>
