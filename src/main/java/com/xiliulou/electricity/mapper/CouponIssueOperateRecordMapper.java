@@ -16,11 +16,11 @@ import java.util.List;
  * @author makejava
  * @since 2022-08-19 09:28:22
  */
-public interface CouponIssueOperateRecordMapper extends BaseMapper<CouponIssueOperateRecord>{
+public interface CouponIssueOperateRecordMapper extends BaseMapper<CouponIssueOperateRecord> {
 
 
-    List<CouponIssueOperateRecord> queryList(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
+    List<CouponIssueOperateRecord> queryList(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
 
-    Integer queryCount(CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
+    Integer queryCount(@Param("query") CouponIssueOperateRecordQuery couponIssueOperateRecordQuery);
 
 }
