@@ -331,7 +331,6 @@
     </select>
 
     <update id="updateByUid" >
-
         update t_user_info
         <set>
             <if test="phone != null and phone != ''">
@@ -358,11 +357,11 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            <if test="createdTime != null">
-                created_time = #{createdTime},
+            <if test="createTime != null">
+                create_time = #{createTime},
             </if>
-            <if test="updatedTime != null">
-                updated_time = #{updatedTime},
+            <if test="updateTime != null">
+                update_time = #{updateTime},
             </if>
         </set>
         where uid = #{uid}
