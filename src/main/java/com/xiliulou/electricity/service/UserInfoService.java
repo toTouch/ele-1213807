@@ -104,4 +104,6 @@ public interface UserInfoService extends IService<UserInfo> {
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
 
     R deleteUserInfo(Long uid);
+
+    Integer updateByUid(UserInfo userInfo);
 }

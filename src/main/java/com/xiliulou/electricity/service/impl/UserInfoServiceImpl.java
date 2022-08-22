@@ -983,7 +983,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public Integer deleteByUid(Long uid) {
-        return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+//        return userInfoMapper.delete(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getUid, uid));
+
+        //改为逻辑删除
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(uid);
+        userInfo.setDelFlag(UserInfo.DEL_DEL);
+
+        return this.updateByUid(userInfo);
     }
 
     @Override
@@ -1071,4 +1078,18 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         return R.fail(result.getMiddle(), String.valueOf(result.getRight()));
     }
+
+    @Override
+    public Integer updateByUid(UserInfo userInfo){
+
+        Integer result = this.userInfoMapper.updateByUid(userInfo);
+
+        DbUtils.dbOperateSuccessThen(result, () -> {
+            redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
+            return null;
+        });
+        return result;
+    }
+
+
 }
