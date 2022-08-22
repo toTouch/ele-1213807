@@ -44,7 +44,7 @@ public class NormalOtaProcessHandlerIot extends AbstractElectricityIotHandler {
         }
 
         redisService.saveWithHash(CacheConstant.OTA_PROCESS_CACHE + sessionId, request);
-        redisService.expire(CacheConstant.OTA_PROCESS_CACHE + sessionId, 30L * 1000 , false);
+        redisService.expire(CacheConstant.OTA_PROCESS_CACHE + sessionId, 120L * 1000 , false);
     }
 }
 
