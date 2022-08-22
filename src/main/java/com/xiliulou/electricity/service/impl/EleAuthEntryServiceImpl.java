@@ -107,6 +107,11 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
         eleAuthEntry.setIdentify(EleAuthEntry.ID_CARD_BACK_PHOTO);
         eleAuthEntryMapper.insert(eleAuthEntry);
 
+        //自拍照片
+        eleAuthEntry.setName("自拍照片");
+        eleAuthEntry.setType("file");
+        eleAuthEntry.setIdentify(EleAuthEntry.ID_SELF_PHOTO);
+        eleAuthEntryMapper.insert(eleAuthEntry);
 
     }
 
