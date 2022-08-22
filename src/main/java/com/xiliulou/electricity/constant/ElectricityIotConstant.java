@@ -118,7 +118,8 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, OTA_PROCESS)
                 || Objects.equals(command, OTA_PROCESS_RSP)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP);
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
+                || Objects.equals(command, RESTART_APP);
 
     }
 
@@ -326,6 +327,9 @@ public class ElectricityIotConstant {
      */
     public static final String SIM_TRAFFIC_STATISTICS = "iccid_traffic_statistics";
     public static final String SIM_TRAFFIC_STATISTICS_RSP = "sim_card_statistics_rsp";
+
+    public static final String RESTART_APP = "restart_app";
+
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
