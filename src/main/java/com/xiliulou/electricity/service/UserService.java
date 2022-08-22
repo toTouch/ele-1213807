@@ -91,4 +91,6 @@ public interface UserService {
     R userAutoCodeGeneration();
 
     R userAutoCodeCheck(String autoCode);
+
+    String selectServicePhone(Integer tenantId);
 }

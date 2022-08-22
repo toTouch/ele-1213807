@@ -8,6 +8,7 @@ import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -707,6 +708,23 @@ public class UserServiceImpl implements UserService {
         redisService.delete(autoCode);
 
         return R.ok();
+    }
+
+
+    @Override
+    public String selectServicePhone(Integer tenantId) {
+        String cachePhone = redisService.get(CacheConstant.CACHE_SERVICE_PHONE + tenantId);
+        if (StringUtils.isNotBlank(cachePhone)) {
+            return cachePhone;
+        }
+
+        String phone = null;
+        List<User> userList = this.queryByTenantIdAndType(tenantId, User.TYPE_USER_OPERATE);
+        if (CollectionUtils.isNotEmpty(userList)) {
+            phone = userList.get(0).getPhone();
+        }
+
+        return phone;
     }
 
     private void delUserOauthBindAndClearToken(List<UserOauthBind> userOauthBinds) {

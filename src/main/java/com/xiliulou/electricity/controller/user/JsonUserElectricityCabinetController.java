@@ -145,6 +145,7 @@ public class JsonUserElectricityCabinetController extends BaseController {
 	}
 
 	@PostMapping("/user/address")
+	@Deprecated
 	public R addUserAddress(@RequestParam("cityCode") String cityCode) {
 		return returnPairResult(userService.addUserAddress(cityCode));
 	}

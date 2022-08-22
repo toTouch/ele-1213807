@@ -118,4 +118,15 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         return R.ok(result);
     }
 
+    @Override
+    public List<String> selectTemplateId(Integer tenantId) {
+        List<String> result = new ArrayList<>(2);
+
+        TemplateConfigEntity templateConfigEntity = queryByTenantIdFromCache(tenantId);
+        if(Objects.nonNull(templateConfigEntity)){
+            result.add(templateConfigEntity.getBatteryOuttimeTemplate());
+            result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+        }
+        return result;
+    }
 }
