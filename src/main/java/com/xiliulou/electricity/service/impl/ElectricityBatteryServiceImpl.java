@@ -418,6 +418,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 appTemplateQuery.setTouser(openId);
                 appTemplateQuery.setFormId(RandomUtil.randomString(20));
                 appTemplateQuery.setTemplateId(templateConfigEntity.getElectricQuantityRemindTemplate());
+                appTemplateQuery.setPage("/pages/record/index");
                 Map<String, Object> data = new HashMap<>(3);
 
                 data.put("character_string1", electricityBattery.getPower() + "%");
