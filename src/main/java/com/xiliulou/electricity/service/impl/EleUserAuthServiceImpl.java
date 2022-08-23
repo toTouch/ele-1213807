@@ -260,4 +260,9 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("idcard/"));
     }
+
+    @Override
+    public R acquireselfieFileSign() {
+        return R.ok(storageService.getOssUploadSign("selfie/"));
+    }
 }
