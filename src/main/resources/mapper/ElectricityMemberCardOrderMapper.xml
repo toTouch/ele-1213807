@@ -9,6 +9,9 @@
 
         LEFT JOIN t_franchisee tf on tf.id = tel.franchisee_id
         WHERE 0= 0
+        <if test="query.userName != null and query.userName != ''">
+            and tui.name like concat('%',#{query.userName,jdbcType=VARCHAR},'%')
+        </if>
         <if test="query.phone != null">
             and tui.phone =#{query.phone}
         </if>
