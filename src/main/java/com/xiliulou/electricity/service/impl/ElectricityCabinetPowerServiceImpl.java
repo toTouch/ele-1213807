@@ -72,12 +72,10 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
             index++;
             ElectricityCabinetPowerExcelVo excelVo = new ElectricityCabinetPowerExcelVo();
             excelVo.setId(index);
-            excelVo.setDate(electricityCabinetPowerVo.getDate());
-            excelVo
-                .setElectricityCabinetName(electricityCabinetPowerVo.getElectricityCabinetName());
+            excelVo.setDate(electricityCabinetPowerVo.getDate().toString());
+            excelVo.setElectricityCabinetName(electricityCabinetPowerVo.getElectricityCabinetName());
             excelVo.setSameDayPower(electricityCabinetPowerVo.getSameDayPower());
             excelVo.setSumPower(electricityCabinetPowerVo.getSumPower());
-            excelVo.setDate(electricityCabinetPowerVo.getDate());
 
             if (Objects.nonNull(electricityCabinetPowerVo.getCreateTime())) {
                 excelVo.setCreateTime(
