@@ -1,4 +1,5 @@
 package com.xiliulou.electricity.entity;
+
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.AllArgsConstructor;
@@ -26,30 +27,30 @@ public class EleAuthEntry {
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
     /**
-    * 资料项名称
-    */
+     * 资料项名称
+     */
     private String name;
     //是否使用（0--使用,1--不使用）
     private Integer isUse;
     /**
-    * 资料项类型 select---下拉选择框 input--输入框 radio--单选 file--文件上传
-    */
+     * 资料项类型 select---下拉选择框 input--输入框 radio--单选 file--文件上传
+     */
     private String type;
     /**
-    * 创建时间
-    */
+     * 创建时间
+     */
     private Long createTime;
     /**
-    * 更新时间
-    */
+     * 更新时间
+     */
     private Long updateTime;
     /**
-    * 删除标记
-    */
+     * 删除标记
+     */
     private Object delFlag;
     /**
-    * 备注
-    */
+     * 备注
+     */
     private String remark;
 
     //唯一标识(1--姓名，2--身份证，3--身份证正面 ，4--身份证反面)
@@ -70,9 +71,11 @@ public class EleAuthEntry {
     //身份证
     public static final Integer ID_ID_CARD = 2;
     //身份证正面
-    public static final  Integer ID_CARD_FRONT_PHOTO = 3;
+    public static final Integer ID_CARD_FRONT_PHOTO = 3;
     //身份证反面
-    public static final  Integer ID_CARD_BACK_PHOTO = 4;
+    public static final Integer ID_CARD_BACK_PHOTO = 4;
+    //自拍照片
+    public static final Integer ID_SELF_PHOTO = 5;
 
 
     //使用
