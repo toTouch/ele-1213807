@@ -72,11 +72,15 @@ public interface ElectricityCabinetPhysicsOperRecordMapper  extends BaseMapper<E
                                                                                  @Param("operateType") Integer operateType,
                                                                                  @Param("beginTime") Long beginTime,
                                                                                  @Param("endTime") Long endTime,
-                                                                                 @Param("cellNo") Integer cellNo);
+                                                                                 @Param("cellNo") Integer cellNo,
+                                                                                 @Param("userName") String userName,
+                                                                                 @Param("phone")String phone);
 
     Long electricityCabinetOperRecordCount(@Param("eleId") Integer eleId,
                                            @Param("operateType") Integer operateType,
                                            @Param("beginTime") Long beginTime,
                                            @Param("endTime") Long endTime,
-                                           @Param("cellNo") Integer cellNo);
+                                           @Param("cellNo") Integer cellNo,
+                                           @Param("userName") String userName,
+                                           @Param("phone")String phone);
 }

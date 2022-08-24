@@ -98,11 +98,11 @@ public class ElectricityCabinetPhysicsOperRecordServiceImpl implements Electrici
     }
 
     @Override
-    public R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer operateType, Long beginTime, Long endTime, Integer cellNo) {
-        List<ElectricityCabinetPhysicsOperRecordVo> data = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo);
-        Long count = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordCount(eleId, operateType, beginTime, endTime, cellNo);
+    public R electricityCabinetOperRecordList(Integer size, Integer offset, Integer eleId, Integer operateType, Long beginTime, Long endTime, Integer cellNo, String userName, String phone) {
+        List<ElectricityCabinetPhysicsOperRecordVo> data = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo, userName, phone);
+        Long count = electricityCabinetPhysicsOperRecordMapper.electricityCabinetOperRecordCount(eleId, operateType, beginTime, endTime, cellNo, userName, phone);
 
-        PageDataAndCountVo<List<ElectricityCabinetPhysicsOperRecordVo>> vo = new PageDataAndCountVo();
+        PageDataAndCountVo<List<ElectricityCabinetPhysicsOperRecordVo>> vo = new PageDataAndCountVo<>();
         vo.setData(data);
         vo.setCount(count);
         return R.ok(vo);

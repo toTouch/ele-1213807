@@ -24,8 +24,10 @@ public class JsonAdminElectricityCabinetPhysicsOperRecordController {
                                     @RequestParam(value = "endTime", required = false) Long endTime,
                                     @RequestParam(value = "cellNo", required = false) Integer cellNo,
                                     @RequestParam(value = "eleId", required = false) Integer eleId,
-                                    @RequestParam(value = "operateType", required = false) Integer operateType) {
+                                    @RequestParam(value = "operateType", required = false) Integer operateType,
+                                    @RequestParam(value = "userName", required = false) String userName,
+                                    @RequestParam(value = "phone", required = false) String phone) {
 
-        return electricityCabinetPhysicsOperRecordService.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo);
+        return electricityCabinetPhysicsOperRecordService.electricityCabinetOperRecordList(size, offset, eleId, operateType, beginTime, endTime, cellNo, userName, phone);
     }
 }

@@ -11,11 +11,6 @@ import lombok.Data;
 public class ElectricityCabinetPhysicsOperRecordVo {
     private Long id;
 
-    private Integer electricityCabinetId;
-
-    private String command;
-
-    private String cellNo;
     /**
      * 操作状态 0--初始化 1--成功,2--失败
      */
@@ -33,5 +28,5 @@ public class ElectricityCabinetPhysicsOperRecordVo {
 
     private Long createTime;
 
-    private String electricityCabinetName;
+    private String phone;
 }

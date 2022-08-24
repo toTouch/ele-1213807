@@ -118,10 +118,9 @@
 
     <select id="electricityCabinetOperRecordList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetPhysicsOperRecordVo">
          select
-             ecpor.id, ecpor.electricity_cabinet_id, ecpor.cell_no, ecpor.status, ecpor.msg, ecpor.uid, ecpor.user_name, ecpor.operate_type, ecpor.create_time, ecpor.command,
-             ec.name as electricity_cabinet_name
+             ecpor.id, ecpor.status, ecpor.msg, ecpor.uid, ecpor.user_name, ecpor.operate_type, ecpor.create_time, ui.phone
          from t_electricity_cabinet_physics_oper_record ecpor
-         left join t_electricity_cabinet ec on ecpor.electricity_cabinet_id = ec.id
+         left join t_user_info ui on ecpor.uid = ui.uid
          <where>
              <if test="eleId != null">
                  and ecpor.electricity_cabinet_id = #{eleId}
@@ -135,6 +134,12 @@
              <if test="cellNo != null">
                  and ecpor.cell_no = #{cellNo}
              </if>
+             <if test="userName != null and userName != ''">
+                 and ecpor.user_name like concat('%', #{user_name}, '%')
+             </if>
+             <if test="phone != null and phone != ''">
+                 and ui.phone like concat('%', #{phone}, '%')
+             </if>
          </where>
          order by create_time desc
          <if test="offset != null and size != null">
@@ -146,6 +151,7 @@
         select
             count( * )
         from t_electricity_cabinet_physics_oper_record
+        left join t_user_info ui on ecpor.uid = ui.uid
         <where>
             <if test="eleId != null">
                 and electricity_cabinet_id = #{eleId}
@@ -158,6 +164,12 @@
             </if>
             <if test="cellNo != null">
                 and cell_no = #{cellNo}
+            </if>
+            <if test="userName != null and userName != ''">
+                and ecpor.user_name like concat('%', #{user_name}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                and ui.phone like concat('%', #{phone}, '%')
             </if>
         </where>
     </select>

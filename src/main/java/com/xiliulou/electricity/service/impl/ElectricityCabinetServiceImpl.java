@@ -2810,4 +2810,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok(vo);
     }
+
+    @Override
+    public R closeOtaUpgradeSession(String sessionId) {
+        redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);
+        return R.ok();
+    }
 }

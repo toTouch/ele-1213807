@@ -52,6 +52,9 @@ public class NormalOtaProcessHandlerIot extends AbstractElectricityIotHandler {
 class OtaRequest {
     private String type;
     private String sessionId;
+    /**
+     * 1--核心板 2--子板 3--所有
+     */
     private Integer upgradeType;
     private Long completeTime;
     private List<Integer> successCells;
