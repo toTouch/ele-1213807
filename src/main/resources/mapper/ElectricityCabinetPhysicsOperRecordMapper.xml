@@ -120,7 +120,7 @@
          select
              ecpor.id, ecpor.status, ecpor.msg, ecpor.uid, ecpor.user_name, ecpor.operate_type, ecpor.create_time, ui.phone
          from t_electricity_cabinet_physics_oper_record ecpor
-         left join t_user_info ui on ecpor.uid = ui.uid
+         left join t_user ui on ecpor.uid = ui.uid
          <where>
              <if test="eleId != null">
                  and ecpor.electricity_cabinet_id = #{eleId}
@@ -151,7 +151,7 @@
         select
             count( * )
         from t_electricity_cabinet_physics_oper_record ecpor
-        left join t_user_info ui on ecpor.uid = ui.uid
+        left join t_user ui on ecpor.uid = ui.uid
         <where>
             <if test="eleId != null">
                 and ecpor.electricity_cabinet_id = #{eleId}
