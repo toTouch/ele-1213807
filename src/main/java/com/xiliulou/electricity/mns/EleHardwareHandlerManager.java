@@ -12,6 +12,7 @@ import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.handler.iot.IElectricityHandler;
+import com.xiliulou.electricity.service.EleOnlineLogService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.MaintenanceUserNotifyConfigService;
 import com.xiliulou.electricity.service.TenantService;
@@ -73,6 +74,8 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
     TenantConfig tenantConfig;
     @Autowired
     MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    @Autowired
+    EleOnlineLogService eleOnlineLogService;
 
 
     ExecutorService executorService = XllThreadPoolExecutors.newFixedThreadPool("eleHardwareHandlerExecutor", 2, "ELE_HARDWARE_HANDLER_EXECUTOR");
@@ -175,6 +178,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             eleOnlineLog.setAppearTime(receiverMessage.getTime());
             eleOnlineLog.setCreateTime(System.currentTimeMillis());
             eleOnlineLog.setMsg(receiverMessage.getStatus());
+            eleOnlineLogService.insert(eleOnlineLog);
 
             if (electricityCabinetService.update(newElectricityCabinet) > 0) {
                 redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET + newElectricityCabinet.getId());
