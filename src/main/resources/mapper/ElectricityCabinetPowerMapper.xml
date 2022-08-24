@@ -3,7 +3,7 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetPowerMapper">
 
 
-    <select id="queryList"  resultType="java.util.Map">
+    <select id="queryList"  resultType="com.xiliulou.electricity.vo.ElectricityCabinetPowerVo">
         select
         tecp.id as id, tecp.eid as electricityCabinetId, tecp.same_day_power as sameDayPower, tecp.sum_power as sumPower,
          tecp.`date` as `date`, tecp.create_time as createTime, tecp.update_time as updateTime,tec.name as electricityCabinetName
@@ -15,6 +15,9 @@
             </if>
             <if test="query.date != null">
                 and tecp.`date` = #{query.date}
+            </if>
+            <if test="query.tenantId != null">
+                and tecp.tenant_id = #{query.tenantId}
             </if>
             <if test="query.electricityCabinetName != null">
                 and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')

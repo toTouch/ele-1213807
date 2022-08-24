@@ -1,0 +1,37 @@
+package com.xiliulou.electricity.vo;
+
+
+import com.alibaba.excel.annotation.ExcelProperty;
+import java.math.BigDecimal;
+import java.sql.Date;
+import lombok.Data;
+
+/**
+ *
+ * @author hrp
+ * @since 2022-08-24 11:13:45
+ */
+@Data
+public class ElectricityCabinetPowerExcelVo {
+	@ExcelProperty("序号")
+    private Integer id;
+
+	@ExcelProperty("电柜名称")
+	private String electricityCabinetName;
+
+	@ExcelProperty("当天电量")
+	private BigDecimal sameDayPower;
+
+	@ExcelProperty("总电量")
+	private BigDecimal sumPower;
+
+	@ExcelProperty("日期")
+	private Date date;
+
+	@ExcelProperty("创建时间")
+	private String createTime;
+
+	@ExcelProperty("更新时间")
+	private String updateTime;
+
+}
