@@ -10,7 +10,7 @@ import lombok.Data;
  * @since 2022-08-24 11:13:45
  */
 @Data
-public class ElectricityCabinetPowerExcelVo {
+public class ElectricityCabinetTrafficExcelVo {
 
     @ExcelProperty("序号")
     private Integer id;
@@ -18,11 +18,11 @@ public class ElectricityCabinetPowerExcelVo {
     @ExcelProperty("电柜名称")
     private String electricityCabinetName;
 
-    @ExcelProperty("当天电量")
-    private BigDecimal sameDayPower;
+    @ExcelProperty("当天流量")
+    private BigDecimal sameDayTraffic;
 
-    @ExcelProperty("总电量")
-    private BigDecimal sumPower;
+    @ExcelProperty("总流量")
+    private BigDecimal sumTraffic;
 
     @ExcelProperty("日期")
     private String date;

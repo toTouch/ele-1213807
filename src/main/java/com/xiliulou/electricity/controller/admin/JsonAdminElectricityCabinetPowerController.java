@@ -71,7 +71,7 @@ public class JsonAdminElectricityCabinetPowerController {
         return electricityCabinetPowerService.queryList(electricityCabinetPowerQuery);
     }
 
-    //押金订单导出报表
+    //换电柜电量导出报表
     @GetMapping("/admin/electricityCabinetPower/exportExcel")
     public void exportExcel(@RequestParam("size") Long size,
         @RequestParam("offset") Long offset,
