@@ -578,8 +578,8 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                     e.setElectricityCabinetName(electricityCabinet.getName());
                 }
 
-                if (e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL)
-                        || e.getStatus().equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
+                if (Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_CANCEL)
+                        || Objects.nonNull(e.getStatus()) && e.getStatus().equals(ElectricityCabinetOrder.ORDER_EXCEPTION_CANCEL)) {
 
 
                     ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(electricityCabinetOrderQuery.getTenantId());
