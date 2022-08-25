@@ -9,8 +9,10 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import java.util.List;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -419,19 +421,20 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      * @param batteryName
      */
     private void unbindUserBattery(String batteryName) {
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.selectByNowElectricityBatterySn(batteryName);
-        if (Objects.isNull(franchiseeUserInfo)) {
+        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService
+            .selectByNowElectricityBatterySn(batteryName);
+        if (CollectionUtils.isEmpty(franchiseeUserInfoList)) {
             return;
         }
 
-        if(StringUtils.isNotBlank(franchiseeUserInfo.getNowElectricityBatterySn())){
+        franchiseeUserInfoList.forEach(item -> {
             FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
-                    .id(franchiseeUserInfo.getId())
-                    .nowElectricityBatterySn(null)
-                    .serviceStatus(franchiseeUserInfo.getServiceStatus())
-                    .updateTime(System.currentTimeMillis()).build();
+                .id(item.getId())
+                .nowElectricityBatterySn(null)
+                .serviceStatus(item.getServiceStatus())
+                .updateTime(System.currentTimeMillis()).build();
             franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
-        }
+        });
     }
 
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {

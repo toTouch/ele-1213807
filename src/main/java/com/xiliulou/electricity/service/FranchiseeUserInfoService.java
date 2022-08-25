@@ -74,5 +74,5 @@ public interface FranchiseeUserInfoService {
 
     void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
-    FranchiseeUserInfo selectByNowElectricityBatterySn(String batteryName);
+    List<FranchiseeUserInfo> selectByNowElectricityBatterySn(String batteryName);
 }
