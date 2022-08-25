@@ -84,7 +84,9 @@ public class JsonAdminElectricityCabinetTrafficController {
             throw new CustomBusinessException("用户权限不足");
         }
 
-        electricityCabinetTrafficService.exportExcel(size, offset, electricityCabinetId, electricityCabinetName, date, beginTime,
-            endTime, response);
+        electricityCabinetTrafficService
+            .exportExcel(size, offset, electricityCabinetId, electricityCabinetName, date,
+                beginTime,
+                endTime, response);
     }
 }

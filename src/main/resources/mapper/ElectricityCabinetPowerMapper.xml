@@ -16,9 +16,6 @@
             <if test="query.date != null">
                 and tecp.`date` = #{query.date}
             </if>
-            <if test="query.tenantId != null">
-                and tecp.tenant_id = #{query.tenantId}
-            </if>
             <if test="query.electricityCabinetName != null">
                 and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')
             </if>
