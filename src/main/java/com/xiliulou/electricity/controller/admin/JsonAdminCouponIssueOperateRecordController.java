@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Objects;
 
 /**
- * 优惠券规则表(t_coupon_issue_operate_record)表控制层
+ * 优惠券发放操作记录表(t_coupon_issue_operate_record)表控制层
  *
  * @author makejava
  * @since 2022-08-19 09:28:22
