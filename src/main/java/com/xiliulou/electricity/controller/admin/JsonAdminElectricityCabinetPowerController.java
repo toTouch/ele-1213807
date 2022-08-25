@@ -73,9 +73,7 @@ public class JsonAdminElectricityCabinetPowerController {
 
     //换电柜电量导出报表
     @GetMapping("/admin/electricityCabinetPower/exportExcel")
-    public void exportExcel(@RequestParam("size") Long size,
-        @RequestParam("offset") Long offset,
-        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+    public void exportExcel(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
         @RequestParam(value = "beginTime", required = false) Long beginTime,
         @RequestParam(value = "endTime", required = false) Long endTime,
@@ -106,8 +104,6 @@ public class JsonAdminElectricityCabinetPowerController {
 
         ElectricityCabinetPowerQuery electricityCabinetPowerQuery = ElectricityCabinetPowerQuery
             .builder()
-            .offset(offset)
-            .size(size)
             .beginTime(beginTime)
             .endTime(endTime)
             .electricityCabinetId(electricityCabinetId)

@@ -17,12 +17,9 @@ public interface ElectricityCabinetTrafficService {
 
     int insertOne(ElectricityCabinetTraffic electricityCabinetTraffic);
 
-    R queryList(Long size, Long offset, Integer electricityCabinetId, String electricityCabinetName,
-        LocalDate date, Long beginTime, Long endTime);
+    R queryList(Long size, Long offset, Integer electricityCabinetId, String electricityCabinetName, LocalDate date, Long beginTime, Long endTime);
 
-    void exportExcel(Long size, Long offset, Integer electricityCabinetId, String electricityCabinetName,
-        LocalDate date, Long beginTime, Long endTime,
-        HttpServletResponse response);
+    void exportExcel(Integer electricityCabinetId, String electricityCabinetName, LocalDate date, Long beginTime, Long endTime, HttpServletResponse response);
 
     void expiredDel();
 }

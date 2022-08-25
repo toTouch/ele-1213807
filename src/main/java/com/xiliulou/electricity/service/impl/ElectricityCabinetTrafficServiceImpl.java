@@ -72,11 +72,11 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
     }
 
     @Override
-    public void exportExcel(Long size, Long offset, Integer electricityCabinetId,
+    public void exportExcel( Integer electricityCabinetId,
         String electricityCabinetName, LocalDate date, Long beginTime, Long endTime,
         HttpServletResponse response) {
-        offset=0L;
-        size=2000L;
+        Long offset=0L;
+        Long size=2000L;
         List<ElectricityCabinetTrafficVo> electricityCabinetTrafficVos = electricityCabinetTrafficMapper
             .queryList(size, offset, electricityCabinetId, electricityCabinetName, beginTime, endTime, date);
         if (ObjectUtil.isEmpty(electricityCabinetTrafficVos)) {

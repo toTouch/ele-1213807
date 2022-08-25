@@ -46,16 +46,12 @@ public class JsonAdminElectricityCabinetTrafficController {
             offset = 0L;
         }
 
-        return electricityCabinetTrafficService
-            .queryList(size, offset, electricityCabinetId, electricityCabinetName, date, beginTime,
-                endTime);
+        return electricityCabinetTrafficService.queryList(size, offset, electricityCabinetId, electricityCabinetName, date, beginTime, endTime);
     }
 
     //流量导出报表
     @GetMapping("/admin/electricityCabinetTraffic/exportExcel")
-    public void exportExcel(@RequestParam("size") Long size,
-        @RequestParam("offset") Long offset,
-        @RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
+    public void exportExcel(@RequestParam(value = "electricityCabinetId", required = false) Integer electricityCabinetId,
         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
         @RequestParam(value = "beginTime", required = false) Long beginTime,
         @RequestParam(value = "endTime", required = false) Long endTime,
@@ -84,9 +80,6 @@ public class JsonAdminElectricityCabinetTrafficController {
             throw new CustomBusinessException("用户权限不足");
         }
 
-        electricityCabinetTrafficService
-            .exportExcel(size, offset, electricityCabinetId, electricityCabinetName, date,
-                beginTime,
-                endTime, response);
+        electricityCabinetTrafficService.exportExcel(electricityCabinetId, electricityCabinetName, date, beginTime, endTime, response);
     }
 }
