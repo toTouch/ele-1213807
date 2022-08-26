@@ -74,7 +74,7 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
 
         //换电订单数量统计
         CompletableFuture<Void> sumPower = CompletableFuture.runAsync(() -> {
-            ElectricityCabinetPowerVo electricityCabinetPowerVo=electricityCabinetPowerMapper.queryLatestPower();
+            ElectricityCabinetPowerVo electricityCabinetPowerVo=electricityCabinetPowerMapper.queryLatestPower(electricityCabinetPowerQuery);
             electricityCabinetSumPowerVo.setSumPower(electricityCabinetPowerVo.getSumPower());
         }, threadPool).exceptionally(e -> {
             log.error("query electricityCabinet sum power ERROR!", e);
