@@ -77,8 +77,7 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
         HttpServletResponse response) {
         Long offset=0L;
         Long size=2000L;
-        List<ElectricityCabinetTrafficVo> electricityCabinetTrafficVos = electricityCabinetTrafficMapper
-            .queryList(size, offset, electricityCabinetId, electricityCabinetName, beginTime, endTime, date);
+        List<ElectricityCabinetTrafficVo> electricityCabinetTrafficVos = electricityCabinetTrafficMapper.queryList(size, offset, electricityCabinetId, electricityCabinetName, beginTime, endTime, date);
         if (ObjectUtil.isEmpty(electricityCabinetTrafficVos)) {
             throw new CustomBusinessException("查不到柜机电量");
         }
@@ -118,7 +117,7 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder
                 .encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, EleDepositOrderExcelVO.class).sheet("sheet")
+            EasyExcel.write(outputStream, ElectricityCabinetTrafficExcelVo.class).sheet("sheet")
                 .doWrite(electricityCabinetTrafficExcelVos);
             return;
         } catch (IOException e) {
