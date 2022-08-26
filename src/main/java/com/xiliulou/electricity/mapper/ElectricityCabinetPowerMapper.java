@@ -30,4 +30,6 @@ public interface ElectricityCabinetPowerMapper  extends BaseMapper<ElectricityCa
     int insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
 
     List<ElectricityCabinetPowerVo> queryList(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+
+    ElectricityCabinetPowerVo queryLatestPower();
 }

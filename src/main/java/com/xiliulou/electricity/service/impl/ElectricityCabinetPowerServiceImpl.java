@@ -5,22 +5,28 @@ import cn.hutool.core.date.format.DateParser;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.thread.XllThreadPoolExecutorService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleDepositOrder;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.mapper.ElectricityCabinetPowerMapper;
+import com.xiliulou.electricity.query.ElectricityCabinetOrderQuery;
 import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetPowerService;
 import com.xiliulou.electricity.vo.EleDepositOrderExcelVO;
 import com.xiliulou.electricity.vo.EleDepositOrderVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetPowerExcelVo;
 import com.xiliulou.electricity.vo.ElectricityCabinetPowerVo;
+import com.xiliulou.electricity.vo.ElectricityCabinetSumPowerVo;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
@@ -43,6 +49,9 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
     @Resource
     private ElectricityCabinetPowerMapper electricityCabinetPowerMapper;
 
+    XllThreadPoolExecutorService threadPool = XllThreadPoolExecutors
+        .newFixedThreadPool("DATA-SCREEN-THREAD-POOL", 4, "dataScreenThread:");
+
 
     @Override
     public Integer insertOrUpdate(ElectricityCabinetPower electricityCabinetPower) {
@@ -51,20 +60,48 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
 
     @Override
     public R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery) {
-        return R.ok(electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery));
+
+        ElectricityCabinetSumPowerVo electricityCabinetSumPowerVo=new ElectricityCabinetSumPowerVo();
+
+        //换电订单数量统计
+        CompletableFuture<Void> powerList = CompletableFuture.runAsync(() -> {
+            List<ElectricityCabinetPowerVo> electricityCabinetPowerVoList=electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery);
+            electricityCabinetSumPowerVo.setElectricityCabinetPowerVo(electricityCabinetPowerVoList);
+        }, threadPool).exceptionally(e -> {
+            log.error("query electricityCabinet power list ERROR!", e);
+            return null;
+        });
+
+        //换电订单数量统计
+        CompletableFuture<Void> sumPower = CompletableFuture.runAsync(() -> {
+            ElectricityCabinetPowerVo electricityCabinetPowerVo=electricityCabinetPowerMapper.queryLatestPower();
+            electricityCabinetSumPowerVo.setSumPower(electricityCabinetPowerVo.getSumPower());
+        }, threadPool).exceptionally(e -> {
+            log.error("query electricityCabinet sum power ERROR!", e);
+            return null;
+        });
+
+        CompletableFuture<Void> resultFuture = CompletableFuture.allOf(powerList,sumPower);
+
+        try {
+            resultFuture.get(10, TimeUnit.SECONDS);
+        } catch (Exception e) {
+            log.error("ORDER STATISTICS ERROR!", e);
+        }
+        return R.ok(electricityCabinetSumPowerVo);
     }
 
     @Override
-    public void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery, HttpServletResponse response) {
+    public void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery,
+        HttpServletResponse response) {
 
         electricityCabinetPowerQuery.setOffset(0L);
         electricityCabinetPowerQuery.setSize(2000L);
-        List<ElectricityCabinetPowerVo> electricityCabinetPowerVos = electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery);
+        List<ElectricityCabinetPowerVo> electricityCabinetPowerVos = electricityCabinetPowerMapper
+            .queryList(electricityCabinetPowerQuery);
         if (ObjectUtil.isEmpty(electricityCabinetPowerVos)) {
             throw new CustomBusinessException("查不到柜机电量");
         }
-
-        System.out.println("电量列表================================="+electricityCabinetPowerVos);
 
         List<ElectricityCabinetPowerExcelVo> electricityCabinetPowerExcelVos = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DatePattern.NORM_DATETIME_PATTERN);
@@ -92,8 +129,6 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
             electricityCabinetPowerExcelVos.add(excelVo);
 
         }
-
-
 
         String fileName = "换电柜电量报表.xlsx";
 
