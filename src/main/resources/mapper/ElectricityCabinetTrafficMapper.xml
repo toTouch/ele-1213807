@@ -88,10 +88,7 @@
             <if test="electricityCabinetId != null">
                 and tect.eid = #{electricityCabinetId}
             </if>
-            <if test="electricityCabinetName != null">
-                and tec.name like concat('%',#{electricityCabinetName},'%')
-            </if>
         </where>
-        order by tecp.create_time desc limit 1;
+        order by tect.create_time desc limit 1;
     </select>
 </mapper>

@@ -80,7 +80,6 @@ public class ElectricityCabinetTrafficServiceImpl implements ElectricityCabinetT
 
         ElectricityCabinetSumTrafficVo electricityCabinetSumTrafficVo=new ElectricityCabinetSumTrafficVo();
 
-
         //流量列表统计
         CompletableFuture<Void> trafficList = CompletableFuture.runAsync(() -> {
             List<ElectricityCabinetTrafficVo> electricityCabinetTrafficVos=electricityCabinetTrafficMapper.queryList(size, offset, electricityCabinetId, electricityCabinetName, beginTime, endTime, date);

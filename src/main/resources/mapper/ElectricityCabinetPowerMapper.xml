@@ -43,9 +43,6 @@
             <if test="query.electricityCabinetId != null">
                 and tecp.eid = #{query.electricityCabinetId}
             </if>
-            <if test="query.electricityCabinetName != null">
-                and tec.name like concat('%',#{query.electricityCabinetName,jdbcType=VARCHAR},'%')
-            </if>
         </where>
         order by tecp.create_time desc limit 1;
     </select>
