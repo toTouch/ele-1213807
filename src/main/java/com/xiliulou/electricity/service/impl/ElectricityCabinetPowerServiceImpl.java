@@ -55,16 +55,17 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
     }
 
     @Override
-    public void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery,
-        HttpServletResponse response) {
+    public void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery, HttpServletResponse response) {
 
         electricityCabinetPowerQuery.setOffset(0L);
         electricityCabinetPowerQuery.setSize(2000L);
-        List<ElectricityCabinetPowerVo> electricityCabinetPowerVos = electricityCabinetPowerMapper
-            .queryList(electricityCabinetPowerQuery);
+        List<ElectricityCabinetPowerVo> electricityCabinetPowerVos = electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery);
         if (ObjectUtil.isEmpty(electricityCabinetPowerVos)) {
             throw new CustomBusinessException("查不到柜机电量");
         }
+
+        System.out.println("电量列表================================="+electricityCabinetPowerVos);
+
         List<ElectricityCabinetPowerExcelVo> electricityCabinetPowerExcelVos = new ArrayList();
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat(DatePattern.NORM_DATETIME_PATTERN);
         int index = 0;
@@ -73,7 +74,8 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
             ElectricityCabinetPowerExcelVo excelVo = new ElectricityCabinetPowerExcelVo();
             excelVo.setId(index);
             excelVo.setDate(electricityCabinetPowerVo.getDate().toString());
-            excelVo.setElectricityCabinetName(electricityCabinetPowerVo.getElectricityCabinetName());
+            excelVo
+                .setElectricityCabinetName(electricityCabinetPowerVo.getElectricityCabinetName());
             excelVo.setSameDayPower(electricityCabinetPowerVo.getSameDayPower());
             excelVo.setSumPower(electricityCabinetPowerVo.getSumPower());
 
@@ -90,6 +92,9 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
             electricityCabinetPowerExcelVos.add(excelVo);
 
         }
+
+
+
         String fileName = "换电柜电量报表.xlsx";
 
         try {
@@ -99,7 +104,7 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
             // 下载文件的默认名称
             response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder
                 .encode(fileName, "utf-8"));
-            EasyExcel.write(outputStream, EleDepositOrderExcelVO.class).sheet("sheet")
+            EasyExcel.write(outputStream, ElectricityCabinetPowerExcelVo.class).sheet("sheet")
                 .doWrite(electricityCabinetPowerExcelVos);
             return;
         } catch (IOException e) {
