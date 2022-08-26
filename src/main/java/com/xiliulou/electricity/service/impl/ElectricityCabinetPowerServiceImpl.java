@@ -63,7 +63,7 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
 
         ElectricityCabinetSumPowerVo electricityCabinetSumPowerVo=new ElectricityCabinetSumPowerVo();
 
-        //换电订单数量统计
+        //电量列表统计
         CompletableFuture<Void> powerList = CompletableFuture.runAsync(() -> {
             List<ElectricityCabinetPowerVo> electricityCabinetPowerVoList=electricityCabinetPowerMapper.queryList(electricityCabinetPowerQuery);
             electricityCabinetSumPowerVo.setElectricityCabinetPowerVo(electricityCabinetPowerVoList);
@@ -72,10 +72,12 @@ public class ElectricityCabinetPowerServiceImpl implements ElectricityCabinetPow
             return null;
         });
 
-        //换电订单数量统计
+        //总电量统计
         CompletableFuture<Void> sumPower = CompletableFuture.runAsync(() -> {
             ElectricityCabinetPowerVo electricityCabinetPowerVo=electricityCabinetPowerMapper.queryLatestPower(electricityCabinetPowerQuery);
-            electricityCabinetSumPowerVo.setSumPower(electricityCabinetPowerVo.getSumPower());
+            if (Objects.nonNull(electricityCabinetPowerVo)) {
+                electricityCabinetSumPowerVo.setSumPower(electricityCabinetPowerVo.getSumPower());
+            }
         }, threadPool).exceptionally(e -> {
             log.error("query electricityCabinet sum power ERROR!", e);
             return null;

@@ -26,6 +26,8 @@ public interface ElectricityCabinetTrafficMapper extends BaseMapper<ElectricityC
                                                 @Param("endTime")Long endTime,
                                                 @Param("date")LocalDate date);
 
+    ElectricityCabinetTrafficVo queryLatestTraffic(@Param("electricityCabinetId")Integer electricityCabinetId, @Param("electricityCabinetName")String electricityCabinetName);
+
     @Delete("delete from t_electricity_cabinet_traffic where create_time < #{time}")
     int removeLessThanTime(@Param("time")Long time);
 }

@@ -73,4 +73,25 @@
         order by tect.create_time DESC
         limit #{offset}, #{size}
     </select>
+
+    <select id="queryLatestTraffic" resultType="com.xiliulou.electricity.vo.ElectricityCabinetTrafficVo">
+         select
+            tect.id,
+            tect.same_day_traffic,
+            tect.sum_traffic,
+            tect.`date`,
+            tect.create_time,
+            tect.update_time,
+            tect.eid as electricity_cabinet_id
+        from t_electricity_cabinet_traffic as tect
+        <where>
+            <if test="electricityCabinetId != null">
+                and tect.eid = #{electricityCabinetId}
+            </if>
+            <if test="electricityCabinetName != null">
+                and tec.name like concat('%',#{electricityCabinetName},'%')
+            </if>
+        </where>
+        order by tecp.create_time desc limit 1;
+    </select>
 </mapper>
