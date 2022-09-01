@@ -277,7 +277,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             batteryChargeA = 0.0;
         }
 
-        electricityBatteryVO.setBatteryChargeA(batteryChargeA / 100.0);
+        //electricityBatteryVO.setBatteryChargeA(batteryChargeA / 100.0);
         return electricityBatteryVO;
     }
 
