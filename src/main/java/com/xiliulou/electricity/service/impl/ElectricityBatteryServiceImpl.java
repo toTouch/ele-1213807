@@ -271,7 +271,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
 
         if(Objects.nonNull(electricityBatteryVO.getSumV())) {
-            electricityBatteryVO.setBatteryChargeA(electricityBatteryVO.getSumV() < 0 ? 0 : electricityBatteryVO.getSumV());
+            electricityBatteryVO.setBatteryV(electricityBatteryVO.getSumV() < 0 ? 0 : electricityBatteryVO.getSumV());
         }
 
         return electricityBatteryVO;
