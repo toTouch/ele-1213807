@@ -265,19 +265,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         }
 
         //前端显示值替换
-        electricityBatteryVO.setBatteryChargeA(electricityBatteryVO.getSumA());
-        electricityBatteryVO.setBatteryV(electricityBatteryVO.getSumV());
-
-        if(Objects.isNull(electricityBatteryVO.getBatteryChargeA())) {
-            return electricityBatteryVO;
+        if(Objects.nonNull(electricityBatteryVO.getSumA())) {
+            electricityBatteryVO.setBatteryChargeA(electricityBatteryVO.getSumA() < 0 ? 0 : electricityBatteryVO.getSumA());
         }
 
-        Double batteryChargeA = electricityBatteryVO.getBatteryChargeA();
-        if(batteryChargeA < 0) {
-            batteryChargeA = 0.0;
+
+        if(Objects.nonNull(electricityBatteryVO.getSumV())) {
+            electricityBatteryVO.setBatteryChargeA(electricityBatteryVO.getSumV() < 0 ? 0 : electricityBatteryVO.getSumV());
         }
 
-        //electricityBatteryVO.setBatteryChargeA(batteryChargeA / 100.0);
         return electricityBatteryVO;
     }
 
