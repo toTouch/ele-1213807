@@ -124,5 +124,13 @@ public class ElectricityBatteryVO {
      * 用户所产生的电池服务费
      */
     private BigDecimal userBatteryServiceFee;
+    /**
+     * gps上报电流
+     */
+    private Double sumA;
 
+    /**
+     * gps
+     */
+    private Double sumV;
 }
