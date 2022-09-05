@@ -752,6 +752,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
             updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
+            updateFranchiseeUserInfo.setBatteryServiceFeeGenerateTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
