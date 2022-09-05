@@ -259,7 +259,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBatteryVO queryInfoByUid(Long uid) {
-        return electricitybatterymapper.selectBatteryInfo(uid);
+        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryInfo(uid);
+        if(Objects.isNull(electricityBatteryVO)) {
+            return electricityBatteryVO;
+        }
+
+        //前端显示值替换
+        if(Objects.nonNull(electricityBatteryVO.getSumA())) {
+            electricityBatteryVO.setBatteryChargeA(electricityBatteryVO.getSumA() < 0 ? 0 : electricityBatteryVO.getSumA());
+        }
+
+
+        if(Objects.nonNull(electricityBatteryVO.getSumV())) {
+            electricityBatteryVO.setBatteryV(electricityBatteryVO.getSumV() < 0 ? 0 : electricityBatteryVO.getSumV());
+        }
+
+        return electricityBatteryVO;
     }
 
     @Override

@@ -95,7 +95,8 @@
         select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
         teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
         teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid,
-        tbop.battery_v as batteryV,tbop.battery_charge_a as batteryChargeA
+        tbop.battery_v as battery_v, tbop.battery_charge_a as battery_charge_a,
+        tbop.sum_v as sum_v, tbop.sum_a as sum_a
         FROM t_electricity_battery as teb
         left join t_battery_other_properties as tbop on teb.sn=tbop.battery_name
         WHERE teb.uid = #{uid} and teb.del_flag = 0
