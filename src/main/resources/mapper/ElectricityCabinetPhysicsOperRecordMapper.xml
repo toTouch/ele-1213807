@@ -135,7 +135,7 @@
                  and ecpor.cell_no = #{cellNo}
              </if>
              <if test="userName != null and userName != ''">
-                 and ecpor.user_name like concat('%', #{user_name}, '%')
+                 and ecpor.user_name like concat('%', #{userName}, '%')
              </if>
              <if test="phone != null and phone != ''">
                  and ui.phone like concat('%', #{phone}, '%')
@@ -166,7 +166,7 @@
                 and ecpor.cell_no = #{cellNo}
             </if>
             <if test="userName != null and userName != ''">
-                and ecpor.user_name like concat('%', #{user_name}, '%')
+                and ecpor.user_name like concat('%', #{userName}, '%')
             </if>
             <if test="phone != null and phone != ''">
                 and ui.phone like concat('%', #{phone}, '%')
