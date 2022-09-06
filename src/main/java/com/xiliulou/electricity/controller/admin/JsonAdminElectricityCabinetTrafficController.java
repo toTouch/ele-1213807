@@ -58,7 +58,14 @@ public class JsonAdminElectricityCabinetTrafficController {
         @RequestParam(value = "date", required = false) LocalDate date,
         HttpServletResponse response) {
 
-        Double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
+        if (Objects.isNull(beginTime)) {
+            beginTime = System.currentTimeMillis() - 2592000000L;
+        }
+        if (Objects.isNull(endTime)) {
+            endTime = System.currentTimeMillis();
+        }
+
+        double days = (Double.valueOf(endTime - beginTime)) / 1000 / 3600 / 24;
         if (days > 92) {
             throw new CustomBusinessException("搜索日期不能大于3个月");
         }
