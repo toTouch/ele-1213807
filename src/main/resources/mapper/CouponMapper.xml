@@ -29,6 +29,7 @@
         <if test="query.offset != null and query.size != null">
             limit #{query.offset}, #{query.size}
         </if>
+        order by create_time desc
     </select>
 
     <select id="queryCount" resultType="java.lang.Integer">
