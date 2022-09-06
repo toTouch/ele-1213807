@@ -8,6 +8,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
+import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.WarnMsgVo;
 import com.xiliulou.iot.entity.HardwareCommand;
@@ -54,6 +55,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
 
+    @Autowired
+    EleHardwareHandlerManager eleHardwareHandlerManager;
+
 
     @Override
     public void postHandleReceiveMsg(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
@@ -79,7 +83,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.nonNull(electricityConfig)
                 && Objects.equals(electricityConfig.getIsOpenDoorLock(), ElectricityConfig.OPEN_DOOR_LOCK)
                 && exchangeOrderRsp.getIsException()) {
-            lockExceptionDoor(electricityCabinetOrder);
+            lockExceptionDoor(electricityCabinetOrder,exchangeOrderRsp);
         }
 
         if (exchangeOrderRsp.getIsException()) {
@@ -239,7 +243,6 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     // TODO: 2022/8/1 异常锁定格挡
     private void lockExceptionDoor(ElectricityCabinetOrder electricityCabinetOrder,ExchangeOrderRsp exchangeOrderRsp) {
 
-
         //上报的订单状态值
         String orderStatus = exchangeOrderRsp.getOrderStatus();
         if (Objects.isNull(orderStatus)) {
@@ -286,15 +289,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             .data(dataMap)
             .productKey(electricityCabinet.getProductKey())
             .deviceName(electricityCabinet.getDeviceName())
-            .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+            .command(ElectricityIotConstant.ELE_COMMAND_CELL_UPDATE)
             .build();
 
         Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
         if (!sendResult.getLeft()) {
             log.error("ELE LOCK CELL ERROR! send command error! orderId:{}", exchangeOrderRsp.getOrderId());
         }
-
-
     }
 
 
