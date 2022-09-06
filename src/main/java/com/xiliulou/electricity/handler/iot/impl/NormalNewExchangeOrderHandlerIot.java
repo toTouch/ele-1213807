@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
@@ -9,9 +10,14 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.WarnMsgVo;
+import com.xiliulou.iot.entity.HardwareCommand;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import java.util.HashMap;
+import java.util.UUID;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -44,6 +50,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
+
+    @Autowired
+    ElectricityCabinetBoxService electricityCabinetBoxService;
 
 
     @Override
@@ -228,7 +237,63 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     }
 
     // TODO: 2022/8/1 异常锁定格挡
-    private void lockExceptionDoor(ElectricityCabinetOrder electricityCabinetOrder) {
+    private void lockExceptionDoor(ElectricityCabinetOrder electricityCabinetOrder,ExchangeOrderRsp exchangeOrderRsp) {
+
+
+        //上报的订单状态值
+        String orderStatus = exchangeOrderRsp.getOrderStatus();
+        if (Objects.isNull(orderStatus)) {
+            log.error("ELE LOCK CELL orderStatus is null! orderId:{}", exchangeOrderRsp.getOrderId());
+            return;
+        }
+
+        //仓门编号
+        Integer cellNo = null;
+        //电柜Id
+        Integer electricityCabinetId = null;
+
+        //旧仓门异常
+        if (Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_OPEN_FAIL)
+            || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_FAIL)
+            || Objects.equals(orderStatus, ElectricityCabinetOrder.INIT_BATTERY_CHECK_TIMEOUT)) {
+            cellNo = electricityCabinetOrder.getOldCellNo();
+            electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
+        } else if (Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_OPEN_FAIL)
+            || Objects.equals(orderStatus, ElectricityCabinetOrder.COMPLETE_BATTERY_TAKE_TIMEOUT)) {
+            cellNo = electricityCabinetOrder.getNewCellNo();
+            electricityCabinetId = electricityCabinetOrder.getElectricityCabinetId();
+        }
+
+        if (Objects.isNull(cellNo) || Objects.isNull(electricityCabinetId)) {
+            log.error("ELE LOCK CELL cellNo or electricityCabinetId is null! orderId:{}", exchangeOrderRsp.getOrderId());
+            return;
+        }
+
+        //对异常仓门进行锁仓处理
+        electricityCabinetBoxService.disableCell(cellNo, electricityCabinetId);
+
+        //查询三元组信息
+        ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityCabinetId);
+
+        //发送锁仓命令
+        //发送命令
+        HashMap<String, Object> dataMap = Maps.newHashMap();
+        dataMap.put("cell_no", cellNo);
+        dataMap.put("isForbidden", true);
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+            .sessionId(UUID.randomUUID().toString().replace("-", ""))
+            .data(dataMap)
+            .productKey(electricityCabinet.getProductKey())
+            .deviceName(electricityCabinet.getDeviceName())
+            .command(HardwareCommand.ELE_COMMAND_CELL_UPDATE)
+            .build();
+
+        Pair<Boolean, String> sendResult = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        if (!sendResult.getLeft()) {
+            log.error("ELE LOCK CELL ERROR! send command error! orderId:{}", exchangeOrderRsp.getOrderId());
+        }
+
 
     }
 
