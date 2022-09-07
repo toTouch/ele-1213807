@@ -178,7 +178,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //更新格挡
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
         //将用户绑定的电池解绑
-        this.unbindUserBattery(eleBox.getSn());
+        //this.unbindUserBattery(eleBox.getSn());
 
         //保存电池上报其他信息
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
@@ -270,7 +270,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                 updateBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateByOrder(updateBattery);
 
-                this.unbindUserBattery(eleBox.getSn());
+                //this.unbindUserBattery(eleBox.getSn());
             }
         }
     }
@@ -299,7 +299,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
 
-            this.unbindUserBattery(eleBox.getSn());
+            //this.unbindUserBattery(eleBox.getSn());
 
             electricityBatteryService.updateByOrder(updateBattery);
             log.info("ELE BATTERY REPORT INFO! current batteryName not equals original batteryName,currentBatteryName={},originalBatteryName={},sessionId={}", eleBatteryVO.getBatteryName(), eleBox.getSn(), sessionId);
@@ -424,22 +424,22 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      *
      * @param batteryName
      */
-    private void unbindUserBattery(String batteryName) {
-        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService
-            .selectByNowElectricityBatterySn(batteryName);
-        if (CollectionUtils.isEmpty(franchiseeUserInfoList)) {
-            return;
-        }
-
-        franchiseeUserInfoList.forEach(item -> {
-            FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
-                .id(item.getId())
-                .nowElectricityBatterySn(null)
-                .serviceStatus(item.getServiceStatus())
-                .updateTime(System.currentTimeMillis()).build();
-            franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
-        });
-    }
+//    private void unbindUserBattery(String batteryName) {
+//        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService
+//            .selectByNowElectricityBatterySn(batteryName);
+//        if (CollectionUtils.isEmpty(franchiseeUserInfoList)) {
+//            return;
+//        }
+//
+//        franchiseeUserInfoList.forEach(item -> {
+//            FranchiseeUserInfo updateFranchiseeUserInfo = FranchiseeUserInfo.builder()
+//                .id(item.getId())
+//                .nowElectricityBatterySn(null)
+//                .serviceStatus(item.getServiceStatus())
+//                .updateTime(System.currentTimeMillis()).build();
+//            franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
+//        });
+//    }
 
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
         if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
