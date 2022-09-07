@@ -641,6 +641,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     userAuthInfoVo.setIdCardFrontUrl(auth.getValue());
                 }
 
+                if (auth.getEntryId().equals(EleAuthEntry.ID_SELF_PHOTO)) {
+                    userAuthInfoVo.setSelfPhoto(auth.getValue());
+                }
+
             });
 
 

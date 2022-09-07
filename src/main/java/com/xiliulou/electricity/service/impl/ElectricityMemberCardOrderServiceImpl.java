@@ -326,7 +326,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                     franchiseeUserInfo.getMemberCardExpireTime() > now &&
                     (ObjectUtil.equal(ElectricityMemberCard.UN_LIMITED_COUNT, franchiseeUserInfo.getRemainingNumber()) || franchiseeUserInfo.getRemainingNumber() > 0)) {
                 log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
-                return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
+                return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
             }
         }
 
@@ -751,7 +751,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
-            updateFranchiseeUserInfo.setMemberCardExpireTime(System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime()));
+            Long memberCardExpireTime=System.currentTimeMillis() + (franchiseeUserInfo.getMemberCardExpireTime() - franchiseeUserInfo.getDisableMemberCardTime());
+            updateFranchiseeUserInfo.setMemberCardExpireTime(memberCardExpireTime);
+            updateFranchiseeUserInfo.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
             updateFranchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         }
         updateFranchiseeUserInfo.setId(franchiseeUserInfo.getId());
@@ -1251,7 +1253,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         if (Objects.nonNull(franchiseeUserInfo.getRentCarCardId()) && !Objects.equals(franchiseeUserInfo.getBindCarModelId(), electricityMemberCard.getCarModelId())) {
             log.error("CREATE MEMBER_ORDER ERROR ,MEMBER_CARD IS NOT EXPIRED USERINFO:{}", userInfo);
-            return R.fail("ELECTRICITY.0089", "您的月卡还未过期,无需再次购买!");
+            return R.fail("ELECTRICITY.0089", "您的套餐未过期，只能购买您绑定的套餐类型!");
         }
 
         BigDecimal payAmount = electricityMemberCard.getHolidayPrice();

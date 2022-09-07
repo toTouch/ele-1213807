@@ -46,4 +46,6 @@ public interface EleUserAuthService {
 
     R acquireIdcardFileSign();
 
+    R acquireselfieFileSign();
+
 }
