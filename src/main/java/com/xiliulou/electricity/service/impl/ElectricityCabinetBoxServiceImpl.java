@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -177,4 +178,13 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
     }
 
+    /**
+     * 根据电池id查询格挡
+     * @param batteryId
+     * @return
+     */
+    @Override
+    public ElectricityCabinetBox selectByBatteryId(Long batteryId) {
+        return electricityCabinetBoxMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetBox>().eq(ElectricityCabinetBox::getBId, batteryId));
+    }
 }

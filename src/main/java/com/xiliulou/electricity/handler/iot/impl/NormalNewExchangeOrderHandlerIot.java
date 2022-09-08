@@ -24,8 +24,6 @@ import java.util.concurrent.TimeUnit;
 public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
-    @Autowired
-    ElectricityCabinetService electricityCabinetService;
 
     @Autowired
     ElectricityBatteryService electricityBatteryService;
@@ -108,6 +106,12 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
+        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
+        if(Objects.isNull(oldFranchiseeUserInfo)){
+            log.error("EXCHANGE ORDER ERROR! not found franchiseeUserInfo,uid={},requestId={}",userInfo.getUid(), exchangeOrderRsp.getSessionId());
+            return ;
+        }
+
         //用户绑新电池
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setUserInfoId(userInfo.getId());
@@ -116,12 +120,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
         //查看用户是否有以前绑定的电池
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+//        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
             newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
-            newElectricityBattery.setUid(null);
+//            newElectricityBattery.setUid(null);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -136,7 +141,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
-        newElectricityBattery.setUid(electricityCabinetOrder.getUid());
+//        newElectricityBattery.setUid(electricityCabinetOrder.getUid());
         newElectricityBattery.setExchangeCount(electricityBattery.getExchangeCount() + 1);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
@@ -168,12 +173,13 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         franchiseeUserInfoService.update(franchiseeUserInfo);
 
         //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+//        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
         if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
             newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
-            newElectricityBattery.setUid(null);
+//            newElectricityBattery.setUid(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
@@ -188,7 +194,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
             newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
             newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-            newElectricityBattery.setUid(null);
+//            newElectricityBattery.setUid(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(null);
             electricityBatteryService.updateByOrder(newElectricityBattery);

@@ -31,7 +31,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryByBindSn(String initElectricityBatterySn);
 
-    ElectricityBattery queryByUid(Long uid);
+//    ElectricityBattery queryByUid(Long uid);
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 

@@ -3,6 +3,23 @@
 <mapper namespace="com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper">
 
 
+    <!-- 基础字段 -->
+    <sql id="selectFranchiseeUserInfo">
+        select  id, user_info_id, service_status, franchisee_id,card_id, card_name, card_type, member_card_expire_time, remaining_number, init_electricity_battery_sn,now_electricity_battery_sn, battery_deposit, order_id, del_flag, create_time,update_time, tenant_id, model_type,battery_type, remaining_distance, battery_service_fee_status, battery_service_fee_generate_time,member_card_disable_status,disable_member_card_time
+        from t_franchisee_user_info
+    </sql>
+
+    <select id="selectByNowBattery" resultType="com.xiliulou.electricity.entity.FranchiseeUserInfo">
+        <include refid="selectFranchiseeUserInfo"/>
+        where del_flag = 0
+        <if test="batteryName != null and batteryName !=''">
+            and now_electricity_battery_sn =#{batteryName}
+        </if>
+    </select>
+
+
+
+
     <update id="unBind">
         update t_franchisee_user_info
         set service_status = #{serviceStatus},

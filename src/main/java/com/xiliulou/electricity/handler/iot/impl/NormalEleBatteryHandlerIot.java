@@ -165,7 +165,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                     newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
                     newElectricityBattery.setElectricityCabinetId(null);
                     newElectricityBattery.setElectricityCabinetName(null);
-                    newElectricityBattery.setUid(null);
+//                    newElectricityBattery.setUid(null);
                     newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                     electricityBatteryService.updateByOrder(newElectricityBattery);
                 }
@@ -231,8 +231,8 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
         newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
         newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-        newElectricityBattery.setLastDepositCellNo(cellNo);
-        newElectricityBattery.setUid(null);
+//        newElectricityBattery.setLastDepositCellNo(cellNo);
+//        newElectricityBattery.setUid(null);
         newElectricityBattery.setBorrowExpireTime(null);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         //newElectricityBattery.setReportType(ElectricityBattery.REPORT_TYPE_ELECTRICITY_CABINET);
