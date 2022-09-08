@@ -36,6 +36,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn);
 
+    ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId);
+
     Integer updateByOrder(ElectricityBattery electricityBattery);
 
     R queryCount(ElectricityBatteryQuery electricityBatteryQuery);

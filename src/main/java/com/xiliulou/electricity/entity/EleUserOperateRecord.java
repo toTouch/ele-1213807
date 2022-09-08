@@ -3,6 +3,7 @@ package com.xiliulou.electricity.entity;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.google.gson.internal.$Gson$Types;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -98,6 +99,10 @@ public class EleUserOperateRecord {
     //操作后使用次数
     private Long newMaxUseCount;
 
+    private Integer memberCardDisableStatus;
+
+    private BigDecimal batteryServiceFee;
+
     public static final Integer BATTERY_MODEL = 0;
     public static final Integer DEPOSIT_MODEL = 1;
     public static final Integer MEMBER_CARD_MODEL = 2;
@@ -108,6 +113,8 @@ public class EleUserOperateRecord {
     public static final Integer BIND_BATTERY_CONTENT = 2;
     public static final Integer UN_BIND_BATTERY_CONTENT = 3;
     public static final Integer EDIT_BATTERY_CONTENT = 5;
+    public static final Integer MEMBER_CARD_DISABLE = 6;
+    public static final Integer CLEAN_BATTERY_SERVICE_FEE = 7;
 
 }
 

@@ -25,7 +25,7 @@ public class UserInfoQuery {
 
     private Integer serviceStatus;
 
-    private String batterySn;
+    private String nowElectricityBatterySn;
     private Long franchiseeId;
 
     private Long memberCardExpireTimeBegin;

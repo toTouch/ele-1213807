@@ -79,6 +79,8 @@ public interface UserInfoService extends IService<UserInfo> {
 
     R queryCount(UserInfoQuery userInfoQuery);
 
+    R queryAuthenticationCount(UserInfoQuery userInfoQuery);
+
     Integer querySumCount(UserInfoQuery userInfoQuery);
 
     R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate);
@@ -101,4 +103,7 @@ public interface UserInfoService extends IService<UserInfo> {
 
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
 
+    R deleteUserInfo(Long uid);
+
+    Integer updateByUid(UserInfo userInfo);
 }

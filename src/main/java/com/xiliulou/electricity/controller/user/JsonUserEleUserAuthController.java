@@ -120,4 +120,12 @@ public class JsonUserEleUserAuthController {
         return eleUserAuthService.acquireIdcardFileSign();
 	}
 
+	/**
+	 * 获取上传自拍照片所需的签名
+	 */
+	@GetMapping(value = "/user/acquire/upload/selfie/file/sign")
+	public R getUploadselfieFileSign() {
+		return eleUserAuthService.acquireselfieFileSign();
+	}
+
 }

@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -50,6 +51,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "memberCardModel", required = false) Integer memberCardModel,
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
+			@RequestParam(value = "userName", required = false) String userName,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime) {
 
 		if (size < 0 || size > 50) {
@@ -93,6 +95,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.status(status)
 				.cardModel(memberCardModel)
 				.franchiseeName(franchiseeName)
+				.userName(userName)
 				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryList(memberCardOrderQuery);
@@ -211,6 +214,26 @@ public class JsonAdminElectricityMemberCardOrderController {
 	@PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
 	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
 		return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
+	}
+
+	/**
+	 * 暂停用户套餐
+	 * @param usableStatus
+	 * @return
+	 */
+	@PutMapping("/admin/memberCard/openOrDisableMemberCard")
+	public R adminOpenOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam( "uid") Long uid){
+		return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus,uid);
+	}
+
+	/**
+	 * 	清除用户电池服务费
+	 * @param uid
+	 * @return
+	 */
+	@PutMapping("/admin/memberCard/cleanBatteryServiceFee")
+	public R cleanBatteryServiceFee(@RequestParam( "uid") Long uid){
+		return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
 	}
 
 }

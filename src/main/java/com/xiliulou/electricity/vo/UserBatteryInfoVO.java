@@ -1,8 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -126,6 +123,17 @@ public class UserBatteryInfoVO {
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;
+
+
+    /**
+     * 月卡停启用状态 0--启用 1--停用
+     */
+    private Integer memberCardDisableStatus;
+
+    /**
+     * 月卡暂停启用更新时间
+     */
+    private Long disableMemberCardTime;
 
     private Integer modelType;
 

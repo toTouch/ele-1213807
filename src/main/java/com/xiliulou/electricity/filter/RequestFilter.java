@@ -51,7 +51,7 @@ public class RequestFilter implements Filter {
         collectorRegistry.register(REQUEST_LATENCY_HISTOGRAM);
     }
 
-    public void afterCompletion(HttpServletRequest request) {
+    public void afterCompletion(String ip, HttpServletRequest request) {
         PROGRESSING_REQUESTS.dec();
 
         Object attribute = request.getAttribute(REQ_TIME);
@@ -77,7 +77,7 @@ public class RequestFilter implements Filter {
             return;
         }
         Long uid = SecurityUtils.getUid();
-        log.info("uid={} method={} uri={} time={}", uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
+        log.info("ip={} uid={} method={} uri={} time={}", ip, uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
 
     }
 
@@ -126,7 +126,7 @@ public class RequestFilter implements Filter {
             filterChain.doFilter(httpServletRequest, servletResponse);
 
         }
-        afterCompletion(httpServletRequest);
+        afterCompletion(ip, httpServletRequest);
 
     }
 }

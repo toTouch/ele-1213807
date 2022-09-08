@@ -20,7 +20,18 @@ public class ElectricityIotConstant {
     public static final String NORMAL_API_EXCHANGE_HANDLER = "normalApiExchangeHandler";
     public static final String NORMAL_API_RENT_HANDLER = "normalApiRentHandler";
     public static final String NORMAL_API_RETURN_HANDLER = "normalApiReturnHandler";
+    /**
+     * 电池上报
+     */
     public static final String NORMAL_ELE_BATTERY_HANDLER = "normalEleBatteryHandler";
+    /**
+     * 电池变化
+     */
+    public static final String NORMAL_ELE_BATTERY_CHANGE_HANDLER = "normalEleBatteryChangeHandler";
+    /**
+     * 邮箱上报告警
+     */
+    public static final String NORMAL_ELE_EMAIL_WARN_MSG_HANDLER = "normalEleEmailWarnMsgHandler";
     public static final String NORMAL_ELE_CELL_HANDLER = "normalEleCellHandler";
     public static final String NORMAL_ELE_EXCHANGE_HANDLER = "normalEleExchangeHandler";
     public static final String NORMAL_ELE_OPERATE_HANDLER = "normalEleOperateHandler";
@@ -329,6 +340,10 @@ public class ElectricityIotConstant {
     public static final String SIM_TRAFFIC_STATISTICS_RSP = "sim_card_statistics_rsp";
 
     public static final String RESTART_APP = "restart_app";
+    /**
+     * 邮箱上报告警
+     */
+    public static final String ELE_EMAIL_WARN_MSG = "email_warn_msg";
 
 
     static {
@@ -408,9 +423,7 @@ public class ElectricityIotConstant {
         /**
          * 柜机检测电池数据上报
          */
-        COMMAND_HANDLER_MAPS.put(BATTERY_CHANGE_REPORT, NORMAL_ELE_BATTERY_HANDLER);
-
-
+        COMMAND_HANDLER_MAPS.put(BATTERY_CHANGE_REPORT, NORMAL_ELE_BATTERY_CHANGE_HANDLER);
         /**
          * 核心板数据上报
          */
@@ -435,5 +448,11 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
         COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS_RSP, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
+        /**
+         * 柜机上报告警发邮件
+         */
+        COMMAND_HANDLER_MAPS.put(ELE_EMAIL_WARN_MSG, NORMAL_ELE_EMAIL_WARN_MSG_HANDLER);
+
+
     }
 }

@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 @Data
 @RefreshScope
 public class EleCommonConfig {
-
+    @Deprecated
     private Integer batteryReportCheck;
 
     /**

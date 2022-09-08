@@ -77,4 +77,6 @@ public interface FranchiseeUserInfoService {
     void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
     List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(int offset, int size, long now, long threeDaysLater);
+
+    List<FranchiseeUserInfo> selectByNowElectricityBatterySn(String batteryName);
 }

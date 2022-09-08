@@ -36,5 +36,10 @@ public class MqNotifyCommon<T> {
 
     public static final Integer TYPE_MALFUNCTION_INFO = 2;
 
+    /**
+     * 系统升级邮件通知
+     */
+    public static final Integer TYPE_UPGRADE_SEND_MAIL = 10000;
+
     public static final String PROJECT_NAME = "换电柜";
 }
