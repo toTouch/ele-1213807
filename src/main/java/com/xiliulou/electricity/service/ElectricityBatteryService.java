@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 
@@ -55,6 +56,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
+
+    BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn);
 

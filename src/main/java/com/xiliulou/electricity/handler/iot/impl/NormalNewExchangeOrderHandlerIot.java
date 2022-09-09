@@ -11,6 +11,7 @@ import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.vo.WarnMsgVo;
+import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.HardwareCommand;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
@@ -18,10 +19,12 @@ import java.util.HashMap;
 import java.util.UUID;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -194,6 +197,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         }
 
         //放入电池改为在仓
+        //获取放入电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
@@ -212,6 +216,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
 
 
     private void handleOrderException(ElectricityCabinetOrder electricityCabinetOrder, ExchangeOrderRsp exchangeOrderRsp, ElectricityConfig electricityConfig) {
+        //取消订单
         ElectricityCabinetOrder newElectricityCabinetOrder = new ElectricityCabinetOrder();
         newElectricityCabinetOrder.setId(electricityCabinetOrder.getId());
         newElectricityCabinetOrder.setUpdateTime(System.currentTimeMillis());

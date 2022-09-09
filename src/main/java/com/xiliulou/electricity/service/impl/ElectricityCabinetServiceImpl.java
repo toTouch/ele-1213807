@@ -17,6 +17,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.config.EleIotOtaUrlConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -125,6 +126,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     UserService userService;
+    @Autowired
+    EleIotOtaUrlConfig eleIotOtaUrlConfig;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -1171,18 +1174,36 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0036", "不合法的命令");
         }
 
+        Map<String, Object> dataMap = null;
+        if(CollectionUtils.isEmpty(eleOuterCommandQuery.getData())) {
+            dataMap = Maps.newHashMap();
+        } else {
+            dataMap = eleOuterCommandQuery.getData();
+        }
+
+        dataMap.put("uid", SecurityUtils.getUid());
+        dataMap.put("username", SecurityUtils.getUserInfo().getUsername());
+        eleOuterCommandQuery.setData(dataMap);
+
+        //开全部门 -->  cell_all_open_door
         if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_ALL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
             List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
             if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
                 return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
             }
-            HashMap<String, Object> dataMap = Maps.newHashMap();
+
             List<String> cellList = new ArrayList<>();
             for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
                 cellList.add(electricityCabinetBox.getCellNo());
             }
             dataMap.put("cell_list", cellList);
-            eleOuterCommandQuery.setData(dataMap);
+
+        }
+
+        //ota升级 -->  ota_process
+        if(Objects.equals(ElectricityIotConstant.OTA_PROCESS, eleOuterCommandQuery.getCommand())){
+            dataMap.put("subUrl", eleIotOtaUrlConfig.getSubUrl());
+            dataMap.put("coreUrl", eleIotOtaUrlConfig.getCoreUrl());
         }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -1848,25 +1869,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("电池与换电柜租户不匹配");
         }
 
-        //电池加盟商是否匹配
-        if (Objects.nonNull(isParseBattery) && isParseBattery) {
-            //查电池所属加盟商
-            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
-            if (Objects.isNull(franchiseeBindElectricityBattery)) {
-                log.error("checkBattery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
-                return R.fail("电池未绑定加盟商");
-            }
-            // 查换电柜所属加盟商
-            Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-            if (Objects.isNull(store)) {
-                log.error("checkBattery error! not find store,storeId:{}", electricityCabinet.getStoreId());
-                return R.fail("找不到换电柜门店");
-            }
+        //查电池所属加盟商
+        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+        if (Objects.isNull(franchiseeBindElectricityBattery)) {
+            log.error("checkBattery error! battery not bind franchisee,electricityBatteryId:{}", electricityBattery.getId());
+            return R.fail("电池未绑定加盟商");
+        }
+        // 查换电柜所属加盟商
+        Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
+        if (Objects.isNull(store)) {
+            log.error("checkBattery error! not find store,storeId:{}", electricityCabinet.getStoreId());
+            return R.fail("找不到换电柜门店");
+        }
 
-            if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
-                log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
-                return R.fail("电池加盟商与电柜加盟商不匹配");
-            }
+        if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
+            log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId());
+            return R.fail("电池加盟商与电柜加盟商不匹配");
         }
 
         //检查电池和用户是否匹配
@@ -1978,6 +1996,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return Triple.of(false, "100219", "电池没有绑定加盟商,无法换电，请联系客服在后台绑定");
         }
 
+        //把本柜机加盟商的绑定电池信息拿出来
+        franchiseeBindElectricityBatteries = franchiseeBindElectricityBatteries.stream().filter(e -> Objects.equals(e.getFranchiseeId(), franchiseeId.intValue())).collect(Collectors.toList());
+        //获取全部可用电池id
         List<Long> bindingBatteryIds = franchiseeBindElectricityBatteries.stream().map(FranchiseeBindElectricityBattery::getElectricityBatteryId).collect(Collectors.toList());
         //把加盟商绑定的电池过滤出来
         usableBatteryCellNos = usableBatteryCellNos.stream().filter(e -> bindingBatteryIds.contains(e.getBId())).collect(Collectors.toList());
@@ -2791,5 +2812,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(homepageBatteryVo);
 
+    }
+
+    @Override
+    public R checkOtaUpgradeSession(String sessionId) {
+        //OtaRequestVo vo = redisService.getWithHash(CacheConstant.OTA_PROCESS_CACHE + sessionId, OtaRequestVo.class);
+        String json =
+            "{\"completeTime\":1662630328600,\"coreUpgradeResult\":false,\"deviceName\":\"dy-test-002\",\"failCells\":[],\"msg\":\"升级失败!\",\"operateResult\":false,\"productKey\":\"a1QqoBrbcT1\",\"successCells\":[],\"type\":\"ota_process_rsp\",\"upgradeType\":1}";
+        OtaRequestVo vo = JsonUtil.fromJson(json, OtaRequestVo.class);
+        if(Objects.isNull(vo)) {
+            return R.fail(null,"检查超时");
+        }
+        return R.ok(vo);
+    }
+
+    @Override
+    public R closeOtaUpgradeSession(String sessionId) {
+        redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);
+        return R.ok();
     }
 }

@@ -136,4 +136,8 @@ public class UserBatteryInfoVO {
     private Long disableMemberCardTime;
 
     private Integer modelType;
+
+    private String orderId;
+
+    private Long storeId;
 }

@@ -190,6 +190,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
                 }
 
+                if(StringUtils.isNotBlank(item.getOrderId())) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
+                    if(Objects.nonNull(eleDepositOrder)) {
+                        item.setStoreId(eleDepositOrder.getStoreId());
+                    }
+                }
+
                 FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(item.getUid());
                 if(Objects.nonNull(franchiseeUserInfo)){
                     item.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
@@ -859,14 +866,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfo.setNowElectricityBatterySn(null);
-        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
+        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         Integer update = franchiseeUserInfoService.unBind(franchiseeUserInfo);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
 
             //添加租电池记录
-            RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
+            /*RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(oldUserInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
@@ -875,7 +882,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setCreateTime(System.currentTimeMillis());
             rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
-            rentBatteryOrderService.insert(rentBatteryOrder);
+            rentBatteryOrderService.insert(rentBatteryOrder);*/
 
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()

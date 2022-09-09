@@ -112,6 +112,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+        Long storeId = null;
 
         //限频
         Boolean getLockSuccess = redisService.setNx(CacheConstant.ELE_CACHE_USER_DEPOSIT_LOCK_KEY + user.getUid(), IdUtil.fastSimpleUUID(), 3 * 1000L, false);
@@ -189,7 +190,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
 
             franchiseeId = store.getFranchiseeId();
-
+            storeId = store.getId();
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeId);
@@ -247,6 +248,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .tenantId(tenantId)
                 .franchiseeId(franchisee.getId())
                 .payType(EleDepositOrder.ONLINE_PAYMENT)
+                .storeId(storeId)
                 .modelType(franchisee.getModelType()).build();
 
         if (Objects.equals(franchisee.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
@@ -574,6 +576,18 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                     map.put("refundStatus", refundStatus.toString());
                 } else {
                     map.put("refundStatus", null);
+                }
+
+                EleDepositOrder eleDepositOrder = queryByOrderId(franchiseeUserInfo.getRentCarOrderId());
+                if(Objects.isNull(eleDepositOrder)) {
+                    map.put("store", null);
+                }else {
+                    Store store = storeService.queryByIdFromCache(eleDepositOrder.getStoreId());
+                    if (Objects.nonNull(store)) {
+                        map.put("store", store.getName());
+                    } else {
+                        map.put("store", null);
+                    }
                 }
 
                 map.put("deposit", franchiseeUserInfo.getBatteryDeposit().toString());
@@ -1320,6 +1334,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .tenantId(franchiseeUserInfo.getTenantId())
                 .franchiseeId(batteryDepositAdd.getFranchiseeId())
                 .payType(EleDepositOrder.OFFLINE_PAYMENT)
+                .storeId(batteryDepositAdd.getStoreId())
                 .modelType(batteryDepositAdd.getModelType()).build();
         if (Objects.equals(franchisee.getModelType(), FranchiseeUserInfo.NEW_MODEL_TYPE)) {
             eleDepositOrder.setBatteryType(BatteryConstant.acquireBatteryShort(batteryDepositAdd.getModel()));

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import java.util.List;
 
+import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
@@ -45,6 +46,11 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 	void modifyRentCarStatusByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
 	void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
+
+    List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(@Param("offset") int offset,
+																  @Param("size") int size,
+																  @Param("startExpireTime") long startExpireTime,
+																  @Param("endExpireTime") long endExpireTime);
 
     List<FranchiseeUserInfo> selectByNowElectricityBatterySn(@Param("batteryName") String batteryName);
 }

@@ -8,6 +8,7 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper;
+import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -134,6 +135,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     public List<FranchiseeUserInfo> selectByFranchiseeId(Long id) {
         return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getFranchiseeId, id)
                 .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
+    }
+
+    @Override
+    public List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(int offset, int size, long startExpireTime, long endExpireTime) {
+        return franchiseeUserInfoMapper.queryMemberCardExpiringSoon(offset, size, startExpireTime, endExpireTime);
     }
 
     @Override
