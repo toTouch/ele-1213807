@@ -137,8 +137,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         electricityBatteryService.updateByOrder(updateBattery);
         //更新格挡
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
-        //将用户绑定的电池解绑
-        //this.unbindUserBattery(eleBox.getSn());
 
         //保存电池上报其他信息
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
@@ -147,7 +145,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {
         ElectricityBattery battery = new ElectricityBattery();
         battery.setId(electricityBattery.getId());
-        battery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+        battery.setStatus(ElectricityBattery.STATUS_WARE_HOUSE);
         battery.setElectricityCabinetId(electricityCabinet.getId());
         battery.setElectricityCabinetName(electricityCabinet.getName());
 //        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
@@ -220,17 +218,25 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
             //更新原仓门中的电池
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
-            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+//            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+//                ElectricityBattery updateBattery = new ElectricityBattery();
+//                updateBattery.setId(electricityBattery.getId());
+//                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+//                updateBattery.setElectricityCabinetId(null);
+//                updateBattery.setElectricityCabinetName(null);
+////                updateBattery.setUid(null);
+//                updateBattery.setUpdateTime(System.currentTimeMillis());
+//                electricityBatteryService.updateByOrder(updateBattery);
+//            }
+            if (Objects.nonNull(electricityBattery)) {
                 ElectricityBattery updateBattery = new ElectricityBattery();
                 updateBattery.setId(electricityBattery.getId());
-                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+                updateBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
                 updateBattery.setElectricityCabinetId(null);
                 updateBattery.setElectricityCabinetName(null);
-//                updateBattery.setUid(null);
+                //                updateBattery.setUid(null);
                 updateBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateByOrder(updateBattery);
-
-                //this.unbindUserBattery(eleBox.getSn());
             }
         }
     }
@@ -253,16 +259,13 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
-            updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+            updateBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
 //            updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
 
-            //this.unbindUserBattery(eleBox.getSn());
-
             electricityBatteryService.updateByOrder(updateBattery);
-            log.info("ELE BATTERY REPORT INFO! current batteryName not equals original batteryName,currentBatteryName={},originalBatteryName={},sessionId={}", eleBatteryVO.getBatteryName(), eleBox.getSn(), sessionId);
         }
     }
 
@@ -343,7 +346,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                 eleBatteryVO.getPower(), power, sessionId);
             return power;
         }
-
 
         return power;
     }

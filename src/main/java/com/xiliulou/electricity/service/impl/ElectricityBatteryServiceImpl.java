@@ -94,16 +94,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("dataScreen  ERROR! not found user ");
+            log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         Integer count = electricitybatterymapper.selectCount(new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getSn, electricityBattery.getSn())
                 .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL));
         if (count > 0) {
-            return R.fail("该电池已被其他租户使用!");
+            return R.fail("100224","该电池已被其他租户使用!");
         }
-        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+//        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+        electricityBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
+        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBattery.setTenantId(tenantId);
@@ -196,7 +198,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 //                    electricityBatteryVO.setUserName(userInfo.getName());
 //                }
 //            }
-            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+            if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
                 FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
                 if(Objects.nonNull(franchiseeUserInfo)){
                     UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
@@ -206,7 +208,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
             }
 
-            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS) && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
+            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.STATUS_WARE_HOUSE) && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
                 if (Objects.nonNull(electricityCabinet)) {
                     electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
@@ -324,7 +326,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 //            }
 //        }
 
-        if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
+        if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
             FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
             if(Objects.nonNull(franchiseeUserInfo)){
                 UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
@@ -347,20 +349,20 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public R deleteElectricityBattery(Long id) {
         ElectricityBattery electricityBattery = electricitybatterymapper.selectById(id);
         if (Objects.isNull(electricityBattery)) {
-            log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,NOT FOUND ELECTRICITYBATTERY ID:{}", id);
-            return R.failMsg("未找到电池!");
+            log.error("ELE ERROR ,not found electricitybattery,batteryId={}", id);
+            return R.fail("100225","未找到电池!");
         }
 
-        if (ObjectUtil.equal(ElectricityBattery.LEASE_STATUS, electricityBattery.getStatus())) {
-            log.error("DELETE_ELECTRICITY_BATTERY  ERROR ,THIS ELECTRICITY_BATTERY IS USING:{}", id);
-            return R.failMsg("电池正在租用中,无法删除!");
+        if (ObjectUtil.equal(ElectricityBattery.BUSINESS_STATUS_LEASE, electricityBattery.getBusinessStatus())) {
+            log.error("ELE ERROR ,electricity_battery is using,batteryId={}", id);
+            return R.fail("100226","电池正在租用中,无法删除!");
         }
 
         int raws = electricitybatterymapper.deleteById(id);
         if (raws > 0) {
             return R.ok();
         } else {
-            return R.failMsg("删除失败!");
+            return R.fail("100227","删除失败!");
         }
     }
 
@@ -401,7 +403,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId) {
         return electricitybatterymapper.selectList(new LambdaQueryWrapper<ElectricityBattery>().
-                eq(ElectricityBattery::getElectricityCabinetId, electricityCabinetId).eq(ElectricityBattery::getStatus, ElectricityBattery.WARE_HOUSE_STATUS).
+                eq(ElectricityBattery::getElectricityCabinetId, electricityCabinetId).eq(ElectricityBattery::getStatus, ElectricityBattery.STATUS_WARE_HOUSE).
                 eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
     }
 

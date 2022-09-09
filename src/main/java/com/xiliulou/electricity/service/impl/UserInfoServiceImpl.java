@@ -756,7 +756,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             if (Objects.nonNull(isBindElectricityBattery)) {
                 ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
                 notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
-                notBindOldElectricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+                notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
                 notBindOldElectricityBattery.setElectricityCabinetId(null);
                 notBindOldElectricityBattery.setElectricityCabinetName(null);
 //                notBindOldElectricityBattery.setUid(null);
@@ -800,7 +800,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
-            electricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
             electricityBattery.setElectricityCabinetId(null);
             electricityBattery.setElectricityCabinetName(null);
 //            electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
@@ -904,7 +904,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             //修改电池状态
             ElectricityBattery electricityBattery = new ElectricityBattery();
             electricityBattery.setId(oldElectricityBattery.getId());
-            electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+            electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
             electricityBattery.setElectricityCabinetId(null);
             electricityBattery.setElectricityCabinetName(null);
 //            electricityBattery.setUid(null);

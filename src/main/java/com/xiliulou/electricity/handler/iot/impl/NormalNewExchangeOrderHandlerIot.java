@@ -144,7 +144,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //            newElectricityBattery.setUid(null);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
@@ -157,7 +157,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getTakeBatteryName());
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
-        newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
 //        newElectricityBattery.setUid(electricityCabinetOrder.getUid());
@@ -197,7 +197,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //            newElectricityBattery.setUid(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setElectricityCabinetId(null);
@@ -211,7 +211,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
             newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
             newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 //            newElectricityBattery.setUid(null);

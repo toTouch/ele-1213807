@@ -152,7 +152,6 @@ public class EleOperateQueueHandler {
             }
 
             handleRentOrder(rentBatteryOrder, finalOpenDTO);
-
         }
     }
 
@@ -329,7 +328,7 @@ public class EleOperateQueueHandler {
                     if (!Objects.equals(electricityBattery.getSn(), newElectricityCabinetOrder.getOldElectricityBatterySn())) {
                         ElectricityBattery newElectricityBattery = new ElectricityBattery();
                         newElectricityBattery.setId(electricityBattery.getId());
-                        newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //                        newElectricityBattery.setUid(null);
                         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                         newElectricityBattery.setElectricityCabinetId(null);
@@ -345,7 +344,8 @@ public class EleOperateQueueHandler {
                     if (Objects.nonNull(electricityCabinet)) {
                         ElectricityBattery newElectricityBattery = new ElectricityBattery();
                         newElectricityBattery.setId(oldElectricityBattery.getId());
-                        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+//                        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
                         newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
                         newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 //                        newElectricityBattery.setUid(null);
@@ -501,7 +501,7 @@ public class EleOperateQueueHandler {
                 }
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //                newElectricityBattery.setUid(null);
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
@@ -514,7 +514,7 @@ public class EleOperateQueueHandler {
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
 //            newElectricityBattery.setUid(electricityCabinetOrder.getUid());
@@ -613,7 +613,7 @@ public class EleOperateQueueHandler {
             }
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //            newElectricityBattery.setUid(null);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
@@ -625,7 +625,7 @@ public class EleOperateQueueHandler {
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
-        newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
 //        newElectricityBattery.setUid(rentBatteryOrder.getUid());
@@ -668,7 +668,7 @@ public class EleOperateQueueHandler {
             if (!Objects.equals(electricityBattery.getSn(), rentBatteryOrder.getElectricityBatterySn())) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //                newElectricityBattery.setUid(null);
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
@@ -684,7 +684,7 @@ public class EleOperateQueueHandler {
             if (Objects.nonNull(electricityCabinet)) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
                 newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
                 newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 //                newElectricityBattery.setUid(null);

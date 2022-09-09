@@ -192,7 +192,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             if (!Objects.equals(electricityBattery.getSn(), offlineEleOrderVo.getOldElectricityBatterySn())) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+//                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
 //                newElectricityBattery.setUid(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setElectricityCabinetId(null);
@@ -209,7 +210,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         ElectricityBattery InWarehouseElectricityBattery = new ElectricityBattery();
         InWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
-        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+//        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+        InWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.STATUS_WARE_HOUSE);
         InWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
         InWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 //        InWarehouseElectricityBattery.setUid(null);
@@ -225,7 +227,8 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         ElectricityBattery UsingElectricityBattery = new ElectricityBattery();
         UsingElectricityBattery.setId(newElectricityBattery.getId());
-        UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+//        UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        UsingElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
         UsingElectricityBattery.setElectricityCabinetId(null);
         UsingElectricityBattery.setElectricityCabinetName(null);
 //        UsingElectricityBattery.setUid(user.getUid());
