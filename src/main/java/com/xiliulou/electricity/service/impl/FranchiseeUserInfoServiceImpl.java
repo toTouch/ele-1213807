@@ -148,11 +148,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public List<FranchiseeUserInfo> selectByNowElectricityBatterySn(String batteryName) {
-        return franchiseeUserInfoMapper.selectByNowElectricityBatterySn(batteryName);
-    }
-
-    @Override
     public FranchiseeUserInfo selectByNowBattery(String batteryName) {
         return franchiseeUserInfoMapper.selectByNowBattery(batteryName);
     }

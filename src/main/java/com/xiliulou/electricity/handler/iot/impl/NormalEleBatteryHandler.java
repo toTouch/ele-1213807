@@ -129,46 +129,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         ElectricityCabinetBox updateElectricityCabinetBox = this.buildElectricityCabinetBox(eleBatteryVO, electricityBattery, electricityCabinet, power);
 
-/*                //更新电池信息
-        ElectricityBattery updateBattery = new ElectricityBattery();
-        updateBattery.setId(electricityBattery.getId());
-        updateBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        updateBattery.setElectricityCabinetId(electricityCabinet.getId());
-        updateBattery.setElectricityCabinetName(electricityCabinet.getName());
-        updateBattery.setLastDepositCellNo(cellNO);
-        updateBattery.setUid(null);
-        updateBattery.setBorrowExpireTime(null);
-        updateBattery.setUpdateTime(System.currentTimeMillis());
-        updateBattery.setHealthStatus(eleBatteryVO.getHealth());
-        updateBattery.setChargeStatus(eleBatteryVO.getChargeStatus());
-
-
-        //格挡信息
-        ElectricityCabinetBox updateElectricityCabinetBox = new ElectricityCabinetBox();
-        updateElectricityCabinetBox.setBatteryType(null);
-        updateElectricityCabinetBox.setChargeV(eleBatteryVO.getChargeV());
-        updateElectricityCabinetBox.setChargeA(eleBatteryVO.getChargeA());
-        updateElectricityCabinetBox.setReportTime(reportTime);
-        updateElectricityCabinetBox.setCellNo(cellNO);
-        updateElectricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
-        updateElectricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        updateElectricityCabinetBox.setSn(electricityBattery.getSn());
-        updateElectricityCabinetBox.setBId(electricityBattery.getId());
-        updateElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-
-        //获取电池电量
-        Double power = getBatteryPower(eleBatteryVO, electricityBattery, electricityCabinet, sessionId);
-        if (Objects.nonNull(power)) {
-            updateBattery.setPower(power * 100);
-            updateElectricityCabinetBox.setPower(power * 100);
-        }
-
-        //获取电池型号
-        if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
-            String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
-            updateBattery.setModel(batteryModel);
-            updateElectricityCabinetBox.setBatteryType(batteryModel);
-        }*/
 
         //检查电池所属加盟商
         this.checkBatteryFranchisee(electricityCabinet, electricityBattery, updateElectricityCabinetBox, sessionId);
@@ -190,8 +150,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         battery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
         battery.setElectricityCabinetId(electricityCabinet.getId());
         battery.setElectricityCabinetName(electricityCabinet.getName());
-        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
-        battery.setUid(null);
+//        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
+//        battery.setUid(null);
         battery.setBorrowExpireTime(null);
         battery.setUpdateTime(System.currentTimeMillis());
         battery.setHealthStatus(eleBatteryVO.getHealth());
@@ -266,7 +226,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
                 updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
                 updateBattery.setElectricityCabinetId(null);
                 updateBattery.setElectricityCabinetName(null);
-                updateBattery.setUid(null);
+//                updateBattery.setUid(null);
                 updateBattery.setUpdateTime(System.currentTimeMillis());
                 electricityBatteryService.updateByOrder(updateBattery);
 
@@ -296,7 +256,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
-            updateBattery.setUid(null);
+//            updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
 
             //this.unbindUserBattery(eleBox.getSn());

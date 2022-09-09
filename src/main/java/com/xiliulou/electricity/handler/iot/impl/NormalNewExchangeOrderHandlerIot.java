@@ -36,6 +36,9 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
     RedisService redisService;
 
     @Autowired
+    ElectricityCabinetService electricityCabinetService;
+
+    @Autowired
     ElectricityBatteryService electricityBatteryService;
 
     @Autowired
