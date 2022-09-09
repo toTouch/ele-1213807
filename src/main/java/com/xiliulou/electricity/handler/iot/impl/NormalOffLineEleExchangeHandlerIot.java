@@ -186,13 +186,14 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         franchiseeUserInfoService.update(franchiseeUserInfo);
 
         //用户绑定电池和还入电池是否一致，不一致绑定的电池更新为游离态
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+//        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
         if (Objects.nonNull(electricityBattery)) {
             if (!Objects.equals(electricityBattery.getSn(), offlineEleOrderVo.getOldElectricityBatterySn())) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(electricityBattery.getId());
                 newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
-                newElectricityBattery.setUid(null);
+//                newElectricityBattery.setUid(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
@@ -211,7 +212,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
         InWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
         InWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-        InWarehouseElectricityBattery.setUid(null);
+//        InWarehouseElectricityBattery.setUid(null);
         InWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
         InWarehouseElectricityBattery.setBorrowExpireTime(null);
         electricityBatteryService.updateByOrder(InWarehouseElectricityBattery);
@@ -227,7 +228,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
         UsingElectricityBattery.setElectricityCabinetId(null);
         UsingElectricityBattery.setElectricityCabinetName(null);
-        UsingElectricityBattery.setUid(user.getUid());
+//        UsingElectricityBattery.setUid(user.getUid());
         UsingElectricityBattery.setUpdateTime(System.currentTimeMillis());
         UsingElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
         electricityBatteryService.updateByOrder(UsingElectricityBattery);

@@ -1,6 +1,5 @@
 package com.xiliulou.electricity.entity;
 
-
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
@@ -10,7 +9,6 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 
 /**
  * 换电柜电池表(ElectricityBattery)实体类
@@ -91,12 +89,12 @@ public class ElectricityBattery {
     private String  electricityCabinetName;
 
     //所属用户id
-    private Long uid;
+//    private Long uid;
 
     /**
      * 电池上次所在的舱门号
      */
-    private String lastDepositCellNo;
+//    private String lastDepositCellNo;
 
     /**
      * 物联网卡号

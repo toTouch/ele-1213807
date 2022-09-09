@@ -28,12 +28,12 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     Integer queryCount(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 
-    ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
+//    ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
 
     Integer updateByOrder(ElectricityBattery electricityBattery);
 
 
-    List<BorrowExpireBatteryVo> queryBorrowExpireBattery(@Param("curTime") long curTime, @Param("offset") Integer offset, @Param("size") Integer size);
+//    List<BorrowExpireBatteryVo> queryBorrowExpireBattery(@Param("curTime") long curTime, @Param("offset") Integer offset, @Param("size") Integer size);
 
     //@Select("select count(1) from t_electricity_battery where power < #{batteryLevel} and report_type = 1 and status = 2")
     //Long queryLowBatteryCount(@Param("batteryLevel")String batteryLevel);
@@ -42,7 +42,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBattery> queryNotBindList(@Param("offset") Long offset, @Param("size") Long size, @Param("franchiseeId") Integer franchiseeId, @Param("tenantId") Integer tenantId);
 
-    ElectricityBattery queryByUid(@Param("uid") Long uid);
+//    ElectricityBattery queryByUid(@Param("uid") Long uid);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
 

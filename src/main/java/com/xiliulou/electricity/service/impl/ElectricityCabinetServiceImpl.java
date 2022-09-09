@@ -1037,7 +1037,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         //校验用户
         UserInfo userInfo = userInfoService.queryByUidFromCache(user.getUid());
         if (Objects.isNull(userInfo)) {
-            log.error("order  ERROR! not found user,uid:{} ", user.getUid());
+            log.error("order  ERROR! not found user,uid={} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
@@ -1046,7 +1046,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
+            log.error("payDeposit  ERROR! not found user! userId={}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
@@ -1078,7 +1078,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         //我的电池
         Double battery = null;
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+//        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(franchiseeUserInfo.getNowElectricityBatterySn());
         if (Objects.nonNull(electricityBattery)) {
             battery = electricityBattery.getPower();
         }

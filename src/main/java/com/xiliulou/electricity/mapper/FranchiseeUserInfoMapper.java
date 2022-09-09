@@ -53,4 +53,6 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 																  @Param("endExpireTime") long endExpireTime);
 
     List<FranchiseeUserInfo> selectByNowElectricityBatterySn(@Param("batteryName") String batteryName);
+
+    FranchiseeUserInfo selectByNowBattery(@Param("batteryName") String batteryName);
 }
