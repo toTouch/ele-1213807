@@ -22,7 +22,7 @@ public class UserInfoExcelVO {
 	@ExcelProperty("套餐名称")
 	private String cardName;
 	@ExcelProperty("套餐过期时间")
-	private Long memberCardExpireTime;
+	private String memberCardExpireTime;
 	@ExcelProperty("押金")
 	private BigDecimal batteryDeposit;
 

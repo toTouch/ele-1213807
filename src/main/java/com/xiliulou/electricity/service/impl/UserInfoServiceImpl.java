@@ -1067,6 +1067,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
         List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         int index = 0;
         for (UserBatteryInfoVO userBatteryInfoVO : userBatteryInfoVOS) {
             index++;
@@ -1076,9 +1077,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             excelVo.setName(userBatteryInfoVO.getName());
             excelVo.setBatteryDeposit(userBatteryInfoVO.getBatteryDeposit());
             excelVo.setCardName(userBatteryInfoVO.getCardName());
-            excelVo.setMemberCardExpireTime(userBatteryInfoVO.getMemberCardExpireTime());
             excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
             userInfoExcelVOS.add(excelVo);
+
+
+            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime())) {
+                excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
+            }
+
         }
 
         String fileName = "会员列表报表.xlsx";
