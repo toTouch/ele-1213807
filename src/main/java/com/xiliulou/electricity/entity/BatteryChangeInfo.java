@@ -18,5 +18,7 @@ public class BatteryChangeInfo {
     private String changeBatteryName;
     private Long reportTime;
     private Long createTime;
+    private String orderId;
+    private Integer operateType;
 
 }
