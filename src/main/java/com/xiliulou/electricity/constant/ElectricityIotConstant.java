@@ -109,6 +109,7 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
+                || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE);
 
     }
@@ -301,6 +302,11 @@ public class ElectricityIotConstant {
      * 关闭充电器
      */
     public static final String ELE_CELL_CLOSE_CHARGE = "cell_close_charge";
+
+    /**
+     * 重新开启App循环检测
+     */
+    public static final String CUPBOARD_RESUME_CYCLE="cupboard_resume_cycle";
 
 
     static {
