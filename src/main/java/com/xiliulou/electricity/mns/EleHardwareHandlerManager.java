@@ -172,7 +172,7 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
             newElectricityCabinet.setOnlineStatus(CommonConstant.STATUS_ONLINE.equals(receiverMessage.getStatus()) ? 0 : 1);
 
             EleOnlineLog eleOnlineLog=new EleOnlineLog();
-            eleOnlineLog.setEleId(electricityCabinet.getId());
+            eleOnlineLog.setElectricityId(electricityCabinet.getId());
             eleOnlineLog.setClientIp(receiverMessage.getClientIp());
             eleOnlineLog.setStatus(receiverMessage.getStatus());
             eleOnlineLog.setAppearTime(receiverMessage.getTime());
