@@ -140,4 +140,8 @@ public class UserBatteryInfoVO {
     private String orderId;
 
     private Long storeId;
+    /**
+     * 电池业务状态
+     */
+    private Integer businessStatus;
 }
