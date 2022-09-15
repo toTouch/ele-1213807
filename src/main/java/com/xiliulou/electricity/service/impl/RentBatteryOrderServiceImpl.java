@@ -965,8 +965,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         if (Objects.nonNull(electricityBattery)) {
 
                             //3、查加盟商是否绑定电池
-                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+//                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                                box = Integer.valueOf(newCellNo);
+//                            }
+
+                            ElectricityBattery battery = electricityBatteryService.selectByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                            if (Objects.nonNull(battery)) {
                                 box = Integer.valueOf(newCellNo);
                             }
                         }
@@ -999,11 +1004,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                         count++;
 
-                        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                        if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+//                        if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                            electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+//                        }
+
+                        ElectricityBattery battery = electricityBatteryService.selectByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                        if (Objects.nonNull(battery)) {
                             electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
                         }
-
                     }
                 }
             }

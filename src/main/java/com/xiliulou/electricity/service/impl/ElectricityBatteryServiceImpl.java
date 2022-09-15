@@ -8,7 +8,6 @@ import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
@@ -19,6 +18,7 @@ import com.xiliulou.electricity.config.WechatTemplateNotificationConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.ElectricityBatteryMapper;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.service.*;
@@ -30,6 +30,8 @@ import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,7 +39,6 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.text.SimpleDateFormat;
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * 换电柜电池表(ElectricityBattery)表服务实现类
@@ -103,14 +104,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         if (count > 0) {
             return R.fail("100224","该电池已被其他租户使用!");
         }
-//        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-        electricityBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
-        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
-        electricityBattery.setCreateTime(System.currentTimeMillis());
-        electricityBattery.setUpdateTime(System.currentTimeMillis());
-        electricityBattery.setTenantId(tenantId);
-        electricitybatterymapper.insert(electricityBattery);
-
 
         Long franchiseeId=null;
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
@@ -126,12 +119,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
         }
 
-        if (Objects.nonNull(franchiseeId)){
-            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
-            franchiseeBindElectricityBattery.setFranchiseeId(franchiseeId.intValue());
-            franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBattery.getId());
-            franchiseeBindElectricityBatteryService.insert(franchiseeBindElectricityBattery);
-        }
+        electricityBattery.setFranchiseeId(franchiseeId);
+//        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+        electricityBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
+        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
+        electricityBattery.setCreateTime(System.currentTimeMillis());
+        electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setTenantId(tenantId);
+        electricitybatterymapper.insert(electricityBattery);
+
+
+//        if (Objects.nonNull(franchiseeId)){
+//            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = new FranchiseeBindElectricityBattery();
+//            franchiseeBindElectricityBattery.setFranchiseeId(franchiseeId.intValue());
+//            franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBattery.getId());
+//            franchiseeBindElectricityBatteryService.insert(franchiseeBindElectricityBattery);
+//        }
 
         return R.ok();
     }
@@ -175,9 +178,8 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @DS("slave_1")
     public R queryList(ElectricityBatteryQuery electricityBatteryQuery, Long offset, Long size) {
         List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryList(electricityBatteryQuery, offset, size);
-
         if (ObjectUtil.isEmpty(electricityBatteryList)) {
-            return R.ok(electricityBatteryList);
+            return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
 
         List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
@@ -215,21 +217,14 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
             }
 
-            Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
-            if (Objects.nonNull(franchisee)) {
-                electricityBatteryVO.setFranchiseeName(franchisee.getName());
-            }
+//            Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
+//            if (Objects.nonNull(franchisee)) {
+//                electricityBatteryVO.setFranchiseeName(franchisee.getName());
+//            }
 
-            //用于电池绑定问题
-			/*electricityBatteryVO.setIsBind(false);
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(electricityBattery.getFranchiseeId());
+            electricityBatteryVO.setFranchiseeName(Objects.isNull(franchisee) ? "" : franchisee.getName());
 
-			if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
-				for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
-					if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
-						electricityBatteryVO.setIsBind(true);
-					}
-				}
-			}*/
 
             electricityBatteryVOList.add(electricityBatteryVO);
         }
@@ -238,32 +233,55 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     @DS("slave_1")
-    public R queryNotBindList(Long offset, Long size, Integer franchiseeId) {
-        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size, franchiseeId, TenantContextHolder.getTenantId());
-        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
+    public R queryBindListByPage(Long offset, Long size, Long franchiseeId) {
+//        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryNotBindList(offset, size, franchiseeId, TenantContextHolder.getTenantId());
+//        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
+//
+//        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+//        if (Objects.nonNull(franchiseeId)) {
+//            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(Long.parseLong(franchiseeId + ""));
+//        }
+//
+//        for (ElectricityBattery electricityBattery : electricityBatteryList) {
+//            ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+//            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+//
+//            electricityBatteryVO.setIsBind(false);
+//
+//            if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
+//                for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
+//                    if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
+//                        electricityBatteryVO.setIsBind(true);
+//                    }
+//                }
+//            }
+//
+//            electricityBatteryVOList.add(electricityBatteryVO);
+//        }
+        List<ElectricityBatteryVO> batteryVOList = new ArrayList<>();
 
-        List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
-        if (Objects.nonNull(franchiseeId)) {
-            franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(Long.parseLong(franchiseeId + ""));
+        //没有绑定加盟商的电池
+        List<ElectricityBattery> notBindList = electricitybatterymapper.queryNotBindList(offset, size,TenantContextHolder.getTenantId());
+        //当前加盟商绑定的电池
+        List<ElectricityBattery> bindList = electricitybatterymapper.queryBindList(offset, size, franchiseeId, TenantContextHolder.getTenantId());
+
+        if(CollectionUtils.isNotEmpty(notBindList)){
+            notBindList.forEach(item->{
+                ElectricityBatteryVO batteryVO = new ElectricityBatteryVO();
+                BeanUtils.copyProperties(item,batteryVO);
+                batteryVO.setIsBind(false);
+            });
         }
 
-        for (ElectricityBattery electricityBattery : electricityBatteryList) {
-            ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
-            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
-
-            electricityBatteryVO.setIsBind(false);
-
-            if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
-                for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
-                    if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
-                        electricityBatteryVO.setIsBind(true);
-                    }
-                }
-            }
-
-            electricityBatteryVOList.add(electricityBatteryVO);
+        if(CollectionUtils.isNotEmpty(bindList)){
+            bindList.forEach(item->{
+                ElectricityBatteryVO batteryVO = new ElectricityBatteryVO();
+                BeanUtils.copyProperties(item,batteryVO);
+                batteryVO.setIsBind(true);
+            });
         }
-        return R.ok(electricityBatteryVOList);
+
+        return R.ok(batteryVOList);
     }
 
     @Override
@@ -578,6 +596,40 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery) {
         return electricitybatterymapper.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
+    }
+
+    /**
+     * 电池绑定/解绑加盟商
+     * @param batteryQuery
+     * @return
+     */
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R bindFranchisee(BindElectricityBatteryQuery batteryQuery) {
+        //先解绑电池加盟商
+        ElectricityBattery updateBattery = new ElectricityBattery();
+        updateBattery.setFranchiseeId(null);
+        updateBattery.setTenantId(TenantContextHolder.getTenantId());
+        updateBattery.setUpdateTime(System.currentTimeMillis());
+        electricitybatterymapper.unbindFranchiseeId(batteryQuery.getFranchiseeId(), updateBattery);
+
+        //再绑定加盟商
+        if (CollectionUtils.isEmpty(batteryQuery.getElectricityBatteryIdList())) {
+            return R.ok();
+        }
+
+        electricitybatterymapper.bindFranchiseeId(batteryQuery);
+        return R.ok();
+    }
+
+    @Override
+    public List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds) {
+        return electricitybatterymapper.selectByBatteryIds(batteryIds);
+    }
+
+    @Override public ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId, Long franchiseeId) {
+        return electricitybatterymapper.selectOne( new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, batteryId)
+                .eq(ElectricityBattery::getFranchiseeId, franchiseeId));
     }
 
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {

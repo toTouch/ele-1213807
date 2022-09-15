@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
@@ -48,7 +49,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     void handlerLowBatteryReminder();
 
-    R queryNotBindList(Long offset, Long size, Integer franchiseeId);
+    R queryBindListByPage(Long offset, Long size, Long franchiseeId);
 
     void insert(ElectricityBattery electricityBattery);
 
@@ -66,4 +67,10 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    R bindFranchisee(BindElectricityBatteryQuery bindElectricityBatteryQuery);
+
+    List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds);
+
+    ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
 }

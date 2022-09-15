@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
@@ -40,7 +41,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBattery> queryLowBattery(@Param("offset") Integer offset, @Param("size") Integer size, @Param("batteryLevel") String batteryLevel);
 
-    List<ElectricityBattery> queryNotBindList(@Param("offset") Long offset, @Param("size") Long size, @Param("franchiseeId") Integer franchiseeId, @Param("tenantId") Integer tenantId);
+    List<ElectricityBattery> queryNotBindList(@Param("offset") Long offset, @Param("size") Long size, @Param("tenantId") Integer tenantId);
+    List<ElectricityBattery> queryBindList(@Param("offset") Long offset, @Param("size") Long size,@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
 //    ElectricityBattery queryByUid(@Param("uid") Long uid);
 
@@ -52,4 +54,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    int unbindFranchiseeId(@Param("franchiseeId") Integer franchiseeId, @Param("updateBattery") ElectricityBattery updateBattery);
+
+    int bindFranchiseeId(@Param("batteryQuery")  BindElectricityBatteryQuery batteryQuery);
+
+    List<ElectricityBattery> selectByBatteryIds(@Param("batteryIds") List<Long> batteryIds);
 }

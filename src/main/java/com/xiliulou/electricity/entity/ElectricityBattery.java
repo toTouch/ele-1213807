@@ -109,6 +109,10 @@ public class ElectricityBattery {
      * 换电次数
      */
     private Integer exchangeCount;
+    /**
+     * 加盟商id
+     */
+    private Long franchiseeId;
 
 
 
