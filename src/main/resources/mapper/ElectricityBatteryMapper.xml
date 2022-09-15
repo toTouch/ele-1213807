@@ -246,7 +246,6 @@
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
 		business_status=#{businessStatus},
-/*		last_deposit_cell_no=#{lastDepositCellNo},*/
 		borrow_expire_time=#{borrowExpireTime},
 		update_time=#{updateTime}
 		where id=#{id}
