@@ -270,6 +270,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 ElectricityBatteryVO batteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item,batteryVO);
                 batteryVO.setIsBind(false);
+                batteryVOList.add(batteryVO);
             });
         }
 
@@ -278,6 +279,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 ElectricityBatteryVO batteryVO = new ElectricityBatteryVO();
                 BeanUtils.copyProperties(item,batteryVO);
                 batteryVO.setIsBind(true);
+                batteryVOList.add(batteryVO);
             });
         }
 
