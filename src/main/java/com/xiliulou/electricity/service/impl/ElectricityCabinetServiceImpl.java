@@ -2181,6 +2181,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
                 }
 
+
+
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
             });
 

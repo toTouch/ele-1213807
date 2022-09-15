@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import java.util.List;
 import lombok.Data;
 
 /**
@@ -97,6 +98,8 @@ public class ElectricityCabinetBoxVO {
      * 是否可换电 0:是；1:否
      */
     private Integer exchange;
+
+    private List<String> cabinetPhoto;
 
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;
