@@ -21,8 +21,8 @@ import shaded.org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 
 /**
- * @author: lxc
- * @Date: 2020/12/28 17:02
+ * @author: zzlong
+ * @Date: 2022/08/12 17:02
  * @Description:
  */
 @Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
@@ -210,35 +210,38 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         updateElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
 
-        //原来仓门是否有电池
-        if (StringUtils.isNotBlank(eleBox.getSn())) {
-            if (eleBox.getSn().contains("UNKNOW")) {
-                eleBox.setSn(eleBox.getSn().substring(6));
-            }
-
-            //更新原仓门中的电池
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
-//            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-//                ElectricityBattery updateBattery = new ElectricityBattery();
-//                updateBattery.setId(electricityBattery.getId());
-//                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
-//                updateBattery.setElectricityCabinetId(null);
-//                updateBattery.setElectricityCabinetName(null);
-////                updateBattery.setUid(null);
-//                updateBattery.setUpdateTime(System.currentTimeMillis());
-//                electricityBatteryService.updateByOrder(updateBattery);
-//            }
-            if (Objects.nonNull(electricityBattery)) {
-                ElectricityBattery updateBattery = new ElectricityBattery();
-                updateBattery.setId(electricityBattery.getId());
-                updateBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
-                updateBattery.setElectricityCabinetId(null);
-                updateBattery.setElectricityCabinetName(null);
-                //                updateBattery.setUid(null);
-                updateBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateByOrder(updateBattery);
-            }
+        if (StringUtils.isBlank(eleBox.getSn())) {
+            return;
         }
+
+        //原来仓门有电池
+        if (eleBox.getSn().contains("UNKNOW")) {
+            eleBox.setSn(eleBox.getSn().substring(6));
+        }
+
+        //更新原仓门中的电池
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
+        //            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+        //                ElectricityBattery updateBattery = new ElectricityBattery();
+        //                updateBattery.setId(electricityBattery.getId());
+        //                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+        //                updateBattery.setElectricityCabinetId(null);
+        //                updateBattery.setElectricityCabinetName(null);
+        ////                updateBattery.setUid(null);
+        //                updateBattery.setUpdateTime(System.currentTimeMillis());
+        //                electricityBatteryService.updateByOrder(updateBattery);
+        //            }
+        if (Objects.nonNull(electricityBattery)) {
+            ElectricityBattery updateBattery = new ElectricityBattery();
+            updateBattery.setId(electricityBattery.getId());
+            updateBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
+            updateBattery.setElectricityCabinetId(null);
+            updateBattery.setElectricityCabinetName(null);
+            //                updateBattery.setUid(null);
+            updateBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.updateByOrder(updateBattery);
+        }
+
     }
 
     /**

@@ -39,13 +39,13 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
         EleCellVO eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVO.class);
         if (Objects.isNull(eleCellVo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
+            log.error("ele cell error! eleCellVo is null,sessionId={}", receiverMessage.getSessionId());
             return ;
         }
 
         String cellNo = eleCellVo.getCell_no();
         if (StringUtils.isEmpty(cellNo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
+            log.error("ele cell error! cellNo is empty,sessionId={}", receiverMessage.getSessionId());
             return ;
         }
 

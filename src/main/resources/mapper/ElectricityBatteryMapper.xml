@@ -171,8 +171,6 @@
 		</if>
 	</select>
 
-
-
 	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
         select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
         teb.capacity as capacity,teb.status as status ,teb.business_status as businessStatus, teb.create_time as createTime, teb.update_time as updateTime,
@@ -183,7 +181,6 @@
         left join t_battery_other_properties as tbop on teb.sn=tbop.battery_name
         WHERE teb.uid = #{uid} and teb.del_flag = 0
     </select>
-
 
 	<select id="selectBatteryDetailInfoBySN" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
         select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,

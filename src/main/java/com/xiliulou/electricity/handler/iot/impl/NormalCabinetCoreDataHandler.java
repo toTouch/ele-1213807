@@ -35,7 +35,7 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
 
         EleCabinetCoreDataVO eleCabinetCoreDataVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetCoreDataVO.class);
         if (Objects.isNull(eleCabinetCoreDataVO)) {
-            log.error("ELE ERROR! cabinetCoreData is null,productKey={},deviceName={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            log.error("ELE ERROR! cabinetCoreData is null,sessionId={}", receiverMessage.getSessionId());
             return;
         }
 

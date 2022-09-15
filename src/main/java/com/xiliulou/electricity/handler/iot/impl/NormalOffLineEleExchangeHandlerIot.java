@@ -211,7 +211,7 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         ElectricityBattery InWarehouseElectricityBattery = new ElectricityBattery();
         InWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
 //        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        InWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.STATUS_WARE_HOUSE);
+        InWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
         InWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
         InWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
 //        InWarehouseElectricityBattery.setUid(null);
