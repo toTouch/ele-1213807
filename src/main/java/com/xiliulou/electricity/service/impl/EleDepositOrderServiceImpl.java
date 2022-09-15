@@ -838,7 +838,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
-                .sn(franchiseeUserInfo.getNowElectricityBatterySn())
+                .sn(Optional.ofNullable(franchiseeUserInfo.getNowElectricityBatterySn()).orElse(""))
                 .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
