@@ -243,9 +243,14 @@
 		<if test="exchangeCount != null">
 			exchange_count =#{exchangeCount},
 		</if>
+		<if test="status != null">
+			status =#{status},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
-		business_status=#{businessStatus},
 		borrow_expire_time=#{borrowExpireTime},
 		update_time=#{updateTime}
 		where id=#{id}
