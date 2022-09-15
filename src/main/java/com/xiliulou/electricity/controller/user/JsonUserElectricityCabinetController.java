@@ -184,5 +184,14 @@ public class JsonUserElectricityCabinetController extends BaseController {
 		return electricityCabinetService.queryElectricityCabinetBoxInfoById(electricityCabinetId);
 	}
 
+	/**
+	 * 查询换电柜图片
+	 */
+	@GetMapping(value="/user/electricityCabinetFile/{electricityCabinetId}")
+	public R queryElectricityCabinetFileById(@PathVariable("electricityCabinetId") Integer electricityCabinetId){
+
+		return electricityCabinetService.queryElectricityCabinetFileById(electricityCabinetId);
+	}
+
 
 }

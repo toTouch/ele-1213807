@@ -35,6 +35,7 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.storage.config.StorageConfig;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -124,6 +125,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    ElectricityCabinetFileService electricityCabinetFileService;
+    @Autowired
+    StorageConfig storageConfig;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -2786,5 +2792,18 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(homepageBatteryVo);
 
+    }
+
+    @Override
+    public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
+        List<ElectricityCabinetFile> electricityCabinetFiles=electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId.longValue(),ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
+        List<String> cabinetPhoto=new ArrayList<>();
+
+        for (ElectricityCabinetFile electricityCabinetFile:electricityCabinetFiles){
+            if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
+                cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+            }
+        }
+        return R.ok(cabinetPhoto);
     }
 }
