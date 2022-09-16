@@ -342,7 +342,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (Objects.nonNull(electricityBattery.getPower())
                 && Objects.equals(electricityBattery.getStatus(), ElectricityBattery.STATUS_WARE_HOUSE)
                 && Objects.nonNull(power)
-                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
+//                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
                 && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
 
             //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过50，则power仍设置为原来的值
