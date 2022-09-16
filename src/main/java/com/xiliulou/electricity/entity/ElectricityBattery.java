@@ -25,7 +25,6 @@ public class ElectricityBattery {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Long id;
-
     /**
      * sn码
      */
@@ -48,9 +47,14 @@ public class ElectricityBattery {
      */
     private Integer capacity;
     /**
+     * 电池状态 0：在仓，1：在库，2：租借，3：异常取走，4游离
+     */
+    @Deprecated
+//    private Integer status;
+    /**
      * 电池物理状态 0：在仓，1：不在仓
      */
-    private Integer status;
+    private Integer physicsStatus;
     /**
      * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
      */
@@ -124,8 +128,8 @@ public class ElectricityBattery {
     /**
      * 电池物理状态 0：在仓，1：不在仓
      */
-    public static final Integer STATUS_WARE_HOUSE = 0;
-    public static final Integer STATUS_NOT_WARE_HOUSE = 1;
+    public static final Integer PHYSICS_STATUS_WARE_HOUSE = 0;
+    public static final Integer PHYSICS_STATUS_NOT_WARE_HOUSE = 1;
     /**
      * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
      */

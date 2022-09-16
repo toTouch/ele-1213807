@@ -9,10 +9,8 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import java.util.List;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -147,7 +145,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {
         ElectricityBattery battery = new ElectricityBattery();
         battery.setId(electricityBattery.getId());
-        battery.setStatus(ElectricityBattery.STATUS_WARE_HOUSE);
+        battery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE);
         battery.setElectricityCabinetId(electricityCabinet.getId());
         battery.setElectricityCabinetName(electricityCabinet.getName());
 //        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
@@ -236,7 +234,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
-            updateBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
+            updateBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
             //                updateBattery.setUid(null);
@@ -264,7 +262,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
-            updateBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
+            updateBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
 //            updateBattery.setUid(null);
@@ -340,7 +338,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
          * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
         if (Objects.nonNull(electricityBattery.getPower())
-                && Objects.equals(electricityBattery.getStatus(), ElectricityBattery.STATUS_WARE_HOUSE)
+                && Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
                 && Objects.nonNull(power)
 //                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
                 && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
@@ -408,7 +406,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 //            franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
 //        });
 //    }
-
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
         if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
             return "";

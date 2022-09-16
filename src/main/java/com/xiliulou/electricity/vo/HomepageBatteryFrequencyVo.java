@@ -13,6 +13,7 @@ public class HomepageBatteryFrequencyVo {
     private String sn;
 
     private Integer useCount;
-
+    @Deprecated
     private Integer status;
+    private Integer physicsStatus;
 }

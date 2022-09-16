@@ -49,7 +49,7 @@ public class ElectricityBatteryVO {
     /**
      * 电池物理状态 0：在仓，1：不在仓
      */
-    private Integer status;
+    private Integer physicsStatus;
     /**
      * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
      */

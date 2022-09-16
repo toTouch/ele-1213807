@@ -89,7 +89,7 @@ public class JsonAdminElectricityCabinetBatteryController {
     @GetMapping(value = "/admin/battery/page")
     public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "status", required = false) Integer status,
+                                       @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                                        @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
                                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                                        @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
@@ -99,7 +99,7 @@ public class JsonAdminElectricityCabinetBatteryController {
 
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
@@ -135,7 +135,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @return
      */
     @GetMapping(value = "/admin/battery/queryCount")
-    public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+    public R queryCount(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                         @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
                         @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
@@ -145,7 +145,7 @@ public class JsonAdminElectricityCabinetBatteryController {
 
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
@@ -166,7 +166,7 @@ public class JsonAdminElectricityCabinetBatteryController {
     @GetMapping(value = "/admin/battery/pageByFranchisee")
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset,
                               @RequestParam(value = "size") Long size,
-                              @RequestParam(value = "status", required = false) Integer status,
+                              @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                               @RequestParam(value = "sn", required = false) String sn,
                               @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
@@ -198,7 +198,7 @@ public class JsonAdminElectricityCabinetBatteryController {
 //        }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
 //        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         electricityBatteryQuery.setFranchiseeId(franchisee.getId());
@@ -216,7 +216,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @return
      */
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
-    public R queryCountByFranchisee(@RequestParam(value = "status", required = false) Integer status,
+    public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                                     @RequestParam(value = "sn", required = false) String sn,
                                     @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
@@ -251,7 +251,7 @@ public class JsonAdminElectricityCabinetBatteryController {
 //        }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
 //        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         electricityBatteryQuery.setFranchiseeId(franchisee.getId());

@@ -121,7 +121,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
         electricityBattery.setFranchiseeId(franchiseeId);
 //        electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
-        electricityBattery.setStatus(ElectricityBattery.STATUS_NOT_WARE_HOUSE);
+        electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
         electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
         electricityBattery.setCreateTime(System.currentTimeMillis());
         electricityBattery.setUpdateTime(System.currentTimeMillis());
@@ -210,7 +210,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 }
             }
 
-            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.STATUS_WARE_HOUSE) && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
+            if (Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE) && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
                 ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
                 if (Objects.nonNull(electricityCabinet)) {
                     electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
@@ -423,7 +423,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public List<ElectricityBattery> queryWareHouseByElectricityCabinetId(Integer electricityCabinetId) {
         return electricitybatterymapper.selectList(new LambdaQueryWrapper<ElectricityBattery>().
-                eq(ElectricityBattery::getElectricityCabinetId, electricityCabinetId).eq(ElectricityBattery::getStatus, ElectricityBattery.STATUS_WARE_HOUSE).
+                eq(ElectricityBattery::getElectricityCabinetId, electricityCabinetId).eq(ElectricityBattery::getPhysicsStatus, ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE).
                 eq(ElectricityBattery::getDelFlag,ElectricityBattery.DEL_NORMAL));
     }
 
