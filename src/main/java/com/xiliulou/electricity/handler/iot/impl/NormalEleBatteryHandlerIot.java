@@ -251,6 +251,9 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         System.out.println("电池名字================="+electricityBattery.getSn()+"上报的电量==================="+power);
 
         if (Objects.nonNull(batteryReportCheckTenantId) && !batteryReportCheckTenantId.contains(electricityCabinet.getTenantId()) &&Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck, EleCommonConfig.OPEN_BATTERY_REPORT_CHECK) && Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
+
+            System.out.println("进行检测====================="+electricityBattery.getSn());
+
             if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
                 power = (electricityBattery.getPower()) / 100;
             }
