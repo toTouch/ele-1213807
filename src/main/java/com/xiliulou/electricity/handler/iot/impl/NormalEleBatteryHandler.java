@@ -113,7 +113,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName, electricityCabinet.getTenantId());
         if (Objects.isNull(electricityBattery)) {
-            this.saveNotExistSn(batteryName, electricityCabinet, cellNO);//保存未录入电池
+            //保存未录入电池
+            this.saveNotExistSn(batteryName, electricityCabinet, cellNO);
             return;
         }
 
@@ -135,6 +136,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //更新电池
         electricityBatteryService.updateByOrder(updateBattery);
+
         //更新格挡
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
 
@@ -335,18 +337,19 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
         /**
-         * 2.如果柜机模式为空，或者柜机模式为其他，检查电量变化是否太大
+         * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
-        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power)
-            && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
-            && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
+        if (Objects.nonNull(electricityBattery.getPower())
+                && Objects.equals(electricityBattery.getStatus(), ElectricityBattery.STATUS_WARE_HOUSE)
+                && Objects.nonNull(power)
+                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
+                && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
 
             //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过50，则power仍设置为原来的值
             power = electricityBattery.getPower() / 100.0;
 
-            log.warn(
-                "ELE BATTERY REPORT WARN! battery power is changing too much,reportPower={},originalPower={},sessionId={}",
-                eleBatteryVO.getPower(), power, sessionId);
+            log.warn("ELE BATTERY REPORT WARN! battery power is changing too much,reportPower={},originalPower={},sessionId={}",
+                    eleBatteryVO.getPower(), power, sessionId);
             return power;
         }
 
