@@ -50,7 +50,7 @@ public class ElectricityBattery {
      * 电池状态 0：在仓，1：在库，2：租借，3：异常取走，4游离
      */
     @Deprecated
-//    private Integer status;
+    private Integer status;
     /**
      * 电池物理状态 0：在仓，1：不在仓
      */
