@@ -246,13 +246,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         Integer isBatteryReportCheck = eleCommonConfig.getBatteryReportCheck();
         List<Integer> batteryReportCheckTenantId = tenantConfig.getNotBatteryReportCheckTenantId();
 
-        System.out.println("租户设置========================"+batteryReportCheckTenantId+"=============="+electricityCabinet.getTenantId());
-
         if (Objects.nonNull(batteryReportCheckTenantId) && !batteryReportCheckTenantId.contains(electricityCabinet.getTenantId()) &&Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck, EleCommonConfig.OPEN_BATTERY_REPORT_CHECK) && Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
-
-            System.out.println("上次的电量===================="+electricityBattery.getPower());
-            System.out.println("本次上报的电量===================="+power);
-
             if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
                 power = (electricityBattery.getPower()) / 100;
             }
