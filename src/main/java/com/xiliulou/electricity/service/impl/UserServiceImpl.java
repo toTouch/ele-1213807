@@ -8,6 +8,7 @@ import cn.hutool.crypto.Padding;
 import cn.hutool.crypto.symmetric.AES;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.google.api.client.util.Lists;
 import com.google.common.collect.Maps;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.utils.DataUtil;
@@ -27,6 +28,7 @@ import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.security.constant.TokenConstant;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
@@ -40,6 +42,7 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
@@ -92,6 +95,8 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
+    @Autowired
+    private UserDataScopeService userDataScopeService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -220,6 +225,7 @@ public class UserServiceImpl implements UserService {
                 .phone(adminUserQuery.getPhone())
                 .updateTime(System.currentTimeMillis())
                 .userType(adminUserQuery.getUserType())
+                .dataType(adminUserQuery.getDataType())
                 .salt("")
                 .city(Objects.nonNull(city) ? city.getName() : null)
                 .province(Objects.nonNull(province) ? province.getName() : null)
@@ -236,7 +242,6 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(role)) {
                 roleId = role;
             }
-
         }
 
         //加盟商
@@ -261,7 +266,26 @@ public class UserServiceImpl implements UserService {
         userRole.setUid(insert.getUid());
         userRoleService.insert(userRole);
 
+
+        //保存用户数据范围
+        if(CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())){
+            List<UserDataScope> userDataScopes=buildUserDataScope(insert.getUid(),adminUserQuery.getDataIdList());
+            userDataScopeService.batchInsert(userDataScopes);
+        }
+
         return insert.getUid() != null ? Triple.of(true, null, null) : Triple.of(false, null, "保存失败!");
+    }
+
+    private List<UserDataScope> buildUserDataScope(Long uid, List<Long> dataIdList) {
+        List<UserDataScope> list = Lists.newArrayList();
+        dataIdList.forEach(item->{
+            UserDataScope userDataScope = new UserDataScope();
+            userDataScope.setUid(uid);
+            userDataScope.setDataId(item);
+            list.add(userDataScope);
+        });
+
+        return list;
     }
 
     @Override
@@ -302,6 +326,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
         User user = queryByUidFromCache(adminUserQuery.getUid());
         if (Objects.isNull(user)) {
@@ -373,6 +398,15 @@ public class UserServiceImpl implements UserService {
                 userInfoService.update(userInfo);
             }
         }
+
+        userDataScopeService.deleteByUid(user.getUid());
+        //更新用户数据范围
+        if (CollectionUtils.isNotEmpty(adminUserQuery.getDataIdList())) {
+            List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
+            userDataScopeService.batchInsert(userDataScopes);
+        }
+
+
         return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
     }
 

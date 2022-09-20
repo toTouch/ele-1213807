@@ -60,6 +60,10 @@ public class User {
 	 */
 	private Integer userType;
 	/**
+	 * 数据类型 ：0--超级管理员 1--运营商 2--加盟商 3--门店
+	 */
+	private Integer dataType;
+	/**
 	 * 创建时间
 	 */
 	private Long createTime;

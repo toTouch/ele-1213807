@@ -1,7 +1,9 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.toolkit.CollectionUtils;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
+import com.google.api.client.util.Lists;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.RolePermissionConfig;
@@ -22,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -65,6 +68,8 @@ public class TenantServiceImpl implements TenantService {
 
     @Autowired
     ElectricityConfigService electricityConfigService;
+    @Autowired
+    private PermissionTemplateService permissionTemplateService;
 
 
     /**
@@ -77,15 +82,15 @@ public class TenantServiceImpl implements TenantService {
     @Transactional(rollbackFor = Exception.class)
     public R addTenant(TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
 
-        //判断用户名是否存在
-        if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
-            return R.fail("LOCKER.10015", "用户名已存在");
-        }
-
         //限频
         boolean lockResult = redisService.setNx(CacheConstant.ELE_ADD_TENANT_CACHE + tenantAddAndUpdateQuery.getId(), "1", 5 * 1000L, false);
         if (!lockResult) {
             return R.fail("ELECTRICITY.0034", "操作频繁");
+        }
+
+        //判断用户名是否存在
+        if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
+            return R.fail("LOCKER.10015", "用户名已存在");
         }
 
         //1.保存租户信息
@@ -145,7 +150,18 @@ public class TenantServiceImpl implements TenantService {
         }
 
 
-        //5.角色赋予权限
+        //获取角色默认权限
+        List<RolePermission> permissionList=buildDefaultPermission( operateRole, franchiseeRole, storeRole);
+        //保存角色默认权限
+        if(CollectionUtils.isNotEmpty(permissionList)){
+            permissionList.parallelStream().forEach(e -> {
+                rolePermissionService.insert(e);
+            });
+        }
+
+
+
+/*        //5.角色赋予权限
         List<RolePermission> operateRolePermission = permissionConfig.getOperator().parallelStream().map(item -> {
             RolePermission operatorRP = new RolePermission();
             operatorRP.setPId(item);
@@ -171,10 +187,9 @@ public class TenantServiceImpl implements TenantService {
         }).collect(Collectors.toList());
         rolePermissionList.addAll(storeRolePermission);
 
-
         rolePermissionList.parallelStream().forEach(e -> {
             rolePermissionService.insert(e);
-        });
+        });*/
 
 
         //新增实名认证审核项
@@ -193,6 +208,65 @@ public class TenantServiceImpl implements TenantService {
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
         return R.ok();
+    }
+
+    /**
+     * 获取角色默认权限
+     * @param operateRole
+     * @param franchiseeRole
+     * @param storeRole
+     * @return
+     */
+    private List<RolePermission> buildDefaultPermission(Role operateRole, Role franchiseeRole, Role storeRole) {
+        List<RolePermission> rolePermissionList = Lists.newArrayList();
+
+        List<PermissionTemplate> permissions = permissionTemplateService.selectByPage(0, Integer.MAX_VALUE);
+        if (CollectionUtils.isEmpty(permissions)) {
+            return rolePermissionList;
+        }
+
+        Map<Integer, List<PermissionTemplate>> permissionMap = permissions.stream().collect(Collectors.groupingBy(PermissionTemplate::getType));
+        if (CollectionUtils.isEmpty(permissionMap)) {
+            return rolePermissionList;
+        }
+
+        //运营商权限
+        List<PermissionTemplate> operatePermissions = permissionMap.get(PermissionTemplate.TYPE_OPERATE);
+        if (CollectionUtils.isNotEmpty(operatePermissions)) {
+            List<RolePermission> operateRolePermission = operatePermissions.parallelStream().map(item -> {
+                RolePermission operatorPermission = new RolePermission();
+                operatorPermission.setPId(item.getPid());
+                operatorPermission.setRoleId(operateRole.getId());
+                return operatorPermission;
+            }).collect(Collectors.toList());
+            rolePermissionList.addAll(operateRolePermission);
+        }
+
+        //加盟商权限
+        List<PermissionTemplate> franchiseePermissions = permissionMap.get(PermissionTemplate.TYPE_FRANCHISEE);
+        if (CollectionUtils.isNotEmpty(franchiseePermissions)) {
+            List<RolePermission> franchiseeRolePermission = franchiseePermissions.parallelStream().map(item -> {
+                RolePermission franchiseePermission = new RolePermission();
+                franchiseePermission.setPId(item.getPid());
+                franchiseePermission.setRoleId(franchiseeRole.getId());
+                return franchiseePermission;
+            }).collect(Collectors.toList());
+            rolePermissionList.addAll(franchiseeRolePermission);
+        }
+
+        //门店权限
+        List<PermissionTemplate> storePermissions = permissionMap.get(PermissionTemplate.TYPE_STORE);
+        if (CollectionUtils.isNotEmpty(storePermissions)) {
+            List<RolePermission> storeRolePermission = storePermissions.parallelStream().map(item -> {
+                RolePermission shopPermission = new RolePermission();
+                shopPermission.setPId(item.getPid());
+                shopPermission.setRoleId(storeRole.getId());
+                return shopPermission;
+            }).collect(Collectors.toList());
+            rolePermissionList.addAll(storeRolePermission);
+        }
+
+        return rolePermissionList;
     }
 
     @Override

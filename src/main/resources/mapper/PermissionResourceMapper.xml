@@ -4,8 +4,8 @@
 
 	<!--新增所有列-->
 	<insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_permission_resource(name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag)
-        values (#{name}, #{type}, #{uri}, #{method}, #{sort}, #{parent}, #{desc}, #{createTime}, #{updateTime}, #{delFlag})
+        insert into t_permission_resource(name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag, permission)
+        values (#{name}, #{type}, #{uri}, #{method}, #{sort}, #{parent}, #{desc}, #{createTime}, #{updateTime}, #{delFlag}, #{permission})
     </insert>
 	<update id="update">
 		update t_permission_resource
@@ -40,6 +40,9 @@
 			<if test="delFlag != null ">
 				del_flag = #{delFlag},
 			</if>
+			<if test="permission != null ">
+				permission = #{permission},
+			</if>
 		</set>
 		where id =#{id}
 	</update>
@@ -48,7 +51,7 @@
 	<!--通过实体作为筛选条件查询-->
 	<select id="queryAll" resultType="com.xiliulou.electricity.entity.PermissionResource">
 		select
-		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag
+		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag, permission
 		from t_permission_resource
 		where del_flag = 0 order by sort
 
@@ -57,7 +60,7 @@
 
 	<select id="queryListByIds" resultType="com.xiliulou.electricity.entity.PermissionResource">
 		select
-		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag
+		id, name, type, uri, method, sort, parent, `desc`, create_time, update_time, del_flag, permission
 		from t_permission_resource
 		where
 		id in

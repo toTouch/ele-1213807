@@ -70,8 +70,8 @@ public class JsonAdminUserController extends BaseController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
-            tenantId=null;
+        if (SecurityUtils.isAdmin() && Objects.nonNull(type) && type == -1) {
+            tenantId = null;
         }
 
         return returnPairResult(userService.queryListUser(uid, size, offset, name, phone, type, startTime, endTime,tenantId));
@@ -93,7 +93,6 @@ public class JsonAdminUserController extends BaseController {
         if(SecurityUtils.isAdmin()&&Objects.nonNull(type)&&type==-1){
             tenantId=null;
         }
-        log.info("tenantId is -->{}",tenantId);
 
         return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
     }
