@@ -29,7 +29,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     Integer queryCount(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
 
-//    ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
+    ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
 
     Integer updateByOrder(ElectricityBattery electricityBattery);
 
@@ -44,7 +44,7 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<ElectricityBattery> queryNotBindList(@Param("offset") Long offset, @Param("size") Long size, @Param("tenantId") Integer tenantId);
     List<ElectricityBattery> queryBindList(@Param("offset") Long offset, @Param("size") Long size,@Param("franchiseeId") Long franchiseeId, @Param("tenantId") Integer tenantId);
 
-//    ElectricityBattery queryByUid(@Param("uid") Long uid);
+    ElectricityBattery queryByUid(@Param("uid") Long uid);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(@Param("sn") String sn);
 

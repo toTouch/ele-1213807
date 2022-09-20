@@ -96,8 +96,10 @@ public class ElectricityBattery {
     private Integer electricityCabinetId;
     private String  electricityCabinetName;
 
-    //所属用户id
-//    private Long uid;
+    /**
+     * 所属用户id
+     */
+    private Long uid;
 
     /**
      * 电池上次所在的舱门号

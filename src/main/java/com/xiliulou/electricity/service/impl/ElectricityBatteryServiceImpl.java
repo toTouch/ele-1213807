@@ -293,18 +293,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public ElectricityBatteryVO queryInfoByUid(Long uid) {
-        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if(Objects.isNull(userInfo)){
-            log.error("ELE ERROR! not found userInfo,uid={}",uid);
-        }
-
-        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
-        if(Objects.isNull(franchiseeUserInfo)){
-            log.error("ELE ERROR! not found franchiseeUserInfo,uid={}",uid);
-        }
-
-        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryDetailInfoBySN(franchiseeUserInfo.getNowElectricityBatterySn());
-//        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryInfo(uid);
+//        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+//        if(Objects.isNull(userInfo)){
+//            log.error("ELE ERROR! not found userInfo,uid={}",uid);
+//        }
+//
+//        FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
+//        if(Objects.isNull(franchiseeUserInfo)){
+//            log.error("ELE ERROR! not found franchiseeUserInfo,uid={}",uid);
+//        }
+//
+//        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryDetailInfoBySN(franchiseeUserInfo.getNowElectricityBatterySn());
+        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryInfo(uid);
         if(Objects.isNull(electricityBatteryVO)) {
             return electricityBatteryVO;
         }
@@ -339,22 +339,22 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
         BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 
-//        if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
-//            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
-//            if (Objects.nonNull(userInfo)) {
-//                electricityBatteryVO.setUserName(userInfo.getName());
-//            }
-//        }
-
-        if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-            FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
-            if(Objects.nonNull(franchiseeUserInfo)){
-                UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
-                if(Objects.nonNull(userInfo)){
-                    electricityBatteryVO.setUserName(userInfo.getName());
-                }
+        if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.nonNull(electricityBattery.getUid())) {
+            UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
+            if (Objects.nonNull(userInfo)) {
+                electricityBatteryVO.setUserName(userInfo.getName());
             }
         }
+
+//        if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+//            FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
+//            if(Objects.nonNull(franchiseeUserInfo)){
+//                UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
+//                if(Objects.nonNull(userInfo)){
+//                    electricityBatteryVO.setUserName(userInfo.getName());
+//                }
+//            }
+//        }
 
         return R.ok(electricityBatteryVO);
     }
@@ -392,16 +392,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
                 .eq(ElectricityBattery::getSn, initElectricityBatterySn));
     }
 
-//    /**
-//     * 获取个人电池
-//     *
-//     * @param uid
-//     * @return
-//     */
-//    @Override
-//    public ElectricityBattery queryByUid(Long uid) {
-//        return baseMapper.queryByUid(uid);
-//    }
+    /**
+     * 获取个人电池
+     *
+     * @param uid
+     * @return
+     */
+    @Override
+    public ElectricityBattery queryByUid(Long uid) {
+        return baseMapper.queryByUid(uid);
+    }
 
     @Override
     public ElectricityBattery queryBySn(String oldElectricityBatterySn) {
@@ -464,15 +464,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             }
 
             borrowExpireBatteryList.parallelStream().forEach(electricityBattery -> {
-//                Long uid = electricityBattery.getUid();
-                Long uid = null;
-                FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
-                if(Objects.nonNull(franchiseeUserInfo)){
-                    UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
-                    if(Objects.nonNull(userInfo)){
-                        uid = userInfo.getUid();
-                    }
-                }
+                Long uid = electricityBattery.getUid();
+//                Long uid = null;
+//                FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
+//                if(Objects.nonNull(franchiseeUserInfo)){
+//                    UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
+//                    if(Objects.nonNull(userInfo)){
+//                        uid = userInfo.getUid();
+//                    }
+//                }
 
                 Integer tenantId = electricityBattery.getTenantId();
                 boolean isOutTime = redisService.setNx(CacheConstant.CACHE_LOW_BATTERY_NOTIFICATION + uid, "ok", lowBatteryFrequency, false);

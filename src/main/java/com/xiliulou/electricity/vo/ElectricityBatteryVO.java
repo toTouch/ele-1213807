@@ -96,9 +96,10 @@ public class ElectricityBatteryVO {
      * 所属加盟商
      */
     private String franchiseeName;
-
-    //所属用户id
-    //private Long uid;
+    /**
+     * 所属用户id
+     */
+    private Long uid;
 
     //所属用户
     private String userName;
