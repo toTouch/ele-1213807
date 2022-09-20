@@ -143,11 +143,17 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handelUserCouponExpired() {
+
+        System.out.println("定时任务处理======================");
+
         //分页只修改200条
         List<UserCoupon> userCouponList = userCouponMapper.getExpiredUserCoupon(System.currentTimeMillis(), 0, 200);
         if (!DataUtil.collectionIsUsable(userCouponList)) {
             return;
         }
+
+        System.out.println("所有过期优惠卷----------============="+userCouponList);
+
         for (UserCoupon userCoupon : userCouponList) {
             userCoupon.setStatus(UserCoupon.STATUS_EXPIRED);
             userCoupon.setUpdateTime(System.currentTimeMillis());
