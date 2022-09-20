@@ -109,6 +109,7 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
+                || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE);
 
     }
@@ -302,6 +303,11 @@ public class ElectricityIotConstant {
      */
     public static final String ELE_CELL_CLOSE_CHARGE = "cell_close_charge";
 
+    /**
+     * 重新开启App循环检测
+     */
+    public static final String CUPBOARD_RESUME_CYCLE="cupboard_resume_cycle";
+
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -325,6 +331,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OPERATE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_CELL_OPEN_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_CELL_CLOSE_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(CUPBOARD_RESUME_CYCLE, NORMAL_ELE_OPERATE_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
