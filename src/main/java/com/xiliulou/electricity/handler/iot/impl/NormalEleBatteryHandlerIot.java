@@ -6,6 +6,7 @@ import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.TimeUtils;
 import com.xiliulou.electricity.config.EleCommonConfig;
+import com.xiliulou.electricity.config.TenantConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -22,6 +23,7 @@ import shaded.org.apache.commons.lang3.StringUtils;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -29,7 +31,7 @@ import java.util.Objects;
  * @Date: 2020/12/28 17:02
  * @Description:
  */
-@Service(value= ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
+@Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
 @Slf4j
 public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
@@ -56,6 +58,8 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
     @Autowired
     EleCommonConfig eleCommonConfig;
+    @Autowired
+    TenantConfig tenantConfig;
 
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     public static final String IRON_LITHIUM = "IRON_LITHIUM";
@@ -72,7 +76,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             }
 
             //电池检测上报数据保存到ClickHouse
-            saveReportDataToClickHouse( electricityCabinet,  receiverMessage,batteryChangeReportVO);
+            saveReportDataToClickHouse(electricityCabinet, receiverMessage, batteryChangeReportVO);
 
         } else {
             updateBatteryInfo(electricityCabinet, receiverMessage);
@@ -80,23 +84,23 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
     }
 
 
-    private void updateBatteryInfo(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage){
+    private void updateBatteryInfo(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage) {
         EleBatteryVo eleBatteryVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleBatteryVo.class);
         if (Objects.isNull(eleBatteryVo)) {
             log.error("ele battery error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return ;
+            return;
         }
 
         String cellNo = eleBatteryVo.getCellNo();
         if (StringUtils.isEmpty(cellNo)) {
             log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return ;
+            return;
         }
 
         ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByCellNo(electricityCabinet.getId(), cellNo);
         if (Objects.isNull(oldElectricityCabinetBox)) {
             log.error("ELE ERROR! no cellNo! p={},d={},cell={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName(), cellNo);
-            return ;
+            return;
         }
 
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
@@ -111,7 +115,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         if (Objects.nonNull(reportTime) && Objects.nonNull(oldElectricityCabinetBox.getReportTime())
                 && oldElectricityCabinetBox.getReportTime() >= reportTime) {
             log.error("ele battery error! reportTime is less ,reportTime:{}", reportTime);
-            return ;
+            return;
         }
 
         if (Objects.nonNull(reportTime)) {
@@ -124,7 +128,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         //存在电池但是电池名字没有上报
         if (Objects.nonNull(existsBattery) && StringUtils.isEmpty(batteryName) && existsBattery) {
             log.error("ELE ERROR! battery report illegal! existsBattery={},batteryName={}", existsBattery, batteryName);
-            return ;
+            return;
         }
 
         //缓存存换电柜中电量最多的电池
@@ -175,7 +179,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             if (Objects.nonNull(bigEleBatteryVo) && Objects.equals(bigEleBatteryVo.getCellNo(), cellNo)) {
                 redisService.delete(electricityCabinet.getId().toString());
             }
-            return ;
+            return;
         }
 
         NotExistSn oldNotExistSn = notExistSnService.queryByOther(batteryName, electricityCabinet.getId(), Integer.valueOf(cellNo));
@@ -204,7 +208,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                     notExistSnService.update(notExistSnOld);
                 }
             }
-            return ;
+            return;
         }
 
         //查询表中是否有电池
@@ -216,7 +220,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("ele battery error! tenantId is not equal,tenantId1:{},tenantId2:{}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
-            return ;
+            return;
         }
 
         //根据电池查询仓门类型
@@ -240,11 +244,14 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         //上报电量和上次电量相差百分之50以上，电量不做修改
 
         Integer isBatteryReportCheck = eleCommonConfig.getBatteryReportCheck();
-        if (Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck, EleCommonConfig.OPEN_BATTERY_REPORT_CHECK)) {
-            if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50 && Math.abs(electricityBattery.getPower() - (power * 100)) != 100) {
+        List<Integer> batteryReportCheckTenantId = tenantConfig.getNotBatteryReportCheckTenantId();
+
+        if (Objects.nonNull(batteryReportCheckTenantId) && !batteryReportCheckTenantId.contains(electricityCabinet.getTenantId()) && Objects.nonNull(isBatteryReportCheck) && Objects.equals(isBatteryReportCheck, EleCommonConfig.OPEN_BATTERY_REPORT_CHECK) && Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS)) {
+            if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power) && (electricityBattery.getPower() - (power * 100)) >= 50) {
                 power = (electricityBattery.getPower()) / 100;
             }
         }
+
 
         if (Objects.nonNull(power)) {
             newElectricityBattery.setPower(power * 100);
@@ -306,7 +313,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
             Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
             if (Objects.isNull(store)) {
                 log.error("ele battery error! not find store,storeId:{}", electricityCabinet.getStoreId());
-                return ;
+                return;
             }
 
             if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
@@ -325,6 +332,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
 
     /**
      * 检测电池数据保存到clickhouse
+     *
      * @param batteryChangeReport
      */
     private void saveReportDataToClickHouse(ElectricityCabinet electricityCabinet, ReceiverMessage receiverMessage, EleBatteryChangeReportVO batteryChangeReport) {

@@ -61,4 +61,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery);
+
+    R batteryStatistical(Integer tenantId);
 }

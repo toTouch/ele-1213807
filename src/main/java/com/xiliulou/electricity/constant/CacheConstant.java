@@ -68,6 +68,9 @@ public interface CacheConstant {
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
 
+    //换电柜租户地图key
+    String ELE_TENANT_MAP_EDIT_UID = "ele_tenant_map_edit_uid:";
+
 
     //实名认证资料项缓存key
     String ELE_CACHE_AUTH_ENTRY = "ele_cache_auth_entry:";
@@ -183,4 +186,5 @@ public interface CacheConstant {
      */
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
+    String CACHE_ELE_SET_MAP_KEY = "ele_set_map_key:";
 }

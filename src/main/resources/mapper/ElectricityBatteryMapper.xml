@@ -211,5 +211,29 @@
 		</if>
 	</select>
 
+	<select id="queryBatteryOverview" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select b.id, b.sn,b.power, b.voltage, b.capacity, b.status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
+		b.uid,b.model,b.charge_status,b.iot_card_number,b.longitude,b.latitude
+		from t_electricity_battery b
+		where b.del_flag = 0 and b.tenant_id = #{query.tenantId}
+		<if test="query.sn != null and query.sn !=''">
+			and b.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.status != null">
+			and b.status =#{query.status}
+		</if>
+		order by create_time desc
+	</select>
+
+	<select id="batteryStatistical" resultType="com.xiliulou.electricity.vo.BatteryStatisticalVo">
+		SELECT  COUNT(1) sumCount,
+ 				sum(CASE WHEN status = 0 THEN 1 ELSE 0 END) wareHouseCount ,
+ 				sum(CASE WHEN status = 1 THEN 1 ELSE 0 END) stockCount ,
+ 				sum(CASE WHEN status = 2 THEN 1 ELSE 0 END) leaseCount ,
+ 				sum(CASE WHEN status = 3 THEN 1 ELSE 0 END) exceptionCount ,
+ 				sum(CASE WHEN status = 4 THEN 1 ELSE 0 END) exceptionFreeCount
+ 		FROM t_electricity_battery  where tenant_id=#{tenantId} and del_flag=0;
+	</select>
+
 
 </mapper>
