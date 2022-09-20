@@ -32,6 +32,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
+    public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     /**
      * 核心板上报数据处理
      */
@@ -110,7 +111,8 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
                 || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
-                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE);
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY);
 
     }
 
@@ -306,7 +308,12 @@ public class ElectricityIotConstant {
     /**
      * 重新开启App循环检测
      */
-    public static final String CUPBOARD_RESUME_CYCLE="cupboard_resume_cycle";
+    public static final String CUPBOARD_RESUME_CYCLE = "cupboard_resume_cycle";
+
+    /**
+     * 故障上报
+     */
+    public static final String ELE_COMMAND_WARN_MSG_NOTIFY = "warn_msg_notify";
 
 
     static {
@@ -400,6 +407,8 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP, NORMAL_NEW_EXCHANGE_ORDER_HANDLER);
+
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_WARN_MSG_NOTIFY, NORMAL_ELE_WARN_MSG_HANDLER);
 
 
     }
