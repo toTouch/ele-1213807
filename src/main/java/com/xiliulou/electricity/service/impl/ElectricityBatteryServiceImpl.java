@@ -283,10 +283,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.queryCount(electricityBatteryQuery);
     }
 
-    @Override
-    public BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId) {
-        return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);
-    }
+    //    @Override
+    //    public BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId) {
+    //        return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);
+    //    }
 
     @Override
     public R queryById(Long electricityBatteryId) {

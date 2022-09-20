@@ -948,9 +948,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
         }
 
-        /*BigEleBatteryVo bigEleBatteryVo = electricityBatteryService.queryMaxPowerByElectricityCabinetId(electricityCabinet.getId());
+        //BigEleBatteryVo bigEleBatteryVo = electricityBatteryService.queryMaxPowerByElectricityCabinetId(electricityCabinet.getId());
 
-        if (Objects.nonNull(bigEleBatteryVo)) {
+        /*if (Objects.nonNull(bigEleBatteryVo)) {
             if (Objects.isNull(batteryType)) {
                 String newCellNo = bigEleBatteryVo.getCellNo();
                 Double power = bigEleBatteryVo.getPower();
