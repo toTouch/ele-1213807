@@ -104,6 +104,11 @@ public class EleBatteryServiceFeeOrderVo {
      */
     private Integer batteryGenerateDay;
 
+    /**
+     * 电池服务费来源
+     */
+    private Integer source;
+
     public static final Integer STATUS_INIT = 0;
     public static final Integer STATUS_SUCCESS = 1;
     public static final Integer STATUS_FAIL = 2;

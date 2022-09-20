@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -28,102 +29,102 @@ import java.util.Objects;
 @RestController
 @Slf4j
 public class JsonAdminCouponController {
-	/**
-	 * 服务对象
-	 */
-	@Autowired
-	private CouponService couponService;
+    /**
+     * 服务对象
+     */
+    @Autowired
+    private CouponService couponService;
 
-	@Autowired
-	FranchiseeService franchiseeService;
+    @Autowired
+    FranchiseeService franchiseeService;
 
-	//新增
-	@PostMapping(value = "/admin/coupon")
-	public R save(@RequestBody @Validated(value = CreateGroup.class) Coupon coupon) {
-		return couponService.insert(coupon);
-	}
+    //新增
+    @PostMapping(value = "/admin/coupon")
+    public R save(@RequestBody @Validated(value = CreateGroup.class) Coupon coupon) {
+        return couponService.insert(coupon);
+    }
 
-	//修改--暂时无此功能
-	@PutMapping(value = "/admin/coupon")
-	public R update(@RequestBody @Validated(value = UpdateGroup.class) Coupon coupon) {
-		return couponService.update(coupon);
-	}
+    //修改--暂时无此功能
+    @PutMapping(value = "/admin/coupon")
+    public R update(@RequestBody @Validated(value = UpdateGroup.class) Coupon coupon) {
+        return couponService.update(coupon);
+    }
 
-	//列表查询
-	@GetMapping(value = "/admin/coupon/list")
-	public R queryList(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam(value = "discountType", required = false) Integer discountType,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "applyType", required = false) Integer applyType) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
+    //列表查询
+    @GetMapping(value = "/admin/coupon/list")
+    public R queryList(@RequestParam("size") Long size,
+                       @RequestParam("offset") Long offset,
+                       @RequestParam(value = "discountType", required = false) Integer discountType,
+                       @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                       @RequestParam(value = "name", required = false) String name,
+                       @RequestParam(value = "applyType", required = false) Integer applyType) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
 
-		if (offset < 0) {
-			offset = 0L;
-		}
+        if (offset < 0) {
+            offset = 0L;
+        }
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-			if (Objects.isNull(franchisee)) {
-				return R.ok();
-			}
-			franchiseeId = franchisee.getId();
-		}
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
+                return R.ok();
+            }
+            franchiseeId = franchisee.getId();
+        }
 
-		CouponQuery couponQuery = CouponQuery.builder()
-				.offset(offset)
-				.size(size)
-				.name(name)
-				.discountType(discountType)
-				.franchiseeId(franchiseeId)
-				.applyType(applyType)
-				.tenantId(tenantId).build();
-		return couponService.queryList(couponQuery);
-	}
+        CouponQuery couponQuery = CouponQuery.builder()
+                .offset(offset)
+                .size(size)
+                .name(name)
+                .discountType(discountType)
+                .franchiseeId(franchiseeId)
+                .applyType(applyType)
+                .tenantId(tenantId).build();
+        return couponService.queryList(couponQuery);
+    }
 
-	//列表查询
-	@GetMapping(value = "/admin/coupon/count")
-	public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType,
-			@RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
-			@RequestParam(value = "name", required = false) String name,
-			@RequestParam(value = "applyType", required = false) Integer applyType) {
+    //列表查询
+    @GetMapping(value = "/admin/coupon/count")
+    public R queryCount(@RequestParam(value = "discountType", required = false) Integer discountType,
+                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+                        @RequestParam(value = "name", required = false) String name,
+                        @RequestParam(value = "applyType", required = false) Integer applyType) {
 
-		//租户
-		Integer tenantId = TenantContextHolder.getTenantId();
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-		if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-			Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-			if (Objects.isNull(franchisee)) {
-				return R.ok();
-			}
-			franchiseeId = franchisee.getId();
-		}
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.isNull(franchisee)) {
+                return R.ok();
+            }
+            franchiseeId = franchisee.getId();
+        }
 
-		CouponQuery couponQuery = CouponQuery.builder()
-				.name(name)
-				.discountType(discountType)
-				.franchiseeId(franchiseeId)
-				.applyType(applyType)
-				.tenantId(tenantId).build();
-		return couponService.queryCount(couponQuery);
-	}
+        CouponQuery couponQuery = CouponQuery.builder()
+                .name(name)
+                .discountType(discountType)
+                .franchiseeId(franchiseeId)
+                .applyType(applyType)
+                .tenantId(tenantId).build();
+        return couponService.queryCount(couponQuery);
+    }
 
 }
