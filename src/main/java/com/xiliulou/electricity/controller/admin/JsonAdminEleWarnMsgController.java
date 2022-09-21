@@ -381,4 +381,41 @@ public class JsonAdminEleWarnMsgController {
     }
 
 
+    //电池故障列表查询
+    @GetMapping(value = "/admin/cellWarnMsg/list")
+    public R queryCellWarnMsgList(@RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "beginTime") Long beginTime,
+                                     @RequestParam(value = "endTime") Long endTime,
+                                     @RequestParam(value = "sn", required = false) String sn,
+                                     @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+        if (StringUtil.isNotEmpty(sn) && StringUtil.isEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_battery where sn=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+            return R.ok(clickHouseService.query(EleBatteryWarnMsgVo.class, sql, sn, begin, end, offset, size));
+        }
+
+        if (StringUtil.isNotEmpty(electricityCabinetId) && StringUtil.isEmpty(sn)) {
+            String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+            return R.ok(clickHouseService.query(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size));
+        }
+
+        String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+        return R.ok(clickHouseService.query(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, sn, begin, end, offset, size));
+    }
+
+
 }
