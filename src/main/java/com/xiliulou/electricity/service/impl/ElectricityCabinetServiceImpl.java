@@ -2174,10 +2174,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Double fullyCharged = electricityCabinet.getFullyCharged();
 
 //        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        ElectricityCabinetBoxQuery electricityCabinetBoxQuery=ElectricityCabinetBoxQuery.builder()
-                .tenantId(electricityCabinet.getTenantId())
-                .electricityCabinetId(electricityCabinetId).build();
-        List<ElectricityCabinetBox> electricityCabinetBoxList = (List<ElectricityCabinetBox>) electricityCabinetBoxService.queryList(electricityCabinetBoxQuery).getData();
+        List<ElectricityCabinetBox> electricityCabinetBoxList =  electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
 
