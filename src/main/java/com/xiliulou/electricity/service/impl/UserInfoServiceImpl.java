@@ -855,6 +855,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
+        System.out.println("解绑电池计算服务费产生天数==========================="+cardDays);
+
         if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
@@ -866,7 +868,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (Objects.equals(model, modelBatteryDeposit.getModel())) {
                         //计算服务费
                         BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+
+                        System.out.println("计算出电池服务非====================="+batteryServiceFee);
+
+
                         if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+
+                            System.out.println("返回电池服务非====================="+batteryServiceFee);
                             return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                         }
                     }
@@ -875,7 +883,13 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
                 //计算服务费
                 BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+
+
+                System.out.println("计算出电池服务非====================="+batteryServiceFee);
                 if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+
+
+                    System.out.println("返回电池服务非====================="+batteryServiceFee);
                     return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
                 }
             }
