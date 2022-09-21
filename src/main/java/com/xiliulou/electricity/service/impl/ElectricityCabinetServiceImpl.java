@@ -2190,6 +2190,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 //                    if (Objects.nonNull(electricityBattery.getModel())) {
 //                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
 //                    }
+                    if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())){
+                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityCabinetBoxVO.getBatteryType()).toString());
+                    }
                 }
 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
