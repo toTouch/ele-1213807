@@ -428,8 +428,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public Integer updateByOrder(ElectricityBattery electricityBattery) {
-        return electricitybatterymapper.updateByOrder(electricityBattery);
+    public Integer updateBatteryById(ElectricityBattery electricityBattery) {
+        return electricitybatterymapper.updateBatteryById(electricityBattery);
+    }
+
+    /**
+     * 更新电池绑定的用户
+     * @param electricityBattery
+     * @return
+     */
+    @Override
+    public Integer updateBatteryUser(ElectricityBattery electricityBattery) {
+        return electricitybatterymapper.updateBatteryUser(electricityBattery);
     }
 
     @Override

@@ -10,21 +10,16 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.*;
-import com.xiliulou.electricity.vo.WarnMsgVo;
-import com.xiliulou.iot.entity.HardwareCommandQuery;
-import com.xiliulou.iot.entity.HardwareCommand;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import java.util.HashMap;
 import java.util.UUID;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.tuple.Triple;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
@@ -34,31 +29,24 @@ import java.util.concurrent.TimeUnit;
 public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHandler {
     @Autowired
     RedisService redisService;
-
     @Autowired
     ElectricityCabinetService electricityCabinetService;
-
     @Autowired
     ElectricityBatteryService electricityBatteryService;
-
     @Autowired
     ElectricityCabinetOrderService electricityCabinetOrderService;
-
     @Autowired
     ElectricityConfigService electricityConfigService;
     @Autowired
     ElectricityExceptionOrderStatusRecordService electricityExceptionOrderStatusRecordService;
-
     @Autowired
     UserInfoService userInfoService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     WechatTemplateNotificationConfig wechatTemplateNotificationConfig;
-
     @Autowired
     ElectricityCabinetBoxService electricityCabinetBoxService;
-
     @Autowired
     EleHardwareHandlerManager eleHardwareHandlerManager;
 
@@ -131,25 +119,25 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return ;
         }
 
-        //用户绑新电池
-        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        franchiseeUserInfo.setUserInfoId(userInfo.getId());
-        franchiseeUserInfo.setNowElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
-        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
+//        //用户绑新电池
+//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//        franchiseeUserInfo.setUserInfoId(userInfo.getId());
+//        franchiseeUserInfo.setNowElectricityBatterySn(exchangeOrderRsp.getTakeBatteryName());
+//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//        franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
         //查看用户是否有以前绑定的电池
-//        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
             newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-//            newElectricityBattery.setUid(null);
+            newElectricityBattery.setUid(null);
+            newElectricityBattery.setBorrowExpireTime(null);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateByOrder(newElectricityBattery);
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
 
 
@@ -160,11 +148,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
-//        newElectricityBattery.setUid(electricityCabinetOrder.getUid());
+        newElectricityBattery.setUid(electricityCabinetOrder.getUid());
         newElectricityBattery.setExchangeCount(electricityBattery.getExchangeCount() + 1);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setBorrowExpireTime(Long.parseLong(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
-        electricityBatteryService.updateByOrder(newElectricityBattery);
+        electricityBatteryService.updateBatteryUser(newElectricityBattery);
     }
 
     private void handlePlaceBatteryInfo(ExchangeOrderRsp exchangeOrderRsp, ElectricityCabinetOrder electricityCabinetOrder, ElectricityCabinet electricityCabinet) {
@@ -184,25 +172,24 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-        //用户解绑旧电池 旧电池到底是哪块，不确定
-        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-        franchiseeUserInfo.setNowElectricityBatterySn(null);
-        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.update(franchiseeUserInfo);
+//        //用户解绑旧电池 旧电池到底是哪块，不确定
+//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
+//        franchiseeUserInfo.setNowElectricityBatterySn(null);
+//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//        franchiseeUserInfoService.update(franchiseeUserInfo);
 
         //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
-//        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
-        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
             newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-//            newElectricityBattery.setUid(null);
+            newElectricityBattery.setUid(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
-            electricityBatteryService.updateByOrder(newElectricityBattery);
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
 
         //放入电池改为在仓
@@ -214,13 +201,11 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
             newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
             newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
-//            newElectricityBattery.setUid(null);
+            newElectricityBattery.setUid(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(null);
-            electricityBatteryService.updateByOrder(newElectricityBattery);
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
-
-
     }
 
 

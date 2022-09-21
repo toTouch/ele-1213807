@@ -135,7 +135,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(user.getUid(), tenantId);
-
         if (Objects.isNull(userOauthBind) || Objects.isNull(userOauthBind.getThirdId())) {
             log.error("CREATE MEMBER_ORDER ERROR ,NOT FOUND USEROAUTHBIND OR THIRDID IS NULL  UID:{}", user.getUid());
             return R.failMsg("未找到用户的第三方授权信息!");
@@ -143,7 +142,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //用户
         UserInfo userInfo = userInfoService.selectUserByUid(user.getUid());
-
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY  ERROR! not found user,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
@@ -161,10 +159,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //是否缴纳押金，是否绑定电池
+        //
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未找到用户
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("payDeposit  ERROR! not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
@@ -183,7 +179,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         if (Objects.nonNull(franchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
             long cardDays = (now - franchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
 
-            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+            if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+//            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
                 //查询用户是否存在电池服务费
                 Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
                 Integer modelType = franchisee.getModelType();
@@ -697,7 +694,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //启用月卡时判断用户是否有电池，收取服务费
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
-            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+
+            if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
 
                 if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
 
@@ -774,7 +772,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Transactional(rollbackFor = Exception.class)
     public R adminOpenOrDisableMemberCard(Integer usableStatus, Long uid) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("admin saveUserMemberCard ERROR! not found user ");
@@ -787,10 +784,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        //是否缴纳押金，是否绑定电池
+        //
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-
-        //未缴纳押金
         if (Objects.isNull(franchiseeUserInfo)) {
             log.error("DISABLE MEMBER CARD ERROR!not found user! userId:{}", user.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
@@ -821,7 +816,9 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //启用月卡时判断用户是否有电池，收取服务费
         if (Objects.equals(usableStatus, FranchiseeUserInfo.MEMBER_CARD_NOT_DISABLE)) {
-            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+
+            if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
+//            if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && Objects.equals(franchiseeUserInfo.getBatteryServiceFeeStatus(), FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE)) {
 
                 if (Objects.nonNull(franchiseeUserInfo.getDisableMemberCardTime())) {
 

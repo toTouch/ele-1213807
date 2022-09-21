@@ -31,7 +31,9 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     ElectricityBatteryVO selectBatteryInfo(@Param("uid") Long uid);
 
-    Integer updateByOrder(ElectricityBattery electricityBattery);
+    Integer updateBatteryById(ElectricityBattery electricityBattery);
+
+    Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
 
 //    List<BorrowExpireBatteryVo> queryBorrowExpireBattery(@Param("curTime") long curTime, @Param("offset") Integer offset, @Param("size") Integer size);

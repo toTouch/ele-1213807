@@ -215,14 +215,13 @@
     </select>
 
 	<select id="queryByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
-        teb.capacity as capacity,teb.physics_status as physicsStatus, teb.create_time as createTime, teb.update_time as updateTime,
-        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid
+		select id, sn, power, voltage, capacity, physics_status, business_status, create_time, update_time, electricity_cabinet_id, uid
         FROM t_electricity_battery as teb
-        WHERE teb.uid = #{uid} and teb.del_flag = 0
+        WHERE teb.uid = #{uid} and teb.del_flag = 0 order by create_time DESC limit 1
 	</select>
 
-	<update id="updateByOrder">
+
+	<update id="updateBatteryById">
 		update t_electricity_battery
 		set
 		<if test="chargeStatus != null">
@@ -246,9 +245,51 @@
 		<if test="businessStatus != null">
 			business_status=#{businessStatus},
 		</if>
+		<if test="electricityCabinetName != null and electricityCabinetName !=''">
+			electricity_cabinet_name=#{electricityCabinetName},
+		</if>
+		<if test="electricityCabinetId != null">
+			electricity_cabinet_id=#{electricityCabinetId},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
+		<if test="updateTime != null">
+			update_time=#{updateTime},
+		</if>
+		where id=#{id}
+	</update>
+
+	<update id="updateBatteryUser">
+		update t_electricity_battery
+		set
+		<if test="chargeStatus != null">
+			charge_status =#{chargeStatus},
+		</if>
+		<if test="healthStatus != null">
+			health_status =#{healthStatus},
+		</if>
+		<if test="power != null">
+			power =#{power},
+		</if>
+		<if test="model != null">
+			model =#{model},
+		</if>
+		<if test="exchangeCount != null">
+			exchange_count =#{exchangeCount},
+		</if>
+		<if test="physicsStatus != null">
+			physics_status =#{physicsStatus},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
-		borrow_expire_time=#{borrowExpireTime},
+		uid=#{uid},
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>

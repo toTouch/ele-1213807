@@ -103,7 +103,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R payDeposit(String productKey, String deviceName, Long franchiseeId, Integer model, HttpServletRequest request) {
-        //用户
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("payDeposit  ERROR! not found user ");
@@ -422,7 +422,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
-        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+        if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+//        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
@@ -822,6 +823,13 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
+
+
         String orderId = generateOrderId(user.getUid());
         //创建订单
         EleBatteryServiceFeeOrder eleBatteryServiceFeeOrder = EleBatteryServiceFeeOrder.builder()
@@ -837,7 +845,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
-                .sn(franchiseeUserInfo.getNowElectricityBatterySn())
+                .sn(electricityBattery.getSn())
                 .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 

@@ -484,7 +484,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+//        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
@@ -679,10 +680,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     //后台绑定电池
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -697,77 +697,69 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //未实名认证
         if (Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("webBindBattery  ERROR! user not auth! uid={} ", oldUserInfo.getUid());
+            log.error("WEBBIND ERROR! user not auth! uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
-
-        //未找到用户
         if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("payDeposit  ERROR! not found user! userId={}", oldUserInfo.getUid());
+            log.error("WEBBIND ERROR ERROR! not found user! userId={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
-
         }
 
         //判断是否缴纳押金
         if (Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)
                 || Objects.isNull(oldFranchiseeUserInfo.getBatteryDeposit()) || Objects.isNull(oldFranchiseeUserInfo.getOrderId())) {
-            log.error("ELECTRICITY  ERROR! not pay deposit! uid={} ", oldUserInfo.getUid());
+            log.error("WEBBIND ERROR ERROR! not pay deposit! uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
         //已绑定电池
-//        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && StringUtils.isNotBlank(oldFranchiseeUserInfo.getNowElectricityBatterySn())) {
         if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("webBindBattery  ERROR! user rent battery! uid={} ", oldUserInfo.getUid());
+            log.error("WEBBIND ERROR ERROR! user rent battery! uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 
         //判断电池是否存在，或者已经被绑定
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
-            log.error("webBindBattery  ERROR! not found Battery! batteryName={}", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            log.error("WEBBIND ERROR ERROR! not found Battery! batteryName={}", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
         if (Objects.nonNull(oldElectricityBattery.getUid()) && !Objects.equals(oldElectricityBattery.getUid(), userInfoBatteryAddAndUpdate.getUid())) {
-            log.error("webBindBattery  ERROR! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+            log.error("WEBBIND ERROR ERROR! battery is bind user! sn={} ", userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
             return R.fail("100019", "该电池已经绑定用户");
         }
 
-        //绑定电池
+        //更新用户绑定电池状态
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
         if (Objects.isNull(oldFranchiseeUserInfo.getInitElectricityBatterySn())) {
             franchiseeUserInfo.setInitElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         }
-        franchiseeUserInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
+//        franchiseeUserInfo.setNowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
         Integer update = franchiseeUserInfoService.update(franchiseeUserInfo);
 
         //之前有电池，将原来的电池解绑
-        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
-            ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
-//            ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
-            if (Objects.nonNull(isBindElectricityBattery)) {
-                ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
-                notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
-                notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-                notBindOldElectricityBattery.setElectricityCabinetId(null);
-                notBindOldElectricityBattery.setElectricityCabinetName(null);
-//                notBindOldElectricityBattery.setUid(null);
-                notBindOldElectricityBattery.setBorrowExpireTime(null);
-                notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateByOrder(notBindOldElectricityBattery);
-            }
+        ElectricityBattery isBindElectricityBattery = electricityBatteryService.queryByUid(userInfoBatteryAddAndUpdate.getUid());
+        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) && Objects.nonNull(isBindElectricityBattery)) {
+            ElectricityBattery notBindOldElectricityBattery = new ElectricityBattery();
+            notBindOldElectricityBattery.setId(isBindElectricityBattery.getId());
+            notBindOldElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+            notBindOldElectricityBattery.setElectricityCabinetId(null);
+            notBindOldElectricityBattery.setElectricityCabinetName(null);
+            notBindOldElectricityBattery.setUid(null);
+            notBindOldElectricityBattery.setBorrowExpireTime(null);
+            notBindOldElectricityBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.updateBatteryUser(notBindOldElectricityBattery);
         }
 
         DbUtils.dbOperateSuccessThen(update, () -> {
-            RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
-
             //添加租电池记录
+            RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
             rentBatteryOrder.setUid(oldUserInfo.getUid());
             rentBatteryOrder.setName(oldUserInfo.getName());
             rentBatteryOrder.setPhone(oldUserInfo.getPhone());
@@ -778,18 +770,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_BIND);
             rentBatteryOrderService.insert(rentBatteryOrder);
 
-            Integer operateContent = EleUserOperateRecord.BIND_BATTERY_CONTENT;
-            if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE)) {
-                operateContent = EleUserOperateRecord.EDIT_BATTERY_CONTENT;
-            }
             //生成后台操作记录
             EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                     .operateModel(EleUserOperateRecord.BATTERY_MODEL)
-                    .operateContent(operateContent)
+                    .operateContent(Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) ? EleUserOperateRecord.EDIT_BATTERY_CONTENT : EleUserOperateRecord.BIND_BATTERY_CONTENT)
                     .operateUid(user.getUid())
                     .uid(oldUserInfo.getUid())
                     .name(user.getUsername())
-                    .initElectricityBatterySn(oldFranchiseeUserInfo.getNowElectricityBatterySn())
+                    .initElectricityBatterySn(Objects.nonNull(isBindElectricityBattery) ? isBindElectricityBattery.getSn() : "")
                     .nowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())
                     .createTime(System.currentTimeMillis())
                     .updateTime(System.currentTimeMillis()).build();
@@ -801,26 +789,22 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
             electricityBattery.setElectricityCabinetId(null);
             electricityBattery.setElectricityCabinetName(null);
-//            electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
+            electricityBattery.setUid(userInfoBatteryAddAndUpdate.getUid());
             electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateByOrder(electricityBattery);
+            electricityBatteryService.updateBatteryUser(electricityBattery);
 
-//            //修改旧电池状态
-//            ElectricityBattery oldElectricityBattery = new ElectricityBattery();
-//
             return null;
         });
         return R.ok();
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R webUnBindBattery(Long uid) {
 
-        //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("webUnBindBattery  ERROR! not found user ");
+            log.error("WEBUNBIND ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
         //查找用户
@@ -831,86 +815,68 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         //未实名认证
         if (Objects.equals(oldUserInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
-            log.error("webUnBindBattery  ERROR! user not auth! uid={} ", oldUserInfo.getUid());
+            log.error("WEBUNBIND ERROR! user not auth,uid={} ", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0041", "未实名认证");
         }
 
-        //是否缴纳押金，是否绑定电池
+        //
         FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(oldUserInfo.getId());
-
-        //未找到用户
         if (Objects.isNull(oldFranchiseeUserInfo)) {
-            log.error("webUnBindBattery  ERROR! not found user! userId={}", oldUserInfo.getUid());
+            log.error("WEBUNBIND ERROR! not found user,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
-
         }
 
         if (!Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("webUnBindBattery  ERROR! not  rent battery!  userInfo={} ", oldUserInfo);
+            log.error("WEBUNBIND ERROR! not  rent battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0033", "用户未绑定电池");
         }
 
-        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(oldFranchiseeUserInfo.getNowElectricityBatterySn());
+        ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(oldUserInfo.getUid());
         if (Objects.isNull(oldElectricityBattery)) {
-            log.error("webUnBindBattery  ERROR! not found Battery! sn={} ", oldFranchiseeUserInfo.getNowElectricityBatterySn());
+            log.error("WEBUNBIND ERROR! not found user bind battery,uid={}", oldUserInfo.getUid());
             return R.fail("ELECTRICITY.0020", "未找到电池");
         }
 
         Long now = System.currentTimeMillis();
         if (!Objects.equals(oldFranchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
             if (((now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24) > 1 || Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-                log.error("webUnBindBattery  ERROR! user have BatterySrviceFee! userId={} ", oldUserInfo.getUid());
+                log.error("WEBUNBIND ERROR! user have BatterySrviceFee! userId={} ", oldUserInfo.getUid());
                 return R.fail("ELECTRICITY.100000", "用户存在电池服务费");
             }
         }
 
         //解绑电池
-        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-        franchiseeUserInfo.setNowElectricityBatterySn(null);
-        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
-        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update = franchiseeUserInfoService.unBind(franchiseeUserInfo);
+        ElectricityBattery electricityBattery = new ElectricityBattery();
+        electricityBattery.setId(oldElectricityBattery.getId());
+        electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+        electricityBattery.setElectricityCabinetId(null);
+        electricityBattery.setElectricityCabinetName(null);
+        electricityBattery.setUid(null);
+        electricityBattery.setBorrowExpireTime(null);
+        electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBatteryService.updateBatteryUser(electricityBattery);
 
-        DbUtils.dbOperateSuccessThen(update, () -> {
+//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
+//        franchiseeUserInfo.setNowElectricityBatterySn(null);
+//        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
+//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//        Integer update = franchiseeUserInfoService.unBind(franchiseeUserInfo);
 
-            //添加租电池记录
-            /*RentBatteryOrder rentBatteryOrder = new RentBatteryOrder();
-            rentBatteryOrder.setUid(oldUserInfo.getUid());
-            rentBatteryOrder.setName(oldUserInfo.getName());
-            rentBatteryOrder.setPhone(oldUserInfo.getPhone());
-            rentBatteryOrder.setElectricityBatterySn(franchiseeUserInfo.getInitElectricityBatterySn());
-            rentBatteryOrder.setBatteryDeposit(franchiseeUserInfo.getBatteryDeposit());
-            rentBatteryOrder.setCreateTime(System.currentTimeMillis());
-            rentBatteryOrder.setUpdateTime(System.currentTimeMillis());
-            rentBatteryOrder.setType(RentBatteryOrder.TYPE_WEB_UNBIND);
-            rentBatteryOrderService.insert(rentBatteryOrder);*/
 
-            //生成后台操作记录
-            EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
-                    .operateModel(EleUserOperateRecord.BATTERY_MODEL)
-                    .operateContent(EleUserOperateRecord.UN_BIND_BATTERY_CONTENT)
-                    .operateUid(user.getUid())
-                    .uid(oldUserInfo.getUid())
-                    .name(user.getUsername())
-                    .initElectricityBatterySn(oldFranchiseeUserInfo.getNowElectricityBatterySn())
-                    .nowElectricityBatterySn(null)
-                    .createTime(System.currentTimeMillis())
-                    .updateTime(System.currentTimeMillis()).build();
-            eleUserOperateRecordService.insert(eleUserOperateRecord);
+        //生成后台操作记录
+        EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
+                .operateModel(EleUserOperateRecord.BATTERY_MODEL)
+                .operateContent(EleUserOperateRecord.UN_BIND_BATTERY_CONTENT)
+                .operateUid(user.getUid())
+                .uid(oldUserInfo.getUid())
+                .name(user.getUsername())
+                .initElectricityBatterySn(oldElectricityBattery.getSn())
+                .nowElectricityBatterySn(null)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis()).build();
+        eleUserOperateRecordService.insert(eleUserOperateRecord);
 
-            //修改电池状态
-            ElectricityBattery electricityBattery = new ElectricityBattery();
-            electricityBattery.setId(oldElectricityBattery.getId());
-            electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-            electricityBattery.setElectricityCabinetId(null);
-            electricityBattery.setElectricityCabinetName(null);
-//            electricityBattery.setUid(null);
-            electricityBattery.setBorrowExpireTime(null);
-            electricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateByOrder(electricityBattery);
-            return null;
-        });
         return R.ok();
     }
 
@@ -1081,7 +1047,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.nonNull(franchiseeUserInfo) && StringUtils.isNotBlank(franchiseeUserInfo.getNowElectricityBatterySn())) {
+        if (Objects.nonNull(franchiseeUserInfo) && Objects.equals(FranchiseeUserInfo.STATUS_IS_BATTERY, franchiseeUserInfo.getServiceStatus())) {
             return R.fail("ELECTRICITY.0045", "已绑定电池");
         }
 

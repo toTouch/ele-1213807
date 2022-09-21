@@ -515,6 +515,14 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
         }
 
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            log.error("RENT BATTERY ERROR! not found user bind battery,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
+
+
+
         String cellNo = usableEmptyCellNo.getRight().toString();
 
         try {
@@ -549,7 +557,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
-                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                    dataMap.put("user_binding_battery_sn", electricityBattery.getSn());
                 } else {
                     dataMap.put("is_checkBatterySn", false);
                 }
@@ -639,6 +647,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            log.error("RENT BATTERY ERROR! not found user bind battery,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
+
         //租电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
             //发送开门命令
@@ -670,7 +684,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
-                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                    dataMap.put("user_binding_battery_sn", electricityBattery.getSn());
                 } else {
                     dataMap.put("is_checkBatterySn", false);
                 }
