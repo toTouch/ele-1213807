@@ -414,7 +414,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
 
             //不足一天按一天计算
-            double time = Math.ceil(disableMemberCardTime / 1000L / 60 / 60.0);
+            double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
             if (time < 24) {
                 cardDays = 1;
             }
