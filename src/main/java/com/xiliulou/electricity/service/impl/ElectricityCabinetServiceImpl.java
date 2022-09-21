@@ -2174,7 +2174,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Double fullyCharged = electricityCabinet.getFullyCharged();
 
 //        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
+        ElectricityCabinetBoxQuery electricityCabinetBoxQuery=ElectricityCabinetBoxQuery.builder()
+                .tenantId(electricityCabinet.getTenantId())
+                .electricityCabinetId(electricityCabinetId).build();
+        List<ElectricityCabinetBox> electricityCabinetBoxList = (List<ElectricityCabinetBox>) electricityCabinetBoxService.queryList(electricityCabinetBoxQuery).getData();
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
 
@@ -2187,9 +2190,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                     electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
-                    if (Objects.nonNull(electricityBattery.getModel())) {
-                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
-                    }
+//                    if (Objects.nonNull(electricityBattery.getModel())) {
+//                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
+//                    }
                 }
 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
