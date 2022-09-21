@@ -31,7 +31,7 @@ import java.util.Objects;
  * @Date: 2022/09/20 17:02
  * @Description:
  */
-@Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
+@Service(value = ElectricityIotConstant.NORMAL_ELE_WARN_MSG_HANDLER)
 @Slf4j
 public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
 
