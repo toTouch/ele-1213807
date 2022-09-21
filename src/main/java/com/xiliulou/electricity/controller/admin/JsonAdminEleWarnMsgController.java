@@ -1,8 +1,10 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
@@ -12,6 +14,7 @@ import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -21,6 +24,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +47,11 @@ public class JsonAdminEleWarnMsgController {
     EleWarnMsgService eleWarnMsgService;
     @Autowired
     UserTypeFactory userTypeFactory;
+
+    @Autowired
+    ClickHouseService clickHouseService;
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     //列表查询
     @GetMapping(value = "/admin/eleWarnMsg/list")
@@ -315,7 +326,7 @@ public class JsonAdminEleWarnMsgController {
     }
 
     @GetMapping(value = "/admin/statisticsEleWarmMsg/rankingCount")
-    public R statisticEleWarnMsgRankingCount(){
+    public R statisticEleWarnMsgRankingCount() {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -329,6 +340,39 @@ public class JsonAdminEleWarnMsgController {
         }
 
         return eleWarnMsgService.queryStatisticEleWarnMsgRankingCount();
+    }
+
+
+    //列表查询
+    @GetMapping(value = "/admin/batteryWarnMsg/list")
+    public R queryBatteryWarnMsgList(@RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "sn",required = false) String sn,
+                                     @RequestParam(value = "beginTime",required = false) Long beginTime,
+                                     @RequestParam(value = "endTime",required = false) Long endTime,
+                                     @RequestParam(value = "electricityCabinetId",required = false) String electricityCabinetId) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+        if (StringUtil.isNotEmpty(sn)){
+
+        }
+
+
+        String sql = "select * from t_battery_change where electricityCabinetId=? and cellNo=? and reportTime>=? AND reportTime<=? order by  createTime desc  limit ?,?";
+
+        return R.ok(clickHouseService.query(BatteryChangeInfo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size));
     }
 
 
