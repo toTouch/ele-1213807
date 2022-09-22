@@ -8,15 +8,11 @@ import lombok.Data;
  * @Description:
  */
 @Data
-public class EleCellWarnMsgVo {
-
-	private String sessionId;
+public class EleCabinetWarnMsgVo {
 
 	private Long createTime;
 
 	private Long errorCode;
-
-	private Integer cellNo;
 
 	private String errorMsg;
 

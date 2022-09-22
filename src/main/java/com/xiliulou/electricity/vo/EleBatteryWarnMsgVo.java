@@ -25,4 +25,6 @@ public class EleBatteryWarnMsgVo {
 	private String electricityCabinetId;
 
 	private String cabinetName;
+
+	private Integer tenantId;
 }

@@ -2787,4 +2787,15 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(homepageBatteryVo);
 
     }
+
+    @Override
+    public R queryName(Integer tenantId, Integer id) {
+        return R.ok(electricityCabinetMapper.queryName(tenantId, id));
+    }
+
+    @Override
+    public R superAdminQueryName(Integer id) {
+        return R.ok(electricityCabinetMapper.queryName(null, id));
+        ;
+    }
 }
