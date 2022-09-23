@@ -307,4 +307,37 @@ public class JsonAdminElectricityCabinetBatteryController {
         }
         return R.ok();
     }
+
+    /**
+     * 电池总览
+     * @param status
+     * @param sn
+     * @return
+     */
+    @GetMapping("/admin/battery/queryBatteryOverview")
+    public R queryBatteryOverview(@RequestParam(value = "status", required = false) Integer status,
+                                  @RequestParam(value = "sn", required = false) String sn) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
+                .status(status)
+                .sn(sn)
+                .tenantId(tenantId).build();
+        return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
+    }
+
+    /**
+     * 电池总览--电池统计
+     * @return
+     */
+    @GetMapping("/admin/battery/batteryStatistical")
+    public R batteryStatistical() {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        return electricityBatteryService.batteryStatistical(tenantId);
+    }
 }

@@ -32,6 +32,75 @@
         limit #{offset},#{size}
     </select>
 
+
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo">
+        SELECT te.pay_amount, te.sn, te.battery_type, te.order_id, te.create_time, te.model_type,
+        te.status,te.source,te.phone,te.name ,te.status,
+        te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
+        tf.name as franchisee_name FROM
+        t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
+        <where>
+            <if test="query.status != null">
+                and te.status =#{query.status}
+            </if>
+            <if test="query.uid != null">
+                and te.uid =#{query.uid}
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and te.name =#{query.name}
+            </if>
+            <if test="query.sn != null and query.sn != ''">
+                and te.sn =#{query.sn}
+            </if>
+            <if test="query.tenantId != null">
+                and te.tenant_id =#{query.tenantId}
+            </if>
+            <if test="query.phone != null">
+                and te.phone =#{query.phone}
+            </if>
+            <if test="query.source != null">
+                and te.source =#{query.source}
+            </if>
+            <if test="query.queryStartTime != null">
+                and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+            </if>
+            order by te.create_time desc
+            limit #{query.offset},#{query.size}
+        </where>
+    </select>
+
+    <select id="queryCount" resultType="java.lang.Integer">
+        SELECT count(1) FROM
+        t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
+        <where>
+            <if test="query.status != null">
+                and te.status =#{query.status}
+            </if>
+            <if test="query.uid != null">
+                and te.uid =#{query.uid}
+            </if>
+            <if test="query.name != null and query.name != ''">
+                and te.name =#{query.name}
+            </if>
+            <if test="query.sn != null and query.sn != ''">
+                and te.sn =#{query.sn}
+            </if>
+            <if test="query.tenantId != null">
+                and te.tenant_id =#{query.tenantId}
+            </if>
+            <if test="query.phone != null">
+                and te.phone =#{query.phone}
+            </if>
+            <if test="query.source != null">
+                and te.source =#{query.source}
+            </if>
+            <if test="query.queryStartTime != null">
+                and te.create_time BETWEEN #{query.queryStartTime} and #{query.queryEndTime}
+            </if>
+        </where>
+    </select>
+
+
     <select id="queryTurnOver" resultType="decimal">
         select sum(pay_amount) from t_ele_battery_service_fee_order
         where status=1
@@ -50,7 +119,7 @@
             and tenant_id = #{tenantId}
         </if>
         <if test="todayStartTime != null">
-            and create_time  &gt;=#{todayStartTime}
+            and create_time &gt;=#{todayStartTime}
         </if>
         <if test="franchiseeId != null">
             and franchisee_id =#{franchiseeId}
@@ -78,7 +147,7 @@
     </select>
 
     <select id="queryAllTurnOver" resultType="decimal">
-        select sum(pay_amount)  from t_ele_battery_service_fee_order
+        select sum(pay_amount) from t_ele_battery_service_fee_order
         where status=1
         <if test="tenantId != null">
             and tenant_id = #{tenantId}

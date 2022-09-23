@@ -6,6 +6,7 @@ import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.mapper.EleBatteryServiceFeeOrderMapper;
+import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeOrderVo;
@@ -78,6 +79,29 @@ public class EleBatteryServiceFeeOrderServiceImpl implements EleBatteryServiceFe
 
         }
         return R.ok(eleBatteryServiceFeeOrders);
+    }
+
+    @Override
+    public R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery) {
+        List<EleBatteryServiceFeeOrderVo> eleBatteryServiceFeeOrders = eleBatteryServiceFeeOrderMapper.queryList(batteryServiceFeeQuery);
+
+        for (EleBatteryServiceFeeOrderVo eleBatteryServiceFeeOrderVo : eleBatteryServiceFeeOrders) {
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getModelType(), Franchisee.NEW_MODEL_TYPE)) {
+                Integer model = BatteryConstant.acquireBattery(eleBatteryServiceFeeOrderVo.getBatteryType());
+                eleBatteryServiceFeeOrderVo.setModel(model);
+            }
+
+            if (Objects.equals(eleBatteryServiceFeeOrderVo.getStatus(), EleBatteryServiceFeeOrderVo.STATUS_SUCCESS) && BigDecimal.valueOf(0).compareTo(eleBatteryServiceFeeOrderVo.getBatteryServiceFee()) != 0) {
+                eleBatteryServiceFeeOrderVo.setBatteryGenerateDay((eleBatteryServiceFeeOrderVo.getPayAmount().divide(eleBatteryServiceFeeOrderVo.getBatteryServiceFee())).intValue());
+            }
+
+        }
+        return R.ok(eleBatteryServiceFeeOrders);
+    }
+
+    @Override
+    public R queryCount(BatteryServiceFeeQuery batteryServiceFeeQuery) {
+        return R.ok(eleBatteryServiceFeeOrderMapper.queryCount(batteryServiceFeeQuery));
     }
 
     @Override

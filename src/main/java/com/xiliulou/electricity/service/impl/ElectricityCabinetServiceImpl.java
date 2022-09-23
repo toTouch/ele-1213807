@@ -2790,7 +2790,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 homepageElectricityExchangeVo.setExchangeFrequency(item.getExchangeFrequency());
                 homepageElectricityExchangeVos.add(homepageElectricityExchangeVo);
             });
-            homepageElectricityExchangeFrequencyVo.setHomepageElectricityExchangeVos(homepageElectricityExchangeVos);
+
+            List<HomepageElectricityExchangeVo> result = homepageElectricityExchangeVos.stream().sorted(Comparator.comparing(HomepageElectricityExchangeVo::getExchangeFrequency).reversed()).collect(Collectors.toList());
+            homepageElectricityExchangeFrequencyVo.setHomepageElectricityExchangeVos(result);
         }, executorService).exceptionally(e -> {
             log.error("ORDER STATISTICS ERROR! query electricity Order Count error!", e);
             return null;

@@ -163,27 +163,26 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (Objects.equals(item.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
                         carDays = (item.getMemberCardExpireTime() - item.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L);
                     }
-
                     item.setCardDays(carDays);
+
+                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                    if (Objects.nonNull(electricityMemberCardOrder)) {
+                        item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
+                    }
                 } else {
                     item.setCardDays(null);
                     item.setCardId(null);
                     item.setCardName(null);
                 }
-                if (Objects.nonNull(item.getMemberCardExpireTime())) {
-                    ElectricityMemberCardOrder electricityMemberCardOrder = electricityMemberCardOrderService.queryLastPayMemberCardTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
-                    if (Objects.nonNull(electricityMemberCardOrder)) {
-                        item.setMemberCardCreateTime(electricityMemberCardOrder.getCreateTime());
-                    }
-                }
+
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
                     item.setPayDepositTime(eleDepositOrder.getCreateTime());
                 }
 
-                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
-                    item.setServiceStatus(UserInfo.STATUS_INIT);
-                }
+//                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
+//                    item.setServiceStatus(UserInfo.STATUS_INIT);
+//                }
 
                 if (Objects.nonNull(item.getModel())){
                     item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());

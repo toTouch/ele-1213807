@@ -610,6 +610,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.homepageBatteryAnalysisCount(homepageBatteryFrequencyQuery);
     }
 
+    @Override
+    public R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery) {
+        return R.ok(electricitybatterymapper.queryBatteryOverview(electricityBatteryQuery));
+    }
+
+    @Override
+    public R batteryStatistical(Integer tenantId) {
+        return R.ok(electricitybatterymapper.batteryStatistical(tenantId));
+    }
+
     /**
      * 电池绑定/解绑加盟商
      * @param batteryQuery

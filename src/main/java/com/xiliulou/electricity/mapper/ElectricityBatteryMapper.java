@@ -6,6 +6,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
+import com.xiliulou.electricity.vo.BatteryStatisticalVo;
 import com.xiliulou.electricity.vo.BigEleBatteryVo;
 import com.xiliulou.electricity.vo.BorrowExpireBatteryVo;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
@@ -56,6 +57,10 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysis(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     List<HomepageBatteryFrequencyVo> homepageBatteryAnalysisCount(@Param("query") HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
+
+    List<ElectricityBattery> queryBatteryOverview(@Param("query") ElectricityBatteryQuery electricityBatteryQuery);
+
+    BatteryStatisticalVo batteryStatistical(Integer tenantId);
 
     int unbindFranchiseeId(@Param("franchiseeId") Integer franchiseeId, @Param("updateBattery") ElectricityBattery updateBattery);
 
