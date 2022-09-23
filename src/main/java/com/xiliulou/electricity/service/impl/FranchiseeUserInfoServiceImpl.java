@@ -269,8 +269,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
             }
         }
 
-        if123 (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
-//        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+
         if (Objects.nonNull(franchiseeUserInfo.getServiceStatus()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {

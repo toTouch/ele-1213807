@@ -840,7 +840,6 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
         if (Objects.isNull(electricityBattery)) {
             log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
         }
 
 
@@ -860,8 +859,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
-                .sn(Optional.ofNullable(franchiseeUserInfo.getNowElectricityBatterySn()).orElse(""))
-                123.sn(electricityBattery.getSn())
+                .sn(Optional.ofNullable(electricityBattery.getSn()).orElse(""))
                 .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 

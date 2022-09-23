@@ -310,19 +310,21 @@ public class JsonAdminElectricityCabinetBatteryController {
 
     /**
      * 电池总览
-     * @param status
+     * @param
      * @param sn
      * @return
      */
     @GetMapping("/admin/battery/queryBatteryOverview")
-    public R queryBatteryOverview(@RequestParam(value = "status", required = false) Integer status,
+    public R queryBatteryOverview(@RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+                                  @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                                   @RequestParam(value = "sn", required = false) String sn) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
-                .status(status)
+                .physicsStatus(physicsStatus)
+                .businessStatus(businessStatus)
                 .sn(sn)
                 .tenantId(tenantId).build();
         return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);
