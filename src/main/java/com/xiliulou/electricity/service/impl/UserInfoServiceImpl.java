@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -23,6 +25,12 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
+import com.xxl.job.core.util.DateUtil;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
@@ -837,12 +845,51 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         }
 
         Long now = System.currentTimeMillis();
-        if (!Objects.equals(oldFranchiseeUserInfo.getCardType(), FranchiseeUserInfo.TYPE_COUNT)) {
-            if (((now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24) > 1 || Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
-                log.error("WEBUNBIND ERROR! user have BatterySrviceFee! userId={} ", oldUserInfo.getUid());
-                return R.fail("ELECTRICITY.100000", "用户存在电池服务费");
+        long cardDays = 0;
+        if (Objects.nonNull(oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime())) {
+            cardDays = (now - oldFranchiseeUserInfo.getBatteryServiceFeeGenerateTime()) / 1000L / 60 / 60 / 24;
+        }
+
+        Long disableMemberCardTime = oldFranchiseeUserInfo.getDisableMemberCardTime();
+
+        //判断用户是否产生电池服务费
+        if (Objects.equals(oldFranchiseeUserInfo.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
+
+            cardDays = (now - disableMemberCardTime) / 1000L / 60 / 60 / 24;
+
+            //不足一天按一天计算
+            double time = Math.ceil((now - disableMemberCardTime) / 1000L / 60 / 60.0);
+            if (time < 24) {
+                cardDays = 1;
             }
         }
+
+        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+            //查询用户是否存在电池服务费
+            Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
+            Integer modelType = franchisee.getModelType();
+            if (Objects.equals(modelType, Franchisee.NEW_MODEL_TYPE)) {
+                Integer model = BatteryConstant.acquireBattery(oldFranchiseeUserInfo.getBatteryType());
+                List<ModelBatteryDeposit> modelBatteryDepositList = JSONObject.parseArray(franchisee.getModelBatteryDeposit(), ModelBatteryDeposit.class);
+                for (ModelBatteryDeposit modelBatteryDeposit : modelBatteryDepositList) {
+                    if (Objects.equals(model, modelBatteryDeposit.getModel())) {
+                        //计算服务费
+                        BigDecimal batteryServiceFee = modelBatteryDeposit.getBatteryServiceFee().multiply(new BigDecimal(cardDays));
+                        if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                            return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                        }
+                    }
+                }
+            } else {
+                BigDecimal franchiseeBatteryServiceFee = franchisee.getBatteryServiceFee();
+                //计算服务费
+                BigDecimal batteryServiceFee = franchiseeBatteryServiceFee.multiply(new BigDecimal(cardDays));
+                if (BigDecimal.valueOf(0).compareTo(batteryServiceFee) != 0) {
+                    return R.fail("ELECTRICITY.100000", "用户存在电池服务费", batteryServiceFee);
+                }
+            }
+        }
+
 
         //解绑电池
         ElectricityBattery electricityBattery = new ElectricityBattery();
@@ -1072,4 +1119,50 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
 
+
+    @Override
+    public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
+        userInfoQuery.setOffset(0L);
+        userInfoQuery.setSize(2000L);
+        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
+            throw new CustomBusinessException("查不到会员用户");
+        }
+
+
+        List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        int index = 0;
+        for (UserBatteryInfoVO userBatteryInfoVO : userBatteryInfoVOS) {
+            index++;
+            UserInfoExcelVO excelVo = new UserInfoExcelVO();
+            excelVo.setId(index);
+            excelVo.setPhone(userBatteryInfoVO.getPhone());
+            excelVo.setName(userBatteryInfoVO.getName());
+            excelVo.setBatteryDeposit(userBatteryInfoVO.getBatteryDeposit());
+            excelVo.setCardName(userBatteryInfoVO.getCardName());
+            excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
+            userInfoExcelVOS.add(excelVo);
+
+
+            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime())) {
+                excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
+            }
+
+        }
+
+        String fileName = "会员列表报表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, UserInfoExcelVO.class).sheet("sheet").doWrite(userInfoExcelVOS);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+
+    }
 }

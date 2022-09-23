@@ -105,15 +105,15 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("100224","该电池已被其他租户使用!");
         }
 
-        Long franchiseeId=null;
+        Long franchiseeId = null;
         if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
             Store store = storeService.queryByUid(user.getUid());
             if (Objects.nonNull(store)) {
                 franchiseeId = store.getFranchiseeId();
             }
         }
-        if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)){
-            Franchisee franchisee=franchiseeService.queryByUid(user.getUid());
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
             if (Objects.nonNull(franchisee)) {
                 franchiseeId = franchisee.getId();
             }
@@ -305,17 +305,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 //
 //        ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryDetailInfoBySN(franchiseeUserInfo.getNowElectricityBatterySn());
         ElectricityBatteryVO electricityBatteryVO = electricitybatterymapper.selectBatteryInfo(uid);
-        if(Objects.isNull(electricityBatteryVO)) {
+        if (Objects.isNull(electricityBatteryVO)) {
             return electricityBatteryVO;
         }
 
         //前端显示值替换
-        if(Objects.nonNull(electricityBatteryVO.getSumA())) {
+        if (Objects.nonNull(electricityBatteryVO.getSumA())) {
             electricityBatteryVO.setBatteryChargeA(electricityBatteryVO.getSumA() < 0 ? 0 : electricityBatteryVO.getSumA());
         }
 
 
-        if(Objects.nonNull(electricityBatteryVO.getSumV())) {
+        if (Objects.nonNull(electricityBatteryVO.getSumV())) {
             electricityBatteryVO.setBatteryV(electricityBatteryVO.getSumV() < 0 ? 0 : electricityBatteryVO.getSumV());
         }
 
@@ -612,7 +612,57 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
 
     @Override
     public R queryBatteryOverview(ElectricityBatteryQuery electricityBatteryQuery) {
-        return R.ok(electricitybatterymapper.queryBatteryOverview(electricityBatteryQuery));
+        List<ElectricityBattery> electricityBatteryList = electricitybatterymapper.queryBatteryOverview(electricityBatteryQuery);
+
+        if (ObjectUtil.isEmpty(electricityBatteryList)) {
+            return R.ok(electricityBatteryList);
+        }
+
+        List<ElectricityBatteryVO> electricityBatteryVOList = new ArrayList<>();
+
+		/*List<FranchiseeBindElectricityBattery> franchiseeBindElectricityBatteryList = new ArrayList<>();
+		if (Objects.nonNull(electricityBatteryQuery.getFranchiseeId())) {
+			franchiseeBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(electricityBatteryQuery.getFranchiseeId());
+		}*/
+
+        for (ElectricityBattery electricityBattery : electricityBatteryList) {
+
+            ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
+            BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
+
+            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
+                if (Objects.nonNull(userInfo)) {
+                    electricityBatteryVO.setUserName(userInfo.getName());
+                }
+            }
+
+            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.WARE_HOUSE_STATUS) && Objects.nonNull(electricityBattery.getElectricityCabinetId())) {
+                ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(electricityBattery.getElectricityCabinetId());
+                if (Objects.nonNull(electricityCabinet)) {
+                    electricityBatteryVO.setElectricityCabinetName(electricityCabinet.getName());
+                }
+            }
+
+            Franchisee franchisee = franchiseeService.queryByElectricityBatteryId(electricityBattery.getId());
+            if (Objects.nonNull(franchisee)) {
+                electricityBatteryVO.setFranchiseeName(franchisee.getName());
+            }
+
+            //用于电池绑定问题
+			/*electricityBatteryVO.setIsBind(false);
+
+			if (ObjectUtil.isNotEmpty(franchiseeBindElectricityBatteryList)) {
+				for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindElectricityBatteryList) {
+					if (Objects.equals(franchiseeBindElectricityBattery.getElectricityBatteryId(), electricityBattery.getId())) {
+						electricityBatteryVO.setIsBind(true);
+					}
+				}
+			}*/
+
+            electricityBatteryVOList.add(electricityBatteryVO);
+        }
+        return R.ok(electricityBatteryVOList);
     }
 
     @Override

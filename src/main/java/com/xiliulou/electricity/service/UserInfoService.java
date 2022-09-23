@@ -5,6 +5,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
@@ -12,6 +13,7 @@ import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
 
 import java.util.HashMap;
 import java.util.List;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * 用户列表(TUserInfo)表服务接口
@@ -102,6 +104,8 @@ public interface UserInfoService extends IService<UserInfo> {
     List<HomePageUserByWeekDayVo>  queryUserAnalysisForAuthUser(Integer tenantId, Long beginTime, Long endTime);
 
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
+
+    void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
 
     R deleteUserInfo(Long uid);
 
