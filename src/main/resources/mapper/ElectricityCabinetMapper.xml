@@ -232,8 +232,8 @@
         </where>
     </select>
 
-    <select id="queryName" resultType="string">
-        select name from t_electricity_cabinet
+    <select id="queryName" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select id,name from t_electricity_cabinet
         where del_flag=0
         <if test="tenantId != null ">
             and tenant_id = #{tenantId}
