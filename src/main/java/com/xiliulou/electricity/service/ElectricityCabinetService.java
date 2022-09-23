@@ -143,4 +143,5 @@ public interface ElectricityCabinetService {
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
 
+    List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
 }

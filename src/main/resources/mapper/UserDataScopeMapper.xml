@@ -21,7 +21,12 @@
 
     <select id="selectByUid" resultMap="UserDataScopeMap">
         <include refid="selectUserDataScope"/>
-        where id = #{id}
+        where uid = #{uid}
+    </select>
+
+    <select id="selectDataIdByUid" resultType="long">
+        select   data_id     from t_user_data_scope
+        where uid = #{uid}
     </select>
 
     <!--查询指定行数据-->

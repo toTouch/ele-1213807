@@ -469,6 +469,11 @@ public class StoreServiceImpl implements StoreService {
         return storeMapper.queryStoreIdByFranchiseeId(id);
     }
 
+    @Override
+    public List<Store> selectByFranchiseeIds(List<Long> franchiseeIds) {
+        return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getFranchiseeId, franchiseeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+
     public Long getTime(Long time) {
         Date date1 = new Date(time);
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");

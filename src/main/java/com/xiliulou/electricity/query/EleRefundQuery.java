@@ -4,6 +4,8 @@ package com.xiliulou.electricity.query;
 import lombok.Builder;
 import lombok.Data;
 
+import java.util.List;
+
 /**
  * 订单表(TElectricityCabinetOrder)实体类
  *
@@ -52,9 +54,9 @@ public class EleRefundQuery {
 
     private Integer payType;
 
-    private Long storeId;
+    private List<Long> storeIds;
 
-    private Long franchiseeId;
+    private List<Long> franchiseeIds;
 
 
 }

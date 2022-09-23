@@ -16,8 +16,11 @@
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
             </if>
-            <if test="query.franchiseeId!=null">
-                and franchisee_id =#{query.franchiseeId}
+            <if test="query.franchiseeIds!=null">
+                and franchisee_id in
+                <foreach collection="batteryQuery.electricityBatteryIdList" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.applyType!=null">
                 and apply_type =#{query.applyType}
@@ -41,8 +44,11 @@
             <if test="query.discountType != null">
                 and discount_type = #{query.discountType}
             </if>
-            <if test="query.franchiseeId!=null">
-                and franchisee_id =#{query.franchiseeId}
+            <if test="query.franchiseeIds!=null">
+                and franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.applyType!=null">
                 and apply_type =#{query.applyType}

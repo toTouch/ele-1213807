@@ -66,4 +66,6 @@ public interface UserDataScopeService {
     Integer deleteByUid(Long uid);
 
     List<UserDataScope> selectByUid(Long uid);
+
+    List<Long> selectDataIdByUid(Long uid);
 }

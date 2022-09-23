@@ -8,8 +8,11 @@
 		from t_franchisee_amount
 		<where>
 			del_flag = 0
-			<if test="franchiseeId != null">
-				and franchisee_id = #{franchiseeId}
+			<if test="franchiseeIds != null">
+				and franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+					#{id}
+				</foreach>
 			</if>
 			<if test="startTime != null">
 				and create_time &gt;= #{startTime}
@@ -31,8 +34,11 @@
 		from t_franchisee_amount
 		<where>
 			del_flag = 0
-			<if test="franchiseeId != null">
-				and franchisee_id = #{franchiseeId}
+			<if test="franchiseeIds != null">
+				and franchisee_id in
+				<foreach collection="franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+					#{id}
+				</foreach>
 			</if>
 			<if test="startTime != null">
 				and create_time &gt;= #{startTime}

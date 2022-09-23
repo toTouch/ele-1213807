@@ -2,13 +2,12 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleRefundOrder;
-import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.service.EleRefundOrderService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -21,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -41,6 +41,9 @@ public class JsonAdminEleRefundOrderController {
     StoreService storeService;
     @Autowired
     FranchiseeService franchiseeService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
+
 
     //退款列表
     @GetMapping("/admin/eleRefundOrder/queryList")
@@ -64,35 +67,38 @@ public class JsonAdminEleRefundOrderController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long storeId = null;
-
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-        	refundOrderType= EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER;
-            Store store = storeService.queryByUid(user.getUid());
-            if (Objects.nonNull(store)) {
-                storeId = store.getId();
-            }
+        List<Long> storeIds = null;
+//        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//        	refundOrderType= EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER;
+//            Store store = storeService.queryByUid(user.getUid());
+//            if (Objects.nonNull(store)) {
+//                storeId = store.getId();
+//            }
+//        }
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
-        Long franchiseeId = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+
+        List<Long> franchiseeIds = null;
+//        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+//                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
+//                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//            //加盟商
+//            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+//            if (Objects.nonNull(franchisee)) {
+//                franchiseeId = franchisee.getId();
+//            }
+//        }
+
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
@@ -102,9 +108,9 @@ public class JsonAdminEleRefundOrderController {
                 .status(status)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
-                .storeId(storeId)
-                .franchiseeId(franchiseeId)
+                .tenantId(TenantContextHolder.getTenantId())
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .phone(phone)
                 .payType(payType)
                 .refundOrderType(refundOrderType)
@@ -119,52 +125,39 @@ public class JsonAdminEleRefundOrderController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "payType", required = false) Integer payType,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
-						@RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
+                        @RequestParam(value = "refundOrderType", required = false) Integer refundOrderType,
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
 
-		//用户区分
-		TokenUser user = SecurityUtils.getUserInfo();
-		if (Objects.isNull(user)) {
-			log.error("ELECTRICITY  ERROR! not found user ");
-			return R.fail("ELECTRICITY.0001", "未找到用户");
-		}
-
-		Long storeId = null;
-
-		if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-			refundOrderType= EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER;
-			Store store = storeService.queryByUid(user.getUid());
-			if (Objects.nonNull(store)) {
-				storeId = store.getId();
-			}
-		}
+        List<Long> storeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            refundOrderType = EleRefundOrder.RENT_CAR_DEPOSIT_REFUND_ORDER;
+            storeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+        }
 
 
-        Long franchiseeId = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)
-                && !Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
         EleRefundQuery eleRefundQuery = EleRefundQuery.builder()
                 .orderId(orderId)
                 .status(status)
-				.storeId(storeId)
-                .franchiseeId(franchiseeId)
+                .storeIds(storeIds)
+                .franchiseeIds(franchiseeIds)
                 .payType(payType)
-				.refundOrderType(refundOrderType)
+                .refundOrderType(refundOrderType)
                 .beginTime(beginTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
                 .phone(phone).build();
 
         return eleRefundOrderService.queryCount(eleRefundQuery);
@@ -192,20 +185,20 @@ public class JsonAdminEleRefundOrderController {
         return eleRefundOrderService.handleOffLineRefund(refundOrderNo, errMsg, status, refundAmount, uid, request);
     }
 
-	//用户电池押金缴纳方式
-	@GetMapping("/admin/queryUserDepositPayType")
-	public R queryUserDepositPayType( @RequestParam("uid") Long uid){
-		return eleRefundOrderService.queryUserDepositPayType(uid);
-	}
+    //用户电池押金缴纳方式
+    @GetMapping("/admin/queryUserDepositPayType")
+    public R queryUserDepositPayType(@RequestParam("uid") Long uid) {
+        return eleRefundOrderService.queryUserDepositPayType(uid);
+    }
 
-	//后台电池线下退款处理
-	@PostMapping("/admin/batteryOffLineRefund")
-	public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
-								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
-								 @RequestParam("uid") Long uid,
-								  @RequestParam("refundType") Integer refundType) {
-		return eleRefundOrderService.batteryOffLineRefund( errMsg,refundAmount, uid, refundType);
-	}
+    //后台电池线下退款处理
+    @PostMapping("/admin/batteryOffLineRefund")
+    public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
+                                  @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
+                                  @RequestParam("uid") Long uid,
+                                  @RequestParam("refundType") Integer refundType) {
+        return eleRefundOrderService.batteryOffLineRefund(errMsg, refundAmount, uid, refundType);
+    }
 
 
 }

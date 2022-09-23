@@ -8,24 +8,24 @@ import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.query.StoreAddAndUpdate;
 import com.xiliulou.electricity.query.StoreQuery;
-import com.xiliulou.electricity.service.FranchiseeService;
-import com.xiliulou.electricity.service.StoreAmountService;
-import com.xiliulou.electricity.service.StoreService;
-import com.xiliulou.electricity.service.StoreSplitAccountHistoryService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * 门店表(TStore)表控制层
@@ -50,6 +50,8 @@ public class JsonAdminStoreController {
 
     @Autowired
     StoreSplitAccountHistoryService storeSplitAccountHistoryService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     //新增门店
     @PostMapping(value = "/admin/store")
@@ -90,19 +92,15 @@ public class JsonAdminStoreController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long uid = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            uid = user.getUid();
+        List<Long> ids = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            ids = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
         StoreQuery storeQuery = StoreQuery.builder()
@@ -113,8 +111,8 @@ public class JsonAdminStoreController {
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
-                .tenantId(tenantId)
-                .uid(uid)
+                .tenantId(TenantContextHolder.getTenantId())
+                .storeIdList(ids)
                 .franchiseeId(franchiseeId).build();
 
         return storeService.queryList(storeQuery);
@@ -129,19 +127,15 @@ public class JsonAdminStoreController {
                         @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long uid = null;
-        if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-            uid = user.getUid();
+        List<Long> ids = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            ids = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
         StoreQuery storeQuery = StoreQuery.builder()
@@ -150,8 +144,8 @@ public class JsonAdminStoreController {
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
-                .tenantId(tenantId)
-                .uid(uid)
+                .tenantId(TenantContextHolder.getTenantId())
+                .storeIdList(ids)
                 .franchiseeId(franchiseeId).build();
 
         return storeService.queryCount(storeQuery);
@@ -174,9 +168,6 @@ public class JsonAdminStoreController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         StoreQuery storeQuery = StoreQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -185,7 +176,7 @@ public class JsonAdminStoreController {
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -226,16 +217,13 @@ public class JsonAdminStoreController {
                                     @RequestParam(value = "endTime", required = false) Long endTime,
                                     @RequestParam(value = "usableStatus", required = false) Integer usableStatus) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         StoreQuery storeQuery = StoreQuery.builder()
                 .name(name)
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -291,8 +279,6 @@ public class JsonAdminStoreController {
             offset = 0L;
         }
 
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -300,42 +286,63 @@ public class JsonAdminStoreController {
         }
 
         List<Long> storeIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
             //加盟商查询
             if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-                //1、先找到加盟商
-                Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-                if (ObjectUtil.isEmpty(franchisee)) {
-                    return R.ok(0);
+                List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if (CollectionUtils.isEmpty(franchiseeIds)) {
+                    return R.ok(Collections.EMPTY_LIST);
                 }
 
-                List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+                List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+                if (CollectionUtils.isEmpty(storeList)) {
+                    return R.ok(Collections.EMPTY_LIST);
+                }
 
-                if (ObjectUtil.isEmpty(storeList)) {
-                    return R.ok(0);
-                }
-                //2、再找加盟商绑定的门店
-                storeIdList = new ArrayList<>();
-                for (Store store : storeList) {
-                    storeIdList.add(store.getId());
-                }
-                if (ObjectUtil.isEmpty(storeIdList)) {
-                    return R.ok(0);
+                storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(storeIdList)) {
+                    return R.ok(Collections.EMPTY_LIST);
                 }
             }
-
 
             //门店查询
-            if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-                Store store = storeService.queryByUid(user.getUid());
-                if (ObjectUtil.isEmpty(store)) {
-                    return R.ok(0);
-                }
-                storeIdList = new ArrayList<>();
-                storeIdList.add(store.getId());
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+                storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
             }
+
+//            //加盟商查询
+//            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//                //1、先找到加盟商
+//                Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+//                if (ObjectUtil.isEmpty(franchisee)) {
+//                    return R.ok(0);
+//                }
+//
+//                List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+//
+//                if (ObjectUtil.isEmpty(storeList)) {
+//                    return R.ok(0);
+//                }
+//                //2、再找加盟商绑定的门店
+//                storeIdList = new ArrayList<>();
+//                for (Store store : storeList) {
+//                    storeIdList.add(store.getId());
+//                }
+//                if (ObjectUtil.isEmpty(storeIdList)) {
+//                    return R.ok(0);
+//                }
+//            }
+
+//            //门店查询
+//            if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//                Store store = storeService.queryByUid(user.getUid());
+//                if (ObjectUtil.isEmpty(store)) {
+//                    return R.ok(0);
+//                }
+//                storeIdList = new ArrayList<>();
+//                storeIdList.add(store.getId());
+//            }
         }
 
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
@@ -343,7 +350,7 @@ public class JsonAdminStoreController {
                 .size(size)
                 .startTime(startTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
                 .storeId(storeId)
                 .storeIdList(storeIdList).build();
 
@@ -358,8 +365,6 @@ public class JsonAdminStoreController {
                              @RequestParam(value = "startTime", required = false) Long startTime,
                              @RequestParam(value = "endTime", required = false) Long endTime) {
 
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -367,48 +372,70 @@ public class JsonAdminStoreController {
         }
 
         List<Long> storeIdList = null;
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
-                && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+        if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
             //加盟商查询
             if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
-                //1、先找到加盟商
-                Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-                if (ObjectUtil.isEmpty(franchisee)) {
-                    return R.ok(0);
+                List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+                if (CollectionUtils.isEmpty(franchiseeIds)) {
+                    return R.ok(Collections.EMPTY_LIST);
                 }
 
-                List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+                List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+                if (CollectionUtils.isEmpty(storeList)) {
+                    return R.ok(Collections.EMPTY_LIST);
+                }
 
-                if (ObjectUtil.isEmpty(storeList)) {
-                    return R.ok(0);
-                }
-                //2、再找加盟商绑定的门店
-                storeIdList = new ArrayList<>();
-                for (Store store : storeList) {
-                    storeIdList.add(store.getId());
-                }
-                if (ObjectUtil.isEmpty(storeIdList)) {
-                    return R.ok(0);
+                storeIdList = storeList.stream().map(Store::getId).collect(Collectors.toList());
+                if (CollectionUtils.isEmpty(storeIdList)) {
+                    return R.ok(Collections.EMPTY_LIST);
                 }
             }
-
 
             //门店查询
-            if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
-                Store store = storeService.queryByUid(user.getUid());
-                if (ObjectUtil.isEmpty(store)) {
-                    return R.ok(0);
-                }
-                storeIdList = new ArrayList<>();
-                storeIdList.add(store.getId());
+            if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+                storeIdList = userDataScopeService.selectDataIdByUid(user.getUid());
             }
+
+//            //加盟商查询
+//            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+//                //1、先找到加盟商
+//                Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+//                if (ObjectUtil.isEmpty(franchisee)) {
+//                    return R.ok(0);
+//                }
+//
+//                List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
+//
+//                if (ObjectUtil.isEmpty(storeList)) {
+//                    return R.ok(0);
+//                }
+//                //2、再找加盟商绑定的门店
+//                storeIdList = new ArrayList<>();
+//                for (Store store : storeList) {
+//                    storeIdList.add(store.getId());
+//                }
+//                if (ObjectUtil.isEmpty(storeIdList)) {
+//                    return R.ok(0);
+//                }
+//            }
+//
+//
+//            //门店查询
+//            if (Objects.equals(user.getType(), User.TYPE_USER_STORE)) {
+//                Store store = storeService.queryByUid(user.getUid());
+//                if (ObjectUtil.isEmpty(store)) {
+//                    return R.ok(0);
+//                }
+//                storeIdList = new ArrayList<>();
+//                storeIdList.add(store.getId());
+//            }
         }
 
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
                 .startTime(startTime)
                 .endTime(endTime)
-                .tenantId(tenantId)
+                .tenantId(TenantContextHolder.getTenantId())
                 .storeId(storeId)
                 .storeIdList(storeIdList).build();
 

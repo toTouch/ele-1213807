@@ -70,4 +70,6 @@ public interface UserDataScopeMapper extends BaseMapper<UserDataScope> {
     Integer deleteByUid(@Param("uid") Long uid);
 
     List<UserDataScope> selectByUid(Long uid);
+
+    List<Long> selectDataIdByUid(Long uid);
 }

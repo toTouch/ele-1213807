@@ -3,12 +3,12 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityMemberCard;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.ElectricityMemberCardRecordQuery;
 import com.xiliulou.electricity.service.EleDisableMemberCardRecordService;
 import com.xiliulou.electricity.service.ElectricityMemberCardService;
 import com.xiliulou.electricity.service.FranchiseeService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
@@ -18,6 +18,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -32,12 +33,12 @@ public class JsonAdminElectricityMemberCardController {
 
     @Autowired
     ElectricityMemberCardService electricityMemberCardService;
-
     @Autowired
     FranchiseeService franchiseeService;
-
     @Autowired
     EleDisableMemberCardRecordService eleDisableMemberCardRecordService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
     /**
      * 新增
@@ -84,26 +85,18 @@ public class JsonAdminElectricityMemberCardController {
                                           @RequestParam(value = "status", required = false) Integer status,
                                           @RequestParam(value = "cardModel", required = false) Integer cardModel) {
 
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-
-        //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
-            log.error("ELECTRICITY  ERROR! not found user ");
+            log.error("ELE ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        Long franchiseeId = null;
-        if (Objects.equals(user.getType(),User.TYPE_USER_FRANCHISEE)) {
-            //加盟商
-            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-            if (Objects.nonNull(franchisee)) {
-                franchiseeId = franchisee.getId();
-            }
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
 
-        return electricityMemberCardService.queryList(offset, size, status, type, tenantId,cardModel,franchiseeId);
+        return electricityMemberCardService.queryList(offset, size, status, type, TenantContextHolder.getTenantId(), cardModel, franchiseeIds);
     }
 
 
@@ -135,7 +128,7 @@ public class JsonAdminElectricityMemberCardController {
             }
         }
 
-        return electricityMemberCardService.queryCount(status, type, tenantId,cardModel,franchiseeId);
+        return electricityMemberCardService.queryCount(status, type, tenantId, cardModel, franchiseeId);
     }
 
 

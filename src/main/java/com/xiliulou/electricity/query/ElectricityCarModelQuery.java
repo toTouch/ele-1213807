@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 /**
  * @author: eclair
  * @Date: 2022/6/6 10:02
@@ -18,8 +20,9 @@ public class ElectricityCarModelQuery {
     private Long size;
     private Long offset;
     private String name;
+    private List<Long> franchiseeIds;
     private Long franchiseeId;
-    private Long storeId;
+    private List<Long> storeIds;
     private Long uid;
 
     //租户id

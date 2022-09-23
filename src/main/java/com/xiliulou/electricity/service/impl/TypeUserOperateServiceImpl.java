@@ -12,4 +12,9 @@ public class TypeUserOperateServiceImpl implements UserTypeService {
     public List<Integer> getEleIdListByUserType(TokenUser user) {
         return null;
     }
+
+    @Override
+    public List<Integer> getEleIdListByDataType(TokenUser user) {
+        return null;
+    }
 }

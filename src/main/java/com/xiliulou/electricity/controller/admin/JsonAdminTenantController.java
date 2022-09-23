@@ -1,7 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
 import com.xiliulou.electricity.service.TenantService;
@@ -32,10 +31,8 @@ public class JsonAdminTenantController {
     //新增租户
     @PostMapping(value = "/admin/tenant")
     public R addTenant(@Validated(value = CreateGroup.class) @RequestBody TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (!Objects.equals(tenantId, 1)) {
+        if (!Objects.equals(TenantContextHolder.getTenantId(), 1)) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -45,10 +42,8 @@ public class JsonAdminTenantController {
     //修改租户
     @PutMapping(value = "/admin/tenant")
     public R editTenant(@Validated(value = UpdateGroup.class) @RequestBody TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (!Objects.equals(tenantId, 1)) {
+        if (!Objects.equals(TenantContextHolder.getTenantId(), 1)) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -63,10 +58,8 @@ public class JsonAdminTenantController {
                         @RequestParam(value = "status", required = false) Integer status,
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (!Objects.equals(tenantId, 1)) {
+        if (!Objects.equals(TenantContextHolder.getTenantId(), 1)) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -97,10 +90,7 @@ public class JsonAdminTenantController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        if (!Objects.equals(tenantId, 1)) {
+        if (!Objects.equals(TenantContextHolder.getTenantId(), 1)) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
@@ -118,7 +108,6 @@ public class JsonAdminTenantController {
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
     }
-
 
 
 }

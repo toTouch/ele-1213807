@@ -23,5 +23,6 @@ public class FranchiseeQuery {
 	private Integer tenantId;
 
 	private Long uid;
+	private List<Long> ids;
 
 }

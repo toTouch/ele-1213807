@@ -32,8 +32,11 @@
             <if test="query.tenantId != null">
                 and edo.tenant_id = #{query.tenantId}
             </if>
-            <if test="query.franchiseeId != null">
-                and edo.franchisee_id = #{query.franchiseeId}
+            <if test="query.franchiseeIds != null">
+                and edo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.uid != null">
                 and edo.uid = #{query.uid}
@@ -47,8 +50,11 @@
             <if test="query.payType != null">
                 and edo.pay_type = #{query.payType}
             </if>
-            <if test="query.storeId != null">
-                and edo.store_id = #{query.storeId}
+            <if test="query.storeIds != null">
+                and edo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
         </where>
         order by edo.create_time desc
@@ -86,8 +92,11 @@
             <if test="query.tenantId != null">
                 and edo.tenant_id = #{query.tenantId}
             </if>
-            <if test="query.franchiseeId != null">
-                and edo.franchisee_id = #{query.franchiseeId}
+            <if test="query.franchiseeIds != null">
+                and edo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.uid != null">
                 and edo.uid = #{query.uid}
@@ -98,8 +107,11 @@
             <if test="query.payType != null">
                 and edo.pay_type = #{query.payType}
             </if>
-            <if test="query.storeId != null">
-                and edo.store_id = #{query.storeId}
+            <if test="query.storeIds != null">
+                and edo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.carModel != null and query.carModel != ''">
                 and tecm.name = #{query.carModel}
@@ -136,14 +148,20 @@
             <if test="query.tenantId != null">
                 and edo.tenant_id = #{query.tenantId}
             </if>
-            <if test="query.franchiseeId != null">
-                and edo.franchisee_id = #{query.franchiseeId}
+            <if test="query.franchiseeIds != null">
+                and edo.franchisee_id in
+                <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}
             </if>
             <if test="query.storeId != null">
-                and edo.store_id = #{query.storeId}
+                and edo.store_id in
+                <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
+                    #{id}
+                </foreach>
             </if>
             <if test="query.depositType != null">
                 and edo.deposit_type = #{query.depositType}

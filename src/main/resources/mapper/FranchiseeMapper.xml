@@ -27,6 +27,12 @@
         <if test="query.uid != null">
             and uid = #{query.uid}
         </if>
+        <if test="query.ids != null">
+            and id in
+            <foreach collection="query.ids" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
+        </if>
         order by create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -49,6 +55,12 @@
         </if>
         <if test="query.uid != null">
             and uid = #{query.uid}
+        </if>
+        <if test="query.ids != null">
+            and id in
+            <foreach collection="query.ids" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         order by create_time desc
     </select>

@@ -114,4 +114,9 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
     public List<UserDataScope> selectByUid(Long uid) {
         return this.userDataScopeMapper.selectByUid(uid);
     }
+
+    @Override
+    public List<Long> selectDataIdByUid(Long uid) {
+        return this.userDataScopeMapper.selectDataIdByUid(uid);
+    }
 }
