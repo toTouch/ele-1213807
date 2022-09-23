@@ -1,10 +1,12 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -24,6 +26,11 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
 import com.xxl.job.core.util.DateUtil;
+import java.io.IOException;
+import java.net.URLEncoder;
+import java.text.SimpleDateFormat;
+import javax.servlet.ServletOutputStream;
+import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1085,5 +1092,51 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     public List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime) {
         return userInfoMapper.queryUserAnalysisByUserStatus(tenantId,userStatus,beginTime,endTime);
+    }
+
+    @Override
+    public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
+        userInfoQuery.setOffset(0L);
+        userInfoQuery.setSize(2000L);
+        List<UserBatteryInfoVO> userBatteryInfoVOS = userInfoMapper.queryListForBatteryService(userInfoQuery);
+        if (ObjectUtil.isEmpty(userBatteryInfoVOS)) {
+            throw new CustomBusinessException("查不到会员用户");
+        }
+
+
+        List<UserInfoExcelVO> userInfoExcelVOS = new ArrayList();
+        SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        int index = 0;
+        for (UserBatteryInfoVO userBatteryInfoVO : userBatteryInfoVOS) {
+            index++;
+            UserInfoExcelVO excelVo = new UserInfoExcelVO();
+            excelVo.setId(index);
+            excelVo.setPhone(userBatteryInfoVO.getPhone());
+            excelVo.setName(userBatteryInfoVO.getName());
+            excelVo.setBatteryDeposit(userBatteryInfoVO.getBatteryDeposit());
+            excelVo.setCardName(userBatteryInfoVO.getCardName());
+            excelVo.setNowElectricityBatterySn(userBatteryInfoVO.getNowElectricityBatterySn());
+            userInfoExcelVOS.add(excelVo);
+
+
+            if (Objects.nonNull(userBatteryInfoVO.getMemberCardExpireTime())) {
+                excelVo.setMemberCardExpireTime(simpleDateFormat.format(new Date(userBatteryInfoVO.getMemberCardExpireTime())));
+            }
+
+        }
+
+        String fileName = "会员列表报表.xlsx";
+        try {
+            ServletOutputStream outputStream = response.getOutputStream();
+            // 告诉浏览器用什么软件可以打开此文件
+            response.setHeader("content-Type", "application/vnd.ms-excel");
+            // 下载文件的默认名称
+            response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(fileName, "utf-8"));
+            EasyExcel.write(outputStream, UserInfoExcelVO.class).sheet("sheet").doWrite(userInfoExcelVOS);
+            return;
+        } catch (IOException e) {
+            log.error("导出报表失败！", e);
+        }
+
     }
 }

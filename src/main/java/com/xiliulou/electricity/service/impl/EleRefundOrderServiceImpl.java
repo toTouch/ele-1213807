@@ -661,8 +661,8 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
     }
 
     public String generateOrderId(Long uid) {
-        return String.valueOf(System.currentTimeMillis()).substring(2) + uid +
-                RandomUtil.randomNumbers(6);
+        return String.valueOf(System.currentTimeMillis()).substring(3) + uid +
+                RandomUtil.randomNumbers(2);
     }
 
 
