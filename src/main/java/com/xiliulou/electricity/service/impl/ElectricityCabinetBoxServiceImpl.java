@@ -177,4 +177,8 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
     }
 
+    @Override
+    public R queryBoxCount(Integer electricityCabinet, Integer tenantId) {
+        return R.ok(electricityCabinetBoxMapper.queryBoxCount(electricityCabinet,tenantId));
+    }
 }
