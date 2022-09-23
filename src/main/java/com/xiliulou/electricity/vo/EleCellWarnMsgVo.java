@@ -12,7 +12,7 @@ public class EleCellWarnMsgVo {
 
 	private String sessionId;
 
-	private Long createTime;
+	private String createTime;
 
 	private Long errorCode;
 
@@ -22,7 +22,7 @@ public class EleCellWarnMsgVo {
 
 	private Integer operateType;
 
-	private Long reportTime;
+	private String reportTime;
 
 	private String electricityCabinetId;
 
