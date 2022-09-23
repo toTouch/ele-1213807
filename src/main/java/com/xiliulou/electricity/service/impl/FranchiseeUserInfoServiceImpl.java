@@ -79,6 +79,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }*/
 
     @Override
+    @Deprecated
     public Integer unBind(FranchiseeUserInfo franchiseeUserInfo) {
         return franchiseeUserInfoMapper.unBind(franchiseeUserInfo);
     }
@@ -148,6 +149,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    @Deprecated
     public FranchiseeUserInfo selectByNowBattery(String batteryName) {
         return franchiseeUserInfoMapper.selectByNowBattery(batteryName);
     }

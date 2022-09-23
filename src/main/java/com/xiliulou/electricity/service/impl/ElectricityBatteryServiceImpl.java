@@ -194,19 +194,10 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
             BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 
-//            if (Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS) && Objects.nonNull(electricityBattery.getUid())) {
-//                UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
-//                if (Objects.nonNull(userInfo)) {
-//                    electricityBatteryVO.setUserName(userInfo.getName());
-//                }
-//            }
-            if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
-                FranchiseeUserInfo franchiseeUserInfo=franchiseeUserInfoService.selectByNowBattery(electricityBattery.getSn());
-                if(Objects.nonNull(franchiseeUserInfo)){
-                    UserInfo userInfo = userInfoService.queryByIdFromDB(franchiseeUserInfo.getUserInfoId());
-                    if(Objects.nonNull(userInfo)){
-                        electricityBatteryVO.setUserName(userInfo.getName());
-                    }
+            if (Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE) && Objects.nonNull(electricityBattery.getUid())) {
+                UserInfo userInfo = userInfoService.queryByUidFromCache(electricityBattery.getUid());
+                if (Objects.nonNull(userInfo)) {
+                    electricityBatteryVO.setUserName(userInfo.getName());
                 }
             }
 

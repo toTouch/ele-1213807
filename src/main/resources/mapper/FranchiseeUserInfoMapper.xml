@@ -4,7 +4,7 @@
 
     <!-- 基础字段 -->
     <sql id="selectFranchiseeUserInfo">
-        select id, user_info_id, service_status, franchisee_id, card_id, card_name, card_type, member_card_expire_time, remaining_number, init_electricity_battery_sn, now_electricity_battery_sn, battery_deposit, order_id, del_flag, create_time, update_time, tenant_id, model_type, battery_type, battery_service_fee_generate_time, battery_service_fee_status, member_card_disable_status, disable_member_card_time, rent_car_status, rent_car_order_id, rent_car_deposit, bind_car_id, bind_car_model_id, rent_car_card_id, rent_car_member_card_expire_time
+        select id, user_info_id, service_status, franchisee_id, card_id, card_name, card_type, member_card_expire_time, remaining_number, init_electricity_battery_sn, battery_deposit, order_id, del_flag, create_time, update_time, tenant_id, model_type, battery_type, battery_service_fee_generate_time, battery_service_fee_status, member_card_disable_status, disable_member_card_time, rent_car_status, rent_car_order_id, rent_car_deposit, bind_car_id, bind_car_model_id, rent_car_card_id, rent_car_member_card_expire_time
         from t_franchisee_user_info
     </sql>
 
@@ -38,10 +38,24 @@
         where id = #{id} and del_flag=0
 	</update>
 
-
-    <update id="updateByUserInfoId">
+<!--    <update id="updateByUserInfoId">
         update t_franchisee_user_info
         set now_electricity_battery_sn = #{nowElectricityBatterySn},
+        <if test="serviceStatus != null">
+            service_status = #{serviceStatus},
+        </if>
+        <if test="initElectricityBatterySn != null">
+            init_electricity_battery_sn = #{initElectricityBatterySn},
+        </if>
+        <if test="batteryServiceFeeStatus != null">
+            battery_service_fee_status = #{batteryServiceFeeStatus},
+        </if>
+        update_time = #{updateTime}
+        where user_info_id = #{userInfoId} and del_flag=0
+    </update>-->
+    <update id="updateByUserInfoId">
+        update t_franchisee_user_info
+        set
         <if test="serviceStatus != null">
             service_status = #{serviceStatus},
         </if>
@@ -93,7 +107,7 @@
 
     <select id="queryFranchiseeUserInfoByUid" resultType="com.xiliulou.electricity.entity.FranchiseeUserInfo">
         select tf.id ,tf.user_info_id,tf.service_status,tf.franchisee_id,tf.card_id,tf.card_name,tf.card_type,tf.member_card_expire_time,
-                tf.remaining_number,tf.init_electricity_battery_sn,tf.now_electricity_battery_sn,tf.battery_deposit,tf.order_id,tf.del_flag,
+                tf.remaining_number,tf.init_electricity_battery_sn,tf.battery_deposit,tf.order_id,tf.del_flag,
                 tf.create_time,tf.update_time,tf.tenant_id,tf.model_type,tf.battery_type,tf.battery_service_fee_status,tf.battery_service_fee_generate_time,
                 tf.rent_car_status,tf.rent_car_order_id,tf.rent_car_deposit,tf.bind_car_id,tf.bind_car_model_id,tf.rent_car_card_id,tf.member_card_disable_status,tf.rent_car_member_card_expire_time,
                 tf.disable_member_card_time
