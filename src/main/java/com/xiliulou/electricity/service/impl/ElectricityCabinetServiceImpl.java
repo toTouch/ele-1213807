@@ -2796,6 +2796,5 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R superAdminQueryName(Integer id) {
         return R.ok(electricityCabinetMapper.queryName(null, id));
-        ;
     }
 }
