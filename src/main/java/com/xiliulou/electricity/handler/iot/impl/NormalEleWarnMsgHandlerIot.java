@@ -135,7 +135,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         String sql = "insert into t_warn_msg_cell (electricityCabinetId,errorCode,sessionId,cellNo,errorMsg,createTime,reportTime,tenantId) values(?,?,?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getErrorMsg(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getErrorMsg(),
                     createTime, reportTime,electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert cellWarn sql error!", e);
