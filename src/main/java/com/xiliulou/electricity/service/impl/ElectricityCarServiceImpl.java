@@ -14,14 +14,17 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCarVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 换电柜表(TElectricityCar)表服务实现类
@@ -44,6 +47,8 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     EleBindCarRecordService eleBindCarRecordService;
+    @Autowired
+    ElectricityBatteryService electricityBatteryService;
 
 
     /**
@@ -197,7 +202,19 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     @DS("slave_1")
     public R queryList(ElectricityCarQuery electricityCarQuery) {
-        return R.ok(electricityCarMapper.queryList(electricityCarQuery));
+        List<ElectricityCarVO> electricityCarVOS = electricityCarMapper.queryList(electricityCarQuery);
+        if(CollectionUtils.isEmpty(electricityCarVOS)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        List<ElectricityCarVO> carVOList = electricityCarVOS.parallelStream().peek(item -> {
+            ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+            if (Objects.nonNull(electricityBattery)) {
+                item.setBatterySn(electricityBattery.getSn());
+            }
+        }).collect(Collectors.toList());
+
+        return R.ok(carVOList);
     }
 
     @Override
