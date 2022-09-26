@@ -67,6 +67,54 @@ public class UserCouponServiceImpl implements UserCouponService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R batchRelease(Integer id, Long[] uids) {
+        if (ObjectUtil.isEmpty(uids)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        Coupon coupon = couponService.queryByIdFromCache(id);
+        if (Objects.isNull(coupon)) {
+            log.error("Coupon  ERROR! not found coupon ! couponId:{} ", id);
+            return R.fail("ELECTRICITY.0085", "未找到优惠券");
+        }
+
+        UserCoupon.UserCouponBuilder couponBuild = UserCoupon.builder()
+                .name(coupon.getName())
+                .source(UserCoupon.TYPE_SOURCE_ADMIN_SEND)
+                .couponId(coupon.getId())
+                .discountType(coupon.getDiscountType())
+                .status(UserCoupon.STATUS_UNUSED)
+                .createTime(System.currentTimeMillis())
+                .updateTime(System.currentTimeMillis())
+                .tenantId(tenantId);
+
+        //优惠券过期时间
+
+        LocalDateTime now = LocalDateTime.now().plusDays(coupon.getDays());
+        couponBuild.deadline(TimeUtils.convertTimeStamp(now));
+
+        //批量插入
+        for (Long uid : uids) {
+            //查询用户手机号
+            User user = userService.queryByUidFromCache(uid);
+            if (Objects.isNull(user)) {
+                log.error("batchRelease  ERROR! not found user,uid:{} ", user.getUid());
+                return R.fail("ELECTRICITY.0019", "未找到用户");
+            }
+            couponBuild.uid(uid);
+            couponBuild.phone(user.getPhone());
+            UserCoupon userCoupon = couponBuild.build();
+            userCouponMapper.insert(userCoupon);
+        }
+
+        return R.ok();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R adminBatchRelease(Integer id, Long[] uids) {
         //用户区分
         TokenUser operateUser = SecurityUtils.getUserInfo();
         if (Objects.isNull(operateUser)) {
@@ -120,10 +168,10 @@ public class UserCouponServiceImpl implements UserCouponService {
             }
 
             UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-			if (Objects.isNull(userInfo)) {
-				log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
-				return R.fail("ELECTRICITY.0019", "未找到用户");
-			}
+            if (Objects.isNull(userInfo)) {
+                log.error("batchRelease  ERROR! not found user,uid:{} ", uid);
+                return R.fail("ELECTRICITY.0019", "未找到用户");
+            }
             couponBuild.uid(uid);
             couponBuild.phone(user.getPhone());
             UserCoupon userCoupon = couponBuild.build();
