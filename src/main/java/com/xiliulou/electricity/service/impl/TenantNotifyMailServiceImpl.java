@@ -174,7 +174,7 @@ public class TenantNotifyMailServiceImpl implements TenantNotifyMailService {
 
 
     @Override
-    public List<TenantNotifyMailDTO> selectGroupByTenantId() {
-        return this.tenantNotifyMailMapper.selectGroupByTenantId();
+    public List<TenantNotifyMailDTO> selectAllTenantNotifyMail() {
+        return this.tenantNotifyMailMapper.selectAllTenantNotifyMail();
     }
 }

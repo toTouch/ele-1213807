@@ -79,5 +79,5 @@ public interface TenantNotifyMailMapper extends BaseMapper<TenantNotifyMail> {
 
     List<TenantNotifyMailVO> selectByTenantId(@Param("tenantId") Long tenantId);
 
-    List<TenantNotifyMailDTO> selectGroupByTenantId();
+    List<TenantNotifyMailDTO> selectAllTenantNotifyMail();
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.service.impl;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.dto.TenantNotifyMailDTO;
 import com.xiliulou.electricity.entity.EmailRecipient;
@@ -12,7 +13,6 @@ import com.xiliulou.electricity.service.MailService;
 import com.xiliulou.electricity.service.TenantNotifyMailService;
 import com.xiliulou.electricity.service.VersionNotificationService;
 import com.xiliulou.electricity.utils.SecurityUtils;
-import com.xiliulou.electricity.vo.TenantNotifyMailVO;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -23,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -178,21 +179,26 @@ public class VersionNotificationServiceImpl implements VersionNotificationServic
             mailService.sendVersionNotificationEmailToMQ(mailMessageNotify);
         }*/
 
-        //2.根据租户ID分组 发送通知
-        List<TenantNotifyMailDTO> tenantNotifyMailDTOList = tenantNotifyMailService.selectGroupByTenantId();
+        //2.获取所有通知邮箱   根据租户ID分组 发送通知
+        List<TenantNotifyMailDTO> tenantNotifyMailDTOList = tenantNotifyMailService.selectAllTenantNotifyMail();
         if (CollectionUtils.isEmpty(tenantNotifyMailDTOList)) {
             log.error("ELE ERROR!tenantNotifyMailDTOList is empty");
             return;
         }
 
-        for (TenantNotifyMailDTO tenantNotifyMailDTO : tenantNotifyMailDTOList) {
-            List<TenantNotifyMailVO> list = tenantNotifyMailDTO.getTenantNotifyMailList();
-            if (CollectionUtils.isEmpty(list)) {
-                log.info("ELE INFO!tenantNotifyMailVOList is empty");
+        Map<Long, List<TenantNotifyMailDTO>> tenantNotifyMailMap = tenantNotifyMailDTOList.stream().collect(Collectors.groupingBy(TenantNotifyMailDTO::getTenantId));
+        if(ObjectUtil.isEmpty(tenantNotifyMailMap)){
+            log.error("ELE ERROR!tenantNotifyMailMap is empty");
+            return;
+        }
+
+        for (List<TenantNotifyMailDTO> tenantNotifyMailDTOs : tenantNotifyMailMap.values()) {
+            if (CollectionUtils.isEmpty(tenantNotifyMailDTOs)) {
+                log.info("ELE INFO!tenantNotifyMailDTOs is empty");
                 break;
             }
 
-            List<EmailRecipient> mailList = list.stream().map(item -> {
+            List<EmailRecipient> mailList = tenantNotifyMailDTOs.stream().map(item -> {
                 EmailRecipient emailRecipient = new EmailRecipient();
                 emailRecipient.setEmail(item.getMail());
                 emailRecipient.setName(item.getTenantName());

@@ -30,7 +30,7 @@
     </sql>
 
     <!--根据租户ID分组-->
-    <select id="selectGroupByTenantId" resultMap="TenantNotifyMailDTOListMap">
+    <select id="selectAllTenantNotifyMail" resultMap="TenantNotifyMailDTOListMap">
         select   tnm.id, tnm.mail, tnm.tenant_id, tnm.create_time, tnm.update_time,tt.name
         from t_tenant_notify_mail tnm
         left join t_tenant tt on tnm.tenant_id=tt.id
