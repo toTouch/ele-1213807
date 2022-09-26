@@ -114,6 +114,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 			@RequestParam(value = "status", required = false) Integer status,
 			@RequestParam(value = "queryStartTime", required = false) Long queryStartTime,
 			@RequestParam(value = "queryEndTime", required = false) Long queryEndTime,
+			@RequestParam(value = "userName", required = false) String userName,
 			@RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
 		//租户
@@ -147,6 +148,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 				.status(status)
 				.cardModel(memberCardModel)
 				.franchiseeName(franchiseeName)
+				.userName(userName)
 				.franchiseeId(franchiseeId).build();
 
 		return electricityMemberCardOrderService.queryCount(memberCardOrderQuery);
