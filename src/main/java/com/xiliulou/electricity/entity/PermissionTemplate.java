@@ -28,7 +28,7 @@ public class PermissionTemplate {
      */
     private Long pid;
     /**
-     * 权限类型，0：不显示的权限，1：运营商，2：加盟商，3：门店，
+     * 权限类型，0：不显示的权限，1：运营商，2：加盟商，3：门店，4：运维
      */
     private Integer type;
 
@@ -43,6 +43,8 @@ public class PermissionTemplate {
     public static final Integer TYPE_FRANCHISEE = 2;
     //门店
     public static final Integer TYPE_STORE = 3;
+    //运维
+    public static final Integer TYPE_MAINTAIN = 4;
 
 
 

@@ -100,47 +100,6 @@ public class EleHardwareHandlerManager extends HardwareHandlerManager {
         }
 
         return electricityHandler.receiveMessageProcess(receiverMessage);
-
-
-/*
-        if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.OFFLINE_EXCHANGE_ORDER_ACK_RSP)) {
-            return true;
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.OFFLINE_ELE_EXCHANGE_ORDER_RSP)) {
-            return normalOffLineEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("order_operate")) {
-            return normalEleOrderOperateHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.API_RETURN_ORDER_RSP)) {
-            return normalApiReturnHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.API_EXCHANGE_ORDER_RSP)) {
-            return normalApiExchangeHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.API_RENT_ORDER_RSP)) {
-            return normalApiRentHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("order")) {
-            return normalEleOrderHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("operate")) {
-            return normalEleOperateHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("cell")) {
-            return normalEleCellHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (receiverMessage.getType().contains("battery")) {
-            return normalEleBatteryHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.EXCHANGE_CABINET)) {
-            return normalEleExchangeHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.ELE_COMMAND_POWER_CONSUMPTION_RSP)) {
-            return normalPowerConsumptionHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.ELE_COMMAND_WARN_MSG_RSP)) {
-            return normalWarnHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.ELE_COMMAND_OTHER_CONFIG_RSP)) {
-            return normalOtherConfigHandlerIot.receiveMessageProcess(receiverMessage);
-        } else if (Objects.equals(receiverMessage.getType(), ElectricityIotConstant.ELE_COMMAND_ICCID_GET_RSP)) {
-            return icIdCommandIotHandler.receiveMessageProcess(receiverMessage);
-        } else {
-            log.error("command not support handle,command:{}", receiverMessage.getType());
-            return false;
-        }
-
-*/
-
-
     }
 
 

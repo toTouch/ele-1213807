@@ -38,4 +38,8 @@ public class PermissionResourceQuery {
 	@NotNull(message = "父id不能为空",groups = CreateGroup.class)
 	private Long parent;
 
+	/**
+	 * 权限标识
+	 */
+	private String permission;
 }

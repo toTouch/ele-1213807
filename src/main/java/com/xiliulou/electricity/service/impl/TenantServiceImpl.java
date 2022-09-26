@@ -40,32 +40,22 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TenantServiceImpl implements TenantService {
 
-
     @Resource
     private TenantMapper tenantMapper;
-
     @Resource
     private UserService userService;
-
-
     @Autowired
     RoleService roleService;
-
     @Autowired
     UserRoleService userRoleService;
-
     @Autowired
     private RolePermissionConfig permissionConfig;
-
     @Autowired
     private RolePermissionService rolePermissionService;
-
     @Autowired
     private RedisService redisService;
-
     @Autowired
     EleAuthEntryService eleAuthEntryService;
-
     @Autowired
     ElectricityConfigService electricityConfigService;
     @Autowired
@@ -90,7 +80,7 @@ public class TenantServiceImpl implements TenantService {
 
         //判断用户名是否存在
         if (!Objects.isNull(userService.queryByUserName(tenantAddAndUpdateQuery.getName()))) {
-            return R.fail("LOCKER.10015", "用户名已存在");
+            return R.fail("100105", "用户名已存在");
         }
 
         //1.保存租户信息
@@ -119,10 +109,16 @@ public class TenantServiceImpl implements TenantService {
         storeRole.setName(CommonConstant.STORE_NAME);
         storeRole.setCode(CommonConstant.STORE_CODE);
 
+        //运维
+        Role maintainRole = new Role();
+        storeRole.setName(CommonConstant.MAINTAIN_NAME);
+        storeRole.setCode(CommonConstant.MAINTAIN_CODE);
+
         ArrayList<Role> roleList = new ArrayList<>();
         roleList.add(operateRole);
         roleList.add(franchiseeRole);
         roleList.add(storeRole);
+        roleList.add(maintainRole);
 
         roleList.forEach(item -> {
             item.setTenantId(tenant.getId());
@@ -143,6 +139,7 @@ public class TenantServiceImpl implements TenantService {
         adminUserQuery.setLang(User.DEFAULT_LANG);
         adminUserQuery.setCityId(null);
         adminUserQuery.setProvinceId(null);
+        adminUserQuery.setDataType(User.DATA_TYPE_OPERATE);
         TenantContextHolder.setTenantId(tenant.getId());
         R result = userService.addInnerUser(adminUserQuery);
         if (result.getCode() == 1) {
@@ -151,7 +148,7 @@ public class TenantServiceImpl implements TenantService {
 
 
         //获取角色默认权限
-        List<RolePermission> permissionList=buildDefaultPermission( operateRole, franchiseeRole, storeRole);
+        List<RolePermission> permissionList = buildDefaultPermission(operateRole, franchiseeRole, storeRole, maintainRole);
         //保存角色默认权限
         if(CollectionUtils.isNotEmpty(permissionList)){
             permissionList.parallelStream().forEach(e -> {
@@ -217,7 +214,7 @@ public class TenantServiceImpl implements TenantService {
      * @param storeRole
      * @return
      */
-    private List<RolePermission> buildDefaultPermission(Role operateRole, Role franchiseeRole, Role storeRole) {
+    private List<RolePermission> buildDefaultPermission(Role operateRole, Role franchiseeRole, Role storeRole,Role maintainRole) {
         List<RolePermission> rolePermissionList = Lists.newArrayList();
 
         List<PermissionTemplate> permissions = permissionTemplateService.selectByPage(0, Integer.MAX_VALUE);
@@ -225,6 +222,7 @@ public class TenantServiceImpl implements TenantService {
             return rolePermissionList;
         }
 
+        //默认权限分组
         Map<Integer, List<PermissionTemplate>> permissionMap = permissions.stream().collect(Collectors.groupingBy(PermissionTemplate::getType));
         if (CollectionUtils.isEmpty(permissionMap)) {
             return rolePermissionList;
@@ -264,6 +262,18 @@ public class TenantServiceImpl implements TenantService {
                 return shopPermission;
             }).collect(Collectors.toList());
             rolePermissionList.addAll(storeRolePermission);
+        }
+
+        //运维权限
+        List<PermissionTemplate> maintainPermissions = permissionMap.get(PermissionTemplate.TYPE_MAINTAIN);
+        if (CollectionUtils.isNotEmpty(maintainPermissions)) {
+            List<RolePermission> maintainRolePermission = maintainPermissions.parallelStream().map(item -> {
+                RolePermission maintainPermission = new RolePermission();
+                maintainPermission.setPId(item.getPid());
+                maintainPermission.setRoleId(maintainRole.getId());
+                return maintainPermission;
+            }).collect(Collectors.toList());
+            rolePermissionList.addAll(maintainRolePermission);
         }
 
         return rolePermissionList;

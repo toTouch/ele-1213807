@@ -618,6 +618,7 @@ public class UserServiceImpl implements UserService {
                 .province(Objects.nonNull(province) ? province.getName() : null)
                 .cid(Objects.nonNull(city) ? city.getId() : null)
                 .tenantId(tenantId)
+                .dataType(Objects.nonNull(adminUserQuery.getDataType()) ? adminUserQuery.getDataType() : null)
                 .build();
         User insert = insert(user);
 
