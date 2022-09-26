@@ -103,7 +103,7 @@
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
         </if>
-        <if test="query.sortType == 0">
+        <if test="query.sortType == null">
             order by tfui.member_card_expire_time desc
         </if>
         <if test="query.sortType == 1">
