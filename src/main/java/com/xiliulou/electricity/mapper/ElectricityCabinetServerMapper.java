@@ -66,6 +66,10 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
         @Param("tenantName") String tenantName, @Param("serverTimeStart") Long beginServerTimeStart,
         @Param("serverTimeEnd") Long beginServerTimeEnd, @Param("offset") Long offset, @Param("size") Long size);
 
+    Long queryCount(@Param("eleName") String eleName, @Param("deviceName") String deviceName,
+        @Param("tenantName") String tenantName, @Param("serverTimeStart") Long beginServerTimeStart,
+        @Param("serverTimeEnd") Long beginServerTimeEnd);
+
     ElectricityCabinetServer queryByProductKeyAndDeviceName(@Param("productKey") String productKey,
         @Param("deviceName") String deviceName);
 }

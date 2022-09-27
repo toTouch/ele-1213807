@@ -12,6 +12,7 @@ import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.PageDataAndCountVo;
 import java.util.Objects;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -116,7 +117,10 @@ import lombok.extern.slf4j.Slf4j;
 
         List<ElectricityCabinetServer> data = electricityCabinetServerMapper
             .queryList(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd, offset, size);
-        return R.ok(data);
+
+        Long count =
+            electricityCabinetServerMapper.queryCount(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd);
+        return R.ok(new PageDataAndCountVo<>(data, count));
     }
 
     @Override @Transactional(rollbackFor = Exception.class) public R deleteOne(Long id) {
