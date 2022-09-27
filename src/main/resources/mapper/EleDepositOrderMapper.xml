@@ -52,6 +52,9 @@
             <if test="query.storeId != null">
                 and edo.store_id = #{query.storeId}
             </if>
+            <if test="query.storeName != null and query.storeName != ''">
+                and s.name like concat('%', #{query.storeName}, '%')
+            </if>
         </where>
         order by edo.create_time desc
         limit #{query.offset}, #{query.size}
@@ -105,6 +108,9 @@
             </if>
             <if test="query.carModel != null and query.carModel != ''">
                 and tecm.name = #{query.carModel}
+            </if>
+            <if test="query.storeName != null and query.storeName != ''">
+                and ts.name like concat('%', #{query.storeName}, '%')
             </if>
         </where>
         order by edo.create_time desc

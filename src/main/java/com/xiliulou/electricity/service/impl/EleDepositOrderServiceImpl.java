@@ -620,6 +620,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             excelVo.setPhone(eleDepositOrder.getPhone());
             excelVo.setName(eleDepositOrder.getName());
             excelVo.setPayAmount(eleDepositOrder.getPayAmount());
+            excelVo.setStoreName(eleDepositOrder.getStoreName());
 
             if (Objects.nonNull(eleDepositOrder.getCreateTime())) {
                 excelVo.setCreatTime(simpleDateFormat.format(new Date(eleDepositOrder.getCreateTime())));

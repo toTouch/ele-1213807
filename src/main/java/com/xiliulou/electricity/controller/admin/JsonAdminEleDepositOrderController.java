@@ -60,7 +60,8 @@ public class JsonAdminEleDepositOrderController {
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "depositType", required = false) Integer depositType,
                        @RequestParam(value = "carModel", required = false) String carModel,
-                       @RequestParam(value = "payType", required = false) Integer payType) {
+        @RequestParam(value = "payType", required = false) Integer payType,
+        @RequestParam(value = "storeName", required = false) String storeName) {
         if (size < 0 || size > 50) {
             size = 10L;
         }
@@ -115,8 +116,7 @@ public class JsonAdminEleDepositOrderController {
                 .carModel(carModel)
                 .franchiseeName(franchiseeName)
                 .depositType(depositType)
-                .payType(payType)
-                .franchiseeId(franchiseeId).build();
+                .payType(payType).franchiseeId(franchiseeId).storeName(storeName).build();
         return eleDepositOrderService.queryList(eleDepositOrderQuery);
     }
 
