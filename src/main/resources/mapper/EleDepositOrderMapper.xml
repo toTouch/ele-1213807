@@ -162,6 +162,9 @@
             <if test="query.payType != null">
                 and edo.pay_type = #{query.payType}
             </if>
+            <if test="query.storeName != null and query.storeName != ''">
+                and ts.name like concat('%', #{query.storeName}, '%')
+            </if>
         </where>
     </select>
 
