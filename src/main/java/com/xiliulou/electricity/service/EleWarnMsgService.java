@@ -3,8 +3,6 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
-import com.xiliulou.electricity.vo.ElectricityWarnMsgVo;
-import org.apache.poi.ss.formula.functions.T;
 
 import java.util.List;
 
