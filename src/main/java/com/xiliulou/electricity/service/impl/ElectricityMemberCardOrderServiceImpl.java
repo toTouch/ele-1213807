@@ -1346,67 +1346,67 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
     @Override
     public void expireReminderHandler() {
-        int offset = 0;
-        int size = 50;
-        long now = System.currentTimeMillis();
-        long threeDaysLater = 24 * 3600 * 1000 * 3 + now;
-        SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        Date date = new Date();
-
-        while (true) {
-            List<MemberCardExpiringSoonQuery> franchiseeUserInfos = franchiseeUserInfoService.queryMemberCardExpiringSoon(offset, size, now, threeDaysLater);
-            if(CollectionUtils.isEmpty(franchiseeUserInfos)) {
-                break;
-            }
-
-            franchiseeUserInfos.parallelStream().forEach(item -> {
-                Long limitTime = item.getMemberCardExpireTime() - now < 0 ? 0 : item.getMemberCardExpireTime() - now;
-                if(!redisService.setNx(CacheConstant.MEMBER_CARD_EXPIRING_SOON + item.getUid(), "ok", limitTime, false)) {
-                    return;
-                }
-
-                UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(item.getUid(), item.getTenantId());
-                if (Objects.isNull(userOauthBind)) {
-                    log.error("MemberCardExpiringSoon Error! userOauthBind is null error! uid={},tenantId={}", item.getUid(), item.getTenantId());
-                    return;
-                }
-
-                ElectricityPayParams ele = electricityPayParamsService.queryByTenantId(item.getTenantId());
-                if (Objects.isNull(ele)) {
-                    log.error("MemberCardExpiringSoon Error! ElectricityPayParams is null error! tenantId={}", item.getTenantId());
-                    return;
-                }
-
-                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(item.getTenantId());
-                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
-                    log.error("MemberCardExpiringSoon templateConfigEntity is null error! tenantId={}", item.getTenantId());
-                    return;
-                }
-
-                date.setTime(item.getMemberCardExpireTime());
-
-                AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
-                appTemplateQuery.setAppId(ele.getMerchantMinProAppId());
-                appTemplateQuery.setSecret(ele.getMerchantMinProAppSecert());
-                appTemplateQuery.setTouser(userOauthBind.getThirdId());
-                appTemplateQuery.setFormId(RandomUtil.randomString(20));
-                appTemplateQuery.setTemplateId(templateConfigEntity.getMemberCardExpiringTemplate());
-                //appTemplateQuery.setEmphasisKeyword("套餐即将到期通知");
-                Map<String, Object> data = new HashMap<>(4);
-
-                data.put("thing2", item.getCardName());
-                data.put("date4", simp.format(date));
-                data.put("thing3", "套餐即将过期，请重新订购。");
-                data.put("thing5", "暂无");
-
-                appTemplateQuery.setData(data);
-                log.info("LOW BATTERY POWER MESSAGE TO USER uid={}, tenantId={}", item.getUid(), item.getTenantId());
-
-                weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
-            });
-
-            offset += 50;
-        }
+        //        int offset = 0;
+        //        int size = 50;
+        //        long now = System.currentTimeMillis();
+        //        long threeDaysLater = 24 * 3600 * 1000 * 3 + now;
+        //        SimpleDateFormat simp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        //        Date date = new Date();
+        //
+        //        while (true) {
+        //            List<MemberCardExpiringSoonQuery> franchiseeUserInfos = franchiseeUserInfoService.queryMemberCardExpiringSoon(offset, size, now, threeDaysLater);
+        //            if(CollectionUtils.isEmpty(franchiseeUserInfos)) {
+        //                break;
+        //            }
+        //
+        //            franchiseeUserInfos.parallelStream().forEach(item -> {
+        //                Long limitTime = item.getMemberCardExpireTime() - now < 0 ? 0 : item.getMemberCardExpireTime() - now;
+        //                if(!redisService.setNx(CacheConstant.MEMBER_CARD_EXPIRING_SOON + item.getUid(), "ok", limitTime, false)) {
+        //                    return;
+        //                }
+        //
+        //                UserOauthBind userOauthBind = userOauthBindService.queryUserOauthBySysId(item.getUid(), item.getTenantId());
+        //                if (Objects.isNull(userOauthBind)) {
+        //                    log.error("MemberCardExpiringSoon Error! userOauthBind is null error! uid={},tenantId={}", item.getUid(), item.getTenantId());
+        //                    return;
+        //                }
+        //
+        //                ElectricityPayParams ele = electricityPayParamsService.queryByTenantId(item.getTenantId());
+        //                if (Objects.isNull(ele)) {
+        //                    log.error("MemberCardExpiringSoon Error! ElectricityPayParams is null error! tenantId={}", item.getTenantId());
+        //                    return;
+        //                }
+        //
+        //                TemplateConfigEntity templateConfigEntity = templateConfigService.queryByTenantIdFromCache(item.getTenantId());
+        //                if (Objects.isNull(templateConfigEntity) || Objects.isNull(templateConfigEntity.getBatteryOuttimeTemplate())) {
+        //                    log.error("MemberCardExpiringSoon templateConfigEntity is null error! tenantId={}", item.getTenantId());
+        //                    return;
+        //                }
+        //
+        //                date.setTime(item.getMemberCardExpireTime());
+        //
+        //                AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
+        //                appTemplateQuery.setAppId(ele.getMerchantMinProAppId());
+        //                appTemplateQuery.setSecret(ele.getMerchantMinProAppSecert());
+        //                appTemplateQuery.setTouser(userOauthBind.getThirdId());
+        //                appTemplateQuery.setFormId(RandomUtil.randomString(20));
+        //                appTemplateQuery.setTemplateId(templateConfigEntity.getMemberCardExpiringTemplate());
+        //                //appTemplateQuery.setEmphasisKeyword("套餐即将到期通知");
+        //                Map<String, Object> data = new HashMap<>(4);
+        //
+        //                data.put("thing2", item.getCardName());
+        //                data.put("date4", simp.format(date));
+        //                data.put("thing3", "套餐即将过期，请重新订购。");
+        //                data.put("thing5", "暂无");
+        //
+        //                appTemplateQuery.setData(data);
+        //                log.info("LOW BATTERY POWER MESSAGE TO USER uid={}, tenantId={}", item.getUid(), item.getTenantId());
+        //
+        //                weChatAppTemplateService.sendWeChatAppTemplate(appTemplateQuery);
+        //            });
+        //
+        //            offset += 50;
+        //        }
     }
 
     private String generateOrderId(Long uid) {

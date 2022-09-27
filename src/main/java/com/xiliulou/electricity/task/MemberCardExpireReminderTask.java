@@ -13,8 +13,8 @@ import org.springframework.stereotype.Component;
  * @date 2022/8/9 9:16
  * @mood
  */
-@Component
-@JobHandler(value = "memberCardExpireReminderTask")
+//@Component
+//@JobHandler(value = "memberCardExpireReminderTask")
 @Slf4j
 public class MemberCardExpireReminderTask extends IJobHandler {
 
@@ -24,7 +24,7 @@ public class MemberCardExpireReminderTask extends IJobHandler {
     @Override
     public ReturnT<String> execute(String param) throws Exception {
         try{
-            electricityMemberCardOrderService.expireReminderHandler();
+            //electricityMemberCardOrderService.expireReminderHandler();
         } catch (Exception e) {
             log.error("处理失败！", e);
         }
