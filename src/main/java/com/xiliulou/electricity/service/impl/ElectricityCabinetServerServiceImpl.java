@@ -1,19 +1,26 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.api.client.util.Lists;
+import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetServer;
 import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
+import com.xiliulou.electricity.entity.Tenant;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.ElectricityCabinetServerMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetServerOperRecordService;
 import com.xiliulou.electricity.service.ElectricityCabinetServerService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.service.TenantService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.ElectricityCabinetServerVo;
 import com.xiliulou.electricity.vo.PageDataAndCountVo;
+import java.util.ArrayList;
 import java.util.Objects;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -37,6 +44,8 @@ import lombok.extern.slf4j.Slf4j;
     @Autowired private UserService userService;
 
     @Autowired private ElectricityCabinetServerOperRecordService electricityCabinetServerOperRecordService;
+
+    @Autowired private TenantService tenantService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -115,8 +124,29 @@ import lombok.extern.slf4j.Slf4j;
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
 
+        List<ElectricityCabinetServerVo> result = new ArrayList<>();
+
         List<ElectricityCabinetServer> data = electricityCabinetServerMapper
             .queryList(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd, offset, size);
+        if (DataUtil.collectionIsUsable(data)) {
+            data.forEach(item -> {
+                ElectricityCabinetServerVo vo = new ElectricityCabinetServerVo();
+                BeanUtils.copyProperties(item, vo);
+
+                ElectricityCabinet electricityCabinet =
+                    electricityCabinetService.queryByIdFromCache(item.getElectricityCabinetId());
+                if (Objects.nonNull(electricityCabinet)) {
+                    vo.setEleName(electricityCabinet.getName());
+                }
+
+                Tenant tenant = tenantService.queryByIdFromCache(item.getTenantId());
+                if (Objects.nonNull(tenant)) {
+                    vo.setTenantName(tenant.getName());
+                }
+
+                result.add(vo);
+            });
+        }
 
         Long count =
             electricityCabinetServerMapper.queryCount(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd);
