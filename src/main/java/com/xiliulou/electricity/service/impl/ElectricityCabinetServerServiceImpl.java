@@ -126,14 +126,14 @@ import lombok.extern.slf4j.Slf4j;
 
         ElectricityCabinetServer electricityCabinetServer = queryByIdFromDB(id);
         if (Objects.isNull(electricityCabinetServer)) {
-            return R.fail("100224", "未找到电柜服务信息");
+            return R.fail("100228", "未找到电柜服务信息");
         }
 
         ElectricityCabinet electricityCabinet =
             electricityCabinetService.queryByIdFromCache(electricityCabinetServer.getElectricityCabinetId());
         if (Objects.nonNull(electricityCabinet) && Objects
             .equals(electricityCabinet.getDelFlag(), ElectricityCabinet.DEL_NORMAL)) {
-            return R.fail("100225", "电柜服务信息还有绑定电柜，无法删除");
+            return R.fail("100229", "电柜服务信息还有绑定电柜，无法删除");
         }
 
         electricityCabinetServer.setDelFlag(ElectricityCabinetServer.DEL_DEL);
@@ -154,7 +154,7 @@ import lombok.extern.slf4j.Slf4j;
 
         ElectricityCabinetServer electricityCabinetServer = this.queryByIdFromDB(id);
         if (Objects.isNull(electricityCabinetServer)) {
-            return R.fail("100224", "未找到电柜服务信息");
+            return R.fail("100228", "未找到电柜服务信息");
         }
 
         ElectricityCabinetServer update = new ElectricityCabinetServer();
