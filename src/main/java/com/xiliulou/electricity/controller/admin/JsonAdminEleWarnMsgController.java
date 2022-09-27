@@ -349,7 +349,9 @@ public class JsonAdminEleWarnMsgController {
 
     //电池故障列表查询
     @GetMapping(value = "/admin/batteryWarnMsg/list")
-    public R queryBatteryWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+    public R queryBatteryWarnMsgList(@RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "beginTime") Long beginTime,
                                      @RequestParam(value = "endTime") Long endTime,
                                      @RequestParam(value = "sn", required = false) String sn,
                                      @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
@@ -362,28 +364,28 @@ public class JsonAdminEleWarnMsgController {
         String end = formatter.format(endLocalDateTime);
 
         if (StringUtil.isNotEmpty(sn) && StringUtil.isEmpty(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_battery where tenantId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, sn, begin, end);
+            String sql = "select * from t_warn_msg_battery where tenantId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, sn, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
         if (StringUtil.isNotEmpty(electricityCabinetId) && StringUtil.isEmpty(sn)) {
-            String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end);
+            String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
         if (StringUtil.isNotEmpty(sn) && StringUtil.isNotEmpty(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end);
+            String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end);
+        String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
     }
@@ -391,7 +393,8 @@ public class JsonAdminEleWarnMsgController {
 
     //格挡故障列表查询
     @GetMapping(value = "/admin/cellWarnMsg/list")
-    public R queryCellWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+    public R queryCellWarnMsgList(@RequestParam("size") Long size,
+                                  @RequestParam("offset") Long offset, @RequestParam(value = "beginTime") Long beginTime,
                                   @RequestParam(value = "endTime") Long endTime,
                                   @RequestParam(value = "cellNo", required = false) Integer cellNo,
                                   @RequestParam(value = "operateType", required = false) Integer operateType,
@@ -406,28 +409,28 @@ public class JsonAdminEleWarnMsgController {
         String end = formatter.format(endLocalDateTime);
 
         if (Objects.nonNull(cellNo) && Objects.nonNull(operateType)) {
-            String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, operateType, begin, end);
+            String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
         if (Objects.nonNull(cellNo) && Objects.isNull(operateType)) {
-            String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc";
-            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, begin, end);
+            String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
         if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
-            String sql = "select * from t_warn_msg_cell where tenantId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end);
+            String sql = "select * from t_warn_msg_cell where tenantId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        String sql = "select * from t_warn_msg_cell where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc";
-        List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, begin, end);
+        String sql = "select * from t_warn_msg_cell where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
     }
@@ -436,6 +439,8 @@ public class JsonAdminEleWarnMsgController {
     //柜机故障列表查询
     @GetMapping(value = "/admin/cabinetWarnMsg/list")
     public R queryCabinetWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                     @RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
                                      @RequestParam(value = "endTime") Long endTime,
                                      @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
 
@@ -449,18 +454,24 @@ public class JsonAdminEleWarnMsgController {
 
 
         if (Objects.nonNull(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_cabinet where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end));
+            String sql = "select * from t_warn_msg_cabinet where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
 
-        String sql = "select * from t_warn_msg_cabinet where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc ";
-        return R.ok(clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, tenantId, begin, end));
+        String sql = "select * from t_warn_msg_cabinet where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
     //业务故障列表查询
     @GetMapping(value = "/admin/businessWarnMsg/list")
     public R queryBusinessWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                      @RequestParam("size") Long size,
+                                      @RequestParam("offset") Long offset,
                                       @RequestParam(value = "endTime") Long endTime,
                                       @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
 
@@ -474,19 +485,25 @@ public class JsonAdminEleWarnMsgController {
 
 
         if (Objects.nonNull(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_business where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end));
+            String sql = "select * from t_warn_msg_business where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
 
-        String sql = "select * from t_warn_msg_business where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc ";
-        return R.ok(clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, tenantId, begin, end));
+        String sql = "select * from t_warn_msg_business where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 
     //超级管理员电池故障列表查询
     @GetMapping(value = "/admin/superAdminBatteryWarnMsg/list")
     public R querySuperAdminBatteryWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                               @RequestParam("size") Long size,
+                                               @RequestParam("offset") Long offset,
                                                @RequestParam(value = "endTime") Long endTime,
                                                @RequestParam(value = "sn", required = false) String sn,
                                                @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
@@ -508,22 +525,30 @@ public class JsonAdminEleWarnMsgController {
         String end = formatter.format(endLocalDateTime);
 
         if (StringUtil.isNotEmpty(sn) && StringUtil.isEmpty(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_battery where sn=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, sn, begin, end));
+            String sql = "select * from t_warn_msg_battery where sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, sn, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (StringUtil.isNotEmpty(electricityCabinetId) && StringUtil.isEmpty(sn)) {
-            String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, begin, end));
+            String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (StringUtil.isNotEmpty(sn) && StringUtil.isNotEmpty(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_battery where and  electricityCabinetId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, sn, begin, end));
+            String sql = "select * from t_warn_msg_battery where and  electricityCabinetId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, sn, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
-        String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, sn, begin, end));
+        String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, sn, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 
@@ -531,6 +556,8 @@ public class JsonAdminEleWarnMsgController {
     @GetMapping(value = "/admin/superAdminCellWarnMsg/list")
     public R querySuperAdminCellWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
                                             @RequestParam(value = "endTime") Long endTime,
+                                            @RequestParam("size") Long size,
+                                            @RequestParam("offset") Long offset,
                                             @RequestParam(value = "cellNo", required = false) Integer cellNo,
                                             @RequestParam(value = "operateType", required = false) Integer operateType,
                                             @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
@@ -552,23 +579,31 @@ public class JsonAdminEleWarnMsgController {
         String end = formatter.format(endLocalDateTime);
 
         if (Objects.nonNull(cellNo) && Objects.nonNull(operateType)) {
-            String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, operateType, begin, end));
+            String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (Objects.nonNull(cellNo) && Objects.isNull(operateType)) {
-            String sql = "select * from t_warn_msg_cell where electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, begin, end));
+            String sql = "select * from t_warn_msg_cell where electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
-            String sql = "select * from t_warn_msg_cell where  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, operateType, begin, end));
+            String sql = "select * from t_warn_msg_cell where  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
 
-        String sql = "select * from t_warn_msg_cell where  reportTime>=? AND reportTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, begin, end));
+        String sql = "select * from t_warn_msg_cell where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 
@@ -576,6 +611,8 @@ public class JsonAdminEleWarnMsgController {
     @GetMapping(value = "/admin/superAdminCabinetWarnMsg/list")
     public R querySuperAdminCabinetWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
                                                @RequestParam(value = "endTime") Long endTime,
+                                               @RequestParam("size") Long size,
+                                               @RequestParam("offset") Long offset,
                                                @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
 
         //用户区分
@@ -596,19 +633,25 @@ public class JsonAdminEleWarnMsgController {
 
 
         if (Objects.nonNull(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_cabinet where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, electricityCabinetId, begin, end));
+            String sql = "select * from t_warn_msg_cabinet where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
 
-        String sql = "select * from t_warn_msg_cabinet where  reportTime>=? AND reportTime<=? order by  createTime desc ";
-        return R.ok(clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, begin, end));
+        String sql = "select * from t_warn_msg_cabinet where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
     //超级管理员业务故障列表查询
     @GetMapping(value = "/admin/superAdminBusinessWarnMsg/list")
     public R querySuperAdminBusinessWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
                                                 @RequestParam(value = "endTime") Long endTime,
+                                                @RequestParam("size") Long size,
+                                                @RequestParam("offset") Long offset,
                                                 @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
 
         //用户区分
@@ -629,13 +672,17 @@ public class JsonAdminEleWarnMsgController {
 
 
         if (Objects.nonNull(electricityCabinetId)) {
-            String sql = "select * from t_warn_msg_business where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, electricityCabinetId, begin, end));
+            String sql = "select * from t_warn_msg_business where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
 
-        String sql = "select * from t_warn_msg_business where reportTime>=? AND reportTime<=? order by  createTime desc ";
-        return R.ok(clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, begin, end));
+        String sql = "select * from t_warn_msg_business where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 
