@@ -201,7 +201,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(item.getUid());
-                if(Objects.nonNull(franchiseeUserInfo) && Objects.nonNull(franchiseeUserInfo.getCardName())){
+                if(Objects.nonNull(franchiseeUserInfo) && StringUtils.isNotBlank(franchiseeUserInfo.getCardName())){
                     item.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
                 }
             });
