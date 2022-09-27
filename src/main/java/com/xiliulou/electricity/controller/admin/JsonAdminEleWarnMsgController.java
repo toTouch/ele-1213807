@@ -363,21 +363,29 @@ public class JsonAdminEleWarnMsgController {
 
         if (StringUtil.isNotEmpty(sn) && StringUtil.isEmpty(electricityCabinetId)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, sn, begin, end));
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, sn, begin, end);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (StringUtil.isNotEmpty(electricityCabinetId) && StringUtil.isEmpty(sn)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end));
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (StringUtil.isNotEmpty(sn) && StringUtil.isNotEmpty(electricityCabinetId)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end));
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end));
+        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 
@@ -399,22 +407,29 @@ public class JsonAdminEleWarnMsgController {
 
         if (Objects.nonNull(cellNo) && Objects.nonNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, operateType, begin, end));
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, operateType, begin, end);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (Objects.nonNull(cellNo) && Objects.isNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc";
-            return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, begin, end));
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, begin, end);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
         if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc ";
-            return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end));
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
         }
 
-
         String sql = "select * from t_warn_msg_cell where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, begin, end));
+        List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, begin, end);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 
