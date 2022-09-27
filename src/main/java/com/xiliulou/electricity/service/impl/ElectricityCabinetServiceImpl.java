@@ -2899,4 +2899,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);
         return R.ok();
     }
+
+    @Override
+    public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
+        List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+        if(CollectionUtils.isEmpty(electricityCabinets)){
+            return R.ok(Collections.EMPTY_LIST);
+        }
+
+        return R.ok(electricityCabinets);
+    }
 }

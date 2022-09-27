@@ -648,4 +648,20 @@ public class JsonAdminElectricityCabinetController {
                               @RequestParam("eleId") Integer eleId) {
         return eleOnlineLogService.queryOnlineLogCount(status, eleId);
     }
+
+    /**
+     * 根据经纬度获取柜机列表
+     * @return
+     */
+    @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
+    public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value="id", required = false) Integer id){
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
+                .id(id)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+
+        return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+    }
+
 }

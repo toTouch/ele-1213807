@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -49,5 +50,5 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
 
 	Integer queryCountByStoreIdsAndStatus(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds,@Param("status") Integer status);
 
-
+    List<ElectricityCabinet> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
 }

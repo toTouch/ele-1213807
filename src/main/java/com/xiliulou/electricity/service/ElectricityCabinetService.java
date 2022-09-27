@@ -148,4 +148,6 @@ public interface ElectricityCabinetService {
     R checkOtaUpgradeSession(String sessionId);
 
     R closeOtaUpgradeSession(String sessionId);
+
+    R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery);
 }
