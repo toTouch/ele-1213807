@@ -36,8 +36,8 @@ public class JsonAdminElectricityCabinetServerController {
     }
 
     @PutMapping("/update") public R updateOne(@RequestParam(value = "id") Long id,
-        @RequestParam(value = "serverTimeStart") Long serverTimeStart,
-        @RequestParam(value = "serverTimeEnd") Long serverTimeEnd) {
+        @RequestParam(value = "serverBeginTime") Long serverTimeStart,
+        @RequestParam(value = "serverEndTime") Long serverTimeEnd) {
         return electricityCabinetServerService.updateOne(id, serverTimeStart, serverTimeEnd);
     }
 }

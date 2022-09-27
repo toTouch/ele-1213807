@@ -205,6 +205,7 @@ import lombok.extern.slf4j.Slf4j;
             insert.setOldServerEndTime(electricityCabinetServer.getServerEndTime());
             insert.setNewServerBeginTime(serverTimeStart);
             insert.setNewServerEndTime(serverTimeEnd);
+            insert.setCreateTime(System.currentTimeMillis());
             electricityCabinetServerOperRecordService.insert(insert);
 
             return null;
