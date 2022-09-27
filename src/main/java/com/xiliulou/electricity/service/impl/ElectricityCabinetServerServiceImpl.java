@@ -110,7 +110,7 @@ import lombok.extern.slf4j.Slf4j;
     @Override
     public R queryList(String eleName, String deviceName, String tenantName, Long serverTimeStart, Long serverTimeEnd,
         Long offset, Long size) {
-        if (Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
+        if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
 
@@ -120,7 +120,7 @@ import lombok.extern.slf4j.Slf4j;
     }
 
     @Override @Transactional(rollbackFor = Exception.class) public R deleteOne(Long id) {
-        if (Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
+        if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
 
@@ -143,7 +143,7 @@ import lombok.extern.slf4j.Slf4j;
 
     @Override @Transactional(rollbackFor = Exception.class)
     public R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd) {
-        if (Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
+        if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
 
