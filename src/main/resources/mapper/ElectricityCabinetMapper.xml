@@ -234,7 +234,7 @@
 
 
 	<select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
-		select id, name,longitude, latitude, sn, online_status
+		select id, name,longitude, latitude, online_status
 		from t_electricity_cabinet
 		where del_flag=0
 
