@@ -237,7 +237,9 @@
 		select id, name,longitude, latitude, online_status
 		from t_electricity_cabinet
 		where del_flag=0
-
+		<if test="query.name != null and query.name != ''">
+			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+		</if>
 		<if test="query.id != null">
 			and id =#{query.id}
 		</if>

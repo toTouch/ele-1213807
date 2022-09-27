@@ -654,10 +654,12 @@ public class JsonAdminElectricityCabinetController {
      * @return
      */
     @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
-    public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value="id", required = false) Integer id){
+    public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value="id", required = false) Integer id,
+                                                        @RequestParam(value="name", required = false) String name){
 
         ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
                 .id(id)
+                .name(name)
                 .tenantId(TenantContextHolder.getTenantId())
                 .build();
 
