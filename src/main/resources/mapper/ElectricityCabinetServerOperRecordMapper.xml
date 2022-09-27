@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetServerOperRecordMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord"
+        id="ElectricityCabinetServerOperRecordMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="eleServerId" column="ele_server_id" jdbcType="INTEGER"/>
+        <result property="createUid" column="create_uid" jdbcType="INTEGER"/>
+        <result property="oldServerBeginTime" column="old_server_begin_time" jdbcType="INTEGER"/>
+        <result property="oldServerEndTime" column="old_server_end_time" jdbcType="INTEGER"/>
+        <result property="newServerBeginTime" column="new_server_begin_time" jdbcType="INTEGER"/>
+        <result property="newServerEndTime" column="new_server_end_time" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!--查询单个-->
+    <select id="queryById" resultMap="ElectricityCabinetServerOperRecordMap">
+        select
+          id, ele_server_id, create_uid, old_server_begin_time, old_server_end_time, new_server_begin_time, new_server_end_time, create_time
+        from t_electricity_cabinet_server_oper_record
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="ElectricityCabinetServerOperRecordMap">
+        select
+          id, ele_server_id, create_uid, old_server_begin_time, old_server_end_time, new_server_begin_time, new_server_end_time, create_time
+        from t_electricity_cabinet_server_oper_record
+        limit #{offset}, #{limit}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="ElectricityCabinetServerOperRecordMap">
+        select
+        id, ele_server_id, create_uid, old_server_begin_time, old_server_end_time,
+        new_server_begin_time, new_server_end_time, create_time
+        from t_electricity_cabinet_server_oper_record
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="eleServerId != null">
+                and ele_server_id = #{eleServerId}
+            </if>
+            <if test="createUid != null">
+                and create_uid = #{createUid}
+            </if>
+            <if test="oldServerBeginTime != null">
+                and old_server_begin_time = #{oldServerBeginTime}
+            </if>
+            <if test="oldServerEndTime != null">
+                and old_server_end_time = #{oldServerEndTime}
+            </if>
+            <if test="newServerBeginTime != null">
+                and new_server_begin_time = #{newServerBeginTime}
+            </if>
+            <if test="newServerEndTime != null">
+                and new_server_end_time = #{newServerEndTime}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_electricity_cabinet_server_oper_record(ele_server_id, create_uid, old_server_begin_time, old_server_end_time, new_server_begin_time, new_server_end_time, create_time)
+        values (#{eleServerId}, #{createUid}, #{oldServerBeginTime}, #{oldServerEndTime}, #{newServerBeginTime}, #{newServerEndTime}, #{createTime})
+    </insert>
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_electricity_cabinet_server_oper_record
+        <set>
+            <if test="eleServerId != null">
+                ele_server_id = #{eleServerId},
+            </if>
+            <if test="createUid != null">
+                create_uid = #{createUid},
+            </if>
+            <if test="oldServerBeginTime != null">
+                old_server_begin_time = #{oldServerBeginTime},
+            </if>
+            <if test="oldServerEndTime != null">
+                old_server_end_time = #{oldServerEndTime},
+            </if>
+            <if test="newServerBeginTime != null">
+                new_server_begin_time = #{newServerBeginTime},
+            </if>
+            <if test="newServerEndTime != null">
+                new_server_end_time = #{newServerEndTime},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_electricity_cabinet_server_oper_record where id = #{id}
+    </delete>
+
+    <select id="queryList" resultMap="ElectricityCabinetServerOperRecordMap">
+        select
+        ecsor.id, ecsor.ele_server_id, ecsor.create_uid, ecsor.old_server_begin_time, ecsor.old_server_end_time,
+        ecsor.new_server_begin_time, ecsor.new_server_end_time, ecsor.create_time
+        from t_electricity_cabinet_server_oper_record ecsor
+        left join t_user u on u.uid = ecsor.create_uid
+        where
+        ecsor.ele_server_id = #{eleServerId}
+        <if test="createUserName != null and createUserName != ''">
+            and u.name = #{createUserName}
+        </if>
+        limit #{offset}, #{limit}
+    </select>
+</mapper>

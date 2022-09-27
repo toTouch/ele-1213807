@@ -131,6 +131,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
+    @Autowired private ElectricityCabinetServerService electricityCabinetServerService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -240,6 +241,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //添加快递柜格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+            //添加服务时间记录
+            electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             return electricityCabinet;
         });
         return R.ok(electricityCabinet.getId());
@@ -326,6 +329,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
                 electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
             }
+
+            //修改柜机服务时间信息
+            electricityCabinetServerService
+                .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             return null;
         });
         return R.ok();
@@ -439,6 +446,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     isLock = 1;
                 }
                 e.setIsLock(isLock);
+
+                ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService
+                    .queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
+                if (Objects.nonNull(electricityCabinetServer)) {
+                    e.setServerBeginTime(electricityCabinetServer.getServerBeginTime());
+                    e.setServerEndTime(electricityCabinetServer.getServerEndTime());
+                }
             });
         }
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
