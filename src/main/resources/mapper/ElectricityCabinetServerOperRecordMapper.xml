@@ -116,6 +116,6 @@
         <if test="createUserName != null and createUserName != ''">
             and u.name = #{createUserName}
         </if>
-        limit #{offset}, #{limit}
+        limit #{offset}, #{size}
     </select>
 </mapper>
