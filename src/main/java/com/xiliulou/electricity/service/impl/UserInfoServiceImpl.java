@@ -861,8 +861,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-        if (Objects.nonNull(oldElectricityBattery) && cardDays >= 1) {
-//        if (Objects.nonNull(oldFranchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
+        if ( cardDays >= 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
@@ -900,14 +899,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         electricityBattery.setUpdateTime(System.currentTimeMillis());
         electricityBatteryService.updateBatteryUser(electricityBattery);
 
-//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-//        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-//        franchiseeUserInfo.setNowElectricityBatterySn(null);
-//        franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
-//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-//        Integer update = franchiseeUserInfoService.unBind(franchiseeUserInfo);
-
-
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.BATTERY_MODEL)
@@ -941,7 +932,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             log.error("userMove  ERROR! not found userInfo,uid:{} ", user.getUid());
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
-
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
         if (Objects.isNull(franchiseeUserInfo)) {
