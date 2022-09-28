@@ -54,6 +54,10 @@ public class EleRefundQuery {
 
     private Integer payType;
 
+    private Long storeId;
+
+    private Long franchiseeId;
+
     private List<Long> storeIds;
 
     private List<Long> franchiseeIds;
