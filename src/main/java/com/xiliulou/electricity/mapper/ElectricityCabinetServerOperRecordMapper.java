@@ -65,4 +65,6 @@ public interface ElectricityCabinetServerOperRecordMapper extends BaseMapper<Ele
 
     List<ElectricityCabinetServerOperRecord> queryList(@Param("createUserName") String createUserName,
         @Param("eleServerId") Long eleServerId, @Param("offset") Long offset, @Param("size") Long size);
+
+    Long queryCount(@Param("createUserName") String createUserName, @Param("eleServerId") Long eleServerId);
 }

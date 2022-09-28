@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
 import com.xiliulou.electricity.mapper.ElectricityCabinetServerOperRecordMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetServerOperRecordService;
+import com.xiliulou.electricity.vo.PageDataAndCountVo;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -87,6 +88,10 @@ import lombok.extern.slf4j.Slf4j;
     }
 
     @Override public R queryList(String createUserName, Long eleServerId, Long offset, Long size) {
-        return R.ok(electricityCabinetServerOperRecordMapper.queryList(createUserName, eleServerId, offset, size));
+        List<ElectricityCabinetServerOperRecord> data =
+            electricityCabinetServerOperRecordMapper.queryList(createUserName, eleServerId, offset, size);
+
+        Long count = electricityCabinetServerOperRecordMapper.queryCount(createUserName, eleServerId);
+        return R.ok(new PageDataAndCountVo<>(data, count));
     }
 }

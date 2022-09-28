@@ -116,6 +116,19 @@
         <if test="createUserName != null and createUserName != ''">
             and u.name = #{createUserName}
         </if>
+        order by ecsor.create_time desc
         limit #{offset}, #{size}
+    </select>
+
+    <select id="queryCount" resultType="long">
+        select
+        count(*)
+        from t_electricity_cabinet_server_oper_record ecsor
+        left join t_user u on u.uid = ecsor.create_uid
+        where
+        ecsor.ele_server_id = #{eleServerId}
+        <if test="createUserName != null and createUserName != ''">
+            and u.name = #{createUserName}
+        </if>
     </select>
 </mapper>
