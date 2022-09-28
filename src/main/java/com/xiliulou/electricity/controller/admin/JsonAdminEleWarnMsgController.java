@@ -365,14 +365,14 @@ public class JsonAdminEleWarnMsgController {
         String begin = formatter.format(beginLocalDateTime);
         String end = formatter.format(endLocalDateTime);
 
-        if (StrUtil.isNotEmpty(sn) && StrUtil.isNotEmpty(electricityCabinetId)) {
+        if (StrUtil.isNotEmpty(sn) && StrUtil.isEmpty(electricityCabinetId)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, sn, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        if (StrUtil.isNotEmpty(electricityCabinetId) && StrUtil.isNotEmpty(sn)) {
+        if (StrUtil.isNotEmpty(electricityCabinetId) && StrUtil.isEmpty(sn)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
@@ -387,7 +387,7 @@ public class JsonAdminEleWarnMsgController {
         }
 
         String sql = "select * from t_warn_msg_battery where tenantId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
-        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end, offset, size);
+        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId,  begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
     }
