@@ -429,14 +429,14 @@ public class JsonAdminEleWarnMsgController {
             return R.ok(list);
         }
 
-        if (Objects.isNull(electricityCabinetId) && Objects.nonNull(operateType)) {
+        if (Objects.nonNull(electricityCabinetId) && Objects.nonNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        if (Objects.isNull(electricityCabinetId) && Objects.isNull(operateType)) {
+        if (Objects.nonNull(electricityCabinetId) && Objects.isNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
