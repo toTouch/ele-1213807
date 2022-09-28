@@ -1,11 +1,9 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetServerOperRecord;
 import java.util.List;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.springframework.web.bind.annotation.RequestParam;
 
 /**
  * (ElectricityCabinetServerOperRecord)表数据库访问层
@@ -65,7 +63,6 @@ public interface ElectricityCabinetServerOperRecordMapper extends BaseMapper<Ele
      */
     int deleteById(Long id);
 
-    List<ElectricityCabinetServerOperRecord> queryList(@RequestParam("createUserName") String createUserName,
-        @RequestParam("eleServerId") Long eleServerId, @RequestParam("offset") Long offset,
-        @RequestParam("size") Long size);
+    List<ElectricityCabinetServerOperRecord> queryList(@Param("createUserName") String createUserName,
+        @Param("eleServerId") Long eleServerId, @Param("offset") Long offset, @Param("size") Long size);
 }
