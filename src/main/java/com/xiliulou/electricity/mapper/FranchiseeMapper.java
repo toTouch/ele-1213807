@@ -3,6 +3,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.FranchiseeQuery;
 import com.xiliulou.electricity.vo.FranchiseeVO;
+import org.apache.commons.lang3.tuple.Triple;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -24,4 +25,6 @@ public interface FranchiseeMapper extends BaseMapper<Franchisee> {
     Franchisee queryByUserId(Long uid);
 
     Franchisee queryByCabinetId(Integer id);
+
+    List<Franchisee> selectListByQuery(FranchiseeQuery franchiseeQuery);
 }

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.*;
@@ -32,7 +33,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminFranchiseeController {
+public class JsonAdminFranchiseeController extends BaseController {
     /**
      * 服务对象
      */
@@ -102,7 +103,17 @@ public class JsonAdminFranchiseeController {
                 .tenantId(TenantContextHolder.getTenantId()).build();
 
         return franchiseeService.queryList(franchiseeQuery);
+    }
 
+    /**
+     * 获取租户加盟商列表
+     * @return
+     */
+    @GetMapping(value = "/admin/franchisee/selectListByTenantId")
+    public R selectFranchiseeList(){
+        FranchiseeQuery franchiseeQuery = new FranchiseeQuery();
+        franchiseeQuery.setTenantId(TenantContextHolder.getTenantId());
+        return returnTripleResult(franchiseeService.selectListByQuery(franchiseeQuery));
     }
 
     //列表查询

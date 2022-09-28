@@ -32,9 +32,11 @@ import com.xiliulou.electricity.vo.MapVo;
 import com.xiliulou.electricity.vo.StoreVO;
 import com.xiliulou.electricity.web.query.AdminUserQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
 import java.math.BigDecimal;
@@ -472,6 +474,16 @@ public class StoreServiceImpl implements StoreService {
     @Override
     public List<Store> selectByFranchiseeIds(List<Long> franchiseeIds) {
         return storeMapper.selectList(new LambdaQueryWrapper<Store>().in(Store::getFranchiseeId, franchiseeIds).eq(Store::getDelFlag, Store.DEL_NORMAL));
+    }
+
+    @Override
+    public Triple<Boolean, String, Object> selectListByQuery(StoreQuery storeQuery) {
+        List<Store> stores = storeMapper.selectListByQuery(storeQuery);
+        if (CollectionUtils.isEmpty(stores)) {
+            return Triple.of(true, "", Collections.EMPTY_LIST);
+        }
+
+        return Triple.of(true, "", stores);
     }
 
     public Long getTime(Long time) {

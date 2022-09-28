@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
  */
 @RestController
 @Slf4j
-public class JsonAdminStoreController {
+public class JsonAdminStoreController extends BaseController {
     /**
      * 服务对象
      */
@@ -73,6 +74,32 @@ public class JsonAdminStoreController {
         }
         return storeService.delete(id);
     }
+
+    /**
+     * 根据角色获取门店列表
+     * @return
+     */
+    @GetMapping(value = "/admin/store/selectListQuery")
+    public R selectList(){
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        StoreQuery storeQuery=new StoreQuery();
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if(Objects.nonNull(franchisee)){
+                storeQuery.setFranchiseeId(franchisee.getId());
+            }
+        }
+
+        storeQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        return returnTripleResult(storeService.selectListByQuery(storeQuery));
+    }
+
 
     //列表查询
     @GetMapping(value = "/admin/store/list")

@@ -2,6 +2,25 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.xiliulou.electricity.mapper.FranchiseeMapper">
 
+    <!-- 基础字段 -->
+    <sql id="selectFranchisee">
+       	select   id, name, tenant_id  from t_franchisee
+    </sql>
+
+    <!--列表查询-->
+    <select id="selectListByQuery" resultType="com.xiliulou.electricity.entity.Franchisee">
+        <include refid="selectFranchisee"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+
 
     <!--查询指定行数据-->
     <select id="queryList"

@@ -3,6 +3,28 @@
 <mapper namespace="com.xiliulou.electricity.mapper.StoreMapper">
 
 
+    <!-- 基础字段 -->
+    <sql id="selectStore">
+       	select   id, name, tenant_id , franchisee_id from t_store
+    </sql>
+
+    <!--列表查询-->
+    <select id="selectListByQuery" resultType="com.xiliulou.electricity.entity.Franchisee">
+        <include refid="selectStore"/>
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="franchiseeId != null">
+                and franchisee_id = #{franchiseeId}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+        </where>
+    </select>
+
+
     <!--查询指定行数据-->
     <select id="queryList"   resultType="com.xiliulou.electricity.vo.StoreVO">
         select

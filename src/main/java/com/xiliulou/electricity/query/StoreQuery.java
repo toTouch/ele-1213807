@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.query;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.util.List;
 
@@ -10,6 +12,8 @@ import java.util.List;
  * @Description:
  */
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 @Builder
 public class StoreQuery {
 	private Long size;
