@@ -513,13 +513,6 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
 
-        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        if (Objects.isNull(electricityBattery)) {
-            log.error("RENT BATTERY ERROR! not found user bind battery,uid={}", user.getUid());
-            return R.fail("ELECTRICITY.0020", "未找到电池");
-        }
-
-
 
         String cellNo = usableEmptyCellNo.getRight().toString();
 
@@ -552,8 +545,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+
+                    ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+
                     dataMap.put("is_checkBatterySn", true);
-                    dataMap.put("user_binding_battery_sn", electricityBattery.getSn());
+                    dataMap.put("user_binding_battery_sn", Objects.nonNull(electricityBattery)?electricityBattery.getSn():"");
                 } else {
                     dataMap.put("is_checkBatterySn", false);
                 }
