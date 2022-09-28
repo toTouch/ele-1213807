@@ -365,28 +365,28 @@ public class JsonAdminEleWarnMsgController {
         String begin = formatter.format(beginLocalDateTime);
         String end = formatter.format(endLocalDateTime);
 
-        if (StringUtil.isNotEmpty(sn) && StringUtil.isEmpty(electricityCabinetId)) {
+        if (StrUtil.isNotEmpty(sn) && StrUtil.isNotEmpty(electricityCabinetId)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, sn, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        if (StringUtil.isNotEmpty(electricityCabinetId) && StringUtil.isEmpty(sn)) {
+        if (StrUtil.isNotEmpty(electricityCabinetId) && StrUtil.isNotEmpty(sn)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        if (StringUtil.isNotEmpty(sn) && StringUtil.isNotEmpty(electricityCabinetId)) {
+        if (StrUtil.isNotEmpty(sn) && StrUtil.isNotEmpty(electricityCabinetId)) {
             String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and  sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and sn=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        String sql = "select * from t_warn_msg_battery where tenantId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
         List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, sn, begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
