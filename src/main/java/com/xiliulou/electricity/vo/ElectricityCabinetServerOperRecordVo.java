@@ -34,5 +34,5 @@ import lombok.Data;
 
     private String eleName;
 
-    private String tenantName;
+    private String userName;
 }

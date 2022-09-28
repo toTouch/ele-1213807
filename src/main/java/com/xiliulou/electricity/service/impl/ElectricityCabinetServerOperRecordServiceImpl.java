@@ -104,40 +104,10 @@ import lombok.extern.slf4j.Slf4j;
     }
 
     @Override public R queryList(String createUserName, Long eleServerId, Long offset, Long size) {
-        List<ElectricityCabinetServerOperRecord> data =
+        List<ElectricityCabinetServerOperRecordVo> data =
             electricityCabinetServerOperRecordMapper.queryList(createUserName, eleServerId, offset, size);
 
-        List<ElectricityCabinetServerOperRecordVo> result = new ArrayList<>();
-        if (DataUtil.collectionIsUsable(data)) {
-            data.forEach(item -> {
-                ElectricityCabinetServerOperRecordVo vo = new ElectricityCabinetServerOperRecordVo();
-                BeanUtils.copyProperties(item, vo);
-
-                ElectricityCabinetServer electricityCabinetServer =
-                    electricityCabinetServerService.queryByIdFromDB(item.getEleServerId());
-                if (Objects.isNull(electricityCabinetServer)) {
-                    log.error(
-                        "QUERY ELECTRICITY_CABINET_SERVER_OPER_RECORD ERROR! electricityCabinetServer is null id={}",
-                        item.getId());
-                    return;
-                }
-
-                ElectricityCabinet electricityCabinet =
-                    electricityCabinetService.queryByIdFromCache(electricityCabinetServer.getElectricityCabinetId());
-                if (Objects.nonNull(electricityCabinet)) {
-                    vo.setEleName(electricityCabinet.getName());
-                }
-
-                Tenant tenant = tenantService.queryByIdFromCache(electricityCabinetServer.getTenantId());
-                if (Objects.nonNull(tenant)) {
-                    vo.setTenantName(tenant.getName());
-                }
-
-                result.add(vo);
-            });
-        }
-
         Long count = electricityCabinetServerOperRecordMapper.queryCount(createUserName, eleServerId);
-        return R.ok(new PageDataAndCountVo<>(result, count));
+        return R.ok(new PageDataAndCountVo<>(data, count));
     }
 }

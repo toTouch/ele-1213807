@@ -105,12 +105,15 @@
         delete from t_electricity_cabinet_server_oper_record where id = #{id}
     </delete>
 
-    <select id="queryList" resultMap="ElectricityCabinetServerOperRecordMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetServerOperRecordVo">
         select
         ecsor.id, ecsor.ele_server_id, ecsor.create_uid, ecsor.old_server_begin_time, ecsor.old_server_end_time,
-        ecsor.new_server_begin_time, ecsor.new_server_end_time, ecsor.create_time
+        ecsor.new_server_begin_time, ecsor.new_server_end_time, ecsor.create_time, u.name as user_name, ec.name as
+        ele_name
         from t_electricity_cabinet_server_oper_record ecsor
         left join t_user u on u.uid = ecsor.create_uid
+        left join t_electricity_cabinet_server ecs on ecs.id = ecsor.ele_server_id
+        left join t_electricity_cabinet ec on ecs.electricity_cabinet_id = ec.id
         where
         ecsor.ele_server_id = #{eleServerId}
         <if test="createUserName != null and createUserName != ''">
