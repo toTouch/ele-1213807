@@ -23,12 +23,12 @@ public class JsonAdminElectricityCabinetServerController {
     @GetMapping("queryList") public R queryList(@RequestParam(value = "eleName", required = false) String eleName,
         @RequestParam(value = "deviceName", required = false) String deviceName,
         @RequestParam(value = "tenantName", required = false) String tenantName,
-        @RequestParam(value = "serverTimeStart", required = false) Long serverTimeStart,
-        @RequestParam(value = "serverTimeEnd", required = false) Long serverTimeEnd,
+        @RequestParam(value = "serverBeginTime", required = false) Long serverBeginTime,
+        @RequestParam(value = "serverEndTime", required = false) Long serverEndTime,
         @RequestParam("offset") Long offset, @RequestParam("size") Long size) {
 
         return electricityCabinetServerService
-            .queryList(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd, offset, size);
+            .queryList(eleName, deviceName, tenantName, serverBeginTime, serverEndTime, offset, size);
     }
 
     @DeleteMapping("/delete/{id}") public R deleteOne(@PathVariable("id") Long id) {
@@ -36,8 +36,8 @@ public class JsonAdminElectricityCabinetServerController {
     }
 
     @PutMapping("/update") public R updateOne(@RequestParam(value = "id") Long id,
-        @RequestParam(value = "serverBeginTime") Long serverTimeStart,
-        @RequestParam(value = "serverEndTime") Long serverTimeEnd) {
-        return electricityCabinetServerService.updateOne(id, serverTimeStart, serverTimeEnd);
+        @RequestParam(value = "serverBeginTime") Long serverBeginTime,
+        @RequestParam(value = "serverEndTime") Long serverEndTime) {
+        return electricityCabinetServerService.updateOne(id, serverBeginTime, serverEndTime);
     }
 }
