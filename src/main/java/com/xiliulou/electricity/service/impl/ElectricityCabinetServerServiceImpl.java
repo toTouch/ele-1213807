@@ -150,7 +150,7 @@ import lombok.extern.slf4j.Slf4j;
 
         Long count =
             electricityCabinetServerMapper.queryCount(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd);
-        return R.ok(new PageDataAndCountVo<>(data, count));
+        return R.ok(new PageDataAndCountVo<>(result, count));
     }
 
     @Override @Transactional(rollbackFor = Exception.class) public R deleteOne(Long id) {
