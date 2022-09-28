@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
@@ -20,6 +21,7 @@ import com.xiliulou.electricity.vo.EleCellWarnMsgVo;
 import com.xiliulou.security.bean.TokenUser;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -429,14 +431,14 @@ public class JsonAdminEleWarnMsgController {
             return R.ok(list);
         }
 
-        if (Objects.nonNull(electricityCabinetId) && Objects.nonNull(operateType)) {
+        if (StringUtils.isNoneBlank(electricityCabinetId) && Objects.nonNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, operateType, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
             return R.ok(list);
         }
 
-        if (Objects.nonNull(electricityCabinetId) && Objects.isNull(operateType)) {
+        if (StringUtils.isNoneBlank(electricityCabinetId) && Objects.isNull(operateType)) {
             String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
             List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
             eleWarnMsgService.queryElectricityName(list);
