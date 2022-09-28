@@ -69,11 +69,11 @@ public class JsonAdminEleWarnMsgController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (ObjectUtil.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (ObjectUtil.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()
@@ -166,11 +166,11 @@ public class JsonAdminEleWarnMsgController {
                 log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (ObjectUtil.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (ObjectUtil.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         EleWarnMsgQuery eleWarnMsgQuery = EleWarnMsgQuery.builder()

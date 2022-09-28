@@ -179,10 +179,9 @@ public class JsonAdminFranchiseeController {
         List<Long> franchiseeIds = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-        }
-
-        if (CollectionUtils.isEmpty(franchiseeIds)) {
-            return R.ok(Collections.EMPTY_LIST);
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
@@ -214,10 +213,9 @@ public class JsonAdminFranchiseeController {
         List<Long> franchiseeIds = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
-        }
-
-        if (CollectionUtils.isEmpty(franchiseeIds)) {
-            return R.ok(Collections.EMPTY_LIST);
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()

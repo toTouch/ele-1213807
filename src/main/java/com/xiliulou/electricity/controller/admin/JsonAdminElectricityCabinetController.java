@@ -128,11 +128,11 @@ public class JsonAdminElectricityCabinetController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
@@ -173,11 +173,11 @@ public class JsonAdminElectricityCabinetController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getDataType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder()
@@ -350,13 +350,12 @@ public class JsonAdminElectricityCabinetController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
+
             eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
-
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
-        }
-
 
         return R.ok(electricityCabinetService.queryNameList(size, offset, eleIdList, TenantContextHolder.getTenantId()));
     }

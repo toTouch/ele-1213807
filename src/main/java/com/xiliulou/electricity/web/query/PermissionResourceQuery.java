@@ -25,9 +25,9 @@ public class PermissionResourceQuery {
 	@Range(min = 1, max = 2, message = "type类型不合法")
 	private Integer type;
 
-	@NotEmpty(message = "uri不能为空", groups = CreateGroup.class)
+//	@NotEmpty(message = "uri不能为空", groups = CreateGroup.class)
 	private String uri;
-	@NotEmpty(message = "方法不能为空", groups = CreateGroup.class)
+//	@NotEmpty(message = "方法不能为空", groups = CreateGroup.class)
 	private String method;
 
 	@NotNull(message = "排序不能为空", groups = CreateGroup.class)

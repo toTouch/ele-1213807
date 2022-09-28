@@ -67,11 +67,11 @@ public class JsonAdminMaintenanceRecordController extends BaseController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         MaintenanceRecordListQuery query = MaintenanceRecordListQuery.builder()
@@ -109,11 +109,11 @@ public class JsonAdminMaintenanceRecordController extends BaseController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         MaintenanceRecordListQuery query = MaintenanceRecordListQuery.builder()

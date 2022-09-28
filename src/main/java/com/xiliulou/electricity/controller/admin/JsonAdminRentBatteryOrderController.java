@@ -72,11 +72,11 @@ public class JsonAdminRentBatteryOrderController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByDataType(user);
-        }
 
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByDataType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
@@ -118,11 +118,11 @@ public class JsonAdminRentBatteryOrderController {
                 log.warn("USER TYPE ERROR! not found operate service! userType={}", user.getType());
                 return R.fail("ELECTRICITY.0066", "用户权限不足");
             }
-            eleIdList = userTypeService.getEleIdListByUserType(user);
-        }
 
-        if (CollectionUtils.isEmpty(eleIdList)) {
-            return R.ok(Collections.EMPTY_LIST);
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if (CollectionUtils.isEmpty(eleIdList)) {
+                return R.ok(Collections.EMPTY_LIST);
+            }
         }
 
         RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
