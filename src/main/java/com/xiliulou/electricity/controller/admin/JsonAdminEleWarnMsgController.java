@@ -386,8 +386,6 @@ public class JsonAdminEleWarnMsgController {
             return R.ok(list);
         }
 
-        System.out.println("电柜ID===================="+electricityCabinetId+"=============="+sn);
-
         String sql = "select * from t_warn_msg_battery where tenantId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
         List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId,  begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);

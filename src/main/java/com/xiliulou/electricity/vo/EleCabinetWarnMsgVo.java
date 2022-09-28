@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class EleCabinetWarnMsgVo {
 
-	private Long createTime;
+	private String createTime;
 
 	private Long errorCode;
 
@@ -18,7 +18,7 @@ public class EleCabinetWarnMsgVo {
 
 	private Integer operateType;
 
-	private Long reportTime;
+	private String reportTime;
 
 	private String electricityCabinetId;
 

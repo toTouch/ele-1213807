@@ -10,7 +10,7 @@ import lombok.Data;
 @Data
 public class EleBusinessWarnMsgVo {
 
-	private Long createTime;
+	private String createTime;
 
 	private Long errorCode;
 
@@ -18,7 +18,7 @@ public class EleBusinessWarnMsgVo {
 
 	private Integer cellNo;
 
-	private Long reportTime;
+	private String reportTime;
 
 	private String electricityCabinetId;
 

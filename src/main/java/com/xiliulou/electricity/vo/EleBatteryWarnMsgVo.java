@@ -12,7 +12,7 @@ public class EleBatteryWarnMsgVo {
 
 	private String sessionId;
 
-	private Long createTime;
+	private String createTime;
 
 	private Long errorCode;
 
@@ -20,7 +20,7 @@ public class EleBatteryWarnMsgVo {
 
 	private String errorMsg;
 
-	private Long reportTime;
+	private String reportTime;
 
 	private String electricityCabinetId;
 
