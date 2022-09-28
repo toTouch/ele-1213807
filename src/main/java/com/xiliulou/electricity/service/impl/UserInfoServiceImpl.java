@@ -204,6 +204,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if(Objects.nonNull(franchiseeUserInfo) && StringUtils.isNotBlank(franchiseeUserInfo.getCardName())){
                     item.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
                 }
+
+                ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                if(Objects.nonNull(electricityBattery)){
+                    item.setNowElectricityBatterySn(electricityBattery.getSn());
+                }
             });
         }, threadPool).exceptionally(e -> {
             log.error("payDepositTime list ERROR! query memberCard error!", e);
