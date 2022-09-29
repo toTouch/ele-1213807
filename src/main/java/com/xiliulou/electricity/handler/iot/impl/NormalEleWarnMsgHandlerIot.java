@@ -112,7 +112,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         String sql = "insert into t_warn_msg_battery (electricityCabinetId,errorCode,sessionId,batteryName,errorMsg,createTime,reportTime,tenantId) values(?,?,?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getBatteryName(), eleWarnMsgVo.getErrorMsg(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getBatteryName(), eleWarnMsgVo.getErrorMsg(),
                     createTime, reportTime,electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert batteryWarn sql error!", e);
@@ -158,7 +158,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         String sql = "insert into t_warn_msg_cabinet (electricityCabinetId,errorCode,sessionId,operateType,errorMsg,createTime,reportTime,tenantId) values(?,?,?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getOperateType(), eleWarnMsgVo.getErrorMsg(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getOperateType(), eleWarnMsgVo.getErrorMsg(),
                     createTime, reportTime,electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert cabinetWarn sql error!", e);
@@ -178,10 +178,10 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleWarnMsgVo.getCreateTime()) ? 0L : eleWarnMsgVo.getCreateTime());
         String reportTime = formatter.format(reportDateTime);
 
-        String sql = "insert into t_warn_msg_business (electricityCabinetId,errorCode,sessionId,cellNo,operateType,errorMsg,createTime,reportTime,tenantId) values(?,?,?,?,?,?,?,?,?);";
+        String sql = "insert into t_warn_msg_business (electricityCabinetId,errorCode,sessionId,cellNo,errorMsg,createTime,reportTime,tenantId) values(?,?,?,?,?,?,?,?);";
 
         try {
-            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getOperateType(), eleWarnMsgVo.getErrorMsg(),
+            clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getErrorMsg(),
                     createTime, reportTime,electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert cabinetWarn sql error!", e);
