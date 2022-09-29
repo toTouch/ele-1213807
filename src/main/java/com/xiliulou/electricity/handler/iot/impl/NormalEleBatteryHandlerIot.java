@@ -266,7 +266,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
         if (StringUtils.isNotEmpty(chargeStatus)) {
             newElectricityBattery.setChargeStatus(Integer.valueOf(chargeStatus));
         }
-        electricityBatteryService.updateByOrder(newElectricityBattery);
+        electricityBatteryService.updateByOrderV2(newElectricityBattery);
 
         //电池上报是否有其他信息
         if (Objects.nonNull(eleBatteryVo.getHasOtherAttr()) && eleBatteryVo.getHasOtherAttr()) {
