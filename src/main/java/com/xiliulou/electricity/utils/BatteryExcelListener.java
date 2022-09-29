@@ -108,7 +108,7 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 					batteryExcelQuery.setVoltage(0);
 				}
 				electricityBattery.setVoltage(batteryExcelQuery.getVoltage());
-
+				electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
 				electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
 				electricityBattery.setCreateTime(System.currentTimeMillis());
 				electricityBattery.setUpdateTime(System.currentTimeMillis());
