@@ -170,7 +170,7 @@ public class NormalEleBatteryHandlerIot extends AbstractElectricityIotHandler {
                     newElectricityBattery.setElectricityCabinetId(null);
                     newElectricityBattery.setElectricityCabinetName(null);
                     newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                    electricityBatteryService.updateByOrder(newElectricityBattery);
+                    electricityBatteryService.updateByOrderV2(newElectricityBattery);
                 }
             }
 
