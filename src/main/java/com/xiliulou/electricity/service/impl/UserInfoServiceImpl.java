@@ -724,10 +724,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        //已绑定电池
-        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+        //已缴纳押金和已绑定电池状态  才允许绑定电池
+        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
             log.error("WEBBIND ERROR ERROR! user rent battery! uid={} ", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
+            return R.fail("ELECTRICITY.0042", "绑定电池失败");
         }
 
         //判断电池是否存在，或者已经被绑定
