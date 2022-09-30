@@ -106,7 +106,7 @@ public class JsonAdminFranchiseeController extends BaseController {
     }
 
     /**
-     * 获取租户加盟商列表
+     * 获取租户下加盟商列表
      * @return
      */
     @GetMapping(value = "/admin/franchisee/selectListByTenantId")

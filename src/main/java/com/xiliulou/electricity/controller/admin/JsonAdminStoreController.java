@@ -76,7 +76,7 @@ public class JsonAdminStoreController extends BaseController {
     }
 
     /**
-     * 根据角色获取门店列表
+     * 根据角色获取租户下门店列表
      * @return
      */
     @GetMapping(value = "/admin/store/selectListQuery")

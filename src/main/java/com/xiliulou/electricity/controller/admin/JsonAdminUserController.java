@@ -4,6 +4,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.service.UserDataScopeService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -41,6 +42,8 @@ public class JsonAdminUserController extends BaseController {
     UserService userService;
     @Autowired
     RoleService roleService;
+    @Autowired
+    UserDataScopeService userDataScopeService;
 
 
     @PostMapping("/user/register")
@@ -95,6 +98,11 @@ public class JsonAdminUserController extends BaseController {
         }
 
         return returnPairResult(userService.queryCount(uid,  name, phone, type, startTime, endTime,tenantId));
+    }
+
+    @GetMapping("/user/scope/{uid}")
+    public R UserDataScope(@PathVariable("uid") Long uid) {
+        return R.ok(userDataScopeService.selectByUid(uid));
     }
 
     @PutMapping("/user")

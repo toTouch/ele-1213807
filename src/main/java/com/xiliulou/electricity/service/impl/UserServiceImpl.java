@@ -42,11 +42,9 @@ import javax.annotation.Resource;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * (User)表服务实现类
@@ -321,8 +319,12 @@ public class UserServiceImpl implements UserService {
     @Override
     @DS("slave_1")
     public Pair<Boolean, Object> queryListUser(Long uid, Long size, Long offset, String name, String phone, Integer type, Long startTime, Long endTime, Integer tenantId) {
-        return Pair.of(true, this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime, tenantId));
+        List<User> userList = this.userMapper.queryListUserByCriteria(uid, size, offset, name, phone, type, startTime, endTime, tenantId);
+        if(CollectionUtils.isEmpty(userList)){
+            return Pair.of(true, Collections.EMPTY_LIST);
+        }
 
+        return Pair.of(true, userList);
     }
 
     @Override
@@ -405,7 +407,6 @@ public class UserServiceImpl implements UserService {
             List<UserDataScope> userDataScopes = buildUserDataScope(user.getUid(), adminUserQuery.getDataIdList());
             userDataScopeService.batchInsert(userDataScopes);
         }
-
 
         return i > 0 ? Pair.of(true, null) : Pair.of(false, "更新失败!");
     }

@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.PermissionTemplate;
+import com.xiliulou.electricity.query.PermissionTemplateQuery;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -61,5 +63,7 @@ public interface PermissionTemplateService {
      */
     Boolean deleteById(Long id);
 
-    List<PermissionTemplate> selectByType(Integer typeOperate);
+    List<Long> selectByType(Integer typeOperate);
+
+    int insertPermissionTemplate(PermissionTemplateQuery permissionTemplateQuery);
 }

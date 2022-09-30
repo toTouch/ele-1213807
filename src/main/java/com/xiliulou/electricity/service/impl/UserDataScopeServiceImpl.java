@@ -3,13 +3,16 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.UserDataScope;
 import com.xiliulou.electricity.mapper.UserDataScopeMapper;
 import com.xiliulou.electricity.service.UserDataScopeService;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -111,8 +114,15 @@ public class UserDataScopeServiceImpl implements UserDataScopeService {
     }
 
     @Override
-    public List<UserDataScope> selectByUid(Long uid) {
-        return this.userDataScopeMapper.selectByUid(uid);
+    public List<Long> selectByUid(Long uid) {
+        List<UserDataScope> userDataScopes = this.userDataScopeMapper.selectByUid(uid);
+        if(CollectionUtils.isEmpty(userDataScopes)){
+            return Collections.EMPTY_LIST;
+        }
+
+        List<Long> list = userDataScopes.stream().map(UserDataScope::getDataId).collect(Collectors.toList());
+
+        return list;
     }
 
     @Override

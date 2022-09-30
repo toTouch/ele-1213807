@@ -16,6 +16,7 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 public class StoreQuery {
+	private Long id;
 	private Long size;
 	private Long offset;
 	/**

@@ -22,6 +22,7 @@ import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -150,7 +151,9 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL)
+				&& isIllegalMethod(permissionResource.getMethod())
+				&& StringUtils.isNotBlank(permissionResourceQuery.getUri())) {
 			return Pair.of(false, "方法不合法！");
 		}
 
@@ -193,7 +196,9 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 			}
 		}
 
-		if (Objects.nonNull(permissionResource.getMethod()) && Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL) && isIllegalMethod(permissionResource.getMethod())) {
+		if (Objects.equals(permissionResourceQuery.getType(), PermissionResource.TYPE_URL)
+				&& isIllegalMethod(permissionResource.getMethod())
+				&& StringUtils.isNotBlank(permissionResourceQuery.getUri())) {
 			return Pair.of(false, "方法不合法！");
 		}
 

@@ -65,4 +65,7 @@ public interface PermissionTemplateMapper extends BaseMapper<PermissionTemplate>
      */
     int deleteById(Long id);
 
+    int deleteByType(Integer type);
+
+    int batchInsert(List<PermissionTemplate> permissionList);
 }

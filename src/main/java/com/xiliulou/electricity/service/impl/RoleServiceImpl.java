@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.google.api.client.util.Sets;
 import com.google.common.collect.Lists;
 import com.xiliulou.cache.redis.RedisService;
@@ -23,6 +24,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.RoleQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -257,5 +259,4 @@ public class RoleServiceImpl implements RoleService {
 		}
 		return role.getId();
 	}
-
 }

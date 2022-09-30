@@ -16,6 +16,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class FranchiseeQuery {
+	private Long id;
 	private Long size;
 	private Long offset;
 	/**

@@ -14,8 +14,6 @@ import java.util.List;
  */
 public interface RolePermissionService {
 
-
-
     /**
      * 新增数据
      *

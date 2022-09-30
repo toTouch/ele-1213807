@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.UserDataScope;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.List;
 
@@ -65,7 +66,7 @@ public interface UserDataScopeService {
 
     Integer deleteByUid(Long uid);
 
-    List<UserDataScope> selectByUid(Long uid);
+    List<Long> selectByUid(Long uid);
 
     List<Long> selectDataIdByUid(Long uid);
 }

@@ -3,14 +3,18 @@ package com.xiliulou.electricity.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.electricity.entity.PermissionTemplate;
 import com.xiliulou.electricity.mapper.PermissionTemplateMapper;
+import com.xiliulou.electricity.query.PermissionTemplateQuery;
 import com.xiliulou.electricity.service.PermissionTemplateService;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -100,7 +104,34 @@ public class PermissionTemplateServiceImpl implements PermissionTemplateService 
     }
 
     @Override
-    public List<PermissionTemplate> selectByType(Integer typeOperate) {
-        return this.permissionTemplateMapper.selectList(new LambdaQueryWrapper<PermissionTemplate>().eq(PermissionTemplate::getType, typeOperate));
+    public List<Long> selectByType(Integer typeOperate) {
+        List<PermissionTemplate> permissionTemplates = this.permissionTemplateMapper.selectList(new LambdaQueryWrapper<PermissionTemplate>().eq(PermissionTemplate::getType, typeOperate));
+        if(CollectionUtils.isEmpty(permissionTemplates)){
+            return Collections.EMPTY_LIST;
+        }
+
+        return permissionTemplates.stream().map(PermissionTemplate::getPid).collect(Collectors.toList());
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public int insertPermissionTemplate(PermissionTemplateQuery permissionTemplateQuery) {
+
+        //删除旧权限
+        permissionTemplateMapper.deleteByType(permissionTemplateQuery.getType());
+
+        //保存新权限
+        if(CollectionUtils.isEmpty(permissionTemplateQuery.getPermissionIds())){
+            return 0;
+        }
+
+        List<PermissionTemplate> permissionList = permissionTemplateQuery.getPermissionIds().parallelStream().map(item -> {
+            PermissionTemplate permissionTemplate = new PermissionTemplate();
+            permissionTemplate.setPid(item);
+            permissionTemplate.setType(permissionTemplateQuery.getType());
+            return permissionTemplate;
+        }).collect(Collectors.toList());
+
+        return permissionTemplateMapper.batchInsert(permissionList);
     }
 }

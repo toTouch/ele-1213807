@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
@@ -20,7 +21,7 @@ import java.util.Objects;
  * @since 2021-06-16 14:31:45
  */
 @RestController
-public class JsonAdminTenantController {
+public class JsonAdminTenantController extends BaseController {
     /**
      * 服务对象
      */
@@ -108,6 +109,5 @@ public class JsonAdminTenantController {
     public R addTenant(@PathVariable("id") Integer id) {
         return R.ok(tenantService.queryByIdFromCache(id));
     }
-
 
 }

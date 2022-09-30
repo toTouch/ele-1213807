@@ -37,7 +37,7 @@ public class AdminUserQuery {
 	private Integer userType;
 
 	@Range(min = 1, max = 10, message = "数据可见类型不合法", groups = {CreateGroup.class, UpdateGroup.class})
-	@NotNull(message = "数据可见类型不为空", groups = {CreateGroup.class})
+	@NotNull(message = "数据可见类型不能为空", groups = {CreateGroup.class})
 	private Integer dataType;
 
 	@NotEmpty(message = "语言不能为空", groups = {CreateGroup.class})
