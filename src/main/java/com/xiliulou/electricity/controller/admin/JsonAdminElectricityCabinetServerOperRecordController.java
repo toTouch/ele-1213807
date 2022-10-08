@@ -20,7 +20,7 @@ public class JsonAdminElectricityCabinetServerOperRecordController {
     @Resource private ElectricityCabinetServerOperRecordService electricityCabinetServerOperRecordService;
 
     @GetMapping("queryList")
-    public R queryList(@RequestParam(value = "createUserName", required = false) String createUserName,
+    public R queryList(@RequestParam(value = "userName", required = false) String createUserName,
         @RequestParam("eleServerId") Long eleServerId, @RequestParam("offset") Long offset,
         @RequestParam("size") Long size) {
 
