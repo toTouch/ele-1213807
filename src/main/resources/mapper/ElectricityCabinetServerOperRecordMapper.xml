@@ -117,7 +117,7 @@
         where
         ecsor.ele_server_id = #{eleServerId}
         <if test="createUserName != null and createUserName != ''">
-            and u.name = #{createUserName}
+            and u.name like concat('%', #{createUserName}, '%')
         </if>
         order by ecsor.create_time desc
         limit #{offset}, #{size}
