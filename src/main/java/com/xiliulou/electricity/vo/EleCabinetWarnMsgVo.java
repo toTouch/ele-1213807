@@ -10,6 +10,8 @@ import lombok.Data;
 @Data
 public class EleCabinetWarnMsgVo {
 
+	private String sessionId;
+
 	private String createTime;
 
 	private Long errorCode;
