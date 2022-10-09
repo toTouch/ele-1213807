@@ -116,4 +116,6 @@ public class ElectricityCabinetOtherSetting {
      * multi——v模式
      * */
     private Integer maxBatteryStandard;
+
+    private Integer enableBatteryExceptionCheck;
 }
