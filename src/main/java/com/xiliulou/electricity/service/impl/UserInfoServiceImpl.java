@@ -1119,7 +1119,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setServiceStatus(serviceStatus);
         userInfo.setTenantId(TenantContextHolder.getTenantId());
 
-        int result = userInfoMapper.updateByUid(userInfo);
+        int result = this.updateByUid(userInfo);
         return Pair.of(true, result);
     }
 
