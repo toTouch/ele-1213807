@@ -68,9 +68,7 @@
         <if test="tenantId != null">
             tenant_id = #{tenantId},
         </if>
-        <if test="updateTime != null">
-            update_time = #{updateTime},
-        </if>
+        update_time = #{updateTime}
         where user_info_id = #{userInfoId}
     </update>
 
