@@ -37,6 +37,7 @@ import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -44,6 +45,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -132,6 +134,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     StorageConfig storageConfig;
     @Autowired private ElectricityCabinetServerService electricityCabinetServerService;
+
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -2827,5 +2833,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             }
         }
         return R.ok(cabinetPhoto);
+    }
+
+    @Override
+    public R acquireIdcardFileSign() {
+        return R.ok(storageService.getOssUploadSign("cabinet/"));
     }
 }
