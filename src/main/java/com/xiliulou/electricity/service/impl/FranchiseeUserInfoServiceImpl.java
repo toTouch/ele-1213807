@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -18,6 +19,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import org.springframework.stereotype.Service;
@@ -108,15 +110,25 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public Pair<Boolean, Object> updateServiceStatus(Long userInfoId, Integer serviceStatus) {
+    public Triple<Boolean, String, Object> updateServiceStatus(Long uid, Integer serviceStatus) {
+        UserInfo userInfo=userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false,"ELECTRICITY.0019", "未找到用户");
+        }
+
+        ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
+        if (!Objects.isNull(battery)) {
+            return Triple.of(false,"ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！",battery.getSn()));
+        }
+
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setServiceStatus(serviceStatus);
-        franchiseeUserInfo.setUserInfoId(userInfoId);
+        franchiseeUserInfo.setUserInfoId(userInfo.getId());
         franchiseeUserInfo.setTenantId(TenantContextHolder.getTenantId());
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 
         this.updateByUserInfoId(franchiseeUserInfo);
-        return Pair.of(true, null);
+        return Triple.of(true, "",null);
     }
 
     @Override

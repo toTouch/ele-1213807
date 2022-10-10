@@ -211,13 +211,13 @@ public class JsonAdminUserInfoController extends BaseController {
 
     /**
      * 更新用户服务状态
-     * @param userInfoId
+     * @param uid
      * @param serviceStatus
      * @return
      */
     @PutMapping(value = "/admin/userInfo/serviceStatus")
-    public R updateServiceStatus(@RequestParam("userInfoId") Long userInfoId,@RequestParam("serviceStatus") Integer serviceStatus){
-        return returnPairResult(franchiseeUserInfoService.updateServiceStatus(userInfoId,serviceStatus));
+    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
+        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
     }
 
     //列表查询
