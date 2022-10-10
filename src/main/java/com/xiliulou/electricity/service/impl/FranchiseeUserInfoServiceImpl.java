@@ -111,14 +111,21 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
 
     @Override
     public Triple<Boolean, String, Object> updateServiceStatus(Long uid, Integer serviceStatus) {
-        UserInfo userInfo=userInfoService.queryByUidFromCache(uid);
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
         if (Objects.isNull(userInfo)) {
-            return Triple.of(false,"ELECTRICITY.0019", "未找到用户");
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
         }
 
-        ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
-        if (!Objects.isNull(battery)) {
-            return Triple.of(false,"ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！",battery.getSn()));
+        if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
+            if (!Objects.isNull(battery)) {
+                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));
+            }
+        } else if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+
+        } else {
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
         }
 
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
