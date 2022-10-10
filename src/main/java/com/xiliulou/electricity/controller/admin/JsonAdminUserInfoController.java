@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -34,7 +35,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-public class JsonAdminUserInfoController {
+public class JsonAdminUserInfoController extends BaseController {
     /**
      * 服务对象
      */
@@ -201,6 +202,17 @@ public class JsonAdminUserInfoController {
     public R deleteOrderCache(@RequestParam("uid") Long uid) {
         redisService.delete(CacheConstant.ORDER_TIME_UID + uid);
         return R.ok();
+    }
+
+    /**
+     * 更新用户服务状态
+     * @param uid
+     * @param serviceStatus
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/serviceStatus")
+    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
+        return returnPairResult(userInfoService.updateServiceStatus(uid,serviceStatus));
     }
 
     //列表查询

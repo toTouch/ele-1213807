@@ -33,6 +33,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -1111,7 +1112,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         return result;
     }
 
+    @Override
+    public Pair<Boolean, Object> updateServiceStatus(Long uid, Integer serviceStatus) {
+        UserInfo userInfo = new UserInfo();
+        userInfo.setUid(uid);
+        userInfo.setServiceStatus(serviceStatus);
+        userInfo.setTenantId(TenantContextHolder.getTenantId());
 
+        int result = userInfoMapper.updateByUid(userInfo);
+        return Pair.of(true, result);
+    }
 
     @Override
     public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
