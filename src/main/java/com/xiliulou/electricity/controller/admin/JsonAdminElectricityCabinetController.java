@@ -630,4 +630,12 @@ public class JsonAdminElectricityCabinetController {
                               @RequestParam("eleId") Integer eleId) {
         return eleOnlineLogService.queryOnlineLogCount(status, eleId);
     }
+
+    /**
+     * 获取上传柜机照片所需的签名
+     */
+    @GetMapping(value = "/admin/acquire/upload/cabiet/file/sign")
+    public R getUploadCabinetFileSign() {
+        return electricityCabinetService.acquireIdcardFileSign();
+    }
 }
