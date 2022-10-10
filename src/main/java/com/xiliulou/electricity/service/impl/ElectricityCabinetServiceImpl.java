@@ -2837,6 +2837,6 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R acquireIdcardFileSign() {
-        return R.ok(storageService.getOssUploadSign("cabinet/"));
+        return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
 }
