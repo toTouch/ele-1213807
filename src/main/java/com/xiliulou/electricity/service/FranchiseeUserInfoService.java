@@ -5,6 +5,7 @@ import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
@@ -80,5 +81,5 @@ public interface FranchiseeUserInfoService {
 
     FranchiseeUserInfo selectByNowBattery(String sn);
 
-
+    Pair<Boolean, Object> updateServiceStatus(Long userInfoId, Integer serviceStatus);
 }

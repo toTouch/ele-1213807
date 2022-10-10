@@ -6,12 +6,14 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
@@ -43,7 +45,10 @@ public class JsonAdminUserInfoController extends BaseController {
     UserInfoService userInfoService;
     @Autowired
     RedisService redisService;
-    @Autowired UserTypeFactory userTypeFactory;
+    @Autowired
+    UserTypeFactory userTypeFactory;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -206,13 +211,13 @@ public class JsonAdminUserInfoController extends BaseController {
 
     /**
      * 更新用户服务状态
-     * @param uid
+     * @param userInfoId
      * @param serviceStatus
      * @return
      */
     @PutMapping(value = "/admin/userInfo/serviceStatus")
-    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
-        return returnPairResult(userInfoService.updateServiceStatus(uid,serviceStatus));
+    public R updateServiceStatus(@RequestParam("userInfoId") Long userInfoId,@RequestParam("serviceStatus") Integer serviceStatus){
+        return returnPairResult(franchiseeUserInfoService.updateServiceStatus(userInfoId,serviceStatus));
     }
 
     //列表查询

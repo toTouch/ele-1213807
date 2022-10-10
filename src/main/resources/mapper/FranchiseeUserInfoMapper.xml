@@ -65,8 +65,13 @@
         <if test="batteryServiceFeeStatus != null">
             battery_service_fee_status = #{batteryServiceFeeStatus},
         </if>
-        update_time = #{updateTime}
-        where user_info_id = #{userInfoId} and del_flag=0
+        <if test="tenantId != null">
+            tenant_id = #{tenantId},
+        </if>
+        <if test="updateTime != null">
+            update_time = #{updateTime},
+        </if>
+        where user_info_id = #{userInfoId}
     </update>
 
     <update id="updateByOrder">

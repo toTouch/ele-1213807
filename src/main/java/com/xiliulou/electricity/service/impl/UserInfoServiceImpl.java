@@ -1113,17 +1113,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public Pair<Boolean, Object> updateServiceStatus(Long uid, Integer serviceStatus) {
-        UserInfo userInfo = new UserInfo();
-        userInfo.setUid(uid);
-        userInfo.setServiceStatus(serviceStatus);
-        userInfo.setTenantId(TenantContextHolder.getTenantId());
-
-        int result = this.updateByUid(userInfo);
-        return Pair.of(true, result);
-    }
-
-    @Override
     public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {
         userInfoQuery.setOffset(0L);
         userInfoQuery.setSize(2000L);

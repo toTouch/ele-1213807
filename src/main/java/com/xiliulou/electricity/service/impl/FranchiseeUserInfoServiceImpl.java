@@ -14,8 +14,10 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import org.springframework.stereotype.Service;
@@ -103,6 +105,18 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo) {
         franchiseeUserInfoMapper.updateByUserInfoId(franchiseeUserInfo);
+    }
+
+    @Override
+    public Pair<Boolean, Object> updateServiceStatus(Long userInfoId, Integer serviceStatus) {
+        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+        franchiseeUserInfo.setServiceStatus(serviceStatus);
+        franchiseeUserInfo.setUserInfoId(userInfoId);
+        franchiseeUserInfo.setTenantId(TenantContextHolder.getTenantId());
+        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        this.updateByUserInfoId(franchiseeUserInfo);
+        return Pair.of(true, null);
     }
 
     @Override

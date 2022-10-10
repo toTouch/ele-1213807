@@ -112,5 +112,4 @@ public interface UserInfoService extends IService<UserInfo> {
 
     Integer updateByUid(UserInfo userInfo);
 
-    Pair<Boolean, Object> updateServiceStatus(Long uid, Integer serviceStatus);
 }
