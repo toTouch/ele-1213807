@@ -216,13 +216,6 @@ public class EleOperateQueueHandler {
         dataMap.put("lockType", 1);
         dataMap.put("isForbidden", true);
 
-        Iterator<Map.Entry<String, Object>> iterator1 = dataMap.entrySet().iterator();
-        while (iterator1.hasNext()){
-            Map.Entry<String, Object> entry = iterator1.next();
-            System.out.println("key=============="+entry.getKey()+",value==============="+entry.getValue());
-        }
-
-
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(UUID.randomUUID().toString().replace("-", ""))
                 .data(dataMap)
