@@ -95,7 +95,7 @@
                 is_light = #{isLight},
             </if>
             <if test="updateTime!= null ">
-                update_time = #{updateTime}
+                update_time = #{updateTime},
             </if>
             <if test="chargeV != null">
                 charge_v= #{chargeV},
