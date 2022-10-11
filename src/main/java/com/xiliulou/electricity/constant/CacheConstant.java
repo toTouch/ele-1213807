@@ -187,4 +187,6 @@ public interface CacheConstant {
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
     String CACHE_ELE_SET_MAP_KEY = "ele_set_map_key:";
+    String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_battery_member_card_expired_last_time:";
+    String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK = "CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK:";
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.RandomUtil;
+import cn.hutool.core.util.StrUtil;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -22,6 +23,7 @@ import com.xiliulou.electricity.vo.*;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiOrderResultDTO;
 import com.xiliulou.pay.weixinv3.exception.WechatPayException;
 import com.xiliulou.security.bean.TokenUser;
+import java.util.concurrent.TimeUnit;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.ibatis.ognl.ObjectElementsAccessor;
 import org.springframework.beans.BeanUtils;
@@ -1334,6 +1336,30 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     @Override
     public BigDecimal querySumMemberCardTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
         return baseMapper.querySumMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
+    }
+
+    @Override public void batteryMemberCardExpireReminder() {
+        if (!redisService.setNx(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK, "ok", 120000L, false)) {
+            log.warn("batteryMemberCardExpireReminder in execution");
+            return;
+        }
+
+        int offset = 0;
+        int size = 300;
+        long lastTime = System.currentTimeMillis() + 3 * 3600000 * 24;
+        long firstTime = System.currentTimeMillis();
+
+        String firstTimeStr = redisService.get(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME);
+        if (StrUtil.isNotBlank(firstTimeStr)) {
+            firstTime = Long.valueOf(firstTimeStr);
+        }
+        redisService
+            .set(CacheConstant.CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME, String.valueOf(lastTime), 26 * 3600L,
+                TimeUnit.SECONDS);
+
+        //        while(true) {
+        //            franchiseeUserInfoService.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+        //        }
     }
 
     private String generateOrderId(Long uid) {
