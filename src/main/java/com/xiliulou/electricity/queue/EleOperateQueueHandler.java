@@ -20,9 +20,7 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -217,6 +215,13 @@ public class EleOperateQueueHandler {
         dataMap.put("cell_no", cellNo);
         dataMap.put("lockType", 1);
         dataMap.put("isForbidden", true);
+
+        Iterator<Map.Entry<String, Object>> iterator1 = dataMap.entrySet().iterator();
+        while (iterator1.hasNext()){
+            Map.Entry<String, Object> entry = iterator1.next();
+            System.out.println("key=============="+entry.getKey()+",value==============="+entry.getValue());
+        }
+
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(UUID.randomUUID().toString().replace("-", ""))
