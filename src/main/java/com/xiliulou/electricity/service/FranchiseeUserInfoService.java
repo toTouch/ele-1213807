@@ -76,6 +76,8 @@ public interface FranchiseeUserInfoService {
 
     void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
+    Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo);
+
     List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(int offset, int size, long now, long threeDaysLater);
 
     FranchiseeUserInfo selectByNowBattery(String sn);

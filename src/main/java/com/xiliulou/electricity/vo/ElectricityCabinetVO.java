@@ -151,6 +151,15 @@ public class ElectricityCabinetVO {
     //租户code
     private String tenantCode;
 
+    /**
+     * 服务开始时间
+     */
+    private Long serverBeginTime;
+    /**
+     * 服务结束时间
+     */
+    private Long serverEndTime;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段

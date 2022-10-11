@@ -63,6 +63,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
                        @RequestParam(value = "cardName",required = false) String cardName,
+                       @RequestParam(value = "sortType",required = false) Integer sortType,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
@@ -88,6 +89,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .uid(uid)
+                .sortType(sortType)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
                 .tenantId(tenantId).build();

@@ -294,6 +294,33 @@
 		where id=#{id}
 	</update>
 
+	<update id="updateByOrderV2">
+		update t_electricity_battery
+		set
+		<if test="chargeStatus != null">
+			charge_status =#{chargeStatus},
+		</if>
+		<if test="healthStatus != null">
+			health_status =#{healthStatus},
+		</if>
+		<if test="power != null">
+			power =#{power},
+		</if>
+		<if test="model != null">
+			model =#{model},
+		</if>
+		<if test="exchangeCount != null">
+			exchange_count =#{exchangeCount},
+		</if>
+		electricity_cabinet_name=#{electricityCabinetName},
+		electricity_cabinet_id=#{electricityCabinetId},
+		status=#{status},
+		last_deposit_cell_no=#{lastDepositCellNo},
+		borrow_expire_time=#{borrowExpireTime},
+		update_time=#{updateTime}
+		where id=#{id}
+	</update>
+
 	<select id="homepageBatteryAnalysis" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">
        select sn,exchange_count as useCount,physics_status from t_electricity_battery b
        where b.del_flag = 0
