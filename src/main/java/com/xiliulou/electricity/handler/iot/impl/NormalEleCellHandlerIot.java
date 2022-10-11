@@ -83,6 +83,11 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
         }
 
+        Integer cellVoLockType = eleCellVo.getLockType();
+        if (Objects.nonNull(cellVoLockType)) {
+            electricityCabinetBox.setLockType(cellVoLockType);
+        }
+
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
 
@@ -105,6 +110,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         private String is_light;
         //可用禁用
         private String is_forbidden;
+        //锁仓类型
+        private Integer lockType;
 
     }
 }
