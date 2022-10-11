@@ -8,6 +8,8 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
@@ -144,6 +146,17 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Override
     public Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo) {
         return franchiseeUserInfoMapper.unBindNowBatterySn(franchiseeUserInfo);
+    }
+
+    @Override public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
+        Long firstTime, Long lastTime) {
+        return franchiseeUserInfoMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+    }
+
+    @Override
+    public List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime) {
+        return franchiseeUserInfoMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
     }
 
     @Override

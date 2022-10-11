@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.mapper;
 
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import java.util.List;
 
 import org.apache.ibatis.annotations.Insert;
@@ -47,4 +49,10 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 	void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
     Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo);
+
+	List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(@Param("offset") Integer offset,
+		@Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
+
+	List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(@Param("offset") Integer offset,
+		@Param("size") Integer size, @Param("firstTime") Long firstTime, @Param("lastTime") Long lastTime);
 }

@@ -10,19 +10,19 @@ import org.springframework.stereotype.Component;
 
 /**
  * @author zgw
- * @date 2022/10/10 14:14
+ * @date 2022/10/11 11:07
  * @mood
  */
-@Component @JobHandler(value = "batteryMemberCardExpireReminderTask") @Slf4j
-public class BatteryMemberCardExpireReminderTask extends IJobHandler {
+@Component @JobHandler(value = "carMemberCardExpireReminderTask") @Slf4j public class CarMemberCardExpireReminderTask
+    extends IJobHandler {
     @Autowired ElectricityMemberCardOrderService electricityMemberCardOrderService;
 
-    //电池套餐快过期提醒  每天凌晨一次
+    //租车套餐快过期提醒  每天凌晨一次
     @Override public ReturnT<String> execute(String param) throws Exception {
         try {
-            electricityMemberCardOrderService.batteryMemberCardExpireReminder();
+            electricityMemberCardOrderService.carMemberCardExpireReminder();
         } catch (Exception e) {
-            log.error("xxl-job电池月卡即将过期提醒处理失败", e);
+            log.error("xxl-job租车月卡即将过期提醒处理失败", e);
         }
         return IJobHandler.SUCCESS;
     }

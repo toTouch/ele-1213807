@@ -66,4 +66,6 @@ public interface ElectricityMemberCardOrderService {
     BigDecimal querySumMemberCardTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime);
 
     void batteryMemberCardExpireReminder();
+
+    void carMemberCardExpireReminder();
 }

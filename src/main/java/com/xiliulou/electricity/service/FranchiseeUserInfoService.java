@@ -2,6 +2,8 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 
@@ -75,4 +77,10 @@ public interface FranchiseeUserInfoService {
     void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
     Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo);
+
+    List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime);
+
+    List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime);
 }
