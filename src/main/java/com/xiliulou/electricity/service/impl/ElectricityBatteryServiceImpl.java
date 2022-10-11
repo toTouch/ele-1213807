@@ -434,11 +434,6 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
 
     @Override
-    public Integer updateByOrderV2(ElectricityBattery electricityBattery) {
-        return electricitybatterymapper.updateByOrderV2(electricityBattery);
-    }
-
-    @Override
     public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));
     }
