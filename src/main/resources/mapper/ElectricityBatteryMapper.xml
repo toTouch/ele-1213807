@@ -294,7 +294,7 @@
 		where id=#{id}
 	</update>
 
-	<update id="updateByOrderV2">
+	<update id="updateBatteryStatus">
 		update t_electricity_battery
 		set
 		<if test="chargeStatus != null">
