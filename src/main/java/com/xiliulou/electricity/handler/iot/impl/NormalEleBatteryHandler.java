@@ -133,7 +133,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         this.checkBatteryFranchisee(electricityCabinet, electricityBattery, updateElectricityCabinetBox, sessionId);
 
         //更新电池
-        electricityBatteryService.updateBatteryUser(updateBattery);
+        electricityBatteryService.updateBatteryStatus(updateBattery);
 
         //更新格挡
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
@@ -240,7 +240,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setBorrowExpireTime(null);
             updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(updateBattery);
+            electricityBatteryService.updateBatteryStatus(updateBattery);
         }
 
     }
@@ -316,7 +316,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         Double power = eleBatteryVO.getPower();
         //柜机模式
         String applicationMode = null;
-
 
         try {
             ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);

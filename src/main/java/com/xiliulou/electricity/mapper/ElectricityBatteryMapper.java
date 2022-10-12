@@ -36,6 +36,8 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
+    Integer updateBatteryStatus(ElectricityBattery electricityBattery);
+
 
 //    List<BorrowExpireBatteryVo> queryBorrowExpireBattery(@Param("curTime") long curTime, @Param("offset") Integer offset, @Param("size") Integer size);
 

@@ -312,11 +312,17 @@
 		<if test="exchangeCount != null">
 			exchange_count =#{exchangeCount},
 		</if>
+		<if test="physicsStatus != null">
+			physics_status =#{physicsStatus},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
-		status=#{status},
-		last_deposit_cell_no=#{lastDepositCellNo},
-		borrow_expire_time=#{borrowExpireTime},
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>
