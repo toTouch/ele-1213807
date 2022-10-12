@@ -79,7 +79,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
 
         EleWarnMsgVo eleWarnMsgVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleWarnMsgVo.class);
         if (Objects.isNull(eleWarnMsgVo)) {
-            log.error("ELE ERROR! warnMsgReport is null,productKey={},sessionId,{}", receiverMessage.getProductKey(),receiverMessage.getSessionId());
+            log.error("ELE ERROR! warnMsgReport is null,productKey={},sessionId,{}", receiverMessage.getProductKey(), receiverMessage.getSessionId());
             return;
         }
 
@@ -113,7 +113,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getBatteryName(), eleWarnMsgVo.getErrorMsg(),
-                    createTime, reportTime,electricityCabinet.getTenantId());
+                    createTime, reportTime, electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert batteryWarn sql error!", e);
         }
@@ -132,11 +132,11 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         LocalDateTime reportDateTime = TimeUtils.convertLocalDateTime(Objects.isNull(eleWarnMsgVo.getCreateTime()) ? 0L : eleWarnMsgVo.getCreateTime());
         String reportTime = formatter.format(reportDateTime);
 
-        String sql = "insert into t_warn_msg_cell (electricityCabinetId,errorCode,sessionId,cellNo,errorMsg,createTime,reportTime,tenantId) values(?,?,?,?,?,?,?,?);";
+        String sql = "insert into t_warn_msg_cell (electricityCabinetId,errorCode,sessionId,cellNo,errorMsg,createTime,reportTime,operateType,tenantId) values(?,?,?,?,?,?,?,?,?);";
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getErrorMsg(),
-                    createTime, reportTime,electricityCabinet.getTenantId());
+                    createTime, reportTime, eleWarnMsgVo.getOperateType(), electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert cellWarn sql error!", e);
         }
@@ -159,7 +159,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getOperateType(), eleWarnMsgVo.getErrorMsg(),
-                    createTime, reportTime,electricityCabinet.getTenantId());
+                    createTime, reportTime, electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert cabinetWarn sql error!", e);
         }
@@ -182,7 +182,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
 
         try {
             clickHouseService.insert(sql, electricityCabinet.getId(), eleWarnMsgVo.getErrorCode(), eleWarnMsgVo.getSessionId(), eleWarnMsgVo.getCellNo(), eleWarnMsgVo.getErrorMsg(),
-                    createTime, reportTime,electricityCabinet.getTenantId());
+                    createTime, reportTime, electricityCabinet.getTenantId());
         } catch (Exception e) {
             log.error("ELE ERROR! clickHouse insert cabinetWarn sql error!", e);
         }
