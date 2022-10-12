@@ -230,7 +230,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
                 .eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey())
                 .eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName())
-                .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
+//                .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
                 .eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             return R.fail("ELECTRICITY.0002", "换电柜的三元组已存在");

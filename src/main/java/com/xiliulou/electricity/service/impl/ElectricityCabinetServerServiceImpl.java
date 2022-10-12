@@ -228,6 +228,15 @@ import lombok.extern.slf4j.Slf4j;
             return;
         }
 
+        electricityCabinetServer = queryByProductKeyAndDeviceName(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (Objects.nonNull(electricityCabinetServer)) {
+            electricityCabinetServer.setElectricityCabinetId(electricityCabinet.getId());
+            electricityCabinetServer.setTenantId(electricityCabinet.getTenantId());
+            electricityCabinetServer.setUpdateTime(System.currentTimeMillis());
+            this.update(electricityCabinetServer);
+            return;
+        }
+
         electricityCabinetServer = new ElectricityCabinetServer();
         electricityCabinetServer.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetServer.setProductKey(electricityCabinet.getProductKey());
