@@ -7,32 +7,25 @@ import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * (OtaFileConfig)实体类
+ * (OtaFileEleSha256)实体类
  *
  * @author zgw
- * @since 2022-10-12 09:24:46
+ * @since 2022-10-12 17:31:08
  */
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_ota_file_config")
-public class OtaFileConfig {
+@TableName("t_ota_file_ele_sha256")
+public class OtaFileEleSha256 {
     
     private Long id;
     
-    private String name;
+    private Long electricityCabinetId;
     
-    private String downloadLink;
+    private String coreSha256Value;
     
-    private String version;
-    
-    private String sha256Value;
-    
-    /**
-     * 文件类型 1--核心板 2--子板
-     */
-    private Integer type;
+    private String subSha256Value;
     
     private Long createTime;
     
@@ -42,7 +35,4 @@ public class OtaFileConfig {
     
     public static final Integer DEL_DEL = 1;
     
-    public static final Integer TYPE_CORE_BOARD = 1;
-    
-    public static final Integer TYPE_SUB_BOARD = 2;
 }

@@ -41,12 +41,12 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     /**
      * 核心板oss路径
      */
-    private static String coreBoardPath = "a/b/core_board.bin";
+    private static String coreBoardPath = "a/b/core.bin";
     
     /**
      * 子板oss路径
      */
-    private static String daughterBoardPath = "a/b/daughter_board.bin";
+    private static String daughterBoardPath = "a/b/sub.bin";
     
     /**
      * AliYunOss路径
@@ -96,6 +96,11 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         return this.otaFileConfigMapper.queryAllByLimit(offset, limit);
     }
     
+    @Override
+    public List<OtaFileConfig> queryAll() {
+        return this.otaFileConfigMapper.queryAll();
+    }
+    
     /**
      * 新增数据
      *
@@ -141,13 +146,13 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
     
-        if (!Objects.equals(type, OtaFileConfig.TYPE_DAUGHTER_BOARD) && !Objects
+        if (!Objects.equals(type, OtaFileConfig.TYPE_SUB_BOARD) && !Objects
                 .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
-            return R.fail("100224", "ota文件类型不合法,请联系管理员或重新上传！");
+            return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
         
         try (InputStream inputStream = file.getInputStream()) {
-            String ossPath = OtaFileConfig.TYPE_DAUGHTER_BOARD.equals(type) ? daughterBoardPath : coreBoardPath;
+            String ossPath = OtaFileConfig.TYPE_SUB_BOARD.equals(type) ? daughterBoardPath : coreBoardPath;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink = aliYunOssUrl + ossPath;
             
@@ -183,7 +188,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("oat文件不存在");
         }
         try {
-            String ossPath = OtaFileConfig.TYPE_DAUGHTER_BOARD.equals(otaFileConfig.getType()) ? daughterBoardPath
+            String ossPath = OtaFileConfig.TYPE_SUB_BOARD.equals(otaFileConfig.getType()) ? daughterBoardPath
                     : coreBoardPath;
             
             aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
@@ -200,7 +205,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         if (!User.TYPE_USER_SUPER.equals(SecurityUtils.getUserInfo().getType())) {
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
-        
-        return R.ok(this.otaFileConfigMapper.queryAll());
+    
+        return R.ok(queryAll());
     }
 }

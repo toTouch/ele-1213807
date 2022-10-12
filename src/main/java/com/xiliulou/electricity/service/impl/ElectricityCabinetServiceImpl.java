@@ -128,6 +128,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     UserService userService;
     @Autowired
     EleIotOtaUrlConfig eleIotOtaUrlConfig;
+    
+    @Autowired
+    OtaFileConfigService otaFileConfigService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -1199,11 +1202,28 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             dataMap.put("cell_list", cellList);
 
         }
-
-        //ota升级 -->  ota_process
-        if(Objects.equals(ElectricityIotConstant.OTA_PROCESS, eleOuterCommandQuery.getCommand())){
-            dataMap.put("subUrl", eleIotOtaUrlConfig.getSubUrl());
-            dataMap.put("coreUrl", eleIotOtaUrlConfig.getCoreUrl());
+    
+        if (Objects.equals(ElectricityIotConstant.OTA_DOWNLOAD_FILE, eleOuterCommandQuery.getCommand())) {
+            //ota文件是否存在
+            List<OtaFileConfig> otaFileConfigs = Optional.ofNullable(otaFileConfigService.queryAll())
+                    .orElse(Lists.newArrayList());
+            Map<Integer, List<OtaFileConfig>> otaFileMaps = otaFileConfigs.stream()
+                    .collect(Collectors.groupingBy(OtaFileConfig::getType));
+            List<OtaFileConfig> coreBoardOtaFileConfigs = otaFileMaps.get(OtaFileConfig.TYPE_CORE_BOARD);
+            List<OtaFileConfig> subBoardOtaFileConfigs = otaFileMaps.get(OtaFileConfig.TYPE_SUB_BOARD);
+        
+            if (!DataUtil.mapIsUsable(otaFileMaps) || !DataUtil.collectionIsUsable(coreBoardOtaFileConfigs) || !DataUtil
+                    .collectionIsUsable(subBoardOtaFileConfigs)) {
+                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
+                        coreBoardOtaFileConfigs, subBoardOtaFileConfigs);
+                return R.fail("100301", "ota升级文件不完整，请联系客服处理");
+            }
+        
+            Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
+            data.put("coreFileUrl", coreBoardOtaFileConfigs.get(0).getDownloadLink());
+            data.put("coreFileSha256Hex", coreBoardOtaFileConfigs.get(0).getSha256Value());
+            data.put("subFileUrl", subBoardOtaFileConfigs.get(0).getDownloadLink());
+            data.put("subFileSha256Hex", subBoardOtaFileConfigs.get(0).getSha256Value());
         }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -2813,19 +2833,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(homepageBatteryVo);
 
     }
-
-    @Override
-    public R checkOtaUpgradeSession(String sessionId) {
-        //OtaRequestVo vo = redisService.getWithHash(CacheConstant.OTA_PROCESS_CACHE + sessionId, OtaRequestVo.class);
-        String json =
-            "{\"completeTime\":1662630328600,\"coreUpgradeResult\":false,\"deviceName\":\"dy-test-002\",\"failCells\":[],\"msg\":\"升级失败!\",\"operateResult\":false,\"productKey\":\"a1QqoBrbcT1\",\"successCells\":[],\"type\":\"ota_process_rsp\",\"upgradeType\":1}";
-        OtaRequestVo vo = JsonUtil.fromJson(json, OtaRequestVo.class);
-        if(Objects.isNull(vo)) {
-            return R.fail(null,"检查超时");
-        }
-        return R.ok(vo);
-    }
-
+    
     @Override
     public R closeOtaUpgradeSession(String sessionId) {
         redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);

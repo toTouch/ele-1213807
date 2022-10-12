@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.OtaFileEleSha256Mapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.OtaFileEleSha256" id="OtaFileEleSha256Map">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="electricityCabinetId" column="electricity_cabinet_id" jdbcType="INTEGER"/>
+        <result property="coreSha256Value" column="core_sha256_value" jdbcType="VARCHAR"/>
+        <result property="subSha256Value" column="sub_sha256_value" jdbcType="VARCHAR"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="OtaFileEleSha256Map">
+        select
+          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, create_time, update_time
+        from t_ota_file_ele_sha256
+        where id = #{id}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="OtaFileEleSha256Map">
+        select
+          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, create_time, update_time
+        from t_ota_file_ele_sha256
+        limit #{offset}, #{limit}
+    </select>
+    
+    <!--通过实体作为筛选条件查询-->
+    <select id="queryAll" resultMap="OtaFileEleSha256Map">
+        select
+        id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, create_time, update_time
+        from t_ota_file_ele_sha256
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="electricityCabinetId != null">
+                and electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="coreSha256Value != null and coreSha256Value != ''">
+                and core_sha256_value = #{coreSha256Value}
+            </if>
+            <if test="subSha256Value != null and subSha256Value != ''">
+                and sub_sha256_value = #{subSha256Value}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ota_file_ele_sha256(electricity_cabinet_id, core_sha256_value, sub_sha256_value, create_time, update_time)
+        values (#{electricityCabinetId}, #{coreSha256Value}, #{subSha256Value}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ota_file_ele_sha256
+        <set>
+            <if test="electricityCabinetId != null">
+                electricity_cabinet_id = #{electricityCabinetId},
+            </if>
+            <if test="coreSha256Value != null and coreSha256Value != ''">
+                core_sha256_value = #{coreSha256Value},
+            </if>
+            <if test="subSha256Value != null and subSha256Value != ''">
+                sub_sha256_value = #{subSha256Value},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ota_file_ele_sha256 where id = #{id}
+    </delete>
+
+</mapper>

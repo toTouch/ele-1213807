@@ -44,14 +44,18 @@ public class ElectricityIotConstant {
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
-    public static final String NORMAL_OTA_PROCESS_HANDLER = "normalOtaProcessHandler";
     public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
 
     /**
      * 核心板上报数据处理
      */
     public static final String NORMAL_CABINET_CORE_DATA_HANDLER = "normalCabinetCoreDataHandler";
-
+    
+    public static final String NORMAL_OTA_FILE_DOWNLOAD_HANDLER = "normalOtaFileDownloadHandler";
+    
+    public static final String NORMAL_OTA_FILE_SYNC_HANDLER = "normalOtaFileSyncHandler";
+    
+    public static final String NORMAL_OTA_PROCESS_HANDLER = "normalOtaProcessHandler";
 
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
@@ -129,8 +133,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, OTA_PROCESS)
                 || Objects.equals(command, OTA_PROCESS_RSP)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
-                || Objects.equals(command, RESTART_APP);
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP) || Objects.equals(command, RESTART_APP)
+                || Objects.equals(command, OTA_DOWNLOAD_FILE) || Objects.equals(command, OTA_DOWNLOAD_FILE_RSP)
+                || Objects.equals(command, OTA_SYNC_FILE) || Objects.equals(command, OTA_SYNC_FILE_RSP);
 
     }
 
@@ -187,8 +192,7 @@ public class ElectricityIotConstant {
     public static final String ELE_COMMAND_ORDER_NEW_DOOR_OPEN = "order_open_new_door_rsp";
     //新门检测 order_new_door_check_battery_rsp
     public static final String ELE_COMMAND_ORDER_NEW_DOOR_CHECK = "order_new_door_check_battery_rsp";
-
-
+    
     //新命令
     //旧电池
     @Deprecated
@@ -332,6 +336,14 @@ public class ElectricityIotConstant {
      */
     public static final String OTA_PROCESS = "ota_process";
     public static final String OTA_PROCESS_RSP = "ota_process_rsp";
+    
+    public static final String OTA_DOWNLOAD_FILE = "ota_download_file";
+    
+    public static final String OTA_DOWNLOAD_FILE_RSP = "ota_download_file_rsp";
+    
+    public static final String OTA_SYNC_FILE = "ota_sync_file";
+    
+    public static final String OTA_SYNC_FILE_RSP = "ota_sync_file_rsp";
 
     /**
      * sim上报
@@ -452,7 +464,16 @@ public class ElectricityIotConstant {
          * 柜机上报告警发邮件
          */
         COMMAND_HANDLER_MAPS.put(ELE_EMAIL_WARN_MSG, NORMAL_ELE_EMAIL_WARN_MSG_HANDLER);
-
-
+    
+        /**
+         * ota下载文件
+         */
+        COMMAND_HANDLER_MAPS.put(OTA_DOWNLOAD_FILE, NORMAL_OTA_FILE_DOWNLOAD_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OTA_DOWNLOAD_FILE_RSP, NORMAL_OTA_FILE_DOWNLOAD_HANDLER);
+        /**
+         * ota同步文件下载信息
+         */
+        COMMAND_HANDLER_MAPS.put(OTA_SYNC_FILE, NORMAL_OTA_FILE_SYNC_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OTA_SYNC_FILE_RSP, NORMAL_OTA_FILE_SYNC_HANDLER);
     }
 }
