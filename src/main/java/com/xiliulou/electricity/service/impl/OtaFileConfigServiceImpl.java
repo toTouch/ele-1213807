@@ -3,8 +3,10 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.OtaFileConfig;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
 import com.xiliulou.electricity.service.OtaFileConfigService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 
@@ -20,6 +22,8 @@ import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
@@ -133,14 +137,24 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R otaFileConfigUpload(MultipartFile file, String name, String version, Integer type) {
+        if (!User.TYPE_USER_SUPER.equals(SecurityUtils.getUserInfo().getType())) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+    
+        if (!Objects.equals(type, OtaFileConfig.TYPE_DAUGHTER_BOARD) && !Objects
+                .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
+            return R.fail("100224", "ota文件类型不合法,请联系管理员或重新上传！");
+        }
+        
         try (InputStream inputStream = file.getInputStream()) {
             String ossPath = OtaFileConfig.TYPE_DAUGHTER_BOARD.equals(type) ? daughterBoardPath : coreBoardPath;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink = aliYunOssUrl + ossPath;
             
             aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, inputStream);
-            
-            OtaFileConfig otaFileConfig = new OtaFileConfig();
+    
+            OtaFileConfig otaFileConfig = Optional.ofNullable(this.otaFileConfigMapper.queryByType(type))
+                    .orElse(new OtaFileConfig());
             otaFileConfig.setName(name);
             otaFileConfig.setDownloadLink(downloadLink);
             otaFileConfig.setSha256Value(sha256Hex);
@@ -148,11 +162,45 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             otaFileConfig.setType(type);
             otaFileConfig.setCreateTime(System.currentTimeMillis());
             otaFileConfig.setUpdateTime(System.currentTimeMillis());
-            
-            
+            this.otaFileConfigMapper.insertOrupdate(otaFileConfig);
         } catch (Exception e) {
-        
+            log.error("OTA_FILE_CONFIG_UPLOAD ERROR!", e);
+            return R.fail("ota文件上传失败！");
         }
-        return null;
+        return R.ok();
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public R otaFileConfigDelete(Long id) {
+        if (!User.TYPE_USER_SUPER.equals(SecurityUtils.getUserInfo().getType())) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        OtaFileConfig otaFileConfig = this.queryByIdFromDB(id);
+        if (Objects.isNull(otaFileConfig)) {
+            log.error("OTA_FILE_CONFIG_DELETE ERROR! otaFileConfig is null! id={}", id);
+            return R.fail("oat文件不存在");
+        }
+        try {
+            String ossPath = OtaFileConfig.TYPE_DAUGHTER_BOARD.equals(otaFileConfig.getType()) ? daughterBoardPath
+                    : coreBoardPath;
+            
+            aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
+            this.deleteById(id);
+        } catch (Exception e) {
+            log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
+            return R.fail("ota文件删除失败！");
+        }
+        return R.ok();
+    }
+    
+    @Override
+    public R otaFileConfigQueryList() {
+        if (!User.TYPE_USER_SUPER.equals(SecurityUtils.getUserInfo().getType())) {
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return R.ok(this.otaFileConfigMapper.queryAll());
     }
 }

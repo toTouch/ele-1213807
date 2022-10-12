@@ -35,11 +35,9 @@ public interface OtaFileConfigMapper extends BaseMapper<OtaFileConfig> {
     
     /**
      * 通过实体作为筛选条件查询
-     *
-     * @param otaFileConfig 实例对象
      * @return 对象列表
      */
-    List<OtaFileConfig> queryAll(OtaFileConfig otaFileConfig);
+    List<OtaFileConfig> queryAll();
     
     /**
      * 新增数据
@@ -65,4 +63,7 @@ public interface OtaFileConfigMapper extends BaseMapper<OtaFileConfig> {
      */
     int deleteById(Long id);
     
+    OtaFileConfig queryByType(Integer type);
+    
+    Integer insertOrupdate(OtaFileConfig otaFileConfig);
 }

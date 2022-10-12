@@ -25,8 +25,17 @@ public class JsonAdminOtaFileConfigController {
     
     @PostMapping("admin/otaFileConfig/upload")
     public R otaFileConfigUpload(@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
-            @RequestParam("version") String version, @RequestParam(value = "type", defaultValue = "1") Integer type) {
-        
+            @RequestParam("version") String version, @RequestParam(value = "type") Integer type) {
         return otaFileConfigService.otaFileConfigUpload(file, name, version, type);
+    }
+    
+    @DeleteMapping("admin/otaFileConfig/delete/{id}")
+    public R otaFileConfigDelete(@PathVariable("id") Long id) {
+        return otaFileConfigService.otaFileConfigDelete(id);
+    }
+    
+    @GetMapping("admin/otaFileConfig/queryList")
+    public R otaFileConfigQueryList() {
+        return otaFileConfigService.otaFileConfigQueryList();
     }
 }

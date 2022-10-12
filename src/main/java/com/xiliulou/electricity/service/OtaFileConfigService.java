@@ -65,4 +65,8 @@ public interface OtaFileConfigService {
     Boolean deleteById(Long id);
     
     R otaFileConfigUpload(MultipartFile file, String name, String version, Integer type);
+    
+    R otaFileConfigDelete(Long id);
+    
+    R otaFileConfigQueryList();
 }
