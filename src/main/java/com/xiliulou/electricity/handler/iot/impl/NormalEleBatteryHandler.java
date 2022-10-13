@@ -266,7 +266,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
-            updateBattery.setUid(null);
+//            updateBattery.setUid(null);
             updateBattery.setBorrowExpireTime(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
 

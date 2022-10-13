@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -207,6 +208,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
+                log.error("ElectricityBattery:{}", JsonUtil.toJson(electricityBattery));
                 if(Objects.nonNull(electricityBattery)){
                     item.setNowElectricityBatterySn(electricityBattery.getSn());
                 }
