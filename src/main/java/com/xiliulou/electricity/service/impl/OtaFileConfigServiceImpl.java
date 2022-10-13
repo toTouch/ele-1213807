@@ -195,8 +195,8 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         try {
             String ossPath = OtaFileConfig.TYPE_SUB_BOARD.equals(otaFileConfig.getType()) ? daughterBoardPath
                     : coreBoardPath;
-            
-            aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
+            //TODO
+            //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
             this.deleteById(id);
         } catch (Exception e) {
             log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
