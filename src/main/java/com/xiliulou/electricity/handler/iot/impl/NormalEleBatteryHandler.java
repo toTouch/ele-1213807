@@ -149,7 +149,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         battery.setElectricityCabinetId(electricityCabinet.getId());
         battery.setElectricityCabinetName(electricityCabinet.getName());
 //        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
-        battery.setUid(null);
+//        battery.setUid(null);
         battery.setBorrowExpireTime(null);
         battery.setUpdateTime(System.currentTimeMillis());
         battery.setHealthStatus(eleBatteryVO.getHealth());
@@ -238,7 +238,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
             updateBattery.setBorrowExpireTime(null);
-            updateBattery.setUid(null);
+//            updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
             electricityBatteryService.updateBatteryStatus(updateBattery);
         }
