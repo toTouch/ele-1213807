@@ -64,4 +64,5 @@ public interface OtaFileEleSha256Mapper extends BaseMapper<OtaFileEleSha256> {
      */
     int deleteById(Long id);
     
+    OtaFileEleSha256 queryByEid(Integer eid);
 }

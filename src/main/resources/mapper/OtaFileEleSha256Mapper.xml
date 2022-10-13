@@ -88,5 +88,12 @@
     <delete id="deleteById">
         delete from t_ota_file_ele_sha256 where id = #{id}
     </delete>
-
+    
+    
+    <select id="queryByEid" resultMap="OtaFileEleSha256Map">
+        select
+          id, electricity_cabinet_id, core_sha256_value, sub_sha256_value, create_time, update_time
+        from t_ota_file_ele_sha256
+        where electricity_cabinet_id = #{eid}
+    </select>
 </mapper>

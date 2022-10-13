@@ -193,5 +193,5 @@ public interface CacheConstant {
     String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
     String OTA_PROCESS_CACHE = "ota_process_cache";
     
-    String OTA_FILE_DOWNLOAD_CACHE_KEY = "ota_file_download_cache_key:";
+    String OTA_OPERATE_CACHE = "ota_operate_cache:";
 }

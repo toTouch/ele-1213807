@@ -23,4 +23,8 @@ public class JsonAdminOtaFileEleSha256Controller {
     private OtaFileEleSha256Service otaFileEleSha256Service;
     
     
+    @GetMapping("/admin/otaFileEleSha256/info")
+    public R queryInfo(@RequestParam("eid") Integer eid) {
+        return otaFileEleSha256Service.queryInfo(eid);
+    }
 }

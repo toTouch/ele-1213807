@@ -21,7 +21,7 @@ public class OtaFileEleSha256 {
     
     private Long id;
     
-    private Long electricityCabinetId;
+    private Integer electricityCabinetId;
     
     private String coreSha256Value;
     

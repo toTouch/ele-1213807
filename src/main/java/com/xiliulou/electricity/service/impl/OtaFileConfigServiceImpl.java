@@ -140,6 +140,11 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     }
     
     @Override
+    public OtaFileConfig queryByType(Integer type) {
+        return this.otaFileConfigMapper.queryByType(type);
+    }
+    
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public R otaFileConfigUpload(MultipartFile file, String name, String version, Integer type) {
         if (!User.TYPE_USER_SUPER.equals(SecurityUtils.getUserInfo().getType())) {
@@ -158,7 +163,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             
             aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, inputStream);
     
-            OtaFileConfig otaFileConfig = Optional.ofNullable(this.otaFileConfigMapper.queryByType(type))
+            OtaFileConfig otaFileConfig = Optional.ofNullable(queryByType(type))
                     .orElse(new OtaFileConfig());
             otaFileConfig.setName(name);
             otaFileConfig.setDownloadLink(downloadLink);

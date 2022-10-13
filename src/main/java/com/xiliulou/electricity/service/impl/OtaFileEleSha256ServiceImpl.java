@@ -16,6 +16,7 @@ import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
 import com.xiliulou.electricity.service.OtaFileEleSha256Service;
+import com.xiliulou.electricity.vo.OtaFileCheckSumVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -129,6 +130,36 @@ public class OtaFileEleSha256ServiceImpl implements OtaFileEleSha256Service {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.otaFileEleSha256Mapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public OtaFileEleSha256 queryByEid(Integer eid) {
+        return this.otaFileEleSha256Mapper.queryByEid(eid);
+    }
+    
+    @Override
+    public R queryInfo(Integer eid) {
+        OtaFileCheckSumVo otaFileCheckSumVo = new OtaFileCheckSumVo();
+        
+        OtaFileEleSha256 otaFileEleSha256 = this.queryByEid(eid);
+        if (Objects.nonNull(otaFileEleSha256)) {
+            otaFileCheckSumVo.setSubSha256HexEle(otaFileEleSha256.getSubSha256Value());
+            otaFileCheckSumVo.setCoreSha256HexEle(otaFileEleSha256.getCoreSha256Value());
+        }
+        
+        OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
+        if (Objects.nonNull(coreBoardOtaFileConfig)) {
+            otaFileCheckSumVo.setCoreSha256HexCloud(coreBoardOtaFileConfig.getSha256Value());
+            otaFileCheckSumVo.setCoreVersionCloud(coreBoardOtaFileConfig.getVersion());
+        }
+        
+        OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+        if (Objects.nonNull(subBoardOtaFileConfig)) {
+            otaFileCheckSumVo.setSubSha256HexCloud(subBoardOtaFileConfig.getSha256Value());
+            otaFileCheckSumVo.setSubVersionCloud(subBoardOtaFileConfig.getVersion());
+        }
+        
+        return R.ok(otaFileCheckSumVo);
     }
     
 }

@@ -61,4 +61,8 @@ public interface OtaFileEleSha256Service {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
+    
+    OtaFileEleSha256 queryByEid(Integer id);
+    
+    R queryInfo(Integer eid);
 }

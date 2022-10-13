@@ -143,4 +143,8 @@ public interface ElectricityCabinetService {
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
     R closeOtaUpgradeSession(String sessionId);
+    
+    R otaCommand(Integer eid, Integer operateType);
+    
+    R checkOtaSession(String sessionId, Integer operateType);
 }

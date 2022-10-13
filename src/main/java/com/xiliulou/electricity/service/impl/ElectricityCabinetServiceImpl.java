@@ -1203,28 +1203,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         }
     
-        if (Objects.equals(ElectricityIotConstant.OTA_DOWNLOAD_FILE, eleOuterCommandQuery.getCommand())) {
-            //ota文件是否存在
-            List<OtaFileConfig> otaFileConfigs = Optional.ofNullable(otaFileConfigService.queryAll())
-                    .orElse(Lists.newArrayList());
-            Map<Integer, List<OtaFileConfig>> otaFileMaps = otaFileConfigs.stream()
-                    .collect(Collectors.groupingBy(OtaFileConfig::getType));
-            List<OtaFileConfig> coreBoardOtaFileConfigs = otaFileMaps.get(OtaFileConfig.TYPE_CORE_BOARD);
-            List<OtaFileConfig> subBoardOtaFileConfigs = otaFileMaps.get(OtaFileConfig.TYPE_SUB_BOARD);
         
-            if (!DataUtil.mapIsUsable(otaFileMaps) || !DataUtil.collectionIsUsable(coreBoardOtaFileConfigs) || !DataUtil
-                    .collectionIsUsable(subBoardOtaFileConfigs)) {
-                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
-                        coreBoardOtaFileConfigs, subBoardOtaFileConfigs);
-                return R.fail("100301", "ota升级文件不完整，请联系客服处理");
-            }
-        
-            Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
-            data.put("coreFileUrl", coreBoardOtaFileConfigs.get(0).getDownloadLink());
-            data.put("coreFileSha256Hex", coreBoardOtaFileConfigs.get(0).getSha256Value());
-            data.put("subFileUrl", subBoardOtaFileConfigs.get(0).getDownloadLink());
-            data.put("subFileSha256Hex", subBoardOtaFileConfigs.get(0).getSha256Value());
-        }
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(eleOuterCommandQuery.getSessionId())
@@ -2839,4 +2818,66 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);
         return R.ok();
     }
+    
+    @Override
+    public R otaCommand(Integer eid, Integer operateType) {
+        final Integer TYPE_DOWNLOAD = 1;
+        final Integer TYPE_SYNC = 2;
+        final Integer TYPE_UPGRADE = 3;
+        
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+        
+        if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
+            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}",
+                    electricityCabinet, operateType);
+            return R.fail("100302", "ota操作类型不合法");
+        }
+        
+        Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
+        data.put("operateType", operateType);
+        
+        if (TYPE_DOWNLOAD.equals(operateType)) {
+            //ota文件是否存在
+            OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
+            OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+            
+            if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
+                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
+                        coreBoardOtaFileConfig, subBoardOtaFileConfig);
+                return R.fail("100301", "ota升级文件不完整，请联系客服处理");
+            }
+            
+            data.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
+            data.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
+            data.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
+            data.put("subFileSha256Hex", subBoardOtaFileConfig.getSha256Value());
+        }
+        
+        return R.ok();
+    }
+    
+    @Override
+    public R checkOtaSession(String sessionId, Integer operateType) {
+        String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + operateType + ":" + sessionId);
+        if (StrUtil.isEmpty(s)) {
+            return R.ok("0001");
+        }
+        if ("true".equalsIgnoreCase(s)) {
+            return R.ok("0002");
+        } else {
+            return R.ok("0003");
+        }
+    }
+    
+    
 }

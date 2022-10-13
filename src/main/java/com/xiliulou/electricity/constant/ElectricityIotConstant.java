@@ -51,11 +51,8 @@ public class ElectricityIotConstant {
      */
     public static final String NORMAL_CABINET_CORE_DATA_HANDLER = "normalCabinetCoreDataHandler";
     
-    public static final String NORMAL_OTA_FILE_DOWNLOAD_HANDLER = "normalOtaFileDownloadHandler";
+    public static final String NORMAL_OTA_OPERATE_HANDLER = "normalOtaOperateHandler";
     
-    public static final String NORMAL_OTA_FILE_SYNC_HANDLER = "normalOtaFileSyncHandler";
-    
-    public static final String NORMAL_OTA_PROCESS_HANDLER = "normalOtaProcessHandler";
 
     public static String acquireChargeHandlerName(String command) {
         return COMMAND_HANDLER_MAPS.get(command);
@@ -129,13 +126,10 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
-                || Objects.equals(command, OTA_PROCESS)
-                || Objects.equals(command, OTA_PROCESS_RSP)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP) || Objects.equals(command, RESTART_APP)
-                || Objects.equals(command, OTA_DOWNLOAD_FILE) || Objects.equals(command, OTA_DOWNLOAD_FILE_RSP)
-                || Objects.equals(command, OTA_SYNC_FILE) || Objects.equals(command, OTA_SYNC_FILE_RSP);
+                || Objects.equals(command, CUPBOARD_OPERATING_RECORD) || Objects.equals(command, OTA_OPERATE) || Objects
+                .equals(command, OTA_OPERATE_RSP)
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS) || Objects
+                .equals(command, SIM_TRAFFIC_STATISTICS_RSP) || Objects.equals(command, RESTART_APP);
 
     }
 
@@ -334,16 +328,9 @@ public class ElectricityIotConstant {
     /**
      * ota升级
      */
-    public static final String OTA_PROCESS = "ota_process";
-    public static final String OTA_PROCESS_RSP = "ota_process_rsp";
+    public static final String OTA_OPERATE = "ota_operate";
     
-    public static final String OTA_DOWNLOAD_FILE = "ota_download_file";
-    
-    public static final String OTA_DOWNLOAD_FILE_RSP = "ota_download_file_rsp";
-    
-    public static final String OTA_SYNC_FILE = "ota_sync_file";
-    
-    public static final String OTA_SYNC_FILE_RSP = "ota_sync_file_rsp";
+    public static final String OTA_OPERATE_RSP = "ota_operate_rsp";
 
     /**
      * sim上报
@@ -451,11 +438,6 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(CUPBOARD_OPERATING_RECORD, NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER);
         /**
-         * oat升级
-         */
-        COMMAND_HANDLER_MAPS.put(OTA_PROCESS, NORMAL_OTA_PROCESS_HANDLER);
-        COMMAND_HANDLER_MAPS.put(OTA_PROCESS_RSP, NORMAL_OTA_PROCESS_HANDLER);
-        /**
          * 流量上报
          */
         COMMAND_HANDLER_MAPS.put(SIM_TRAFFIC_STATISTICS, NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER);
@@ -466,14 +448,9 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_EMAIL_WARN_MSG, NORMAL_ELE_EMAIL_WARN_MSG_HANDLER);
     
         /**
-         * ota下载文件
+         * ota升级
          */
-        COMMAND_HANDLER_MAPS.put(OTA_DOWNLOAD_FILE, NORMAL_OTA_FILE_DOWNLOAD_HANDLER);
-        COMMAND_HANDLER_MAPS.put(OTA_DOWNLOAD_FILE_RSP, NORMAL_OTA_FILE_DOWNLOAD_HANDLER);
-        /**
-         * ota同步文件下载信息
-         */
-        COMMAND_HANDLER_MAPS.put(OTA_SYNC_FILE, NORMAL_OTA_FILE_SYNC_HANDLER);
-        COMMAND_HANDLER_MAPS.put(OTA_SYNC_FILE_RSP, NORMAL_OTA_FILE_SYNC_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OTA_OPERATE, NORMAL_OTA_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(OTA_OPERATE_RSP, NORMAL_OTA_OPERATE_HANDLER);
     }
 }
