@@ -35,17 +35,17 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
 
         EleCabinetCoreDataVO eleCabinetCoreDataVO = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCabinetCoreDataVO.class);
         if (Objects.isNull(eleCabinetCoreDataVO)) {
-            log.error("ELE ERROR! cabinetCoreData is null,productKey={},deviceName={}", receiverMessage.getProductKey(), receiverMessage.getDeviceName());
+            log.error("ELE ERROR! cabinetCoreData is null,sessionId={}", receiverMessage.getSessionId());
             return;
         }
 
-        this.atomicUpdateCabinetCoreData(electricityCabinet,eleCabinetCoreDataVO);
+        this.idempotentUpdateCabinetCoreData(electricityCabinet,eleCabinetCoreDataVO);
     }
 
     /**
      * 原子更新核心板上报数据
      */
-    private void atomicUpdateCabinetCoreData(ElectricityCabinet electricityCabinet,EleCabinetCoreDataVO eleCabinetCoreDataVO) {
+    private void idempotentUpdateCabinetCoreData(ElectricityCabinet electricityCabinet,EleCabinetCoreDataVO eleCabinetCoreDataVO) {
 
         EleCabinetCoreData cabinetCoreData = EleCabinetCoreData.builder()
                 .electricityCabinetId(electricityCabinet.getId().longValue()).
@@ -64,11 +64,12 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
                         temp(eleCabinetCoreDataVO.getTemp()).
                         humidity(eleCabinetCoreDataVO.getHumidity()).
                         waterLeachingWarning(eleCabinetCoreDataVO.isWaterLeachingWarning() ? EleCabinetCoreData.STSTUS_YES : EleCabinetCoreData.STSTUS_NO).
+                        coreVersion(Objects.isNull(eleCabinetCoreDataVO.getCoreVersion())? "0":String.valueOf(eleCabinetCoreDataVO.getCoreVersion())).
                         createTime(System.currentTimeMillis()).
                         updateTime(System.currentTimeMillis()).build();
 
 
-        eleCabinetCoreDataService.atomicUpdateCabinetCoreData(cabinetCoreData);
+        eleCabinetCoreDataService.idempotentUpdateCabinetCoreData(cabinetCoreData);
     }
 
 
@@ -111,6 +112,10 @@ public class NormalCabinetCoreDataHandler extends AbstractElectricityIotHandler 
          * 柜内水浸状态
          */
         private boolean isWaterLeachingWarning;
+        /**
+         * 核心板版本号
+         */
+        private String coreVersion;
     }
 
 }

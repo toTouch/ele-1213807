@@ -66,7 +66,7 @@ public interface EleCabinetCoreDataMapper extends BaseMapper<EleCabinetCoreData>
      */
     int deleteById(Long id);
 
-    int atomicUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
+    int idempotentUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData);
 
     List<EleCabinetCoreData> selectListByQuery(EleCabinetCoreDataQuery eleCabinetCoreDataQuery);
 }

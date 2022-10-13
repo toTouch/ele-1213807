@@ -7,7 +7,6 @@ import lombok.NoArgsConstructor;
 import com.baomidou.mybatisplus.annotation.TableName;
 
 /**
- * (OtaFileEleSha256)实体类
  *
  * @author zgw
  * @since 2022-10-12 17:31:08
@@ -16,12 +15,16 @@ import com.baomidou.mybatisplus.annotation.TableName;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_ota_file_ele_sha256")
-public class OtaFileEleSha256 {
+@TableName("t_ele_ota_file")
+public class EleOtaFile {
     
     private Long id;
     
     private Integer electricityCabinetId;
+
+    private String coreName;
+
+    private String subName;
     
     private String coreSha256Value;
     

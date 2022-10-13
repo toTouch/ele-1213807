@@ -2812,12 +2812,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         return R.ok(homepageBatteryVo);
 
     }
-    
-    @Override
-    public R closeOtaUpgradeSession(String sessionId) {
-        redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);
-        return R.ok();
-    }
+
     
     @Override
     public R otaCommand(Integer eid, Integer operateType) {
@@ -2862,21 +2857,33 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             data.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
             data.put("subFileSha256Hex", subBoardOtaFileConfig.getSha256Value());
         }
+
+        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(sessionId)
+                .data(data)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(ElectricityIotConstant.OTA_OPERATE)
+                .build();
+
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
         
-        return R.ok();
+        return R.ok(sessionId);
     }
     
     @Override
     public R checkOtaSession(String sessionId, Integer operateType) {
         String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + operateType + ":" + sessionId);
         if (StrUtil.isEmpty(s)) {
-            return R.ok("0001");
+            return R.ok();
         }
-        if ("true".equalsIgnoreCase(s)) {
-            return R.ok("0002");
-        } else {
-            return R.ok("0003");
-        }
+        return R.ok(s);
     }
     
     

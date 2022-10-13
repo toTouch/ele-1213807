@@ -5,10 +5,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.EleOtaFile;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
-import com.xiliulou.electricity.entity.OtaFileEleSha256;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.service.OtaFileEleSha256Service;
+import com.xiliulou.electricity.service.EleOtaFileService;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -28,7 +28,7 @@ import java.util.concurrent.TimeUnit;
 public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
     
     @Autowired
-    private OtaFileEleSha256Service otaFileEleSha256Service;
+    private EleOtaFileService eleOtaFileService;
     
     @Autowired
     RedisService redisService;
@@ -49,36 +49,69 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
                     receiverMessage.getSessionId(), receiverMessage.getProductKey(), receiverMessage.getDeviceName());
             return;
         }
-        
-        if (EleOtaOperateRequest.TYPE_SYNC.equals(request.getOperateType())) {
-            insertOrUpdateOtaFileEleSha256(electricityCabinet, request);
+
+        if (EleOtaOperateRequest.TYPE_DOWNLOAD.equals(request.getOperateType())) {
+            insertOrUpdateEleOtaFile(electricityCabinet, request);
+            cacheDownloadResult(request, receiverMessage);
+        }else if (EleOtaOperateRequest.TYPE_SYNC.equals(request.getOperateType())) {
+            insertOrUpdateEleOtaFile(electricityCabinet, request);
+            cacheSyncResult(request, receiverMessage);
         }
-        
+
+
+
+    }
+    
+    private void insertOrUpdateEleOtaFile(ElectricityCabinet electricityCabinet, EleOtaOperateRequest request) {
+        EleOtaFile eleOtaFile = new EleOtaFile();
+        eleOtaFile.setCoreSha256Value(request.getCoreSha256());
+        eleOtaFile.setSubSha256Value(request.getSubSha256());
+        eleOtaFile.setCoreName(request.getCoreName());
+        eleOtaFile.setSubName(request.getSubName());
+
+        EleOtaFile eleOtaFileFromDb = eleOtaFileService.queryByEid(electricityCabinet.getId());
+        if (Objects.isNull(eleOtaFileFromDb)) {
+            eleOtaFile.setElectricityCabinetId(electricityCabinet.getId());
+            eleOtaFile.setCreateTime(System.currentTimeMillis());
+            eleOtaFile.setUpdateTime(System.currentTimeMillis());
+            eleOtaFileService.insert(eleOtaFile);
+        } else {
+            eleOtaFile.setUpdateTime(System.currentTimeMillis());
+            eleOtaFileService.update(eleOtaFile);
+        }
+    }
+
+    private void cacheDownloadResult(EleOtaOperateRequest request, ReceiverMessage receiverMessage){
         //操作回调的放在redis中
         if (Objects.nonNull(receiverMessage.getSuccess()) && "true".equalsIgnoreCase(receiverMessage.getSuccess())) {
-            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + sessionId, "true", 30L,
+            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage.getSessionId(),queryDownloadStatus(request.getDownloadStatus()) , 30L,
                     TimeUnit.SECONDS);
         } else {
-            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + sessionId, "false", 30L,
+            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage.getSessionId(), "fail", 30L,
                     TimeUnit.SECONDS);
         }
     }
-    
-    private void insertOrUpdateOtaFileEleSha256(ElectricityCabinet electricityCabinet, EleOtaOperateRequest request) {
-        OtaFileEleSha256 otaFileEleSha256 = new OtaFileEleSha256();
-        otaFileEleSha256.setCoreSha256Value(request.getCoreSha256());
-        otaFileEleSha256.setSubSha256Value(request.getSubSha256());
-        
-        OtaFileEleSha256 otaFileEleSha256FromDb = otaFileEleSha256Service.queryByEid(electricityCabinet.getId());
-        if (Objects.isNull(otaFileEleSha256FromDb)) {
-            otaFileEleSha256.setElectricityCabinetId(electricityCabinet.getId());
-            otaFileEleSha256.setCreateTime(System.currentTimeMillis());
-            otaFileEleSha256.setUpdateTime(System.currentTimeMillis());
-            otaFileEleSha256Service.insert(otaFileEleSha256);
+
+    private void cacheSyncResult(EleOtaOperateRequest request, ReceiverMessage receiverMessage){
+        //操作回调的放在redis中
+        if (Objects.nonNull(receiverMessage.getSuccess()) && "true".equalsIgnoreCase(receiverMessage.getSuccess())) {
+            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage.getSessionId(),"sync_success" , 30L,
+                    TimeUnit.SECONDS);
         } else {
-            otaFileEleSha256.setUpdateTime(System.currentTimeMillis());
-            otaFileEleSha256Service.update(otaFileEleSha256);
+            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage.getSessionId(), "sync_fail", 30L,
+                    TimeUnit.SECONDS);
         }
+    }
+
+    private String queryDownloadStatus(Integer status) {
+        String result = null;
+        switch (status) {
+            case 1: result = "download_fail"; break;
+            case 2: result = "check_fail"; break;
+            case 3: result = "check_success"; break;
+            default: result = "fail"; break;
+        }
+        return  result;
     }
 }
 
@@ -99,17 +132,32 @@ class EleOtaOperateRequest {
     private String coreSha256;
     
     private String subSha256;
+
+    private String coreName;
+
+    private String subName;
     
     private Long createTime;
-    
+
+    /**
+     * 1--下载失败  2--下载成功但校验失败 3-- 下载成功且校验成功
+     */
+    private Integer downloadStatus;
+
     /**
      * 1--下载 2--同步 3-- 升级
      */
     private Integer operateType;
-    
+
     public static final Integer TYPE_DOWNLOAD = 1;
     
     public static final Integer TYPE_SYNC = 2;
     
     public static final Integer TYPE_UPGRADE = 3;
+
+    public static final Integer DOWNLOAD_STATUS_DOWNLOAD_FAIL = 1;
+
+    public static final Integer DOWNLOAD_STATUS_CHECK_FAIL = 2;
+
+    public static final Integer DOWNLOAD_STATUS_CHECK_SUCCESS = 3;
 }

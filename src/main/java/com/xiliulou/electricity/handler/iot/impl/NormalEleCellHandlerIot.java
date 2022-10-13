@@ -39,19 +39,21 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
         EleCellVO eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVO.class);
         if (Objects.isNull(eleCellVo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return ;
+            log.error("ELE CELL REPORT ERROR! eleCellVo is null,sessionId={}", receiverMessage.getSessionId());
+            return;
         }
 
         String cellNo = eleCellVo.getCell_no();
         if (StringUtils.isEmpty(cellNo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
-            return ;
+            log.error("ELE CELL REPORT ERROR! cellNo is empty,sessionId={}", receiverMessage.getSessionId());
+            return;
         }
 
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetBox.setCellNo(cellNo);
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+
 
         String isLock = eleCellVo.getIs_lock();
         if (StringUtils.isNotEmpty(isLock)) {
@@ -83,7 +85,10 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
         }
 
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        Float version = eleCellVo.getVersion();
+        if (Objects.nonNull(version)) {
+            electricityCabinetBox.setVersion(String.valueOf(version));
+        }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
 
 
@@ -105,7 +110,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         private String is_light;
         //可用禁用
         private String is_forbidden;
-
+        //子板版本号
+        private Float version;
     }
 }
 

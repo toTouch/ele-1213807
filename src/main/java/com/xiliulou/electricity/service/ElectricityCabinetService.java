@@ -141,8 +141,6 @@ public interface ElectricityCabinetService {
     R homepageExchangeOrderFrequency(HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery);
 
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
-
-    R closeOtaUpgradeSession(String sessionId);
     
     R otaCommand(Integer eid, Integer operateType);
     

@@ -1,17 +1,17 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.OtaFileEleSha256;
+import com.xiliulou.electricity.entity.EleOtaFile;
+import com.xiliulou.electricity.mapper.EleOtaFileMapper;
 
 import java.util.List;
 
 /**
- * (OtaFileEleSha256)表服务接口
  *
  * @author zgw
  * @since 2022-10-12 17:31:10
  */
-public interface OtaFileEleSha256Service {
+public interface EleOtaFileService {
     
     /**
      * 通过ID查询单条数据从数据库
@@ -19,7 +19,7 @@ public interface OtaFileEleSha256Service {
      * @param id 主键
      * @return 实例对象
      */
-    OtaFileEleSha256 queryByIdFromDB(Long id);
+    EleOtaFile queryByIdFromDB(Long id);
     
     /**
      * 通过ID查询单条数据从缓存
@@ -27,7 +27,7 @@ public interface OtaFileEleSha256Service {
      * @param id 主键
      * @return 实例对象
      */
-    OtaFileEleSha256 queryByIdFromCache(Long id);
+    EleOtaFile queryByIdFromCache(Long id);
     
     /**
      * 查询多条数据
@@ -36,23 +36,21 @@ public interface OtaFileEleSha256Service {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<OtaFileEleSha256> queryAllByLimit(int offset, int limit);
+    List<EleOtaFile> queryAllByLimit(int offset, int limit);
     
     /**
      * 新增数据
      *
-     * @param otaFileEleSha256 实例对象
      * @return 实例对象
      */
-    OtaFileEleSha256 insert(OtaFileEleSha256 otaFileEleSha256);
+    EleOtaFile insert(EleOtaFile eleOtaFile);
     
     /**
      * 修改数据
      *
-     * @param otaFileEleSha256 实例对象
      * @return 实例对象
      */
-    Integer update(OtaFileEleSha256 otaFileEleSha256);
+    Integer update(EleOtaFile eleOtaFile);
     
     /**
      * 通过主键删除数据
@@ -61,8 +59,8 @@ public interface OtaFileEleSha256Service {
      * @return 是否成功
      */
     Boolean deleteById(Long id);
-    
-    OtaFileEleSha256 queryByEid(Integer id);
+
+    EleOtaFile queryByEid(Integer id);
     
     R queryInfo(Integer eid);
 }

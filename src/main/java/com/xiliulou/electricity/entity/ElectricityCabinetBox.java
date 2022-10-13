@@ -105,6 +105,10 @@ public class ElectricityCabinetBox {
      * 电池id
      */
     private Long bId;
+    /**
+     * 子板版本号
+     */
+    private String version;
 
 
     public static final Integer DEL_NORMAL = 0;

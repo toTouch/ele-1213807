@@ -7,7 +7,7 @@
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
         status,is_lock,is_fan,temperature,is_heat,is_light, create_time,
-        update_time, del_flag,tenant_id,temperature,battery_type,charge_v,charge_a
+        update_time, del_flag,tenant_id,temperature,battery_type,charge_v,charge_a,version
         from t_electricity_cabinet_box
         where del_flag=0
         <if test="query.electricityCabinetId != null">
@@ -28,18 +28,15 @@
         from t_electricity_cabinet_box
         where del_flag=0 AND electricity_cabinet_id=#{id}
         and status=0 and usable_status=0
-        <if test="fullCharged != null">
-            and power > #{fullCharged}
-        </if>
         <if test="cellNo != null ">
             and cell_no != #{cellNo}
         </if>
         <if test="batteryType != null ">
             and battery_type = #{batteryType}
         </if>
-        <!--        <if test="batteryType == null ">-->
-        <!--            and battery_type is null-->
-        <!--        </if>-->
+        <if test="batteryType == null ">
+            and battery_type is null
+        </if>
     </select>
 
 
@@ -106,6 +103,9 @@
             <if test="bId != null">
                 b_id = #{bId},
             </if>
+            <if test="version != null">
+                version = #{version},
+            </if>
         </set>
         where cell_no = #{cellNo}
         and electricity_cabinet_id = #{electricityCabinetId}
@@ -125,7 +125,7 @@
             and status = 0
             and power &gt;= #{fullV}
             <if test="type != null and type!= ''">
-               and battery_type = #{type}
+                and battery_type = #{type}
             </if>
         </where>
         order by power desc

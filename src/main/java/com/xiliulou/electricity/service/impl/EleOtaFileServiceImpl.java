@@ -8,14 +8,14 @@ import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.EleOtaFile;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.OtaFileConfig;
-import com.xiliulou.electricity.entity.OtaFileEleSha256;
-import com.xiliulou.electricity.mapper.OtaFileEleSha256Mapper;
+import com.xiliulou.electricity.mapper.EleOtaFileMapper;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
+import com.xiliulou.electricity.service.EleOtaFileService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
 import com.xiliulou.electricity.service.OtaFileConfigService;
-import com.xiliulou.electricity.service.OtaFileEleSha256Service;
 import com.xiliulou.electricity.vo.OtaFileCheckSumVo;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import org.apache.commons.lang3.tuple.Pair;
@@ -35,29 +35,21 @@ import java.util.stream.Collectors;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * (OtaFileEleSha256)表服务实现类
  *
  * @author zgw
  * @since 2022-10-12 17:31:10
  */
-@Service("otaFileEleSha256Service")
+@Service("eleOtaFileServiceImpl")
 @Slf4j
-public class OtaFileEleSha256ServiceImpl implements OtaFileEleSha256Service {
+public class EleOtaFileServiceImpl implements EleOtaFileService {
     
     @Resource
-    private OtaFileEleSha256Mapper otaFileEleSha256Mapper;
-    
-    @Autowired
-    private ElectricityCabinetService electricityCabinetService;
+    private EleOtaFileMapper eleOtaFileMapper;
+
     
     @Autowired
     private OtaFileConfigService otaFileConfigService;
-    
-    @Autowired
-    private EleHardwareHandlerManager eleHardwareHandlerManager;
-    
-    @Autowired
-    private RedisService redisService;
+
     
     /**
      * 通过ID查询单条数据从DB
@@ -66,8 +58,8 @@ public class OtaFileEleSha256ServiceImpl implements OtaFileEleSha256Service {
      * @return 实例对象
      */
     @Override
-    public OtaFileEleSha256 queryByIdFromDB(Long id) {
-        return this.otaFileEleSha256Mapper.queryById(id);
+    public EleOtaFile queryByIdFromDB(Long id) {
+        return this.eleOtaFileMapper.queryById(id);
     }
     
     /**
@@ -77,7 +69,7 @@ public class OtaFileEleSha256ServiceImpl implements OtaFileEleSha256Service {
      * @return 实例对象
      */
     @Override
-    public OtaFileEleSha256 queryByIdFromCache(Long id) {
+    public EleOtaFile queryByIdFromCache(Long id) {
         return null;
     }
     
@@ -90,33 +82,31 @@ public class OtaFileEleSha256ServiceImpl implements OtaFileEleSha256Service {
      * @return 对象列表
      */
     @Override
-    public List<OtaFileEleSha256> queryAllByLimit(int offset, int limit) {
-        return this.otaFileEleSha256Mapper.queryAllByLimit(offset, limit);
+    public List<EleOtaFile> queryAllByLimit(int offset, int limit) {
+        return this.eleOtaFileMapper.queryAllByLimit(offset, limit);
     }
     
     /**
      * 新增数据
      *
-     * @param otaFileEleSha256 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public OtaFileEleSha256 insert(OtaFileEleSha256 otaFileEleSha256) {
-        this.otaFileEleSha256Mapper.insertOne(otaFileEleSha256);
-        return otaFileEleSha256;
+    public EleOtaFile insert(EleOtaFile eleOtaFile) {
+        this.eleOtaFileMapper.insertOne(eleOtaFile);
+        return eleOtaFile;
     }
     
     /**
      * 修改数据
      *
-     * @param otaFileEleSha256 实例对象
      * @return 实例对象
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer update(OtaFileEleSha256 otaFileEleSha256) {
-        return this.otaFileEleSha256Mapper.update(otaFileEleSha256);
+    public Integer update(EleOtaFile eleOtaFile) {
+        return this.eleOtaFileMapper.update(eleOtaFile);
         
     }
     
@@ -129,22 +119,22 @@ public class OtaFileEleSha256ServiceImpl implements OtaFileEleSha256Service {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
-        return this.otaFileEleSha256Mapper.deleteById(id) > 0;
+        return this.eleOtaFileMapper.deleteById(id) > 0;
     }
     
     @Override
-    public OtaFileEleSha256 queryByEid(Integer eid) {
-        return this.otaFileEleSha256Mapper.queryByEid(eid);
+    public EleOtaFile queryByEid(Integer eid) {
+        return this.eleOtaFileMapper.queryByEid(eid);
     }
     
     @Override
     public R queryInfo(Integer eid) {
         OtaFileCheckSumVo otaFileCheckSumVo = new OtaFileCheckSumVo();
-        
-        OtaFileEleSha256 otaFileEleSha256 = this.queryByEid(eid);
-        if (Objects.nonNull(otaFileEleSha256)) {
-            otaFileCheckSumVo.setSubSha256HexEle(otaFileEleSha256.getSubSha256Value());
-            otaFileCheckSumVo.setCoreSha256HexEle(otaFileEleSha256.getCoreSha256Value());
+
+        EleOtaFile eleOtaFile = this.queryByEid(eid);
+        if (Objects.nonNull(eleOtaFile)) {
+            otaFileCheckSumVo.setSubSha256HexEle(eleOtaFile.getSubSha256Value());
+            otaFileCheckSumVo.setCoreSha256HexEle(eleOtaFile.getCoreSha256Value());
         }
         
         OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
