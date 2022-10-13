@@ -181,10 +181,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardId(null);
                     item.setCardName(null);
                 }
-
-                if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
-                    item.setPayDepositTime(eleDepositOrder.getCreateTime());
+    
+                if (Objects.nonNull(item.getServiceStatus()) && !Objects
+                        .equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService
+                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                    if (Objects.nonNull(eleDepositOrder)) {
+                        item.setPayDepositTime(eleDepositOrder.getCreateTime());
+                    }
                 }
 
 //                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
@@ -208,7 +212,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 }
 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-                log.error("ElectricityBattery:{}", JsonUtil.toJson(electricityBattery));
                 if(Objects.nonNull(electricityBattery)){
                     item.setNowElectricityBatterySn(electricityBattery.getSn());
                 }
