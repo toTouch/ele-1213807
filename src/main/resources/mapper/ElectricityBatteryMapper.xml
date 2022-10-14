@@ -65,7 +65,10 @@
 			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
 		</if>
 		<if test="query.franchiseeId != null">
-			and franchisee_id=#{franchiseeId}
+			and franchisee_id =#{franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and '' != query.franchiseeName">
+			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
 		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
@@ -168,6 +171,9 @@
 		</if>
 		<if test="query.franchiseeId != null">
 			and franchisee_id =#{franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and '' != query.franchiseeName">
+			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
 		</if>
 	</select>
 
