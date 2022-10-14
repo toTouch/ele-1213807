@@ -146,6 +146,10 @@ public interface ElectricityCabinetService {
 
     R acquireIdcardFileSign();
 
+    R queryName(Integer tenant,Integer id);
+
+    R superAdminQueryName(Integer id);
+
 
     R checkOtaUpgradeSession(String sessionId);
 

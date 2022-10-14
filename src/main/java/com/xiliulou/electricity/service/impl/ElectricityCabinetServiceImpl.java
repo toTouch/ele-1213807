@@ -2934,4 +2934,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     public R acquireIdcardFileSign() {
         return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
+
+    @Override
+    public R queryName(Integer tenantId, Integer id) {
+        return R.ok(electricityCabinetMapper.queryName(tenantId, id));
+    }
+
+    @Override
+    public R superAdminQueryName(Integer id) {
+        return R.ok(electricityCabinetMapper.queryName(null, id));
+    }
 }

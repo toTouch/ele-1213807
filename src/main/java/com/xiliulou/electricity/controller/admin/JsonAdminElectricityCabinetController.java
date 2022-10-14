@@ -519,7 +519,7 @@ public class JsonAdminElectricityCabinetController {
     //首页用户分析
     @GetMapping(value = "/admin/electricityCabinet/homepageUserAnalysis")
     public R homepageUserAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,
-                                     @RequestParam(value = "endTime", required = false) Long endTime) {
+                                  @RequestParam(value = "endTime", required = false) Long endTime) {
         return electricityCabinetService.homepageUserAnalysis(beginTime, endTime);
     }
 
@@ -566,7 +566,7 @@ public class JsonAdminElectricityCabinetController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery= HomepageElectricityExchangeFrequencyQuery.builder()
+        HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery = HomepageElectricityExchangeFrequencyQuery.builder()
                 .beginTime(beginTime)
                 .endTime(endTime)
                 .size(size)
@@ -614,7 +614,7 @@ public class JsonAdminElectricityCabinetController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery=HomepageBatteryFrequencyQuery.builder()
+        HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery = HomepageBatteryFrequencyQuery.builder()
                 .batterySn(batterySn)
                 .beginTime(beginTime)
                 .endTime(endTime)
@@ -645,8 +645,34 @@ public class JsonAdminElectricityCabinetController {
 
     @GetMapping("/admin/electricityCabinet/onlineLogCount")
     public R getOnlineLogCount(@RequestParam(value = "status", required = false) String status,
-                              @RequestParam("eleId") Integer eleId) {
+                               @RequestParam("eleId") Integer eleId) {
         return eleOnlineLogService.queryOnlineLogCount(status, eleId);
+    }
+
+    @GetMapping("/admin/electricityCabinet/queryName")
+    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricityCabinetService.queryName(tenantId, eleId);
+    }
+
+    @GetMapping("/admin/electricityCabinet/superAdminQueryName")
+    public R superAdminQueryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        //租户
+        return electricityCabinetService.superAdminQueryName(eleId);
     }
 
     /**

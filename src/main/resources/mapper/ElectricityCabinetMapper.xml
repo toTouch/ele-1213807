@@ -3,234 +3,245 @@
 <mapper namespace="com.xiliulou.electricity.mapper.ElectricityCabinetMapper">
 
 
-	<!--查询指定行数据-->
-	<select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-		select
-		id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,
-		online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
-		update_time, del_flag,tenant_id,store_id
-		from t_electricity_cabinet
-		where del_flag=0
-		<if test="query.name != null and query.name != ''">
-			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.address != null and query.address != ''">
-			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.usableStatus != null">
-			and usable_status = #{query.usableStatus}
-		</if>
-		<if test="query.id != null">
-			and id =#{query.id}
-		</if>
-		<if test="query.onlineStatus != null">
-			and online_status = #{query.onlineStatus}
-		</if>
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.beginTime != null">
-			and create_time &gt;=#{query.beginTime}
-		</if>
-		<if test="query.endTime != null">
-			and create_time &lt;=#{query.endTime}
-		</if>
-		<if test="query.eleIdList!=null and query.eleIdList!=''">
-			and id in
-			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		order by create_time desc
-		limit #{query.offset}, #{query.size}
-	</select>
+    <!--查询指定行数据-->
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select
+        id, name,sn, address, longitude, latitude, product_key, device_name, usable_status,
+        online_status, model_id, version, fully_charged, service_phone, business_time, create_time,
+        update_time, del_flag,tenant_id,store_id
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="query.name != null and query.name != ''">
+            and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.address != null and query.address != ''">
+            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        <if test="query.id != null">
+            and id =#{query.id}
+        </if>
+        <if test="query.onlineStatus != null">
+            and online_status = #{query.onlineStatus}
+        </if>
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.eleIdList!=null and query.eleIdList!=''">
+            and id in
+            <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        order by create_time desc
+        limit #{query.offset}, #{query.size}
+    </select>
 
-	<select id="queryCount" resultType="java.lang.Integer">
-		select count(1)
-		from t_electricity_cabinet
-		where del_flag=0
-		<if test="query.tenantId != null">
-			and tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.name != null and query.name != ''">
-			and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.address != null and query.address != ''">
-			and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
-		</if>
-		<if test="query.usableStatus != null">
-			and usable_status = #{query.usableStatus}
-		</if>
-		<if test="query.onlineStatus != null">
-			and online_status = #{query.onlineStatus}
-		</if>
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.beginTime != null">
-			and create_time &gt;=#{query.beginTime}
-		</if>
-		<if test="query.endTime != null">
-			and create_time &lt;=#{query.endTime}
-		</if>
-		<if test="query.eleIdList!=null and query.eleIdList!=''">
-			and id in
-			<foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-	</select>
-
-
-	<select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
-		select id, name,sn, address, longitude, latitude, product_key, device_name, device_secret,
-		usable_status, online_status, model_id, version,
-		fully_charged, service_phone, business_time, create_time, update_time, ROUND(
-		6378.138 * 2 * ASIN(
-		SQRT(
-		POW(
-		SIN(
-		(
-		#{query.lat} * PI() / 180 - latitude * PI() / 180
-		) / 2
-		),
-		2
-		) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
-		SIN(
-		(
-		#{query.lon} * PI() / 180 - longitude * PI() / 180
-		) / 2
-		),
-		2
-		)
-		)
-		) * 1000
-		) AS distance
-		from t_electricity_cabinet
-		where del_flag = 0
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-		<if test="query.distance != null">
-			having distance &lt; #{query.distance}
-		</if>
-		order by distance asc
-	</select>
-
-	<select id="queryFullyElectricityBattery" resultType="java.lang.Long">
-		select eb.id from t_electricity_cabinet as ec
-		left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
-		left join t_electricity_battery as eb on ecb.sn is not null and ecb.sn=eb.sn
-		where eb.power&gt;=ec.fully_charged and ec.id = #{id} and ecb.usable_status =0
-		<if test="batteryType != null and batteryType != '-1' ">
-			and ecb.battery_type = #{batteryType}
-		</if>
-		<if test="batteryType == null ">
-			and ecb.battery_type is null
-		</if>
-	</select>
-
-	<select id="queryFullyElectricityBatteryForLowBatteryExchange" resultType="java.lang.Long">
-		select eb.id from t_electricity_cabinet as ec
-		left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
-		left join t_electricity_battery as eb on ecb.sn is not null and ecb.sn=eb.sn
-		where eb.power&gt;=#{fullyCharged} and ec.id = #{id} and ecb.usable_status =0
-		<if test="batteryType != null and batteryType != '-1' ">
-			and ecb.battery_type = #{batteryType}
-		</if>
-		<if test="batteryType == null ">
-			and ecb.battery_type is null
-		</if>
-	</select>
+    <select id="queryCount" resultType="java.lang.Integer">
+        select count(1)
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="query.tenantId != null">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.name != null and query.name != ''">
+            and name like concat('%',#{query.name,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.address != null and query.address != ''">
+            and address like concat('%',#{query.address,jdbcType=VARCHAR},'%')
+        </if>
+        <if test="query.usableStatus != null">
+            and usable_status = #{query.usableStatus}
+        </if>
+        <if test="query.onlineStatus != null">
+            and online_status = #{query.onlineStatus}
+        </if>
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.beginTime != null">
+            and create_time &gt;=#{query.beginTime}
+        </if>
+        <if test="query.endTime != null">
+            and create_time &lt;=#{query.endTime}
+        </if>
+        <if test="query.eleIdList!=null and query.eleIdList!=''">
+            and id in
+            <foreach collection="query.eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+    </select>
 
 
-	<select id="queryNameList" resultType="java.util.Map">
-		select
-		id, name
-		from t_electricity_cabinet
-		where del_flag=0
-		<if test="query.tenantId != null ">
-			and tenant_id = #{query.tenantId}
-		</if>
-		<if test="eleIdList!=null and eleIdList!=''">
-			and id in
-			<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		limit #{offset}, #{size}
-	</select>
+    <select id="showInfoByDistance" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select id, name,sn, address, longitude, latitude, product_key, device_name, device_secret,
+        usable_status, online_status, model_id, version,
+        fully_charged, service_phone, business_time, create_time, update_time, ROUND(
+        6378.138 * 2 * ASIN(
+        SQRT(
+        POW(
+        SIN(
+        (
+        #{query.lat} * PI() / 180 - latitude * PI() / 180
+        ) / 2
+        ),
+        2
+        ) + COS(#{query.lat} * PI() / 180) * COS(latitude * PI() / 180) * POW(
+        SIN(
+        (
+        #{query.lon} * PI() / 180 - longitude * PI() / 180
+        ) / 2
+        ),
+        2
+        )
+        )
+        ) * 1000
+        ) AS distance
+        from t_electricity_cabinet
+        where del_flag = 0
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="query.distance != null">
+            having distance &lt; #{query.distance}
+        </if>
+        order by distance asc
+    </select>
 
-	<select id="homeOne" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
-		select
-		id, name,sn, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
-		online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time,
-		del_flag
-		from t_electricity_cabinet
-		where del_flag=0
-		<if test="eleIdList!=null and eleIdList!=''">
-			and id in
-			<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-	</select>
+    <select id="queryFullyElectricityBattery" resultType="java.lang.Long">
+        select eb.id from t_electricity_cabinet as ec
+        left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
+        left join t_electricity_battery as eb on ecb.sn is not null and ecb.sn=eb.sn
+        where eb.power&gt;=ec.fully_charged and ec.id = #{id} and ecb.usable_status =0
+        <if test="batteryType != null and batteryType != '-1' ">
+            and ecb.battery_type = #{batteryType}
+        </if>
+        <if test="batteryType == null ">
+            and ecb.battery_type is null
+        </if>
+    </select>
 
-	<select id="homeThree" resultType="java.util.HashMap">
-		select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
-		from t_electricity_cabinet where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
-		<if test="eleIdList!=null and eleIdList!=''">
-			and id in
-			<foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
-				#{id}
-			</foreach>
-		</if>
-		<if test="tenantId != null ">
-			and tenant_id = #{tenantId}
-		</if>
-		group by date
-		order by date desc
-	</select>
+    <select id="queryFullyElectricityBatteryForLowBatteryExchange" resultType="java.lang.Long">
+        select eb.id from t_electricity_cabinet as ec
+        left join t_electricity_cabinet_box as ecb on ec.id=ecb.electricity_cabinet_id
+        left join t_electricity_battery as eb on ecb.sn is not null and ecb.sn=eb.sn
+        where eb.power&gt;=#{fullyCharged} and ec.id = #{id} and ecb.usable_status =0
+        <if test="batteryType != null and batteryType != '-1' ">
+            and ecb.battery_type = #{batteryType}
+        </if>
+        <if test="batteryType == null ">
+            and ecb.battery_type is null
+        </if>
+    </select>
 
-	<select id="queryCountByStoreIds" resultType="integer">
-		select count(1)
-		from t_electricity_cabinet
-		<where>
-			del_flag=0
-			<if test="tenantId != null">
-				and tenant_id = #{tenantId}
-			</if>
-			<if test="storeIds != null and storeIds.size() > 0">
-				and store_id in
-				<foreach collection="storeIds" item="id" separator="," open="(" close=")">
-					#{id}
-				</foreach>
-			</if>
-		</where>
-	</select>
 
-	<select id="queryCountByStoreIdsAndStatus" resultType="integer">
-		select count(1)
-		from t_electricity_cabinet
-		<where>
-			del_flag=0
-			<if test="tenantId != null">
-				and tenant_id = #{tenantId}
-			</if>
-			<if test="storeIds != null and storeIds.size() > 0">
-				and store_id in
-				<foreach collection="storeIds" item="id" separator="," open="(" close=")">
-					#{id}
-				</foreach>
-			</if>
-			<if test="status != null">
-				and online_status = #{status}
-			</if>
-		</where>
-	</select>
+    <select id="queryNameList" resultType="java.util.Map">
+        select
+        id, name
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="query.tenantId != null ">
+            and tenant_id = #{query.tenantId}
+        </if>
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        limit #{offset}, #{size}
+    </select>
+
+    <select id="homeOne" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">
+        select
+        id, name,sn, address, longitude, latitude, product_key, device_name, device_secret, usable_status,
+        online_status, model_id, version, fully_charged, service_phone, business_time, create_time, update_time,
+        del_flag
+        from t_electricity_cabinet
+        where del_flag=0
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+    </select>
+
+    <select id="homeThree" resultType="java.util.HashMap">
+        select from_unixtime(create_time / 1000, '%Y-%m-%d') date, count(*) as count
+        from t_electricity_cabinet where create_time &gt;= #{startTimeMilliDay} and create_time &lt;=#{endTimeMilliDay}
+        <if test="eleIdList!=null and eleIdList!=''">
+            and id in
+            <foreach collection="eleIdList" item="id" index="index" open="(" close=")" separator=",">
+                #{id}
+            </foreach>
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        group by date
+        order by date desc
+    </select>
+
+    <select id="queryCountByStoreIds" resultType="integer">
+        select count(1)
+        from t_electricity_cabinet
+        <where>
+            del_flag=0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeIds != null and storeIds.size() > 0">
+                and store_id in
+                <foreach collection="storeIds" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+        </where>
+    </select>
+
+    <select id="queryCountByStoreIdsAndStatus" resultType="integer">
+        select count(1)
+        from t_electricity_cabinet
+        <where>
+            del_flag=0
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="storeIds != null and storeIds.size() > 0">
+                and store_id in
+                <foreach collection="storeIds" item="id" separator="," open="(" close=")">
+                    #{id}
+                </foreach>
+            </if>
+            <if test="status != null">
+                and online_status = #{status}
+            </if>
+        </where>
+    </select>
+
+    <select id="queryName" resultType="com.xiliulou.electricity.vo.ElectricityCabinetVO">
+        select id,name from t_electricity_cabinet
+        where del_flag=0
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="id != null">
+            and id =#{id}
+        </if>
+    </select>
 
 
 	<select id="selectEleCabinetListByLongitudeAndLatitude" resultType="com.xiliulou.electricity.entity.ElectricityCabinet">

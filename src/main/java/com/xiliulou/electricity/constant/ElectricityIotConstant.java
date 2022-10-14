@@ -43,6 +43,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
+    public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
     public static final String NORMAL_OTA_PROCESS_HANDLER = "normalOtaProcessHandler";
     public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
@@ -132,7 +133,9 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, OTA_PROCESS_RSP)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
-                || Objects.equals(command, RESTART_APP);
+                || Objects.equals(command, RESTART_APP)
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY);
 
     }
 
@@ -350,7 +353,12 @@ public class ElectricityIotConstant {
     /**
      * 重新开启App循环检测
      */
-    public static final String CUPBOARD_RESUME_CYCLE="cupboard_resume_cycle";
+    public static final String CUPBOARD_RESUME_CYCLE = "cupboard_resume_cycle";
+
+    /**
+     * 故障上报
+     */
+    public static final String ELE_COMMAND_WARN_MSG_NOTIFY = "warn_msg_notify";
 
 
     static {
@@ -460,6 +468,8 @@ public class ElectricityIotConstant {
          * 柜机上报告警发邮件
          */
         COMMAND_HANDLER_MAPS.put(ELE_EMAIL_WARN_MSG, NORMAL_ELE_EMAIL_WARN_MSG_HANDLER);
+
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_WARN_MSG_NOTIFY, NORMAL_ELE_WARN_MSG_HANDLER);
 
 
     }
