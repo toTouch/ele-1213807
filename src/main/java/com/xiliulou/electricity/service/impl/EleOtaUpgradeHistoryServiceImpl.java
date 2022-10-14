@@ -100,11 +100,7 @@ public class EleOtaUpgradeHistoryServiceImpl implements EleOtaUpgradeHistoryServ
     public Boolean deleteById(Long id) {
         return this.eleOtaUpgradeHistoryMapper.deleteById(id) > 0;
     }
-    
-    @Override
-    public EleOtaUpgradeHistory queryByUpgradeNo(String upgradeNo) {
-        return eleOtaUpgradeHistoryMapper.queryByUpgradeNo(upgradeNo);
-    }
+
     
     @Override
     public R queryList(Integer eid, Integer cellNo, Integer type, String upgradeVersion, String historyVersion,
@@ -118,5 +114,10 @@ public class EleOtaUpgradeHistoryServiceImpl implements EleOtaUpgradeHistoryServ
         pageDataAndCountVo.setData(vo);
         pageDataAndCountVo.setCount(count);
         return R.ok(pageDataAndCountVo);
+    }
+
+    @Override
+    public EleOtaUpgradeHistory queryByCellNoAndSessionId(Integer id, Integer cellNo, String sessionId, Integer type) {
+        return eleOtaUpgradeHistoryMapper.queryByCellNoAndSessionId(id, cellNo, sessionId, type);
     }
 }

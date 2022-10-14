@@ -63,7 +63,7 @@ public class EleOtaUpgradeHistory {
     
     private Long updateTime;
     
-    private String upgradeNo;
+    private String sessionId;
     
     public static final Integer DEL_NORMAL = 0;
     

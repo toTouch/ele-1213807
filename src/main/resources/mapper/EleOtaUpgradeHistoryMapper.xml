@@ -17,13 +17,13 @@
         <result property="errMsg" column="err_msg" jdbcType="VARCHAR"/>
         <result property="createTime" column="create_time" jdbcType="INTEGER"/>
         <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
-        <result property="upgradeNo" column="upgrade_no" jdbcType="VARCHAR"/>
+        <result property="sessionId" column="session_id" jdbcType="VARCHAR"/>
     </resultMap>
     
     <!--查询单个-->
     <select id="queryById" resultMap="EleOtaUpgradeHistoryMap">
         select
-          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, upgrade_no
+          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id
         from t_ele_ota_upgrade_history
         where id = #{id}
     </select>
@@ -31,7 +31,7 @@
     <!--查询指定行数据-->
     <select id="queryAllByLimit" resultMap="EleOtaUpgradeHistoryMap">
         select
-          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, upgrade_no 
+          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id 
         from t_ele_ota_upgrade_history
         limit #{offset}, #{limit}
     </select>
@@ -41,7 +41,7 @@
         select
         id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version,
         upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time,
-        upgrade_no
+        session_id
         from t_ele_ota_upgrade_history
         <where>
             <if test="id != null">
@@ -83,16 +83,16 @@
             <if test="updateTime != null">
                 and update_time = #{updateTime}
             </if>
-            <if test="upgradeNo  != null and upgradeNo != ''">
-                and upgrade_no = #{upgradeNo}
+            <if test="sessionId  != null and sessionId != ''">
+                and session_id = #{sessionId}
             </if>
         </where>
     </select>
     
     <!--新增所有列-->
     <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
-        insert into t_ele_ota_upgrade_history(electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, upgrade_no)
-        values (#{electricityCabinetId}, #{cellNo}, #{type}, #{upgradeVersion}, #{historyVersion}, #{upgradeSha256Value}, #{status}, #{upgradeTime}, #{finishTime}, #{errMsg}, #{createTime}, #{updateTime}, #{upgradeNo})
+        insert into t_ele_ota_upgrade_history(electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id)
+        values (#{electricityCabinetId}, #{cellNo}, #{type}, #{upgradeVersion}, #{historyVersion}, #{upgradeSha256Value}, #{status}, #{upgradeTime}, #{finishTime}, #{errMsg}, #{createTime}, #{updateTime}, #{sessionId})
     </insert>
     
     <!--通过主键修改数据-->
@@ -135,8 +135,8 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="upgradeNo != null and upgradeNo != ''">
-                upgrade_no = #{upgradeNo},
+            <if test="sessionId != null and sessionId != ''">
+                session_id = #{sessionId},
             </if>
         </set>
         where id = #{id}
@@ -147,18 +147,24 @@
         delete from t_ele_ota_upgrade_history where id = #{id}
     </delete>
     
-    <select id="queryByUpgradeNo" resultMap="EleOtaUpgradeHistoryMap">
+    <select id="queryByCellNoAndSessionId" resultMap="EleOtaUpgradeHistoryMap">
         select
-          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, upgrade_no
+          id, electricity_cabinet_id, cell_no, type, upgrade_version, history_version, upgrade_sha256_value, status, upgrade_time, finish_time, err_msg, create_time, update_time, session_id
         from t_ele_ota_upgrade_history
-        where upgrade_no = #{upgradeNo}
+        where electricity_cabinet_id = #{eid} and session_id = #{sessionId}
+        <if test="cellNo != null">
+            and cell_no = #{cellNo}
+        </if>
+        <if test="type != null">
+            and type = #{type}
+        </if>
     </select>
     
     <select id="queryList" resultType=" com.xiliulou.electricity.vo.EleOtaUpgradeHistoryVo">
         select
         teouh.id, ec.name as electricity_name , teouh.cell_no, teouh.type, teouh.upgrade_version, teouh.history_version,
         teouh.upgrade_sha256_value, teouh.status, teouh.upgrade_time, teouh.finish_time, teouh.err_msg,
-        teouh.create_time, teouh.update_time, teouh.upgrade_no
+        teouh.create_time, teouh.update_time, teouh.session_id
         from t_ele_ota_upgrade_history teouh
         left join t_electricity_cabinet ec on ec.id = teouh.electricity_cabinet_id
         <where>

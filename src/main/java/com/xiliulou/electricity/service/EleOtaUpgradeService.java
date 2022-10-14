@@ -64,8 +64,8 @@ public interface EleOtaUpgradeService {
     Boolean deleteById(Long id);
     
     R queryVoList(Long eid);
-    
-    List<OtaUpgradeQuery> updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid);
+
+    void updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid,  String sessionId);
     
     EleOtaUpgrade queryByEidAndCellNo(Integer eid, Integer cellNo, Integer type);
     

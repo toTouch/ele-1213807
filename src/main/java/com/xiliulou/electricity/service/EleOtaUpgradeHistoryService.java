@@ -62,8 +62,8 @@ public interface EleOtaUpgradeHistoryService {
      */
     Boolean deleteById(Long id);
     
-    EleOtaUpgradeHistory queryByUpgradeNo(String upgradeNo);
-    
     R queryList(Integer eid, Integer cellNo, Integer type, String upgradeVersion, String historyVersion, String status,
             Long startTime, Long endTime, Long offset, Long size);
+
+    EleOtaUpgradeHistory queryByCellNoAndSessionId(Integer id, Integer cellNo, String sessionId, Integer type);
 }

@@ -2866,9 +2866,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 return R.fail("100303", "升级内容为空，请选择您要升级的板子");
             }
     
-            List<OtaUpgradeQuery> otaUpgradeQueries = eleOtaUpgradeService
-                    .updateEleOtaUpgradeAndSaveHistory(cellNos, eid);
-            content.put("cellNos", otaUpgradeQueries);
+            eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
+            content.put("cellNos", cellNos);
         }
     
         data.put("content", JsonUtil.toJson(content));

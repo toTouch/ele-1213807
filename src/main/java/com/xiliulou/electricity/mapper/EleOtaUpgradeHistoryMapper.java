@@ -64,8 +64,7 @@ public interface EleOtaUpgradeHistoryMapper extends BaseMapper<EleOtaUpgradeHist
      * @return 影响行数
      */
     int deleteById(Long id);
-    
-    EleOtaUpgradeHistory queryByUpgradeNo(String upgradeNo);
+
     
     List<EleOtaUpgradeHistoryVo> queryList(@Param("eid") Integer eid, @Param("cellNo") Integer cellNo,
             @Param("type") Integer type, @Param("upgradeVersion") String upgradeVersion,
@@ -76,4 +75,6 @@ public interface EleOtaUpgradeHistoryMapper extends BaseMapper<EleOtaUpgradeHist
     Long queryCount(@Param("eid") Integer eid, @Param("cellNo") Integer cellNo, @Param("type") Integer type,
             @Param("upgradeVersion") String upgradeVersion, @Param("historyVersion") String historyVersion,
             @Param("status") String status, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
+
+    EleOtaUpgradeHistory queryByCellNoAndSessionId(@Param("eid")Integer eid, @Param("cellNo")Integer cellNo, @Param("sessionId")String sessionId, @Param("type")Integer type);
 }

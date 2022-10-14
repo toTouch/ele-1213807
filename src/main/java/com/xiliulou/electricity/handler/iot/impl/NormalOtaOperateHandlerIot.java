@@ -94,16 +94,15 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         updateEleOtaUpgrade.setUpdateTime(System.currentTimeMillis());
         eleOtaUpgradeService.update(eleOtaUpgradeFromDb);
         
-        EleOtaUpgradeHistory eleOtaUpgradeHistory = eleOtaUpgradeHistoryService
-                .queryByUpgradeNo(request.getUpgradeNo());
+        EleOtaUpgradeHistory eleOtaUpgradeHistory = eleOtaUpgradeHistoryService.queryByCellNoAndSessionId(electricityCabinet.getId(), request.getCellNo(), receiverMessage.getSessionId(), type);
         if (Objects.isNull(eleOtaUpgradeHistory)) {
-            log.error("OTA UPGRADE ERROR! eleOtaUpgradeHistory is null error! session={}, eid={}, cid={}, no={}",
-                    receiverMessage.getSessionId(), electricityCabinet.getId(), request.getCellNo(),
-                    request.getUpgradeNo());
+            log.error("OTA UPGRADE ERROR! eleOtaUpgradeHistory is null error! session={}, eid={}, cid={}",
+                    receiverMessage.getSessionId(), electricityCabinet.getId(), request.getCellNo());
             return;
         }
         
         EleOtaUpgradeHistory updateEleOtaUpgradeHistory = new EleOtaUpgradeHistory();
+        updateEleOtaUpgradeHistory.setId(eleOtaUpgradeHistory.getId());
         updateEleOtaUpgradeHistory.setUpgradeSha256Value(
                 Objects.equals(type, EleOtaUpgrade.TYPE_CORE) ? request.getCoreSha256() : request.getSubSha256());
         updateEleOtaUpgradeHistory.setErrMsg(request.getMsg());
@@ -199,8 +198,6 @@ class EleOtaOperateRequest {
     private Integer operateType;
     
     private Integer cellNo;
-    
-    private String upgradeNo;
     
     private String msg;
 

@@ -144,8 +144,8 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public List<OtaUpgradeQuery> updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid) {
-        return Optional.ofNullable(cellNos).orElse(Lists.newArrayList()).parallelStream().map(cellNo -> {
+    public void updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid, String sessionId) {
+        Optional.ofNullable(cellNos).orElse(Lists.newArrayList()).parallelStream().forEach(cellNo -> {
             Integer type = Objects.equals(cellNo, 0) ? EleOtaUpgrade.TYPE_CORE : EleOtaUpgrade.TYPE_SUB;
             EleOtaUpgrade eleOtaUpgradeFromDb = queryByEidAndCellNo(eid, cellNo, type);
             if (Objects.isNull(eleOtaUpgradeFromDb)) {
@@ -165,8 +165,6 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
                 eleOtaUpgradeMapper.update(eleOtaUpgrade);
             }
             
-            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
-            
             EleOtaUpgradeHistory eleOtaUpgradeHistory = new EleOtaUpgradeHistory();
             eleOtaUpgradeHistory.setCellNo(String.valueOf(cellNo));
             eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));
@@ -174,13 +172,11 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
             eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(type));
             eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
             eleOtaUpgradeHistory.setStatus(EleOtaUpgrade.STATUS_INIT);
-            eleOtaUpgradeHistory.setUpgradeNo(uuid);
+            eleOtaUpgradeHistory.setSessionId(sessionId);
             eleOtaUpgradeHistory.setCreateTime(System.currentTimeMillis());
             eleOtaUpgradeHistory.setUpdateTime(System.currentTimeMillis());
             eleOtaUpgradeHistoryService.insert(eleOtaUpgradeHistory);
-            
-            return new OtaUpgradeQuery(cellNo, uuid);
-        }).collect(Collectors.toList());
+        });
     }
     
     private String queryOtaVersionByEidAndCellNo(Integer type) {
