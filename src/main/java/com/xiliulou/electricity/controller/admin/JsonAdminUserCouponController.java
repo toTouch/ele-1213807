@@ -74,7 +74,7 @@ public class JsonAdminUserCouponController {
 	public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
 		Long[] uids = (Long[])
 				JSONUtil.parseArray(uid).toArray(Long[].class);
-		return userCouponService.batchRelease(id, uids);
+		return userCouponService.adminBatchRelease(id, uids);
 	}
 
 }

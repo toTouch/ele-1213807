@@ -142,6 +142,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo) {
+        return franchiseeUserInfoMapper.unBindNowBatterySn(franchiseeUserInfo);
+    }
+
+    @Override
     public R queryBattery() {
         //用户
         TokenUser user = SecurityUtils.getUserInfo();

@@ -142,6 +142,10 @@ public interface ElectricityCabinetService {
 
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
+    R queryElectricityCabinetFileById(Integer electricityCabinetId);
+
+    R acquireIdcardFileSign();
+
     R queryName(Integer tenant,Integer id);
 
     R superAdminQueryName(Integer id);

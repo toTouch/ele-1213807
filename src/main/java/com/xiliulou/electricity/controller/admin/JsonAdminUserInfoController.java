@@ -1,15 +1,27 @@
 package com.xiliulou.electricity.controller.admin;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
+import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.service.UserTypeFactory;
+import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.UpdateGroup;
+import com.xiliulou.security.bean.TokenUser;
+import java.util.List;
+import java.util.Objects;
+import javax.servlet.http.HttpServletResponse;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -21,6 +33,7 @@ import org.springframework.web.bind.annotation.*;
  * @since 2020-12-07 15:00:00
  */
 @RestController
+@Slf4j
 public class JsonAdminUserInfoController {
     /**
      * 服务对象
@@ -29,6 +42,7 @@ public class JsonAdminUserInfoController {
     UserInfoService userInfoService;
     @Autowired
     RedisService redisService;
+    @Autowired UserTypeFactory userTypeFactory;
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -43,6 +57,7 @@ public class JsonAdminUserInfoController {
                        @RequestParam(value = "uid", required = false) Long uid,
                        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
                        @RequestParam(value = "cardName",required = false) String cardName,
+                       @RequestParam(value = "sortType",required = false) Integer sortType,
                        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                        @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd) {
         if (size < 0 || size > 50) {
@@ -68,11 +83,69 @@ public class JsonAdminUserInfoController {
                 .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .uid(uid)
+                .sortType(sortType)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
                 .tenantId(tenantId).build();
 
         return userInfoService.queryList(userInfoQuery);
+    }
+
+
+    //租电池订单导出报表
+    @GetMapping("/admin/userInfo/exportExcel")
+    public void exportExcel(@RequestParam(value = "name", required = false) String name,
+        @RequestParam(value = "phone", required = false) String phone,
+        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+        @RequestParam(value = "authStatus", required = false) Integer authStatus,
+        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
+        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
+        @RequestParam(value = "uid", required = false) Long uid,
+        @RequestParam(value = "memberCardId",required = false) Long memberCardId,
+        @RequestParam(value = "cardName",required = false) String cardName,
+        @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
+        @RequestParam(value = "memberCardExpireTimeEnd",required = false) Long memberCardExpireTimeEnd, HttpServletResponse response) {
+
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            throw new CustomBusinessException("查不到订单");
+        }
+
+        List<Integer> eleIdList = null;
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)
+            && !Objects.equals(user.getType(), User.TYPE_USER_OPERATE)) {
+            UserTypeService userTypeService = userTypeFactory.getInstance(user.getType());
+            if (Objects.isNull(userTypeService)) {
+                log.warn("USER TYPE ERROR! not found operate service! userType:{}", user.getType());
+                throw new CustomBusinessException("查不到订单");
+            }
+            eleIdList = userTypeService.getEleIdListByUserType(user);
+            if (ObjectUtil.isEmpty(eleIdList)) {
+                throw new CustomBusinessException("查不到订单");
+            }
+        }
+
+        UserInfoQuery userInfoQuery = UserInfoQuery.builder()
+            .name(name)
+            .phone(phone)
+            .nowElectricityBatterySn(nowElectricityBatterySn)
+            .franchiseeId(franchiseeId)
+            .authStatus(authStatus)
+            .serviceStatus(serviceStatus)
+            .memberCardExpireTimeBegin(memberCardExpireTimeBegin)
+            .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
+            .uid(uid)
+            .memberCardId(memberCardId)
+            .cardName(cardName)
+            .tenantId(tenantId).build();
+
+        userInfoService.exportExcel(userInfoQuery, response);
     }
 
     //列表查询

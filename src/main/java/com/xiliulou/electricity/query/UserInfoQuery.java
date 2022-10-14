@@ -39,4 +39,9 @@ public class UserInfoQuery {
     private String cardName;
 
     private Long uid;
+
+    /**
+     * 排序方式
+     */
+    private Integer sortType;
 }

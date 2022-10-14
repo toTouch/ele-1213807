@@ -16,6 +16,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -35,6 +36,8 @@ import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
+import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -42,6 +45,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -124,6 +128,16 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Autowired
     UserService userService;
+
+    @Autowired
+    ElectricityCabinetFileService electricityCabinetFileService;
+    @Autowired
+    StorageConfig storageConfig;
+    @Autowired private ElectricityCabinetServerService electricityCabinetServerService;
+
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -233,6 +247,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //添加快递柜格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+            //添加服务时间记录
+            electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             return electricityCabinet;
         });
         return R.ok(electricityCabinet.getId());
@@ -319,6 +335,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
                 electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
             }
+
+            //修改柜机服务时间信息
+            electricityCabinetServerService
+                .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             return null;
         });
         return R.ok();
@@ -432,6 +452,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     isLock = 1;
                 }
                 e.setIsLock(isLock);
+
+                ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService
+                    .queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
+                if (Objects.nonNull(electricityCabinetServer)) {
+                    e.setServerBeginTime(electricityCabinetServer.getServerBeginTime());
+                    e.setServerEndTime(electricityCabinetServer.getServerEndTime());
+                }
             });
         }
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
@@ -2167,7 +2194,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Double fullyCharged = electricityCabinet.getFullyCharged();
 
 //        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
+        List<ElectricityCabinetBox> electricityCabinetBoxList =  electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
 
@@ -2178,7 +2205,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(item.getSn());
                 if (!Objects.isNull(electricityBattery)) {
                     electricityCabinetBoxVO.setPower(electricityBattery.getPower());
+                    electricityCabinetBoxVO.setChargeStatus(electricityBattery.getChargeStatus());
                     electricityCabinetBoxVO.setExchange(electricityBattery.getPower() >= fullyCharged ? ElectricityCabinetBoxVO.EXCHANGE_YES : ElectricityCabinetBoxVO.EXCHANGE_NO);
+//                    if (Objects.nonNull(electricityBattery.getModel())) {
+//                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
+//                    }
+                    if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())){
+                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityCabinetBoxVO.getBatteryType()).toString());
+                    }
                 }
 
                 electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
@@ -2786,6 +2820,24 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
         return R.ok(homepageBatteryVo);
 
+    }
+
+    @Override
+    public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
+        List<ElectricityCabinetFile> electricityCabinetFiles=electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId.longValue(),ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
+        List<String> cabinetPhoto=new ArrayList<>();
+
+        for (ElectricityCabinetFile electricityCabinetFile:electricityCabinetFiles){
+            if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
+                cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
+            }
+        }
+        return R.ok(cabinetPhoto);
+    }
+
+    @Override
+    public R acquireIdcardFileSign() {
+        return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
     }
 
     @Override

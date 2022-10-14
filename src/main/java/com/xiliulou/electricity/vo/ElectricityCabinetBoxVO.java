@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.vo;
 
+import java.util.List;
 import lombok.Data;
 
 /**

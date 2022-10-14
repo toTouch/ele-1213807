@@ -20,6 +20,8 @@ public interface UserCouponService {
 
     R batchRelease(Integer id, Long[] uids);
 
+    R adminBatchRelease(Integer id, Long[] uids);
+
     void handelUserCouponExpired();
 
     R queryMyCoupon( List<Integer> statusList,List<Integer> typeList);
