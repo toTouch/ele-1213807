@@ -17,7 +17,7 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
-import com.xiliulou.electricity.config.EleIotOtaUrlConfig;
+import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -127,7 +127,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     UserService userService;
     @Autowired
-    EleIotOtaUrlConfig eleIotOtaUrlConfig;
+    EleIotOtaPathConfig eleIotOtaPathConfig;
     
     @Autowired
     OtaFileConfigService otaFileConfigService;
