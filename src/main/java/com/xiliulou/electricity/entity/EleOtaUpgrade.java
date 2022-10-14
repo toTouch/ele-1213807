@@ -40,4 +40,15 @@ public class EleOtaUpgrade {
     
     public static final Integer DEL_DEL = 1;
     
+    public static final Integer TYPE_CORE = 1;
+    
+    public static final Integer TYPE_SUB = 2;
+    
+    public static final String STATUS_INIT = "INIT";
+    
+    public static final String STATUS_UPGRADING = "UPGRADING";
+    
+    public static final String STATUS_UPGRADE_FAIL = "UPGRADE_FAIL";
+    
+    public static final String STATUS_UPGRADE_SUCCESS = "UPGRADE_SUCCESS";
 }

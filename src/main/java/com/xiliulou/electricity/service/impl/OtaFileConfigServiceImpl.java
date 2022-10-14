@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.config.EleIotOtaPathConfig;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
@@ -188,8 +189,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         }
         try {
             String ossPath = eleIotOtaPathConfig + otaFileConfig.getName();
-            //TODO
-            //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
+            aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
             this.deleteById(id);
         } catch (Exception e) {
             log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
@@ -206,4 +206,5 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     
         return R.ok(queryAll());
     }
+    
 }

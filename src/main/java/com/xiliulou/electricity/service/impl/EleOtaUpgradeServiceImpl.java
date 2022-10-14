@@ -1,14 +1,33 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.google.common.collect.Lists;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.EleOtaUpgrade;
+import com.xiliulou.electricity.entity.EleOtaUpgradeHistory;
+import com.xiliulou.electricity.entity.ElectricityCabinetBox;
+import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.mapper.EleOtaUpgradeMapper;
+import com.xiliulou.electricity.query.OtaUpgradeQuery;
+import com.xiliulou.electricity.service.EleCabinetCoreDataService;
+import com.xiliulou.electricity.service.EleOtaFileService;
+import com.xiliulou.electricity.service.EleOtaUpgradeHistoryService;
 import com.xiliulou.electricity.service.EleOtaUpgradeService;
+import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.service.OtaFileConfigService;
+import com.xiliulou.electricity.vo.OtaUpgradeInfoVo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -24,6 +43,18 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     
     @Resource
     private EleOtaUpgradeMapper eleOtaUpgradeMapper;
+    
+    @Autowired
+    EleCabinetCoreDataService eleCabinetCoreDataService;
+    
+    @Autowired
+    ElectricityCabinetBoxService electricityCabinetBoxService;
+    
+    @Autowired
+    EleOtaUpgradeHistoryService eleOtaUpgradeHistoryService;
+    
+    @Autowired
+    OtaFileConfigService otaFileConfigService;
     
     /**
      * 通过ID查询单条数据从DB
@@ -96,5 +127,89 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long id) {
         return this.eleOtaUpgradeMapper.deleteById(id) > 0;
+    }
+    
+    @Override
+    public R queryVoList(Long eid) {
+        List<OtaUpgradeInfoVo> otaCellNoUpgradeInfoVos = Optional
+                .ofNullable(eleOtaUpgradeMapper.queryCellNoUpgradeInfoVoList(eid)).orElse(Lists.newArrayList());
+        OtaUpgradeInfoVo otaCoreUpgradeInfoVo = Optional.ofNullable(eleOtaUpgradeMapper.queryCoreUpgradeInfoVo(eid))
+                .orElse(new OtaUpgradeInfoVo());
+        otaCellNoUpgradeInfoVos.add(otaCoreUpgradeInfoVo);
+        
+        List<OtaUpgradeInfoVo> result = otaCellNoUpgradeInfoVos.stream()
+                .sorted(Comparator.comparing(OtaUpgradeInfoVo::getCellNo)).collect(Collectors.toList());
+        return R.ok(result);
+    }
+    
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public List<OtaUpgradeQuery> updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid) {
+        return Optional.ofNullable(cellNos).orElse(Lists.newArrayList()).parallelStream().map(cellNo -> {
+            Integer type = Objects.equals(cellNo, 0) ? EleOtaUpgrade.TYPE_CORE : EleOtaUpgrade.TYPE_SUB;
+            EleOtaUpgrade eleOtaUpgradeFromDb = queryByEidAndCellNo(eid, cellNo, type);
+            if (Objects.isNull(eleOtaUpgradeFromDb)) {
+                EleOtaUpgrade eleOtaUpgrade = new EleOtaUpgrade();
+                eleOtaUpgrade.setElectricityCabinetId(Long.valueOf(eid));
+                eleOtaUpgrade.setCellNo(String.valueOf(cellNo));
+                eleOtaUpgrade.setStatus(EleOtaUpgrade.STATUS_INIT);
+                eleOtaUpgrade.setType(type);
+                eleOtaUpgrade.setCreateTime(System.currentTimeMillis());
+                eleOtaUpgrade.setUpdateTime(System.currentTimeMillis());
+                eleOtaUpgradeMapper.insertOne(eleOtaUpgrade);
+            } else {
+                EleOtaUpgrade eleOtaUpgrade = new EleOtaUpgrade();
+                eleOtaUpgrade.setId(eleOtaUpgradeFromDb.getId());
+                eleOtaUpgrade.setStatus(EleOtaUpgrade.STATUS_INIT);
+                eleOtaUpgrade.setUpdateTime(System.currentTimeMillis());
+                eleOtaUpgradeMapper.update(eleOtaUpgrade);
+            }
+            
+            String uuid = UUID.randomUUID().toString().replaceAll("-", "");
+            
+            EleOtaUpgradeHistory eleOtaUpgradeHistory = new EleOtaUpgradeHistory();
+            eleOtaUpgradeHistory.setCellNo(String.valueOf(cellNo));
+            eleOtaUpgradeHistory.setElectricityCabinetId(Long.valueOf(eid));
+            eleOtaUpgradeHistory.setType(type);
+            eleOtaUpgradeHistory.setUpgradeVersion(queryOtaVersionByEidAndCellNo(type));
+            eleOtaUpgradeHistory.setHistoryVersion(queryEleVersionByEidAndCellNo(eid, cellNo, type));
+            eleOtaUpgradeHistory.setStatus(EleOtaUpgrade.STATUS_INIT);
+            eleOtaUpgradeHistory.setUpgradeNo(uuid);
+            eleOtaUpgradeHistory.setCreateTime(System.currentTimeMillis());
+            eleOtaUpgradeHistory.setUpdateTime(System.currentTimeMillis());
+            eleOtaUpgradeHistoryService.insert(eleOtaUpgradeHistory);
+            
+            return new OtaUpgradeQuery(cellNo, uuid);
+        }).collect(Collectors.toList());
+    }
+    
+    private String queryOtaVersionByEidAndCellNo(Integer type) {
+        OtaFileConfig otaFileConfig = otaFileConfigService.queryByType(type);
+        if (Objects.nonNull(otaFileConfig)) {
+            return otaFileConfig.getVersion();
+        }
+        return null;
+    }
+    
+    private String queryEleVersionByEidAndCellNo(Integer eid, Integer cellNo, Integer type) {
+        if (EleOtaUpgrade.TYPE_CORE.equals(type)) {
+            EleCabinetCoreData eleCabinetCoreData = eleCabinetCoreDataService.selectByEleCabinetId(eid);
+            if (Objects.nonNull(eleCabinetCoreData)) {
+                return eleCabinetCoreData.getCoreVersion();
+            }
+        }
+        
+        ElectricityCabinetBox electricityCabinetBox = electricityCabinetBoxService
+                .queryByCellNo(eid, String.valueOf(cellNo));
+        if (Objects.nonNull(electricityCabinetBox)) {
+            return electricityCabinetBox.getVersion();
+        }
+        
+        return null;
+    }
+    
+    @Override
+    public EleOtaUpgrade queryByEidAndCellNo(Integer eid, Integer cellNo, Integer type) {
+        return eleOtaUpgradeMapper.queryByEidAndCellNo(eid, cellNo, type);
     }
 }

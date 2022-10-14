@@ -95,5 +95,32 @@
     <delete id="deleteById">
         delete from t_ele_ota_upgrade where id = #{id}
     </delete>
-
+    
+    
+    <select id="queryCellNoUpgradeInfoVoList" resultType="com.xiliulou.electricity.vo.OtaUpgradeInfoVo">
+        select
+            eou.id, ecb.cell_no, ecb.version, eou.status
+        from t_electricity_cabinet_box ecb
+        left join t_ele_ota_upgrade eou on eou.electricity_cabinet_id = ecb.electricity_cabinet_id and eou.cell_no = ecb.cell_no
+        where ecb.electricity_cabinet_id = #{eid}
+    </select>
+    
+    <select id="queryCoreUpgradeInfoVo" resultType="com.xiliulou.electricity.vo.OtaUpgradeInfoVo">
+        select
+            eou.id, eccd.version, eou.status
+        from t_ele_cabinet_core_data eccd
+        left join t_ele_ota_upgrade eou on eou.electricity_cabinet_id = eccd.electricity_cabinet_id
+        where eccd.electricity_cabinet_id = #{eid}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryByEidAndCellNo" resultMap="EleOtaUpgradeMap">
+        select
+        id, electricity_cabinet_id, cell_no, type, status, create_time, update_time
+        from t_ele_ota_upgrade
+        where electricity_cabinet_id = #{eid} and cell_no = #{cellNo}
+        <if test="type != null">
+            and type = #{type}
+        </if>
+    </select>
 </mapper>

@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.controller.admin;
 
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleOtaUpgrade;
 import com.xiliulou.electricity.service.EleOtaUpgradeService;
 import org.springframework.web.bind.annotation.*;
@@ -21,5 +22,8 @@ public class JsonAdminEleOtaUpgradeController {
     @Resource
     private EleOtaUpgradeService eleOtaUpgradeService;
     
-    
+    @GetMapping("admin/eleOtaUpgrade/list")
+    public R queryVoList(@RequestParam("eid") Long eid) {
+        return eleOtaUpgradeService.queryVoList(eid);
+    }
 }

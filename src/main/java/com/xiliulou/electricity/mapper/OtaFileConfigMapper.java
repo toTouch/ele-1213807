@@ -1,5 +1,6 @@
 package com.xiliulou.electricity.mapper;
 
+import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 
 import java.util.List;
@@ -66,4 +67,5 @@ public interface OtaFileConfigMapper extends BaseMapper<OtaFileConfig> {
     OtaFileConfig queryByType(Integer type);
     
     Integer insertOrupdate(OtaFileConfig otaFileConfig);
+    
 }

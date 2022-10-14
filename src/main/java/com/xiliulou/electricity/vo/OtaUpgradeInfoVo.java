@@ -16,7 +16,5 @@ public class OtaUpgradeInfoVo {
     
     private String status;
     
-    private Integer type;
-    
     private String cellNo;
 }

@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import java.util.List;
 
 import com.xiliulou.electricity.entity.EleOtaUpgrade;
+import com.xiliulou.electricity.vo.OtaUpgradeInfoVo;
 import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
@@ -64,4 +65,10 @@ public interface EleOtaUpgradeMapper extends BaseMapper<EleOtaUpgrade> {
      */
     int deleteById(Long id);
     
+    List<OtaUpgradeInfoVo> queryCellNoUpgradeInfoVoList(Long eid);
+    
+    OtaUpgradeInfoVo queryCoreUpgradeInfoVo(Long eid);
+    
+    EleOtaUpgrade queryByEidAndCellNo(@Param("eid") Integer eid, @Param("cellNo") Integer cellNo,
+            @Param("type") Integer type);
 }

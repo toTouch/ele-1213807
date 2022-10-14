@@ -131,6 +131,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     
     @Autowired
     OtaFileConfigService otaFileConfigService;
+    
+    @Autowired
+    EleOtaUpgradeService eleOtaUpgradeService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -2815,7 +2818,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     
     @Override
-    public R otaCommand(Integer eid, Integer operateType) {
+    public R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos) {
         final Integer TYPE_DOWNLOAD = 1;
         final Integer TYPE_SYNC = 2;
         final Integer TYPE_UPGRADE = 3;
@@ -2837,10 +2840,12 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     electricityCabinet, operateType);
             return R.fail("100302", "ota操作类型不合法");
         }
+    
+        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
         
         Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
+        Map<String, Object> content = new HashMap<>();
         data.put("operateType", operateType);
-        
         if (TYPE_DOWNLOAD.equals(operateType)) {
             //ota文件是否存在
             OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
@@ -2851,14 +2856,22 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                         coreBoardOtaFileConfig, subBoardOtaFileConfig);
                 return R.fail("100301", "ota升级文件不完整，请联系客服处理");
             }
-            
-            data.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
-            data.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
-            data.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
-            data.put("subFileSha256Hex", subBoardOtaFileConfig.getSha256Value());
+    
+            content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
+            content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
+            content.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
+            content.put("subFileSha256Hex", subBoardOtaFileConfig.getSha256Value());
+        } else if (TYPE_UPGRADE.equals(operateType)) {
+            if (!DataUtil.collectionIsUsable(cellNos)) {
+                return R.fail("100303", "升级内容为空，请选择您要升级的板子");
+            }
+    
+            List<OtaUpgradeQuery> otaUpgradeQueries = eleOtaUpgradeService
+                    .updateEleOtaUpgradeAndSaveHistory(cellNos, eid);
+            content.put("cellNos", otaUpgradeQueries);
         }
-
-        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+    
+        data.put("content", JsonUtil.toJson(content));
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(sessionId)

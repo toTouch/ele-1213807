@@ -588,8 +588,9 @@ public class JsonAdminElectricityCabinetController {
      * ota操作  1--下载  2-- 同步  3--升级
      */
     @PostMapping("/admin/electricityCabinet/ota/command")
-    public R otaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType) {
-        return electricityCabinetService.otaCommand(eid, operateType);
+    public R otaCommand(@RequestParam("eid") Integer eid, @RequestParam("operateType") Integer operateType,
+            @RequestParam(value = "cellNos", required = false) List<Integer> cellNos) {
+        return electricityCabinetService.otaCommand(eid, operateType, cellNos);
     }
     
     /**

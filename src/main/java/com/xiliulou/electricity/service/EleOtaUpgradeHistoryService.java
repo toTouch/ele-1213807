@@ -1,18 +1,17 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.EleOtaUpgrade;
-import com.xiliulou.electricity.query.OtaUpgradeQuery;
+import com.xiliulou.electricity.entity.EleOtaUpgradeHistory;
 
 import java.util.List;
 
 /**
- * (EleOtaUpgrade)表服务接口
+ * (EleOtaUpgradeHistory)表服务接口
  *
  * @author Hardy
- * @since 2022-10-14 09:02:00
+ * @since 2022-10-14 14:35:40
  */
-public interface EleOtaUpgradeService {
+public interface EleOtaUpgradeHistoryService {
     
     /**
      * 通过ID查询单条数据从数据库
@@ -20,7 +19,7 @@ public interface EleOtaUpgradeService {
      * @param id 主键
      * @return 实例对象
      */
-    EleOtaUpgrade queryByIdFromDB(Long id);
+    EleOtaUpgradeHistory queryByIdFromDB(Long id);
     
     /**
      * 通过ID查询单条数据从缓存
@@ -28,7 +27,7 @@ public interface EleOtaUpgradeService {
      * @param id 主键
      * @return 实例对象
      */
-    EleOtaUpgrade queryByIdFromCache(Long id);
+    EleOtaUpgradeHistory queryByIdFromCache(Long id);
     
     /**
      * 查询多条数据
@@ -37,23 +36,23 @@ public interface EleOtaUpgradeService {
      * @param limit  查询条数
      * @return 对象列表
      */
-    List<EleOtaUpgrade> queryAllByLimit(int offset, int limit);
+    List<EleOtaUpgradeHistory> queryAllByLimit(int offset, int limit);
     
     /**
      * 新增数据
      *
-     * @param eleOtaUpgrade 实例对象
+     * @param eleOtaUpgradeHistory 实例对象
      * @return 实例对象
      */
-    EleOtaUpgrade insert(EleOtaUpgrade eleOtaUpgrade);
+    EleOtaUpgradeHistory insert(EleOtaUpgradeHistory eleOtaUpgradeHistory);
     
     /**
      * 修改数据
      *
-     * @param eleOtaUpgrade 实例对象
+     * @param eleOtaUpgradeHistory 实例对象
      * @return 实例对象
      */
-    Integer update(EleOtaUpgrade eleOtaUpgrade);
+    Integer update(EleOtaUpgradeHistory eleOtaUpgradeHistory);
     
     /**
      * 通过主键删除数据
@@ -63,10 +62,8 @@ public interface EleOtaUpgradeService {
      */
     Boolean deleteById(Long id);
     
-    R queryVoList(Long eid);
+    EleOtaUpgradeHistory queryByUpgradeNo(String upgradeNo);
     
-    List<OtaUpgradeQuery> updateEleOtaUpgradeAndSaveHistory(List<Integer> cellNos, Integer eid);
-    
-    EleOtaUpgrade queryByEidAndCellNo(Integer eid, Integer cellNo, Integer type);
-    
+    R queryList(Integer eid, Integer cellNo, Integer type, String upgradeVersion, String historyVersion, String status,
+            Long startTime, Long endTime, Long offset, Long size);
 }
