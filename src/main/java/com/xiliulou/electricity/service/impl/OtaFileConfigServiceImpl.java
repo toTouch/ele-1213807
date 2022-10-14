@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.entity.OtaFileConfig;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mapper.OtaFileConfigMapper;
@@ -39,16 +40,6 @@ import org.springframework.web.multipart.MultipartFile;
 public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     
     /**
-     * 核心板oss路径
-     */
-    private static String coreBoardPath = "a/b/core.bin";
-    
-    /**
-     * 子板oss路径
-     */
-    private static String daughterBoardPath = "a/b/sub.bin";
-    
-    /**
      * AliYunOss路径
      */
     private static String aliYunOssUrl = "https://xiliulou-electricity.oss-cn-beijing.aliyuncs.com/";
@@ -61,6 +52,9 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     
     @Autowired
     private StorageConfig storageConfig;
+    
+    @Autowired
+    private EleIotOtaPathConfig eleIotOtaPathConfig;
     
     /**
      * 通过ID查询单条数据从DB
@@ -157,7 +151,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         }
         
         try (InputStream inputStream = file.getInputStream()) {
-            String ossPath = OtaFileConfig.TYPE_SUB_BOARD.equals(type) ? daughterBoardPath : coreBoardPath;
+            String ossPath = eleIotOtaPathConfig + name;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink = aliYunOssUrl + ossPath;
             
@@ -193,8 +187,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("oat文件不存在");
         }
         try {
-            String ossPath = OtaFileConfig.TYPE_SUB_BOARD.equals(otaFileConfig.getType()) ? daughterBoardPath
-                    : coreBoardPath;
+            String ossPath = eleIotOtaPathConfig + otaFileConfig.getName();
             //TODO
             //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
             this.deleteById(id);
