@@ -145,6 +145,7 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
     R acquireIdcardFileSign();
-
-
+    
+    
+    R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery);
 }
