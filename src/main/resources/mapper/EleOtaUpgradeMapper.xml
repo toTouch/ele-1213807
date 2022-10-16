@@ -103,6 +103,7 @@
         from t_electricity_cabinet_box ecb
         left join t_ele_ota_upgrade eou on eou.electricity_cabinet_id = ecb.electricity_cabinet_id and eou.cell_no = ecb.cell_no
         where ecb.electricity_cabinet_id = #{eid}
+        order by ecb.cell_no
     </select>
     
     <select id="queryCoreUpgradeInfoVo" resultType="com.xiliulou.electricity.vo.OtaUpgradeInfoVo">

@@ -22,11 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import lombok.extern.slf4j.Slf4j;
@@ -133,13 +129,11 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
     public R queryVoList(Long eid) {
         List<OtaUpgradeInfoVo> otaCellNoUpgradeInfoVos = Optional
                 .ofNullable(eleOtaUpgradeMapper.queryCellNoUpgradeInfoVoList(eid)).orElse(Lists.newArrayList());
+
         OtaUpgradeInfoVo otaCoreUpgradeInfoVo = Optional.ofNullable(eleOtaUpgradeMapper.queryCoreUpgradeInfoVo(eid))
                 .orElse(new OtaUpgradeInfoVo());
-        otaCellNoUpgradeInfoVos.add(otaCoreUpgradeInfoVo);
-        
-        List<OtaUpgradeInfoVo> result = otaCellNoUpgradeInfoVos.stream()
-                .sorted(Comparator.comparing(OtaUpgradeInfoVo::getCellNo)).collect(Collectors.toList());
-        return R.ok(result);
+        otaCellNoUpgradeInfoVos.add(0, otaCoreUpgradeInfoVo);
+        return R.ok(otaCellNoUpgradeInfoVos);
     }
     
     @Override

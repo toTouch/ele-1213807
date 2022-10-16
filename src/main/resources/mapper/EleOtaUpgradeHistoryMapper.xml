@@ -230,8 +230,5 @@
                 and wo.create_time BETWEEN #{startTime} and #{endTime}
             </if>
         </where>
-        <if test="offset != null and size != null">
-            limit #{offset}, #{size}
-        </if>
     </select>
 </mapper>
