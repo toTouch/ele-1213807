@@ -53,6 +53,4 @@ public class EleOtaUpgradeHistoryVo {
     private Long createTime;
     
     private Long updateTime;
-    
-    private String upgradeNo;
 }

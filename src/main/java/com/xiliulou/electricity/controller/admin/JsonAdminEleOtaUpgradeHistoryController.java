@@ -14,7 +14,6 @@ import javax.annotation.Resource;
  * @since 2022-10-14 14:35:41
  */
 @RestController
-@RequestMapping("eleOtaUpgradeHistory")
 public class JsonAdminEleOtaUpgradeHistoryController {
     
     /**
@@ -25,15 +24,15 @@ public class JsonAdminEleOtaUpgradeHistoryController {
     
     
     @GetMapping("admin/eleOtaUpgradeHistory/queryList")
-    public R queryList(@RequestParam(value = "eid", required = false) Integer eid,
+    public R queryList(@RequestParam(value = "eid") Integer eid,
             @RequestParam(value = "cellNo", required = false) Integer cellNo,
             @RequestParam(value = "type", required = false) Integer type,
             @RequestParam(value = "upgradeVersion", required = false) String upgradeVersion,
             @RequestParam(value = "historyVersion", required = false) String historyVersion,
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "startTime", required = false) Long startTime,
-            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam("offset") Long offset,
-            @RequestParam("size") Long size) {
+            @RequestParam(value = "endTime", required = false) Long endTime, @RequestParam(value = "offset", required = false) Long offset,
+            @RequestParam(value = "size", required = false) Long size) {
         return eleOtaUpgradeHistoryService
                 .queryList(eid, cellNo, type, upgradeVersion, historyVersion, status, startTime, endTime, offset, size);
     }

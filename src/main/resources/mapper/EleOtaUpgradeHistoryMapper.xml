@@ -168,8 +168,8 @@
         from t_ele_ota_upgrade_history teouh
         left join t_electricity_cabinet ec on ec.id = teouh.electricity_cabinet_id
         <where>
-            <if test="eleName != null and eleName != ''">
-                and ec.name like concat('%', #{eleName}, '%')
+            <if test="eid != null">
+                and teouh.electricity_cabinet_id = #{eid}
             </if>
             <if test="cellNo != null">
                 and cell_no = #{cellNo}
@@ -194,7 +194,9 @@
             </if>
         </where>
         order by create_time desc
-        limit #{offset}, #{size}
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
     
     <select id="queryCount" resultType="long">
@@ -203,8 +205,8 @@
         from t_ele_ota_upgrade_history teouh
         left join t_electricity_cabinet ec on ec.id = teouh.electricity_cabinet_id
         <where>
-            <if test="eleName != null and eleName != ''">
-                and ec.name like concat('%', #{eleName}, '%')
+            <if test="eid != null">
+                and teouh.electricity_cabinet_id = #{eid}
             </if>
             <if test="cellNo != null">
                 and cell_no = #{cellNo}
@@ -228,5 +230,8 @@
                 and wo.create_time BETWEEN #{startTime} and #{endTime}
             </if>
         </where>
+        <if test="offset != null and size != null">
+            limit #{offset}, #{size}
+        </if>
     </select>
 </mapper>
