@@ -152,7 +152,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         }
         
         try (InputStream inputStream = file.getInputStream()) {
-            String ossPath = eleIotOtaPathConfig + name;
+            String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink = aliYunOssUrl + ossPath;
             
