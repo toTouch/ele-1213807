@@ -160,8 +160,7 @@
         </if>
     </select>
     
-    <!--<select id="queryList" resultType="com.xiliulou.electricity.vo.EleOtaUpgradeHistoryVo">-->
-    <select id="queryList" resultMap="EleOtaUpgradeHistoryMap">
+    <select id="queryList" resultType="com.xiliulou.electricity.vo.EleOtaUpgradeHistoryVo">
         select
         teouh.id, ec.name as electricity_name , teouh.cell_no, teouh.type, teouh.upgrade_version, teouh.history_version,
         teouh.upgrade_sha256_value, teouh.status, teouh.upgrade_time, teouh.finish_time, teouh.err_msg,

@@ -79,7 +79,7 @@
     <select id="queryByType" resultMap="OtaFileConfigMap">
         select
           id, name, download_link, version, sha256_value, type, create_time, update_time
-        from t_ota_file_config where type = {type}
+        from t_ota_file_config where type = #{type}
     </select>
     
     
