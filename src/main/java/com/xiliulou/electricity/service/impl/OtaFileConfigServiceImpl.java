@@ -189,7 +189,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         }
         try {
             String ossPath = eleIotOtaPathConfig + otaFileConfig.getName();
-            aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
+            //aliyunOssService.removeOssFile(storageConfig.getBucketName(), ossPath);
             this.deleteById(id);
         } catch (Exception e) {
             log.error("OTA_FILE_CONFIG_DELETE ERROR!", e);
