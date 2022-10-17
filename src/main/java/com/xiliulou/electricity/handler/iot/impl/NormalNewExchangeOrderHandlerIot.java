@@ -73,7 +73,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-        if (exchangeOrderRsp.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
             log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
             return;
         }
@@ -178,7 +178,8 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
         franchiseeUserInfo.setNowElectricityBatterySn(null);
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.update(franchiseeUserInfo);
+//        franchiseeUserInfoService.update(franchiseeUserInfo);
+        franchiseeUserInfoService.unBindNowBatterySn(franchiseeUserInfo);
 
         //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());

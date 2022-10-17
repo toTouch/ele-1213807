@@ -668,7 +668,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     //后台绑定电池
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
         //用户
@@ -707,11 +707,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        //已绑定电池
-        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
-        }
+//        //已绑定电池
+//        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+//            log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
+//            return R.fail("ELECTRICITY.0045", "已绑定电池");
+//        }
 
         //判断电池是否存在，或者已经被绑定
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
@@ -800,7 +800,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R webUnBindBattery(Long uid) {
 
         //用户
