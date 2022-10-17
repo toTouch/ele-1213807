@@ -154,14 +154,20 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
     
-        try (InputStream inputStream = file.getInputStream()) {
+        InputStream ossInputStream = null;
+        InputStream sha256HexInputStream = null;
+        try {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
             String downloadLink =
                     "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
-            
-            aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, inputStream);
         
-            String sha256Hex = DigestUtils.sha256Hex(inputStream);
+            byte[] fileByte = file.getBytes();
+            ossInputStream = new ByteArrayInputStream(fileByte);
+            sha256HexInputStream = new ByteArrayInputStream(fileByte);
+        
+            aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, ossInputStream);
+        
+            String sha256Hex = DigestUtils.sha256Hex(sha256HexInputStream);
             OtaFileConfig otaFileConfig = queryByType(type);
             if (Objects.isNull(otaFileConfig)) {
                 otaFileConfig = new OtaFileConfig();
@@ -184,6 +190,22 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         } catch (Exception e) {
             log.error("OTA_FILE_CONFIG_UPLOAD ERROR!", e);
             return R.fail("ota文件上传失败！");
+        } finally {
+            if (Objects.nonNull(ossInputStream)) {
+                try {
+                    ossInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        
+            if (Objects.nonNull(sha256HexInputStream)) {
+                try {
+                    sha256HexInputStream.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
         }
         return R.ok();
     }
