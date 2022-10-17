@@ -145,6 +145,19 @@
         </where>
         order by cell_no desc
     </select>
+    
+    <select id="selectUsableEmptyCellNumber" resultType="int">
+        select count(1)
+        from t_electricity_cabinet_box
+        <where>
+            electricity_cabinet_id = #{eid}
+            and tenant_id=#{tenantId}
+            and usable_status = 0
+            and del_flag = 0
+            and status = 1
+        </where>
+        order by cell_no desc
+    </select>
 
     <update id="modifyCellUsableStatus">
         update t_electricity_cabinet_box

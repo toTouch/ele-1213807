@@ -2072,6 +2072,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Deprecated
     public Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid) {
         List<ElectricityCabinetBox> usableEmptyCellNo = electricityCabinetBoxService.findUsableEmptyCellNo(eid);
         if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {

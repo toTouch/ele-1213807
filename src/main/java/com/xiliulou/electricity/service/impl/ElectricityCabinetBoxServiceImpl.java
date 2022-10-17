@@ -9,6 +9,7 @@ import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
+import com.xiliulou.electricity.entity.ElectricityConfig;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.mapper.ElectricityCabinetBoxMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
@@ -16,7 +17,9 @@ import com.xiliulou.electricity.service.*;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -34,6 +37,7 @@ import java.util.stream.Collectors;
  * @since 2020-11-25 11:00:37
  */
 @Service("electricityCabinetBoxService")
+@Slf4j
 public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxService {
     @Resource
     private ElectricityCabinetBoxMapper electricityCabinetBoxMapper;
@@ -49,7 +53,9 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     FranchiseeUserInfoService franchiseeUserInfoService;
     @Autowired
     BatteryOtherPropertiesService batteryOtherPropertiesService;
-
+    @Autowired
+    ElectricityConfigService electricityConfigService;
+ 
 
     /**
      * 通过ID查询单条数据从DB
@@ -172,7 +178,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     public List<ElectricityCabinetBox> findUsableEmptyCellNo(Integer eid) {
         return electricityCabinetBoxMapper.queryUsableEmptyCellNo(eid);
     }
-
+    
+    @Override
+    public int selectUsableEmptyCellNumber(Integer eid, Integer tenantId) {
+        return electricityCabinetBoxMapper.selectUsableEmptyCellNumber(eid, tenantId);
+    }
+    
     @Override
     public Integer disableCell(Integer cellNo, Integer electricityCabinetId) {
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
@@ -190,5 +201,28 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     @Override
     public ElectricityCabinetBox selectByBatteryId(Long batteryId) {
         return electricityCabinetBoxMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetBox>().eq(ElectricityCabinetBox::getBId, batteryId));
+    }
+    
+    @Override
+    public Triple<Boolean, String, Object> selectAvailableBoxNumber(Integer electricityCabinetId, Integer tenantId) {
+        
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig)) {
+            log.error("ELE ERROR! electricityConfig is null,tenantId={}", tenantId);
+            return Triple.of(false, "000001", "系统异常！");
+        }
+        
+        if (!Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.ENABLE_RETURN_BOX_CHECK)) {
+            return Triple.of(true, "", "");
+        }
+        
+        int emptyCellNumber = this.selectUsableEmptyCellNumber(electricityCabinetId, tenantId);
+        if (emptyCellNumber <= 1) {
+            log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}",
+                    emptyCellNumber, electricityCabinetId);
+            return Triple.of(false, "100240", "空格挡数量不足1个，无法退电！");
+        }
+        
+        return Triple.of(true, "", "");
     }
 }
