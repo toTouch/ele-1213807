@@ -158,16 +158,25 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
             
             aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, inputStream);
     
-            OtaFileConfig otaFileConfig = Optional.ofNullable(queryByType(type))
-                    .orElse(new OtaFileConfig());
-            otaFileConfig.setName(name);
-            otaFileConfig.setDownloadLink(downloadLink);
-            otaFileConfig.setSha256Value(sha256Hex);
-            otaFileConfig.setVersion(version);
-            otaFileConfig.setType(type);
-            otaFileConfig.setCreateTime(System.currentTimeMillis());
-            otaFileConfig.setUpdateTime(System.currentTimeMillis());
-            this.otaFileConfigMapper.insertOrupdate(otaFileConfig);
+            OtaFileConfig otaFileConfig = queryByType(type);
+            if (Objects.isNull(otaFileConfig)) {
+                otaFileConfig = new OtaFileConfig();
+                otaFileConfig.setName(name);
+                otaFileConfig.setDownloadLink(downloadLink);
+                otaFileConfig.setSha256Value(sha256Hex);
+                otaFileConfig.setVersion(version);
+                otaFileConfig.setType(type);
+                otaFileConfig.setCreateTime(System.currentTimeMillis());
+                otaFileConfig.setUpdateTime(System.currentTimeMillis());
+                this.otaFileConfigMapper.insertOne(otaFileConfig);
+            } else {
+                otaFileConfig.setName(name);
+                otaFileConfig.setDownloadLink(downloadLink);
+                otaFileConfig.setSha256Value(sha256Hex);
+                otaFileConfig.setVersion(version);
+                otaFileConfig.setUpdateTime(System.currentTimeMillis());
+                this.otaFileConfigMapper.update(otaFileConfig);
+            }
         } catch (Exception e) {
             log.error("OTA_FILE_CONFIG_UPLOAD ERROR!", e);
             return R.fail("ota文件上传失败！");
