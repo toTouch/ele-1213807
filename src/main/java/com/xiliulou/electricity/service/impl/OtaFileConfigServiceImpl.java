@@ -12,6 +12,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.storage.config.StorageConfig;
 import com.xiliulou.storage.service.impl.AliyunOssService;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -150,8 +151,8 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
                 .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
-        
-        try (InputStream inputStream = file.getInputStream()) {
+    
+        try (InputStream inputStream = new ByteArrayInputStream(file.getBytes())) {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink =
