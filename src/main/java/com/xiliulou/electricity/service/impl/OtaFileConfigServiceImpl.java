@@ -43,7 +43,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
     /**
      * AliYunOss路径
      */
-    private static String aliYunOssUrl = "https://xiliulou-electricity.oss-cn-beijing.aliyuncs.com/";
+    //private static String aliYunOssUrl = "https://xiliulou-electricity.oss-cn-beijing.aliyuncs.com/";
     
     @Resource
     private OtaFileConfigMapper otaFileConfigMapper;
@@ -154,7 +154,8 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
         try (InputStream inputStream = file.getInputStream()) {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
-            String downloadLink = aliYunOssUrl + ossPath;
+            String downloadLink =
+                    "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
             
             aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, inputStream);
     
