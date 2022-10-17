@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.fileupload.disk.DiskFileItem;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -152,15 +153,15 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
                 .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
-        CommonsMultipartFile cFile = (CommonsMultipartFile) file;
-        try (InputStream inputStream = cFile.getFileItem().getInputStream()) {
+    
+        try (InputStream inputStream = file.getInputStream()) {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
-            String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink =
                     "https://" + storageConfig.getBucketName() + "." + storageConfig.getOssEndpoint() + "/" + ossPath;
             
             aliyunOssService.uploadFile(storageConfig.getBucketName(), ossPath, inputStream);
-    
+        
+            String sha256Hex = DigestUtils.sha256Hex(inputStream);
             OtaFileConfig otaFileConfig = queryByType(type);
             if (Objects.isNull(otaFileConfig)) {
                 otaFileConfig = new OtaFileConfig();
