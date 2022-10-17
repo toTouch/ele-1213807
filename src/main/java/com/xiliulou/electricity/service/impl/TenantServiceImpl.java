@@ -189,7 +189,7 @@ public class TenantServiceImpl implements TenantService {
                 .isManualReview(ElectricityConfig.MANUAL_REVIEW)
                 .isWithdraw(ElectricityConfig.WITHDRAW)
                 .isOpenDoorLock(ElectricityConfig.OPEN_DOOR_LOCK)
-                .isEnableReturnBoxCheck(ElectricityConfig.ENABLE_RETURN_BOX_CHECK)
+                .isEnableReturnBoxCheck(ElectricityConfig.DISABLE_RETURN_BOX_CHECK)
                 .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
