@@ -24,6 +24,7 @@ public class JsonAdminOtaFileConfigController {
     private OtaFileConfigService otaFileConfigService;
     
     @PostMapping("admin/otaFileConfig/upload")
+    @CrossOrigin
     public R otaFileConfigUpload(@RequestParam("file") MultipartFile file, @RequestParam("name") String name,
             @RequestParam("version") String version, @RequestParam(value = "type") Integer type) {
         return otaFileConfigService.otaFileConfigUpload(file, name, version, type);
