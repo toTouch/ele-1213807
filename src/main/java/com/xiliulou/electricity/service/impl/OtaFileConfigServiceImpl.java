@@ -30,6 +30,7 @@ import java.util.Optional;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.commons.CommonsMultipartFile;
 
 /**
  * (OtaFileConfig)表服务实现类
@@ -151,8 +152,8 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
                 .equals(type, OtaFileConfig.TYPE_CORE_BOARD)) {
             return R.fail("100300", "ota文件类型不合法,请联系管理员或重新上传！");
         }
-    
-        try (InputStream inputStream = new ByteArrayInputStream(file.getBytes())) {
+        CommonsMultipartFile cFile = (CommonsMultipartFile) file;
+        try (InputStream inputStream = cFile.getFileItem().getInputStream()) {
             String ossPath = eleIotOtaPathConfig.getOtaPath() + name;
             String sha256Hex = DigestUtils.sha256Hex(inputStream);
             String downloadLink =
