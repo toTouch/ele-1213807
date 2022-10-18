@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BatteryConstant;
+import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
@@ -14,8 +15,11 @@ import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
+import org.apache.commons.lang3.tuple.Pair;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import org.springframework.stereotype.Service;
@@ -106,6 +110,35 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
+    public Triple<Boolean, String, Object> updateServiceStatus(Long uid, Integer serviceStatus) {
+
+        UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
+        if (Objects.isNull(userInfo)) {
+            return Triple.of(false, "ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_DEPOSIT)) {
+            ElectricityBattery battery = electricityBatteryService.queryByUid(userInfo.getUid());
+            if (!Objects.isNull(battery)) {
+                return Triple.of(false, "ELECTRICITY.0045", String.format("用户已绑定电池【%s】, 请先解绑！", battery.getSn()));
+            }
+        } else if (Objects.equals(serviceStatus, FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+
+        } else {
+            return Triple.of(false, "ELECTRICITY.0007", "不合法的参数");
+        }
+
+        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+        franchiseeUserInfo.setServiceStatus(serviceStatus);
+        franchiseeUserInfo.setUserInfoId(userInfo.getId());
+        franchiseeUserInfo.setTenantId(TenantContextHolder.getTenantId());
+        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+
+        this.updateByUserInfoId(franchiseeUserInfo);
+        return Triple.of(true, "",null);
+    }
+
+    @Override
     public void updateRefund(FranchiseeUserInfo franchiseeUserInfo) {
         franchiseeUserInfoMapper.updateRefund(franchiseeUserInfo);
     }
@@ -152,6 +185,11 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     @Deprecated
     public FranchiseeUserInfo selectByNowBattery(String batteryName) {
         return franchiseeUserInfoMapper.selectByNowBattery(batteryName);
+    }
+
+    @Override
+    public Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo) {
+        return franchiseeUserInfoMapper.unBindNowBatterySn(franchiseeUserInfo);
     }
 
     @Override

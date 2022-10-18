@@ -65,7 +65,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
             return;
         }
 
-        if (exchangeOrderRsp.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
+        if (electricityCabinetOrder.getOrderSeq() > exchangeOrderRsp.getOrderSeq()) {
             log.error("EXCHANGE ORDER ERROR! rsp order seq is lower order! requestId={},orderId={},uid={}", receiverMessage.getSessionId(), exchangeOrderRsp.getOrderId(), electricityCabinetOrder.getUid());
             return;
         }
@@ -283,6 +283,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cell_no", cellNo);
+        dataMap.put("lockType", 1);
         dataMap.put("isForbidden", true);
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()

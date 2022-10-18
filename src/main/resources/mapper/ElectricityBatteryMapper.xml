@@ -65,7 +65,10 @@
 			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
 		</if>
 		<if test="query.franchiseeId != null">
-			and franchisee_id=#{franchiseeId}
+			and franchisee_id =#{franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and '' != query.franchiseeName">
+			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
 		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
@@ -169,6 +172,9 @@
 		<if test="query.franchiseeId != null">
 			and franchisee_id =#{franchiseeId}
 		</if>
+		<if test="query.franchiseeName != null and '' != query.franchiseeName">
+			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+		</if>
 	</select>
 
 	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
@@ -211,7 +217,7 @@
 
 
 	<select id="queryLowBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select sn, tenant_id, power from t_electricity_battery where power &lt; #{batteryLevel} and business_status = 2 limit #{offset}, #{size}
+		select sn, tenant_id,uid, power from t_electricity_battery where power &lt; #{batteryLevel} and business_status = 2 limit #{offset}, #{size}
     </select>
 
 	<select id="queryByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
@@ -290,6 +296,39 @@
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
 		uid=#{uid},
+		update_time=#{updateTime}
+		where id=#{id}
+	</update>
+
+	<update id="updateBatteryStatus">
+		update t_electricity_battery
+		set
+		<if test="chargeStatus != null">
+			charge_status =#{chargeStatus},
+		</if>
+		<if test="healthStatus != null">
+			health_status =#{healthStatus},
+		</if>
+		<if test="power != null">
+			power =#{power},
+		</if>
+		<if test="model != null">
+			model =#{model},
+		</if>
+		<if test="exchangeCount != null">
+			exchange_count =#{exchangeCount},
+		</if>
+		<if test="physicsStatus != null">
+			physics_status =#{physicsStatus},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
+		electricity_cabinet_name=#{electricityCabinetName},
+		electricity_cabinet_id=#{electricityCabinetId},
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>

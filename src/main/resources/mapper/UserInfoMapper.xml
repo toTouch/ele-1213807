@@ -50,7 +50,7 @@
 
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
-        tui.phone,tui.name,tui.uid,tui.create_time as
+        tui.id as user_info_id,tui.phone,tui.name,tui.uid,tui.create_time as
         userCertificationTime,tui.auth_status,tui.usable_status,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
         tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.business_status as businessStatus,
         tfui.battery_type as model,tfui.model_type,
@@ -104,7 +104,12 @@
         <if test="query.serviceStatus == 2 or query.serviceStatus == 3">
             and tfui.service_status =#{query.serviceStatus}
         </if>
-        order by tfui.member_card_expire_time desc
+        <if test="query.sortType == null or query.sortType == 0">
+            order by tfui.member_card_expire_time desc
+        </if>
+        <if test="query.sortType == 1">
+            order by tui.create_time desc
+        </if>
         limit #{query.offset}, #{query.size}
     </select>
 
@@ -354,6 +359,9 @@
             </if>
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
             </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},

@@ -65,8 +65,11 @@
         <if test="batteryServiceFeeStatus != null">
             battery_service_fee_status = #{batteryServiceFeeStatus},
         </if>
+        <if test="tenantId != null">
+            tenant_id = #{tenantId},
+        </if>
         update_time = #{updateTime}
-        where user_info_id = #{userInfoId} and del_flag=0
+        where user_info_id = #{userInfoId}
     </update>
 
     <update id="updateByOrder">
@@ -170,4 +173,12 @@
                 where fui.del_flag = 0 and fui.member_card_expire_time &gt;= #{startExpireTime} and fui.member_card_expire_time &lt;= #{endExpireTime}
                 limit #{offset}, #{size}
     </select>
+
+
+    <update id="unBindNowBatterySn">
+        update t_franchisee_user_info
+        set now_electricity_battery_sn = #{nowElectricityBatterySn},
+        update_time = #{updateTime}
+        where id = #{id}
+    </update>
 </mapper>

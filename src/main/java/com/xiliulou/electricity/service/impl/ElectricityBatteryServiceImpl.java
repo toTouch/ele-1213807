@@ -433,6 +433,16 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.updateBatteryUser(electricityBattery);
     }
 
+    /**
+     * 更新电池状态
+     * @param electricityBattery
+     * @return
+     */
+    @Override
+    public Integer updateBatteryStatus(ElectricityBattery electricityBattery) {
+        return electricitybatterymapper.updateBatteryStatus(electricityBattery);
+    }
+
     @Override
     public R queryCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return R.ok(electricitybatterymapper.queryCount(electricityBatteryQuery));

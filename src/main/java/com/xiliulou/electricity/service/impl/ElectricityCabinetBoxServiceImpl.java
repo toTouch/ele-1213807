@@ -178,6 +178,10 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
     }
 
+    @Override
+    public R queryBoxCount(Integer electricityCabinet, Integer tenantId) {
+        return R.ok(electricityCabinetBoxMapper.queryBoxCount(electricityCabinet,tenantId));
+    }
     /**
      * 根据电池id查询格挡
      * @param batteryId

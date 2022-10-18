@@ -47,6 +47,8 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 
 	void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
+    Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo);
+
     List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(@Param("offset") int offset,
 																  @Param("size") int size,
 																  @Param("startExpireTime") long startExpireTime,

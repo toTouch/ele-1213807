@@ -133,7 +133,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         this.checkBatteryFranchisee(electricityCabinet, electricityBattery, updateElectricityCabinetBox, sessionId);
 
         //更新电池
-        electricityBatteryService.updateBatteryUser(updateBattery);
+        electricityBatteryService.updateBatteryStatus(updateBattery);
 
         //更新格挡
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
@@ -149,7 +149,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         battery.setElectricityCabinetId(electricityCabinet.getId());
         battery.setElectricityCabinetName(electricityCabinet.getName());
 //        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
-        battery.setUid(null);
+//        battery.setUid(null);
         battery.setBorrowExpireTime(null);
         battery.setUpdateTime(System.currentTimeMillis());
         battery.setHealthStatus(eleBatteryVO.getHealth());
@@ -238,9 +238,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
             updateBattery.setBorrowExpireTime(null);
-            updateBattery.setUid(null);
+//            updateBattery.setUid(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(updateBattery);
+            electricityBatteryService.updateBatteryStatus(updateBattery);
         }
 
     }
@@ -266,7 +266,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             updateBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
-            updateBattery.setUid(null);
+//            updateBattery.setUid(null);
             updateBattery.setBorrowExpireTime(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
 
@@ -316,7 +316,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         Double power = eleBatteryVO.getPower();
         //柜机模式
         String applicationMode = null;
-
 
         try {
             ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);

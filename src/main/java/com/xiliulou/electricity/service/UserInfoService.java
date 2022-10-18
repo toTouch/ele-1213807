@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.List;
@@ -110,4 +111,5 @@ public interface UserInfoService extends IService<UserInfo> {
     R deleteUserInfo(Long uid);
 
     Integer updateByUid(UserInfo userInfo);
+
 }

@@ -43,6 +43,8 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
+    Integer updateBatteryStatus(ElectricityBattery electricityBattery);
+
     R queryCount(ElectricityBatteryQuery electricityBatteryQuery);
 
     void handlerBatteryNotInCabinetWarning();

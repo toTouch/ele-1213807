@@ -1,8 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
+import cn.hutool.core.util.StrUtil;
+import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
@@ -11,8 +14,14 @@ import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.vo.EleBatteryWarnMsgVo;
+import com.xiliulou.electricity.vo.EleBusinessWarnMsgVo;
+import com.xiliulou.electricity.vo.EleCabinetWarnMsgVo;
+import com.xiliulou.electricity.vo.EleCellWarnMsgVo;
 import com.xiliulou.security.bean.TokenUser;
+import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +30,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -41,6 +53,11 @@ public class JsonAdminEleWarnMsgController {
     EleWarnMsgService eleWarnMsgService;
     @Autowired
     UserTypeFactory userTypeFactory;
+
+    @Autowired
+    ClickHouseService clickHouseService;
+
+    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     //列表查询
     @GetMapping(value = "/admin/eleWarnMsg/list")
@@ -315,7 +332,7 @@ public class JsonAdminEleWarnMsgController {
     }
 
     @GetMapping(value = "/admin/statisticsEleWarmMsg/rankingCount")
-    public R statisticEleWarnMsgRankingCount(){
+    public R statisticEleWarnMsgRankingCount() {
         //用户区分
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -329,6 +346,373 @@ public class JsonAdminEleWarnMsgController {
         }
 
         return eleWarnMsgService.queryStatisticEleWarnMsgRankingCount();
+    }
+
+
+    //电池故障列表查询
+    @GetMapping(value = "/admin/batteryWarnMsg/list")
+    public R queryBatteryWarnMsgList(@RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "beginTime") Long beginTime,
+                                     @RequestParam(value = "endTime") Long endTime,
+                                     @RequestParam(value = "batteryName", required = false) String batteryName,
+                                     @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+        if (StrUtil.isNotEmpty(batteryName) && StrUtil.isEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_battery where tenantId=? and  batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, batteryName, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(electricityCabinetId) && StrUtil.isEmpty(batteryName)) {
+            String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(batteryName) && StrUtil.isNotEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_battery where tenantId=? and  electricityCabinetId=? and  batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, electricityCabinetId, batteryName, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        String sql = "select * from t_warn_msg_battery where tenantId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+
+    //格挡故障列表查询
+    @GetMapping(value = "/admin/cellWarnMsg/list")
+    public R queryCellWarnMsgList(@RequestParam("size") Long size,
+                                  @RequestParam("offset") Long offset, @RequestParam(value = "beginTime") Long beginTime,
+                                  @RequestParam(value = "endTime") Long endTime,
+                                  @RequestParam(value = "cellNo", required = false) Integer cellNo,
+                                  @RequestParam(value = "operateType", required = false) Integer operateType,
+                                  @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+        if (Objects.nonNull(cellNo) && Objects.nonNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (Objects.nonNull(cellNo) && Objects.isNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where tenantId=? and  electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, cellNo, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where tenantId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.nonNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.isNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where tenantId=? and electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        String sql = "select * from t_warn_msg_cell where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+
+    //柜机故障列表查询
+    @GetMapping(value = "/admin/cabinetWarnMsg/list")
+    public R queryCabinetWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                     @RequestParam("size") Long size,
+                                     @RequestParam("offset") Long offset,
+                                     @RequestParam(value = "endTime") Long endTime,
+                                     @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+
+        if (StrUtil.isNotEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_cabinet where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+
+        String sql = "select * from t_warn_msg_cabinet where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+    //业务故障列表查询
+    @GetMapping(value = "/admin/businessWarnMsg/list")
+    public R queryBusinessWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                      @RequestParam("size") Long size,
+                                      @RequestParam("offset") Long offset,
+                                      @RequestParam(value = "endTime") Long endTime,
+                                      @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+
+        if (StrUtil.isNotEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_business where tenantId=? and  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, tenantId, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+
+        String sql = "select * from t_warn_msg_business where tenantId=? and  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, tenantId, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+
+    //超级管理员电池故障列表查询
+    @GetMapping(value = "/admin/superAdminBatteryWarnMsg/list")
+    public R querySuperAdminBatteryWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                               @RequestParam("size") Long size,
+                                               @RequestParam("offset") Long offset,
+                                               @RequestParam(value = "endTime") Long endTime,
+                                               @RequestParam(value = "batteryName", required = false) String batteryName,
+                                               @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+        if (StrUtil.isNotEmpty(batteryName) && StrUtil.isEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_battery where batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, batteryName, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(electricityCabinetId) && StrUtil.isEmpty(batteryName)) {
+            String sql = "select * from t_warn_msg_battery where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(batteryName) && StrUtil.isNotEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_battery where and  electricityCabinetId=? and  batteryName=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, electricityCabinetId, batteryName, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        String sql = "select * from t_warn_msg_battery where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBatteryWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+
+    //超级管理员格挡故障列表查询
+    @GetMapping(value = "/admin/superAdminCellWarnMsg/list")
+    public R querySuperAdminCellWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                            @RequestParam(value = "endTime") Long endTime,
+                                            @RequestParam("size") Long size,
+                                            @RequestParam("offset") Long offset,
+                                            @RequestParam(value = "cellNo", required = false) Integer cellNo,
+                                            @RequestParam(value = "operateType", required = false) Integer operateType,
+                                            @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+        if (Objects.nonNull(cellNo) && Objects.nonNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and cellNo=? and operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (Objects.nonNull(cellNo) && Objects.isNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where electricityCabinetId=? and cellNo=?  and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, cellNo, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (Objects.isNull(cellNo) && Objects.nonNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.nonNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and  operateType=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, operateType, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+        if (StrUtil.isNotEmpty(electricityCabinetId) && Objects.isNull(operateType)) {
+            String sql = "select * from t_warn_msg_cell where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+
+        String sql = "select * from t_warn_msg_cell where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCellWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+
+    //超级管理员柜机故障列表查询
+    @GetMapping(value = "/admin/superAdminCabinetWarnMsg/list")
+    public R querySuperAdminCabinetWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                               @RequestParam(value = "endTime") Long endTime,
+                                               @RequestParam("size") Long size,
+                                               @RequestParam("offset") Long offset,
+                                               @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+
+        if (StrUtil.isNotEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_cabinet where electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+
+        String sql = "select * from t_warn_msg_cabinet where  reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleCabinetWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
+    }
+
+    //超级管理员业务故障列表查询
+    @GetMapping(value = "/admin/superAdminBusinessWarnMsg/list")
+    public R querySuperAdminBusinessWarnMsgList(@RequestParam(value = "beginTime") Long beginTime,
+                                                @RequestParam(value = "endTime") Long endTime,
+                                                @RequestParam("size") Long size,
+                                                @RequestParam("offset") Long offset,
+                                                @RequestParam(value = "electricityCabinetId", required = false) String electricityCabinetId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        LocalDateTime beginLocalDateTime = LocalDateTime.ofEpochSecond(beginTime / 1000, 0, ZoneOffset.ofHours(8));
+        LocalDateTime endLocalDateTime = LocalDateTime.ofEpochSecond(endTime / 1000, 0, ZoneOffset.ofHours(8));
+        String begin = formatter.format(beginLocalDateTime);
+        String end = formatter.format(endLocalDateTime);
+
+
+        if (StrUtil.isNotEmpty(electricityCabinetId)) {
+            String sql = "select * from t_warn_msg_business where  electricityCabinetId=? and reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+            List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, electricityCabinetId, begin, end, offset, size);
+            eleWarnMsgService.queryElectricityName(list);
+            return R.ok(list);
+        }
+
+
+        String sql = "select * from t_warn_msg_business where reportTime>=? AND reportTime<=? order by  createTime desc limit ?,?";
+        List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, begin, end, offset, size);
+        eleWarnMsgService.queryElectricityName(list);
+        return R.ok(list);
     }
 
 

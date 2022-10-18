@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.exception.CustomBusinessException;
+import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.thread.XllThreadPoolExecutorService;
 import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
@@ -33,6 +34,7 @@ import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -179,10 +181,14 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardId(null);
                     item.setCardName(null);
                 }
-
-                if (Objects.nonNull(item.getServiceStatus()) && !Objects.equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
-                    EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
-                    item.setPayDepositTime(eleDepositOrder.getCreateTime());
+    
+                if (Objects.nonNull(item.getServiceStatus()) && !Objects
+                        .equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
+                    EleDepositOrder eleDepositOrder = eleDepositOrderService
+                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                    if (Objects.nonNull(eleDepositOrder)) {
+                        item.setPayDepositTime(eleDepositOrder.getCreateTime());
+                    }
                 }
 
 //                if (Objects.isNull(item.getAuthStatus()) || !Objects.equals(item.getAuthStatus(),UserInfo.STATUS_AUDIT_PASS)){
@@ -724,11 +730,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        //已绑定电池
-        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
-            log.error("WEBBIND ERROR ERROR! user rent battery! uid={} ", oldUserInfo.getUid());
-            return R.fail("ELECTRICITY.0045", "已绑定电池");
-        }
+//        //已绑定电池
+//        if (Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.BIND_TYPE) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY)) {
+//            log.error("webBindBattery  ERROR! user rent battery! uid:{} ", oldUserInfo.getUid());
+//            return R.fail("ELECTRICITY.0045", "已绑定电池");
+//        }
 
         //判断电池是否存在，或者已经被绑定
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByBindSn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn());
@@ -1110,8 +1116,6 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         });
         return result;
     }
-
-
 
     @Override
     public void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response) {

@@ -39,6 +39,7 @@ import com.xiliulou.iot.service.IotAcsService;
 import com.xiliulou.iot.service.PubHardwareService;
 import com.xiliulou.security.bean.TokenUser;
 import com.xiliulou.storage.config.StorageConfig;
+import com.xiliulou.storage.service.StorageService;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ObjectUtils;
@@ -46,6 +47,7 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.CollectionUtils;
@@ -135,6 +137,11 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
+    @Autowired private ElectricityCabinetServerService electricityCabinetServerService;
+
+    @Qualifier("aliyunOssService")
+    @Autowired
+    StorageService storageService;
 
     /**
      * 通过ID查询单条数据从缓存
@@ -223,7 +230,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         List<ElectricityCabinet> existsElectricityCabinetList = electricityCabinetMapper.selectList(new LambdaQueryWrapper<ElectricityCabinet>()
                 .eq(ElectricityCabinet::getProductKey, electricityCabinet.getProductKey())
                 .eq(ElectricityCabinet::getDeviceName, electricityCabinet.getDeviceName())
-                .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
+//                .eq(ElectricityCabinet::getDeviceSecret, electricityCabinet.getDeviceSecret())
                 .eq(ElectricityCabinet::getDelFlag, ElectricityCabinet.DEL_NORMAL));
         if (DataUtil.collectionIsUsable(existsElectricityCabinetList)) {
             return R.fail("ELECTRICITY.0002", "换电柜的三元组已存在");
@@ -244,6 +251,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //添加快递柜格挡
             electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
+            //添加服务时间记录
+            electricityCabinetServerService.insertOrUpdateByElectricityCabinet(electricityCabinet, electricityCabinet);
             return electricityCabinet;
         });
         return R.ok(electricityCabinet.getId());
@@ -330,6 +339,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 electricityCabinetBoxService.batchDeleteBoxByElectricityCabinetId(electricityCabinet.getId());
                 electricityCabinetBoxService.batchInsertBoxByModelId(electricityCabinetModel, electricityCabinet.getId());
             }
+
+            //修改柜机服务时间信息
+            electricityCabinetServerService
+                .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             return null;
         });
         return R.ok();
@@ -443,6 +456,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     isLock = 1;
                 }
                 e.setIsLock(isLock);
+
+                ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService
+                    .queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
+                if (Objects.nonNull(electricityCabinetServer)) {
+                    e.setServerBeginTime(electricityCabinetServer.getServerBeginTime());
+                    e.setServerEndTime(electricityCabinetServer.getServerEndTime());
+                }
             });
         }
         electricityCabinetList.stream().sorted(Comparator.comparing(ElectricityCabinetVO::getCreateTime).reversed()).collect(Collectors.toList());
@@ -1243,6 +1263,67 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
         return R.ok(sessionId);
     }
+    
+    
+    @Override
+    public R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery) {
+        //不合法的参数
+        if (Objects.isNull(eleOuterCommandQuery.getCommand())
+                || Objects.isNull(eleOuterCommandQuery.getDeviceName())
+                || Objects.isNull(eleOuterCommandQuery.getProductKey())) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        
+        String sessionId = UUID.randomUUID().toString().replace("-", "");
+        eleOuterCommandQuery.setSessionId(sessionId);
+        
+        ElectricityCabinet electricityCabinet = queryByProductAndDeviceName(eleOuterCommandQuery.getProductKey(), eleOuterCommandQuery.getDeviceName());
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        //换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet{}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+        
+        //不合法的命令
+        //        if (!ElectricityIotConstant.ELE_COMMAND_MAPS.containsKey(eleOuterCommandQuery.getCommand())) {
+        if (!ElectricityIotConstant.isLegalCommand(eleOuterCommandQuery.getCommand())) {
+            return R.fail("ELECTRICITY.0036", "不合法的命令");
+        }
+        
+        if (Objects.equals(ElectricityIotConstant.ELE_COMMAND_CELL_ALL_OPEN_DOOR, eleOuterCommandQuery.getCommand())) {
+            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
+            if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
+                return R.fail("ELECTRICITY.0014", "换电柜没有仓门，不能开门");
+            }
+            HashMap<String, Object> dataMap = Maps.newHashMap();
+            List<String> cellList = new ArrayList<>();
+            for (ElectricityCabinetBox electricityCabinetBox : electricityCabinetBoxList) {
+                cellList.add(electricityCabinetBox.getCellNo());
+            }
+            dataMap.put("cell_list", cellList);
+            eleOuterCommandQuery.setData(dataMap);
+        }
+        
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(eleOuterCommandQuery.getSessionId())
+                .data(eleOuterCommandQuery.getData())
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(eleOuterCommandQuery.getCommand())
+                .build();
+        
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        return R.ok(sessionId);
+    }
 
     @Override
     public R queryByDeviceOuter(String productKey, String deviceName) {
@@ -1876,37 +1957,37 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinet electricityCabinet = queryByProductAndDeviceName(productKey, deviceName);
         if (Objects.isNull(electricityCabinet)) {
             log.error("checkBattery error! no electricityCabinet,productKey={},deviceName={}", productKey, deviceName);
-            return R.fail("未找到换电柜");
+            return R.failMsg("未找到换电柜");
         }
 
         //电池
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batterySn);
         if (Objects.isNull(electricityBattery)) {
             log.error("checkBattery error! no electricityBattery,sn={}", batterySn);
-            return R.fail("未找到电池");
+            return R.failMsg("未找到电池");
         }
 
         if (!Objects.equals(electricityCabinet.getTenantId(), electricityBattery.getTenantId())) {
             log.error("checkBattery error! tenantId is not equal,tenantId1={},tenantId2={}", electricityCabinet.getTenantId(), electricityBattery.getTenantId());
-            return R.fail("电池与换电柜租户不匹配");
+            return R.failMsg("电池与换电柜租户不匹配");
         }
 
         //查电池所属加盟商
 //        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
         if (Objects.isNull(electricityBattery.getFranchiseeId())) {
             log.error("checkBattery error! battery not bind franchisee,electricityBatteryId={}", electricityBattery.getId());
-            return R.fail("电池未绑定加盟商");
+            return R.failMsg("电池未绑定加盟商");
         }
         // 查换电柜所属加盟商
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
         if (Objects.isNull(store)) {
             log.error("checkBattery error! not find store,storeId={}", electricityCabinet.getStoreId());
-            return R.fail("找不到换电柜门店");
+            return R.failMsg("找不到换电柜门店");
         }
 
         if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
             log.error("checkBattery error! franchisee is not equal,franchiseeId1:{},franchiseeId2:{}", store.getFranchiseeId(), electricityBattery.getFranchiseeId());
-            return R.fail("电池加盟商与电柜加盟商不匹配");
+            return R.failMsg("电池加盟商与电柜加盟商不匹配");
         }
 
         //检查电池和用户是否匹配
@@ -2908,5 +2989,20 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         }
 
         return R.ok(electricityCabinets);
+    }
+
+    @Override
+    public R acquireIdcardFileSign() {
+        return R.ok(storageService.getOssUploadSign("saas/cabinet/"));
+    }
+
+    @Override
+    public R queryName(Integer tenantId, Integer id) {
+        return R.ok(electricityCabinetMapper.queryName(tenantId, id));
+    }
+
+    @Override
+    public R superAdminQueryName(Integer id) {
+        return R.ok(electricityCabinetMapper.queryName(null, id));
     }
 }
