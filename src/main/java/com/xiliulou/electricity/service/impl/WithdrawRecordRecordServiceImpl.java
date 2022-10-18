@@ -239,7 +239,7 @@ public class WithdrawRecordRecordServiceImpl implements WithdrawRecordService {
 		Integer tenantId = TenantContextHolder.getTenantId();
 
 		//提现密码确认
-		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache();
+		WithdrawPassword withdrawPassword = withdrawPasswordService.queryFromCache(tenantId);
 		if (Objects.isNull(withdrawPassword)) {
 			return R.fail("请设置提现密码");
 		}
