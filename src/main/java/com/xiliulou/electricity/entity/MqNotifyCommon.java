@@ -44,7 +44,7 @@ public class MqNotifyCommon<T> {
     /**
      * 故障通知告警
      */
-    public static final Integer TYPE_ABNORMAL_ALARM = 10;
+    public static final Integer TYPE_ABNORMAL_ALARM = 6;
 
     public static final String PROJECT_NAME = "换电柜";
 }
