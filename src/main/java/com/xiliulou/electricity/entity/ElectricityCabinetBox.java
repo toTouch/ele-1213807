@@ -110,6 +110,11 @@ public class ElectricityCabinetBox {
      */
     private String version;
 
+    /**
+     * 锁仓类型 0--人为锁仓 1--系统锁仓
+     */
+    private Integer lockType;
+
 
     public static final Integer DEL_NORMAL = 0;
     public static final Integer DEL_DEL = 1;

@@ -7,7 +7,16 @@ import java.util.List;
 
 @Data
 public class TenantNotifyMailDTO {
+
+    private Long id;
+
+    private String mail;
+
     private Long tenantId;
 
-    private List<TenantNotifyMailVO> tenantNotifyMailList;
+    private String tenantName;
+
+    private Long createTime;
+
+    private Long updateTime;
 }

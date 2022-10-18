@@ -231,17 +231,17 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
             serviceStatus = franchiseeUserInfo.getServiceStatus();
         }
 
-        //用户是否开通月卡
-        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
-                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
-            log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
-            serviceStatus = -1;
-        } else {
-            if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
-                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
-                serviceStatus = -1;
-            }
-        }
+//        //用户是否开通月卡
+//        if (Objects.isNull(franchiseeUserInfo.getMemberCardExpireTime())
+//                || Objects.isNull(franchiseeUserInfo.getRemainingNumber())) {
+//            log.error("order  ERROR! not found memberCard ! uid:{} ", user.getUid());
+//            serviceStatus = -1;
+//        } else {
+//            if (franchiseeUserInfo.getMemberCardExpireTime() < now || franchiseeUserInfo.getRemainingNumber() == 0) {
+//                log.error("order  ERROR! memberCard  is Expire ! uid:{} ", user.getUid());
+//                serviceStatus = -1;
+//            }
+//        }
 
         return R.ok(serviceStatus);
     }

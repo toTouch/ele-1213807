@@ -62,4 +62,8 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> queryAllBoxByElectricityCabinetId(Integer electricityCabinetId);
 
     ElectricityCabinetBox queryBySn(String sn,Integer electricityCabinetId);
+
+    R queryBoxCount(Integer electricityCabinet,Integer tenantId);
+
+    ElectricityCabinetBox selectByBatteryId(Long id);
 }

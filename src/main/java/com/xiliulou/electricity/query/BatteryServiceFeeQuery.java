@@ -1,0 +1,35 @@
+package com.xiliulou.electricity.query;
+
+import lombok.Builder;
+import lombok.Data;
+
+/**
+ * @author: hrp
+ * @Date: 2022/08/16 10:02
+ * @Description:
+ */
+@Data
+@Builder
+public class BatteryServiceFeeQuery {
+
+
+    private Long size;
+    private Long offset;
+
+
+    private String phone;
+    private Long uid;
+    private String name;
+
+    private Long queryStartTime;
+    private Long queryEndTime;
+
+    private Integer status;
+
+    private Integer source;
+    private Integer tenantId;
+
+    private String sn;
+
+
+}

@@ -73,5 +73,5 @@ public interface TenantNotifyMailService {
 
     Boolean checkByTenantId();
 
-    List<TenantNotifyMailDTO> selectGroupByTenantId();
+    List<TenantNotifyMailDTO> selectAllTenantNotifyMail();
 }

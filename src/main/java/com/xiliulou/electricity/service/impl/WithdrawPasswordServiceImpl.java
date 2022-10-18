@@ -12,6 +12,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.WithdrawPassword;
 import com.xiliulou.electricity.mapper.WithdrawPasswordMapper;
 import com.xiliulou.electricity.service.WithdrawPasswordService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.security.authentication.console.CustomPasswordEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -49,25 +50,28 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 
 
 	@Override
-	public WithdrawPassword queryFromCache() {
+	public WithdrawPassword queryFromCache(Integer tenantId) {
 		//先查缓存
-		WithdrawPassword cacheWithdrawPassword = redisService.getWithHash(CacheConstant.CACHE_WITHDRAW_PASSWORD, WithdrawPassword.class);
+		WithdrawPassword cacheWithdrawPassword = redisService.getWithHash(CacheConstant.CACHE_WITHDRAW_PASSWORD+tenantId, WithdrawPassword.class);
 		if (Objects.nonNull(cacheWithdrawPassword)) {
 			return cacheWithdrawPassword;
 		}
 		//缓存没有再查数据库
-		WithdrawPassword withdrawPassword = withdrawPasswordMapper.selectOne(new LambdaQueryWrapper<>());
+		WithdrawPassword withdrawPassword = withdrawPasswordMapper.selectOne(new LambdaQueryWrapper<WithdrawPassword>().eq(WithdrawPassword::getTenantId,tenantId));
 		if (Objects.isNull(withdrawPassword)) {
 			return null;
 		}
 		//放入缓存
-		redisService.saveWithHash(CacheConstant.CACHE_WITHDRAW_PASSWORD, withdrawPassword);
+		redisService.saveWithHash(CacheConstant.CACHE_WITHDRAW_PASSWORD+tenantId, withdrawPassword);
 		return withdrawPassword;
 	}
 
 
 	@Override
 	public R update(WithdrawPassword withdrawPassword) {
+
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
 
 		String decryptPassword = null;
 		String encryptPassword = withdrawPassword.getPassword();
@@ -80,7 +84,8 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 			}
 		}
 
-		WithdrawPassword oldWithdrawPassword=queryFromCache();
+		WithdrawPassword oldWithdrawPassword=queryFromCache(tenantId);
+		withdrawPassword.setTenantId(tenantId);
 		if(Objects.isNull(oldWithdrawPassword)){
 			withdrawPassword.setPassword(customPasswordEncoder.encode(decryptPassword));
 			withdrawPassword.setCreateTime(System.currentTimeMillis());
@@ -90,8 +95,8 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 			withdrawPassword.setId(oldWithdrawPassword.getId());
 			withdrawPassword.setPassword(customPasswordEncoder.encode(decryptPassword));
 			withdrawPassword.setUpdateTime(System.currentTimeMillis());
-			withdrawPasswordMapper.updateById(withdrawPassword);
-			redisService.delete(CacheConstant.CACHE_WITHDRAW_PASSWORD);
+			withdrawPasswordMapper.updateByIdAndTenantId(withdrawPassword);
+			redisService.delete(CacheConstant.CACHE_WITHDRAW_PASSWORD+tenantId);
 		}
 		return R.ok();
 	}

@@ -17,6 +17,7 @@ import org.apache.ibatis.annotations.Update;
  */
 public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo>{
 
+	@Deprecated
     Integer unBind(FranchiseeUserInfo franchiseeUserInfo);
 
 	@Update("update t_franchisee_user_info set remaining_number=remaining_number-1 where id=#{id} and remaining_number>0 and del_flag=0")
@@ -36,7 +37,6 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 
 	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
-
 	FranchiseeUserInfo queryFranchiseeUserInfoByUid(Long uid);
 
 	void updateRentCar(FranchiseeUserInfo franchiseeUserInfo);
@@ -47,10 +47,12 @@ public interface FranchiseeUserInfoMapper  extends BaseMapper<FranchiseeUserInfo
 
 	void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
 
+    Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo);
+
     List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(@Param("offset") int offset,
 																  @Param("size") int size,
 																  @Param("startExpireTime") long startExpireTime,
 																  @Param("endExpireTime") long endExpireTime);
-
-    List<FranchiseeUserInfo> selectByNowElectricityBatterySn(@Param("batteryName") String batteryName);
+	@Deprecated
+    FranchiseeUserInfo selectByNowBattery(@Param("batteryName") String batteryName);
 }

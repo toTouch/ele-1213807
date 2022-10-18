@@ -62,7 +62,7 @@ public class FranchiseeUserInfo {
     /**
      * 当前电池编号
      */
-    private String nowElectricityBatterySn;
+//    private String nowElectricityBatterySn;
     /**
      * 租电池押金
      */
@@ -75,7 +75,6 @@ public class FranchiseeUserInfo {
      * 租车订单编号
      */
     private String rentCarOrderId;
-
     /**
      * 租车押金
      */
@@ -95,22 +94,18 @@ public class FranchiseeUserInfo {
 
     //租户
     private Integer tenantId;
-
     /**
      * 加盟商类型 1--老（不分型号） 2--新（分型号）
      */
     private Integer modelType;
-
     /**
      * 电池类型
      */
     private String batteryType;
-
     /**
      * 月卡停启用状态 0--启用 1--停用
      */
     private Integer memberCardDisableStatus;
-
     /**
      * 月卡暂停启用更新时间
      */
@@ -120,18 +115,14 @@ public class FranchiseeUserInfo {
      * 停卡电池服务费支付状态 0--未缴纳 1--缴纳
      */
     private Integer batteryServiceFeeStatus;
-
-
     /**
      * 电池服务费产生时间
      */
     private Long batteryServiceFeeGenerateTime;
-
     /**
      * 服务状态 (1--已缴纳押金，2--已租车辆)
      */
     private Integer rentCarStatus;
-
     /**
      * 绑定的车辆Id
      */

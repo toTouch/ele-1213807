@@ -158,11 +158,11 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Boolean deleteById(Long uid) {
-        User updateUser = new User();
-        updateUser.setUid(uid);
-        updateUser.setDelFlag(User.DEL_DEL);
-        return this.userMapper.updateUserById(updateUser)>0;
-//        return this.userMapper.deleteById(uid) > 0;
+//        User updateUser = new User();
+//        updateUser.setUid(uid);
+//        updateUser.setDelFlag(User.DEL_DEL);
+//        return this.userMapper.updateUserById(updateUser)>0;
+        return this.userMapper.deleteById(uid) > 0;
     }
 
     @Override

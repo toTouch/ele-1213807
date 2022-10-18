@@ -9,10 +9,8 @@ import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.ReceiverMessage;
-import java.util.List;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,8 +19,8 @@ import shaded.org.apache.commons.lang3.StringUtils;
 import java.util.Objects;
 
 /**
- * @author: lxc
- * @Date: 2020/12/28 17:02
+ * @author: zzlong
+ * @Date: 2022/08/12 17:02
  * @Description:
  */
 @Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
@@ -113,7 +111,8 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(batteryName, electricityCabinet.getTenantId());
         if (Objects.isNull(electricityBattery)) {
-            this.saveNotExistSn(batteryName, electricityCabinet, cellNO);//保存未录入电池
+            //保存未录入电池
+            this.saveNotExistSn(batteryName, electricityCabinet, cellNO);
             return;
         }
 
@@ -129,56 +128,15 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         ElectricityCabinetBox updateElectricityCabinetBox = this.buildElectricityCabinetBox(eleBatteryVO, electricityBattery, electricityCabinet, power);
 
-/*                //更新电池信息
-        ElectricityBattery updateBattery = new ElectricityBattery();
-        updateBattery.setId(electricityBattery.getId());
-        updateBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
-        updateBattery.setElectricityCabinetId(electricityCabinet.getId());
-        updateBattery.setElectricityCabinetName(electricityCabinet.getName());
-        updateBattery.setLastDepositCellNo(cellNO);
-        updateBattery.setUid(null);
-        updateBattery.setBorrowExpireTime(null);
-        updateBattery.setUpdateTime(System.currentTimeMillis());
-        updateBattery.setHealthStatus(eleBatteryVO.getHealth());
-        updateBattery.setChargeStatus(eleBatteryVO.getChargeStatus());
-
-
-        //格挡信息
-        ElectricityCabinetBox updateElectricityCabinetBox = new ElectricityCabinetBox();
-        updateElectricityCabinetBox.setBatteryType(null);
-        updateElectricityCabinetBox.setChargeV(eleBatteryVO.getChargeV());
-        updateElectricityCabinetBox.setChargeA(eleBatteryVO.getChargeA());
-        updateElectricityCabinetBox.setReportTime(reportTime);
-        updateElectricityCabinetBox.setCellNo(cellNO);
-        updateElectricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
-        updateElectricityCabinetBox.setUpdateTime(System.currentTimeMillis());
-        updateElectricityCabinetBox.setSn(electricityBattery.getSn());
-        updateElectricityCabinetBox.setBId(electricityBattery.getId());
-        updateElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_ELECTRICITY_BATTERY);
-
-        //获取电池电量
-        Double power = getBatteryPower(eleBatteryVO, electricityBattery, electricityCabinet, sessionId);
-        if (Objects.nonNull(power)) {
-            updateBattery.setPower(power * 100);
-            updateElectricityCabinetBox.setPower(power * 100);
-        }
-
-        //获取电池型号
-        if (Objects.nonNull(eleBatteryVO.getIsMultiBatteryModel()) && eleBatteryVO.getIsMultiBatteryModel()) {
-            String batteryModel = parseBatteryNameAcquireBatteryModel(batteryName);
-            updateBattery.setModel(batteryModel);
-            updateElectricityCabinetBox.setBatteryType(batteryModel);
-        }*/
 
         //检查电池所属加盟商
         this.checkBatteryFranchisee(electricityCabinet, electricityBattery, updateElectricityCabinetBox, sessionId);
 
         //更新电池
-        electricityBatteryService.updateByOrder(updateBattery);
+        electricityBatteryService.updateBatteryStatus(updateBattery);
+
         //更新格挡
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
-        //将用户绑定的电池解绑
-        //this.unbindUserBattery(eleBox.getSn());
 
         //保存电池上报其他信息
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
@@ -187,11 +145,11 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {
         ElectricityBattery battery = new ElectricityBattery();
         battery.setId(electricityBattery.getId());
-        battery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+        battery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE);
         battery.setElectricityCabinetId(electricityCabinet.getId());
         battery.setElectricityCabinetName(electricityCabinet.getName());
-        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
-        battery.setUid(null);
+//        battery.setLastDepositCellNo(eleBatteryVO.getCellNo());
+//        battery.setUid(null);
         battery.setBorrowExpireTime(null);
         battery.setUpdateTime(System.currentTimeMillis());
         battery.setHealthStatus(eleBatteryVO.getHealth());
@@ -252,27 +210,39 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         updateElectricityCabinetBox.setStatus(ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY);
         electricityCabinetBoxService.modifyByCellNo(updateElectricityCabinetBox);
 
-        //原来仓门是否有电池
-        if (StringUtils.isNotBlank(eleBox.getSn())) {
-            if (eleBox.getSn().contains("UNKNOW")) {
-                eleBox.setSn(eleBox.getSn().substring(6));
-            }
-
-            //更新原仓门中的电池
-            ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
-            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getStatus(), ElectricityBattery.LEASE_STATUS)) {
-                ElectricityBattery updateBattery = new ElectricityBattery();
-                updateBattery.setId(electricityBattery.getId());
-                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
-                updateBattery.setElectricityCabinetId(null);
-                updateBattery.setElectricityCabinetName(null);
-                updateBattery.setUid(null);
-                updateBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateByOrder(updateBattery);
-
-                //this.unbindUserBattery(eleBox.getSn());
-            }
+        if (StringUtils.isBlank(eleBox.getSn())) {
+            return;
         }
+
+        //原来仓门有电池
+        if (eleBox.getSn().contains("UNKNOW")) {
+            eleBox.setSn(eleBox.getSn().substring(6));
+        }
+
+        //更新原仓门中的电池
+        ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(eleBox.getSn());
+        //            if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getBusinessStatus(), ElectricityBattery.BUSINESS_STATUS_LEASE)) {
+        //                ElectricityBattery updateBattery = new ElectricityBattery();
+        //                updateBattery.setId(electricityBattery.getId());
+        //                updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+        //                updateBattery.setElectricityCabinetId(null);
+        //                updateBattery.setElectricityCabinetName(null);
+        ////                updateBattery.setUid(null);
+        //                updateBattery.setUpdateTime(System.currentTimeMillis());
+        //                electricityBatteryService.updateByOrder(updateBattery);
+        //            }
+        if (Objects.nonNull(electricityBattery)) {
+            ElectricityBattery updateBattery = new ElectricityBattery();
+            updateBattery.setId(electricityBattery.getId());
+            updateBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
+            updateBattery.setElectricityCabinetId(null);
+            updateBattery.setElectricityCabinetName(null);
+            updateBattery.setBorrowExpireTime(null);
+//            updateBattery.setUid(null);
+            updateBattery.setUpdateTime(System.currentTimeMillis());
+            electricityBatteryService.updateBatteryStatus(updateBattery);
+        }
+
     }
 
     /**
@@ -293,16 +263,14 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         if (Objects.nonNull(electricityBattery)) {
             ElectricityBattery updateBattery = new ElectricityBattery();
             updateBattery.setId(electricityBattery.getId());
-            updateBattery.setStatus(ElectricityBattery.EXCEPTION_STATUS);
+            updateBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
             updateBattery.setElectricityCabinetId(null);
             updateBattery.setElectricityCabinetName(null);
-            updateBattery.setUid(null);
+//            updateBattery.setUid(null);
+            updateBattery.setBorrowExpireTime(null);
             updateBattery.setUpdateTime(System.currentTimeMillis());
 
-            //this.unbindUserBattery(eleBox.getSn());
-
-            electricityBatteryService.updateByOrder(updateBattery);
-            log.info("ELE BATTERY REPORT INFO! current batteryName not equals original batteryName,currentBatteryName={},originalBatteryName={},sessionId={}", eleBatteryVO.getBatteryName(), eleBox.getSn(), sessionId);
+            electricityBatteryService.updateBatteryUser(updateBattery);
         }
     }
 
@@ -349,7 +317,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         //柜机模式
         String applicationMode = null;
 
-
         try {
             ElectricityCabinetOtherSetting eleOtherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
             if (Objects.nonNull(eleOtherSetting)) {
@@ -369,21 +336,21 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         }
 
         /**
-         * 2.如果柜机模式为空，或者柜机模式为其他，检查电量变化是否太大
+         * 2.如果柜机模式为空，或者柜机模式为其他  并且电池上一次在仓，检查电量变化是否太大
          */
-        if (Objects.nonNull(electricityBattery.getPower()) && Objects.nonNull(power)
-            && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
-            && Math.abs(electricityBattery.getPower() - (power * 100)) >= 50) {
+        if (Objects.nonNull(electricityBattery.getPower())
+                && Objects.equals(electricityBattery.getPhysicsStatus(), ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)
+                && Objects.nonNull(power)
+//                && electricityBattery.getPower() != 0 //排除刚录入的电池，新录入的电池电量为0
+                && (electricityBattery.getPower() - (power * 100)) >= 50) {
 
             //如果开启电量变化检测，并且本次上报电量和上次上报电量相差超过50，则power仍设置为原来的值
             power = electricityBattery.getPower() / 100.0;
 
-            log.warn(
-                "ELE BATTERY REPORT WARN! battery power is changing too much,reportPower={},originalPower={},sessionId={}",
-                eleBatteryVO.getPower(), power, sessionId);
+            log.warn("ELE BATTERY REPORT WARN! battery power is changing too much,reportPower={},originalPower={},sessionId={}",
+                    eleBatteryVO.getPower(), power, sessionId);
             return power;
         }
-
 
         return power;
     }
@@ -393,17 +360,17 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
      */
     private void checkBatteryFranchisee(ElectricityCabinet electricityCabinet, ElectricityBattery electricityBattery, ElectricityCabinetBox updateElectricityCabinetBox, String sessionId) {
         //查电池所属加盟商
-        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
-        if (Objects.isNull(franchiseeBindElectricityBattery)) {
-            log.error("ELE BATTERY REPORT ERROR! battery not bind franchisee,electricityBatteryId={},sessionId={}", electricityBattery.getId(), sessionId);
-            updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
-            return;
-        }
+//        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryId(electricityBattery.getId());
+//        if (Objects.isNull(franchiseeBindElectricityBattery)) {
+//            log.error("ELE BATTERY REPORT ERROR! battery not bind franchisee,electricityBatteryId={},sessionId={}", electricityBattery.getId(), sessionId);
+//            updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
+//            return;
+//        }
 
         // 查换电柜所属加盟商
         Store store = storeService.queryByIdFromCache(electricityCabinet.getStoreId());
-        if (!Objects.equals(store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId().longValue())) {
-            log.error("ELE BATTERY REPORT ERROR! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}", store.getFranchiseeId(), franchiseeBindElectricityBattery.getFranchiseeId(), sessionId);
+        if (!Objects.equals(store.getFranchiseeId(), electricityBattery.getFranchiseeId())) {
+            log.error("ELE BATTERY REPORT ERROR! franchisee is not equal,franchiseeId1={},franchiseeId2={},sessionId={}", store.getFranchiseeId(), electricityBattery.getFranchiseeId(), sessionId);
             updateElectricityCabinetBox.setSn("UNKNOW" + electricityBattery.getSn());
         }
     }
@@ -440,7 +407,6 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 //            franchiseeUserInfoService.unBind(updateFranchiseeUserInfo);
 //        });
 //    }
-
     public static String parseBatteryNameAcquireBatteryModel(String batteryName) {
         if (StringUtils.isEmpty(batteryName) || batteryName.length() < 11) {
             return "";

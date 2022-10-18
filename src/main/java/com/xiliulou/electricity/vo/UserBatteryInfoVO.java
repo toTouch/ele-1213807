@@ -18,7 +18,6 @@ import java.math.BigDecimal;
 @Builder
 public class UserBatteryInfoVO {
 
-
     /**
      * 手机号
      */
@@ -140,4 +139,8 @@ public class UserBatteryInfoVO {
     private String orderId;
 
     private Long storeId;
+    /**
+     * 电池业务状态
+     */
+    private Integer businessStatus;
 }

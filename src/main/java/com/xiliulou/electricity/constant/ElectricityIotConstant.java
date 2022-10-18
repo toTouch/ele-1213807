@@ -43,6 +43,7 @@ public class ElectricityIotConstant {
     public static final String NORMAL_POWER_CONSUMPTION_HANDLER = "normalPowerConsumptionHandler";
     public static final String NORMAL_WARN_HANDLER = "normalWarnHandler";
     public static final String NORMAL_NEW_EXCHANGE_ORDER_HANDLER = "newExchangeOrderHandler";
+    public static final String NORMAL_ELE_WARN_MSG_HANDLER = "normalEleWarnMsgHandler";
     public static final String NORMAL_CUPBOARD_OPERATING_RECORD_HANDLER = "normalCupboardOperatingRecordHandler";
     public static final String NORMAL_SIM_TRAFFIC_STATISTICS_HANDLER = "normalSimTrafficStatisticsHandler";
 
@@ -125,11 +126,17 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER)
                 || Objects.equals(command, ELE_COMMAND_NEW_EXCHANGE_ORDER_RSP)
                 || Objects.equals(command, ELE_CELL_OPEN_CHARGE)
+                || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, CUPBOARD_OPERATING_RECORD) || Objects.equals(command, OTA_OPERATE) || Objects
-                .equals(command, OTA_OPERATE_RSP)
-                || Objects.equals(command, SIM_TRAFFIC_STATISTICS) || Objects
-                .equals(command, SIM_TRAFFIC_STATISTICS_RSP) || Objects.equals(command, RESTART_APP);
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
+                || Objects.equals(command, OTA_PROCESS)
+                || Objects.equals(command, OTA_PROCESS_RSP)
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
+                || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
+                || Objects.equals(command, RESTART_APP)
+                || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
+                || Objects.equals(command, ELE_COMMAND_WARN_MSG_NOTIFY);
 
     }
 
@@ -344,6 +351,16 @@ public class ElectricityIotConstant {
      */
     public static final String ELE_EMAIL_WARN_MSG = "email_warn_msg";
 
+    /**
+     * 重新开启App循环检测
+     */
+    public static final String CUPBOARD_RESUME_CYCLE = "cupboard_resume_cycle";
+
+    /**
+     * 故障上报
+     */
+    public static final String ELE_COMMAND_WARN_MSG_NOTIFY = "warn_msg_notify";
+
 
     static {
         COMMAND_HANDLER_MAPS.put(CUPBOARD_COMMAND_RESET_PASSWORD, NORMAL_ELE_OPERATE_HANDLER);
@@ -367,6 +384,7 @@ public class ElectricityIotConstant {
         COMMAND_HANDLER_MAPS.put(ELE_COMMAND_OPERATE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_CELL_OPEN_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(ELE_CELL_CLOSE_CHARGE, NORMAL_ELE_OPERATE_HANDLER);
+        COMMAND_HANDLER_MAPS.put(CUPBOARD_RESUME_CYCLE, NORMAL_ELE_OPERATE_HANDLER);
 
 
         COMMAND_HANDLER_MAPS.put(EXCHANGE_CABINET, NORMAL_ELE_EXCHANGE_HANDLER);
@@ -452,5 +470,9 @@ public class ElectricityIotConstant {
          */
         COMMAND_HANDLER_MAPS.put(OTA_OPERATE, NORMAL_OTA_OPERATE_HANDLER);
         COMMAND_HANDLER_MAPS.put(OTA_OPERATE_RSP, NORMAL_OTA_OPERATE_HANDLER);
+
+        COMMAND_HANDLER_MAPS.put(ELE_COMMAND_WARN_MSG_NOTIFY, NORMAL_ELE_WARN_MSG_HANDLER);
+
+
     }
 }
