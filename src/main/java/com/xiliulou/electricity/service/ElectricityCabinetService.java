@@ -150,11 +150,6 @@ public interface ElectricityCabinetService {
 
     R superAdminQueryName(Integer id);
 
-
-    R checkOtaUpgradeSession(String sessionId);
-
-    R closeOtaUpgradeSession(String sessionId);
-
     R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery);
     
     
