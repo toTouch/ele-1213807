@@ -9,4 +9,6 @@ import com.xiliulou.electricity.entity.WithdrawPassword;
  * @Description:
  */
 public interface WithdrawPasswordMapper extends BaseMapper<WithdrawPassword> {
+
+    int updateByIdAndTenantId(WithdrawPassword withdrawPassword);
 }
