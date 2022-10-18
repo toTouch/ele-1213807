@@ -18,6 +18,10 @@ public class OtaFileCheckSumVo {
     
     private String subVersionCloud;
     
+    private String coreNameEle;
+    
+    private String subNameEle;
+    
     private String coreSha256HexEle;
     
     private String subSha256HexEle;
