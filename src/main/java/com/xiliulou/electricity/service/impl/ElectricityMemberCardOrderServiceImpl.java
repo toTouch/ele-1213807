@@ -1357,8 +1357,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
     public BigDecimal querySumMemberCardTurnOver(Integer tenantId, Long franchiseeId, Long beginTime, Long endTime) {
         return baseMapper.querySumMemberCardTurnOverByCreateTime(tenantId, franchiseeId, beginTime, endTime);
     }
-
-    @Override
+    
+    //@Override
     public void expireReminderHandler() {
         //        int offset = 0;
         //        int size = 50;
