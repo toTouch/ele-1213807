@@ -56,7 +56,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                       @RequestParam(value = "batteryId",required = false) Long batteryId,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -82,7 +82,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .batteryId(batteryId)
                 .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)

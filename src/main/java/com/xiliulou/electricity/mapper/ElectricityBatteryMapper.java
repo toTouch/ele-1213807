@@ -69,4 +69,6 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     int bindFranchiseeId(@Param("batteryQuery")  BindElectricityBatteryQuery batteryQuery);
 
     List<ElectricityBattery> selectByBatteryIds(@Param("batteryIds") List<Long> batteryIds);
+    
+    ElectricityBattery selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
 }

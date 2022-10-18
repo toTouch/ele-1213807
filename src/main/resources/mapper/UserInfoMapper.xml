@@ -68,8 +68,8 @@
         <if test="query.phone != null and query.phone != ''">
             and tui.phone = #{query.phone}
         </if>
-        <if test="query.nowElectricityBatterySn != null and query.nowElectricityBatterySn != ''">
-            and tfui.now_electricity_battery_sn = #{query.nowElectricityBatterySn}
+        <if test="query.batteryId != null">
+            and teb.id = #{query.batteryId}
         </if>
         <if test="query.uid != null ">
             and tui.uid = #{query.uid}

@@ -700,11 +700,17 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
         return electricitybatterymapper.selectByBatteryIds(batteryIds);
     }
 
-    @Override public ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId, Long franchiseeId) {
+    @Override
+    public ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId, Long franchiseeId) {
         return electricitybatterymapper.selectOne( new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, batteryId)
                 .eq(ElectricityBattery::getFranchiseeId, franchiseeId));
     }
-
+    
+    @Override
+    public ElectricityBattery selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
+        return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
+    }
+    
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {
         AppTemplateQuery appTemplateQuery = new AppTemplateQuery();
         appTemplateQuery.setAppId(appId);

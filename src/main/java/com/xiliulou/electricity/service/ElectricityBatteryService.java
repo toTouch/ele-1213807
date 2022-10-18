@@ -81,4 +81,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
     List<ElectricityBattery> selectByBatteryIds(List<Long> batteryIds);
 
     ElectricityBattery selectByBatteryIdAndFranchiseeId(Long batteryId,Long franchiseeId);
+    
+    ElectricityBattery selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
 }

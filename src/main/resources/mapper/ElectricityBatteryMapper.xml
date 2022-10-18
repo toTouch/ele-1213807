@@ -436,6 +436,24 @@
  				sum(CASE WHEN status = 4 THEN 1 ELSE 0 END) exceptionFreeCount
  		FROM t_electricity_battery  where tenant_id=#{tenantId} and del_flag=0;
 	</select>
-
+	
+	
+	<select id="selectBatteryInfoByBatteryName" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn, physics_status , business_status
+		from t_electricity_battery
+		where del_flag = 0
+		<if test="sn != null and sn !=''">
+			and sn =#{sn}
+		</if>
+		<if test="query.physicsStatus != null">
+			and physics_status =#{physicsStatus}
+		</if>
+		<if test="query.businessStatus != null">
+			and business_status =#{businessStatus}
+		</if>
+		<if test="query.tenantId != null">
+			and tenant_id = #{query.tenantId}
+		</if>
+	</select>
 
 </mapper>

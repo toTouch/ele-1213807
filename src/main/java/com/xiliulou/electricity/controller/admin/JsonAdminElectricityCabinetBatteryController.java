@@ -342,4 +342,18 @@ public class JsonAdminElectricityCabinetBatteryController {
 
         return electricityBatteryService.batteryStatistical(tenantId);
     }
+    
+    /**
+     * 根据电池名字获取电池详情
+     * @param batteryName
+     * @return
+     */
+    @GetMapping("/admin/battery/{batteryName}")
+    public R batteryInfo(@PathVariable("batteryName") String batteryName) {
+        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder()
+                .sn(batteryName).tenantId(TenantContextHolder.getTenantId()).build();
+    
+        ElectricityBattery electricityBattery = electricityBatteryService.selectBatteryInfoByBatteryName(batteryQuery);
+        return R.ok(electricityBattery);
+    }
 }
