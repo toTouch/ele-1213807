@@ -178,12 +178,12 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             franchiseeUserInfoService.minCountForOffLineEle(oldFranchiseeUserInfo.getId());
         }
 
-        //用户解绑旧电池，绑定新电池
-        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-        franchiseeUserInfo.setNowElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn());
-        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-        franchiseeUserInfoService.update(franchiseeUserInfo);
+//        //用户解绑旧电池，绑定新电池
+//        FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//        franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
+//        franchiseeUserInfo.setNowElectricityBatterySn(offlineEleOrderVo.getNewElectricityBatterySn());
+//        franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//        franchiseeUserInfoService.update(franchiseeUserInfo);
 
         //用户绑定电池和还入电池是否一致，不一致绑定的电池更新为游离态
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
@@ -191,30 +191,33 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
             if (!Objects.equals(electricityBattery.getSn(), offlineEleOrderVo.getOldElectricityBatterySn())) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+//                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
                 newElectricityBattery.setUid(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
-                electricityBatteryService.updateByOrder(newElectricityBattery);
+                newElectricityBattery.setBorrowExpireTime(null);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
         }
 
         //更新旧电池为在仓
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryBySn(offlineEleOrderVo.getOldElectricityBatterySn());
         if (Objects.isNull(oldElectricityBattery)) {
-            log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn:{}", offlineEleOrderVo.getOldElectricityBatterySn());
+            log.error("OFFLINE EXCHANGE ERROR! electricityBattery is null! BatterySn={}", offlineEleOrderVo.getOldElectricityBatterySn());
             return ;
         }
         ElectricityBattery InWarehouseElectricityBattery = new ElectricityBattery();
         InWarehouseElectricityBattery.setId(oldElectricityBattery.getId());
-        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+//        InWarehouseElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+        InWarehouseElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
         InWarehouseElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
         InWarehouseElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
         InWarehouseElectricityBattery.setUid(null);
         InWarehouseElectricityBattery.setUpdateTime(System.currentTimeMillis());
         InWarehouseElectricityBattery.setBorrowExpireTime(null);
-        electricityBatteryService.updateByOrder(InWarehouseElectricityBattery);
+        electricityBatteryService.updateBatteryUser(InWarehouseElectricityBattery);
 
         //更新新电池为在用
         ElectricityBattery newElectricityBattery = electricityBatteryService.queryBySn(offlineEleOrderVo.getNewElectricityBatterySn());
@@ -224,13 +227,14 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
         }
         ElectricityBattery UsingElectricityBattery = new ElectricityBattery();
         UsingElectricityBattery.setId(newElectricityBattery.getId());
-        UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+//        UsingElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        UsingElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
         UsingElectricityBattery.setElectricityCabinetId(null);
         UsingElectricityBattery.setElectricityCabinetName(null);
         UsingElectricityBattery.setUid(user.getUid());
         UsingElectricityBattery.setUpdateTime(System.currentTimeMillis());
         UsingElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
-        electricityBatteryService.updateByOrder(UsingElectricityBattery);
+        electricityBatteryService.updateBatteryUser(UsingElectricityBattery);
     }
 
     private void senMsg(ElectricityCabinet electricityCabinet, OfflineEleOrderVo offlineEleOrderVo, User user) {
@@ -262,68 +266,54 @@ public class NormalOffLineEleExchangeHandlerIot extends AbstractElectricityIotHa
          * 换电柜旧仓门号
          */
         private String oldCellNo;
-
         /**
          * 换电柜新仓门号
          */
         private String newCellNo;
-
         /**
          * 旧电池编号
          */
         private String oldElectricityBatterySn;
-
         /**
          * 新电池编号
          */
         private String newElectricityBatterySn;
-
         /**
          * 订单状态
          */
         private String  status;
-
         /**
          * 订单开始时间
          */
         private Long startTime;
-
         /**
          * 订单结束时间
          */
         private Long endTime;
-
         /**
          * 本次操作是否执行失败
          */
         private Boolean isProcessFail;
-
         /**
          * 订单号
          */
         private String orderId;
-
         /**
          * 用户手机号
          */
         private String phone;
-
-
         /**
          * 是否上报电池类型
          */
         private Boolean isMultiBatteryModel;
-
         /**
          * 旧电池电量
          */
         private Double power;
-
         /**
          * 操作记录列表
          */
         private List<OperateMsgVo> msg;
-
         /**
          * 订单来源 APP离线换电
          */

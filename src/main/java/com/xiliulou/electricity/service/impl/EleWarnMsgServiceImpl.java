@@ -2,10 +2,15 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
+import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleWarnMsgMapper;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
-import com.xiliulou.electricity.vo.EleWarnMsgVo;
+import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.vo.*;
+import net.bytebuddy.description.type.TypeList;
+import org.apache.poi.ss.formula.functions.T;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +29,9 @@ import java.util.Objects;
 public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Resource
     private EleWarnMsgMapper eleWarnMsgMapper;
+
+    @Autowired
+    ElectricityCabinetService electricityCabinetService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -120,5 +128,30 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
     @Override
     public R queryStatisticEleWarnMsgRankingCount() {
         return R.ok(eleWarnMsgMapper.queryStatisticEleWarnMsgRankingCount());
+    }
+
+    @Override
+    public void queryElectricityName(List<Object> list) {
+
+        if (Objects.isNull(list)){
+            return;
+        }
+
+        for (Object object:list){
+            if (object instanceof EleBatteryWarnMsgVo){
+                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(Integer.parseInt(((EleBatteryWarnMsgVo) object).getElectricityCabinetId()));
+                ((EleBatteryWarnMsgVo) object).setCabinetName(electricityCabinet.getName());
+            } else if (object instanceof EleBusinessWarnMsgVo){
+                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(Integer.parseInt(((EleBusinessWarnMsgVo) object).getElectricityCabinetId()));
+                ((EleBusinessWarnMsgVo) object).setCabinetName(electricityCabinet.getName());
+            }else if (object instanceof EleCabinetWarnMsgVo){
+                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(Integer.parseInt(((EleCabinetWarnMsgVo) object).getElectricityCabinetId()));
+                ((EleCabinetWarnMsgVo) object).setCabinetName(electricityCabinet.getName());
+            }else if (object instanceof EleCellWarnMsgVo){
+                ElectricityCabinet electricityCabinet=electricityCabinetService.queryByIdFromCache(Integer.parseInt(((EleCellWarnMsgVo) object).getElectricityCabinetId()));
+                ((EleCellWarnMsgVo) object).setCabinetName(electricityCabinet.getName());
+            }
+        }
+
     }
 }

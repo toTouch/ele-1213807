@@ -24,5 +24,8 @@ public class BindElectricityBatteryQuery {
      */
     private List<Long> electricityBatteryIdList;
 
-
+    /**
+     * 租户id
+     */
+    private Integer tenantId;
 }

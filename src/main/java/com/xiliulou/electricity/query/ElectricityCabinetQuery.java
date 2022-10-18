@@ -27,6 +27,14 @@ public class ElectricityCabinetQuery {
      */
     private String address;
     /**
+     * 地址经度
+     */
+    private Double longitude;
+    /**
+     * 地址纬度
+     */
+    private Double latitude;
+    /**
      * 可用状态(0--启用，1--禁用)
      */
     private Integer usableStatus;

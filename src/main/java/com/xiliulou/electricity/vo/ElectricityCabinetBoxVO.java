@@ -99,6 +99,11 @@ public class ElectricityCabinetBoxVO {
      */
     private Integer exchange;
 
+    /**
+     * 锁仓类型 0--人为锁仓 1--系统锁仓
+     */
+    private Integer lockType;
+
     public static final Integer EXCHANGE_YES=0;
     public static final Integer EXCHANGE_NO=1;
 }

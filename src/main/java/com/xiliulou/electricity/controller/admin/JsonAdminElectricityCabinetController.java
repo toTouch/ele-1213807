@@ -8,6 +8,7 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -23,7 +24,6 @@ import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.validation.annotation.Validated;
@@ -32,7 +32,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -354,6 +353,24 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.checkOpenSessionId(sessionId);
     }
     
+
+    //检查ota升级
+    @GetMapping("/admin/electricityCabinet/ota/upgrade/check")
+    public R checkOtaUpgradeSession(@RequestParam("sessionId") String sessionId) {
+        if (StrUtil.isEmpty(sessionId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCabinetService.checkOtaUpgradeSession(sessionId);
+    }
+
+    @DeleteMapping("/admin/electricityCabinet/ota/upgrade/close")
+    public R closeOtaUpgradeSession(@RequestParam("sessionId") String sessionId) {
+        if (StrUtil.isEmpty(sessionId)) {
+            return R.fail("ELECTRICITY.0007", "不合法的参数");
+        }
+        return electricityCabinetService.closeOtaUpgradeSession(sessionId);
+    }
+
     //短信测试
     @GetMapping("/outer/sendMessage")
     public void sendMessage() {
@@ -462,12 +479,14 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
-        if (StringUtils.isEmpty(result)) {
-            return R.ok();
-        }
-        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
-        return R.ok(map);
+//        String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
+//        if (StringUtils.isEmpty(result)) {
+//            return R.ok();
+//        }
+//        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
+        ElectricityCabinetOtherSetting otherSetting = redisService.getWithHash(CacheConstant.OTHER_CONFIG_CACHE_V_2 + electricityCabinet.getId(), ElectricityCabinetOtherSetting.class);
+
+        return R.ok(otherSetting);
     }
     
     //列表查询
@@ -580,7 +599,7 @@ public class JsonAdminElectricityCabinetController {
     //首页用户分析
     @GetMapping(value = "/admin/electricityCabinet/homepageUserAnalysis")
     public R homepageUserAnalysis(@RequestParam(value = "beginTime", required = false) Long beginTime,
-            @RequestParam(value = "endTime", required = false) Long endTime) {
+                                  @RequestParam(value = "endTime", required = false) Long endTime) {
         return electricityCabinetService.homepageUserAnalysis(beginTime, endTime);
     }
     
@@ -625,10 +644,15 @@ public class JsonAdminElectricityCabinetController {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
+
         HomepageElectricityExchangeFrequencyQuery homepageElectricityExchangeFrequencyQuery = HomepageElectricityExchangeFrequencyQuery.builder()
-                .beginTime(beginTime).endTime(endTime).size(size).offset(offset)
-                .electricityCabinetId(electricityCabinetId).tenantId(tenantId).eleIdList(eleIdList)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .size(size)
+                .offset(offset)
+                .electricityCabinetId(electricityCabinetId)
+                .tenantId(tenantId)
+                .eleIdList(eleIdList)
                 .franchiseeId(franchiseeId).build();
         
         return electricityCabinetService.homepageExchangeOrderFrequency(homepageElectricityExchangeFrequencyQuery);
@@ -667,11 +691,16 @@ public class JsonAdminElectricityCabinetController {
         
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
-        
+
         HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery = HomepageBatteryFrequencyQuery.builder()
-                .batterySn(batterySn).beginTime(beginTime).endTime(endTime).offset(offset).size(size)
-                .franchiseeId(franchiseeId).tenantId(tenantId).build();
-        
+                .batterySn(batterySn)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .offset(offset)
+                .size(size)
+                .franchiseeId(franchiseeId)
+                .tenantId(tenantId).build();
+
         return electricityCabinetService.homepageBatteryAnalysis(homepageBatteryFrequencyQuery);
     }
     
@@ -692,10 +721,55 @@ public class JsonAdminElectricityCabinetController {
     
     @GetMapping("/admin/electricityCabinet/onlineLogCount")
     public R getOnlineLogCount(@RequestParam(value = "status", required = false) String status,
-            @RequestParam("eleId") Integer eleId) {
+                               @RequestParam("eleId") Integer eleId) {
         return eleOnlineLogService.queryOnlineLogCount(status, eleId);
     }
     
+
+    @GetMapping("/admin/electricityCabinet/queryName")
+    public R queryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return electricityCabinetService.queryName(tenantId, eleId);
+    }
+
+    @GetMapping("/admin/electricityCabinet/superAdminQueryName")
+    public R superAdminQueryName(@RequestParam(value = "eleId", required = false) Integer eleId) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+
+        //租户
+        return electricityCabinetService.superAdminQueryName(eleId);
+    }
+
+    /**
+     * 根据经纬度获取柜机列表
+     * @return
+     */
+    @GetMapping("/admin/electricityCabinet/listByLongitudeAndLatitude")
+    public R selectEleCabinetListByLongitudeAndLatitude(@RequestParam(value="id", required = false) Integer id,
+                                                        @RequestParam(value="name", required = false) String name){
+
+        ElectricityCabinetQuery cabinetQuery = ElectricityCabinetQuery.builder()
+                .id(id)
+                .name(name)
+                .tenantId(TenantContextHolder.getTenantId())
+                .build();
+
+        return electricityCabinetService.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
+    }
+
+
     /**
      * 获取上传柜机照片所需的签名
      */

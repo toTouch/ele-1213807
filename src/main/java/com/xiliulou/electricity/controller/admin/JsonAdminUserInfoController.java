@@ -2,15 +2,18 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
@@ -34,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-public class JsonAdminUserInfoController {
+public class JsonAdminUserInfoController extends BaseController {
     /**
      * 服务对象
      */
@@ -42,7 +45,10 @@ public class JsonAdminUserInfoController {
     UserInfoService userInfoService;
     @Autowired
     RedisService redisService;
-    @Autowired UserTypeFactory userTypeFactory;
+    @Autowired
+    UserTypeFactory userTypeFactory;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -205,6 +211,17 @@ public class JsonAdminUserInfoController {
         return R.ok();
     }
 
+    /**
+     * 更新用户服务状态
+     * @param uid
+     * @param serviceStatus
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/serviceStatus")
+    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
+        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
+    }
+
     //列表查询
     @GetMapping(value = "/admin/userInfo/list/v2")
     public R queryListV2(@RequestParam(value = "size") Long size,
@@ -307,6 +324,14 @@ public class JsonAdminUserInfoController {
     @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
     public R queryUserAllConsumption(@PathVariable("id") Long id){
         return userInfoService.queryUserAllConsumption(id);
+    }
+
+    /**
+     * 会员列表删除
+     */
+    @DeleteMapping(value = "/admin/userInfo/{uid}")
+    public R deleteUserInfo(@PathVariable("uid") Long uid) {
+        return userInfoService.deleteUserInfo(uid);
     }
 
 }

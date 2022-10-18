@@ -66,8 +66,9 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 		}
 
 		ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(sn);
-		if (Objects.equals(electricityBattery.getStatus(),ElectricityBattery.WARE_HOUSE_STATUS)){
-			ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.queryByCellNo(electricityBattery.getElectricityCabinetId(),electricityBattery.getLastDepositCellNo());
+		if (Objects.equals(electricityBattery.getPhysicsStatus(),ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)){
+//			ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.queryByCellNo(electricityBattery.getElectricityCabinetId(),electricityBattery.getLastDepositCellNo());
+			ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.selectByBatteryId(electricityBattery.getId());
 			if (Objects.nonNull(electricityCabinetBox)) {
 				batteryOtherPropertiesQuery.setChargeV(electricityCabinetBox.getChargeV());
 			}

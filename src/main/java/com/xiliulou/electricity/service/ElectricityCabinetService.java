@@ -145,6 +145,17 @@ public interface ElectricityCabinetService {
     R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
     R acquireIdcardFileSign();
+
+    R queryName(Integer tenant,Integer id);
+
+    R superAdminQueryName(Integer id);
+
+
+    R checkOtaUpgradeSession(String sessionId);
+
+    R closeOtaUpgradeSession(String sessionId);
+
+    R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery);
     
     
     R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery);

@@ -1,13 +1,11 @@
 package com.xiliulou.electricity.controller.admin;
 
-import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
-import com.xiliulou.electricity.entity.FranchiseeBindElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
-import com.xiliulou.electricity.entity.Role;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
+import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -15,18 +13,17 @@ import com.xiliulou.electricity.service.FranchiseeService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.BatteryExcelListener;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -92,21 +89,20 @@ public class JsonAdminElectricityCabinetBatteryController {
     @GetMapping(value = "/admin/battery/page")
     public R getElectricityBatteryPage(@RequestParam(value = "offset") Long offset,
                                        @RequestParam(value = "size") Long size,
-                                       @RequestParam(value = "status", required = false) Integer status,
+                                       @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+                                       @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
                                        @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                                        @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                                        @RequestParam(value = "sn", required = false) String sn,
                                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                                        @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        //组装参数
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
+        electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
-        electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
@@ -114,11 +110,18 @@ public class JsonAdminElectricityCabinetBatteryController {
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
     }
 
+    /**
+     * 获取当前加盟商的电池+未绑定加盟商的电池
+     * @param offset
+     * @param size
+     * @param franchiseeId
+     * @return
+     */
     @GetMapping(value = "/admin/battery/bind/page")
-    public R getElectricityBatteryBindPage(@RequestParam(value = "offset") Long offset,
-                                           @RequestParam(value = "size") Long size,
-                                           @RequestParam(value = "franchiseeId") Integer franchiseeId) {
-        return electricityBatteryService.queryNotBindList(offset, size, franchiseeId);
+    public R batteryBindPage(@RequestParam(value = "offset") Long offset,
+                             @RequestParam(value = "size") Long size,
+                             @RequestParam(value = "franchiseeId") Long franchiseeId) {
+        return electricityBatteryService.queryBindListByPage(offset, size, franchiseeId);
     }
 
     /**
@@ -132,21 +135,20 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @return
      */
     @GetMapping(value = "/admin/battery/queryCount")
-    public R queryCount(@RequestParam(value = "status", required = false) Integer status,
+    public R queryCount(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
+                        @RequestParam(value = "businessStatus", required = false) Integer businessStatus,
                         @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus,
                         @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
                         @RequestParam(value = "sn", required = false) String sn,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
                         @RequestParam(value = "franchiseeName", required = false) String franchiseeName) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
-        //组装参数
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
+        electricityBatteryQuery.setBusinessStatus(businessStatus);
         electricityBatteryQuery.setSn(sn);
-        electricityBatteryQuery.setTenantId(tenantId);
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
         electricityBatteryQuery.setElectricityCabinetName(electricityCabinetName);
         electricityBatteryQuery.setFranchiseeId(franchiseeId);
@@ -164,12 +166,9 @@ public class JsonAdminElectricityCabinetBatteryController {
     @GetMapping(value = "/admin/battery/pageByFranchisee")
     public R pageByFranchisee(@RequestParam(value = "offset") Long offset,
                               @RequestParam(value = "size") Long size,
-                              @RequestParam(value = "status", required = false) Integer status,
+                              @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                               @RequestParam(value = "sn", required = false) String sn,
                               @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
@@ -181,28 +180,29 @@ public class JsonAdminElectricityCabinetBatteryController {
         //加盟商
         Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
         if (Objects.isNull(franchisee)) {
-            return R.ok(new ArrayList<>());
+            return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
 
         //加盟商电池
-        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
-
-        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
-            return R.ok(new ArrayList<>());
-        }
-        List<Long> electricityBatteryIdList = new ArrayList<>();
-        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
-            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
-        }
-        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
-            return R.ok(new ArrayList<>());
-        }
+//        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
+//
+//        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
+//            return R.ok(CollectionUtils.EMPTY_COLLECTION);
+//        }
+//        List<Long> electricityBatteryIdList = new ArrayList<>();
+//        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
+//            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
+//        }
+//        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
+//            return R.ok(CollectionUtils.EMPTY_COLLECTION);
+//        }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
-        electricityBatteryQuery.setTenantId(tenantId);
+//        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
+        electricityBatteryQuery.setFranchiseeId(franchisee.getId());
+        electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);
 
         return electricityBatteryService.queryList(electricityBatteryQuery, offset, size);
@@ -216,7 +216,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @return
      */
     @GetMapping(value = "/admin/battery/queryCountByFranchisee")
-    public R queryCountByFranchisee(@RequestParam(value = "status", required = false) Integer status,
+    public R queryCountByFranchisee(@RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                                     @RequestParam(value = "sn", required = false) String sn,
                                     @RequestParam(value = "chargeStatus", required = false) Integer chargeStatus) {
 
@@ -236,24 +236,25 @@ public class JsonAdminElectricityCabinetBatteryController {
             return R.ok(0);
         }
 
-        //加盟商电池
-        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
-
-        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
-            return R.ok(0);
-        }
-        List<Long> electricityBatteryIdList = new ArrayList<>();
-        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
-            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
-        }
-        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
-            return R.ok(0);
-        }
+//        //加盟商电池
+//        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
+//
+//        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
+//            return R.ok(0);
+//        }
+//        List<Long> electricityBatteryIdList = new ArrayList<>();
+//        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
+//            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
+//        }
+//        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
+//            return R.ok(0);
+//        }
 
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
-        electricityBatteryQuery.setStatus(status);
+        electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
+//        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
+        electricityBatteryQuery.setFranchiseeId(franchisee.getId());
         electricityBatteryQuery.setTenantId(tenantId);
         electricityBatteryQuery.setChargeStatus(chargeStatus);
 
@@ -271,6 +272,20 @@ public class JsonAdminElectricityCabinetBatteryController {
     public R queryById(@PathVariable("id") Long id) {
         return electricityBatteryService.queryById(id);
     }
+
+    /**
+     * 电池绑定/解绑加盟商
+     */
+    @PostMapping(value = "/admin/franchisee/bindElectricityBattery")
+    public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class)
+        BindElectricityBatteryQuery bindElectricityBatteryQuery) {
+//        return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);
+        return electricityBatteryService.bindFranchisee(bindElectricityBatteryQuery);
+    }
+
+
+
+
 
 
     /**
@@ -295,19 +310,21 @@ public class JsonAdminElectricityCabinetBatteryController {
 
     /**
      * 电池总览
-     * @param status
+     * @param
      * @param sn
      * @return
      */
     @GetMapping("/admin/battery/queryBatteryOverview")
-    public R queryBatteryOverview(@RequestParam(value = "status", required = false) Integer status,
+    public R queryBatteryOverview(@RequestParam(value = "businessStatus", required = false) Integer businessStatus,
+                                  @RequestParam(value = "physicsStatus", required = false) Integer physicsStatus,
                                   @RequestParam(value = "sn", required = false) String sn) {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
         ElectricityBatteryQuery electricityBatteryQuery=ElectricityBatteryQuery.builder()
-                .status(status)
+                .physicsStatus(physicsStatus)
+                .businessStatus(businessStatus)
                 .sn(sn)
                 .tenantId(tenantId).build();
         return electricityBatteryService.queryBatteryOverview(electricityBatteryQuery);

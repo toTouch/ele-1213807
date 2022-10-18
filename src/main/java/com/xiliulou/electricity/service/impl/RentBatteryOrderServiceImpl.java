@@ -513,7 +513,8 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
             }
 
-            String cellNo = usableEmptyCellNo.getRight().toString();
+
+        String cellNo = usableEmptyCellNo.getRight().toString();
 
             String orderId = generateOrderId(user.getUid(), cellNo);
 
@@ -544,8 +545,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(TenantContextHolder.getTenantId());
             if (Objects.nonNull(electricityConfig)) {
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
+
+                    ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+
                     dataMap.put("is_checkBatterySn", true);
-                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                    dataMap.put("user_binding_battery_sn", Objects.nonNull(electricityBattery)?electricityBattery.getSn():"");
                 } else {
                     dataMap.put("is_checkBatterySn", false);
                 }
@@ -637,6 +641,12 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             return R.fail("ELECTRICITY.0035", "换电柜不在线");
         }
 
+        ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
+        if (Objects.isNull(electricityBattery)) {
+            log.error("RENT BATTERY ERROR! not found user bind battery,uid={}", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
+
         //租电池开门
         if (Objects.equals(rentOpenDoorQuery.getOpenType(), RentOpenDoorQuery.RENT_OPEN_TYPE)) {
             //发送开门命令
@@ -668,7 +678,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
                 if (Objects.equals(electricityConfig.getIsBatteryReview(), ElectricityConfig.BATTERY_REVIEW)) {
                     dataMap.put("is_checkBatterySn", true);
-                    dataMap.put("user_binding_battery_sn", franchiseeUserInfo.getNowElectricityBatterySn());
+                    dataMap.put("user_binding_battery_sn", electricityBattery.getSn());
                 } else {
                     dataMap.put("is_checkBatterySn", false);
                 }
@@ -945,8 +955,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
             }
         }
 
-        //先查询缓存
-        BigEleBatteryVo bigEleBatteryVo = redisService.getWithHash(CacheConstant.ELE_BIG_POWER_CELL_NO_CACHE_KEY + electricityCabinet.getId(), BigEleBatteryVo.class);
+        BigEleBatteryVo bigEleBatteryVo = electricityBatteryService.queryMaxPowerByElectricityCabinetId(electricityCabinet.getId());
 
         if (Objects.nonNull(bigEleBatteryVo)) {
             if (Objects.isNull(batteryType)) {
@@ -964,8 +973,13 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         if (Objects.nonNull(electricityBattery)) {
 
                             //3、查加盟商是否绑定电池
-                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                            FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+//                            if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                                box = Integer.valueOf(newCellNo);
+//                            }
+
+                            ElectricityBattery battery = electricityBatteryService.selectByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                            if (Objects.nonNull(battery)) {
                                 box = Integer.valueOf(newCellNo);
                             }
                         }
@@ -999,11 +1013,15 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                         electricityCabinetBoxVO.setPower(electricityBattery.getPower());
                         count++;
 
-                        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
-                        if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                        FranchiseeBindElectricityBattery franchiseeBindElectricityBattery = franchiseeBindElectricityBatteryService.queryByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+//                        if (Objects.nonNull(franchiseeBindElectricityBattery)) {
+//                            electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
+//                        }
+
+                        ElectricityBattery battery = electricityBatteryService.selectByBatteryIdAndFranchiseeId(electricityBattery.getId(), franchiseeId);
+                        if (Objects.nonNull(battery)) {
                             electricityCabinetBoxVOList.add(electricityCabinetBoxVO);
                         }
-
                     }
                 }
             }

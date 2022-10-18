@@ -50,13 +50,14 @@
 
     <select id="queryListForBatteryService" resultType="com.xiliulou.electricity.vo.UserBatteryInfoVO">
         select
-        tui.phone,tui.name,tui.uid,tui.create_time as
-        userCertificationTime,tui.auth_status,tui.usable_status,tfui.now_electricity_battery_sn,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
-        tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,
-        tfui.battery_type as model,tfui.model_type from t_user_info
-        tui
+        tui.id as user_info_id,tui.phone,tui.name,tui.uid,tui.create_time as
+        userCertificationTime,tui.auth_status,tui.usable_status,tfui.service_status,tfui.card_name,tfui.member_card_expire_time,
+        tfui.remaining_number,tfui.battery_deposit,tfui.franchisee_id,tfui.card_id,teb.power,teb.business_status as businessStatus,
+        tfui.battery_type as model,tfui.model_type,
+        tfui.order_id
+        from t_user_info  tui
         left join t_franchisee_user_info tfui on tfui.user_info_id=tui.id
-        left join t_electricity_battery teb on tfui.now_electricity_battery_sn=teb.sn
+        left join t_electricity_battery teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
         <if test="query.tenantId != null">
             and tui.tenant_id = #{query.tenantId}
@@ -334,6 +335,47 @@
         GROUP BY
         weekDate
     </select>
+
+    <update id="updateByUid" >
+        update t_user_info
+        <set>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="authStatus != null">
+                auth_status = #{authStatus},
+            </if>
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where uid = #{uid}
+    </update>
+
 
 
 </mapper>
