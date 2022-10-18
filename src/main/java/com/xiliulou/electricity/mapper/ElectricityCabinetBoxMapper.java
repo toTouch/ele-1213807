@@ -32,7 +32,7 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
 
     List<ElectricityCabinetBox> queryElectricityBatteryBox(@Param("id") Integer id, @Param("cellNo") String cellNo,
-        @Param("batteryType") String batteryType, @Param("fullCharged") Double fullCharged);
+            @Param("batteryType") String batteryType);
 
     List<ElectricityCabinetBox> queryUsableBatteryCellNo(@Param("eid") Integer id, @Param("type") String batteryType, @Param("fullV") Double fullyCharged);
 

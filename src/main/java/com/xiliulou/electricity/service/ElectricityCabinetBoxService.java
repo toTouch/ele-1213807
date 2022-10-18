@@ -39,7 +39,7 @@ public interface ElectricityCabinetBoxService {
     List<ElectricityCabinetBox> queryNoElectricityBatteryBox(Integer id);
 
     List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo,
-        String batteryType, Double fullCharged);
+            String batteryType);
 
     ElectricityCabinetBox queryByCellNo(Integer electricityCabinetId,String cellNo);
 
