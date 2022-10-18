@@ -129,9 +129,8 @@ public class ElectricityIotConstant {
                 || Objects.equals(command, CUPBOARD_RESUME_CYCLE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
                 || Objects.equals(command, ELE_CELL_CLOSE_CHARGE)
-                || Objects.equals(command, CUPBOARD_OPERATING_RECORD)
-                || Objects.equals(command, OTA_PROCESS)
-                || Objects.equals(command, OTA_PROCESS_RSP)
+                || Objects.equals(command, CUPBOARD_OPERATING_RECORD) || Objects.equals(command, OTA_OPERATE) || Objects
+                .equals(command, OTA_OPERATE_RSP)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS)
                 || Objects.equals(command, SIM_TRAFFIC_STATISTICS_RSP)
                 || Objects.equals(command, RESTART_APP)

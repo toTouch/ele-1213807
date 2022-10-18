@@ -955,9 +955,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 fullCharged = list.get(0).getBatteryPowerStandard();
             }
         }
-
-        BigEleBatteryVo bigEleBatteryVo = electricityBatteryService.queryMaxPowerByElectricityCabinetId(electricityCabinet.getId());
-
+    
+        //TODO:这里这里这里要修改
+        //BigEleBatteryVo bigEleBatteryVo = electricityBatteryService.queryMaxPowerByElectricityCabinetId(electricityCabinet.getId());
+        BigEleBatteryVo bigEleBatteryVo = null;
+        
         if (Objects.nonNull(bigEleBatteryVo)) {
             if (Objects.isNull(batteryType)) {
                 String newCellNo = bigEleBatteryVo.getCellNo();
@@ -992,9 +994,9 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
         }
 
         if (Objects.isNull(box)) {
-
-            List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo, batteryType);
-
+            //TODO:这里这里这里要修改
+            //List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryElectricityBatteryBox(electricityCabinet, cellNo, batteryType);
+            List<ElectricityCabinetBox> electricityCabinetBoxList = null;
             if (ObjectUtil.isEmpty(electricityCabinetBoxList)) {
                 log.error("ELE ERROR! electricityCabinet not has full charge battery,electricityCabinetId={}",electricityCabinet.getId());
                 return Triple.of(false, "0", "换电柜暂无满电电池");
