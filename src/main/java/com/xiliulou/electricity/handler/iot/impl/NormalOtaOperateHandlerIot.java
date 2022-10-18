@@ -63,8 +63,15 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         if (EleOtaOperateRequest.TYPE_DOWNLOAD.equals(request.getOperateType()) || EleOtaOperateRequest.TYPE_SYNC
                 .equals(request.getOperateType())) {
             insertOrUpdateEleOtaFile(electricityCabinet, request);
-            redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage
-                    .getSessionId(), request.getMsg(), 30L, TimeUnit.SECONDS);
+            //操作回调的放在redis中
+            if (Objects.nonNull(receiverMessage.getSuccess()) && "true"
+                    .equalsIgnoreCase(receiverMessage.getSuccess())) {
+                redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage
+                        .getSessionId(), "ok", 30L, TimeUnit.SECONDS);
+            } else {
+                redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage
+                        .getSessionId(), request.getMsg(), 30L, TimeUnit.SECONDS);
+            }
         }
     
         updateEleOtaUpgrade(electricityCabinet, receiverMessage, request);
@@ -130,15 +137,6 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
     private String queryStatus(Integer status) {
         String result;
         switch (status) {
-            case 1: result = "download_fail"; break;
-            case 2: result = "check_fail"; break;
-            case 3: result = "check_success"; break;
-            case 4:
-                result = "sync_success";
-                break;
-            case 5:
-                result = "sync_fail";
-                break;
             case 6:
                 result = EleOtaUpgrade.STATUS_UPGRADING;
                 break;
