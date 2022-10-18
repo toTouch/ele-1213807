@@ -103,7 +103,7 @@
         from t_electricity_cabinet_box ecb
         left join t_ele_ota_upgrade eou on eou.electricity_cabinet_id = ecb.electricity_cabinet_id and eou.cell_no = ecb.cell_no
         where ecb.electricity_cabinet_id = #{eid}
-        order by ecb.cell_no
+        order by CONVERT(ecb.cell_no,SIGNED)
     </select>
     
     <select id="queryCoreUpgradeInfoVo" resultType="com.xiliulou.electricity.vo.OtaUpgradeInfoVo">
@@ -111,7 +111,7 @@
             eou.id, eccd.core_version, eou.status
         from t_ele_cabinet_core_data eccd
         left join t_ele_ota_upgrade eou on eou.electricity_cabinet_id = eccd.electricity_cabinet_id
-        where eccd.electricity_cabinet_id = #{eid}
+        where eccd.electricity_cabinet_id = #{eid} and `type` = 1
     </select>
     
     <!--查询指定行数据-->

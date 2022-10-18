@@ -132,6 +132,7 @@ public class EleOtaUpgradeServiceImpl implements EleOtaUpgradeService {
 
         OtaUpgradeInfoVo otaCoreUpgradeInfoVo = Optional.ofNullable(eleOtaUpgradeMapper.queryCoreUpgradeInfoVo(eid))
                 .orElse(new OtaUpgradeInfoVo());
+        otaCoreUpgradeInfoVo.setCellNo("0");
         otaCellNoUpgradeInfoVos.add(0, otaCoreUpgradeInfoVo);
         return R.ok(otaCellNoUpgradeInfoVos);
     }
