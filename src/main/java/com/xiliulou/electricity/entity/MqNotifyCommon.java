@@ -40,6 +40,11 @@ public class MqNotifyCommon<T> {
      * 系统升级邮件通知
      */
     public static final Integer TYPE_UPGRADE_SEND_MAIL = 10000;
+    
+    /**
+     * 故障通知告警
+     */
+    public static final Integer TYPE_ABNORMAL_ALARM = 10;
 
     public static final String PROJECT_NAME = "换电柜";
 }
