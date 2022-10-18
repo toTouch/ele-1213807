@@ -195,7 +195,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
                 try {
                     ossInputStream.close();
                 } catch (IOException e) {
-                    log.error("OTA_FILE_CONFIG_UPLOAD ERROR! ossInputStream close fail!");
+                    log.error("OTA_FILE_CONFIG_UPLOAD ERROR! ossInputStream close fail!", e);
                 }
             }
         
@@ -203,7 +203,7 @@ public class OtaFileConfigServiceImpl implements OtaFileConfigService {
                 try {
                     sha256HexInputStream.close();
                 } catch (IOException e) {
-                    log.error("OTA_FILE_CONFIG_UPLOAD ERROR! sha256HexInputStream close fail!");
+                    log.error("OTA_FILE_CONFIG_UPLOAD ERROR! sha256HexInputStream close fail!", e);
                 }
             }
         }
