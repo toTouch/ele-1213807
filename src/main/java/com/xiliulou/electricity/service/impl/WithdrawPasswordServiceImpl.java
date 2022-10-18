@@ -96,6 +96,7 @@ public class WithdrawPasswordServiceImpl implements WithdrawPasswordService {
 			withdrawPassword.setPassword(customPasswordEncoder.encode(decryptPassword));
 			withdrawPassword.setUpdateTime(System.currentTimeMillis());
 			withdrawPasswordMapper.updateByIdAndTenantId(withdrawPassword);
+			redisService.delete(CacheConstant.CACHE_WITHDRAW_PASSWORD+tenantId);
 		}
 		return R.ok();
 	}
