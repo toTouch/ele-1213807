@@ -452,7 +452,7 @@
 			and business_status =#{businessStatus}
 		</if>
 		<if test="query.tenantId != null">
-			and tenant_id = #{query.tenantId}
+			and tenant_id = #{tenantId}
 		</if>
 		limit #{offset}, #{size}
 	</select>
