@@ -348,10 +348,11 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @param batteryName
      * @return
      */
-    @GetMapping("/admin/battery/{batteryName}")
-    public R batteryInfo(@PathVariable("batteryName") String batteryName) {
-        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder()
-                .sn(batteryName).tenantId(TenantContextHolder.getTenantId()).build();
+    @GetMapping("/admin/battery")
+    public R batteryInfo(@RequestParam(value = "offset") Long offset, @RequestParam(value = "size") Long size,
+            @RequestParam(value = "batteryName", required = false) String batteryName) {
+        ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(batteryName).offset(offset)
+                .size(size).tenantId(TenantContextHolder.getTenantId()).build();
     
         ElectricityBattery electricityBattery = electricityBatteryService.selectBatteryInfoByBatteryName(batteryQuery);
         return R.ok(electricityBattery);

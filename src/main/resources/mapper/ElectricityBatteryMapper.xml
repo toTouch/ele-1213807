@@ -454,6 +454,7 @@
 		<if test="query.tenantId != null">
 			and tenant_id = #{query.tenantId}
 		</if>
+		limit #{offset}, #{size}
 	</select>
 
 </mapper>
