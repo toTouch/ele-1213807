@@ -160,7 +160,7 @@
         select COUNT(1)
         from t_user_info as tui
         left join t_franchisee_user_info as tfui on tui.id=tfui.user_info_id
-        left join t_electricity_battery teb on tui.uid=teb.uid
+        left join t_electricity_battery as teb on tui.uid=teb.uid
         where tui.del_flag=0 and tui.auth_status=2
         <if test="query.name != null and query.name != ''">
             and tui.name = #{query.name}
@@ -175,7 +175,7 @@
             and tui.tenant_id = #{query.tenantId}
         </if>
         <if test="query.batteryId != null">
-            and teb.batteryId = #{query.batteryId}
+            and teb.id = #{query.batteryId}
         </if>
         <if test="query.memberCardId != null ">
             and tfui.card_id = #{query.memberCardId}
