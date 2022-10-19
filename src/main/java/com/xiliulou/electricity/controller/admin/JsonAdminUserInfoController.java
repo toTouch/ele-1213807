@@ -73,10 +73,7 @@ public class JsonAdminUserInfoController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
@@ -92,7 +89,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .sortType(sortType)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryList(userInfoQuery);
     }
