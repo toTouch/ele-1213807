@@ -77,6 +77,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
                 redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage
                         .getSessionId(), request.getMsg(), 30L, TimeUnit.SECONDS);
             }
+            return;
         }
     
         updateEleOtaUpgrade(electricityCabinet, receiverMessage, request);
