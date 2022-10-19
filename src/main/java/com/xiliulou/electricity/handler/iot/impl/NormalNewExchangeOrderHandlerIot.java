@@ -129,6 +129,7 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //查看用户是否有以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
+            //如果放入的电池与用户绑定的电池不一致
             if (!Objects.equals(oldElectricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
@@ -138,6 +139,20 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 electricityBatteryService.updateBatteryUser(newElectricityBattery);
+    
+                ElectricityBattery placeBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
+                if(Objects.nonNull(placeBattery)){
+                    ElectricityBattery updateBattery = new ElectricityBattery();
+                    updateBattery.setId(oldElectricityBattery.getId());
+                    updateBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+                    updateBattery.setUid(null);
+                    updateBattery.setBorrowExpireTime(null);
+                    updateBattery.setElectricityCabinetId(null);
+                    updateBattery.setElectricityCabinetName(null);
+                    updateBattery.setUpdateTime(System.currentTimeMillis());
+                    electricityBatteryService.updateBatteryUser(updateBattery);
+                }
+                
             } else {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
