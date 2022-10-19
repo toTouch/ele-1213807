@@ -129,15 +129,26 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //查看用户是否有以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
-            ElectricityBattery newElectricityBattery = new ElectricityBattery();
-            newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-            newElectricityBattery.setUid(null);
-            newElectricityBattery.setBorrowExpireTime(null);
-            newElectricityBattery.setElectricityCabinetId(null);
-            newElectricityBattery.setElectricityCabinetName(null);
-            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            if (!Objects.equals(oldElectricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(oldElectricityBattery.getId());
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+                newElectricityBattery.setUid(null);
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            } else {
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(oldElectricityBattery.getId());
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+                newElectricityBattery.setUid(null);
+                newElectricityBattery.setBorrowExpireTime(null);
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            }
         }
 
 
