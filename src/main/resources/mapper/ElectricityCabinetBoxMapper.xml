@@ -19,7 +19,7 @@
         order by -cell_no DESC
         limit #{query.offset}, #{query.size}
     </select>
-
+    
     <select id="queryElectricityBatteryBox" resultType="com.xiliulou.electricity.entity.ElectricityCabinetBox">
         select
         id, electricity_cabinet_id, cell_no, sn, usable_status,
@@ -28,15 +28,18 @@
         from t_electricity_cabinet_box
         where del_flag=0 AND electricity_cabinet_id=#{id}
         and status=0 and usable_status=0
+        <if test="fullCharged != null">
+            and power > #{fullCharged}
+        </if>
         <if test="cellNo != null ">
             and cell_no != #{cellNo}
         </if>
         <if test="batteryType != null ">
             and battery_type = #{batteryType}
         </if>
-        <if test="batteryType == null ">
-            and battery_type is null
-        </if>
+        <!--        <if test="batteryType == null ">-->
+        <!--            and battery_type is null-->
+        <!--        </if>-->
     </select>
 
 
