@@ -12,7 +12,7 @@ public class EleOtaUpgradeHistoryVo {
     
     private Long id;
     
-    private Long electricityName;
+    private String electricityName;
     
     private String cellNo;
     
