@@ -24,6 +24,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -354,7 +355,7 @@ public class JsonAdminElectricityCabinetBatteryController {
         ElectricityBatteryQuery batteryQuery = ElectricityBatteryQuery.builder().sn(batteryName).offset(offset)
                 .size(size).tenantId(TenantContextHolder.getTenantId()).build();
     
-        ElectricityBattery electricityBattery = electricityBatteryService.selectBatteryInfoByBatteryName(batteryQuery);
-        return R.ok(electricityBattery);
+        List<ElectricityBattery> electricityBatterys = electricityBatteryService.selectBatteryInfoByBatteryName(batteryQuery);
+        return R.ok(electricityBatterys);
     }
 }

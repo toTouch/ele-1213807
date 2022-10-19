@@ -707,7 +707,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     }
     
     @Override
-    public ElectricityBattery selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
+    public List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
         return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
     }
     

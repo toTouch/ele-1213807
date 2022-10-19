@@ -70,5 +70,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
 
     List<ElectricityBattery> selectByBatteryIds(@Param("batteryIds") List<Long> batteryIds);
     
-    ElectricityBattery selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
+    List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery);
 }
