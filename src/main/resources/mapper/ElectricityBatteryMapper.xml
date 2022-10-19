@@ -445,13 +445,13 @@
 		<if test="sn != null and sn !=''">
 			and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
 		</if>
-		<if test="query.physicsStatus != null">
+		<if test="physicsStatus != null">
 			and physics_status =#{physicsStatus}
 		</if>
-		<if test="query.businessStatus != null">
+		<if test="businessStatus != null">
 			and business_status =#{businessStatus}
 		</if>
-		<if test="query.tenantId != null">
+		<if test="tenantId != null">
 			and tenant_id = #{tenantId}
 		</if>
 		limit #{offset}, #{size}
