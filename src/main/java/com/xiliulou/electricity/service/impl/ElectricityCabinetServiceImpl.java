@@ -3039,8 +3039,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
     
     @Override
-    public R checkOtaSession(String sessionId, Integer operateType) {
-        String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + operateType + ":" + sessionId);
+    public R checkOtaSession(String sessionId) {
+        String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + sessionId);
         if (StrUtil.isEmpty(s)) {
             return R.ok();
         }

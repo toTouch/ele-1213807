@@ -50,6 +50,11 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return;
         }
+    
+        if (StrUtil.isBlank(receiverMessage.getOriginContent())) {
+            redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage.getSessionId(), "操作失败", 30L,
+                    TimeUnit.SECONDS);
+        }
         
         EleOtaOperateRequest request = JsonUtil
                 .fromJson(receiverMessage.getOriginContent(), EleOtaOperateRequest.class);
@@ -66,10 +71,10 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             //操作回调的放在redis中
             if (Objects.nonNull(receiverMessage.getSuccess()) && "true"
                     .equalsIgnoreCase(receiverMessage.getSuccess())) {
-                redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage
+                redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage
                         .getSessionId(), "ok", 30L, TimeUnit.SECONDS);
             } else {
-                redisService.set(CacheConstant.OTA_OPERATE_CACHE + request.getOperateType() + ":" + receiverMessage
+                redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage
                         .getSessionId(), request.getMsg(), 30L, TimeUnit.SECONDS);
             }
         }

@@ -700,12 +700,11 @@ public class JsonAdminElectricityCabinetController {
      * ota操作检查
      */
     @GetMapping("/admin/electricityCabinet/ota/check")
-    public R checkOtaSession(@RequestParam("sessionId") String sessionId,
-            @RequestParam("operateType") Integer operateType) {
+    public R checkOtaSession(@RequestParam("sessionId") String sessionId) {
         if (StrUtil.isEmpty(sessionId)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
-        return electricityCabinetService.checkOtaSession(sessionId, operateType);
+        return electricityCabinetService.checkOtaSession(sessionId);
     }
     
     @GetMapping("/admin/electricityCabinet/onlineLogList")
