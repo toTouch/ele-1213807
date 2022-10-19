@@ -157,7 +157,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-                        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                        @RequestParam(value = "batteryId",required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "cardName",required = false) String cardName,
                         @RequestParam(value = "memberCardId",required = false) Long memberCardId,
@@ -174,7 +174,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .cardName(cardName)
                 .uid(uid)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .batteryId(batteryId)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
