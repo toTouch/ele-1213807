@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import com.google.common.collect.Maps;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
@@ -92,6 +93,7 @@ public class JsonAdminElectricityCabinetBoxController {
 
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
+    @Log(title = "更新格挡状态")
     public R updateUsableStatus(@RequestBody UpdateUsableStatusQuery updateUsableStatusQuery) {
         if (Objects.isNull(updateUsableStatusQuery.getId())
                 || Objects.isNull(updateUsableStatusQuery.getUsableStatus())) {
@@ -141,6 +143,7 @@ public class JsonAdminElectricityCabinetBoxController {
 
     //更改多个仓门可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateBoxesStatus")
+    @Log(title = "更新多个仓门状态")
     public R updateBoxesStatus(@RequestBody UpdateBoxesStatusQuery updateBoxesStatusQuery) {
 
         if (Objects.isNull(updateBoxesStatusQuery.getElectricityCabinetId())

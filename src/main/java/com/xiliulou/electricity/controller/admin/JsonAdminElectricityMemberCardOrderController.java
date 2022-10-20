@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.MemberCardOrderAddAndUpdate;
@@ -214,6 +215,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@PutMapping(value = "/admin/electricityMemberCard/editUserMemberCard")
+	@Log(title = "编辑用户套餐")
 	public R editUserMemberCard(@RequestBody @Validated MemberCardOrderAddAndUpdate memberCardOrderAddAndUpdate){
 		return electricityMemberCardOrderService.editUserMemberCard(memberCardOrderAddAndUpdate);
 	}
@@ -224,6 +226,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@PutMapping("/admin/memberCard/openOrDisableMemberCard")
+	@Log(title = "暂停用户套餐")
 	public R adminOpenOrDisableMemberCard(@RequestParam("usableStatus") Integer usableStatus, @RequestParam( "uid") Long uid){
 		return electricityMemberCardOrderService.adminOpenOrDisableMemberCard(usableStatus,uid);
 	}
@@ -234,6 +237,7 @@ public class JsonAdminElectricityMemberCardOrderController {
 	 * @return
 	 */
 	@PutMapping("/admin/memberCard/cleanBatteryServiceFee")
+	@Log(title = "清除用户电池服务费")
 	public R cleanBatteryServiceFee(@RequestParam( "uid") Long uid){
 		return electricityMemberCardOrderService.cleanBatteryServiceFee(uid);
 	}

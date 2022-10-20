@@ -3,6 +3,7 @@ package com.xiliulou.electricity.filter;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.utils.SecurityUtils;
+import com.xiliulou.electricity.utils.UUIDUtil;
 import com.xiliulou.electricity.utils.WebUtils;
 import com.xiliulou.electricity.web.entity.BodyReaderHttpServletRequestWrapper;
 import io.prometheus.client.CollectorRegistry;
@@ -36,6 +37,8 @@ public class RequestFilter implements Filter {
     @Autowired
     CollectorRegistry collectorRegistry;
 
+    public static final String REQUEST_ID = "requestId";
+
     private static final String REQ_TIME = "req_time";
     private static final String REQ_HISTOGRAM_TIMER = "req_histogram_time";
 
@@ -51,7 +54,7 @@ public class RequestFilter implements Filter {
         collectorRegistry.register(REQUEST_LATENCY_HISTOGRAM);
     }
 
-    public void afterCompletion(String ip, HttpServletRequest request) {
+    public void afterCompletion(String ip, HttpServletRequest request, String requestId) {
         PROGRESSING_REQUESTS.dec();
 
         Object attribute = request.getAttribute(REQ_TIME);
@@ -77,7 +80,7 @@ public class RequestFilter implements Filter {
             return;
         }
         Long uid = SecurityUtils.getUid();
-        log.info("ip={} uid={} method={} uri={} time={}", ip, uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
+        log.info("requestId={} ip={} uid={} method={} uri={} time={}", requestId, ip, uid, request.getMethod(), request.getRequestURI(), System.currentTimeMillis() - startTime);
 
     }
 
@@ -110,23 +113,25 @@ public class RequestFilter implements Filter {
 
         Long uid = SecurityUtils.getUid();
         String ip = WebUtils.getIP(httpServletRequest);
+        String requestId = UUIDUtil.uuid();
+
+        httpServletRequest.setAttribute(REQUEST_ID, requestId);
 
         if (StrUtil.isEmpty(header) || header.startsWith(MediaType.MULTIPART_FORM_DATA_VALUE) || header.startsWith(MediaType.APPLICATION_FORM_URLENCODED_VALUE)) {
-            log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+            log.info("requestId={} ip={} uid={} method={} uri={} params={}", requestId, ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             filterChain.doFilter(httpServletRequest, servletResponse);
         } else {
             httpServletRequest = new BodyReaderHttpServletRequestWrapper(httpServletRequest);
 
             if (header.startsWith(MediaType.APPLICATION_JSON_VALUE)) {
-                log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
+                log.info("requestId={} ip={} uid={} method={} uri={} params={}", requestId, ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), getRequestBody(httpServletRequest));
             } else {
-                log.info("ip={} uid={} method={} uri={} params={}", ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
+                log.info("requestId={} ip={} uid={} method={} uri={} params={}", requestId, ip, uid, httpServletRequest.getMethod(), httpServletRequest.getRequestURI(), JsonUtil.toJson(httpServletRequest.getParameterMap()));
             }
 
             filterChain.doFilter(httpServletRequest, servletResponse);
-
         }
-        afterCompletion(ip, httpServletRequest);
 
+        afterCompletion(ip, httpServletRequest, requestId);
     }
 }

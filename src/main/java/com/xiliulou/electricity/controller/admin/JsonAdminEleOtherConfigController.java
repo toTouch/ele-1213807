@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.EleOtherConfig;
 import com.xiliulou.electricity.service.EleOtherConfigService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +29,7 @@ public class JsonAdminEleOtherConfigController extends BaseController {
     }
 
     @PutMapping("/admin/ele/other/config")
+    @Log(title = "修改柜机其他配置")
     public R updateEleOtherConfig(@RequestBody EleOtherConfig eleOtherConfig){
         return eleOtherConfigService.updateEleOtherConfig(eleOtherConfig);
     }

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.json.JSONUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.UserCouponQuery;
 import com.xiliulou.electricity.service.UserCouponService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -71,6 +72,7 @@ public class JsonAdminUserCouponController {
 
 	//批量发放优惠券
 	@PostMapping(value = "/admin/userCoupon/batchRelease")
+	@Log(title = "批量发放优惠券")
 	public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
 		Long[] uids = (Long[])
 				JSONUtil.parseArray(uid).toArray(Long[].class);

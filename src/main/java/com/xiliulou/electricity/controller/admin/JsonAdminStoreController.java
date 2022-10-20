@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -59,12 +60,14 @@ public class JsonAdminStoreController {
 
     //修改门店
     @PutMapping(value = "/admin/store")
+    @Log(title = "修改门店")
     public R update(@RequestBody @Validated(value = UpdateGroup.class) StoreAddAndUpdate storeAddAndUpdate) {
         return storeService.edit(storeAddAndUpdate);
     }
 
     //删除门店
     @DeleteMapping(value = "/admin/store/{id}")
+    @Log(title = "删除门店")
     public R delete(@PathVariable("id") Long id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -456,6 +459,7 @@ public class JsonAdminStoreController {
 
     //修改余额
     @PostMapping("/admin/store/modifyAccount")
+    @Log(title = "修改门店余额")
     public R modifyShopAccountAmount(@RequestParam("storeId") Long storeId,
                                      @RequestParam("balance") BigDecimal modifyBalance) {
         if (storeId <= 0 || modifyBalance.compareTo(BigDecimal.valueOf(0.0)) >= 0) {

@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -63,12 +64,14 @@ public class JsonAdminFranchiseeController {
 
 	//修改加盟商
 	@PutMapping(value = "/admin/franchisee")
+	@Log(title = "修改加盟商")
 	public R update(@RequestBody @Validated(value = UpdateGroup.class) FranchiseeAddAndUpdate franchiseeAddAndUpdate) {
 		return franchiseeService.edit(franchiseeAddAndUpdate);
 	}
 
 	//删除加盟商
 	@DeleteMapping(value = "/admin/franchisee/{id}")
+	@Log(title = "删除加盟商")
 	public R delete(@PathVariable("id") Long id) {
 		if (Objects.isNull(id)) {
 			return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -167,6 +170,7 @@ public class JsonAdminFranchiseeController {
 
 	//分账设置
 	@PostMapping(value = "/admin/franchisee/setSplit")
+	@Log(title = "加盟商分帐设置")
 	public R setSplit(@RequestBody List<FranchiseeSetSplitQuery> franchiseeSetSplitQueryList) {
 		return franchiseeService.setSplit(franchiseeSetSplitQueryList);
 	}
@@ -325,6 +329,7 @@ public class JsonAdminFranchiseeController {
 
 	//修改余额
 	@PostMapping("/admin/franchisee/modifyAccount")
+	@Log(title = "修改加盟商余额")
 	public R modifyShopAccountAmount(@RequestParam("franchiseeId") Long franchiseeId,
 			@RequestParam("balance") BigDecimal modifyBalance) {
 		if (franchiseeId <= 0 || modifyBalance.compareTo(BigDecimal.valueOf(0.0)) >= 0) {

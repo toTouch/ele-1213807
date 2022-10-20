@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.query.ElectricityCabinetModelQuery;
 import com.xiliulou.electricity.query.ElectricityCarModelQuery;
@@ -45,12 +46,14 @@ public class JsonAdminElectricityCarModelController {
 
     //修改换电柜车辆型号
     @PutMapping(value = "/admin/electricityCarModel")
+    @Log(title = "修改换电柜车辆型号")
     public R update(@RequestBody ElectricityCarModel electricityCarModel) {
         return electricityCarModelService.edit(electricityCarModel);
     }
 
     //删除换电柜型号
     @DeleteMapping(value = "/admin/electricityCarModel/{id}")
+    @Log(title = "删除换电柜型号")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");

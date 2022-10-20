@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.StoreQuery;
 import com.xiliulou.electricity.query.TenantAddAndUpdateQuery;
 import com.xiliulou.electricity.query.TenantQuery;
@@ -44,6 +45,7 @@ public class JsonAdminTenantController {
 
     //修改租户
     @PutMapping(value = "/admin/tenant")
+    @Log(title = "修改租户")
     public R editTenant(@Validated(value = UpdateGroup.class) @RequestBody TenantAddAndUpdateQuery tenantAddAndUpdateQuery) {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();

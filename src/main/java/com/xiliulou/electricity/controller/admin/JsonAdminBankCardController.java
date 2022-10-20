@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
 import lombok.extern.slf4j.Slf4j;
@@ -72,6 +73,7 @@ public class JsonAdminBankCardController {
 	 * 后台解绑卡
 	 */
 	@DeleteMapping("/admin/bankcard/unBindByWeb")
+	@Log(title = "后台解绑银行卡")
 	public R unBindByWeb(@RequestParam("id") Integer id) {
 		return bankCardService.unBindByWeb(id);
 	}

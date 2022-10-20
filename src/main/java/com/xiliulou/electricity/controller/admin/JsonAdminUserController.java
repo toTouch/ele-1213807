@@ -3,6 +3,7 @@ import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.service.RoleService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -99,6 +100,7 @@ public class JsonAdminUserController extends BaseController {
     }
 
     @PutMapping("/user")
+    @Log(title = "修改用户")
     public R updateAdminUser(@Validated(value = UpdateGroup.class) @RequestBody AdminUserQuery adminUserQuery, BindingResult result) {
         if (result.hasFieldErrors()) {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
@@ -108,6 +110,7 @@ public class JsonAdminUserController extends BaseController {
     }
 
     @DeleteMapping("/user/{uid}")
+    @Log(title = "删除用户")
     public R deleteAdminUser(@PathVariable("uid") Long uid) {
         return returnPairResult(userService.deleteAdminUser(uid));
     }
@@ -128,6 +131,7 @@ public class JsonAdminUserController extends BaseController {
     }
 
     @PostMapping("/user/updatePassword")
+    @Log(title = "修改登录密码")
     public R updatePassword(@Validated(value = CreateGroup.class)  PasswordQuery passwordQuery, BindingResult result) {
         if (result.hasFieldErrors()) {
             return R.fail("SYSTEM.0002", result.getFieldError().getDefaultMessage());
@@ -143,6 +147,7 @@ public class JsonAdminUserController extends BaseController {
     }
 
     @DeleteMapping("/user/del/{uid}")
+    @Log(title = "删除普通用户")
     public R deleteNormalUser(@PathVariable("uid") Long uid) {
         return returnTripleResult(userService.deleteNormalUser(uid));
     }

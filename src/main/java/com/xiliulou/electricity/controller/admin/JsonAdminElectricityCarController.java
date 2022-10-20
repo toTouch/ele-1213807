@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
 import com.xiliulou.electricity.entity.User;
@@ -185,6 +186,7 @@ public class JsonAdminElectricityCarController {
 
     //车辆绑定用户
     @PostMapping("/admin/electricityCar/bindUser")
+    @Log(title = "车辆绑定用户")
     public R bindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
         return electricityCarService.bindUser(electricityCarBindUser);
     }
@@ -192,6 +194,7 @@ public class JsonAdminElectricityCarController {
 
     //用户解绑车辆
     @PostMapping("/admin/electricityCar/unBindUser")
+    @Log(title = "用户解绑车辆")
     public R unBindUser(@RequestBody @Validated(value = CreateGroup.class) ElectricityCarBindUser electricityCarBindUser) {
         return electricityCarService.unBindUser(electricityCarBindUser);
     }

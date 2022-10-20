@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.controller.admin;
 
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.Store;
@@ -172,6 +173,7 @@ public class JsonAdminEleRefundOrderController {
 
     //后台退款处理
     @PostMapping("/admin/handleRefund")
+    @Log(title = "后台退款处理")
     public R handleRefund(@RequestParam("refundOrderNo") String refundOrderNo,
                           @RequestParam("status") Integer status,
                           @RequestParam(value = "errMsg", required = false) String errMsg,
@@ -183,6 +185,7 @@ public class JsonAdminEleRefundOrderController {
 
     //后台租车线下退款处理
     @PostMapping("/admin/handleOffLineRefund")
+    @Log(title = "后台租车线下退款处理")
     public R handleOffLineRefund(@RequestParam("refundOrderNo") String refundOrderNo,
                                  @RequestParam("status") Integer status,
                                  @RequestParam(value = "errMsg", required = false) String errMsg,
@@ -200,6 +203,7 @@ public class JsonAdminEleRefundOrderController {
 
 	//后台电池线下退款处理
 	@PostMapping("/admin/batteryOffLineRefund")
+    @Log(title = "后台电池线下退款处理")
 	public R batteryOffLineRefund(@RequestParam(value = "errMsg", required = false) String errMsg,
 								 @RequestParam(value = "refundAmount", required = false) BigDecimal refundAmount,
 								 @RequestParam("uid") Long uid,

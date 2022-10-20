@@ -7,6 +7,7 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.sms.SmsService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.EleCabinetCoreData;
@@ -85,6 +86,7 @@ public class JsonAdminElectricityCabinetController {
     
     //修改换电柜
     @PutMapping(value = "/admin/electricityCabinet")
+    @Log(title = "修改换电柜")
     public R update(
             @RequestBody @Validated(value = UpdateGroup.class) ElectricityCabinetAddAndUpdate electricityCabinetAddAndUpdate) {
         return electricityCabinetService.edit(electricityCabinetAddAndUpdate);
@@ -92,6 +94,7 @@ public class JsonAdminElectricityCabinetController {
     
     //删除换电柜
     @DeleteMapping(value = "/admin/electricityCabinet/{id}")
+    @Log(title = "删除换电柜")
     public R delete(@PathVariable("id") Integer id) {
         if (Objects.isNull(id)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -265,6 +268,7 @@ public class JsonAdminElectricityCabinetController {
     
     //禁启用换电柜
     @PutMapping(value = "/admin/electricityCabinet/updateStatus")
+    @Log(title = "禁启用换电柜")
     public R updateStatus(@RequestParam("id") Integer id, @RequestParam("usableStatus") Integer usableStatus) {
         return electricityCabinetService.updateStatus(id, usableStatus);
     }
@@ -364,6 +368,7 @@ public class JsonAdminElectricityCabinetController {
     }
 
     @DeleteMapping("/admin/electricityCabinet/ota/upgrade/close")
+    @Deprecated
     public R closeOtaUpgradeSession(@RequestParam("sessionId") String sessionId) {
         if (StrUtil.isEmpty(sessionId)) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");

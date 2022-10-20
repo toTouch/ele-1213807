@@ -2,6 +2,7 @@ package com.xiliulou.electricity.controller.admin;
 
 import com.alibaba.excel.EasyExcel;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
@@ -62,6 +63,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @return
      */
     @PutMapping(value = "/admin/battery")
+    @Log(title = "修改电池")
     public R update(@RequestBody @Validated ElectricityBattery electricityBattery) {
         if (Objects.isNull(electricityBattery.getId())) {
             return R.fail("请求参数错误!");
@@ -77,6 +79,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      * @return
      */
     @DeleteMapping(value = "/admin/battery/{id}")
+    @Log(title = "删除电池")
     public R delete(@PathVariable("id") Long id) {
         return electricityBatteryService.deleteElectricityBattery(id);
     }
@@ -278,6 +281,7 @@ public class JsonAdminElectricityCabinetBatteryController {
      * 电池绑定/解绑加盟商
      */
     @PostMapping(value = "/admin/franchisee/bindElectricityBattery")
+    @Log(title = "电池绑定/解绑加盟商")
     public R bindElectricityBattery(@RequestBody @Validated(value = CreateGroup.class)
         BindElectricityBatteryQuery bindElectricityBatteryQuery) {
 //        return franchiseeService.bindElectricityBattery(bindElectricityBatteryQuery);

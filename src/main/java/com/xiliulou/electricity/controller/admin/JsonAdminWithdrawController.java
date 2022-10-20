@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.annotation.Log;
 import com.xiliulou.electricity.config.WechatConfig;
 import com.xiliulou.electricity.entity.WithdrawRecord;
 import com.xiliulou.electricity.query.HandleWithdrawQuery;
@@ -46,6 +47,7 @@ public class JsonAdminWithdrawController extends BaseController {
 
 
 	@PostMapping(value = "/admin/handleWithdraw")
+	@Log(title = "提现审核")
 	public R withdraw(@Validated @RequestBody HandleWithdrawQuery handleWithdrawQuery) {
 		/*Integer tenantId = TenantContextHolder.getTenantId();
 		if(!Objects.equals(tenantId,wechatConfig.getTenantId())){
