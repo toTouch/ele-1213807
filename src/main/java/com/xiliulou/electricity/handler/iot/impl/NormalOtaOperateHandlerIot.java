@@ -76,10 +76,6 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             }
             return;
         }
-
-        if(Objects.isNull(request.getCellNo())) {
-            request.setCellNo(0);
-        }
     
         updateEleOtaUpgrade(electricityCabinet, receiverMessage, request);
     }
