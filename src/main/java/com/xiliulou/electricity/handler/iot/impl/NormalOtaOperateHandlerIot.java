@@ -73,8 +73,10 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             //操作回调的放在redis中
             if (Objects.nonNull(request.getSuccess()) && "true".equalsIgnoreCase(request.getSuccess())) {
                 redisService.set(CacheConstant.OTA_OPERATE_CACHE + sessionId, "ok", 30L, TimeUnit.SECONDS);
+                log.info("otaces --->" + 1111 + ":" + sessionId);
             } else {
                 redisService.set(CacheConstant.OTA_OPERATE_CACHE + sessionId, request.getMsg(), 30L, TimeUnit.SECONDS);
+                log.info("otaces --->" + 2222 + ":" + sessionId);
             }
             return;
         }
