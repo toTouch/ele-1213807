@@ -28,7 +28,7 @@ public class ElectricityAbnormalMessageNotify {
     /**
      * 异常类型
      */
-    private Integer exceptionType;
+    private Long exceptionType;
     /**
      * 异常描述
      */
@@ -38,7 +38,9 @@ public class ElectricityAbnormalMessageNotify {
      */
     private String reportTime;
     
-    //异常类型  0:电池满仓 ，1：格挡异常 2:电池异常  3:柜机异常  4:业务异常
-    public static final Integer BATTERY_FULL_TYPE=0;
+    //异常类型  00000:电池满仓 ，80004：烟雾告警 2:后门异常打开
+    public static final Long BATTERY_FULL_TYPE=00000L;
+    public static final Long SMOKE_WARN_ERROR_CODE = 80004L;
+    public static final Long BACK_DOOR_OPEN_TYPE=2L;
     
 }

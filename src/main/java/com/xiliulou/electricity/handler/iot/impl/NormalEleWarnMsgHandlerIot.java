@@ -71,6 +71,8 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
     public static final Integer BATTERY_ERROR_TYPE = 2;
     public static final Integer CABINET_ERROR_TYPE = 3;
     public static final Integer BUSINESS_ERROR_TYPE = 4;
+    
+
 
 
     @Override
@@ -99,9 +101,11 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         }
     
         /**
-         * 故障上报发送通知
+         * 烟雾告警、后门异常打开  故障上报发送通知
          */
-        this.sendWarnMessageNotify(electricityCabinet, eleWarnMsgVo);
+        if (Objects.equals(ElectricityAbnormalMessageNotify.SMOKE_WARN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
+            this.sendWarnMessageNotify(electricityCabinet, eleWarnMsgVo,ElectricityAbnormalMessageNotify.SMOKE_WARN_ERROR_CODE);
+        }
     }
 
 
@@ -199,23 +203,26 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
     
     /**
      * 故障上报发送MQ通知
+     *
      * @param electricityCabinet
      * @param eleWarnMsgVo
+     * @param warnNotifyType
      */
-    private void sendWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo){
-        MqNotifyCommon<ElectricityAbnormalMessageNotify> messageNotify = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo);
+    private void sendWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Long warnNotifyType) {
+        MqNotifyCommon<ElectricityAbnormalMessageNotify> messageNotify = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo, warnNotifyType);
         
         rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(messageNotify), "", "", 0);
         log.info("ELE WARN MSG INFO! ele warn message notify, msg={}", JsonUtil.toJson(messageNotify));
     }
     
-    private MqNotifyCommon<ElectricityAbnormalMessageNotify> buildWarnMessageNotify( ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo) {
+    private MqNotifyCommon<ElectricityAbnormalMessageNotify> buildWarnMessageNotify(
+            ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Long warnNotifyType) {
         
         ElectricityAbnormalMessageNotify messageNotify = new ElectricityAbnormalMessageNotify();
         messageNotify.setAddress(electricityCabinet.getAddress());
         messageNotify.setEquipmentNumber(electricityCabinet.getName());
         messageNotify.setDescription(eleWarnMsgVo.getErrorMsg());
-        messageNotify.setExceptionType(eleWarnMsgVo.getErrorType());
+        messageNotify.setExceptionType(warnNotifyType);
         messageNotify.setReportTime(formatter.format(LocalDateTime.now()));
         
         MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
