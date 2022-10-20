@@ -492,7 +492,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //退款中
         Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
-        if (Objects.nonNull(refundStatus) && Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)) {
+        if (Objects.nonNull(refundStatus) && (Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)  || Objects.equals(refundStatus,EleRefundOrder.STATUS_INIT))) {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid:{}", uid);
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
