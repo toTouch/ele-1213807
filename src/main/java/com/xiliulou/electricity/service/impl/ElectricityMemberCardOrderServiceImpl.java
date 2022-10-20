@@ -311,7 +311,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //同一个套餐可以续费
         if (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount())) {
-            if (now < franchiseeUserInfo.getMemberCardExpireTime() && Objects.nonNull(franchiseeUserInfo.getRemainingNumber()) && franchiseeUserInfo.getRemainingNumber() > 0) {
+            if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && now < franchiseeUserInfo.getMemberCardExpireTime() ) {
                 now = franchiseeUserInfo.getMemberCardExpireTime();
             }
             //TODO 使用次数暂时叠加
