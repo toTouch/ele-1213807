@@ -64,8 +64,6 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return;
         }
-    
-        log.info("otaces --->" + request);
         
         if (EleOtaOperateRequest.TYPE_DOWNLOAD.equals(request.getOperateType()) || EleOtaOperateRequest.TYPE_SYNC
                 .equals(request.getOperateType())) {
@@ -73,10 +71,8 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             //操作回调的放在redis中
             if (Objects.nonNull(request.getSuccess()) && "true".equalsIgnoreCase(request.getSuccess())) {
                 redisService.set(CacheConstant.OTA_OPERATE_CACHE + sessionId, "ok", 30L, TimeUnit.SECONDS);
-                log.info("otaces --->" + 1111 + ":" + sessionId);
             } else {
                 redisService.set(CacheConstant.OTA_OPERATE_CACHE + sessionId, request.getMsg(), 30L, TimeUnit.SECONDS);
-                log.info("otaces --->" + 2222 + ":" + sessionId);
             }
             return;
         }
@@ -103,7 +99,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         updateEleOtaUpgrade.setId(eleOtaUpgradeFromDb.getId());
         updateEleOtaUpgrade.setStatus(queryStatus(request.getStatus()));
         updateEleOtaUpgrade.setUpdateTime(System.currentTimeMillis());
-        eleOtaUpgradeService.update(eleOtaUpgradeFromDb);
+        eleOtaUpgradeService.update(updateEleOtaUpgrade);
     
         EleOtaUpgradeHistory eleOtaUpgradeHistory = eleOtaUpgradeHistoryService
                 .queryByCellNoAndSessionId(electricityCabinet.getId(), request.getCellNo(), request.getSessionId(),
@@ -116,7 +112,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
         
         EleOtaUpgradeHistory updateEleOtaUpgradeHistory = new EleOtaUpgradeHistory();
         updateEleOtaUpgradeHistory.setId(eleOtaUpgradeHistory.getId());
-        updateEleOtaUpgrade.setStatus(queryStatus(request.getStatus()));
+        updateEleOtaUpgradeHistory.setStatus(queryStatus(request.getStatus()));
         updateEleOtaUpgradeHistory.setUpgradeSha256Value(
                 Objects.equals(type, EleOtaUpgrade.TYPE_CORE) ? request.getCoreSha256() : request.getSubSha256());
         updateEleOtaUpgradeHistory.setErrMsg(request.getMsg());
