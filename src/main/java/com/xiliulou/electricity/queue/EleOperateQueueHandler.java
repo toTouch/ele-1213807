@@ -20,9 +20,7 @@ import org.springframework.boot.web.context.WebServerInitializedEvent;
 import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -152,7 +150,6 @@ public class EleOperateQueueHandler {
             }
 
             handleRentOrder(rentBatteryOrder, finalOpenDTO);
-
         }
     }
 
@@ -216,6 +213,7 @@ public class EleOperateQueueHandler {
         //发送命令
         HashMap<String, Object> dataMap = Maps.newHashMap();
         dataMap.put("cell_no", cellNo);
+        dataMap.put("lockType", 1);
         dataMap.put("isForbidden", true);
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
@@ -304,38 +302,36 @@ public class EleOperateQueueHandler {
             try {//查找用户
                 UserInfo userInfo = userInfoService.queryByUidFromCache(electricityCabinetOrder.getUid());
                 if (Objects.isNull(userInfo)) {
-                    log.error("userInfo is null!orderId:{}", electricityCabinetOrder.getOrderId());
+                    log.error("userInfo is null!orderId={}", electricityCabinetOrder.getOrderId());
                     return;
                 }
 
                 FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
                 if (Objects.isNull(oldFranchiseeUserInfo)) {
-                    log.error("franchiseeUserInfo is null!orderId:{}", electricityCabinetOrder.getOrderId());
+                    log.error("franchiseeUserInfo is null!orderId={}", electricityCabinetOrder.getOrderId());
                     return;
                 }
 
-                //用户解绑旧电池 旧电池到底是哪块，不确定
-                FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-                franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
-                franchiseeUserInfo.setNowElectricityBatterySn(null);
-                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//                //用户解绑旧电池 旧电池到底是哪块，不确定
+//                FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//                franchiseeUserInfo.setId(oldFranchiseeUserInfo.getId());
+//                franchiseeUserInfo.setNowElectricityBatterySn(null);
+//                franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 //                franchiseeUserInfoService.update(franchiseeUserInfo);
-                franchiseeUserInfoService.unBindNowBatterySn(franchiseeUserInfo);
 
 
                 //查看用户是否有绑定的电池,绑定电池和放入电池不一致则绑定电池处于游离态
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
-                if (Objects.nonNull(electricityBattery)) {
-                    if (!Objects.equals(electricityBattery.getSn(), newElectricityCabinetOrder.getOldElectricityBatterySn())) {
-                        ElectricityBattery newElectricityBattery = new ElectricityBattery();
-                        newElectricityBattery.setId(electricityBattery.getId());
-                        newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
-                        newElectricityBattery.setUid(null);
-                        newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                        newElectricityBattery.setElectricityCabinetId(null);
-                        newElectricityBattery.setElectricityCabinetName(null);
-                        electricityBatteryService.updateByOrder(newElectricityBattery);
-                    }
+                if (Objects.nonNull(electricityBattery) && !Objects.equals(electricityBattery.getSn(), newElectricityCabinetOrder.getOldElectricityBatterySn())) {
+                    ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                    newElectricityBattery.setId(electricityBattery.getId());
+                    newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+                    newElectricityBattery.setUid(null);
+                    newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                    newElectricityBattery.setElectricityCabinetId(null);
+                    newElectricityBattery.setElectricityCabinetName(null);
+                    newElectricityBattery.setBorrowExpireTime(null);
+                    electricityBatteryService.updateBatteryUser(newElectricityBattery);
                 }
 
                 //放入电池改为在仓
@@ -345,13 +341,13 @@ public class EleOperateQueueHandler {
                     if (Objects.nonNull(electricityCabinet)) {
                         ElectricityBattery newElectricityBattery = new ElectricityBattery();
                         newElectricityBattery.setId(oldElectricityBattery.getId());
-                        newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
                         newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
                         newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
                         newElectricityBattery.setUid(null);
                         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                         newElectricityBattery.setBorrowExpireTime(null);
-                        electricityBatteryService.updateByOrder(newElectricityBattery);
+                        electricityBatteryService.updateBatteryUser(newElectricityBattery);
                     }
                 }
 
@@ -478,13 +474,17 @@ public class EleOperateQueueHandler {
                 return;
             }
 
+            FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
+            if (Objects.isNull(oldFranchiseeUserInfo)) {
+                return;
+            }
 
-            //用户绑新电池
-            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
-            franchiseeUserInfo.setUserInfoId(userInfo.getId());
-            franchiseeUserInfo.setNowElectricityBatterySn(electricityCabinetOrder.getNewElectricityBatterySn());
-            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
-            franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
+//            //用户绑新电池
+//            FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
+//            franchiseeUserInfo.setUserInfoId(userInfo.getId());
+//            franchiseeUserInfo.setNowElectricityBatterySn(electricityCabinetOrder.getNewElectricityBatterySn());
+//            franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
+//            franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
 
             //查看用户是否有以前绑定的电池
             ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
@@ -496,12 +496,12 @@ public class EleOperateQueueHandler {
                 }
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
                 newElectricityBattery.setUid(null);
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateByOrder(newElectricityBattery);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
 
 
@@ -509,14 +509,14 @@ public class EleOperateQueueHandler {
             ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(electricityCabinetOrder.getNewElectricityBatterySn());
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(electricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUid(electricityCabinetOrder.getUid());
             newElectricityBattery.setExchangeCount(electricityBattery.getExchangeCount() + 1);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
             newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
-            electricityBatteryService.updateByOrder(newElectricityBattery);
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
 
 
             //删除柜机被锁缓存
@@ -582,11 +582,16 @@ public class EleOperateQueueHandler {
             return;
         }
 
-        //用户绑新电池
+        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
+        if (Objects.isNull(oldFranchiseeUserInfo)) {
+            return;
+        }
+
+        //更新用户租电池状态
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setUserInfoId(userInfo.getId());
         franchiseeUserInfo.setInitElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
-        franchiseeUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
+//        franchiseeUserInfo.setNowElectricityBatterySn(rentBatteryOrder.getElectricityBatterySn());
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_BATTERY);
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfoService.updateByUserInfoId(franchiseeUserInfo);
@@ -602,26 +607,26 @@ public class EleOperateQueueHandler {
             }
             ElectricityBattery newElectricityBattery = new ElectricityBattery();
             newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
             newElectricityBattery.setUid(null);
             newElectricityBattery.setElectricityCabinetId(null);
             newElectricityBattery.setElectricityCabinetName(null);
             newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateByOrder(newElectricityBattery);
+            electricityBatteryService.updateBatteryUser(newElectricityBattery);
         }
 
         //电池改为在用
         ElectricityBattery electricityBattery = electricityBatteryService.queryBySn(rentBatteryOrder.getElectricityBatterySn());
         ElectricityBattery newElectricityBattery = new ElectricityBattery();
         newElectricityBattery.setId(electricityBattery.getId());
-        newElectricityBattery.setStatus(ElectricityBattery.LEASE_STATUS);
+        newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
         newElectricityBattery.setElectricityCabinetId(null);
         newElectricityBattery.setElectricityCabinetName(null);
         newElectricityBattery.setUid(rentBatteryOrder.getUid());
         // newElectricityBattery.setBorrowExpireTime(System.currentTimeMillis() + Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600);
         newElectricityBattery.setUpdateTime(System.currentTimeMillis());
         newElectricityBattery.setBorrowExpireTime(Integer.parseInt(wechatTemplateNotificationConfig.getExpirationTime()) * 3600000 + System.currentTimeMillis());
-        electricityBatteryService.updateByOrder(newElectricityBattery);
+        electricityBatteryService.updateBatteryUser(newElectricityBattery);
 
         //删除柜机被锁缓存
         redisService.delete(CacheConstant.ORDER_ELE_ID + rentBatteryOrder.getElectricityCabinetId());
@@ -636,10 +641,15 @@ public class EleOperateQueueHandler {
             return;
         }
 
+        FranchiseeUserInfo oldFranchiseeUserInfo = franchiseeUserInfoService.queryByUid(userInfo.getUid());
+        if (Objects.isNull(oldFranchiseeUserInfo)) {
+            return;
+        }
+
         //用户解绑电池
         FranchiseeUserInfo franchiseeUserInfo = new FranchiseeUserInfo();
         franchiseeUserInfo.setUserInfoId(userInfo.getId());
-        franchiseeUserInfo.setNowElectricityBatterySn(null);
+//        franchiseeUserInfo.setNowElectricityBatterySn(null);
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
         franchiseeUserInfo.setBatteryServiceFeeStatus(FranchiseeUserInfo.STATUS_NOT_IS_SERVICE_FEE);
         franchiseeUserInfo.setServiceStatus(FranchiseeUserInfo.STATUS_IS_DEPOSIT);
@@ -651,12 +661,12 @@ public class EleOperateQueueHandler {
             if (!Objects.equals(electricityBattery.getSn(), rentBatteryOrder.getElectricityBatterySn())) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(electricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.EXCEPTION_FREE);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
                 newElectricityBattery.setUid(null);
                 newElectricityBattery.setElectricityCabinetId(null);
                 newElectricityBattery.setElectricityCabinetName(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-                electricityBatteryService.updateByOrder(newElectricityBattery);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
         }
 
@@ -667,13 +677,13 @@ public class EleOperateQueueHandler {
             if (Objects.nonNull(electricityCabinet)) {
                 ElectricityBattery newElectricityBattery = new ElectricityBattery();
                 newElectricityBattery.setId(oldElectricityBattery.getId());
-                newElectricityBattery.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
                 newElectricityBattery.setElectricityCabinetId(electricityCabinet.getId());
                 newElectricityBattery.setElectricityCabinetName(electricityCabinet.getName());
                 newElectricityBattery.setUid(null);
                 newElectricityBattery.setUpdateTime(System.currentTimeMillis());
                 newElectricityBattery.setBorrowExpireTime(null);
-                electricityBatteryService.updateByOrder(newElectricityBattery);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
             }
 
             //删除柜机被锁缓存

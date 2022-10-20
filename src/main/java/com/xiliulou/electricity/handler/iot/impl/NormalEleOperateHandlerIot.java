@@ -33,6 +33,8 @@ public class NormalEleOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return ;
         }
+
+
         //操作回调的放在redis中
         if (Objects.nonNull(receiverMessage.getSuccess()) && "True".equalsIgnoreCase(receiverMessage.getSuccess())) {
             redisService.set(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId, "true", 30L, TimeUnit.SECONDS);

@@ -92,7 +92,8 @@ public class NormalApiExchangeHandlerIot extends AbstractElectricityIotHandler {
             apiExchangeOrder.setPutBatterySn(apiExchangeOrderRsp.getPlaceBatteryName());
             Optional.ofNullable(electricityBatteryService.queryBySn(apiExchangeOrderRsp.getPlaceBatteryName())).map(e -> {
                 e.setUpdateTime(System.currentTimeMillis());
-                e.setStatus(ElectricityBattery.WARE_HOUSE_STATUS);
+//                e.setStatus(ElectricityBattery.STATUS_WARE_HOUSE);
+                e.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
                 electricityBatteryService.update(e);
                 return e;
             });
@@ -108,7 +109,8 @@ public class NormalApiExchangeHandlerIot extends AbstractElectricityIotHandler {
             apiExchangeOrder.setTakeBatterySn(apiExchangeOrderRsp.getTakeBatteryName());
             Optional.ofNullable(electricityBatteryService.queryBySn(apiExchangeOrder.getTakeBatterySn())).map(e -> {
                 e.setUpdateTime(System.currentTimeMillis());
-                e.setStatus(ElectricityBattery.LEASE_STATUS);
+//                e.setStatus(ElectricityBattery.LEASE_STATUS);
+                e.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
                 electricityBatteryService.update(e);
                 return e;
             });

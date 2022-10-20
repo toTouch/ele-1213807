@@ -10,7 +10,7 @@ import com.xiliulou.electricity.entity.WithdrawPassword;
  */
 public interface WithdrawPasswordService {
 
-	WithdrawPassword queryFromCache();
+	WithdrawPassword queryFromCache(Integer tenantId);
 
 	R update(WithdrawPassword withdrawPassword);
 

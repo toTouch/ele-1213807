@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.query.ElectricityCabinetQuery;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
@@ -25,29 +26,30 @@ public interface ElectricityCabinetMapper extends BaseMapper<ElectricityCabinet>
      * @param electricityCabinetQuery
      * @return 对象列表
      */
-    List<ElectricityCabinetVO> queryList( @Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+    List<ElectricityCabinetVO> queryList(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 
     List<ElectricityCabinetVO> showInfoByDistance(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
 
-    List<Long> queryFullyElectricityBattery(@Param("id") Integer id,@Param("batteryType") String batteryType);
+    List<Long> queryFullyElectricityBattery(@Param("id") Integer id, @Param("batteryType") String batteryType);
 
 
-    List<Long> queryFullyElectricityBatteryForLowBatteryExchange(@Param("id") Integer id,@Param("batteryType") String batteryType,@Param("fullyCharged") Double fullyCharged);
+    List<Long> queryFullyElectricityBatteryForLowBatteryExchange(@Param("id") Integer id, @Param("batteryType") String batteryType, @Param("fullyCharged") Double fullyCharged);
 
 
-    List<Map<String,Object>> queryNameList(@Param("size")Long size, @Param("offset")Long offset, @Param("eleIdList")List<Integer> eleIdList, @Param("tenantId")Integer tenantId);
+    List<Map<String, Object>> queryNameList(@Param("size") Long size, @Param("offset") Long offset, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
 
-    List<ElectricityCabinet> homeOne(@Param("eleIdList") List<Integer> eleIdList,@Param("tenantId") Integer tenantId);
+    List<ElectricityCabinet> homeOne(@Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
 
-	Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
+    Integer queryCount(@Param("query") ElectricityCabinetQuery electricityCabinetQuery);
 
-	List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay,@Param("eleIdList") List<Integer> eleIdList ,@Param("tenantId")Integer tenantId);
+    List<HashMap<String, String>> homeThree(@Param("startTimeMilliDay") long startTimeMilliDay, @Param("endTimeMilliDay") Long endTimeMilliDay, @Param("eleIdList") List<Integer> eleIdList, @Param("tenantId") Integer tenantId);
 
-	Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds);
+    Integer queryCountByStoreIds(@Param("tenantId") Integer tenantId, @Param("storeIds") List<Long> storeIds);
 
-	Integer queryCountByStoreIdsAndStatus(@Param("tenantId") Integer tenantId,@Param("storeIds") List<Long> storeIds,@Param("status") Integer status);
+    Integer queryCountByStoreIdsAndStatus(@Param("tenantId") Integer tenantId, @Param("storeIds") List<Long> storeIds, @Param("status") Integer status);
 
-
+    List<ElectricityCabinet> selectEleCabinetListByLongitudeAndLatitude(@Param("query") ElectricityCabinetQuery cabinetQuery);
+    List<ElectricityCabinetVO> queryName(@Param("tenantId") Integer tenantId, @Param("id") Integer id);
 }

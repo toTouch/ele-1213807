@@ -305,10 +305,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public R bindElectricityBattery(BindElectricityBatteryQuery bindElectricityBatteryQuery) {
         //先删除
-        franchiseeBindElectricityBatteryService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
+/*        franchiseeBindElectricityBatteryService.deleteByFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
         if (ObjectUtil.isEmpty(bindElectricityBatteryQuery.getElectricityBatteryIdList())) {
             return R.ok();
         }
@@ -324,13 +324,14 @@ public class FranchiseeServiceImpl implements FranchiseeService {
             franchiseeBindElectricityBattery.setFranchiseeId(bindElectricityBatteryQuery.getFranchiseeId());
             franchiseeBindElectricityBattery.setElectricityBatteryId(electricityBatteryId);
             franchiseeBindElectricityBatteryService.insert(franchiseeBindElectricityBattery);
-        }
+        }*/
         return R.ok();
     }
 
     @Override
     public R getElectricityBatteryList(Long id) {
-        return R.ok(franchiseeBindElectricityBatteryService.queryByFranchiseeId(id));
+//        return R.ok(franchiseeBindElectricityBatteryService.queryByFranchiseeId(id));
+        return R.ok();
     }
 
     @Override

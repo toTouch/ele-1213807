@@ -14,4 +14,6 @@ public interface ElectricityPayParamsService extends IService<ElectricityPayPara
     R uploadFile(MultipartFile file,Integer type);
 
     R getTenantId(String appId);
+
+    ElectricityPayParams queryByTenantId(Integer tenantId);
 }

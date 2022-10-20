@@ -36,6 +36,7 @@ public class JsonAdminElectricityCabinetOrderOperHistoryController {
 	 * @return
 	 */
 	@GetMapping("/admin/electricityCabinetOrderOperHistory/dataType")
+	@Deprecated
 	public R selectOperateDataType(@RequestParam("orderId") String orderId,
 					   @RequestParam("type") Integer type) {
 

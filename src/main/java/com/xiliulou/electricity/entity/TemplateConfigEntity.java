@@ -24,6 +24,10 @@ public class TemplateConfigEntity implements Serializable {
      * 低电量模板
      */
     private String electricQuantityRemindTemplate ;
+    //    /**
+    //     * 套餐到期通知
+    //     */
+    //    private String memberCardExpiringTemplate;
     /**
      *  电池月卡快过期提醒模板
      */
