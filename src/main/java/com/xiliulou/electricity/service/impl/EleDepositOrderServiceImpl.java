@@ -1279,8 +1279,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
-        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId,depositType);
     }
 
 

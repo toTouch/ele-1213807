@@ -451,7 +451,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId());
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId(),EleDepositOrder.ELECTRICITY_DEPOSIT);
         return R.ok(eleDepositOrder.getPayType());
     }
 
@@ -527,7 +527,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
 
-        if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
 
             eleRefundOrder.setRefundAmount(refundAmount);
