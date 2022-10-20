@@ -1159,9 +1159,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
 //        }
         if (Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
+            System.out.println("原来的次数================="+remainingNumber);
             remainingNumber=MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
             memberCardExpireTime = System.currentTimeMillis();
         }
+
+        System.out.println("现在的次数================="+remainingNumber);
 
         franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
@@ -1171,6 +1174,10 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         franchiseeUserInfoUpdate.setBatteryServiceFeeGenerateTime(memberCardExpireTime);
         franchiseeUserInfoUpdate.setRemainingNumber(remainingNumber);
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
+
+
+        System.out.println("对侠女======================"+franchiseeUserInfoUpdate);
+
         franchiseeUserInfoService.updateMemberCardExpire(franchiseeUserInfoUpdate);
 
         Long now = System.currentTimeMillis();
