@@ -64,6 +64,8 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             log.error("no sessionId,{}", receiverMessage.getOriginContent());
             return;
         }
+    
+        log.info("otaces --->" + request);
         
         if (EleOtaOperateRequest.TYPE_DOWNLOAD.equals(request.getOperateType()) || EleOtaOperateRequest.TYPE_SYNC
                 .equals(request.getOperateType())) {
