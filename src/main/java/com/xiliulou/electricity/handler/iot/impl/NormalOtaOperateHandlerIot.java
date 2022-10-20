@@ -69,8 +69,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
                 .equals(request.getOperateType())) {
             insertOrUpdateEleOtaFile(electricityCabinet, request);
             //操作回调的放在redis中
-            if (Objects.nonNull(receiverMessage.getSuccess()) && "true"
-                    .equalsIgnoreCase(receiverMessage.getSuccess())) {
+            if (Objects.nonNull(request.getSuccess()) && "true".equalsIgnoreCase(request.getSuccess())) {
                 redisService.set(CacheConstant.OTA_OPERATE_CACHE + receiverMessage
                         .getSessionId(), "ok", 30L, TimeUnit.SECONDS);
             } else {
@@ -201,6 +200,8 @@ class EleOtaOperateRequest {
     private Integer cellNo;
     
     private String msg;
+    
+    private String success;
 
     public static final Integer TYPE_DOWNLOAD = 1;
     
