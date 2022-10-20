@@ -10,6 +10,7 @@ import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
 import com.xiliulou.electricity.vo.HomePageUserAnalysisVo;
 import com.xiliulou.electricity.vo.HomePageUserByWeekDayVo;
+import org.apache.commons.lang3.tuple.Pair;
 
 import java.util.HashMap;
 import java.util.List;
@@ -106,5 +107,9 @@ public interface UserInfoService extends IService<UserInfo> {
     List<HomePageUserByWeekDayVo> queryUserAnalysisByUserStatus(Integer tenantId, Integer userStatus, Long beginTime, Long endTime);
 
     void exportExcel(UserInfoQuery userInfoQuery, HttpServletResponse response);
+
+    R deleteUserInfo(Long uid);
+
+    Integer updateByUid(UserInfo userInfo);
 
 }

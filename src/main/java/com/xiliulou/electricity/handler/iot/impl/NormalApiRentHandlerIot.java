@@ -91,7 +91,8 @@ public class NormalApiRentHandlerIot extends AbstractElectricityIotHandler {
             apiRentOrder.setBatterySn(apiRentBatteryOrderRsp.getRentBatteryName());
             Optional.ofNullable(electricityBatteryService.queryBySn(apiRentBatteryOrderRsp.getRentBatteryName())).map(e -> {
                 e.setUpdateTime(System.currentTimeMillis());
-                e.setStatus(ElectricityBattery.LEASE_STATUS);
+//                e.setStatus(ElectricityBattery.LEASE_STATUS);
+                e.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_LEASE);
                 electricityBatteryService.update(e);
                 return e;
             });

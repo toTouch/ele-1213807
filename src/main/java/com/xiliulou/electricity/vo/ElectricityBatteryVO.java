@@ -47,9 +47,13 @@ public class ElectricityBatteryVO {
      */
     private Integer capacity;
     /**
-     * 0：在仓，1：在库，2：租借
+     * 电池物理状态 0：在仓，1：不在仓
      */
-    private Integer status;
+    private Integer physicsStatus;
+    /**
+     * 电池业务状态：1：已录入，2：租借，3：归还，4：异常交换
+     */
+    private Integer businessStatus;
 
     private Long createTime;
 
@@ -92,8 +96,9 @@ public class ElectricityBatteryVO {
      * 所属加盟商
      */
     private String franchiseeName;
-
-    //所属用户id
+    /**
+     * 所属用户id
+     */
     private Long uid;
 
     //所属用户

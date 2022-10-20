@@ -29,4 +29,5 @@ public class MemberCardOrderQuery {
 
     private Long franchiseeId;
     private String franchiseeName;
+    private String userName;
 }

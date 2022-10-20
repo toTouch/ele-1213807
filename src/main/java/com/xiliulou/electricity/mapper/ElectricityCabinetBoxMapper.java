@@ -30,14 +30,17 @@ public interface ElectricityCabinetBoxMapper extends BaseMapper<ElectricityCabin
     int modifyByCellNo(ElectricityCabinetBox electricityCabinetNewBox);
 
     void modifyCellByCellNo(ElectricityCabinetBox electricityCabinetBox);
-
-    List<ElectricityCabinetBox> queryElectricityBatteryBox(@Param("id") Integer id, @Param("cellNo") String cellNo, @Param("batteryType") String batteryType);
-
+    
+    List<ElectricityCabinetBox> queryElectricityBatteryBox(@Param("id") Integer id, @Param("cellNo") String cellNo,
+            @Param("batteryType") String batteryType, @Param("fullCharged") Double fullCharged);
+    
     List<ElectricityCabinetBox> queryUsableBatteryCellNo(@Param("eid") Integer id, @Param("type") String batteryType, @Param("fullV") Double fullyCharged);
 
     List<ElectricityCabinetBox> queryUsableEmptyCellNo(@Param("eid") Integer eid);
 
-    Integer modifyCellUsableStatus(@Param("cellNo") Integer cellNo,@Param("electricityCabinetId") Integer electricityCabinetId);
+    Integer modifyCellUsableStatus(@Param("cellNo") Integer cellNo, @Param("electricityCabinetId") Integer electricityCabinetId);
+
+    Integer queryBoxCount(@Param("id") Integer id, @Param("tenantId") Integer tenantId);
 
 
 }

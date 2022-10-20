@@ -39,13 +39,13 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
         EleCellVO eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVO.class);
         if (Objects.isNull(eleCellVo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
+            log.error("ele cell error! eleCellVo is null,sessionId={}", receiverMessage.getSessionId());
             return ;
         }
 
         String cellNo = eleCellVo.getCell_no();
         if (StringUtils.isEmpty(cellNo)) {
-            log.error("ele cell error! no eleCellVo,{}", receiverMessage.getOriginContent());
+            log.error("ele cell error! cellNo is empty,sessionId={}", receiverMessage.getSessionId());
             return ;
         }
 
@@ -83,8 +83,15 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
             electricityCabinetBox.setUsableStatus(Integer.valueOf(isForbidden));
         }
 
+        Integer cellVoLockType = eleCellVo.getLockType();
+        if (Objects.nonNull(cellVoLockType)) {
+            electricityCabinetBox.setLockType(cellVoLockType);
+        }
+
         electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
+
+
     }
 
     @Data
@@ -103,6 +110,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         private String is_light;
         //可用禁用
         private String is_forbidden;
+        //锁仓类型
+        private Integer lockType;
 
     }
 }

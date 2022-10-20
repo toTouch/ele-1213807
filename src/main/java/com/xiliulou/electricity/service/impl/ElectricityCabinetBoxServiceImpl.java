@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.util.ObjectUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
@@ -140,10 +141,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
                 .eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
     }
-
+    
     @Override
-    public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType) {
-        return electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType);
+    public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo,
+            String batteryType, Double fullCharged) {
+        return electricityCabinetBoxMapper
+                .queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType, fullCharged);
     }
 
     @Override
@@ -177,4 +180,17 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         return electricityCabinetBoxMapper.modifyCellUsableStatus(cellNo,electricityCabinetId);
     }
 
+    @Override
+    public R queryBoxCount(Integer electricityCabinet, Integer tenantId) {
+        return R.ok(electricityCabinetBoxMapper.queryBoxCount(electricityCabinet,tenantId));
+    }
+    /**
+     * 根据电池id查询格挡
+     * @param batteryId
+     * @return
+     */
+    @Override
+    public ElectricityCabinetBox selectByBatteryId(Long batteryId) {
+        return electricityCabinetBoxMapper.selectOne(new LambdaQueryWrapper<ElectricityCabinetBox>().eq(ElectricityCabinetBox::getBId, batteryId));
+    }
 }

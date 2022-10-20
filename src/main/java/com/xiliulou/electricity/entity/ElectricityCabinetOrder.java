@@ -209,4 +209,5 @@ public class ElectricityCabinetOrder {
      */
     public static final Integer ORDER_SOURCE_FOR_SELF_OPEN_CELL = 4;
 
+
 }

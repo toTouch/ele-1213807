@@ -19,4 +19,5 @@ public interface VersionNotificationMapper extends BaseMapper<VersionNotificatio
 
     VersionNotification queryCreateTimeMaxTenantNotification();
 
+    VersionNotification selectNotSendMailOne();
 }

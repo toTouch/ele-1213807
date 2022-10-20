@@ -3,6 +3,7 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
 import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
+import javax.servlet.http.HttpServletResponse;
 
 
 /**
@@ -14,7 +15,9 @@ import com.xiliulou.electricity.query.ElectricityCabinetPowerQuery;
 public interface ElectricityCabinetPowerService {
 
 
-    Integer insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
+  Integer insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
 
-    R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+  R queryList(ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+
+  void exportExcel(ElectricityCabinetPowerQuery electricityCabinetPowerQuery, HttpServletResponse response);
 }

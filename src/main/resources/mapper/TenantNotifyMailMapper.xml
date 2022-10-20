@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.TenantNotifyMailMapper">
+
+    <resultMap type="com.xiliulou.electricity.entity.TenantNotifyMail" id="TenantNotifyMailMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="mail" column="mail" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap type="com.xiliulou.electricity.dto.TenantNotifyMailDTO" id="TenantNotifyMailDTOMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="mail" column="mail" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="tenantName" column="tenant_name" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <resultMap type="com.xiliulou.electricity.vo.TenantNotifyMailVO" id="TenantNotifyMailVOMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="mail" column="mail" jdbcType="VARCHAR"/>
+        <result property="tenantId" column="tenant_id" jdbcType="INTEGER"/>
+        <result property="tenantName" column="name" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+
+    <!-- 基础字段 -->
+    <sql id="selectTenantNotifyMail">
+       	select   id, mail, tenant_id, create_time, update_time        from t_tenant_notify_mail
+    </sql>
+
+    <!--根据租户ID分组-->
+    <select id="selectAllTenantNotifyMail" resultMap="TenantNotifyMailDTOMap">
+        select   tnm.id as id, tnm.mail as mail, tnm.tenant_id as tenant_id, tnm.create_time as create_time, tnm.update_time as update_time,tt.name as tenant_name
+        from t_tenant_notify_mail tnm
+        left join t_tenant tt on tnm.tenant_id=tt.id
+
+    </select>
+
+    <!--查询单个-->
+    <select id="selectById" resultMap="TenantNotifyMailMap">
+        <include refid="selectTenantNotifyMail"/>
+        where id = #{id}
+    </select>
+
+    <!--查询指定行数据-->
+    <select id="selectByPage" resultMap="TenantNotifyMailVOMap">
+        select   tnm.id, tnm.mail, tnm.tenant_id, tnm.create_time, tnm.update_time,tt.name
+        from t_tenant_notify_mail tnm
+        left join t_tenant tt on tnm.tenant_id=tt.id
+        limit #{offset}, #{limit}
+    </select>
+
+
+    <select id="selectByTenantId" resultMap="TenantNotifyMailVOMap">
+        select   tnm.id, tnm.mail, tnm.tenant_id, tnm.create_time, tnm.update_time,tt.name
+        from t_tenant_notify_mail tnm
+        left join t_tenant tt on tnm.tenant_id=tt.id
+        where tnm.tenant_id = #{tenantId}
+    </select>
+
+    <!--通过实体作为筛选条件查询-->
+    <select id="selectByQuery" resultMap="TenantNotifyMailMap">
+        <include refid="selectTenantNotifyMail"/>
+        from t_tenant_notify_mail
+        <where>
+            <if test="id != null">
+                and id = #{id}
+            </if>
+            <if test="mail != null and mail != ''">
+                and mail = #{mail}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
+            </if>
+            <if test="createTime != null">
+                and create_time = #{createTime}
+            </if>
+            <if test="updateTime != null">
+                and update_time = #{updateTime}
+            </if>
+        </where>
+    </select>
+
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_tenant_notify_mail(mail, tenant_id, create_time, update_time)
+        values (#{mail}, #{tenantId}, #{createTime}, #{updateTime})
+    </insert>
+
+
+    <insert id="insertOrUpdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_tenant_notify_mail(mail, tenant_id, create_time, update_time)
+        values (#{mail}, #{tenantId}, #{createTime}, #{updateTime}) on duplicate key
+        update mail=#{mail},update_time=#{updateTime}
+    </insert>
+
+
+    <!-- 批量插入 -->
+    <insert id="batchInsert">
+        insert into t_tenant_notify_mail( mail, tenant_id, create_time, update_time ) values
+        <foreach item="item" index="index" collection="list" separator=",">
+            ( #{item.mail}, #{item.tenantId}, #{item.createTime}, #{item.updateTime})
+        </foreach>
+    </insert>
+
+
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_tenant_notify_mail
+        <set>
+            <if test="mail != null and mail != ''">
+                mail = #{mail},
+            </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_tenant_notify_mail where id = #{id}
+    </delete>
+
+
+    <!--通过租户id删除-->
+    <delete id="deleteByTenantId">
+        delete from t_tenant_notify_mail where tenant_id = #{tenantId}
+    </delete>
+
+</mapper>
