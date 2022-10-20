@@ -3001,8 +3001,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Map<String, Object> data = Maps.newHashMap();
         Map<String, Object> content = new HashMap<>();
         data.put("operateType", operateType);
-        data.put("userId", user.getUid());
-        data.put("userName", user.getName());
+        data.put("userid", user.getUid());
+        data.put("username", user.getName());
         
         if (TYPE_DOWNLOAD.equals(operateType)) {
             //ota文件是否存在
