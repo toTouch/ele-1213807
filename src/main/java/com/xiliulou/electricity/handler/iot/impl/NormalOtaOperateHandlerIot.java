@@ -135,6 +135,7 @@ public class NormalOtaOperateHandlerIot extends AbstractElectricityIotHandler {
             eleOtaFile.setUpdateTime(System.currentTimeMillis());
             eleOtaFileService.insert(eleOtaFile);
         } else {
+            eleOtaFile.setId(eleOtaFileFromDb.getId());
             eleOtaFile.setUpdateTime(System.currentTimeMillis());
             eleOtaFileService.update(eleOtaFile);
         }
