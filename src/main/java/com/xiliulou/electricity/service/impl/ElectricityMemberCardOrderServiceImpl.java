@@ -316,7 +316,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         //同一个套餐可以续费
         if (Objects.nonNull(bindElectricityMemberCard) && Objects.equals(bindElectricityMemberCard.getLimitCount(), electricityMemberCard.getLimitCount())) {
-            if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && now < franchiseeUserInfo.getMemberCardExpireTime() ) {
+            if (Objects.nonNull(franchiseeUserInfo.getMemberCardExpireTime()) && now < franchiseeUserInfo.getMemberCardExpireTime()) {
                 now = franchiseeUserInfo.getMemberCardExpireTime();
             }
             //TODO 使用次数暂时叠加
@@ -1158,13 +1158,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
 //            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
 //        }
-        if (Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
-            System.out.println("原来的次数================="+remainingNumber);
-            remainingNumber=MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
+
+        Long now = System.currentTimeMillis();
+        if (franchiseeUserInfoUpdate.getMemberCardExpireTime() <= now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
+            remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
             memberCardExpireTime = System.currentTimeMillis();
         }
-
-        System.out.println("现在的次数================="+remainingNumber);
 
         franchiseeUserInfoUpdate.setCardId(memberCardOrderAddAndUpdate.getMemberCardId());
         franchiseeUserInfoUpdate.setCardName(electricityMemberCard.getName());
@@ -1176,11 +1175,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         franchiseeUserInfoUpdate.setUpdateTime(System.currentTimeMillis());
 
 
-        System.out.println("对侠女======================"+franchiseeUserInfoUpdate);
-
         franchiseeUserInfoService.updateMemberCardExpire(franchiseeUserInfoUpdate);
 
-        Long now = System.currentTimeMillis();
         Long oldCardDay = 0L;
         if (oldFranchiseeUserInfo.getMemberCardExpireTime() - now > 0) {
             oldCardDay = (oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24;
