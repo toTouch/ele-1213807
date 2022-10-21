@@ -3,7 +3,6 @@ package com.xiliulou.electricity.handler.iot.impl;
 import cn.hutool.core.date.DatePattern;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
-import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.constant.MqConstant;
@@ -25,7 +24,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.ExecutorService;
 import java.util.stream.Collectors;
 
 /**
@@ -403,55 +401,52 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
         }
     }
-    
+
     /**
-     * 柜子电池满仓发送通知
+     * 柜子电池满仓发送MQ通知
+     *
      * @param electricityCabinet
      */
-    private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet){
-    
-        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinet.getId());
-        if(CollectionUtils.isEmpty(electricityCabinetBoxes)){
+    private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet) {
+
+        //获取所有启用的格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
+        if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return;
         }
-    
-        List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isNotBlank(item.getSn())).collect(Collectors.toList());
-        if(CollectionUtils.isEmpty(haveBatteryBoxs)){
+
+        //过滤没有电池的格挡
+        List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
             return;
         }
-        
-        ElectricityCabinetModel cabinetModel = electricityCabinetModelService.queryByIdFromCache(electricityCabinet.getId());
-        if(Objects.isNull(cabinetModel)){
-            log.error("ELE BATTERY REPORT ERROR! not found ElectricityCabinetModel,electricityCabinetId={}",electricityCabinet.getId());
-            return ;
-        }
-    
-        //若柜机仓内电池已满  发送MQ消息通知
-        boolean fullBatteryFlag = Objects.equals(haveBatteryBoxs.size(), cabinetModel.getNum());
-        boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinet.getId(), "1", 60L, false);
-        if (fullBatteryFlag && cacheFlag) {
-            MqNotifyCommon<ElectricityAbnormalMessageNotify> messageNotify = buildAbnormalMessageNotify( electricityCabinet);
-    
+
+
+        //柜机仓内电池已满  发送MQ消息通知
+        Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinet.getId(), "1", 3600 * 1000L, false);
+        if (cacheFlag) {
+            MqNotifyCommon<ElectricityAbnormalMessageNotify> messageNotify = buildAbnormalMessageNotify(electricityCabinet);
+
             rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(messageNotify), "", "", 0);
             log.info("ELE BATTERY REPORT INFO! ele abnormal notify,msg={}", JsonUtil.toJson(messageNotify));
         }
     }
-    
-    private MqNotifyCommon<ElectricityAbnormalMessageNotify> buildAbnormalMessageNotify( ElectricityCabinet electricityCabinet) {
-    
+
+    private MqNotifyCommon<ElectricityAbnormalMessageNotify> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
+
         ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
         abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
         abnormalMessageNotify.setEquipmentNumber(electricityCabinet.getName());
         abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
-        abnormalMessageNotify.setDescription("系统检测到柜机内电池满仓，该柜机目前无法继续提供换电服务");
+        abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
         abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-        
-        
+
+
         MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
         abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
         abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
         abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
-        
+
         return abnormalMessageNotifyCommon;
     }
 

@@ -13,13 +13,7 @@ import com.xiliulou.electricity.entity.ElectricityAbnormalMessageNotify;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.MqNotifyCommon;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
-import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
-import com.xiliulou.electricity.service.ElectricityBatteryService;
-import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
-import com.xiliulou.electricity.service.ElectricityCabinetService;
-import com.xiliulou.electricity.service.FranchiseeBindElectricityBatteryService;
-import com.xiliulou.electricity.service.NotExistSnService;
-import com.xiliulou.electricity.service.StoreService;
+import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.ReceiverMessage;
 import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
@@ -71,8 +65,10 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
     public static final Integer BATTERY_ERROR_TYPE = 2;
     public static final Integer CABINET_ERROR_TYPE = 3;
     public static final Integer BUSINESS_ERROR_TYPE = 4;
-    
 
+    // 柜机上报的error_code  80004：烟雾告警 ，80008:后门异常打开
+    public static final Long SMOKE_WARN_ERROR_CODE = 80004L;
+    public static final Long BACK_DOOR_OPEN_ERROR_CODE=80008L;
 
 
     @Override
@@ -99,13 +95,11 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
         } else if (Objects.equals(eleWarnMsgVo.getErrorType(), BUSINESS_ERROR_TYPE)) {
             saveBusinessWarnMsgDataToClickHouse(electricityCabinet, eleWarnMsgVo);
         }
-    
-        /**
-         * 烟雾告警、后门异常打开  故障上报发送通知
-         */
-        if (Objects.equals(ElectricityAbnormalMessageNotify.SMOKE_WARN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
-            this.sendWarnMessageNotify(electricityCabinet, eleWarnMsgVo,ElectricityAbnormalMessageNotify.SMOKE_WARN_ERROR_CODE);
-        }
+
+
+        //烟雾告警、后门异常打开  故障上报发送通知
+        this.sendWarnMessageNotify(electricityCabinet, eleWarnMsgVo);
+
     }
 
 
@@ -200,36 +194,43 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
             log.error("ELE ERROR! clickHouse insert cabinetWarn sql error!", e);
         }
     }
-    
+
     /**
      * 故障上报发送MQ通知
      *
      * @param electricityCabinet
      * @param eleWarnMsgVo
-     * @param warnNotifyType
      */
-    private void sendWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Long warnNotifyType) {
-        MqNotifyCommon<ElectricityAbnormalMessageNotify> messageNotify = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo, warnNotifyType);
-        
+    private void sendWarnMessageNotify(ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo) {
+        MqNotifyCommon<ElectricityAbnormalMessageNotify> messageNotify = null;
+
+        if (Objects.equals(SMOKE_WARN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
+            messageNotify = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo, ElectricityAbnormalMessageNotify.SMOKE_WARN_TYPE, ElectricityAbnormalMessageNotify.SMOKE_WARN_MSG);
+        } else if (Objects.equals(BACK_DOOR_OPEN_ERROR_CODE, eleWarnMsgVo.getErrorCode())) {
+            messageNotify = this.buildWarnMessageNotify(electricityCabinet, eleWarnMsgVo, ElectricityAbnormalMessageNotify.BACK_DOOR_OPEN_TYPE, ElectricityAbnormalMessageNotify.BACK_DOOR_OPEN_MSG);
+        } else {
+            return;
+        }
+
         rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(messageNotify), "", "", 0);
         log.info("ELE WARN MSG INFO! ele warn message notify, msg={}", JsonUtil.toJson(messageNotify));
     }
-    
+
     private MqNotifyCommon<ElectricityAbnormalMessageNotify> buildWarnMessageNotify(
-            ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Long warnNotifyType) {
-        
+            ElectricityCabinet electricityCabinet, EleWarnMsgVo eleWarnMsgVo, Integer warnNotifyType, String description) {
+
         ElectricityAbnormalMessageNotify messageNotify = new ElectricityAbnormalMessageNotify();
         messageNotify.setAddress(electricityCabinet.getAddress());
         messageNotify.setEquipmentNumber(electricityCabinet.getName());
-        messageNotify.setDescription(eleWarnMsgVo.getErrorMsg());
+        messageNotify.setDescription(description);
         messageNotify.setExceptionType(warnNotifyType);
         messageNotify.setReportTime(formatter.format(LocalDateTime.now()));
-        
+
         MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
         abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
         abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
         abnormalMessageNotifyCommon.setData(messageNotify);
-        
+
         return abnormalMessageNotifyCommon;
     }
     
