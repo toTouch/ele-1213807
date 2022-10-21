@@ -1160,7 +1160,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //        }
 
         Long now = System.currentTimeMillis();
-        if (franchiseeUserInfoUpdate.getMemberCardExpireTime() <= now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
+        if (memberCardExpireTime <= now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
             remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
             memberCardExpireTime = System.currentTimeMillis();
         }
