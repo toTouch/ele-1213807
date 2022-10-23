@@ -1183,6 +1183,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
             oldMaxUseCount = oldFranchiseeUserInfo.getRemainingNumber();
         }
 
+        Long newCardDay=(memberCardOrderAddAndUpdate.getMemberCardExpireTime() /1000L / 60 / 60 / 24);
+
         //生成后台操作记录
         EleUserOperateRecord eleUserOperateRecord = EleUserOperateRecord.builder()
                 .operateModel(EleUserOperateRecord.MEMBER_CARD_MODEL)
@@ -1191,7 +1193,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
                 .uid(memberCardOrderAddAndUpdate.getUid())
                 .name(user.getUsername())
                 .oldValidDays(oldCardDay.intValue())
-                .newValidDays(memberCardOrderAddAndUpdate.getValidDays())
+                .newValidDays(newCardDay.intValue())
                 .oldMaxUseCount(oldMaxUseCount)
                 .newMaxUseCount(memberCardOrderAddAndUpdate.getMaxUseCount())
                 .createTime(System.currentTimeMillis())
