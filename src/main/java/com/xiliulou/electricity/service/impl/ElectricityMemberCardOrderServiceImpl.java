@@ -1177,7 +1177,7 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         Long now = System.currentTimeMillis();
         Double oldCardDay = 0.0;
         if (oldFranchiseeUserInfo.getMemberCardExpireTime() - now > 0) {
-            oldCardDay = Math.ceil((oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000 / 60 / 60 / 24);
+            oldCardDay = Math.ceil((oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
         }
         Long oldMaxUseCount = null;
         if (Objects.nonNull(memberCardOrderAddAndUpdate.getMaxUseCount())) {
