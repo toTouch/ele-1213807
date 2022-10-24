@@ -1486,7 +1486,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         data.put("thing2", carMemberCardExpiringSoonQuery.getCardName());
         data.put("date4", carMemberCardExpiringSoonQuery.getRentCarMemberCardExpireTimeStr());
         data.put("thing3", "租车套餐即将过期，请重新订购。");
-        data.put("thing5", "暂无");
 
         log.info("CAR MEMBER CARD EXPIRING REMINDER: param={}", carMemberCardExpiringSoonQuery);
 
@@ -1507,7 +1506,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         data.put("thing2", batteryMemberCardExpiringSoonQuery.getCardName());
         data.put("date4", batteryMemberCardExpiringSoonQuery.getMemberCardExpireTimeStr());
         data.put("thing3", "电池套餐即将过期，请重新订购。");
-        data.put("thing5", "暂无");
 
         log.info("BATTERY MEMBER CARD EXPIRING REMINDER: param={}", batteryMemberCardExpiringSoonQuery);
 
