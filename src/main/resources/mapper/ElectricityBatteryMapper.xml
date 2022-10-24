@@ -5,9 +5,9 @@
 
 
 	<!--电池分页-->
-	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select b.id, b.sn,b.power, b.voltage, b.capacity, b.status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
-		b.uid,b.model,b.charge_status,b.iot_card_number
+<!--	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select b.id, b.sn,b.power, b.voltage, b.capacity, b.status , b.business_status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
+		b.model,b.charge_status,b.iot_card_number
 		from t_electricity_battery b
 		where b.del_flag = 0 and b.tenant_id = #{query.tenantId}
 		<if test="query.sn != null and query.sn !=''">
@@ -15,6 +15,9 @@
 		</if>
 		<if test="query.status != null">
 			and b.status =#{query.status}
+		</if>
+		<if test="query.businessStatus != null">
+			and b.business_status =#{query.businessStatus}
 		</if>
 		<if test="query.chargeStatus != null">
 			and b.charge_status =#{query.chargeStatus}
@@ -37,12 +40,44 @@
 		</if>
 		order by create_time desc
 		limit #{offset}, #{size}
+	</select>-->
+	<select id="queryList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn,power, voltage, capacity, physics_status , business_status, create_time, update_time, del_flag, tenant_id, electricity_cabinet_id,
+		model, charge_status, iot_card_number, franchisee_id,uid
+		from t_electricity_battery
+		where del_flag = 0 and tenant_id = #{query.tenantId}
+		<if test="query.sn != null and query.sn !=''">
+			and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.physicsStatus != null">
+			and physics_status =#{query.physicsStatus}
+		</if>
+		<if test="query.businessStatus != null">
+			and business_status =#{query.businessStatus}
+		</if>
+		<if test="query.chargeStatus != null">
+			and charge_status =#{query.chargeStatus}
+		</if>
+		<if test="query.tenantId != null">
+			and tenant_id = #{query.tenantId}
+		</if>
+		<if test="query.electricityCabinetName != null">
+			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
+		</if>
+		<if test="query.franchiseeId != null">
+			and franchisee_id =#{query.franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and '' != query.franchiseeName">
+			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+		</if>
+		order by create_time desc
+		limit #{offset}, #{size}
 	</select>
 
 	<!--电池分页-->
-	<select id="queryNotBindList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+	<!--<select id="queryNotBindList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
 		select b.id, b.sn,b.power, b.voltage, b.capacity, b.status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
-		b.uid,b.model,b.charge_status
+		b.model,b.charge_status
 		from t_electricity_battery b
 		where b.del_flag = 0 and b.tenant_id = #{tenantId}
 		and id not in(
@@ -53,9 +88,27 @@
 		     )
 		order by create_time desc
 		limit #{offset}, #{size}
+	</select>-->
+	<select id="queryNotBindList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn,power, voltage, capacity, physics_status, create_time, update_time, del_flag, tenant_id, electricity_cabinet_id, model,charge_status
+		from t_electricity_battery
+		where del_flag = 0 and tenant_id = #{tenantId}
+		and (ISNULL(franchisee_id) || (LENGTH(trim(franchisee_id))=0) || franchisee_id=0)
+		order by create_time desc
+		limit #{offset}, #{size}
 	</select>
 
-	<select id="queryCount" resultType="java.lang.Integer">
+	<select id="queryBindList" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn,power, voltage, capacity, physics_status, create_time, update_time, del_flag, tenant_id, electricity_cabinet_id, model,charge_status
+		from t_electricity_battery
+		where del_flag = 0
+		and tenant_id = #{tenantId}
+		and franchisee_id = #{franchiseeId}
+		order by create_time desc
+		limit #{offset}, #{size}
+	</select>
+
+<!--	<select id="queryCount" resultType="java.lang.Integer">
 		select COUNT(1)
 		from t_electricity_battery b
 		where b.del_flag = 0
@@ -67,6 +120,9 @@
 		</if>
 		<if test="query.status != null">
 			and b.status =#{query.status}
+		</if>
+		<if test="query.businessStatus != null">
+			and b.business_status =#{query.businessStatus}
 		</if>
 		<if test="query.chargeStatus != null">
 			and b.charge_status =#{query.chargeStatus}
@@ -87,14 +143,44 @@
 		<if test="query.franchiseeName != null">
             and b.id in (select fbeb.electricity_battery_id from t_franchisee_bind_electricity_battery fbeb left join t_franchisee f on fbeb.franchisee_id = f.id where f.name like concat('%',#{query.franchiseeName},'%'))
 		</if>
+	</select>-->
+	<select id="queryCount" resultType="java.lang.Integer">
+		select COUNT(1)
+		from t_electricity_battery
+		where del_flag = 0
+		<if test="query.tenantId != null">
+			and tenant_id =#{query.tenantId}
+		</if>
+		<if test="query.sn != null and query.sn !=''">
+			and sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="query.physicsStatus != null">
+			and physics_status =#{query.physicsStatus}
+		</if>
+		<if test="query.businessStatus != null">
+			and business_status =#{query.businessStatus}
+		</if>
+		<if test="query.chargeStatus != null">
+			and charge_status =#{query.chargeStatus}
+		</if>
+		<if test="query.tenantId != null">
+			and tenant_id = #{query.tenantId}
+		</if>
+		<if test="query.electricityCabinetName != null">
+			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
+		</if>
+		<if test="query.franchiseeId != null">
+			and franchisee_id =#{query.franchiseeId}
+		</if>
+		<if test="query.franchiseeName != null and '' != query.franchiseeName">
+			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
+		</if>
 	</select>
-
-
 
 	<select id="selectBatteryInfo" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
         select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
-        teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
-        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid,
+        teb.capacity as capacity,teb.physics_status as physicsStatus ,teb.business_status as businessStatus, teb.create_time as createTime, teb.update_time as updateTime,
+        teb.electricity_cabinet_id as electricityCabinetId,
         tbop.battery_v as battery_v, tbop.battery_charge_a as battery_charge_a,
         tbop.sum_v as sum_v, tbop.sum_a as sum_a
         FROM t_electricity_battery as teb
@@ -102,12 +188,12 @@
         WHERE teb.uid = #{uid} and teb.del_flag = 0
     </select>
 
-
 	<select id="selectBatteryDetailInfoBySN" resultType="com.xiliulou.electricity.vo.ElectricityBatteryVO">
         select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
-        teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
-        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid,teb.charge_status as chargeStatus,
-        tbop.battery_v as batteryV,tbop.battery_charge_a as batteryChargeA
+        teb.capacity as capacity,teb.physics_status as physicsStatus ,teb.business_status as businessStatus, teb.create_time as createTime, teb.update_time as updateTime,
+        teb.electricity_cabinet_id as electricityCabinetId,teb.charge_status as chargeStatus,
+        tbop.battery_v as batteryV,tbop.battery_charge_a as batteryChargeA,
+        tbop.sum_v as sum_v, tbop.sum_a as sum_a
         FROM t_electricity_battery as teb
         left join t_battery_other_properties as tbop on teb.sn=tbop.battery_name
         WHERE teb.sn = #{sn} and teb.del_flag = 0
@@ -115,9 +201,9 @@
 
 
 	<select id="queryBorrowExpireBattery" resultMap="queryBorrowExpireBatteryMap">
-        select b.sn, b.electricity_cabinet_name, b.borrow_expire_time, u.name, u.phone, b.status, b.tenant_id
+        select b.sn, b.electricity_cabinet_name, b.borrow_expire_time, u.name, u.phone, b.physics_status, b.tenant_id
         FROM t_electricity_battery b left join t_user_info u on b.uid = u.uid
-        WHERE b.borrow_expire_time &lt; #{curTime} and b.del_flag = 0 and b.status in(2,3,4) limit #{offset}, #{size}
+        WHERE b.borrow_expire_time &lt; #{curTime} and b.del_flag = 0 and b.physics_status in(2,3,4) limit #{offset}, #{size}
     </select>
 	<resultMap id="queryBorrowExpireBatteryMap" type="com.xiliulou.electricity.vo.BorrowExpireBatteryVo">
 		<result column="sn" property="sn"></result>
@@ -131,18 +217,17 @@
 
 
 	<select id="queryLowBattery" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select sn, tenant_id, uid , power from t_electricity_battery where power &lt; #{batteryLevel} and status = 2 limit #{offset}, #{size}
+		select sn, tenant_id,uid, power from t_electricity_battery where power &lt; #{batteryLevel} and business_status = 2 limit #{offset}, #{size}
     </select>
 
 	<select id="queryByUid" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select teb.id as id, teb.sn as sn,teb.power as power, teb.voltage as voltage,
-        teb.capacity as capacity,teb.status as status, teb.create_time as createTime, teb.update_time as updateTime,
-        teb.electricity_cabinet_id as electricityCabinetId,teb.uid as uid
+		select id, sn, power, voltage, capacity, physics_status, business_status, create_time, update_time, electricity_cabinet_id, uid
         FROM t_electricity_battery as teb
-        WHERE teb.uid = #{uid} and teb.del_flag = 0
+        WHERE teb.uid = #{uid} and teb.del_flag = 0 order by create_time DESC limit 1
 	</select>
 
-	<update id="updateByOrder">
+
+	<update id="updateBatteryById">
 		update t_electricity_battery
 		set
 		<if test="chargeStatus != null">
@@ -160,16 +245,62 @@
 		<if test="exchangeCount != null">
 			exchange_count =#{exchangeCount},
 		</if>
+		<if test="physicsStatus != null">
+			physics_status =#{physicsStatus},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
+		<if test="electricityCabinetName != null and electricityCabinetName !=''">
+			electricity_cabinet_name=#{electricityCabinetName},
+		</if>
+		<if test="electricityCabinetId != null">
+			electricity_cabinet_id=#{electricityCabinetId},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
+		<if test="updateTime != null">
+			update_time=#{updateTime},
+		</if>
+		where id=#{id}
+	</update>
+
+	<update id="updateBatteryUser">
+		update t_electricity_battery
+		set
+		<if test="chargeStatus != null">
+			charge_status =#{chargeStatus},
+		</if>
+		<if test="healthStatus != null">
+			health_status =#{healthStatus},
+		</if>
+		<if test="power != null">
+			power =#{power},
+		</if>
+		<if test="model != null">
+			model =#{model},
+		</if>
+		<if test="exchangeCount != null">
+			exchange_count =#{exchangeCount},
+		</if>
+		<if test="physicsStatus != null">
+			physics_status =#{physicsStatus},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
-		uid=#{uid},status=#{status},
-		last_deposit_cell_no=#{lastDepositCellNo},
-		borrow_expire_time=#{borrowExpireTime},
+		uid=#{uid},
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>
 
-	<update id="updateByOrderV2">
+	<update id="updateBatteryStatus">
 		update t_electricity_battery
 		set
 		<if test="chargeStatus != null">
@@ -187,17 +318,23 @@
 		<if test="exchangeCount != null">
 			exchange_count =#{exchangeCount},
 		</if>
+		<if test="physicsStatus != null">
+			physics_status =#{physicsStatus},
+		</if>
+		<if test="businessStatus != null">
+			business_status=#{businessStatus},
+		</if>
+		<if test="borrowExpireTime != null">
+			borrow_expire_time=#{borrowExpireTime},
+		</if>
 		electricity_cabinet_name=#{electricityCabinetName},
 		electricity_cabinet_id=#{electricityCabinetId},
-		status=#{status},
-		last_deposit_cell_no=#{lastDepositCellNo},
-		borrow_expire_time=#{borrowExpireTime},
 		update_time=#{updateTime}
 		where id=#{id}
 	</update>
 
 	<select id="homepageBatteryAnalysis" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">
-       select sn,exchange_count as useCount,status from t_electricity_battery b
+       select sn,exchange_count as useCount,physics_status from t_electricity_battery b
        where b.del_flag = 0
 		<if test="query.tenantId != null">
 			and b.tenant_id =#{query.tenantId}
@@ -219,7 +356,7 @@
     </select>
 
 	<select id="homepageBatteryAnalysisCount" resultType="com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo">
-		select sn,exchange_count as useCount,status from t_electricity_battery b
+		select sn,exchange_count as useCount,physics_status from t_electricity_battery b
 		where b.del_flag = 0
 		<if test="query.tenantId != null">
 			and b.tenant_id =#{query.tenantId}
@@ -238,16 +375,54 @@
 		</if>
 	</select>
 
+	<!--电池解绑加盟商id-->
+	<update id="unbindFranchiseeId">
+		update t_electricity_battery
+		set
+		tenant_id=#{updateBattery.tenantId},
+		franchisee_id=#{updateBattery.franchiseeId},
+		update_time=#{updateBattery.updateTime}
+		where franchisee_id=#{franchiseeId}
+	</update>
+
+
+	<!--电池绑定加盟商id-->
+	<update id="bindFranchiseeId">
+		update t_electricity_battery
+		set
+		franchisee_id=#{batteryQuery.franchiseeId}
+		where  id in
+		<foreach collection="batteryQuery.electricityBatteryIdList" item="id" index="index" open="(" close=")"
+				 separator=",">
+			#{id}
+		</foreach>
+	</update>
+
+
+	<select id="selectByBatteryIds" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn,power, voltage, capacity, physics_status , business_status, create_time, update_time, del_flag, tenant_id, electricity_cabinet_id,
+		model, charge_status, iot_card_number, franchisee_id
+		from t_electricity_battery
+		where del_flag = 0
+		and id in
+		<foreach collection="batteryIds" item="id" index="index" open="(" close=")"
+				 separator=",">
+			#{id}
+		</foreach>
+	</select>
 	<select id="queryBatteryOverview" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
-		select b.id, b.sn,b.power, b.voltage, b.capacity, b.status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
+		select b.id, b.sn,b.power, b.voltage, b.capacity, b.physics_status , b.business_status, b.create_time, b.update_time, b.del_flag, b.tenant_id, b.electricity_cabinet_id,
 		b.uid,b.model,b.charge_status,b.iot_card_number,b.longitude,b.latitude
 		from t_electricity_battery b
 		where b.del_flag = 0 and b.tenant_id = #{query.tenantId}
 		<if test="query.sn != null and query.sn !=''">
 			and b.sn like concat('%',#{query.sn,jdbcType=VARCHAR},'%')
 		</if>
-		<if test="query.status != null">
-			and b.status =#{query.status}
+		<if test="query.physicsStatus != null">
+			and b.physics_status =#{query.physicsStatus}
+		</if>
+		<if test="query.businessStatus != null">
+			and b.business_status =#{query.businessStatus}
 		</if>
 		order by create_time desc
 	</select>
@@ -261,6 +436,25 @@
  				sum(CASE WHEN status = 4 THEN 1 ELSE 0 END) exceptionFreeCount
  		FROM t_electricity_battery  where tenant_id=#{tenantId} and del_flag=0;
 	</select>
-
+	
+	
+	<select id="selectBatteryInfoByBatteryName" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn
+		from t_electricity_battery
+		where del_flag = 0
+		<if test="sn != null and sn !=''">
+			and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="physicsStatus != null">
+			and physics_status =#{physicsStatus}
+		</if>
+		<if test="businessStatus != null">
+			and business_status =#{businessStatus}
+		</if>
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		limit #{offset}, #{size}
+	</select>
 
 </mapper>

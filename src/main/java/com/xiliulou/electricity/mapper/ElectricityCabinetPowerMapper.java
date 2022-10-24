@@ -3,6 +3,7 @@ package com.xiliulou.electricity.mapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.xiliulou.electricity.entity.ElectricityCabinetPower;
+import com.xiliulou.electricity.vo.ElectricityCabinetPowerVo;
 import java.util.List;
 import java.util.Map;
 
@@ -28,5 +29,7 @@ public interface ElectricityCabinetPowerMapper  extends BaseMapper<ElectricityCa
     @SelectKey(keyProperty = "id", statement = "select LAST_INSERT_ID()", before = false, resultType = Long.class)
     int insertOrUpdate(ElectricityCabinetPower electricityCabinetPower);
 
-    List<Map<String,Object>> queryList(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+    List<ElectricityCabinetPowerVo> queryList(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
+
+    ElectricityCabinetPowerVo queryLatestPower(@Param("query") ElectricityCabinetPowerQuery electricityCabinetPowerQuery);
 }

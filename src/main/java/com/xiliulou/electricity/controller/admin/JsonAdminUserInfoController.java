@@ -2,15 +2,18 @@ package com.xiliulou.electricity.controller.admin;
 
 import cn.hutool.core.util.ObjectUtil;
 import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.entity.UserMoveHistory;
 import com.xiliulou.electricity.query.RentBatteryOrderQuery;
 import com.xiliulou.electricity.query.UserInfoBatteryAddAndUpdate;
 import com.xiliulou.electricity.query.UserInfoQuery;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
 import com.xiliulou.electricity.service.UserInfoService;
 import com.xiliulou.electricity.service.UserTypeFactory;
 import com.xiliulou.electricity.service.UserTypeService;
@@ -34,7 +37,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @RestController
 @Slf4j
-public class JsonAdminUserInfoController {
+public class JsonAdminUserInfoController extends BaseController {
     /**
      * 服务对象
      */
@@ -42,7 +45,10 @@ public class JsonAdminUserInfoController {
     UserInfoService userInfoService;
     @Autowired
     RedisService redisService;
-    @Autowired UserTypeFactory userTypeFactory;
+    @Autowired
+    UserTypeFactory userTypeFactory;
+    @Autowired
+    FranchiseeUserInfoService franchiseeUserInfoService;
 
     //列表查询
     @GetMapping(value = "/admin/userInfo/list")
@@ -50,7 +56,7 @@ public class JsonAdminUserInfoController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                       @RequestParam(value = "batteryId",required = false) Long batteryId,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -67,16 +73,13 @@ public class JsonAdminUserInfoController {
         if (offset < 0) {
             offset = 0L;
         }
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .batteryId(batteryId)
                 .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
@@ -86,7 +89,7 @@ public class JsonAdminUserInfoController {
                 .sortType(sortType)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -154,7 +157,7 @@ public class JsonAdminUserInfoController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-                        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                        @RequestParam(value = "batteryId",required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "cardName",required = false) String cardName,
                         @RequestParam(value = "memberCardId",required = false) Long memberCardId,
@@ -171,7 +174,7 @@ public class JsonAdminUserInfoController {
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .cardName(cardName)
                 .uid(uid)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .batteryId(batteryId)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
@@ -203,6 +206,17 @@ public class JsonAdminUserInfoController {
     public R deleteOrderCache(@RequestParam("uid") Long uid) {
         redisService.delete(CacheConstant.ORDER_TIME_UID + uid);
         return R.ok();
+    }
+
+    /**
+     * 更新用户服务状态
+     * @param uid
+     * @param serviceStatus
+     * @return
+     */
+    @PutMapping(value = "/admin/userInfo/serviceStatus")
+    public R updateServiceStatus(@RequestParam("uid") Long uid,@RequestParam("serviceStatus") Integer serviceStatus){
+        return returnTripleResult(franchiseeUserInfoService.updateServiceStatus(uid,serviceStatus));
     }
 
     //列表查询
@@ -307,6 +321,14 @@ public class JsonAdminUserInfoController {
     @GetMapping(value = "/admin/queryUserAllConsumption/{id}")
     public R queryUserAllConsumption(@PathVariable("id") Long id){
         return userInfoService.queryUserAllConsumption(id);
+    }
+
+    /**
+     * 会员列表删除
+     */
+    @DeleteMapping(value = "/admin/userInfo/{uid}")
+    public R deleteUserInfo(@PathVariable("uid") Long uid) {
+        return userInfoService.deleteUserInfo(uid);
     }
 
 }
