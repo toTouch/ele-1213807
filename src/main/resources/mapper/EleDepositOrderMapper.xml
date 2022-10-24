@@ -228,6 +228,9 @@
         <if test="franchiseeId != null">
             and franchisee_id = #{franchiseeId}
         </if>
+        <if test="depositType != null">
+            and deposit_type = #{depositType}
+        </if>
         ORDER BY id DESC limit 1
     </select>
 

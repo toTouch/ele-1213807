@@ -156,4 +156,7 @@ public interface ElectricityCabinetService {
     R closeOtaUpgradeSession(String sessionId);
 
     R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery);
+    
+    
+    R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery);
 }

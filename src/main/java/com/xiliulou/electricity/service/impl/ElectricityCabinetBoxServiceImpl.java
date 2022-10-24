@@ -147,10 +147,12 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
                 .eq(ElectricityCabinetBox::getStatus, ElectricityCabinetBox.STATUS_NO_ELECTRICITY_BATTERY).eq(ElectricityCabinetBox::getDelFlag, ElectricityCabinetBox.DEL_NORMAL)
                 .eq(ElectricityCabinetBox::getUsableStatus, ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE));
     }
-
+    
     @Override
-    public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo, String batteryType) {
-        return electricityCabinetBoxMapper.queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType);
+    public List<ElectricityCabinetBox> queryElectricityBatteryBox(ElectricityCabinet electricityCabinet, String cellNo,
+            String batteryType, Double fullCharged) {
+        return electricityCabinetBoxMapper
+                .queryElectricityBatteryBox(electricityCabinet.getId(), cellNo, batteryType, fullCharged);
     }
 
     @Override

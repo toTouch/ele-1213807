@@ -110,7 +110,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         if(Objects.nonNull(templateConfigEntity)){
             result.add(templateConfigEntity.getBatteryOuttimeTemplate());
             result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
-            result.add(templateConfigEntity.getMemberCardExpiringTemplate());
+            //result.add(templateConfigEntity.getMemberCardExpiringTemplate());
         }
 
         return R.ok(result);

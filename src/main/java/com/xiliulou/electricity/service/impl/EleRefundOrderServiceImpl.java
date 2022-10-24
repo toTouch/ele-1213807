@@ -451,7 +451,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
             return R.fail("ELECTRICITY.0042", "未缴纳押金");
         }
 
-        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId());
+        EleDepositOrder eleDepositOrder = eleDepositOrderService.queryLastPayDepositTimeByUid(uid, franchiseeUserInfo.getFranchiseeId(), userInfo.getTenantId(),EleDepositOrder.ELECTRICITY_DEPOSIT);
         return R.ok(eleDepositOrder.getPayType());
     }
 
@@ -492,7 +492,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //退款中
         Integer refundStatus = eleRefundOrderService.queryStatusByOrderId(franchiseeUserInfo.getOrderId());
-        if (Objects.nonNull(refundStatus) && Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)) {
+        if (Objects.nonNull(refundStatus) && (Objects.equals(refundStatus, EleRefundOrder.STATUS_REFUND)  || Objects.equals(refundStatus,EleRefundOrder.STATUS_INIT))) {
             log.error("battery deposit OffLine Refund ERROR ,Inconsistent refund amount uid:{}", uid);
             return R.fail("ELECTRICITY.0051", "押金正在退款中，请勿重复提交");
         }
@@ -527,7 +527,7 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
         updateFranchiseeUserInfo.setUserInfoId(franchiseeUserInfo.getUserInfoId());
 
-        if (Objects.equals(refundType, EleDepositOrder.OFFLINE_PAYMENT)) {
+        if (Objects.equals(eleDepositOrder.getPayType(), EleDepositOrder.OFFLINE_PAYMENT)) {
             //生成退款订单
 
             eleRefundOrder.setRefundAmount(refundAmount);

@@ -185,7 +185,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects
                         .equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService
-                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId());
+                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(),null);
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
                     }
@@ -1069,7 +1069,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId));
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
     }
 
     @Override

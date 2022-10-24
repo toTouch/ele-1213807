@@ -62,8 +62,33 @@ public class JsonAdminElectricityCabinetBoxController {
                 .electricityCabinetId(electricityCabinetId)
                 .tenantId(tenantId).build();
 
-        return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
-    }
+		return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+	}
+	
+	
+	//列表查询
+	@GetMapping(value = "/admin/electricityCabinetBox/list/super")
+	public R queryListSuper(@RequestParam("size") Long size,
+			@RequestParam("offset") Long offset,
+			@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+		
+		if (offset < 0) {
+			offset = 0L;
+		}
+		
+		
+		
+		ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
+				.offset(offset)
+				.size(size)
+				.electricityCabinetId(electricityCabinetId)
+				.tenantId(null).build();
+		
+		return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+	}
 
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")

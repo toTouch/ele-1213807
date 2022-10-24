@@ -129,15 +129,43 @@ public class NormalNewExchangeOrderHandlerIot extends AbstractElectricityIotHand
         //查看用户是否有以前绑定的电池
         ElectricityBattery oldElectricityBattery = electricityBatteryService.queryByUid(electricityCabinetOrder.getUid());
         if (Objects.nonNull(oldElectricityBattery)) {
-            ElectricityBattery newElectricityBattery = new ElectricityBattery();
-            newElectricityBattery.setId(oldElectricityBattery.getId());
-            newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
-            newElectricityBattery.setUid(null);
-            newElectricityBattery.setBorrowExpireTime(null);
-            newElectricityBattery.setElectricityCabinetId(null);
-            newElectricityBattery.setElectricityCabinetName(null);
-            newElectricityBattery.setUpdateTime(System.currentTimeMillis());
-            electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            //如果放入的电池与用户绑定的电池不一致
+            if (!Objects.equals(oldElectricityBattery.getSn(), exchangeOrderRsp.getPlaceBatteryName())) {
+                //更新用户绑定的电池状态
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(oldElectricityBattery.getId());
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_EXCEPTION);
+                newElectricityBattery.setUid(null);
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+    
+                //更新放入电池的状态
+                ElectricityBattery placeBattery = electricityBatteryService.queryBySn(exchangeOrderRsp.getPlaceBatteryName());
+                if(Objects.nonNull(placeBattery)){
+                    ElectricityBattery updateBattery = new ElectricityBattery();
+                    updateBattery.setId(placeBattery.getId());
+                    updateBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+                    updateBattery.setUid(null);
+                    updateBattery.setBorrowExpireTime(null);
+                    updateBattery.setElectricityCabinetId(null);
+                    updateBattery.setElectricityCabinetName(null);
+                    updateBattery.setUpdateTime(System.currentTimeMillis());
+                    electricityBatteryService.updateBatteryUser(updateBattery);
+                }
+                
+            } else {
+                ElectricityBattery newElectricityBattery = new ElectricityBattery();
+                newElectricityBattery.setId(oldElectricityBattery.getId());
+                newElectricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_RETURN);
+                newElectricityBattery.setUid(null);
+                newElectricityBattery.setBorrowExpireTime(null);
+                newElectricityBattery.setElectricityCabinetId(null);
+                newElectricityBattery.setElectricityCabinetName(null);
+                newElectricityBattery.setUpdateTime(System.currentTimeMillis());
+                electricityBatteryService.updateBatteryUser(newElectricityBattery);
+            }
         }
 
 
