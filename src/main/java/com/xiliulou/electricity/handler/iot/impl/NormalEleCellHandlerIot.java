@@ -89,10 +89,12 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         if (Objects.nonNull(cellVoLockType)) {
             electricityCabinetBox.setLockType(cellVoLockType);
         }
-        
-        Float version = eleCellVo.getVersion();
+    
+        String version =
+                Objects.isNull(eleCellVo.getVersion()) || "null".equalsIgnoreCase(eleCellVo.getVersion()) ? null
+                        : eleCellVo.getVersion();
         if (Objects.nonNull(version)) {
-            electricityCabinetBox.setVersion(String.valueOf(version));
+            electricityCabinetBox.setVersion(version);
         }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
 
@@ -119,7 +121,7 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         private Integer lockType;
 
         //子板版本号
-        private Float version;
+        private String version;
     }
 }
 
