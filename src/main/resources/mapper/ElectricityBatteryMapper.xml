@@ -65,7 +65,7 @@
 			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
 		</if>
 		<if test="query.franchiseeId != null">
-			and franchisee_id =#{franchiseeId}
+			and franchisee_id =#{query.franchiseeId}
 		</if>
 		<if test="query.franchiseeName != null and '' != query.franchiseeName">
 			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
@@ -170,7 +170,7 @@
 			and electricity_cabinet_name like  concat('%',#{query.electricityCabinetName},'%')
 		</if>
 		<if test="query.franchiseeId != null">
-			and franchisee_id =#{franchiseeId}
+			and franchisee_id =#{query.franchiseeId}
 		</if>
 		<if test="query.franchiseeName != null and '' != query.franchiseeName">
 			and franchisee_id in (select id from t_franchisee where name like concat('%',#{query.franchiseeName},'%'))
@@ -436,6 +436,25 @@
  				sum(CASE WHEN status = 4 THEN 1 ELSE 0 END) exceptionFreeCount
  		FROM t_electricity_battery  where tenant_id=#{tenantId} and del_flag=0;
 	</select>
-
+	
+	
+	<select id="selectBatteryInfoByBatteryName" resultType="com.xiliulou.electricity.entity.ElectricityBattery">
+		select id, sn
+		from t_electricity_battery
+		where del_flag = 0
+		<if test="sn != null and sn !=''">
+			and sn like concat('%',#{sn,jdbcType=VARCHAR},'%')
+		</if>
+		<if test="physicsStatus != null">
+			and physics_status =#{physicsStatus}
+		</if>
+		<if test="businessStatus != null">
+			and business_status =#{businessStatus}
+		</if>
+		<if test="tenantId != null">
+			and tenant_id = #{tenantId}
+		</if>
+		limit #{offset}, #{size}
+	</select>
 
 </mapper>

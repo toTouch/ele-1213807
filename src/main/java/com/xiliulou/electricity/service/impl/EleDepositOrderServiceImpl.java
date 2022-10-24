@@ -838,9 +838,10 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
             }
         }
 
+        String nowBattery="";
         ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(user.getUid());
-        if (Objects.isNull(electricityBattery)) {
-            log.error("ELE ERROR! not found user bind battery,uid={}", user.getUid());
+        if (!Objects.isNull(electricityBattery)) {
+            nowBattery=electricityBattery.getSn();
         }
 
 
@@ -860,7 +861,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .franchiseeId(franchisee.getId())
                 .modelType(franchisee.getModelType())
                 .batteryType(franchiseeUserInfo.getBatteryType())
-                .sn(Optional.ofNullable(electricityBattery.getSn()).orElse(""))
+                .sn(nowBattery)
                 .batteryServiceFee(batteryServiceFee).build();
         eleBatteryServiceFeeOrderMapper.insert(eleBatteryServiceFeeOrder);
 
@@ -1279,8 +1280,8 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
     }
 
     @Override
-    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId) {
-        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId);
+    public EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType) {
+        return eleDepositOrderMapper.queryLastPayDepositTimeByUid(uid, franchiseeId, tenantId,depositType);
     }
 
 

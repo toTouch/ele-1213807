@@ -56,7 +56,7 @@ public class JsonAdminUserInfoController extends BaseController {
                        @RequestParam("offset") Long offset,
                        @RequestParam(value = "name", required = false) String name,
                        @RequestParam(value = "phone", required = false) String phone,
-                       @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                       @RequestParam(value = "batteryId",required = false) Long batteryId,
                        @RequestParam(value = "authStatus", required = false) Integer authStatus,
                        @RequestParam(value = "serviceStatus", required = false) Integer serviceStatus,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId,
@@ -73,16 +73,13 @@ public class JsonAdminUserInfoController extends BaseController {
         if (offset < 0) {
             offset = 0L;
         }
-
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
+        
         UserInfoQuery userInfoQuery = UserInfoQuery.builder()
                 .offset(offset)
                 .size(size)
                 .name(name)
                 .phone(phone)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .batteryId(batteryId)
                 .franchiseeId(franchiseeId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)
@@ -92,7 +89,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .sortType(sortType)
                 .memberCardId(memberCardId)
                 .cardName(cardName)
-                .tenantId(tenantId).build();
+                .tenantId(TenantContextHolder.getTenantId()).build();
 
         return userInfoService.queryList(userInfoQuery);
     }
@@ -160,7 +157,7 @@ public class JsonAdminUserInfoController extends BaseController {
                         @RequestParam(value = "phone", required = false) String phone,
                         @RequestParam(value = "memberCardExpireTimeBegin", required = false) Long memberCardExpireTimeBegin,
                         @RequestParam(value = "memberCardExpireTimeEnd", required = false) Long memberCardExpireTimeEnd,
-                        @RequestParam(value = "nowElectricityBatterySn",required = false) String nowElectricityBatterySn,
+                        @RequestParam(value = "batteryId",required = false) Long batteryId,
                         @RequestParam(value = "uid", required = false) Long uid,
                         @RequestParam(value = "cardName",required = false) String cardName,
                         @RequestParam(value = "memberCardId",required = false) Long memberCardId,
@@ -177,7 +174,7 @@ public class JsonAdminUserInfoController extends BaseController {
                 .memberCardExpireTimeEnd(memberCardExpireTimeEnd)
                 .cardName(cardName)
                 .uid(uid)
-                .nowElectricityBatterySn(nowElectricityBatterySn)
+                .batteryId(batteryId)
                 .memberCardId(memberCardId)
                 .authStatus(authStatus)
                 .serviceStatus(serviceStatus)

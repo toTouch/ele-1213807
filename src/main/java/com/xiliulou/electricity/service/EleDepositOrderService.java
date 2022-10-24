@@ -59,7 +59,7 @@ public interface EleDepositOrderService {
 
     R queryRentCarDeposit();
 
-    EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId);
+    EleDepositOrder queryLastPayDepositTimeByUid(Long uid, Long franchiseeId, Integer tenantId,Integer depositType);
 
     R adminPayBatteryDeposit(BatteryDepositAdd batteryDepositAdd);
 

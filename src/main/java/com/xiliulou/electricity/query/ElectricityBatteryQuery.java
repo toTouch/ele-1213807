@@ -12,8 +12,8 @@ import java.util.List;
 @Data
 @Builder
 public class ElectricityBatteryQuery {
-
-
+    private Long size;
+    private Long offset;
     /**
      * sn码
      */
