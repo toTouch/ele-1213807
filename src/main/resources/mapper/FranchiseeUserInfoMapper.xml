@@ -194,10 +194,11 @@
     </select>
 
     <select id="carMemberCardExpire" resultType="com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery">
-        select  fui.id, fui.card_name, fui.rent_car_member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id
+        select  fui.id, emc.name as card_name, fui.rent_car_member_card_expire_time, ui.uid, fui.tenant_id, uob.third_id
                 from t_franchisee_user_info fui
                 left join t_user_info ui on fui.user_info_id = ui.id
                 left join t_user_oauth_bind uob on uob.uid = ui.uid
+                left join t_electricity_member_card emc on fui.rent_car_card_id = emc.id
                 where fui.del_flag = 0
                 and fui.rent_car_member_card_expire_time &gt; #{firstTime}
                 and fui.rent_car_member_card_expire_time &lt;= #{lastTime}
