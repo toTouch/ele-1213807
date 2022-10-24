@@ -552,7 +552,7 @@ public class JsonAdminElectricityCabinetController {
     }
     
     
-    //核心板上报数据分页
+/*    //核心板上报数据分页
     @GetMapping(value = "/admin/electricityCabinet/core_data_list")
     public R queryEleCabinetCoreDataList(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
             @RequestParam(value = "id", required = false) Integer id) {
@@ -570,7 +570,7 @@ public class JsonAdminElectricityCabinetController {
         List<EleCabinetCoreData> eleCabinetCoreData = eleCabinetCoreDataService
                 .selectListByQuery(eleCabinetCoreDataQuery);
         return R.ok(eleCabinetCoreData);
-    }
+    }*/
     
     //核心板上报数据详情
     @GetMapping(value = "/admin/electricityCabinet/core_data_list/{electricityCabinetId}")

@@ -326,7 +326,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
 
-        int update = electricityCabinetMapper.updateById(electricityCabinet);
+        int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
 
             //更新缓存
@@ -363,7 +363,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setDelFlag(ElectricityCabinet.DEL_DEL);
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
-        int update = electricityCabinetMapper.updateById(electricityCabinet);
+        int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
 
             //删除缓存
@@ -676,7 +676,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setUsableStatus(usableStatus);
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
-        electricityCabinetMapper.updateById(electricityCabinet);
+        electricityCabinetMapper.updateEleById(electricityCabinet);
 
         //更新缓存
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
