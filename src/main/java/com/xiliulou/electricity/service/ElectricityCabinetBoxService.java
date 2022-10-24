@@ -24,7 +24,7 @@ public interface ElectricityCabinetBoxService {
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetBox queryByIdFromDB(Long id);
+    ElectricityCabinetBox queryByIdFromDB(Long id,Integer tenantId);
 
     void batchInsertBoxByModelId(ElectricityCabinetModel electricityCabinetModel, Integer id);
 

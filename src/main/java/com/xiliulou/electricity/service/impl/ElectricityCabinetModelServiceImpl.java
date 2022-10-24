@@ -1,9 +1,11 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
 import com.xiliulou.electricity.constant.CacheConstant;
+import com.xiliulou.electricity.entity.EleAuthEntry;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.entity.ElectricityCabinetModel;
 import com.xiliulou.electricity.mapper.ElectricityCabinetModelMapper;
@@ -16,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.util.Objects;
 
@@ -82,6 +85,10 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @Transactional
     public R edit(ElectricityCabinetModel electricityCabinetModel) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         if (Objects.isNull(electricityCabinetModel.getId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
@@ -89,12 +96,17 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         if (Objects.isNull(oldElectricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
+
+        if (!Objects.equals(tenantId, oldElectricityCabinetModel.getTenantId())) {
+            return R.ok();
+        }
+
         Integer count = electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
         if (count > 0) {
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
-        int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
+        int update = electricityCabinetModelMapper.update(electricityCabinetModel,new LambdaQueryWrapper<ElectricityCabinetModel>().eq(ElectricityCabinetModel::getId,electricityCabinetModel.getId()).eq(ElectricityCabinetModel::getTenantId,tenantId));
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
@@ -106,10 +118,19 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
     @Override
     @Transactional
     public R delete(Integer id) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityCabinetModel electricityCabinetModel = queryByIdFromCache(id);
         if (Objects.isNull(electricityCabinetModel)) {
             return R.fail("ELECTRICITY.0004", "未找到换电柜型号");
         }
+
+        if (!Objects.equals(tenantId, electricityCabinetModel.getTenantId())) {
+            return R.ok();
+        }
+
         Integer count = electricityCabinetService.queryByModelId(electricityCabinetModel.getId());
         if (count > 0) {
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
@@ -118,7 +139,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
-        int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
+        int update = electricityCabinetModelMapper.update(electricityCabinetModel,new LambdaQueryWrapper<ElectricityCabinetModel>().eq(ElectricityCabinetModel::getId,electricityCabinetModel.getId()).eq(ElectricityCabinetModel::getTenantId,tenantId));
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);

@@ -62,43 +62,48 @@ public class JsonAdminElectricityCabinetBoxController {
                 .electricityCabinetId(electricityCabinetId)
                 .tenantId(tenantId).build();
 
-		return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
-	}
-	
-	
-	//列表查询
-	@GetMapping(value = "/admin/electricityCabinetBox/list/super")
-	public R queryListSuper(@RequestParam("size") Long size,
-			@RequestParam("offset") Long offset,
-			@RequestParam("electricityCabinetId") Integer electricityCabinetId) {
-		if (size < 0 || size > 50) {
-			size = 10L;
-		}
-		
-		if (offset < 0) {
-			offset = 0L;
-		}
-		
-		
-		
-		ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
-				.offset(offset)
-				.size(size)
-				.electricityCabinetId(electricityCabinetId)
-				.tenantId(null).build();
-		
-		return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
-	}
+        return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+    }
+
+
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinetBox/list/super")
+    public R queryListSuper(@RequestParam("size") Long size,
+                            @RequestParam("offset") Long offset,
+                            @RequestParam("electricityCabinetId") Integer electricityCabinetId) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
+                .offset(offset)
+                .size(size)
+                .electricityCabinetId(electricityCabinetId)
+                .tenantId(tenantId).build();
+
+        return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
+    }
 
     //更改可用状态
     @PostMapping(value = "/admin/electricityCabinetBox/updateUsableStatus")
     public R updateUsableStatus(@RequestBody UpdateUsableStatusQuery updateUsableStatusQuery) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         if (Objects.isNull(updateUsableStatusQuery.getId())
                 || Objects.isNull(updateUsableStatusQuery.getUsableStatus())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
 
-        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateUsableStatusQuery.getId());
+        ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateUsableStatusQuery.getId(), tenantId);
         if (Objects.isNull(oldElectricityCabinetBox)) {
             return R.fail("ELECTRICITY.0006", "未找到此仓门");
         }
@@ -106,6 +111,10 @@ public class JsonAdminElectricityCabinetBoxController {
         ElectricityCabinet electricityCabinet = electricityCabinetService.queryByIdFromCache(oldElectricityCabinetBox.getElectricityCabinetId());
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        if (!Objects.equals(tenantId, electricityCabinet.getTenantId())) {
+            return R.ok();
         }
 
         //换电柜是否在线
@@ -143,6 +152,9 @@ public class JsonAdminElectricityCabinetBoxController {
     @PostMapping(value = "/admin/electricityCabinetBox/updateBoxesStatus")
     public R updateBoxesStatus(@RequestBody UpdateBoxesStatusQuery updateBoxesStatusQuery) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         if (Objects.isNull(updateBoxesStatusQuery.getElectricityCabinetId())
                 || Objects.isNull(updateBoxesStatusQuery.getUsableStatus())
                 || ObjectUtil.isEmpty(updateBoxesStatusQuery.getUpdateBoxesQueryList())) {
@@ -154,6 +166,10 @@ public class JsonAdminElectricityCabinetBoxController {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
 
+		if (!Objects.equals(tenantId, electricityCabinet.getTenantId())) {
+			return R.ok();
+		}
+
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
         if (!eleResult) {
@@ -164,7 +180,7 @@ public class JsonAdminElectricityCabinetBoxController {
         List<String> cellList = new ArrayList<>();
         for (UpdateBoxesQuery updateBoxesQuery : updateBoxesStatusQuery.getUpdateBoxesQueryList()) {
 
-            ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateBoxesQuery.getId());
+            ElectricityCabinetBox oldElectricityCabinetBox = electricityCabinetBoxService.queryByIdFromDB(updateBoxesQuery.getId(), tenantId);
             if (Objects.isNull(oldElectricityCabinetBox)) {
                 return R.fail("ELECTRICITY.0006", "未找到此仓门");
             }
