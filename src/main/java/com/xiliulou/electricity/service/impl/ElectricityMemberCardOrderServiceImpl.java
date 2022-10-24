@@ -1160,7 +1160,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 //        if (Objects.nonNull(oldFranchiseeUserInfo.getMemberCardExpireTime()) && ((oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24) == memberCardOrderAddAndUpdate.getValidDays()) {
 //            memberCardExpireTime = oldFranchiseeUserInfo.getMemberCardExpireTime();
 //        }
-        if (Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
+        Long now = System.currentTimeMillis();
+        if (memberCardExpireTime <= now || Objects.equals(memberCardOrderAddAndUpdate.getMaxUseCount(), MemberCardOrderAddAndUpdate.ZERO_USER_COUNT) || Objects.nonNull(memberCardOrderAddAndUpdate.getValidDays()) && Objects.equals(memberCardOrderAddAndUpdate.getValidDays(), MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) && (oldFranchiseeUserInfo.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000 / 60 / 60 / 24 != MemberCardOrderAddAndUpdate.ZERO_VALIdDAY_MEMBER_CARD) {
             remainingNumber = MemberCardOrderAddAndUpdate.ZERO_USER_COUNT;
             memberCardExpireTime = System.currentTimeMillis();
         }
@@ -1177,7 +1178,6 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
 
         franchiseeUserInfoService.updateMemberCardExpire(franchiseeUserInfoUpdate);
 
-        Long now = System.currentTimeMillis();
         Double oldCardDay = 0.0;
         if (oldFranchiseeUserInfo.getMemberCardExpireTime() - now > 0) {
             oldCardDay = Math.ceil((oldFranchiseeUserInfo.getMemberCardExpireTime() - now) / 1000L / 60 / 60 / 24.0);
