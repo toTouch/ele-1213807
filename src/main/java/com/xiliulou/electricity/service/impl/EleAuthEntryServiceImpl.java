@@ -5,8 +5,10 @@ import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.mapper.EleAuthEntryMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,6 +53,10 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
 
     @Override
     public R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
             if (ObjectUtil.isEmpty(eleAuthEntry.getId())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
@@ -59,7 +65,7 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
-            eleAuthEntryMapper.updateById(eleAuthEntry);
+            eleAuthEntryMapper.update(eleAuthEntry,new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getId,eleAuthEntry.getId()).eq(EleAuthEntry::getTenantId,tenantId));
             redisService.delete(CacheConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
         }
         return R.ok();

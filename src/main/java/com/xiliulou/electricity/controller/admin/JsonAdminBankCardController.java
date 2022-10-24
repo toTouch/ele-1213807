@@ -65,8 +65,12 @@ public class JsonAdminBankCardController {
 	public R queryCount(@RequestParam(value = "uid", required = false) Long uid,
 			@RequestParam(value = "encBindUserName", required = false) String encBindUserName) {
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		BankCardQuery bankCardQuery = BankCardQuery.builder()
 				.uid(uid)
+				.tenantId(tenantId)
 				.encBindUserName(encBindUserName).build();
 
 		return bankCardService.queryCount(bankCardQuery);
@@ -78,7 +82,9 @@ public class JsonAdminBankCardController {
 	 */
 	@DeleteMapping("/admin/bankcard/unBindByWeb")
 	public R unBindByWeb(@RequestParam("id") Integer id) {
-		return bankCardService.unBindByWeb(id);
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+		return bankCardService.unBindByWeb(id,tenantId);
 	}
 
 }

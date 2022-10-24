@@ -21,7 +21,7 @@
         te.battery_service_fee , te.battery_service_fee_generate_time, tf.model_battery_deposit,
         tf.name as franchisee_name FROM
         t_ele_battery_service_fee_order te left join t_franchisee tf on te.franchisee_id = tf.id
-        WHERE te.uid =#{uid}
+        WHERE te.uid =#{uid} and te.tenant_id=#{tenantId}
         <if test="status != null">
             and te.status =#{status}
         </if>
