@@ -46,7 +46,7 @@ public interface FranchiseeService {
 
 	R queryByTenantId(Integer tenantId);
 
-	R queryByCabinetId(Integer cabinetId);
+	R queryByCabinetId(Integer id, Integer cabinetId);
 
 
 

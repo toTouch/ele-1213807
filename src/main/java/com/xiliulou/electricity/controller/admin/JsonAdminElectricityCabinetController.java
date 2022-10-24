@@ -404,6 +404,10 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+    
+        if (!Objects.equals(electricityCabinet.getTenantId(), TenantContextHolder.getTenantId())) {
+            return R.ok();
+        }
         
         //换电柜是否在线
         boolean eleResult = electricityCabinetService.deviceIsOnline(electricityCabinet.getProductKey(),
@@ -479,6 +483,11 @@ public class JsonAdminElectricityCabinetController {
         if (Objects.isNull(electricityCabinet)) {
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
+    
+        if(!Objects.equals(electricityCabinet.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
+        
 //        String result = redisService.get(CacheConstant.OTHER_CONFIG_CACHE + electricityCabinet.getId());
 //        if (StringUtils.isEmpty(result)) {
 //            return R.ok();
@@ -550,16 +559,16 @@ public class JsonAdminElectricityCabinetController {
         if (size < 0 || size > 50) {
             size = 10L;
         }
-        
+    
         if (offset < 0) {
             offset = 0L;
         }
-        
+    
         EleCabinetCoreDataQuery eleCabinetCoreDataQuery = EleCabinetCoreDataQuery.builder().offset(offset).size(size)
-                .id(id).build();
-        
-        List<EleCabinetCoreData> eleCabinetCoreData = eleCabinetCoreDataService.selectListByQuery(
-                eleCabinetCoreDataQuery);
+                .id(id).tenantId(TenantContextHolder.getTenantId()).build();
+    
+        List<EleCabinetCoreData> eleCabinetCoreData = eleCabinetCoreDataService
+                .selectListByQuery(eleCabinetCoreDataQuery);
         return R.ok(eleCabinetCoreData);
     }
     

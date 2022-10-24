@@ -11,6 +11,7 @@
         LEFT JOIN t_electricity_cabinet b ON a.electricity_id = b.id
         <where>
             a.electricity_id = #{eleId}
+            and b.tenant_id = #{tenantId}
             <if test="type != null and type != ''">
                 and a.status = #{type}
             </if>

@@ -92,7 +92,7 @@
                     FROM
                         t_electricity_cabinet
                 WHERE
-                id = #{id}))
+                id = #{id})) and tf.tenant_id=#{tenantId}
     </select>
 
 

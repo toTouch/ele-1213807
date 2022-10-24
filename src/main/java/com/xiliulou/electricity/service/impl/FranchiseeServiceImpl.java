@@ -435,8 +435,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
-    public R queryByCabinetId(Integer cabinetId) {
-        return R.ok(franchiseeMapper.queryByCabinetId(cabinetId));
+    public R queryByCabinetId(Integer id, Integer tenantId) {
+        return R.ok(franchiseeMapper.queryByCabinetId(id,tenantId));
     }
 
 	@Override
