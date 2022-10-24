@@ -189,7 +189,14 @@
     <insert id="idempotentUpdateCabinetCoreData" keyProperty="id" useGeneratedKeys="true">
         insert into t_ele_cabinet_core_data(electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power, power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity, water_leaching_warning, create_time, update_time,core_version)
         values (#{electricityCabinetId}, #{lockOpen}, #{smokeSensorOpen}, #{lightOpen}, #{fanOpen}, #{extinguisherOpen}, #{v}, #{a}, #{power}, #{powerFactor}, #{activeElectricalEnergy}, #{waterPumpOpen}, #{waterLevelWarning}, #{temp}, #{humidity}, #{waterLeachingWarning}, #{createTime}, #{updateTime},#{coreVersion})
-         on duplicate key update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open = #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power = #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open = #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity = #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime},core_version=#{coreVersion}
+        on duplicate key update lock_open = #{lockOpen} ,smoke_sensor_open = #{smokeSensorOpen} ,light_open =
+        #{lightOpen} , fan_open =#{fanOpen},extinguisher_open = #{extinguisherOpen},v = #{v},a = #{a},power =
+        #{power},power_factor = #{powerFactor},active_electrical_energy = #{activeElectricalEnergy},water_pump_open =
+        #{waterPumpOpen},water_level_warning = #{waterLevelWarning},temp = #{temp},humidity =
+        #{humidity},water_leaching_warning = #{waterLeachingWarning},update_time = #{updateTime}
+        <if test="coreVersion != null">
+            ,core_version=#{coreVersion}
+        </if>
     </insert>
 
 
