@@ -183,7 +183,7 @@ public class StoreAmountServiceImpl implements StoreAmountService {
     @Transactional
     public R modifyBalance(Long storeId, BigDecimal modifyBalance) {
         StoreAmount storeAmount = queryByStoreIdFromCache(storeId);
-        if (Objects.isNull(storeAmount)) {
+        if (Objects.isNull(storeAmount)|| !Objects.equals(storeAmount.getTenantId(),TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.00111", "金额不存在！");
         }
 

@@ -178,7 +178,7 @@ public class StoreServiceImpl implements StoreService {
         Store store = new Store();
         BeanUtil.copyProperties(storeAddAndUpdate, store);
         Store oldStore = queryByIdFromCache(store.getId());
-        if (Objects.isNull(oldStore)) {
+        if (Objects.isNull(oldStore) || !Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
@@ -206,7 +206,7 @@ public class StoreServiceImpl implements StoreService {
     public R delete(Long id) {
 
         Store store = queryByIdFromCache(id);
-        if (Objects.isNull(store)) {
+        if (Objects.isNull(store) || !Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
 
@@ -292,11 +292,10 @@ public class StoreServiceImpl implements StoreService {
     public R updateStatus(Long id, Integer usableStatus) {
 
         Store oldStore = queryByIdFromCache(id);
-        if (Objects.isNull(oldStore)) {
+        if (Objects.isNull(oldStore) || !Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
         }
-
-
+        
         Store store = new Store();
         store.setId(id);
         store.setUpdateTime(System.currentTimeMillis());
@@ -439,7 +438,7 @@ public class StoreServiceImpl implements StoreService {
 
     @Override
     public void updateById(Store store) {
-        int update = storeMapper.updateById(store);
+        int update = storeMapper.update(store);
 
 
         DbUtils.dbOperateSuccessThen(update, () -> {

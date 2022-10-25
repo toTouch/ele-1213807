@@ -154,6 +154,10 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
         if(Objects.isNull(queryByIdFromCache)){
             return R.fail("没有查询到相关信息，请先添加");
         }
+        
+        if(!Objects.equals(queryByIdFromCache.getTenantId(),tenantId)){
+            return R.ok();
+        }
 
         List<String> list = wechatTemplateAdminNotificationQuery.getOpenIds();
         if(list.size() > 4){

@@ -2,11 +2,13 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.io.IoUtil;
 import cn.hutool.core.util.StrUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.Wrappers;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinetFile;
 import com.xiliulou.electricity.mapper.ElectricityCabinetFileMapper;
 import com.xiliulou.electricity.service.ElectricityCabinetFileService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.storage.service.StorageService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,18 +61,21 @@ public class ElectricityCabinetFileServiceImpl implements ElectricityCabinetFile
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R deleteById(Long id) {
-        ElectricityCabinetFile electricityCabinetFile = electricityCabinetFileMapper.selectById(id);
+        ElectricityCabinetFile electricityCabinetFile = electricityCabinetFileMapper.selectOne(
+                new LambdaQueryWrapper<ElectricityCabinetFile>().eq(ElectricityCabinetFile::getId, id)
+                        .eq(ElectricityCabinetFile::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityCabinetFile)) {
             return R.fail("ELECTRICITY.0009", "未找到文件");
         }
-        electricityCabinetFileMapper.deleteById(id);
+        electricityCabinetFileMapper.deleteById(id, TenantContextHolder.getTenantId());
         return R.ok();
     }
 
     @Override
     public List<ElectricityCabinetFile> queryByDeviceInfo(Long otherId, Integer fileType,Integer  isUseOSS) {
         return electricityCabinetFileMapper.selectList(Wrappers.<ElectricityCabinetFile>lambdaQuery().eq(ElectricityCabinetFile::getOtherId, otherId)
-                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getIsOss,isUseOSS));
+                .eq(ElectricityCabinetFile::getType, fileType).eq(ElectricityCabinetFile::getIsOss,isUseOSS).eq(ElectricityCabinetFile::getTenantId,
+                        TenantContextHolder.getTenantId()));
     }
 
     @Override

@@ -1306,22 +1306,21 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(batteryDepositAdd.getUid());
-        if (Objects.isNull(userInfo)) {
+        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
             log.error("admin payRentCarDeposit  ERROR! not found user! uid={}", batteryDepositAdd.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        //未找到用户
-        if (Objects.isNull(franchiseeUserInfo)) {
+        if (Objects.isNull(franchiseeUserInfo) || !Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())) {
             log.error("admin payRentCarDeposit  ERROR! not found user! userId:{}", userInfo.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
 
         }
 
         Franchisee franchisee = franchiseeService.queryByIdFromDB(batteryDepositAdd.getFranchiseeId());
-        if (Objects.isNull(franchisee)) {
+        if (Objects.isNull(franchisee) || !Objects.equals(franchisee.getTenantId(),TenantContextHolder.getTenantId())) {
             log.error("admin payRentCarDeposit ERROR! not found Franchisee ！franchiseeId{}", batteryDepositAdd.getFranchiseeId());
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
@@ -1374,6 +1373,7 @@ public class EleDepositOrderServiceImpl implements EleDepositOrderService {
                 .name(user.getUsername())
                 .oldBatteryDeposit(franchiseeUserInfo.getBatteryDeposit())
                 .newBatteryDeposit(batteryDepositAdd.getPayAmount())
+                .tenantId(TenantContextHolder.getTenantId())
                 .createTime(System.currentTimeMillis())
                 .updateTime(System.currentTimeMillis()).build();
         eleUserOperateRecordService.insert(eleUserOperateRecord);

@@ -5,9 +5,11 @@ import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.service.PermissionResourceService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -28,62 +30,82 @@ import java.util.Objects;
  * @Date: 2020/12/10 18:01
  * @Description:
  */
+@Slf4j
 @RestController
 @RequestMapping("/admin")
 public class JsonAdminUserPermissionController extends BaseController {
-	@Autowired
-	PermissionResourceService permissionResourceService;
-
-	@GetMapping("/permission/list")
-	public R getList() {
-		return returnPairResult(permissionResourceService.getList());
-	}
-
-	@PostMapping("/permission/add")
-	public R addPermission(@Validated(value = CreateGroup.class) @RequestBody PermissionResourceQuery permissionResourceQuery) {
-		return returnPairResult(permissionResourceService.addPermissionResource(permissionResourceQuery));
-	}
-
-	@PutMapping("/permission/update")
-	public R updatePermission(@Validated(value = UpdateGroup.class) @RequestBody PermissionResourceQuery permissionResourceQuery) {
-		if (permissionResourceQuery.getId() == 0) {
-			return R.fail("SYSTEM.0002", "id不能为空！");
-		}
-		return returnPairResult(permissionResourceService.updatePermissionResource(permissionResourceQuery));
-	}
-
-	@DeleteMapping("/permission/delete/{id}")
-	public R deletePermission(@PathVariable("id") Long permissionId) {
-		if (Objects.isNull(permissionId)) {
-			return R.fail("SYSTEM.0002", "id不能为空");
-		}
-
-		return returnPairResult(permissionResourceService.deletePermission(permissionId));
-	}
-
-	/**
-	 * 绑定权限
-	 *
-	 * @param roleId
-	 * @param jsonPids
-	 * @return
-	 */
-	@PostMapping("/permission/role/bind")
-	public R bindPermissionToRole(@RequestParam("roleId") Long roleId, @RequestParam("pids") String jsonPids) {
-		List<Long> pids = JsonUtil.fromJsonArray(jsonPids, Long.class);
-		if (!DataUtil.collectionIsUsable(pids)) {
-			return R.fail("SYSTEM.0002", "参数不合法");
-		}
-		return returnPairResult(permissionResourceService.bindPermissionToRole(roleId, pids));
-	}
-
-	@GetMapping("/permission/role/info/{id}")
-	public R getPermissionsByRole(@PathVariable("id") Long rid) {
-		if(Objects.isNull(rid)) {
-			return R.fail("SYSTEM.0002", "参数不合法");
-		}
-
-		return returnPairResult(permissionResourceService.getPermissionsByRole(rid));
-	}
-
+    
+    @Autowired
+    PermissionResourceService permissionResourceService;
+    
+    @GetMapping("/permission/list")
+    public R getList() {
+        return returnPairResult(permissionResourceService.getList());
+    }
+    
+    @PostMapping("/permission/add")
+    public R addPermission(
+            @Validated(value = CreateGroup.class) @RequestBody PermissionResourceQuery permissionResourceQuery) {
+        
+        if (SecurityUtils.isAdmin()) {
+            log.error("ELE ERROR! user does not have permission,uid={}", SecurityUtils.getUid());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        return returnPairResult(permissionResourceService.addPermissionResource(permissionResourceQuery));
+    }
+    
+    @PutMapping("/permission/update")
+    public R updatePermission(
+            @Validated(value = UpdateGroup.class) @RequestBody PermissionResourceQuery permissionResourceQuery) {
+        if (SecurityUtils.isAdmin()) {
+            log.error("ELE ERROR! user does not have permission,uid={}", SecurityUtils.getUid());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        if (permissionResourceQuery.getId() == 0) {
+            return R.fail("SYSTEM.0002", "id不能为空！");
+        }
+        return returnPairResult(permissionResourceService.updatePermissionResource(permissionResourceQuery));
+    }
+    
+    @DeleteMapping("/permission/delete/{id}")
+    public R deletePermission(@PathVariable("id") Long permissionId) {
+        if (SecurityUtils.isAdmin()) {
+            log.error("ELE ERROR! user does not have permission,uid={}", SecurityUtils.getUid());
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
+        
+        if (Objects.isNull(permissionId)) {
+            return R.fail("SYSTEM.0002", "id不能为空");
+        }
+        
+        return returnPairResult(permissionResourceService.deletePermission(permissionId));
+    }
+    
+    /**
+     * 绑定权限
+     *
+     * @param roleId
+     * @param jsonPids
+     * @return
+     */
+    @PostMapping("/permission/role/bind")
+    public R bindPermissionToRole(@RequestParam("roleId") Long roleId, @RequestParam("pids") String jsonPids) {
+        List<Long> pids = JsonUtil.fromJsonArray(jsonPids, Long.class);
+        if (!DataUtil.collectionIsUsable(pids)) {
+            return R.fail("SYSTEM.0002", "参数不合法");
+        }
+        return returnPairResult(permissionResourceService.bindPermissionToRole(roleId, pids));
+    }
+    
+    @GetMapping("/permission/role/info/{id}")
+    public R getPermissionsByRole(@PathVariable("id") Long rid) {
+        if (Objects.isNull(rid)) {
+            return R.fail("SYSTEM.0002", "参数不合法");
+        }
+        
+        return returnPairResult(permissionResourceService.getPermissionsByRole(rid));
+    }
+    
 }

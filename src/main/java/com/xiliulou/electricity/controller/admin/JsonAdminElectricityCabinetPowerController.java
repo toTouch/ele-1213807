@@ -53,9 +53,6 @@ public class JsonAdminElectricityCabinetPowerController {
             offset = 0L;
         }
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         ElectricityCabinetPowerQuery electricityCabinetPowerQuery = ElectricityCabinetPowerQuery
             .builder()
             .offset(offset)
@@ -64,7 +61,7 @@ public class JsonAdminElectricityCabinetPowerController {
             .endTime(endTime)
             .electricityCabinetId(electricityCabinetId)
             .electricityCabinetName(electricityCabinetName)
-            .tenantId(tenantId)
+            .tenantId(TenantContextHolder.getTenantId())
             .date(date)
             .build();
 

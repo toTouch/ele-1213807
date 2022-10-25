@@ -168,6 +168,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(oldFranchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
+        
+        if(!Objects.equals(oldFranchisee.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
 
         //押金参数判断
         if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
@@ -206,6 +210,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         Franchisee franchisee = queryByIdFromDB(id);
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
+        }
+    
+        if(!Objects.equals(franchisee.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //查询加盟商是否绑定的有套餐
@@ -395,8 +403,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 Franchisee franchisee = new Franchisee();
                 franchisee.setId(franchiseeSetSplitQuery.getId());
                 franchisee.setPercent(franchiseeSetSplitQuery.getPercent());
+                franchisee.setTenantId(TenantContextHolder.getTenantId());
                 franchisee.setUpdateTime(System.currentTimeMillis());
-                franchiseeMapper.updateById(franchisee);
+                franchiseeMapper.update(franchisee);
 
             }
 
@@ -405,6 +414,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 Store store = new Store();
                 store.setId(franchiseeSetSplitQuery.getId());
                 store.setPercent(franchiseeSetSplitQuery.getPercent());
+                store.setTenantId(TenantContextHolder.getTenantId());
                 store.setUpdateTime(System.currentTimeMillis());
                 storeService.updateById(store);
             }

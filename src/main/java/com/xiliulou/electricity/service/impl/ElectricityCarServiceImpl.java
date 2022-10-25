@@ -219,7 +219,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Override
     public Integer queryByModelId(Integer id) {
-        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL));
+        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL).eq(ElectricityCar::getTenantId,TenantContextHolder.getTenantId()));
     }
 
     @Override

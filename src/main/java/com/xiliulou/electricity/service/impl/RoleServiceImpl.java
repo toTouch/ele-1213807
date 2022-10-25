@@ -23,6 +23,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.RoleQuery;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -111,6 +112,11 @@ public class RoleServiceImpl implements RoleService {
 	public Boolean deleteById(Long id) {
 		return this.roleMapper.deleteById(id) > 0;
 	}
+	
+	@Transactional(rollbackFor = Exception.class)
+	public Boolean deleteById(Long id,Integer tenantId) {
+		return this.roleMapper.deleteById(id,tenantId) > 0;
+	}
 //
 	@Override
 	public R addRole(RoleQuery roleQuery) {
@@ -132,7 +138,7 @@ public class RoleServiceImpl implements RoleService {
 	public R updateRole(RoleQuery roleQuery) {
 		Role role = new Role();
 		BeanUtils.copyProperties(roleQuery, role);
-
+		role.setTenantId(TenantContextHolder.getTenantId());
 		role.setUpdateTime(System.currentTimeMillis());
 
 		Integer update = update(role);
@@ -149,8 +155,8 @@ public class RoleServiceImpl implements RoleService {
 		if (userRoleService.existsRole(id)) {
 			return Pair.of(false, "无法删除！请先解绑绑定该角色的用户");
 		}
-
-		if (deleteById(id)) {
+		
+		if (deleteById(id, TenantContextHolder.getTenantId())) {
 			return Pair.of(true, null);
 		}
 
@@ -227,6 +233,13 @@ public class RoleServiceImpl implements RoleService {
 
 		List<Role> roles = userRoleService.queryByUid(uid);
 		if (DataUtil.collectionIsUsable(roles)) {
+			roles = roles.stream()
+					.filter(item -> Objects.equals(item.getTenantId(), TenantContextHolder.getTenantId()))
+					.collect(Collectors.toList());
+			if (CollectionUtils.isEmpty(roles)) {
+				return Collections.emptyList();
+			}
+			
 			List<Long> rolesIds = roles.stream().map(Role::getId).collect(Collectors.toList());
 			redisService.set(CacheConstant.CACHE_USER_ROLE_RELATION + uid, JsonUtil.toJson(rolesIds));
 			return rolesIds;

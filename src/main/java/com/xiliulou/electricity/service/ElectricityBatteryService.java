@@ -39,8 +39,6 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
     ElectricityBattery queryBySn(String oldElectricityBatterySn, Integer tenantId);
 
-    Integer updateBatteryById(ElectricityBattery electricityBattery);
-
     Integer updateBatteryUser(ElectricityBattery electricityBattery);
 
     Integer updateBatteryStatus(ElectricityBattery electricityBattery);

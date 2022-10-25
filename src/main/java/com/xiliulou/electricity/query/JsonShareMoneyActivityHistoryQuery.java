@@ -19,8 +19,6 @@ public class JsonShareMoneyActivityHistoryQuery {
     private Long offset;
     private Long uid;
     private Integer activityId;
-
-
-
-
+    private Integer tenantId;
+    
 }

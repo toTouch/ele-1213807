@@ -5,6 +5,7 @@ import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -50,6 +51,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
 				.offset(offset)
 				.size(size)
 				.uid(uid)
+				.tenantId(TenantContextHolder.getTenantId())
 				.activityId(activityId).build();
 		return joinShareMoneyActivityHistoryService.queryList(jsonShareMoneyActivityHistoryQuery);
 	}
@@ -66,6 +68,7 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
 
 		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
 				.uid(uid)
+				.tenantId(TenantContextHolder.getTenantId())
 				.activityId(activityId).build();
 		return joinShareMoneyActivityHistoryService.queryCount(jsonShareMoneyActivityHistoryQuery);
 	}

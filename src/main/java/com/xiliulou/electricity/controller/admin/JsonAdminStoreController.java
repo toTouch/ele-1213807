@@ -434,6 +434,7 @@ public class JsonAdminStoreController {
                 .size(size)
                 .startTime(startTime)
                 .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
                 .storeId(storeId).build();
 
         return storeSplitAccountHistoryService.queryList(storeAccountQuery);
