@@ -208,6 +208,15 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public Triple<Boolean, String, Object> selectAvailableBoxNumber(Integer electricityCabinetId, Integer tenantId) {
+        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
+        if (Objects.isNull(electricityConfig)) {
+            log.error("ELE ERROR! electricityConfig is null,tenantId={}", tenantId);
+            return Triple.of(false, "000001", "系统异常！");
+        }
+    
+        if (!Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.ENABLE_RETURN_BOX_CHECK)) {
+            return Triple.of(true, "", "");
+        }
     
         //获取所有启用的格挡
         List<ElectricityCabinetBox> electricityCabinetBoxes = this.queryBoxByElectricityCabinetId(electricityCabinetId);
