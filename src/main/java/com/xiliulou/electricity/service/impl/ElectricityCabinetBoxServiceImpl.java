@@ -18,6 +18,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.ElectricityBatteryVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetBoxVO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -207,21 +208,17 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
     @Override
     public Triple<Boolean, String, Object> selectAvailableBoxNumber(Integer electricityCabinetId, Integer tenantId) {
-        
-        ElectricityConfig electricityConfig = electricityConfigService.queryFromCacheByTenantId(tenantId);
-        if (Objects.isNull(electricityConfig)) {
-            log.error("ELE ERROR! electricityConfig is null,tenantId={}", tenantId);
-            return Triple.of(false, "000001", "系统异常！");
-        }
-        
-        if (!Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.ENABLE_RETURN_BOX_CHECK)) {
+    
+        //获取所有启用的格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxes = this.queryBoxByElectricityCabinetId(electricityCabinetId);
+        if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
             return Triple.of(true, "", "");
         }
-        
-        int emptyCellNumber = this.selectUsableEmptyCellNumber(electricityCabinetId, tenantId);
-        if (emptyCellNumber <= 1) {
-            log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}",
-                    emptyCellNumber, electricityCabinetId);
+    
+        //获取空格挡
+        List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
+            log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}", electricityCabinetId);
             return Triple.of(false, "100240", "空格挡数量不足1个，无法退电！");
         }
         
