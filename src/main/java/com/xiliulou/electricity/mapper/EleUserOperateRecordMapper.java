@@ -19,9 +19,9 @@ import java.util.List;
 public interface EleUserOperateRecordMapper extends BaseMapper<EleUserOperateRecord> {
 
 
-    List<EleUserOperateRecord> queryList(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel);
+    List<EleUserOperateRecord> queryList(@Param("uid") Long uid, @Param("size") Long size, @Param("offset") Long offset, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel, @Param("tenantId") Integer tenantId);
 
-    Integer queryCount(@Param("uid") Long uid, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel);
+    Integer queryCount(@Param("uid") Long uid, @Param("beginTime") Long beginTime, @Param("endTime") Long endTime, @Param("operateModel") Integer operateModel, @Param("tenantId") Integer tenantId);
 
 
 }

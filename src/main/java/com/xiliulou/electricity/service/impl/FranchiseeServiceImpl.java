@@ -217,7 +217,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         }
 
         //查询加盟商是否绑定的有套餐
-        List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id);
+        List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id,franchisee.getTenantId());
         if(!CollectionUtils.isEmpty(electricityMemberCardList)){
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}",id);
             return R.fail(id,"100101", "删除失败，该加盟商已绑定套餐！");

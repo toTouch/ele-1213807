@@ -704,7 +704,11 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
 
     @Override
     public R endOrder(String orderId) {
-        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId));
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        RentBatteryOrder rentBatteryOrder = rentBatteryOrderMapper.selectOne(Wrappers.<RentBatteryOrder>lambdaQuery().eq(RentBatteryOrder::getOrderId, orderId).eq(RentBatteryOrder::getTenantId,tenantId));
         if (Objects.isNull(rentBatteryOrder)) {
             log.error("endOrder  ERROR! not found order,orderId{} ", orderId);
             return R.fail("ELECTRICITY.0015", "未找到订单");

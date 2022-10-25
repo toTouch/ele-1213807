@@ -6,7 +6,7 @@
     <select id="queryList" resultType="com.xiliulou.electricity.entity.EleUserOperateRecord">
         SELECT * FROM
         t_ele_user_operate_record
-        WHERE uid =#{uid}
+        WHERE uid =#{uid} and tenant_id=#{tenantId}
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}
         </if>
@@ -22,7 +22,7 @@
 
     <select id="queryCount" resultType="integer">
         select count(1) from t_ele_user_operate_record
-        where uid=#{uid}
+        where uid=#{uid} and tenant_id=#{tenantId}
         <if test="beginTime != null">
             and create_time &gt;=#{beginTime}
         </if>

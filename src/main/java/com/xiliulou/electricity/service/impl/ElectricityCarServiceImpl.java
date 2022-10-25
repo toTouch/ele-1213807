@@ -15,6 +15,7 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.ElectricityCarVO;
+import com.xiliulou.electricity.web.query.OauthBindQuery;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -106,7 +107,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
-        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId,tenantId));
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId, tenantId));
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
         }
@@ -150,6 +151,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
 
+        if (Objects.equals(tenantId, oldElectricityCar.getTenantId())) {
+            return R.ok();
+        }
+
         //车辆老型号
         Integer oldModelId = oldElectricityCar.getModelId();
         //查找快递柜型号
@@ -157,10 +162,15 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(electricityCarModel)) {
             return R.fail("100005", "未找到车辆型号");
         }
+
+        if (Objects.equals(tenantId, electricityCarModel.getTenantId())) {
+            return R.ok();
+        }
+
         if (!oldModelId.equals(electricityCar.getModelId())) {
             return R.fail("ELECTRICITY.0010", "不能修改型号");
         }
-        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId,tenantId));
+        ElectricityCar existElectricityCar = electricityCarMapper.selectOne(new LambdaQueryWrapper<ElectricityCar>().eq(ElectricityCar::getSn, electricityCarAddAndUpdate.getSn()).eq(ElectricityCar::getTenantId, tenantId));
         if (Objects.nonNull(existElectricityCar)) {
             return R.fail("100017", "已存在该编号车辆");
         }
@@ -180,9 +190,16 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Transactional
     public R delete(Integer id) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         ElectricityCar electricityCar = queryByIdFromCache(id);
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
+        }
+
+        if (Objects.equals(tenantId, electricityCar.getTenantId())) {
+            return R.ok();
         }
 
         //删除数据库
@@ -203,7 +220,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @DS("slave_1")
     public R queryList(ElectricityCarQuery electricityCarQuery) {
         List<ElectricityCarVO> electricityCarVOS = electricityCarMapper.queryList(electricityCarQuery);
-        if(CollectionUtils.isEmpty(electricityCarVOS)){
+        if (CollectionUtils.isEmpty(electricityCarVOS)) {
             return R.ok(Collections.EMPTY_LIST);
         }
 
@@ -219,7 +236,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Override
     public Integer queryByModelId(Integer id) {
-        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL).eq(ElectricityCar::getTenantId,TenantContextHolder.getTenantId()));
+        return electricityCarMapper.selectCount(Wrappers.<ElectricityCar>lambdaQuery().eq(ElectricityCar::getModelId, id).eq(ElectricityCar::getDelFlag, ElectricityCar.DEL_NORMAL).eq(ElectricityCar::getTenantId, TenantContextHolder.getTenantId()));
     }
 
     @Override
@@ -230,6 +247,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public R bindUser(ElectricityCarBindUser electricityCarBindUser) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -241,6 +262,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getTenantId(),tenantId)){
+            return R.ok();
         }
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -273,6 +298,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
+        }
+
+        if (Objects.equals(electricityCar.getTenantId(),tenantId)){
+            return R.ok();
         }
 
         if (!Objects.equals(electricityCar.getModelId(), franchiseeUserInfo.getBindCarModelId())) {
@@ -313,6 +342,9 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
     @Override
     public R unBindUser(ElectricityCarBindUser electricityCarBindUser) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -324,6 +356,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         if (Objects.isNull(userInfo)) {
             log.error("ELECTRICITY CAR ERROR! not found user userId:{}", electricityCarBindUser.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (Objects.equals(userInfo.getTenantId(),tenantId)){
+            return R.ok();
         }
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
@@ -341,6 +377,10 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
         ElectricityCar electricityCar = queryByIdFromCache(electricityCarBindUser.getCarId());
         if (Objects.isNull(electricityCar)) {
             return R.fail("100007", "未找到车辆");
+        }
+
+        if (Objects.equals(electricityCar.getTenantId(),tenantId)){
+            return R.ok();
         }
 
         FranchiseeUserInfo updateFranchiseeUserInfo = new FranchiseeUserInfo();
@@ -380,6 +420,6 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
 
     @Override
     public Integer queryCountByStoreIds(Integer tenantId, List<Long> storeIds) {
-        return electricityCarMapper.queryCountByStoreIds(tenantId,storeIds);
+        return electricityCarMapper.queryCountByStoreIds(tenantId, storeIds);
     }
 }

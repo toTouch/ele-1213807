@@ -15,6 +15,9 @@
             <if test="activityId != null">
                 and jsah.activity_id = #{activityId}
             </if>
+            <if test="tenantId != null">
+                and jsah.tenant_id = #{tenantId}
+            </if>
         </where>
 		order by jsah.update_time desc
         <if test="offset != null and size != null">

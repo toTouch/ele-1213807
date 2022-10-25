@@ -17,6 +17,9 @@
             <if test="uid != null">
                 uid = #{uid}
             </if>
+            <if test="tenantId != null">
+                tenant_id = #{tenantId}
+            </if>
         </where>
         order by create_time desc
         limit #{offset}, #{size}

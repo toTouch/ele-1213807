@@ -21,7 +21,7 @@
         select
           id, electricity_cabinet_id, product_key, device_name, tenant_id, server_begin_time, server_end_time, del_flag, create_time, update_time
         from t_electricity_cabinet_server
-        where id = #{id} and del_flag = 0
+        where id = #{id} and del_flag = 0 and tenant_id=#{tenantId}
     </select>
 
     <!--查询指定行数据-->
@@ -142,6 +142,9 @@
             </if>
             <if test="serverTimeEnd != null">
                 and ecs.server_end_time &lt; #{serverTimeEnd}
+            </if>
+            <if test="tenantId != null">
+                and ecs.tenant_id = #{tenantId}
             </if>
         </where>
         order by server_end_time

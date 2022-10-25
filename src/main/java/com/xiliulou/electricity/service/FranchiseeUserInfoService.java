@@ -70,7 +70,7 @@ public interface FranchiseeUserInfoService {
      * @param id
      * @return
      */
-    List<FranchiseeUserInfo> selectByMemberCardId(Integer id);
+    List<FranchiseeUserInfo> selectByMemberCardId(Integer id, Integer tenantId);
 
     List<FranchiseeUserInfo> selectByFranchiseeId(Long id);
 

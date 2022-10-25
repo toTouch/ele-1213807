@@ -23,6 +23,9 @@
         <if test="query.storeId != null">
             and tsg.store_id = #{query.storeId}
         </if>
+        <if test="query.tenantId != null">
+            and tsg.tenant_id = #{query.tenantId}
+        </if>
         order by tsg.create_time desc
         limit #{query.offset}, #{query.size}
     </select>
@@ -42,6 +45,9 @@
         </if>
         <if test="query.storeId != null">
             and store_id = #{query.storeId}
+        </if>
+        <if test="query.tenantId != null">
+            and tenant_id = #{query.tenantId}
         </if>
     </select>
 

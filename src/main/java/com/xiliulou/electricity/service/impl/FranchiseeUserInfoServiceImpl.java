@@ -135,7 +135,7 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         franchiseeUserInfo.setUpdateTime(System.currentTimeMillis());
 
         this.updateByUserInfoId(franchiseeUserInfo);
-        return Triple.of(true, "",null);
+        return Triple.of(true, "", null);
     }
 
     @Override
@@ -160,8 +160,8 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
     }
 
     @Override
-    public List<FranchiseeUserInfo> selectByMemberCardId(Integer memberCardId) {
-        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId)
+    public List<FranchiseeUserInfo> selectByMemberCardId(Integer memberCardId, Integer tenantId) {
+        return franchiseeUserInfoMapper.selectList(new LambdaQueryWrapper<FranchiseeUserInfo>().eq(FranchiseeUserInfo::getCardId, memberCardId).eq(FranchiseeUserInfo::getTenantId,tenantId)
                 .eq(FranchiseeUserInfo::getDelFlag, FranchiseeUserInfo.DEL_NORMAL));
     }
 

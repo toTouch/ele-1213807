@@ -79,7 +79,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        Integer count = baseMapper.queryCount(null, electricityMemberCard.getType(), tenantId,null,null, electricityMemberCard.getName());
+        Integer count = baseMapper.queryCount(null, electricityMemberCard.getType(), tenantId, null, null, electricityMemberCard.getName());
         if (count > 0) {
             log.error("ELE ERROR! create memberCard fail,there are same memberCardName,memberCardName={}", electricityMemberCard.getName());
             return R.fail("100104", "套餐名称已存在！");
@@ -123,9 +123,9 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        ElectricityMemberCard oldElectricityMemberCard = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()));
+        ElectricityMemberCard oldElectricityMemberCard = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()).eq(ElectricityMemberCard::getTenantId, tenantId));
 
-        Integer count = baseMapper.queryCount(null, electricityMemberCard.getType(), tenantId,null,null, electricityMemberCard.getName());
+        Integer count = baseMapper.queryCount(null, electricityMemberCard.getType(), tenantId, null, null, electricityMemberCard.getName());
 
         if (Objects.nonNull(oldElectricityMemberCard) && count > 0 && !Objects.equals(oldElectricityMemberCard.getName(), electricityMemberCard.getName())) {
             log.error("ELE ERROR! create memberCard fail,there are same memberCardName,memberCardName={}", electricityMemberCard.getName());
@@ -143,7 +143,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
         }
 
-        Integer update = baseMapper.updateById(electricityMemberCard);
+        Integer update = baseMapper.update(electricityMemberCard, new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()).eq(ElectricityMemberCard::getTenantId, tenantId));
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //先删再改
@@ -164,8 +164,11 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     @Override
     public R delete(Integer id) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //判断是否有用户绑定该套餐
-        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id);
+        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
         if (!CollectionUtils.isEmpty(franchiseeUserInfoList)) {
             log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);
             return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
@@ -174,7 +177,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
         electricityMemberCard.setId(id);
         electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
-        Integer update = baseMapper.updateById(electricityMemberCard);
+        Integer update = baseMapper.update(electricityMemberCard, new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()).eq(ElectricityMemberCard::getTenantId, tenantId));
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
@@ -197,7 +200,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
      */
     @Override
     @DS("slave_1")
-    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel,Long franchiseeId) {
+    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId) {
         List<ElectricityMemberCardVO> electricityMemberCardList = baseMapper.queryList(offset, size, status, type, tenantId, cardModel, franchiseeId, null);
         if (ObjectUtil.isEmpty(electricityMemberCardList)) {
             return R.ok(electricityMemberCardList);
@@ -422,22 +425,24 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id) {
+    public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id,Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
                 .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL).eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE)
-                .eq(ElectricityMemberCard::getCardModel,ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
+                .eq(ElectricityMemberCard::getTenantId,tenantId)
+                .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
 
     @Override
-    public List<ElectricityMemberCard> selectByFranchiseeId(Long id) {
+    public List<ElectricityMemberCard> selectByFranchiseeId(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
+                .eq(ElectricityMemberCard::getTenantId,tenantId)
                 .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL)
-                .eq(ElectricityMemberCard::getCardModel,ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
+                .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
 
     @Override
     public R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId) {
-        return R.ok(baseMapper.queryCount(status, type, tenantId, cardModel,franchiseeId,null));
+        return R.ok(baseMapper.queryCount(status, type, tenantId, cardModel, franchiseeId, null));
     }
 
     @Override

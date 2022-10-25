@@ -791,6 +791,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .operateContent(Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) ? EleUserOperateRecord.EDIT_BATTERY_CONTENT : EleUserOperateRecord.BIND_BATTERY_CONTENT)
                     .operateUid(user.getUid())
                     .uid(oldUserInfo.getUid())
+                    .tenantId(TenantContextHolder.getTenantId())
                     .name(user.getUsername())
                     .initElectricityBatterySn(Objects.nonNull(isBindElectricityBattery) ? isBindElectricityBattery.getSn() : "")
                     .nowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())
