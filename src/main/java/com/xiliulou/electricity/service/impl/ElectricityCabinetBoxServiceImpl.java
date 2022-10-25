@@ -214,7 +214,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             return Triple.of(false, "000001", "系统异常！");
         }
     
-        if (!Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.ENABLE_RETURN_BOX_CHECK)) {
+        if (Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.ENABLE_RETURN_BOX_CHECK)) {
             return Triple.of(true, "", "");
         }
     
