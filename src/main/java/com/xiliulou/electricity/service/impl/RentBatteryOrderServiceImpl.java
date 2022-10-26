@@ -526,7 +526,7 @@ public class RentBatteryOrderServiceImpl implements RentBatteryOrderService {
                 eleLockFlag = Boolean.FALSE;
                 log.error("RETURNBATTERY ERROR! electricityCabinet not empty cell,electricityCabinetId={} ",
                         electricityCabinetId);
-                return R.fail("ELECTRICITY.0008", "换电柜暂无空仓");
+                return R.fail("100240", "当前无空余格挡可供退电，请联系客服！");
             }
             
             String cellNo = usableEmptyCellNo.getRight().toString();
