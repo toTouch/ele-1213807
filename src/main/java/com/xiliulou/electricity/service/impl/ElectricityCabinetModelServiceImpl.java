@@ -106,7 +106,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
-        int update = electricityCabinetModelMapper.update(electricityCabinetModel,new LambdaQueryWrapper<ElectricityCabinetModel>().eq(ElectricityCabinetModel::getId,electricityCabinetModel.getId()).eq(ElectricityCabinetModel::getTenantId,tenantId));
+        int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
             redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + electricityCabinetModel.getId(), electricityCabinetModel);
@@ -139,7 +139,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
-        int update = electricityCabinetModelMapper.update(electricityCabinetModel,new LambdaQueryWrapper<ElectricityCabinetModel>().eq(ElectricityCabinetModel::getId,electricityCabinetModel.getId()).eq(ElectricityCabinetModel::getTenantId,tenantId));
+        int update = electricityCabinetModelMapper.updateById(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
             redisService.delete(CacheConstant.CACHE_ELECTRICITY_CABINET_MODEL + id);
