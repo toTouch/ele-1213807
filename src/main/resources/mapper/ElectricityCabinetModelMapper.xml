@@ -31,5 +31,27 @@
         </if>
     </select>
 
+    <update id="update">
+        update t_electricity_cabinet_model
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="num != null">
+                num = #{num},
+            </if>
+            <if test="voltage != null and voltage != ''">
+                voltage = #{voltage},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
 
 </mapper>
