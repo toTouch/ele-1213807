@@ -464,9 +464,6 @@
 			<if test="uid != null">
 				uid = #{uid},
 			</if>
-			<if test="userName != null and userName != ''">
-				user_name = #{userName},
-			</if>
 			<if test="createTime != null">
 				create_time = #{createTime},
 			</if>
