@@ -82,14 +82,10 @@ public class JsonAdminElectricityCabinetBoxController {
             offset = 0L;
         }
 
-        TokenUser user = SecurityUtils.getUserInfo();
-        if (Objects.isNull(user)) {
-            log.error("dataScreen  ERROR! not found user ");
-            return R.fail("ELECTRICITY.0001", "未找到用户");
-        }
-
-        if (!Objects.equals(user.getType(), User.TYPE_USER_SUPER)) {
-            log.error("dataScreen  ERROR! user not permissions userType:{}", user.getType());
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        if (!Objects.equals(tenantId,1)){
+            log.error("ELECTRICITY  ERROR! query electricityCabinetBoxList super not permission tenantId:{}", tenantId);
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
 
