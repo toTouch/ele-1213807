@@ -63,9 +63,9 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
 
-//            if (!Objects.equals(eleAuthEntry.getTenantId(),tenantId)) {
-//                return R.fail("ELECTRICITY.0007", "不合法的参数");
-//            }
+            if (!Objects.equals(eleAuthEntry.getTenantId(),tenantId)) {
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
 
             if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
