@@ -216,7 +216,7 @@
         from t_ele_cabinet_core_data as tccd left join t_electricity_cabinet as tec on tccd.electricity_cabinet_id=tec.id
         <where>
         <if test="id != null">
-            and tccd.id = #{id}
+            and tccd.electricity_cabinet_id = #{id}
         </if>
         <if test="tenantId != null">
             and tec.tenant_id = #{tenantId}
