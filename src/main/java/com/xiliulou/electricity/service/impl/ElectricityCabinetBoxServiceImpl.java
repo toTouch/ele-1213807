@@ -228,7 +228,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
             log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}", electricityCabinetId);
-            return Triple.of(false, "100240", "空格挡数量不足1个，无法退电！");
+            return Triple.of(false, "100240", "当前无空余格挡可供退电，请联系客服！");
         }
         
         return Triple.of(true, "", "");
