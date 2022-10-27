@@ -162,12 +162,12 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
             return R.fail("电池编号已绑定其他电池!");
         }
         electricityBattery.setUpdateTime(System.currentTimeMillis());
+        electricityBattery.setTenantId(TenantContextHolder.getTenantId());
         Integer rows = electricitybatterymapper.update(electricityBattery);
         if (rows > 0) {
             return R.ok();
         } else {
             return R.fail("修改失败!");
-
         }
     }
 
