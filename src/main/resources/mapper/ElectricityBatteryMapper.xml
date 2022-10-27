@@ -4,7 +4,7 @@
 	
 	<!-- 基础字段 -->
 	<sql id="selectElectricityBattery">
-       	select   id, sn, longitude, latitude, power, voltage, capacity, model, status, electricity_cabinet_id, electricity_cabinet_name, uid, user_name, create_time, update_time, del_flag, charge_status, health_status, tenant_id, borrow_expire_time, report_type, iot_card_number, exchange_count, franchisee_id, business_status, physics_status        from t_electricity_battery
+       	select   id, sn, longitude, latitude, power, voltage, capacity, model, status, electricity_cabinet_id, electricity_cabinet_name, uid, create_time, update_time, charge_status, health_status, tenant_id, borrow_expire_time, iot_card_number, exchange_count, franchisee_id, business_status, physics_status        from t_electricity_battery
     </sql>
 	
 	<!--查询单个-->
@@ -481,9 +481,6 @@
 			</if>
 			<if test="borrowExpireTime != null">
 				borrow_expire_time = #{borrowExpireTime},
-			</if>
-			<if test="reportType != null">
-				report_type = #{reportType},
 			</if>
 			<if test="iotCardNumber != null and iotCardNumber != ''">
 				iot_card_number = #{iotCardNumber},
