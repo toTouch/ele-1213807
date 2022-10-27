@@ -214,7 +214,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
             return Triple.of(false, "000001", "系统异常！");
         }
     
-        if (Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.ENABLE_RETURN_BOX_CHECK)) {
+        if (Objects.equals(electricityConfig.getIsEnableReturnBoxCheck(), ElectricityConfig.DISABLE_RETURN_BOX_CHECK)) {
             return Triple.of(true, "", "");
         }
     
@@ -226,7 +226,7 @@ public class ElectricityCabinetBoxServiceImpl implements ElectricityCabinetBoxSe
     
         //获取空格挡
         List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
-        if (CollectionUtils.isNotEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
+        if (CollectionUtils.isEmpty(haveBatteryBoxs) || haveBatteryBoxs.size()<=1) {
             log.error("ELE ERROR! emptyCellNumber less than 1,emptyCellNumber={},electricityCabinetId={}", electricityCabinetId);
             return Triple.of(false, "100240", "当前无空余格挡可供退电，请联系客服！");
         }
