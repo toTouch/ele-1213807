@@ -9,6 +9,7 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -69,9 +70,13 @@ public class JsonUserElectricityCabinetBatteryController {
         String begin = formatter.format(beginLocalDateTime);
         String end = formatter.format(endLocalDateTime);
 
+        if (StringUtils.isEmpty(electricityBattery.getSn())){
+            log.error("query  ERROR! not found BatterySn! uid:{} ", user.getUid());
+            return R.fail("ELECTRICITY.0020", "未找到电池");
+        }
 
         //给加的搜索，没什么意义
         String sql = "select * from t_battery_attr where devId=? and createTime>=? AND createTime<=? order by  createTime desc";
-        return R.ok(clickHouseService.query(BatteryAttr.class, sql, electricityBattery.getSn(), begin, end));
+        return R.ok(clickHouseService.query(BatteryAttr.class, sql, electricityBattery.getSn().trim(), begin, end));
     }
 }
