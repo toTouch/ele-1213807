@@ -71,6 +71,10 @@ public class ElectricityConfigAddAndUpdateQuery {
      * 是否自主开仓 0--开启， 1--关闭
      */
     private Integer isEnableSelfOpen;
+    /**
+     * 是否开启只剩一个格挡退电池
+     */
+    private Integer isEnableReturnBoxCheck;
 
 }
 
