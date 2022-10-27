@@ -1524,4 +1524,8 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         return String.valueOf(System.currentTimeMillis()).substring(2) + uid + RandomUtil.randomNumbers(6);
     }
 
+    @Override
+    public void expireReminderHandler() {
+
+    }
 }

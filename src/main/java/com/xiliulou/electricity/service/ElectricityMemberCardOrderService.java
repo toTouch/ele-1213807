@@ -68,4 +68,6 @@ public interface ElectricityMemberCardOrderService {
     void batteryMemberCardExpireReminder();
 
     void carMemberCardExpireReminder();
+
+    void expireReminderHandler();
 }
