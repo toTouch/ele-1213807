@@ -47,7 +47,7 @@ public class JsonAdminUserPermissionController extends BaseController {
     public R addPermission(
             @Validated(value = CreateGroup.class) @RequestBody PermissionResourceQuery permissionResourceQuery) {
         
-        if (SecurityUtils.isAdmin()) {
+        if (!SecurityUtils.isAdmin()) {
             log.error("ELE ERROR! user does not have permission,uid={}", SecurityUtils.getUid());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -58,7 +58,7 @@ public class JsonAdminUserPermissionController extends BaseController {
     @PutMapping("/permission/update")
     public R updatePermission(
             @Validated(value = UpdateGroup.class) @RequestBody PermissionResourceQuery permissionResourceQuery) {
-        if (SecurityUtils.isAdmin()) {
+        if (!SecurityUtils.isAdmin()) {
             log.error("ELE ERROR! user does not have permission,uid={}", SecurityUtils.getUid());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }
@@ -71,7 +71,7 @@ public class JsonAdminUserPermissionController extends BaseController {
     
     @DeleteMapping("/permission/delete/{id}")
     public R deletePermission(@PathVariable("id") Long permissionId) {
-        if (SecurityUtils.isAdmin()) {
+        if (!SecurityUtils.isAdmin()) {
             log.error("ELE ERROR! user does not have permission,uid={}", SecurityUtils.getUid());
             return R.fail("ELECTRICITY.0066", "用户权限不足");
         }

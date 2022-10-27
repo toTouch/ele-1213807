@@ -10,11 +10,14 @@ import com.xiliulou.electricity.query.WechatTemplateAdminNotificationQuery;
 import com.xiliulou.electricity.service.WechatTemplateAdminNotificationService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.WechatTemplateAdminNotificationVo;
+import org.apache.commons.collections.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import org.springframework.transaction.annotation.Transactional;
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -194,10 +197,11 @@ public class WechatTemplateAdminNotificationServiceImpl implements WechatTemplat
     public R queryList(){
         Integer tenantId = TenantContextHolder.getTenantId();
         WechatTemplateAdminNotification wechatTemplateAdminNotification = this.queryByTenant(tenantId);
+        List<String> list = JSON.parseArray(wechatTemplateAdminNotification.getOpenIds(), String.class);
         WechatTemplateAdminNotificationVo vo = new WechatTemplateAdminNotificationVo();
-        if(Objects.nonNull(wechatTemplateAdminNotification)){
+        if (Objects.nonNull(wechatTemplateAdminNotification)) {
             vo.setId(wechatTemplateAdminNotification.getId());
-            vo.setOpenIds(JSON.parseArray(wechatTemplateAdminNotification.getOpenIds(), String.class));
+            vo.setOpenIds(CollectionUtils.isEmpty(list) ? Collections.EMPTY_LIST : list);
         }
         return R.ok(vo);
     }

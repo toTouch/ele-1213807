@@ -110,6 +110,7 @@ public class ElectricityCarModelServiceImpl implements ElectricityCarModelServic
             return R.fail("100006", "型号已绑定车辆，不能操作");
         }
         electricityCarModel.setUpdateTime(System.currentTimeMillis());
+        electricityCarModel.setTenantId(TenantContextHolder.getTenantId());
         int update = electricityCarModelMapper.update(electricityCarModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存

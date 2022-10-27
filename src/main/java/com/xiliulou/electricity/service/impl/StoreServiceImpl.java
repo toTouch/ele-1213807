@@ -178,8 +178,11 @@ public class StoreServiceImpl implements StoreService {
         Store store = new Store();
         BeanUtil.copyProperties(storeAddAndUpdate, store);
         Store oldStore = queryByIdFromCache(store.getId());
-        if (Objects.isNull(oldStore) || !Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
         if (Objects.nonNull(storeAddAndUpdate.getBusinessTimeType())) {
             if (checkParam(storeAddAndUpdate, store)) {
@@ -206,8 +209,11 @@ public class StoreServiceImpl implements StoreService {
     public R delete(Long id) {
 
         Store store = queryByIdFromCache(id);
-        if (Objects.isNull(store) || !Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(store)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if(!Objects.equals(store.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //查询门店是否绑定换电柜
@@ -292,8 +298,11 @@ public class StoreServiceImpl implements StoreService {
     public R updateStatus(Long id, Integer usableStatus) {
 
         Store oldStore = queryByIdFromCache(id);
-        if (Objects.isNull(oldStore) || !Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(oldStore)) {
             return R.fail("ELECTRICITY.0018", "未找到门店");
+        }
+        if(!Objects.equals(oldStore.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
         
         Store store = new Store();

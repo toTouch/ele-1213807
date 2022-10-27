@@ -74,5 +74,5 @@ public interface ElectricityBatteryMapper extends BaseMapper<ElectricityBattery>
     
     Integer deleteById(@Param("id") Long id, @Param("tenantId") Integer tenantId);
     
-    ElectricityBattery selectById(Long electricityBatteryId, Integer tenantId);
+    ElectricityBattery selectById(@Param("id") Long electricityBatteryId, @Param("tenantId") Integer tenantId);
 }

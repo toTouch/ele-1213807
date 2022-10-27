@@ -64,9 +64,7 @@ public interface ElectricityCabinetServerOperRecordMapper extends BaseMapper<Ele
      */
     int deleteById(Long id);
 
-    List<ElectricityCabinetServerOperRecordVo> queryList(@Param("createUserName") String createUserName, @Param("eleServerId") Long eleServerId, @Param("offset") Long offset, @Param("size") Long size,
-            @Param("tenantId") Integer tenantId);
+    List<ElectricityCabinetServerOperRecordVo> queryList(@Param("createUserName") String createUserName, @Param("eleServerId") Long eleServerId, @Param("offset") Long offset, @Param("size") Long size);
 
-    Long queryCount(@Param("createUserName") String createUserName, @Param("eleServerId") Long eleServerId,
-            @Param("tenantId")  Integer tenantId);
+    Long queryCount(@Param("createUserName") String createUserName, @Param("eleServerId") Long eleServerId);
 }

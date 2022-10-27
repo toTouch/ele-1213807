@@ -119,9 +119,6 @@
         <if test="createUserName != null and createUserName != ''">
             and u.name like concat('%', #{createUserName}, '%')
         </if>
-        <if test="tenantId != null">
-            and ecsor.tenant_id = #{tenantId}
-        </if>
         order by ecsor.create_time desc
         limit #{offset}, #{size}
     </select>
@@ -135,9 +132,6 @@
         ecsor.ele_server_id = #{eleServerId}
         <if test="createUserName != null and createUserName != ''">
             and u.name = #{createUserName}
-        </if>
-        <if test="tenantId != null">
-            and ecsor.tenant_id = #{tenantId}
         </if>
     </select>
 </mapper>

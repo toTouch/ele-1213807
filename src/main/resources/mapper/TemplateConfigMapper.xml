@@ -30,9 +30,6 @@
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>
-            <if test="memberCardExpiringTemplate != null and memberCardExpiringTemplate != ''">
-                member_card_expiring_template = #{memberCardExpiringTemplate},
-            </if>
         </set>
         where id = #{id} and tenant_id = #{tenantId}
     </update>

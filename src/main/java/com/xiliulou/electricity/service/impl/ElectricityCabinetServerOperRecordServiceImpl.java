@@ -128,9 +128,9 @@ public class ElectricityCabinetServerOperRecordServiceImpl implements Electricit
     @Override
     public R queryList(String createUserName, Long eleServerId, Long offset, Long size) {
         List<ElectricityCabinetServerOperRecordVo> data = electricityCabinetServerOperRecordMapper
-                .queryList(createUserName, eleServerId, offset, size, TenantContextHolder.getTenantId());
+                .queryList(createUserName, eleServerId, offset, size);
         
-        Long count = electricityCabinetServerOperRecordMapper.queryCount(createUserName, eleServerId,TenantContextHolder.getTenantId());
+        Long count = electricityCabinetServerOperRecordMapper.queryCount(createUserName, eleServerId);
         return R.ok(new PageDataAndCountVo<>(data, count));
     }
 }
