@@ -9,6 +9,8 @@ import com.xiliulou.electricity.entity.Franchisee;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.entity.UserInfo;
 import com.xiliulou.electricity.mapper.FranchiseeUserInfoMapper;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.query.ModelBatteryDeposit;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -192,6 +194,17 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
         return franchiseeUserInfoMapper.unBindNowBatterySn(franchiseeUserInfo);
     }
 
+    @Override public List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size,
+        Long firstTime, Long lastTime) {
+        return franchiseeUserInfoMapper.batteryMemberCardExpire(offset, size, firstTime, lastTime);
+    }
+
+    @Override
+    public List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime) {
+        return franchiseeUserInfoMapper.carMemberCardExpire(offset, size, firstTime, lastTime);
+    }
+
     @Override
     public R queryBattery() {
         //用户
@@ -308,7 +321,6 @@ public class FranchiseeUserInfoServiceImpl implements FranchiseeUserInfoService 
                 cardDays = 1;
             }
         }
-
 
         if (Objects.nonNull(franchiseeUserInfo.getServiceStatus()) && Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
             //查询用户是否存在电池服务费

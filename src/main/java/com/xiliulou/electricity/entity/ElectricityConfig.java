@@ -81,6 +81,10 @@ public class ElectricityConfig {
      * 是否可以自主开仓
      */
     private Integer isEnableSelfOpen;
+    /**
+     * 是否开启只剩一个格挡退电池
+     */
+    private Integer isEnableReturnBoxCheck;
 
     //人工审核
     public static Integer MANUAL_REVIEW = 0;
@@ -111,5 +115,11 @@ public class ElectricityConfig {
      */
     public static Integer ENABLE_SELF_OPEN = 0;
     public static Integer DISABLE_SELF_OPEN = 1;
+    
+    /**
+     * 是否开启只剩一个格挡退电池 0--开启 1--关闭
+     */
+    public static Integer ENABLE_RETURN_BOX_CHECK = 0;
+    public static Integer DISABLE_RETURN_BOX_CHECK = 1;
 
 }

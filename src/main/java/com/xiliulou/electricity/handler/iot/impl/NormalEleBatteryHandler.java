@@ -1,22 +1,33 @@
 package com.xiliulou.electricity.handler.iot.impl;
 
+import cn.hutool.core.date.DatePattern;
+import com.alibaba.fastjson.JSON;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.constant.MqConstant;
 import com.xiliulou.electricity.dto.ElectricityCabinetOtherSetting;
 import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.handler.iot.AbstractElectricityIotHandler;
 import com.xiliulou.electricity.service.*;
 import com.xiliulou.iot.entity.ReceiverMessage;
+import com.xiliulou.mq.service.RocketMqService;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import shaded.org.apache.commons.lang3.StringUtils;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author: zzlong
@@ -26,7 +37,7 @@ import java.util.Objects;
 @Service(value = ElectricityIotConstant.NORMAL_ELE_BATTERY_HANDLER)
 @Slf4j
 public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
-
+    
     @Autowired
     ElectricityCabinetService electricityCabinetService;
     @Autowired
@@ -45,8 +56,15 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
     NotExistSnService notExistSnService;
     @Autowired
     FranchiseeUserInfoService franchiseeUserInfoService;
-
-
+    @Autowired
+    ElectricityCabinetModelService electricityCabinetModelService;
+    @Autowired
+    RocketMqService rocketMqService;
+    @Autowired
+    MaintenanceUserNotifyConfigService maintenanceUserNotifyConfigService;
+    
+    private static DateTimeFormatter formatter=DateTimeFormatter.ofPattern(DatePattern.NORM_DATETIME_PATTERN);
+    
     public static final String TERNARY_LITHIUM = "TERNARY_LITHIUM";
     public static final String IRON_LITHIUM = "IRON_LITHIUM";
     /**
@@ -140,6 +158,9 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
 
         //保存电池上报其他信息
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
+        
+        //检查柜机电池是否满仓
+        this.checkElectricityCabinetBatteryFull(electricityCabinet);
     }
 
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {
@@ -384,6 +405,72 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
             batteryOtherProperties.setBatteryCoreVList(JsonUtil.toJson(batteryOtherPropertiesQuery.getBatteryCoreVList()));
             batteryOtherPropertiesService.insertOrUpdate(batteryOtherProperties);
         }
+    }
+
+    /**
+     * 柜子电池满仓发送MQ通知
+     *
+     * @param electricityCabinet
+     */
+    private void checkElectricityCabinetBatteryFull(ElectricityCabinet electricityCabinet) {
+    
+        //获取所有启用的格挡
+        List<ElectricityCabinetBox> electricityCabinetBoxes = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinet.getId());
+        if (CollectionUtils.isEmpty(electricityCabinetBoxes)) {
+            return;
+        }
+    
+        //过滤没有电池的格挡
+        List<ElectricityCabinetBox> haveBatteryBoxs = electricityCabinetBoxes.stream().filter(item -> StringUtils.isBlank(item.getSn())).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(haveBatteryBoxs)) {
+            return;
+        }
+    
+        //柜机仓内电池已满  发送MQ消息通知
+        Boolean cacheFlag = redisService.setNx(CacheConstant.FULL_BOX_ELECTRICITY_CACHE + electricityCabinet.getId(), "1", 3600 * 1000L, false);
+        if (cacheFlag) {
+            List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> messageNotifyList = buildAbnormalMessageNotify(electricityCabinet);
+            if (CollectionUtils.isEmpty(messageNotifyList)) {
+                return;
+            }
+        
+            messageNotifyList.forEach(item -> {
+                rocketMqService.sendAsyncMsg(MqConstant.TOPIC_MAINTENANCE_NOTIFY, JsonUtil.toJson(item), "", "", 0);
+                log.info("ELE BATTERY REPORT INFO! ele abnormal notify,msg={}", JsonUtil.toJson(item));
+            });
+        }
+    }
+    
+    private List<MqNotifyCommon<ElectricityAbnormalMessageNotify>> buildAbnormalMessageNotify(ElectricityCabinet electricityCabinet) {
+        MaintenanceUserNotifyConfig notifyConfig = maintenanceUserNotifyConfigService.queryByTenantIdFromCache(electricityCabinet.getTenantId());
+        if (Objects.isNull(notifyConfig) || StringUtils.isBlank(notifyConfig.getPhones())) {
+            log.error("ELE BATTERY REPORT ERROR! not found maintenanceUserNotifyConfig,tenantId={}",
+                    electricityCabinet.getTenantId());
+            return Collections.EMPTY_LIST;
+        }
+        
+        List<String> phones = JSON.parseObject(notifyConfig.getPhones(), List.class);
+        if (CollectionUtils.isEmpty(phones)) {
+            log.error("ELE BATTERY REPORT ERROR! phones is empty,tenantId={}", electricityCabinet.getTenantId());
+            return Collections.EMPTY_LIST;
+        }
+        
+        return phones.parallelStream().map(item -> {
+            ElectricityAbnormalMessageNotify abnormalMessageNotify = new ElectricityAbnormalMessageNotify();
+            abnormalMessageNotify.setAddress(electricityCabinet.getAddress());
+            abnormalMessageNotify.setEquipmentNumber(electricityCabinet.getName());
+            abnormalMessageNotify.setExceptionType(ElectricityAbnormalMessageNotify.BATTERY_FULL_TYPE);
+            abnormalMessageNotify.setDescription(ElectricityAbnormalMessageNotify.BATTERY_FULL_MSG);
+            abnormalMessageNotify.setReportTime(formatter.format(LocalDateTime.now()));
+            
+            MqNotifyCommon<ElectricityAbnormalMessageNotify> abnormalMessageNotifyCommon = new MqNotifyCommon<>();
+            abnormalMessageNotifyCommon.setTime(System.currentTimeMillis());
+            abnormalMessageNotifyCommon.setType(MqNotifyCommon.TYPE_ABNORMAL_ALARM);
+            abnormalMessageNotifyCommon.setPhone(item);
+            abnormalMessageNotifyCommon.setData(abnormalMessageNotify);
+            return abnormalMessageNotifyCommon;
+        }).collect(Collectors.toList());
+        
     }
 
     /**
