@@ -29,6 +29,14 @@ public class TemplateConfigEntity implements Serializable {
     //     */
     //    private String memberCardExpiringTemplate;
     /**
+     *  电池月卡快过期提醒模板
+     */
+    private String batteryMemberCardExpiringTemplate;
+    /**
+     * 租车月卡快过期提醒模板
+     */
+    private String carMemberCardExpiringTemplate;
+    /**
      * 租户id
      */
     private Integer tenantId;

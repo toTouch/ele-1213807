@@ -193,6 +193,10 @@ public interface CacheConstant {
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
     String CACHE_ELE_SET_MAP_KEY = "ele_set_map_key:";
+    String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_battery_member_card_expired_last_time:";
+    String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LAST_TIME = "cache_ele_car_member_card_expired_last_time:";
+    String CACHE_ELE_BATTERY_MEMBER_CARD_EXPIRED_LOCK = "cache_ele_battery_member_card_expired_lock:";
+    String CACHE_ELE_CAR_MEMBER_CARD_EXPIRED_LOCK = "cache_ele_car_member_card_expired_lock:";
 
     String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
     String OTA_PROCESS_CACHE = "ota_process_cache";
