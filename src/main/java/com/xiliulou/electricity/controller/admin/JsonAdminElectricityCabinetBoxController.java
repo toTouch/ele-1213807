@@ -6,6 +6,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.entity.ElectricityCabinetBox;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
+import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.mns.EleHardwareHandlerManager;
 import com.xiliulou.electricity.query.ElectricityCabinetBoxQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
@@ -14,7 +15,9 @@ import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.query.UpdateBoxesQuery;
 import com.xiliulou.electricity.query.UpdateBoxesStatusQuery;
 import com.xiliulou.electricity.query.UpdateUsableStatusQuery;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
+import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -81,12 +84,15 @@ public class JsonAdminElectricityCabinetBoxController {
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+        if (!Objects.equals(tenantId,1)){
+            log.error("ELECTRICITY  ERROR! query electricityCabinetBoxList super not permission tenantId:{}", tenantId);
+            return R.fail("ELECTRICITY.0066", "用户权限不足");
+        }
 
         ElectricityCabinetBoxQuery electricityCabinetBoxQuery = ElectricityCabinetBoxQuery.builder()
                 .offset(offset)
                 .size(size)
-                .electricityCabinetId(electricityCabinetId)
-                .tenantId(tenantId).build();
+                .electricityCabinetId(electricityCabinetId).build();
 
         return electricityCabinetBoxService.queryList(electricityCabinetBoxQuery);
     }

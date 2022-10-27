@@ -3,4 +3,32 @@
 <mapper namespace="com.xiliulou.electricity.mapper.EleAuthEntryMapper">
 
 
+    <update id="update">
+        update t_ele_auth_entry
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="isUse != null">
+                is_use = #{isUse},
+            </if>
+            <if test="type != null and type != ''">
+                type = #{type},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="remark != null and remark != ''">
+                remark = #{remark},
+            </if>
+            <if test="identify != null">
+                identify = #{identify},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
 </mapper>

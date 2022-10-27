@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
@@ -61,11 +62,16 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
             if (ObjectUtil.isEmpty(eleAuthEntry.getId())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
+
+            if (!Objects.equals(eleAuthEntry.getTenantId(),tenantId)) {
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
+
             if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
-            eleAuthEntryMapper.update(eleAuthEntry,new LambdaQueryWrapper<EleAuthEntry>().eq(EleAuthEntry::getId,eleAuthEntry.getId()).eq(EleAuthEntry::getTenantId,tenantId));
+            eleAuthEntryMapper.update(eleAuthEntry);
             redisService.delete(CacheConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
         }
         return R.ok();
