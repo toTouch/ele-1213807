@@ -65,8 +65,8 @@ public class ElectricityCabinetServerServiceImpl
      * @return 实例对象
      */
     @Override
-    public ElectricityCabinetServer queryByIdFromDB(Long id, Integer tenantId) {
-        return this.electricityCabinetServerMapper.queryById(id, tenantId);
+    public ElectricityCabinetServer queryByIdFromDB(Long id) {
+        return this.electricityCabinetServerMapper.queryById(id);
     }
 
     /**
@@ -140,7 +140,7 @@ public class ElectricityCabinetServerServiceImpl
 
     @Override
     public R queryList(String eleName, String deviceName, String tenantName, Long serverTimeStart, Long serverTimeEnd,
-                       Long offset, Long size, Integer tenantId) {
+                       Long offset, Long size) {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
@@ -148,7 +148,7 @@ public class ElectricityCabinetServerServiceImpl
         List<ElectricityCabinetServerVo> result = new ArrayList<>();
 
         List<ElectricityCabinetServer> data = electricityCabinetServerMapper
-                .queryList(eleName, deviceName, tenantName, serverTimeStart, tenantId, serverTimeEnd, offset, size);
+                .queryList(eleName, deviceName, tenantName, serverTimeStart, serverTimeEnd, offset, size);
         if (DataUtil.collectionIsUsable(data)) {
             data.forEach(item -> {
                 ElectricityCabinetServerVo vo = new ElectricityCabinetServerVo();
@@ -176,12 +176,12 @@ public class ElectricityCabinetServerServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R deleteOne(Long id, Integer tenantId) {
+    public R deleteOne(Long id) {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
 
-        ElectricityCabinetServer electricityCabinetServer = queryByIdFromDB(id, tenantId);
+        ElectricityCabinetServer electricityCabinetServer = queryByIdFromDB(id);
         if (Objects.isNull(electricityCabinetServer)) {
             return R.fail("100228", "未找到电柜服务信息");
         }
@@ -200,7 +200,7 @@ public class ElectricityCabinetServerServiceImpl
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd, Integer tenantId) {
+    public R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd) {
         if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("ELECTRICITY.006", "用户权限不足");
         }
@@ -210,7 +210,7 @@ public class ElectricityCabinetServerServiceImpl
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        ElectricityCabinetServer electricityCabinetServer = this.queryByIdFromDB(id, tenantId);
+        ElectricityCabinetServer electricityCabinetServer = this.queryByIdFromDB(id);
         if (Objects.isNull(electricityCabinetServer)) {
             return R.fail("100228", "未找到电柜服务信息");
         }

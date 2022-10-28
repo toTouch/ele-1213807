@@ -32,11 +32,9 @@ public class JsonAdminElectricityCabinetServerController {
                        @RequestParam(value = "serverEndTime", required = false) Long serverEndTime,
                        @RequestParam("offset") Long offset, @RequestParam("size") Long size) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
 
         return electricityCabinetServerService
-                .queryList(eleName, deviceName, tenantName, serverBeginTime, serverEndTime, offset, size, tenantId);
+                .queryList(eleName, deviceName, tenantName, serverBeginTime, serverEndTime, offset, size);
     }
 
     @DeleteMapping("admin/electricityCabinetServer/delete/{id}")
@@ -45,7 +43,7 @@ public class JsonAdminElectricityCabinetServerController {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        return electricityCabinetServerService.deleteOne(id, tenantId);
+        return electricityCabinetServerService.deleteOne(id);
     }
 
     @PutMapping("admin/electricityCabinetServer/update")
@@ -53,9 +51,6 @@ public class JsonAdminElectricityCabinetServerController {
                        @RequestParam(value = "serverBeginTime") Long serverBeginTime,
                        @RequestParam(value = "serverEndTime") Long serverEndTime) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
-        return electricityCabinetServerService.updateOne(id, serverBeginTime, serverEndTime, tenantId);
+        return electricityCabinetServerService.updateOne(id, serverBeginTime, serverEndTime);
     }
 }
