@@ -27,12 +27,8 @@ public class JsonAdminEleOtherConfigController extends BaseController {
     @GetMapping("/admin/ele/other/config/{eid}")
     public R queryEleOtherConfigByCid(@PathVariable("eid") Integer eid) {
 
-        //租户
-        Integer tenantId = TenantContextHolder.getTenantId();
-
         EleOtherConfig eleOtherConfig = eleOtherConfigService.queryByEidFromCache(eid);
-
-        if (!Objects.equals(eleOtherConfig.getTenantId(), tenantId)) {
+        if (Objects.isNull(eleOtherConfig) || !Objects.equals(eleOtherConfig.getTenantId(), TenantContextHolder.getTenantId())) {
             return R.ok();
         }
 
