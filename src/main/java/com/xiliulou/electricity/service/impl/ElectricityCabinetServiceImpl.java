@@ -137,7 +137,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     ElectricityCabinetFileService electricityCabinetFileService;
     @Autowired
     StorageConfig storageConfig;
-    @Autowired private ElectricityCabinetServerService electricityCabinetServerService;
+    @Autowired
+    private ElectricityCabinetServerService electricityCabinetServerService;
 
     @Qualifier("aliyunOssService")
     @Autowired
@@ -343,7 +344,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
             //修改柜机服务时间信息
             electricityCabinetServerService
-                .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
+                    .insertOrUpdateByElectricityCabinet(electricityCabinet, oldElectricityCabinet);
             return null;
         });
         return R.ok();
@@ -460,7 +461,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                 e.setIsLock(isLock);
 
                 ElectricityCabinetServer electricityCabinetServer = electricityCabinetServerService
-                    .queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
+                        .queryByProductKeyAndDeviceName(e.getProductKey(), e.getDeviceName());
                 if (Objects.nonNull(electricityCabinetServer)) {
                     e.setServerBeginTime(electricityCabinetServer.getServerBeginTime());
                     e.setServerEndTime(electricityCabinetServer.getServerEndTime());
@@ -1178,14 +1179,17 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R checkOpenSessionId(String sessionId) {
-        String s = redisService.get(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId);
-        if (StrUtil.isEmpty(s)) {
+        String result = redisService.get(CacheConstant.ELE_OPERATOR_CACHE_KEY + sessionId);
+        if (StrUtil.isEmpty(result)) {
             return R.ok("0001");
         }
-        if ("true".equalsIgnoreCase(s)) {
+
+        Map<String, Object> map = JsonUtil.fromJson(result, Map.class);
+        String value=map.get("success").toString();
+        if ("true".equalsIgnoreCase(value)) {
             return R.ok("0002");
         } else {
-            return R.ok("0003");
+            return R.ok(map);
         }
     }
 
@@ -2144,6 +2148,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
+    @Deprecated
     public Pair<Boolean, Integer> findUsableEmptyCellNo(Integer eid) {
         List<ElectricityCabinetBox> usableEmptyCellNo = electricityCabinetBoxService.findUsableEmptyCellNo(eid);
         if (!DataUtil.collectionIsUsable(usableEmptyCellNo)) {
@@ -2333,7 +2338,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         Double fullyCharged = electricityCabinet.getFullyCharged();
 
 //        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(electricityCabinetId);
-        List<ElectricityCabinetBox> electricityCabinetBoxList =  electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
+        List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryAllBoxByElectricityCabinetId(electricityCabinetId);
         if (!CollectionUtils.isEmpty(electricityCabinetBoxList)) {
             List<ElectricityCabinetBoxVO> electricityCabinetBoxVOList = Lists.newArrayList();
 
@@ -2349,7 +2354,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 //                    if (Objects.nonNull(electricityBattery.getModel())) {
 //                        electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityBattery.getModel()).toString());
 //                    }
-                    if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())){
+                    if (Objects.nonNull(electricityCabinetBoxVO.getBatteryType())) {
                         electricityCabinetBoxVO.setBatteryType(BatteryConstant.acquireBattery(electricityCabinetBoxVO.getBatteryType()).toString());
                     }
                 }
@@ -2963,10 +2968,10 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
-        List<ElectricityCabinetFile> electricityCabinetFiles=electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId.longValue(),ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
-        List<String> cabinetPhoto=new ArrayList<>();
+        List<ElectricityCabinetFile> electricityCabinetFiles = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId.longValue(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
+        List<String> cabinetPhoto = new ArrayList<>();
 
-        for (ElectricityCabinetFile electricityCabinetFile:electricityCabinetFiles){
+        for (ElectricityCabinetFile electricityCabinetFile : electricityCabinetFiles) {
             if (StringUtils.isNotEmpty(electricityCabinetFile.getName())) {
                 cabinetPhoto.add("https://" + storageConfig.getUrlPrefix() + "/" + electricityCabinetFile.getName());
             }

@@ -1357,7 +1357,7 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
 
             Pair<Boolean, Integer> usableEmptyCellNo = electricityCabinetService.findUsableEmptyCellNo(electricityCabinet.getId());
             if (!usableEmptyCellNo.getLeft()) {
-                return Triple.of(false, "100215", "换电柜暂无空仓");
+                return Triple.of(false, "100215", "当前无空余格挡可供换电，请联系客服！");
             }
 
             Triple<Boolean, String, Object> usableBatteryCellNoResult = electricityCabinetService.findUsableBatteryCellNoV2(electricityCabinet.getId(), franchiseeUserInfo.getBatteryType(), electricityCabinet.getFullyCharged(), store.getFranchiseeId());
