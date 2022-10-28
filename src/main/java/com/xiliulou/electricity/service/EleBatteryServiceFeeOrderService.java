@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleBatteryServiceFeeOrder;
 import com.xiliulou.electricity.entity.EleRefundOrder;
 import com.xiliulou.electricity.entity.RefundOrder;
+import com.xiliulou.electricity.query.BatteryServiceFeeQuery;
 import com.xiliulou.electricity.query.EleRefundQuery;
 import com.xiliulou.electricity.vo.HomePageTurnOverGroupByWeekDayVo;
 import com.xiliulou.pay.weixinv3.dto.WechatJsapiRefundOrderCallBackResource;
@@ -50,6 +51,10 @@ public interface EleBatteryServiceFeeOrderService {
      * @return
      */
     R queryListForAdmin(Long offset, Long size, Long startTime, Long endTime, Long uid, Integer status);
+
+    R queryList(BatteryServiceFeeQuery batteryServiceFeeQuery);
+
+    R queryCount(BatteryServiceFeeQuery batteryServiceFeeQuery);
 
     /**
      * 用户的总消费额

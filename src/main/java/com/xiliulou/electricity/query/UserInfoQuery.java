@@ -26,6 +26,7 @@ public class UserInfoQuery {
     private Integer serviceStatus;
 
     private String nowElectricityBatterySn;
+    private Long batteryId;
     private Long franchiseeId;
 
     private Long memberCardExpireTimeBegin;
@@ -39,4 +40,9 @@ public class UserInfoQuery {
     private String cardName;
 
     private Long uid;
+
+    /**
+     * 排序方式
+     */
+    private Integer sortType;
 }

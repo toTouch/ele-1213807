@@ -34,6 +34,9 @@ public class JsonAdminCouponController {
      */
     @Autowired
     private CouponService couponService;
+
+    @Autowired
+    FranchiseeService franchiseeService;
     @Autowired
     UserDataScopeService userDataScopeService;
 

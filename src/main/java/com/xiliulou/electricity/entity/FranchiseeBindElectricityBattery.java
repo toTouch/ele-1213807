@@ -15,6 +15,7 @@ import lombok.NoArgsConstructor;
  * @author lxc
  * @since 2020-11-25 11:00:14
  */
+@Deprecated
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,7 +30,7 @@ public class FranchiseeBindElectricityBattery {
     /**
      * franchiseeId
      */
-    private Integer franchiseeId;
+//    private Integer franchiseeId;
     /**
      * 电池ID
      */

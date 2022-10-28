@@ -105,6 +105,96 @@ public class JsonAdminRentBatteryOrderController {
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "orderId", required = false) String orderId) {
 
+	@GetMapping(value = "/admin/rentBatteryOrder/list/super")
+	public R querySuperList(@RequestParam("size") Long size,
+							@RequestParam("offset") Long offset,
+							@RequestParam(value = "status", required = false) String status,
+							@RequestParam(value = "type", required = false) Integer type,
+							@RequestParam(value = "name", required = false) String name,
+							@RequestParam(value = "phone", required = false) String phone,
+							@RequestParam(value = "beginTime", required = false) Long beginTime,
+							@RequestParam(value = "endTime", required = false) Long endTime,
+							@RequestParam(value = "orderId", required = false) String orderId) {
+		if (size < 0 || size > 50) {
+			size = 10L;
+		}
+
+		if (offset < 0) {
+			offset = 0L;
+		}
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (user.getTenantId() != 1) {
+			return R.fail("权限不足");
+		}
+
+		RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+				.offset(offset)
+				.size(size)
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.status(status)
+				.orderId(orderId)
+				.type(type)
+				.eleIdList(null)
+				.tenantId(null).build();
+
+		return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
+	}
+
+	@GetMapping(value = "/admin/rentBatteryOrder/queryCount/super")
+	public R querySuperCount(@RequestParam(value = "status", required = false) String status,
+							 @RequestParam(value = "type", required = false) Integer type,
+							 @RequestParam(value = "name", required = false) String name,
+							 @RequestParam(value = "phone", required = false) String phone,
+							 @RequestParam(value = "beginTime", required = false) Long beginTime,
+							 @RequestParam(value = "endTime", required = false) Long endTime,
+							 @RequestParam(value = "orderId", required = false) String orderId) {
+
+		//用户区分
+		TokenUser user = SecurityUtils.getUserInfo();
+		if (Objects.isNull(user)) {
+			log.error("ELECTRICITY  ERROR! not found user ");
+			return R.fail("ELECTRICITY.0001", "未找到用户");
+		}
+
+		if (user.getTenantId() != 1) {
+			return R.fail("权限不足");
+		}
+
+		RentBatteryOrderQuery rentBatteryOrderQuery = RentBatteryOrderQuery.builder()
+				.name(name)
+				.phone(phone)
+				.beginTime(beginTime)
+				.endTime(endTime)
+				.status(status)
+				.orderId(orderId)
+				.type(type)
+				.eleIdList(null)
+				.tenantId(null).build();
+
+		return rentBatteryOrderService.queryCount(rentBatteryOrderQuery);
+	}
+
+
+	//列表查询
+	@GetMapping(value = "/admin/rentBatteryOrder/queryCount")
+	public R queryCount(@RequestParam(value = "status", required = false) String status,
+			@RequestParam(value = "type", required = false) Integer type,
+			@RequestParam(value = "name", required = false) String name,
+			@RequestParam(value = "phone", required = false) String phone,
+			@RequestParam(value = "beginTime", required = false) Long beginTime,
+			@RequestParam(value = "endTime", required = false) Long endTime,
+			@RequestParam(value = "orderId", required = false) String orderId) {
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");

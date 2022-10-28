@@ -64,12 +64,12 @@ public class JsonAdminUserCouponController {
         return userCouponService.queryCount(userCouponQuery);
     }
 
-    //批量发放优惠券
-    @PostMapping(value = "/admin/userCoupon/batchRelease")
-    public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
-        Long[] uids = (Long[])
-                JSONUtil.parseArray(uid).toArray(Long[].class);
-        return userCouponService.batchRelease(id, uids);
-    }
+	//批量发放优惠券
+	@PostMapping(value = "/admin/userCoupon/batchRelease")
+	public R batchRelease(@RequestParam("id") Integer id, @RequestParam("uid") String uid) {
+		Long[] uids = (Long[])
+				JSONUtil.parseArray(uid).toArray(Long[].class);
+		return userCouponService.adminBatchRelease(id, uids);
+	}
 
 }

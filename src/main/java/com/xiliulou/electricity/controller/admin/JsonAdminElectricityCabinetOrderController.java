@@ -114,6 +114,56 @@ public class JsonAdminElectricityCabinetOrderController {
         return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
     }
 
+
+    @GetMapping("/admin/electricityCabinetOrder/list/super")
+    public R querySuperList(@RequestParam("size") Long size,
+                            @RequestParam("offset") Long offset,
+                            @RequestParam(value = "orderId", required = false) String orderId,
+                            @RequestParam(value = "phone", required = false) String phone,
+                            @RequestParam(value = "status", required = false) String status,
+                            @RequestParam(value = "beginTime", required = false) Long beginTime,
+                            @RequestParam(value = "endTime", required = false) Long endTime,
+                            @RequestParam(value = "source", required = false) Integer source,
+                            @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+                            @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                            @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+
+        if (offset < 0) {
+            offset = 0L;
+        }
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (user.getTenantId() != 1) {
+            return R.fail("权限不足");
+        }
+
+        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+                .offset(offset)
+                .size(size)
+                .orderId(orderId)
+                .phone(phone)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .paymentMethod(paymentMethod)
+                .eleIdList(null)
+                .source(source)
+                .electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo)
+                .tenantId(null).build();
+        return electricityCabinetOrderService.queryList(electricityCabinetOrderQuery);
+    }
+
     //换电柜订单查询
     @GetMapping("/admin/electricityCabinetOrder/queryCount")
     public R queryCount(@RequestParam(value = "orderId", required = false) String orderId,
@@ -173,6 +223,43 @@ public class JsonAdminElectricityCabinetOrderController {
                 .electricityCabinetName(electricityCabinetName)
                 .oldCellNo(oldCellNo)
                 .tenantId(TenantContextHolder.getTenantId()).build();
+        return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
+    }
+
+    @GetMapping("/admin/electricityCabinetOrder/queryCount/super")
+    public R querySuperCount(@RequestParam(value = "orderId", required = false) String orderId,
+                             @RequestParam(value = "phone", required = false) String phone,
+                             @RequestParam(value = "status", required = false) String status,
+                             @RequestParam(value = "beginTime", required = false) Long beginTime,
+                             @RequestParam(value = "endTime", required = false) Long endTime,
+                             @RequestParam(value = "source", required = false) Integer source,
+                             @RequestParam(value = "paymentMethod", required = false) Integer paymentMethod,
+                             @RequestParam(value = "electricityCabinetName", required = false) String electricityCabinetName,
+                             @RequestParam(value = "oldCellNo", required = false) Integer oldCellNo) {
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        if (user.getTenantId() != 1) {
+            return R.fail("权限不足");
+        }
+
+        ElectricityCabinetOrderQuery electricityCabinetOrderQuery = ElectricityCabinetOrderQuery.builder()
+                .orderId(orderId)
+                .phone(phone)
+                .status(status)
+                .beginTime(beginTime)
+                .endTime(endTime)
+                .paymentMethod(paymentMethod)
+                .eleIdList(null)
+                .source(source)
+                .electricityCabinetName(electricityCabinetName)
+                .oldCellNo(oldCellNo)
+                .tenantId(null).build();
         return electricityCabinetOrderService.queryCount(electricityCabinetOrderQuery);
     }
 

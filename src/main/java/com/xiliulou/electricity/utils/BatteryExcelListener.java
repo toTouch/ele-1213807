@@ -1,13 +1,8 @@
 package com.xiliulou.electricity.utils;
 
-import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.core.util.ObjectUtil;
 import com.alibaba.excel.context.AnalysisContext;
 import com.alibaba.excel.event.AnalysisEventListener;
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.baomidou.mybatisplus.core.toolkit.Wrappers;
-import com.xiliulou.core.exception.CustomBusinessException;
-import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.ElectricityBattery;
 import com.xiliulou.electricity.query.BatteryExcelQuery;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
@@ -113,8 +108,8 @@ public class BatteryExcelListener extends AnalysisEventListener<BatteryExcelQuer
 					batteryExcelQuery.setVoltage(0);
 				}
 				electricityBattery.setVoltage(batteryExcelQuery.getVoltage());
-
-				electricityBattery.setStatus(ElectricityBattery.STOCK_STATUS);
+				electricityBattery.setBusinessStatus(ElectricityBattery.BUSINESS_STATUS_INPUT);
+				electricityBattery.setPhysicsStatus(ElectricityBattery.PHYSICS_STATUS_NOT_WARE_HOUSE);
 				electricityBattery.setCreateTime(System.currentTimeMillis());
 				electricityBattery.setUpdateTime(System.currentTimeMillis());
 				electricityBattery.setTenantId(tenantId);

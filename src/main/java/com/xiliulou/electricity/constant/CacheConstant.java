@@ -64,9 +64,17 @@ public interface CacheConstant {
     //自助开仓
     String SELF_OPEN_CALL_CACHE_KEY = "self_open_cell_cache_key";
 
+    // 换电柜与电池加盟商不一致开门 幂等锁
+    String FRANCHISEES_NOT_SAME_OPEN_DOOR_LOCK = "franchisees_not_same_lock_cache_key:";
+
+    // 换电柜与电池加盟商不一致开门
+    String FRANCHISEES_NOT_SAME_OPEN_DOOR = "franchisees_not_same_cache_key:";
 
     //换电柜平台修改缓存
     String ELE_CONFIG_EDIT_UID = "ele_config_edit_uid:";
+
+    //换电柜租户地图key
+    String ELE_TENANT_MAP_EDIT_UID = "ele_tenant_map_edit_uid:";
 
 
     //实名认证资料项缓存key
@@ -87,7 +95,8 @@ public interface CacheConstant {
     String UNLOCK_CABINET_CACHE = "unlock_cabinet_cache:";
 
     //电柜上报数据
-    String OTHER_CONFIG_CACHE = "other_config_cache:";
+//    String OTHER_CONFIG_CACHE = "other_config_cache:";
+    String OTHER_CONFIG_CACHE_V_2 = "other_config_cache_v2:";
 
     String ELE_ORDER_WARN_MSG_CACHE_KEY = "ele_order_warn_msg:";
 
@@ -183,4 +192,8 @@ public interface CacheConstant {
      */
     String CACHE_USER_INFO = "user_info:";
     String CACHE_ELE_SET_CONFIG = "ele_set_config:";
+    String CACHE_ELE_SET_MAP_KEY = "ele_set_map_key:";
+
+    String MEMBER_CARD_EXPIRING_SOON = "member_card_expiring_soon_cache:";
+    String OTA_PROCESS_CACHE = "ota_process_cache";
 }

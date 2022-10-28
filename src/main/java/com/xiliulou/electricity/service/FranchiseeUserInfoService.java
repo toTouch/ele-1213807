@@ -2,8 +2,9 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
+import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
+import org.apache.commons.lang3.tuple.Triple;
 
 import java.util.List;
 
@@ -35,15 +36,15 @@ public interface FranchiseeUserInfoService {
 
     Integer minCountForOffLineEle(Long id);
 
-	Integer plusCount(Long id);
+    Integer plusCount(Long id);
 
     void updateByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
-	void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
+    void updateRefund(FranchiseeUserInfo franchiseeUserInfo);
 
-	FranchiseeUserInfo insert(FranchiseeUserInfo insertFranchiseeUserInfo);
+    FranchiseeUserInfo insert(FranchiseeUserInfo insertFranchiseeUserInfo);
 
-	Integer queryCountByFranchiseeId(Long id);
+    Integer queryCountByFranchiseeId(Long id);
 
     R updateBattery(String batteryType);
 
@@ -51,9 +52,9 @@ public interface FranchiseeUserInfoService {
 
     Integer deleteByUserInfoId(Long userInfoId);
 
-	void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
+    void updateByOrder(FranchiseeUserInfo franchiseeUserInfo);
 
-	void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
+    void updateOrderByUserInfoId(FranchiseeUserInfo franchiseeUserInfo);
 
     EleBatteryServiceFeeVO queryUserBatteryServiceFee(Long uid);
 
@@ -65,6 +66,7 @@ public interface FranchiseeUserInfoService {
 
     /**
      * 根据套餐id查询用户
+     *
      * @param id
      * @return
      */
@@ -73,4 +75,12 @@ public interface FranchiseeUserInfoService {
     List<FranchiseeUserInfo> selectByFranchiseeId(Long id);
 
     void updateMemberCardExpire(FranchiseeUserInfo franchiseeUserInfo);
+
+    Integer unBindNowBatterySn(FranchiseeUserInfo franchiseeUserInfo);
+
+    List<MemberCardExpiringSoonQuery> queryMemberCardExpiringSoon(int offset, int size, long now, long threeDaysLater);
+
+    FranchiseeUserInfo selectByNowBattery(String sn);
+
+    Triple<Boolean, String, Object> updateServiceStatus(Long uid, Integer serviceStatus);
 }

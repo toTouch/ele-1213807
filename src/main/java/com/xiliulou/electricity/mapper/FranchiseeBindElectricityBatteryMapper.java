@@ -9,6 +9,7 @@ import org.apache.ibatis.annotations.Delete;
  * @author makejava
  * @since 2020-11-25 11:00:14
  */
+@Deprecated
 public interface FranchiseeBindElectricityBatteryMapper extends BaseMapper<FranchiseeBindElectricityBattery> {
 
     @Delete("delete  FROM t_franchisee_bind_electricity_battery  WHERE franchisee_id = #{franchiseeId}")

@@ -142,6 +142,22 @@ public interface ElectricityCabinetService {
 
     R homepageBatteryAnalysis(HomepageBatteryFrequencyQuery homepageBatteryFrequencyQuery);
 
+    R queryElectricityCabinetFileById(Integer electricityCabinetId);
 
     List<ElectricityCabinet> selectBystoreIds(List<Long> storeIds);
+    R acquireIdcardFileSign();
+
+    R queryName(Integer tenant,Integer id);
+
+    R superAdminQueryName(Integer id);
+
+
+    R checkOtaUpgradeSession(String sessionId);
+
+    R closeOtaUpgradeSession(String sessionId);
+
+    R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery);
+    
+    
+    R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery);
 }

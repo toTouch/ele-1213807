@@ -1,8 +1,5 @@
 package com.xiliulou.electricity.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -20,7 +17,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @Builder
 public class UserBatteryInfoVO {
-
 
     /**
      * 手机号
@@ -127,6 +123,7 @@ public class UserBatteryInfoVO {
      */
     private Integer usableStatus;
 
+
     /**
      * 月卡停启用状态 0--启用 1--停用
      */
@@ -138,4 +135,12 @@ public class UserBatteryInfoVO {
     private Long disableMemberCardTime;
 
     private Integer modelType;
+
+    private String orderId;
+
+    private Long storeId;
+    /**
+     * 电池业务状态
+     */
+    private Integer businessStatus;
 }
