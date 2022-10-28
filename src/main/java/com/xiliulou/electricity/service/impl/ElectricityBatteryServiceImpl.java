@@ -307,7 +307,11 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public R queryById(Long electricityBatteryId) {
         ElectricityBattery electricityBattery = electricitybatterymapper.selectById(electricityBatteryId,TenantContextHolder.getTenantId());
-
+        if(Objects.isNull(electricityBattery)){
+            log.error("ELE ERROR, not found electricity battery id={}", electricityBatteryId);
+            return R.fail("ELECTRICITY.0020", "电池不存在!");
+        }
+        
         ElectricityBatteryVO electricityBatteryVO = new ElectricityBatteryVO();
         BeanUtil.copyProperties(electricityBattery, electricityBatteryVO);
 

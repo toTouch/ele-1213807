@@ -244,21 +244,14 @@ public class RoleServiceImpl implements RoleService {
         if (!StrUtil.isEmpty(jsonRoles)) {
             return JsonUtil.fromJsonArray(jsonRoles, Long.class);
         }
-
+    
         List<Role> roles = userRoleService.queryByUid(uid);
         if (DataUtil.collectionIsUsable(roles)) {
-            roles = roles.stream()
-                    .filter(item -> Objects.equals(item.getTenantId(), TenantContextHolder.getTenantId()))
-                    .collect(Collectors.toList());
-            if (CollectionUtils.isEmpty(roles)) {
-                return Collections.emptyList();
-            }
-
             List<Long> rolesIds = roles.stream().map(Role::getId).collect(Collectors.toList());
             redisService.set(CacheConstant.CACHE_USER_ROLE_RELATION + uid, JsonUtil.toJson(rolesIds));
             return rolesIds;
         }
-
+    
         return Collections.emptyList();
     }
 
