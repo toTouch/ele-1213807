@@ -121,5 +121,9 @@
        where id = #{id}
 	</update>
 
+    <update id="update">
+        update t_electricity_member_card
+    </update>
+
 
 </mapper>

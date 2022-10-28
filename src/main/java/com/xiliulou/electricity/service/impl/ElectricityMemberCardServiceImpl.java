@@ -143,7 +143,7 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
             electricityMemberCard.setBatteryType(BatteryConstant.acquireBatteryShort(Integer.valueOf(electricityMemberCard.getBatteryType())));
         }
 
-        Integer update = baseMapper.update(electricityMemberCard, new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()).eq(ElectricityMemberCard::getTenantId, tenantId));
+        Integer update = baseMapper.update(electricityMemberCard);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //先删再改
