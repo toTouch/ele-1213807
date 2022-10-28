@@ -106,6 +106,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
             return R.fail("ELECTRICITY.0011", "型号已绑定换电柜，不能操作");
         }
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
+        electricityCabinetModel.setTenantId(tenantId);
         int update = electricityCabinetModelMapper.update(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //更新缓存
@@ -139,6 +140,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         electricityCabinetModel.setId(id);
         electricityCabinetModel.setUpdateTime(System.currentTimeMillis());
         electricityCabinetModel.setDelFlag(ElectricityCabinetModel.DEL_DEL);
+        electricityCabinetModel.setTenantId(tenantId);
         int update = electricityCabinetModelMapper.update(electricityCabinetModel);
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
