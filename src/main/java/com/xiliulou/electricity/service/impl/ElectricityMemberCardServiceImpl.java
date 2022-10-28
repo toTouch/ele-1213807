@@ -181,7 +181,8 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
         ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
         electricityMemberCard.setId(id);
         electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
-        Integer update = baseMapper.update(electricityMemberCard, new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()).eq(ElectricityMemberCard::getTenantId, tenantId));
+        electricityMemberCard.setTenantId(tenantId);
+        Integer update = baseMapper.update(electricityMemberCard);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
