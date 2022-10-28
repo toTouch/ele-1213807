@@ -169,9 +169,6 @@
             <if test="activityId != null">
                 activity_id = #{activityId},
             </if>
-            <if test="maxUseDistance != null">
-                max_use_distance = #{maxUseDistance},
-            </if>
             <if test="cardModel != null">
                 card_model = #{cardModel},
             </if>
