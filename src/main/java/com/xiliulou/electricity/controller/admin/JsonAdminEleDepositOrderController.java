@@ -198,16 +198,15 @@ public class JsonAdminEleDepositOrderController {
             log.error("ELECTRICITY  ERROR! not found user ");
             throw new CustomBusinessException("查不到订单");
         }
-
+    
         List<Long> franchiseeIds = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
+            if (CollectionUtils.isEmpty(franchiseeIds)) {
+                throw new CustomBusinessException("查不到订单");
+            }
         }
-
-        if (CollectionUtils.isEmpty(franchiseeIds)) {
-            throw new CustomBusinessException("查不到订单");
-        }
-
+        
         EleDepositOrderQuery eleDepositOrderQuery = EleDepositOrderQuery.builder()
                 .name(name)
                 .phone(phone)

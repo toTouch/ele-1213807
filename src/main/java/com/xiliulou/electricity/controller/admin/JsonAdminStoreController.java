@@ -210,28 +210,24 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //1、先找到加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (ObjectUtil.isEmpty(franchisee)) {
-            return R.ok(new ArrayList<>());
+        
+        
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
-
-        List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
-
-        if (ObjectUtil.isEmpty(storeList)) {
-            return R.ok(new ArrayList<>());
+        if(CollectionUtils.isEmpty(franchiseeIds)){
+            return R.ok(Collections.EMPTY_LIST);
         }
-        //2、再找加盟商绑定的门店
-        List<Long> storeIdList = new ArrayList<>();
-        for (Store store : storeList) {
-            storeIdList.add(store.getId());
+        
+        List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+        if (CollectionUtils.isEmpty(storeList)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
-        if (ObjectUtil.isEmpty(storeIdList)) {
-            return R.ok(new ArrayList<>());
-        }
-
-        storeQuery.setStoreIdList(storeIdList);
+    
+        List<Long> storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
+    
+        storeQuery.setStoreIdList(storeIds);
 
         return storeService.queryList(storeQuery);
     }
@@ -257,28 +253,23 @@ public class JsonAdminStoreController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
-        //1、先找到加盟商
-        Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
-        if (ObjectUtil.isEmpty(franchisee)) {
-            return R.ok(0);
+    
+        List<Long> franchiseeIds = null;
+        if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
         }
-
-        List<Store> storeList = storeService.queryByFranchiseeId(franchisee.getId());
-
-        if (ObjectUtil.isEmpty(storeList)) {
-            return R.ok(0);
+        if(CollectionUtils.isEmpty(franchiseeIds)){
+            return R.ok(Collections.EMPTY_LIST);
         }
-        //2、再找加盟商绑定的门店
-        List<Long> storeIdList = new ArrayList<>();
-        for (Store store : storeList) {
-            storeIdList.add(store.getId());
+    
+        List<Store> storeList = storeService.selectByFranchiseeIds(franchiseeIds);
+        if (CollectionUtils.isEmpty(storeList)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
-        if (ObjectUtil.isEmpty(storeIdList)) {
-            return R.ok(0);
-        }
-
-        storeQuery.setStoreIdList(storeIdList);
+    
+        List<Long> storeIds = storeList.stream().map(Store::getId).collect(Collectors.toList());
+    
+        storeQuery.setStoreIdList(storeIds);
 
         return storeService.queryCountByFranchisee(storeQuery);
     }
@@ -316,7 +307,7 @@ public class JsonAdminStoreController extends BaseController {
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
             //加盟商查询
-            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            if (Objects.equals(user.getDataType(), User.TYPE_USER_FRANCHISEE)) {
                 List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
                 if (CollectionUtils.isEmpty(franchiseeIds)) {
                     return R.ok(Collections.EMPTY_LIST);
@@ -402,7 +393,7 @@ public class JsonAdminStoreController extends BaseController {
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
 
             //加盟商查询
-            if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            if (Objects.equals(user.getDataType(), User.TYPE_USER_FRANCHISEE)) {
                 List<Long> franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
                 if (CollectionUtils.isEmpty(franchiseeIds)) {
                     return R.ok(Collections.EMPTY_LIST);

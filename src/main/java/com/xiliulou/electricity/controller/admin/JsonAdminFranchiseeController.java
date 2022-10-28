@@ -91,6 +91,8 @@ public class JsonAdminFranchiseeController extends BaseController {
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
+        }else if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
@@ -132,6 +134,8 @@ public class JsonAdminFranchiseeController extends BaseController {
         List<Long> ids = null;
         if (Objects.equals(user.getDataType(), User.DATA_TYPE_FRANCHISEE)) {
             ids = userDataScopeService.selectDataIdByUid(user.getUid());
+        }else if(Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)){
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         FranchiseeQuery franchiseeQuery = FranchiseeQuery.builder()
@@ -186,13 +190,15 @@ public class JsonAdminFranchiseeController extends BaseController {
             log.error("ELECTRICITY  ERROR! not found user ");
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
-
+    
         List<Long> franchiseeIds = null;
         if (!SecurityUtils.isAdmin() && !Objects.equals(user.getDataType(), User.DATA_TYPE_OPERATE)) {
             franchiseeIds = userDataScopeService.selectDataIdByUid(user.getUid());
             if (CollectionUtils.isEmpty(franchiseeIds)) {
                 return R.ok(Collections.EMPTY_LIST);
             }
+        } else if (Objects.equals(user.getDataType(), User.DATA_TYPE_STORE)) {
+            return R.ok(Collections.EMPTY_LIST);
         }
 
         FranchiseeAccountQuery franchiseeAccountQuery = FranchiseeAccountQuery.builder()
