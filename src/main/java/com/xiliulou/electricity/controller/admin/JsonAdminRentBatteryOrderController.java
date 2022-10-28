@@ -95,16 +95,6 @@ public class JsonAdminRentBatteryOrderController {
         return rentBatteryOrderService.queryList(rentBatteryOrderQuery);
     }
 
-    //列表查询
-    @GetMapping(value = "/admin/rentBatteryOrder/queryCount")
-    public R queryCount(@RequestParam(value = "status", required = false) String status,
-                        @RequestParam(value = "type", required = false) Integer type,
-                        @RequestParam(value = "name", required = false) String name,
-                        @RequestParam(value = "phone", required = false) String phone,
-                        @RequestParam(value = "beginTime", required = false) Long beginTime,
-                        @RequestParam(value = "endTime", required = false) Long endTime,
-                        @RequestParam(value = "orderId", required = false) String orderId) {
-
 	@GetMapping(value = "/admin/rentBatteryOrder/list/super")
 	public R querySuperList(@RequestParam("size") Long size,
 							@RequestParam("offset") Long offset,
