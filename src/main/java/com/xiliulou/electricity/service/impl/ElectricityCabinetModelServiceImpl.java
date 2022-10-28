@@ -89,6 +89,10 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        if (!Objects.equals(tenantId,electricityCabinetModel.getTenantId())){
+            return R.ok();
+        }
+
         if (Objects.isNull(electricityCabinetModel.getId())) {
             return R.fail("ELECTRICITY.0007", "不合法的参数");
         }
