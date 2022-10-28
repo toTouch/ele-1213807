@@ -333,10 +333,13 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
      */
     @Override
     public R deleteElectricityBattery(Long id) {
-        ElectricityBattery electricityBattery = electricitybatterymapper.selectById(id);
+        ElectricityBattery electricityBattery = electricitybatterymapper.selectOne(
+                new LambdaQueryWrapper<ElectricityBattery>().eq(ElectricityBattery::getId, id)
+                        .eq(ElectricityBattery::getDelFlag, ElectricityBattery.DEL_NORMAL)
+                        .eq(ElectricityBattery::getTenantId, TenantContextHolder.getTenantId()));
         if (Objects.isNull(electricityBattery)) {
             log.error("ELE ERROR ,not found electricitybattery,batteryId={}", id);
-            return R.fail("100225","未找到电池!");
+            return R.fail("100225", "未找到电池!");
         }
 
         if (ObjectUtil.equal(ElectricityBattery.BUSINESS_STATUS_LEASE, electricityBattery.getBusinessStatus())) {
