@@ -125,9 +125,13 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
 
         ElectricityMemberCard oldElectricityMemberCard = baseMapper.selectOne(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getId, electricityMemberCard.getId()).eq(ElectricityMemberCard::getTenantId, tenantId));
 
+        if (Objects.isNull(oldElectricityMemberCard)) {
+            return R.ok();
+        }
+
         Integer count = baseMapper.queryCount(null, electricityMemberCard.getType(), tenantId, null, null, electricityMemberCard.getName());
 
-        if (Objects.nonNull(oldElectricityMemberCard) && count > 0 && !Objects.equals(oldElectricityMemberCard.getName(), electricityMemberCard.getName())) {
+        if (count > 0 && !Objects.equals(oldElectricityMemberCard.getName(), electricityMemberCard.getName())) {
             log.error("ELE ERROR! create memberCard fail,there are same memberCardName,memberCardName={}", electricityMemberCard.getName());
             return R.fail("100104", "套餐名称已存在！");
         }
@@ -425,17 +429,17 @@ public class ElectricityMemberCardServiceImpl extends ServiceImpl<ElectricityMem
     }
 
     @Override
-    public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id,Integer tenantId) {
+    public List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
                 .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL).eq(ElectricityMemberCard::getStatus, ElectricityMemberCard.STATUS_USEABLE)
-                .eq(ElectricityMemberCard::getTenantId,tenantId)
+                .eq(ElectricityMemberCard::getTenantId, tenantId)
                 .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
 
     @Override
     public List<ElectricityMemberCard> selectByFranchiseeId(Long id, Integer tenantId) {
         return baseMapper.selectList(new LambdaQueryWrapper<ElectricityMemberCard>().eq(ElectricityMemberCard::getFranchiseeId, id)
-                .eq(ElectricityMemberCard::getTenantId,tenantId)
+                .eq(ElectricityMemberCard::getTenantId, tenantId)
                 .eq(ElectricityMemberCard::getDelFlag, ElectricityMemberCard.DEL_NORMAL)
                 .eq(ElectricityMemberCard::getCardModel, ElectricityMemberCard.ELECTRICITY_MEMBER_CARD));
     }
