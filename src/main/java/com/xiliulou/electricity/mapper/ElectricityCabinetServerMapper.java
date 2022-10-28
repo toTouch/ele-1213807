@@ -19,7 +19,7 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetServer queryById(@Param("id") Long id,@Param("tenantId") Integer tenantId);
+    ElectricityCabinetServer queryById(@Param("id") Long id);
 
     /**
      * 查询指定行数据
@@ -63,7 +63,7 @@ public interface ElectricityCabinetServerMapper extends BaseMapper<ElectricityCa
     int deleteById(Long id);
 
     List<ElectricityCabinetServer> queryList(@Param("eleName") String eleName, @Param("deviceName") String deviceName,
-        @Param("tenantName") String tenantName, @Param("serverTimeStart") Long beginServerTimeStart,@Param("tenantId") Integer tenantId,
+        @Param("tenantName") String tenantName, @Param("serverTimeStart") Long beginServerTimeStart,
         @Param("serverTimeEnd") Long beginServerTimeEnd, @Param("offset") Long offset, @Param("size") Long size);
 
     Long queryCount(@Param("eleName") String eleName, @Param("deviceName") String deviceName,

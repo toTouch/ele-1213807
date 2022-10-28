@@ -264,7 +264,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(userInfo.getTenantId(),tenantId)){
+        if (!Objects.equals(userInfo.getTenantId(),tenantId)){
             return R.ok();
         }
 
@@ -300,7 +300,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
 
-        if (Objects.equals(electricityCar.getTenantId(),tenantId)){
+        if (!Objects.equals(electricityCar.getTenantId(),tenantId)){
             return R.ok();
         }
 
@@ -358,7 +358,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        if (Objects.equals(userInfo.getTenantId(),tenantId)){
+        if (!Objects.equals(userInfo.getTenantId(),tenantId)){
             return R.ok();
         }
 
@@ -379,7 +379,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
 
-        if (Objects.equals(electricityCar.getTenantId(),tenantId)){
+        if (!Objects.equals(electricityCar.getTenantId(),tenantId)){
             return R.ok();
         }
 

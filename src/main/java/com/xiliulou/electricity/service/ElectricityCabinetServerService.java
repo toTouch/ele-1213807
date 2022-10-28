@@ -19,7 +19,7 @@ public interface ElectricityCabinetServerService {
      * @param id 主键
      * @return 实例对象
      */
-    ElectricityCabinetServer queryByIdFromDB(Long id,Integer tenantId);
+    ElectricityCabinetServer queryByIdFromDB(Long id);
 
     /**
      * 通过ID查询单条数据从缓存
@@ -65,12 +65,12 @@ public interface ElectricityCabinetServerService {
     Boolean deleteById(Long id);
 
     R queryList(String eleName, String deviceName, String tenantName, Long serverTimeStart, Long serverTimeEnd,
-        Long offset, Long size,Integer tenantId);
+        Long offset, Long size);
 
-    R deleteOne(Long id,Integer tenantId);
+    R deleteOne(Long id);
 
     void insertOrUpdateByElectricityCabinet(ElectricityCabinet electricityCabinet,
         ElectricityCabinet oldElectricityCabinet);
 
-    R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd, Integer tenantId);
+    R updateOne(Long id, Long serverTimeStart, Long serverTimeEnd);
 }
