@@ -228,9 +228,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.isNull(franchiseeUserInfo) || !Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(franchiseeUserInfo)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(!Objects.equals(franchiseeUserInfo.getTenantId(), TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
@@ -365,9 +368,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.isNull(franchiseeUserInfo) || !Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(franchiseeUserInfo)) {
             log.error("REFUND_ORDER ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER ORDER_NO:{}", refundOrderNo);
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(!Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         if (Objects.equals(status, EleRefundOrder.STATUS_AGREE_REFUND) && Objects.equals(franchiseeUserInfo.getRentCarStatus(), FranchiseeUserInfo.RENT_CAR_STATUS_IS_RENT_CAR)) {
@@ -451,9 +457,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
 
         //是否缴纳押金，是否绑定电池
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUserInfoId(userInfo.getId());
-        if (Objects.isNull(franchiseeUserInfo) || !Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(franchiseeUserInfo)) {
             log.error("admin query user deposit pay type ERROR! not found user! uid:{} ", uid);
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+        if(!Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
@@ -476,9 +485,12 @@ public class EleRefundOrderServiceImpl implements EleRefundOrderService {
         }
 
         FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(uid);
-        if (Objects.isNull(franchiseeUserInfo) || !Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(franchiseeUserInfo)) {
             log.error("battery deposit OffLine Refund ERROR ,NOT FOUND ELECTRICITY_REFUND_ORDER uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(!Objects.equals(franchiseeUserInfo.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //判断是否退电池

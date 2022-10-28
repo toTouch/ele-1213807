@@ -910,9 +910,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(uid);
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(userInfo)) {
             log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //是否缴纳押金，是否绑定电池
@@ -975,9 +978,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(memberCardOrderAddAndUpdate.getUid());
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(userInfo)) {
             log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(!Objects.equals(userInfo.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //是否缴纳押金，是否绑定电池
@@ -1086,9 +1092,12 @@ public class ElectricityMemberCardOrderServiceImpl extends ServiceImpl<Electrici
         }
 
         UserInfo userInfo = userInfoService.queryByUidFromCache(memberCardOrderAddAndUpdate.getUid());
-        if (Objects.isNull(userInfo) || !Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())) {
+        if (Objects.isNull(userInfo)) {
             log.error("admin editUserMemberCard ERROR! not found user! uid={}", memberCardOrderAddAndUpdate.getUid());
             return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        if(!Objects.equals(userInfo.getTenantId(), TenantContextHolder.getTenantId())){
+            return R.ok();
         }
 
         //是否缴纳押金，是否绑定电池
