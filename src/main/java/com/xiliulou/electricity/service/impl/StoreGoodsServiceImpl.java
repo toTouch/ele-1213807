@@ -116,7 +116,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
         storeGoods.setId(id);
         storeGoods.setUpdateTime(System.currentTimeMillis());
         storeGoods.setDelFlag(StoreGoods.DEL_DEL);
-        return R.ok(storeGoodsMapper.updateById(storeGoods));
+        return R.ok(storeGoodsMapper.update(storeGoods));
     }
 
     @Override

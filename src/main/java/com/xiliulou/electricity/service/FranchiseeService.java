@@ -52,4 +52,6 @@ public interface FranchiseeService {
 
 	Franchisee queryByUserId(Long uid);
 
+    Franchisee queryByIdAndTenantId(Long id,Integer tenantId);
+
 }

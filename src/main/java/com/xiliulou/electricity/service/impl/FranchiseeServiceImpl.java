@@ -454,4 +454,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		return franchiseeMapper.queryByUserId(uid);
 	}
 
+    @Override
+    public Franchisee queryByIdAndTenantId(Long id, Integer tenantId) {
+        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId,tenantId));
+    }
 }
