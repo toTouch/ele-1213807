@@ -18,4 +18,6 @@ public interface StoreGoodsMapper extends BaseMapper<StoreGoods> {
 	List<StoreGoodsVO> queryList(@Param("query") StoreShopsQuery storeShopsQuery);
 
 	Integer queryCount(@Param("query") StoreShopsQuery storeShopsQuery);
+
+	int update(StoreGoods storeGoods);
 }

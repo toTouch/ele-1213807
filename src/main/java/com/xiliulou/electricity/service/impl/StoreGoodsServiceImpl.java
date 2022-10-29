@@ -99,7 +99,7 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
         }
 
         storeGoods.setUpdateTime(System.currentTimeMillis());
-        return R.ok(storeGoodsMapper.updateById(storeGoods));
+        return R.ok(storeGoodsMapper.update(storeGoods));
     }
 
     @Override

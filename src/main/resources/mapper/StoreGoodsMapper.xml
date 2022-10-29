@@ -51,5 +51,36 @@
         </if>
     </select>
 
+    <update id="update">
+        update t_store_goods
+        <set>
+            <if test="storeId != null">
+                store_id = #{storeId},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="discountPrice != null">
+                discount_price = #{discountPrice},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="carModelId != null">
+                car_model_id = #{carModelId},
+            </if>
+            <if test="carInventory != null">
+                car_inventory = #{carInventory},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
 
 </mapper>
