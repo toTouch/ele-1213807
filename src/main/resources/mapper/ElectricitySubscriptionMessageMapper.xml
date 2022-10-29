@@ -9,7 +9,7 @@
                 type = #{type},
             </if>
             <if test="messageId != null and messageId != ''">
-                message_id = #{namessageIdme},
+                message_id = #{messageId},
             </if>
             <if test="remark != null and remark != ''">
                 remark = #{remark},
