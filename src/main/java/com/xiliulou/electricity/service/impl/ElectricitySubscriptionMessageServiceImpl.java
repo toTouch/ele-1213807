@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.util.Objects;
 
 /**
@@ -30,6 +31,9 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 
     @Autowired
     RedisService redisService;
+
+    @Resource
+    ElectricitySubscriptionMessageMapper electricitySubscriptionMessageMapper;
 
     /**
      * 保存订阅消息
@@ -107,7 +111,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
         }
 
         electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
-        Integer raws = baseMapper.update(electricitySubscriptionMessage);
+        Integer raws = electricitySubscriptionMessageMapper.update(electricitySubscriptionMessage);
         redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY);
         if (raws > 0) {
             return R.ok();
