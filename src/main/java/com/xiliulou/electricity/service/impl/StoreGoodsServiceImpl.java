@@ -83,6 +83,10 @@ public class StoreGoodsServiceImpl implements StoreGoodsService {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
+        if (!Objects.equals(tenantId,storeGoods.getTenantId())){
+            return R.ok();
+        }
+
         if (Objects.nonNull(storeGoods.getStoreId())) {
             Store store = storeService.queryByIdFromCache(storeGoods.getStoreId());
             if (Objects.isNull(store)) {
