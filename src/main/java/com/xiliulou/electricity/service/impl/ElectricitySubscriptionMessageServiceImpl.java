@@ -102,6 +102,9 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
             return R.failMsg("操作频繁!");
         }
 
+        if (Objects.equals(tenantId,electricitySubscriptionMessage.getTenantId())){
+            return R.ok();
+        }
 
         electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
         Integer raws = baseMapper.update(electricitySubscriptionMessage);
