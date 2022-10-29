@@ -151,7 +151,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
 
-        if (Objects.equals(tenantId, oldElectricityCar.getTenantId())) {
+        if (!Objects.equals(tenantId, oldElectricityCar.getTenantId())) {
             return R.ok();
         }
 
@@ -198,7 +198,7 @@ public class ElectricityCarServiceImpl implements ElectricityCarService {
             return R.fail("100007", "未找到车辆");
         }
 
-        if (Objects.equals(tenantId, electricityCar.getTenantId())) {
+        if (!Objects.equals(tenantId, electricityCar.getTenantId())) {
             return R.ok();
         }
 

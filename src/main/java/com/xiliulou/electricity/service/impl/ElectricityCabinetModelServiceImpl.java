@@ -89,7 +89,7 @@ public class ElectricityCabinetModelServiceImpl implements ElectricityCabinetMod
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        if (!Objects.equals(tenantId,electricityCabinetModel.getTenantId())){
+        if (Objects.isNull(electricityCabinetModel) || !Objects.equals(tenantId, electricityCabinetModel.getTenantId())) {
             return R.ok();
         }
 

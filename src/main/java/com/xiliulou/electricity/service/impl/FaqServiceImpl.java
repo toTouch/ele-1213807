@@ -34,8 +34,8 @@ public class FaqServiceImpl implements FaqService {
      * @return 实例对象
      */
     @Override
-    public Faq queryByIdFromDB(Integer id,Integer tenantId) {
-        return this.faqMapper.selectOne(new LambdaQueryWrapper<Faq>().eq(Faq::getId, id).eq(Faq::getTenantId,tenantId));
+    public Faq queryByIdFromDB(Integer id, Integer tenantId) {
+        return this.faqMapper.selectOne(new LambdaQueryWrapper<Faq>().eq(Faq::getId, id).eq(Faq::getTenantId, tenantId));
     }
 
 
@@ -73,8 +73,8 @@ public class FaqServiceImpl implements FaqService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Integer id,Integer tenantId) {
-        return this.faqMapper.delete(new LambdaQueryWrapper<Faq>().eq(Faq::getId, id).eq(Faq::getTenantId,tenantId)) > 0;
+    public Boolean deleteById(Integer id, Integer tenantId) {
+        return this.faqMapper.delete(id, tenantId) > 0;
     }
 
     @Override
@@ -83,7 +83,7 @@ public class FaqServiceImpl implements FaqService {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        return Triple.of(true, null, faqMapper.queryList(size, offset,tenantId));
+        return Triple.of(true, null, faqMapper.queryList(size, offset, tenantId));
     }
 
     @Override
@@ -109,7 +109,7 @@ public class FaqServiceImpl implements FaqService {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        Faq faq = queryByIdFromDB(faqQuery.getId(),tenantId);
+        Faq faq = queryByIdFromDB(faqQuery.getId(), tenantId);
         if (Objects.isNull(faq)) {
             return Triple.of(false, "ELECTRICITY.0096", "没有该记录");
         }
@@ -129,7 +129,7 @@ public class FaqServiceImpl implements FaqService {
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        deleteById(id,tenantId);
+        deleteById(id, tenantId);
         return Triple.of(true, null, null);
     }
 

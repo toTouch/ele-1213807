@@ -106,15 +106,11 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
             return R.failMsg("操作频繁!");
         }
 
-        System.out.println("参数====================="+electricitySubscriptionMessage);
-
         if (!Objects.equals(tenantId,electricitySubscriptionMessage.getTenantId())){
             return R.ok();
         }
 
-
         electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
-        System.out.println("更新参数====================="+electricitySubscriptionMessage);
         Integer raws = electricitySubscriptionMessageMapper.update(electricitySubscriptionMessage);
         redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY);
         if (raws > 0) {
