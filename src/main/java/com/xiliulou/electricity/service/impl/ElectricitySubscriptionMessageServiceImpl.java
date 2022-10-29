@@ -104,8 +104,7 @@ public class ElectricitySubscriptionMessageServiceImpl extends ServiceImpl<Elect
 
 
         electricitySubscriptionMessage.setUpdateTime(System.currentTimeMillis());
-        Integer raws = baseMapper.update(electricitySubscriptionMessage, new LambdaQueryWrapper<ElectricitySubscriptionMessage>().eq(ElectricitySubscriptionMessage::getId, electricitySubscriptionMessage.getId()
-        ).eq(ElectricitySubscriptionMessage::getTenantId, tenantId));
+        Integer raws = baseMapper.update(electricitySubscriptionMessage);
         redisService.delete(CacheConstant.ADMIN_OPERATE_LOCK_KEY);
         if (raws > 0) {
             return R.ok();
