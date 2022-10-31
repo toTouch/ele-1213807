@@ -24,4 +24,6 @@ public class FranchiseeAccountQuery {
 
 	private Long franchiseeId;
 
+	private String orderId;
+
 }
