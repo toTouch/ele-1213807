@@ -150,13 +150,12 @@ public interface ElectricityCabinetService {
 
     R superAdminQueryName(Integer id);
 
-
-    R checkOtaUpgradeSession(String sessionId);
-
-    R closeOtaUpgradeSession(String sessionId);
-
     R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery);
     
     
     R sendCommandToEleForOuterSuper(EleOuterCommandQuery eleOuterCommandQuery);
+    
+    R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos);
+    
+    R checkOtaSession(String sessionId);
 }

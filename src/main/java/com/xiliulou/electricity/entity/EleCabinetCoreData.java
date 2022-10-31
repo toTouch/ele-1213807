@@ -88,6 +88,10 @@ public class EleCabinetCoreData {
      */
     private Integer waterLeachingWarning;
     /**
+     * 核心板版本号
+     */
+    private String coreVersion;
+    /**
      * 创建时间
      */
     private Long createTime;

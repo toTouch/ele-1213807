@@ -39,19 +39,21 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
 
         EleCellVO eleCellVo = JsonUtil.fromJson(receiverMessage.getOriginContent(), EleCellVO.class);
         if (Objects.isNull(eleCellVo)) {
-            log.error("ele cell error! eleCellVo is null,sessionId={}", receiverMessage.getSessionId());
-            return ;
+            log.error("ELE CELL REPORT ERROR! eleCellVo is null,sessionId={}", receiverMessage.getSessionId());
+            return;
         }
 
         String cellNo = eleCellVo.getCell_no();
         if (StringUtils.isEmpty(cellNo)) {
-            log.error("ele cell error! cellNo is empty,sessionId={}", receiverMessage.getSessionId());
-            return ;
+            log.error("ELE CELL REPORT ERROR! cellNo is empty,sessionId={}", receiverMessage.getSessionId());
+            return;
         }
 
         ElectricityCabinetBox electricityCabinetBox = new ElectricityCabinetBox();
         electricityCabinetBox.setElectricityCabinetId(electricityCabinet.getId());
         electricityCabinetBox.setCellNo(cellNo);
+        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+
 
         String isLock = eleCellVo.getIs_lock();
         if (StringUtils.isNotEmpty(isLock)) {
@@ -87,8 +89,11 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         if (Objects.nonNull(cellVoLockType)) {
             electricityCabinetBox.setLockType(cellVoLockType);
         }
-
-        electricityCabinetBox.setUpdateTime(System.currentTimeMillis());
+        
+        Float version = eleCellVo.getVersion();
+        if (Objects.nonNull(version)) {
+            electricityCabinetBox.setVersion(String.valueOf(version));
+        }
         electricityCabinetBoxService.modifyCellByCellNo(electricityCabinetBox);
 
 
@@ -113,6 +118,8 @@ public class NormalEleCellHandlerIot extends AbstractElectricityIotHandler {
         //锁仓类型
         private Integer lockType;
 
+        //子板版本号
+        private Float version;
     }
 }
 
