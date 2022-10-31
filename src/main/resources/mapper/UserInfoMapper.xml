@@ -401,9 +401,6 @@
             <if test="usableStatus != null">
                 usable_status = #{usableStatus},
             </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId}
-            </if>
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
