@@ -15,6 +15,7 @@ import com.xiliulou.electricity.mapper.StoreAmountMapper;
 import com.xiliulou.electricity.query.StoreAccountQuery;
 import com.xiliulou.electricity.service.SplitAccountFailRecordService;
 import com.xiliulou.electricity.service.StoreAmountService;
+import com.xiliulou.electricity.service.StoreService;
 import com.xiliulou.electricity.service.StoreSplitAccountHistoryService;
 import com.xiliulou.electricity.service.UserService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
@@ -55,6 +56,9 @@ public class StoreAmountServiceImpl implements StoreAmountService {
 
     @Autowired
     UserService userService;
+    
+    @Autowired
+    StoreService storeService;
 
 
 
@@ -164,10 +168,14 @@ public class StoreAmountServiceImpl implements StoreAmountService {
             StoreAmountVO storeAmountVO = new StoreAmountVO();
             BeanUtils.copyProperties(item, storeAmountVO);
             if (Objects.nonNull(item.getUid())) {
-                User user = userService.queryByUidFromCache(item.getUid());
-                if (Objects.nonNull(user)) {
-                    storeAmountVO.setUserName(user.getName());
+                Store store = storeService.queryByIdFromCache(item.getStoreId());
+                if (Objects.nonNull(store)) {
+                    storeAmountVO.setUserName(store.getName());
                 }
+//                User user = userService.queryByUidFromCache(item.getUid());
+//                if (Objects.nonNull(user)) {
+//                    storeAmountVO.setUserName(user.getName());
+//                }
             }
             list.add(storeAmountVO);
         });
