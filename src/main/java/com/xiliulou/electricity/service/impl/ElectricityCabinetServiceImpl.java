@@ -1483,7 +1483,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtils.copyProperties(electricityCabinet, electricityCabinetVO);
 
-        Franchisee franchisee= (Franchisee) franchiseeService.queryByCabinetId(electricityCabinet.getId()).getData();
+        Franchisee franchisee= (Franchisee) franchiseeService.queryByCabinetId(electricityCabinet.getId(),electricityCabinet.getTenantId()).getData();
         if (Objects.nonNull(franchisee)){
             electricityCabinetVO.setFranchiseeName(franchisee.getName());
         }
