@@ -7,7 +7,7 @@
 		select tsa.store_id,tsa.uid,tsa.create_time,tsa.total_income,tsa.balance,tsa.withdraw  from t_store_amount as tsa left join t_store as ts on ts.id=tsa.store_id
 		where tsa.del_flag = 0
 		<if test="storeName != null and storeName != ''">
-			and tsa.name = #{query.storeName}
+			and tsa.name = #{storeName}
 		</if>
 		<if test="storeId != null">
 			and tsa.store_id =#{storeId}
@@ -36,7 +36,7 @@
 		select COUNT(1) from t_store_amount as tsa left join t_store as ts on ts.id=tsa.store_id
 		where tsa.del_flag = 0
 		<if test="storeName != null and storeName != ''">
-			and tsa.name = #{query.storeName}
+			and tsa.name = #{storeName}
 		</if>
 		<if test="storeId != null">
 			and tsa.store_id =#{storeId}
