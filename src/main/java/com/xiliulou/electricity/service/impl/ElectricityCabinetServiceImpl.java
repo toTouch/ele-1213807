@@ -32,6 +32,7 @@ import com.xiliulou.electricity.utils.DateUtils;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
+import com.xiliulou.electricity.vo.api.ApiRentOrderVo;
 import com.xiliulou.iot.entity.AliIotRsp;
 import com.xiliulou.iot.entity.AliIotRspDetail;
 import com.xiliulou.iot.entity.HardwareCommandQuery;
@@ -1477,6 +1478,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         if (Objects.isNull(electricityCabinet)) {
             log.error("queryByDevice  ERROR! not found electricityCabinet ！productKey{},deviceName{}", productKey, deviceName);
             return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+
+        ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
+        BeanUtils.copyProperties(electricityCabinet, electricityCabinetVO);
+
+        Franchisee franchisee= (Franchisee) franchiseeService.queryByCabinetId(electricityCabinet.getId()).getData();
+        if (Objects.nonNull(franchisee)){
+            electricityCabinetVO.setFranchiseeName(franchisee.getName());
         }
 
         return R.ok(electricityCabinet);

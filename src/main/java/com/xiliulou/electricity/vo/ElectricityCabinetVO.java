@@ -160,6 +160,11 @@ public class ElectricityCabinetVO {
      */
     private Long serverEndTime;
 
+    /**
+     * 加盟商名字
+     */
+    private String franchiseeName;
+
     //全天
     public static final String ALL_DAY = "-1";
     //自定义时间段
