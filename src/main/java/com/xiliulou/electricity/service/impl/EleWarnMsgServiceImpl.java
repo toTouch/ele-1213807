@@ -1,23 +1,27 @@
 package com.xiliulou.electricity.service.impl;
 
+import com.xiliulou.cache.redis.RedisService;
+import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.ElectricityCabinet;
 import com.xiliulou.electricity.mapper.EleWarnMsgMapper;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.ElectricityCabinetService;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
-import net.bytebuddy.description.type.TypeList;
-import org.apache.poi.ss.formula.functions.T;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Triple;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
 
 /**
  * 换电柜异常上报信息(TEleWarnMsg)表服务实现类
@@ -26,12 +30,19 @@ import java.util.Objects;
  * @since 2021-03-29 14:12:45
  */
 @Service("eleWarnMsgService")
+@Slf4j
 public class EleWarnMsgServiceImpl implements EleWarnMsgService {
+
+    ExecutorService exportExecutorService = XllThreadPoolExecutors.newFixedThreadPool("eleWarnMsgExportExecutor", 1, "ele_warnMsg_export_executor");
+
+
     @Resource
     private EleWarnMsgMapper eleWarnMsgMapper;
 
     @Autowired
     ElectricityCabinetService electricityCabinetService;
+    @Autowired
+    private RedisService redisService;
 
     /**
      * 通过ID查询单条数据从DB
@@ -153,5 +164,35 @@ public class EleWarnMsgServiceImpl implements EleWarnMsgService {
             }
         }
 
+    }
+
+    /**
+     * 异常告警导出
+     * @param warnMsgQuery
+     * @return
+     */
+    @Override
+    public Triple<Boolean, String, Object> exportToExcel(EleWarnMsgQuery warnMsgQuery) {
+        Long uid = SecurityUtils.getUid();
+        if(Objects.isNull(uid)){
+            log.error("ELE ERROR! uid is empty!");
+            return Triple.of(false, "ELECTRICITY.0001", "用户不存在！");
+        }
+
+        if(redisService.setNx(CacheConstant.WARN_MESSAGE_EXPORT_CACHE,"1",180 * 1000L,false)){
+            return Triple.of(false, "ELECTRICITY.0001", "操作频繁！");
+        }
+
+
+
+
+        exportExecutorService.submit(()->{
+
+        });
+
+
+
+
+        return null;
     }
 }

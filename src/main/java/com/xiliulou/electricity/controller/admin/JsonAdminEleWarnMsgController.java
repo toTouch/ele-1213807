@@ -3,9 +3,9 @@ package com.xiliulou.electricity.controller.admin;
 import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
+import com.xiliulou.core.controller.BaseController;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
-import com.xiliulou.electricity.entity.BatteryChangeInfo;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
@@ -19,16 +19,9 @@ import com.xiliulou.electricity.vo.EleBusinessWarnMsgVo;
 import com.xiliulou.electricity.vo.EleCabinetWarnMsgVo;
 import com.xiliulou.electricity.vo.EleCellWarnMsgVo;
 import com.xiliulou.security.bean.TokenUser;
-import jodd.util.StringUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -45,7 +38,7 @@ import java.util.Objects;
  */
 @RestController
 @Slf4j
-public class JsonAdminEleWarnMsgController {
+public class JsonAdminEleWarnMsgController extends BaseController {
     /**
      * 服务对象
      */
@@ -713,6 +706,15 @@ public class JsonAdminEleWarnMsgController {
         List list = clickHouseService.queryList(EleBusinessWarnMsgVo.class, sql, begin, end, offset, size);
         eleWarnMsgService.queryElectricityName(list);
         return R.ok(list);
+    }
+
+    /**
+     * 异常告警导出
+     * @return
+     */
+    @PostMapping(value = "/admin/eleWarnMsg/export")
+    public R eleWarnMsgExport(@RequestBody EleWarnMsgQuery warnMsgQuery) {
+        return returnTripleResult(eleWarnMsgService.exportToExcel(warnMsgQuery));
     }
 
 

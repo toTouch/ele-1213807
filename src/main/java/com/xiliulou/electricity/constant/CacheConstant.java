@@ -205,4 +205,8 @@ public interface CacheConstant {
      * 满仓柜机缓存
      */
     String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
+    /**
+     * 异常告警导出缓存
+     */
+    String WARN_MESSAGE_EXPORT_CACHE="warn_message_export_cache:";
 }
