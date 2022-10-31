@@ -1488,7 +1488,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             electricityCabinetVO.setFranchiseeName(franchisee.getName());
         }
 
-        return R.ok(electricityCabinet);
+        return R.ok(electricityCabinetVO);
 
     }
 
