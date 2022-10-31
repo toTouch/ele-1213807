@@ -163,6 +163,7 @@ public class EleUserAuthServiceImpl implements EleUserAuthService {
 
         userInfo.setUid(user.getUid());
         userInfo.setAuthStatus(status);
+        userInfo.setTenantId(tenantId);
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfoService.update(userInfo);
 
