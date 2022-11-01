@@ -479,6 +479,7 @@ public class JsonAdminStoreController extends BaseController {
                 .size(size)
                 .startTime(startTime)
                 .endTime(endTime)
+                .tenantId(TenantContextHolder.getTenantId())
                 .storeId(storeId).build();
 
         return storeSplitAccountHistoryService.queryList(storeAccountQuery);

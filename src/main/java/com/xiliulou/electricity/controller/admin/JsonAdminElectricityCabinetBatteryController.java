@@ -184,24 +184,9 @@ public class JsonAdminElectricityCabinetBatteryController {
             return R.ok(CollectionUtils.EMPTY_COLLECTION);
         }
 
-        //加盟商电池
-//        List<FranchiseeBindElectricityBattery> franchiseeBindBindElectricityBatteryList = franchiseeBindElectricityBatteryService.queryByFranchiseeId(franchisee.getId());
-//
-//        if (ObjectUtil.isEmpty(franchiseeBindBindElectricityBatteryList)) {
-//            return R.ok(CollectionUtils.EMPTY_COLLECTION);
-//        }
-//        List<Long> electricityBatteryIdList = new ArrayList<>();
-//        for (FranchiseeBindElectricityBattery franchiseeBindElectricityBattery : franchiseeBindBindElectricityBatteryList) {
-//            electricityBatteryIdList.add(franchiseeBindElectricityBattery.getElectricityBatteryId());
-//        }
-//        if (ObjectUtil.isEmpty(electricityBatteryIdList)) {
-//            return R.ok(CollectionUtils.EMPTY_COLLECTION);
-//        }
-
         ElectricityBatteryQuery electricityBatteryQuery = new ElectricityBatteryQuery();
         electricityBatteryQuery.setPhysicsStatus(physicsStatus);
         electricityBatteryQuery.setSn(sn);
-//        electricityBatteryQuery.setElectricityBatteryIdList(electricityBatteryIdList);
         electricityBatteryQuery.setFranchiseeId(franchisee.getId());
         electricityBatteryQuery.setTenantId(TenantContextHolder.getTenantId());
         electricityBatteryQuery.setChargeStatus(chargeStatus);

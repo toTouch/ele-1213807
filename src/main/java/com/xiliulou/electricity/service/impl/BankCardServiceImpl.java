@@ -8,6 +8,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.BankNoConstants;
 import com.xiliulou.electricity.entity.BankCard;
+import com.xiliulou.electricity.entity.EleTenantMapKey;
 import com.xiliulou.electricity.mapper.BankCardMapper;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
@@ -108,8 +109,8 @@ public class BankCardServiceImpl extends ServiceImpl<BankCardMapper, BankCard> i
 	}
 
 	@Override
-	public R unBindByWeb(Integer id) {
-		BankCard bankCard = baseMapper.selectById(id);
+	public R unBindByWeb(Integer id,Integer tenantId) {
+		BankCard bankCard = baseMapper.selectOne(new LambdaQueryWrapper<BankCard>().eq(BankCard::getTenantId, tenantId).eq(BankCard::getId,id));
 		if (Objects.isNull(bankCard)) {
 			log.error("not found bank By id ,id:{}", id);
 			return R.fail("PAY_TRANSFER.0004", "未找到银行卡");

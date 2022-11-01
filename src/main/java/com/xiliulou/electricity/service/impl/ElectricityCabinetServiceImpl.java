@@ -325,8 +325,9 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             return R.fail("ELECTRICITY.0010", "不能修改型号");
         }
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
+        electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
 
-        int update = electricityCabinetMapper.updateById(electricityCabinet);
+        int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
 
             //更新缓存
@@ -362,7 +363,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setId(id);
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
         electricityCabinet.setDelFlag(ElectricityCabinet.DEL_DEL);
-        int update = electricityCabinetMapper.updateById(electricityCabinet);
+        electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
+        int update = electricityCabinetMapper.updateEleById(electricityCabinet);
         DbUtils.dbOperateSuccessThen(update, () -> {
 
             //删除缓存
@@ -674,7 +676,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         electricityCabinet.setId(id);
         electricityCabinet.setUsableStatus(usableStatus);
         electricityCabinet.setUpdateTime(System.currentTimeMillis());
-        electricityCabinetMapper.updateById(electricityCabinet);
+        electricityCabinet.setTenantId(TenantContextHolder.getTenantId());
+        electricityCabinetMapper.updateEleById(electricityCabinet);
 
         //更新缓存
         redisService.saveWithHash(CacheConstant.CACHE_ELECTRICITY_CABINET + electricityCabinet.getId(), electricityCabinet);
@@ -2002,6 +2005,14 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Override
     public R queryById(Integer id) {
         ElectricityCabinet electricityCabinet = queryByIdFromCache(id);
+        if(Objects.isNull(electricityCabinet)){
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
+        }
+        
+        if(!Objects.equals(electricityCabinet.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
+        
         ElectricityCabinetVO electricityCabinetVO = new ElectricityCabinetVO();
         BeanUtil.copyProperties(electricityCabinet, electricityCabinetVO);
         //营业时间
@@ -2064,7 +2075,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     @Override
     public R queryCabinetBelongFranchisee(Integer id) {
-        return franchiseeService.queryByCabinetId(id);
+        return franchiseeService.queryByCabinetId(id,TenantContextHolder.getTenantId());
     }
 
     @Override

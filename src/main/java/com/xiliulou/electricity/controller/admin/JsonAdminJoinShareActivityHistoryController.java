@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.JsonShareActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareActivityHistoryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,9 +46,13 @@ public class JsonAdminJoinShareActivityHistoryController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		JsonShareActivityHistoryQuery jsonShareActivityHistoryQuery = JsonShareActivityHistoryQuery.builder()
 				.offset(offset)
 				.size(size)
+				.tenantId(tenantId)
 				.uid(uid)
 				.activityId(activityId).build();
 		return joinShareActivityHistoryService.queryList(jsonShareActivityHistoryQuery);

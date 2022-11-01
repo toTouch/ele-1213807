@@ -179,6 +179,10 @@ public class FranchiseeAmountServiceImpl implements FranchiseeAmountService {
         if (Objects.isNull(franchiseeAmount)) {
             return R.fail("ELECTRICITY.00111", "金额不存在！");
         }
+        
+        if(!Objects.equals(franchiseeAmount.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
 
         if (modifyBalance.compareTo(franchiseeAmount.getBalance())>=0) {
             return R.fail("ELECTRICITY.00112", "修改余额不可以超过总余额！");

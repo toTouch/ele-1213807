@@ -17,6 +17,7 @@ import com.xiliulou.electricity.mapper.PermissionResourceMapper;
 import com.xiliulou.electricity.service.PermissionResourceService;
 import com.xiliulou.electricity.service.RolePermissionService;
 import com.xiliulou.electricity.service.RoleService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.utils.TreeUtils;
 import com.xiliulou.electricity.web.query.PermissionResourceQuery;
@@ -228,6 +229,11 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 		if (Objects.isNull(role)) {
 			return Pair.of(false, "角色查询不到！");
 		}
+		
+		if(!Objects.equals(role.getTenantId(), TenantContextHolder.getTenantId())){
+			return Pair.of(true, "");
+		}
+		
 		//删除旧的
 		rolePermissionService.deleteByRoleId(roleId);
 
@@ -280,6 +286,14 @@ public class PermissionResourceServiceImpl implements PermissionResourceService 
 
 	@Override
 	public Pair<Boolean, Object> getPermissionsByRole(Long rid) {
+		Role role = roleService.queryByIdFromDB(rid);
+		if (Objects.isNull(role)) {
+			return Pair.of(false, "角色不存在！");
+		}
+		
+		if(!Objects.equals(role.getTenantId(), TenantContextHolder.getTenantId())){
+			return Pair.of(true, "");
+		}
 
 		List<PermissionResource> permissionResources = queryPermissionsByRole(rid);
 		if (DataUtil.collectionIsUsable(permissionResources)) {

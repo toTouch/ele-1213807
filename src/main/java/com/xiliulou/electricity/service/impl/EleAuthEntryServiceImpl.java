@@ -1,12 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleAuthEntry;
+import com.xiliulou.electricity.entity.FranchiseeAmount;
 import com.xiliulou.electricity.mapper.EleAuthEntryMapper;
 import com.xiliulou.electricity.service.EleAuthEntryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -51,15 +54,24 @@ public class EleAuthEntryServiceImpl implements EleAuthEntryService {
 
     @Override
     public R updateEleAuthEntries(List<EleAuthEntry> eleAuthEntryList) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         for (EleAuthEntry eleAuthEntry : eleAuthEntryList) {
             if (ObjectUtil.isEmpty(eleAuthEntry.getId())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
+
+            if (!Objects.equals(eleAuthEntry.getTenantId(),tenantId)) {
+                return R.fail("ELECTRICITY.0007", "不合法的参数");
+            }
+
             if (ObjectUtil.isNotEmpty(eleAuthEntry.getType()) && !this.checkAuthEntryTypeAllowable(eleAuthEntry.getType())) {
                 return R.fail("ELECTRICITY.0007", "不合法的参数");
             }
             eleAuthEntry.setUpdateTime(System.currentTimeMillis());
-            eleAuthEntryMapper.updateById(eleAuthEntry);
+            eleAuthEntryMapper.update(eleAuthEntry);
             redisService.delete(CacheConstant.ELE_CACHE_AUTH_ENTRY + eleAuthEntry.getId());
         }
         return R.ok();

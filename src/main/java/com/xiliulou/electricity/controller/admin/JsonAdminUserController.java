@@ -144,10 +144,11 @@ public class JsonAdminUserController extends BaseController {
 
 
     //结束限制订单
-    @PutMapping(value = "/user/endLimitUser")
-    public R endLimitUser(@RequestParam("uid") Long uid) {
-        return userService.endLimitUser(uid);
-    }
+//    @Deprecated
+//    @PutMapping(value = "/user/endLimitUser")
+//    public R endLimitUser(@RequestParam("uid") Long uid) {
+//        return userService.endLimitUser(uid);
+//    }
 
     @DeleteMapping("/user/del/{uid}")
     public R deleteNormalUser(@PathVariable("uid") Long uid) {

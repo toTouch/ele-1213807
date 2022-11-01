@@ -303,7 +303,9 @@ public class JsonAdminUserInfoController extends BaseController {
      */
     @GetMapping(value = "/admin/queryUserBelongFranchisee/{id}")
     public R queryUserBelongFranchisee(@PathVariable("id") Long id) {
-        return userInfoService.queryUserBelongFranchisee(id);
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        return userInfoService.queryUserBelongFranchisee(id,tenantId);
     }
 
     /**

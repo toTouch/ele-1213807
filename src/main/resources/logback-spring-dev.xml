@@ -78,6 +78,12 @@
 	<logger name="com.anji" level="ERROR">
 		<appender-ref ref="debug"/>
 	</logger>
+	
+	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
+		<appender-ref ref="debug"/>
+		<appender-ref ref="console"/>
+		<appender-ref ref="request"/>
+	</logger>
 
 	<!-- Level: FATAL 0  ERROR 3  WARN 4  INFO 6  DEBUG 7 -->
 	<root level="INFO">

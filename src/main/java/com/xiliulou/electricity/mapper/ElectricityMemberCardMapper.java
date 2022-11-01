@@ -24,4 +24,6 @@ public interface ElectricityMemberCardMapper extends BaseMapper<ElectricityMembe
 
     void unbindActivity(@Param("id") Integer id);
 
+    int update(ElectricityMemberCard electricityMemberCard);
+
 }

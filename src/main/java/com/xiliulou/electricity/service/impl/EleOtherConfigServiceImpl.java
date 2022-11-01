@@ -7,6 +7,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.EleOtherConfig;
 import com.xiliulou.electricity.mapper.EleOtherConfigMapper;
 import com.xiliulou.electricity.service.EleOtherConfigService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,6 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
     private RedisService redisService;
 
 
-
     /**
      * 新增数据
      *
@@ -52,9 +52,9 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Integer update(EleOtherConfig  eleOtherConfig) {
+    public Integer update(EleOtherConfig eleOtherConfig) {
         int update = this.eleOtherConfigMapper.updateById(eleOtherConfig);
-        if (update > 0){
+        if (update > 0) {
             redisService.delete(CacheConstant.CACHE_ELE_OTHER_CONFIG + eleOtherConfig.getEid());
         }
         return update;
@@ -65,25 +65,30 @@ public class EleOtherConfigServiceImpl implements EleOtherConfigService {
     public EleOtherConfig queryByEidFromCache(Integer eid) {
         EleOtherConfig eleOtherConfigCache = redisService.getWithHash(CacheConstant.CACHE_ELE_OTHER_CONFIG + eid, EleOtherConfig.class);
 
-        if (Objects.nonNull(eleOtherConfigCache)){
+        if (Objects.nonNull(eleOtherConfigCache)) {
             return eleOtherConfigCache;
         }
 
         LambdaQueryWrapper<EleOtherConfig> eq = new LambdaQueryWrapper<EleOtherConfig>().eq(EleOtherConfig::getEid, eid).eq(EleOtherConfig::getDelFlag, EleOtherConfig.DEL_NORMAL);
         EleOtherConfig eleOtherConfig = eleOtherConfigMapper.selectOne(eq);
 
-        if (Objects.isNull(eleOtherConfig)){
+        if (Objects.isNull(eleOtherConfig)) {
             return null;
         }
 
-        redisService.saveWithHash(CacheConstant.CACHE_ELE_OTHER_CONFIG + eid,eleOtherConfig);
+        redisService.saveWithHash(CacheConstant.CACHE_ELE_OTHER_CONFIG + eid, eleOtherConfig);
         return eleOtherConfig;
     }
 
     @Override
-    public R updateEleOtherConfig(EleOtherConfig  eleOtherConfig) {
-        EleOtherConfig config = eleOtherConfigMapper.selectById(eleOtherConfig.getId());
-        if (Objects.isNull(config)){
+    public R updateEleOtherConfig(EleOtherConfig eleOtherConfig) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        EleOtherConfig config = eleOtherConfigMapper.selectOne(new LambdaQueryWrapper<EleOtherConfig>().eq(EleOtherConfig::getId, eleOtherConfig.getId()).eq(EleOtherConfig::getTenantId, tenantId));
+
+        if (Objects.isNull(config)) {
             return R.fail("未查询到相关配置信息");
         }
 

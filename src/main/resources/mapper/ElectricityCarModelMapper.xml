@@ -40,6 +40,30 @@
             </foreach>
         </if>
     </select>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_electricity_car_model
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+    
 
 
 </mapper>

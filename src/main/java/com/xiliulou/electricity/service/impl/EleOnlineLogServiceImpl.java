@@ -48,7 +48,7 @@ public class EleOnlineLogServiceImpl implements EleOnlineLogService {
 
     @Override
     public R queryOnlineLogList(Integer size, Integer offset, String type, Integer eleId) {
-        List<ELeOnlineLogVO> list = eleOnlineLogMapper.queryOnlineLogList(size, offset, type, eleId);
+        List<ELeOnlineLogVO> list = eleOnlineLogMapper.queryOnlineLogList(size, offset, type, eleId,TenantContextHolder.getTenantId());
         return R.ok(list);
     }
 

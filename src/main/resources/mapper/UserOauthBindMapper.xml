@@ -9,13 +9,16 @@
         from t_user_oauth_bind
         <where>
             <if test="phone != null and phone != ''">
-                phone = #{phone}
+                and phone = #{phone}
             </if>
             <if test="thirdId != null and thirdId != ''">
-                third_id = #{thirdId}
+                and third_id = #{thirdId}
             </if>
             <if test="uid != null">
-                uid = #{uid}
+                and uid = #{uid}
+            </if>
+            <if test="tenantId != null">
+                and tenant_id = #{tenantId}
             </if>
         </where>
         order by create_time desc
