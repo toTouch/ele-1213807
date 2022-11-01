@@ -92,12 +92,6 @@
             <if test="delFlag != null">
                 del_flag = #{delFlag},
             </if>
-            <if test="tenantId != null">
-                tenant_id = #{tenantId},
-            </if>
-            <if test="createTime != null">
-                create_time = #{createTime},
-            </if>
             <if test="updateTime != null">
                 update_time = #{updateTime},
             </if>

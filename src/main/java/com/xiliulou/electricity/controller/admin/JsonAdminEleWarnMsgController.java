@@ -4,10 +4,12 @@ import cn.hutool.core.util.ObjectUtil;
 import cn.hutool.core.util.StrUtil;
 import com.xiliulou.clickhouse.service.ClickHouseService;
 import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.exception.CustomBusinessException;
 import com.xiliulou.core.json.JsonUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
 import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.query.EleWarnMsgExcelQuery;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import com.xiliulou.electricity.service.EleWarnMsgService;
 import com.xiliulou.electricity.service.UserTypeFactory;
@@ -713,8 +715,18 @@ public class JsonAdminEleWarnMsgController extends BaseController {
      * @return
      */
     @PostMapping(value = "/admin/eleWarnMsg/export")
-    public R eleWarnMsgExport(@RequestBody EleWarnMsgQuery warnMsgQuery) {
-        return returnTripleResult(eleWarnMsgService.exportToExcel(warnMsgQuery));
+    public R eleWarnMsgExport(@RequestBody EleWarnMsgExcelQuery warnMsgQuery) {
+        verifyParams(warnMsgQuery);
+        return returnTripleResult(eleWarnMsgService.submitExportTask(warnMsgQuery));
+    }
+
+    private void verifyParams(EleWarnMsgExcelQuery warnMsgQuery) {
+        warnMsgQuery.setIsAdmin(SecurityUtils.isAdmin());
+        warnMsgQuery.setTenantId(TenantContextHolder.getTenantId());
+
+        if ((warnMsgQuery.getBeginTime() - warnMsgQuery.getEndTime()) / 1000 / 3600 / 24 > 31) {
+            throw new CustomBusinessException("搜索日期不能大于31天");
+        }
     }
 
 

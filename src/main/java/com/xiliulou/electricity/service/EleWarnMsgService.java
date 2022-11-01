@@ -2,6 +2,7 @@ package com.xiliulou.electricity.service;
 
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.EleWarnMsg;
+import com.xiliulou.electricity.query.EleWarnMsgExcelQuery;
 import com.xiliulou.electricity.query.EleWarnMsgQuery;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -62,5 +63,5 @@ public interface EleWarnMsgService {
 
     void queryElectricityName(List<Object> object);
 
-    Triple<Boolean, String, Object> exportToExcel(EleWarnMsgQuery warnMsgQuery);
+    Triple<Boolean, String, Object> submitExportTask(EleWarnMsgExcelQuery warnMsgQuery);
 }

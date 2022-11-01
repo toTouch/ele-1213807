@@ -22,4 +22,7 @@ public interface CommonConstant {
     String STATUS_ONLINE="online";
     //离线
     String STATUS_OFFLINE="offline";
+
+    String BUCKET_NAME="bucketName";
+    String FILE_NAME="fileName";
 }

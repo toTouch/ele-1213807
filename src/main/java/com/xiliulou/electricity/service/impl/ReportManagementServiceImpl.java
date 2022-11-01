@@ -3,12 +3,12 @@ package com.xiliulou.electricity.service.impl;
 import com.xiliulou.electricity.entity.ReportManagement;
 import com.xiliulou.electricity.mapper.ReportManagementMapper;
 import com.xiliulou.electricity.service.ReportManagementService;
-import org.springframework.stereotype.Service;
-
-import org.springframework.transaction.annotation.Transactional;
-import javax.annotation.Resource;
-import java.util.List;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 /**
  * 报表管理(ReportManagement)表服务实现类
  *
@@ -18,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 @Service("reportManagementService")
 @Slf4j
 public class ReportManagementServiceImpl implements ReportManagementService {
+
     @Autowired
     private ReportManagementMapper reportManagementMapper;
 
