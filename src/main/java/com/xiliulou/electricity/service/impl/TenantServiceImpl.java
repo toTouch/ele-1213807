@@ -202,7 +202,8 @@ public class TenantServiceImpl implements TenantService {
                 .tenantId(tenant.getId())
                 .isManualReview(ElectricityConfig.MANUAL_REVIEW)
                 .isWithdraw(ElectricityConfig.WITHDRAW)
-                .isOpenDoorLock(ElectricityConfig.OPEN_DOOR_LOCK)
+                .isOpenDoorLock(ElectricityConfig.NON_OPEN_DOOR_LOCK)
+                .disableMemberCard(ElectricityConfig.DISABLE_MEMBER_CARD)
                 .isBatteryReview(ElectricityConfig.NON_BATTERY_REVIEW).build();
         electricityConfigService.insertElectricityConfig(electricityConfig);
 
