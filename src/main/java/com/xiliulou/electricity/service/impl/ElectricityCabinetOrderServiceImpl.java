@@ -1330,6 +1330,12 @@ public class ElectricityCabinetOrderServiceImpl implements ElectricityCabinetOrd
                 log.error("ORDER ERROR! not found user info,uid={} ", user.getUid());
                 return Triple.of(false, "100205", "未找到用户审核信息");
             }
+    
+            //用户是否可用
+            if (Objects.equals(userInfo.getUsableStatus(), UserInfo.USER_UN_USABLE_STATUS)) {
+                log.error("ORDER ERROR! user is unUsable,uid={} ", user.getUid());
+                return Triple.of(false, "ELECTRICITY.0024", "用户已被禁用");
+            }
 
             if (Objects.equals(userInfo.getServiceStatus(), UserInfo.STATUS_INIT)) {
                 log.error("ORDER ERROR! userinfo is UN AUTH! uid={}", user.getUid());
