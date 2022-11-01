@@ -1,6 +1,8 @@
 package com.xiliulou.electricity.service;
 
 import com.xiliulou.electricity.entity.ReportManagement;
+import com.xiliulou.electricity.query.ReportManagementQuery;
+
 import java.util.List;
 
 /**
@@ -29,12 +31,11 @@ public interface ReportManagementService {
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
-    List<ReportManagement> selectByPage(int offset, int limit);
+    List<ReportManagement> selectByPage(ReportManagementQuery query);
+
+    Integer selectByPageCount(ReportManagementQuery query);
 
     /**
      * 新增数据
@@ -55,9 +56,9 @@ public interface ReportManagementService {
     /**
      * 通过主键删除数据
      *
-     * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Long id);
+    Boolean deleteByQuery(ReportManagementQuery query);
+
 
 }

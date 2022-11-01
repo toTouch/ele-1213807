@@ -1,9 +1,10 @@
 package com.xiliulou.electricity.mapper;
 
-import com.xiliulou.electricity.entity.ReportManagement;
-import java.util.List;
-import org.apache.ibatis.annotations.Param;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.ReportManagement;
+import com.xiliulou.electricity.query.ReportManagementQuery;
+
+import java.util.List;
 
 /**
  * 报表管理(ReportManagement)表数据库访问层
@@ -23,12 +24,9 @@ public interface ReportManagementMapper  extends BaseMapper<ReportManagement>{
 
     /**
      * 查询指定行数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
-    List<ReportManagement> selectByPage(@Param("offset") int offset, @Param("limit") int limit);
+    List<ReportManagement> selectByPage(ReportManagementQuery query);
 
 
     /**
@@ -63,4 +61,7 @@ public interface ReportManagementMapper  extends BaseMapper<ReportManagement>{
      */
     int deleteById(Long id);
 
+    int deleteByQuery(ReportManagementQuery query);
+
+    Integer selectByPageCount(ReportManagementQuery query);
 }

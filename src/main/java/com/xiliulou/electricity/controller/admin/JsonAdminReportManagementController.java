@@ -1,11 +1,13 @@
 package com.xiliulou.electricity.controller.admin;
 
-import com.xiliulou.electricity.entity.ReportManagement;
+import com.xiliulou.core.controller.BaseController;
+import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.query.ReportManagementQuery;
 import com.xiliulou.electricity.service.ReportManagementService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
+import com.xiliulou.electricity.utils.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import javax.annotation.Resource;
 
 /**
  * 报表管理(ReportManagement)表控制层
@@ -14,21 +16,60 @@ import javax.annotation.Resource;
  * @since 2022-10-31 15:59:06
  */
 @RestController
-@RequestMapping("reportManagement")
-public class JsonAdminReportManagementController {
+@RequestMapping("/admin/reportManagement/")
+public class JsonAdminReportManagementController extends BaseController {
 
     @Autowired
     private ReportManagementService reportManagementService;
 
     /**
-     * 通过主键查询单条数据
-     *
-     * @param id 主键
-     * @return 单条数据
+     * 分页
      */
-    @GetMapping("select")
-    public ReportManagement selectOne(Long id) {
-        return this.reportManagementService.selectById(id);
+    @GetMapping("page")
+    public R page(@RequestParam("size") Long size,
+                  @RequestParam("offset") Long offset,
+                  @RequestParam(value = "beginTime", required = false) Long beginTime,
+                  @RequestParam(value = "endTime", required = false) Long endTime) {
+        ReportManagementQuery query = new ReportManagementQuery();
+        query.setOffset(offset);
+        query.setSize(size);
+        query.setStartTime(beginTime);
+        query.setEndTime(endTime);
+
+        if (!SecurityUtils.isAdmin()) {
+            query.setTenantId(TenantContextHolder.getTenantId());
+        }
+
+         return R.ok(this.reportManagementService.selectByPage(query));
+    }
+
+    /**
+     * 总条数
+     */
+    @GetMapping("count")
+    public R selectOne(
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime) {
+
+        ReportManagementQuery query = new ReportManagementQuery();
+        query.setStartTime(beginTime);
+        query.setEndTime(endTime);
+
+        if (!SecurityUtils.isAdmin()) {
+            query.setTenantId(TenantContextHolder.getTenantId());
+        }
+        return R.ok(this.reportManagementService.selectByPageCount(query));
+    }
+
+    @DeleteMapping("delete/{id}")
+    public R delete(@PathVariable("id") Long id){
+        ReportManagementQuery query = new ReportManagementQuery();
+        query.setId(id);
+        if (!SecurityUtils.isAdmin()) {
+            query.setTenantId(TenantContextHolder.getTenantId());
+        }
+
+        return R.ok(this.reportManagementService.deleteByQuery(query));
     }
 
 }

@@ -2,12 +2,15 @@ package com.xiliulou.electricity.service.impl;
 
 import com.xiliulou.electricity.entity.ReportManagement;
 import com.xiliulou.electricity.mapper.ReportManagementMapper;
+import com.xiliulou.electricity.query.ReportManagementQuery;
 import com.xiliulou.electricity.service.ReportManagementService;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
 /**
  * 报表管理(ReportManagement)表服务实现类
@@ -47,14 +50,20 @@ public class ReportManagementServiceImpl implements ReportManagementService {
 
     /**
      * 查询多条数据
-     *
-     * @param offset 查询起始位置
-     * @param limit 查询条数
      * @return 对象列表
      */
     @Override
-    public List<ReportManagement> selectByPage(int offset, int limit) {
-        return this.reportManagementMapper.selectByPage(offset, limit);
+    public List<ReportManagement> selectByPage(ReportManagementQuery query) {
+        List<ReportManagement> reportManagements = this.reportManagementMapper.selectByPage(query);
+        if(CollectionUtils.isEmpty(reportManagements)){
+            return Collections.EMPTY_LIST;
+        }
+        return reportManagements;
+    }
+
+    @Override
+    public Integer selectByPageCount(ReportManagementQuery query) {
+        return this.reportManagementMapper.selectByPageCount(query);
     }
 
     /**
@@ -86,12 +95,11 @@ public class ReportManagementServiceImpl implements ReportManagementService {
     /**
      * 通过主键删除数据
      *
-     * @param id 主键
      * @return 是否成功
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Boolean deleteById(Long id) {
-        return this.reportManagementMapper.deleteById(id) > 0;
+    public Boolean deleteByQuery(ReportManagementQuery query) {
+        return this.reportManagementMapper.deleteByQuery(query) > 0;
     }
 }
