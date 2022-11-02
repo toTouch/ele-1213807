@@ -71,8 +71,11 @@
         <if test="query.storeId != null ">
             and tec.store_id = #{query.storeId}
         </if>
-        <if test="query.franchiseeId != null ">
-            and ts.franchisee_id = #{query.franchiseeId}
+        <if test="query.franchiseeIds != null ">
+            and ts.franchisee_id in
+            <foreach collection="query.franchiseeIds" item="id" index="index" open="(" close=")"  separator=",">
+                #{id}
+            </foreach>
         </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tec.battery_sn = #{query.batterySn}

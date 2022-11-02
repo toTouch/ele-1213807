@@ -159,7 +159,7 @@
             <if test="query.franchiseeName != null and query.franchiseeName != ''">
                 and f.name = #{query.franchiseeName}
             </if>
-            <if test="query.storeId != null">
+            <if test="query.storeIds != null">
                 and edo.store_id in
                 <foreach collection="query.storeIds" item="id" index="index" open="(" close=")"  separator=",">
                     #{id}
