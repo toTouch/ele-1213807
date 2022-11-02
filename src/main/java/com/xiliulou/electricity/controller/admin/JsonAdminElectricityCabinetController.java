@@ -213,6 +213,45 @@ public class JsonAdminElectricityCabinetController {
         return electricityCabinetService.queryCount(electricityCabinetQuery);
     }
     
+    //列表查询
+    @GetMapping(value = "/admin/electricityCabinet/list/super")
+    public R queryListSuper(@RequestParam("size") Long size, @RequestParam("offset") Long offset,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+            @RequestParam(value = "onlineStatus", required = false) Integer onlineStatus,
+            @RequestParam(value = "beginTime", required = false) Long beginTime,
+            @RequestParam(value = "endTime", required = false) Long endTime,
+            @RequestParam(value = "id", required = false) Integer id) {
+        if (size < 0 || size > 50) {
+            size = 10L;
+        }
+        
+        if (offset < 0) {
+            offset = 0L;
+        }
+        
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+        
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+        
+        if (user.getTenantId() != 1) {
+            return R.fail("权限不足");
+        }
+        
+        
+        ElectricityCabinetQuery electricityCabinetQuery = ElectricityCabinetQuery.builder().offset(offset).size(size)
+                .name(name).address(address).usableStatus(usableStatus).onlineStatus(onlineStatus).beginTime(beginTime)
+                .endTime(endTime).eleIdList(null).id(id).tenantId(null).build();
+        
+        return electricityCabinetService.queryList(electricityCabinetQuery);
+    }
     
     //列表数量查询
     @GetMapping(value = "/admin/electricityCabinet/queryCount/super")
