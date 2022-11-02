@@ -86,5 +86,9 @@ public class FranchiseeInsurance {
     private Long updateTime;
 
 
+    //禁用状态
+    public static final Integer STATUS_UN_USABLE = 1;
+    //可用状态
+    public static final Integer STATUS_USABLE = 0;
 
 }

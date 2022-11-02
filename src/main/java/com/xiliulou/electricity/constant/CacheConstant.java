@@ -207,4 +207,9 @@ public interface CacheConstant {
     String FULL_BOX_ELECTRICITY_CACHE = "full_box_electricity_cache:";
 
     String OTA_OPERATE_CACHE = "ota_operate_cache:";
+
+    /**
+     * 保险缓存
+     */
+    String CACHE_FRANCHISEE_INSURANCE = "CACHE_FRANCHISEE_INSURANCE:";
 }

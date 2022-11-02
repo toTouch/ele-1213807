@@ -18,4 +18,10 @@ public interface FranchiseeInsuranceService {
 
     R add(FranchiseeInsurance franchiseeInsurance);
 
+    R update(FranchiseeInsurance franchiseeInsurance);
+
+    R delete(Integer id);
+
+    R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Long franchiseeId);
+
 }

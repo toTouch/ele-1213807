@@ -1,13 +1,15 @@
 package com.xiliulou.electricity.service.impl;
 
 import cn.hutool.core.bean.BeanUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.xiliulou.cache.redis.RedisService;
 import com.xiliulou.core.web.R;
+import com.xiliulou.electricity.constant.BatteryConstant;
 import com.xiliulou.electricity.constant.CacheConstant;
-import com.xiliulou.electricity.entity.Coupon;
-import com.xiliulou.electricity.entity.FranchiseeInsurance;
-import com.xiliulou.electricity.entity.User;
+import com.xiliulou.electricity.entity.*;
 import com.xiliulou.electricity.mapper.CouponMapper;
+import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
@@ -16,11 +18,14 @@ import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.security.bean.TokenUser;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.CollectionUtils;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -31,13 +36,115 @@ import java.util.Objects;
  */
 @Service("franchiseeInsuranceService")
 @Slf4j
-public class FranchiseeInsuranceServiceImpl implements FranchiseeInsuranceService {
+public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsuranceMapper, FranchiseeInsurance> implements FranchiseeInsuranceService {
 
     @Resource
     FranchiseeInsuranceMapper franchiseeInsuranceMapper;
 
+    @Autowired
+    RedisService redisService;
+
     @Override
     public R add(FranchiseeInsurance franchiseeInsurance) {
-        return null;
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        Integer count = baseMapper.queryCount(null, franchiseeInsurance.getInsuranceType(), tenantId,  null, franchiseeInsurance.getName());
+        if (count > 0) {
+            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsurance.getName());
+            return R.fail("100304", "保险名称已存在！");
+        }
+
+
+        //填充参数
+        franchiseeInsurance.setCreateTime(System.currentTimeMillis());
+        franchiseeInsurance.setUpdateTime(System.currentTimeMillis());
+        franchiseeInsurance.setStatus(FranchiseeInsurance.STATUS_UN_USABLE);
+        franchiseeInsurance.setTenantId(tenantId);
+        franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_NORMAL);
+
+
+        Integer insert = baseMapper.insert(franchiseeInsurance);
+        DbUtils.dbOperateSuccessThen(insert, () -> {
+            return null;
+        });
+
+        if (insert > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
+
+    }
+
+    @Override
+    public R update(FranchiseeInsurance franchiseeInsurance) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        FranchiseeInsurance oldFranchiseeInsurance = baseMapper.selectOne(new LambdaQueryWrapper<FranchiseeInsurance>().eq(FranchiseeInsurance::getId, franchiseeInsurance.getId()).eq(FranchiseeInsurance::getTenantId, tenantId));
+
+        if (Objects.isNull(oldFranchiseeInsurance)) {
+            return R.ok();
+        }
+
+        Integer count = baseMapper.queryCount(null, franchiseeInsurance.getInsuranceType(), tenantId, null, franchiseeInsurance.getName());
+
+        if (count > 0 && !Objects.equals(oldFranchiseeInsurance.getName(), franchiseeInsurance.getName())) {
+            log.error("ELE ERROR! create insurance fail,there are same insuranceName,insuranceName={}", franchiseeInsurance.getName());
+            return R.fail("100304", "保险名称已存在！");
+        }
+
+        franchiseeInsurance.setUpdateTime(System.currentTimeMillis());
+
+
+
+        Integer update = baseMapper.update(franchiseeInsurance);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //先删再改
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + franchiseeInsurance.getId());
+            return null;
+        });
+
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
+    }
+
+    @Override
+    public R delete(Integer id) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //判断是否有用户绑定该套餐
+        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
+        if (!CollectionUtils.isEmpty(franchiseeUserInfoList)) {
+            log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);
+            return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
+        }
+
+        ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
+        electricityMemberCard.setId(id);
+        electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
+        electricityMemberCard.setTenantId(tenantId);
+        Integer update = baseMapper.update(electricityMemberCard);
+
+        DbUtils.dbOperateSuccessThen(update, () -> {
+            //删除缓存
+            redisService.delete(CacheConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            return null;
+        });
+
+        if (update > 0) {
+            return R.ok();
+        }
+        return R.fail("ELECTRICITY.0086", "操作失败");
+    }
+
+    @Override
+    public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
+        return R.ok(baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId));
     }
 }

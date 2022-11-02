@@ -6,10 +6,7 @@ import com.xiliulou.electricity.entity.FranchiseeInsurance;
 import com.xiliulou.electricity.query.BindElectricityBatteryQuery;
 import com.xiliulou.electricity.query.ElectricityBatteryQuery;
 import com.xiliulou.electricity.query.HomepageBatteryFrequencyQuery;
-import com.xiliulou.electricity.vo.BatteryStatisticalVo;
-import com.xiliulou.electricity.vo.BigEleBatteryVo;
-import com.xiliulou.electricity.vo.ElectricityBatteryVO;
-import com.xiliulou.electricity.vo.HomepageBatteryFrequencyVo;
+import com.xiliulou.electricity.vo.*;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
 
@@ -23,6 +20,10 @@ import java.util.List;
  */
 public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsurance> {
 
+    Integer queryCount(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId,@Param("franchiseeId") Long franchiseeId,@Param("name") String name);
 
+    int update(FranchiseeInsurance franchiseeInsurance);
+
+    List<FranchiseeInsurance> queryList(@Param("offset") Long offset, @Param("size") Long size, @Param("status") Integer status, @Param("insuranceType") Integer insuranceType, @Param("tenantId") Integer tenantId, @Param("franchiseeId") Long franchiseeId);
 
 }
