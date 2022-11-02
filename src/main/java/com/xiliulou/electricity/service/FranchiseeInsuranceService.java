@@ -24,4 +24,8 @@ public interface FranchiseeInsuranceService {
 
     R queryList(Long offset, Long size, Integer status, Integer type,Integer tenantId,Long franchiseeId);
 
+    R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId);
+
+    FranchiseeInsurance queryByCache(Integer id);
+
 }

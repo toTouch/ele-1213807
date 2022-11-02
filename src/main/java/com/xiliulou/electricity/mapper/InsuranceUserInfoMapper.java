@@ -1,0 +1,19 @@
+package com.xiliulou.electricity.mapper;
+
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+import com.xiliulou.electricity.entity.FranchiseeInsurance;
+import com.xiliulou.electricity.entity.InsuranceUserInfo;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
+
+/**
+ * 换电柜电池表(InsuranceUserInfo)表数据库访问层
+ *
+ * @author makejava
+ * @since 2020-11-26 14:44:12
+ */
+public interface InsuranceUserInfoMapper extends BaseMapper<InsuranceUserInfo> {
+
+
+}

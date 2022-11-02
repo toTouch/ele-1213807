@@ -13,7 +13,7 @@ import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 
 /**
- * 换电柜保险(FranchiseeInsurance)实体类
+ * 换电柜保险(InsuranceUserInfo)实体类
  *
  * @author makejava
  * @since 2022-11-02 14:44:12
@@ -22,11 +22,13 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@TableName("t_franchisee_insurance")
-public class FranchiseeInsurance {
+@TableName("t_insurance_user_info")
+public class InsuranceUserInfo {
 
     @TableId(value = "id", type = IdType.AUTO)
     private Integer id;
+
+    private Long uid;
 
     /**
      * 加盟商id
@@ -36,42 +38,37 @@ public class FranchiseeInsurance {
     /**
      * 保险名称
      */
-    @NotEmpty(message = "保险名称不能为空!")
     private String name;
 
     /**
      * 保费
      */
-    @NotNull(message = "保费不能为空!")
     private BigDecimal premium;
 
     /**
      * 保额
      */
-    @NotNull(message = "保额不能为空!")
     private BigDecimal forehead;
 
     /**
-     * 可用天数
+     * 保险Id
      */
-    @NotNull(message = "可用天数不能为空!")
-    private Integer validDays;
+    private Integer insuranceId;
 
     /**
-     * 保险类型 0--电池 1--车辆
+     * 保险订单编号
      */
-    @NotNull(message = "保险类型不能为空!")
-    private Integer insuranceType;
+    private String insuranceOrderId;
 
     /**
-     * 状态 0--正常 1--禁用
+     * 保险过期时间
      */
-    private Integer status;
+    private Long insuranceExpireTime;
 
     /**
-     * 是否强制购买 0--非强制 1--强制
+     * 是否出险 0--未出险 1--已出险
      */
-    private Integer isConstraint;
+    private Integer isUse;
 
     /**
      * 删除标志 0--正常 1--删除
@@ -90,5 +87,8 @@ public class FranchiseeInsurance {
     public static final Integer STATUS_UN_USABLE = 1;
     //可用状态
     public static final Integer STATUS_USABLE = 0;
+
+    public static final Integer DEL_NORMAL = 0;
+    public static final Integer DEL_DEL = 1;
 
 }

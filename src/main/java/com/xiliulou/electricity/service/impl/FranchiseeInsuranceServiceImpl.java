@@ -13,6 +13,8 @@ import com.xiliulou.electricity.mapper.ElectricityMemberCardMapper;
 import com.xiliulou.electricity.mapper.FranchiseeInsuranceMapper;
 import com.xiliulou.electricity.query.CouponQuery;
 import com.xiliulou.electricity.service.FranchiseeInsuranceService;
+import com.xiliulou.electricity.service.FranchiseeUserInfoService;
+import com.xiliulou.electricity.service.InsuranceUserInfoService;
 import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.DbUtils;
 import com.xiliulou.electricity.utils.SecurityUtils;
@@ -43,6 +45,9 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
 
     @Autowired
     RedisService redisService;
+
+    @Autowired
+    InsuranceUserInfoService insuranceUserInfoService;
 
     @Override
     public R add(FranchiseeInsurance franchiseeInsurance) {
@@ -118,22 +123,22 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
 
-        //判断是否有用户绑定该套餐
-        List<FranchiseeUserInfo> franchiseeUserInfoList = franchiseeUserInfoService.selectByMemberCardId(id, tenantId);
-        if (!CollectionUtils.isEmpty(franchiseeUserInfoList)) {
+        //判断是否有用户绑定该保险
+        List<InsuranceUserInfo> insuranceUserInfoList = insuranceUserInfoService.selectByInsuranceId(id, tenantId);
+        if (!CollectionUtils.isEmpty(insuranceUserInfoList)) {
             log.error("ELE ERROR! delete memberCard fail,there are user use memberCard,memberCardId={}", id);
             return R.fail(queryByCache(id), "100100", "删除失败，该套餐已有用户使用！");
         }
 
-        ElectricityMemberCard electricityMemberCard = new ElectricityMemberCard();
-        electricityMemberCard.setId(id);
-        electricityMemberCard.setDelFlag(ElectricityMemberCard.DEL_DEL);
-        electricityMemberCard.setTenantId(tenantId);
-        Integer update = baseMapper.update(electricityMemberCard);
+        FranchiseeInsurance franchiseeInsurance = new FranchiseeInsurance();
+        franchiseeInsurance.setId(id);
+        franchiseeInsurance.setDelFlag(ElectricityMemberCard.DEL_DEL);
+        franchiseeInsurance.setTenantId(tenantId);
+        Integer update = baseMapper.update(franchiseeInsurance);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //删除缓存
-            redisService.delete(CacheConstant.CACHE_MEMBER_CARD + electricityMemberCard.getId());
+            redisService.delete(CacheConstant.CACHE_FRANCHISEE_INSURANCE + franchiseeInsurance.getId());
             return null;
         });
 
@@ -146,5 +151,23 @@ public class FranchiseeInsuranceServiceImpl extends ServiceImpl<FranchiseeInsura
     @Override
     public R queryList(Long offset, Long size, Integer status, Integer type, Integer tenantId, Long franchiseeId) {
         return R.ok(baseMapper.queryList(offset, size, status, type, tenantId, franchiseeId));
+    }
+
+    @Override
+    public R queryCount(Integer status, Integer type, Integer tenantId, Long franchiseeId) {
+        return R.ok(baseMapper.queryCount(status,type,tenantId,franchiseeId,null));
+    }
+
+    @Override
+    public FranchiseeInsurance queryByCache(Integer id) {
+        FranchiseeInsurance franchiseeInsurance = null;
+        franchiseeInsurance = redisService.getWithHash(CacheConstant.CACHE_FRANCHISEE_INSURANCE + id, FranchiseeInsurance.class);
+        if (Objects.isNull(franchiseeInsurance)) {
+            franchiseeInsurance = baseMapper.selectById(id);
+            if (Objects.nonNull(franchiseeInsurance)) {
+                redisService.saveWithHash(CacheConstant.CACHE_FRANCHISEE_INSURANCE + id, franchiseeInsurance);
+            }
+        }
+        return franchiseeInsurance;
     }
 }

@@ -54,11 +54,11 @@ public class JsonAdminFranchiseeInsuranceController {
      * @return
      */
     @PutMapping("admin/franchiseeInsurance")
-    public R update(@RequestBody @Validated ElectricityMemberCard electricityMemberCard) {
-        if (Objects.isNull(electricityMemberCard)) {
+    public R update(@RequestBody @Validated FranchiseeInsurance franchiseeInsurance) {
+        if (Objects.isNull(franchiseeInsurance)) {
             return R.failMsg("请求参数不能为空!");
         }
-        return franchiseeInsuranceService.update(electricityMemberCard);
+        return franchiseeInsuranceService.update(franchiseeInsurance);
     }
 
     /**
@@ -103,6 +103,37 @@ public class JsonAdminFranchiseeInsuranceController {
         }
 
         return franchiseeInsuranceService.queryList(offset, size, status, insuranceType, tenantId, franchiseeId);
+    }
+
+    /**
+     * 分页数量
+     *
+     * @return
+     */
+    @GetMapping("admin/franchiseeInsurance/queryCount")
+    public R getElectricityMemberCardPage(@RequestParam(value = "type", required = false) Integer type,
+                                          @RequestParam(value = "status", required = false) Integer status,
+                                          @RequestParam(value = "cardModel", required = false) Integer cardModel) {
+
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        //用户区分
+        TokenUser user = SecurityUtils.getUserInfo();
+        if (Objects.isNull(user)) {
+            log.error("ELECTRICITY  ERROR! not found user ");
+            return R.fail("ELECTRICITY.0001", "未找到用户");
+        }
+
+        Long franchiseeId = null;
+        if (Objects.equals(user.getType(), User.TYPE_USER_FRANCHISEE)) {
+            //加盟商
+            Franchisee franchisee = franchiseeService.queryByUid(user.getUid());
+            if (Objects.nonNull(franchisee)) {
+                franchiseeId = franchisee.getId();
+            }
+        }
+
+        return franchiseeInsuranceService.queryCount(status, type, tenantId, franchiseeId);
     }
 
 }

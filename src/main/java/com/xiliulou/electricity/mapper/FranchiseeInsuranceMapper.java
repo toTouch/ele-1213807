@@ -20,7 +20,7 @@ import java.util.List;
  */
 public interface FranchiseeInsuranceMapper extends BaseMapper<FranchiseeInsurance> {
 
-    Integer queryCount(@Param("status") Integer status, @Param("type") Integer type,@Param("tenantId") Integer tenantId,@Param("franchiseeId") Long franchiseeId,@Param("name") String name);
+    Integer queryCount(@Param("status") Integer status, @Param("insuranceType") Integer insuranceType,@Param("tenantId") Integer tenantId,@Param("franchiseeId") Long franchiseeId,@Param("name") String name);
 
     int update(FranchiseeInsurance franchiseeInsurance);
 

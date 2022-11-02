@@ -35,7 +35,6 @@
             <if test="insuranceType != null">
                 insurance_type = #{insuranceType},
             </if>
-
             <if test="premium != null">
                 premium = #{premium},
             </if>
@@ -65,7 +64,23 @@
     </update>
 
     <select id="queryList" resultType="com.xiliulou.electricity.entity.FranchiseeInsurance">
-
+        select id,franchisee_id,name,premium,forehead,valid_days,insurance_type,status,is_constraint,del_flag,create_time,update_time,tenant_id
+        from t_franchisee_insurance
+        where del_flag=0
+        <if test="status != null">
+            AND status = #{status}
+        </if>
+        <if test="insuranceType != null">
+            AND insurance_type = #{insuranceType}
+        </if>
+        <if test="tenantId != null ">
+            and tenant_id = #{tenantId}
+        </if>
+        <if test="franchiseeId != null ">
+            and franchisee_id = #{franchiseeId}
+        </if>
+        ORDER BY temc.create_time DESC
+        limit #{offset}, #{size}
     </select>
 
 </mapper>
