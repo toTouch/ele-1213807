@@ -56,6 +56,8 @@ public interface UserService {
 
     User queryByUserName(String username);
 
+    User queryByUserNameAndTenantId(String username,Integer tenantId);
+
     Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery);
 
     User queryByUserPhone(String phone, Integer type,Integer tenantId);

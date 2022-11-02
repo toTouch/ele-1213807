@@ -24,4 +24,6 @@ public class StoreShopsQuery {
 
 	private Long endTime;
 
+	private Integer tenantId;
+
 }

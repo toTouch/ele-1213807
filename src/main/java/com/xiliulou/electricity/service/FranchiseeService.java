@@ -46,10 +46,12 @@ public interface FranchiseeService {
 
 	R queryByTenantId(Integer tenantId);
 
-	R queryByCabinetId(Integer cabinetId);
+	R queryByCabinetId(Integer id, Integer cabinetId);
 
 
 
 	Franchisee queryByUserId(Long uid);
+
+    Franchisee queryByIdAndTenantId(Long id,Integer tenantId);
 
 }

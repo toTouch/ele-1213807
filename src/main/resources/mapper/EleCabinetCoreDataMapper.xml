@@ -195,16 +195,37 @@
 
     <select id="selectListByQuery" resultMap="EleCabinetCoreDataMap">
         select
-        id, electricity_cabinet_id, lock_open, smoke_sensor_open, light_open, fan_open, extinguisher_open, v, a, power,
-        power_factor, active_electrical_energy, water_pump_open, water_level_warning, temp, humidity,
-        water_leaching_warning, create_time, update_time,core_version
-        from t_ele_cabinet_core_data
-        <if test="electricityCabinetId != null and electricityCabinetId != ''">
-            and electricity_cabinet_id = #{electricityCabinetId}
+        tccd.id, tccd.electricity_cabinet_id, tccd.lock_open, tccd.smoke_sensor_open, tccd.light_open, tccd.fan_open,
+        tccd.extinguisher_open, tccd.v, tccd.a, tccd.power, tccd.power_factor, tccd.active_electrical_energy,
+        tccd.water_pump_open, tccd.water_level_warning, tccd.temp, tccd.humidity, tccd.water_leaching_warning,
+        tccd.create_time, tccd.update_time
+        from t_ele_cabinet_core_data as tccd left join t_electricity_cabinet as tec on
+        tccd.electricity_cabinet_id=tec.id
+        <where>
+            <if test="electricityCabinetId != null">
+                and tccd.electricity_cabinet_id = #{electricityCabinetId}
+            </if>
+            <if test="tenantId != null">
+                and tec.tenant_id = #{tenantId}
+            </if>
+            <if test="offset != null and limit != null">
+                limit #{offset}, #{limit}
+            </if>
+        </where>
+    </select>
+
+    <select id="selectById" resultMap="EleCabinetCoreDataMap">
+        select
+        tccd.id, tccd.electricity_cabinet_id, tccd.lock_open, tccd.smoke_sensor_open, tccd.light_open, tccd.fan_open, tccd.extinguisher_open, tccd.v, tccd.a, tccd.power, tccd.power_factor, tccd.active_electrical_energy, tccd.water_pump_open, tccd.water_level_warning, tccd.temp, tccd.humidity, tccd.water_leaching_warning, tccd.create_time, tccd.update_time
+        from t_ele_cabinet_core_data as tccd left join t_electricity_cabinet as tec on tccd.electricity_cabinet_id=tec.id
+        <where>
+        <if test="id != null">
+            and tccd.electricity_cabinet_id = #{id}
         </if>
-        <if test="offset != null and limit != null">
-            limit #{offset}, #{limit}
+        <if test="tenantId != null">
+            and tec.tenant_id = #{tenantId}
         </if>
+        </where>
     </select>
 
 

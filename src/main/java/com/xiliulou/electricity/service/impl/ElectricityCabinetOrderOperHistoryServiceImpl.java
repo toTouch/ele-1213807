@@ -7,6 +7,7 @@ import com.xiliulou.electricity.entity.OffLineElectricityCabinetOrderOperHistory
 import com.xiliulou.electricity.mapper.ElectricityCabinetOrderOperHistoryMapper;
 import com.xiliulou.electricity.query.ElectricityCabinetOrderOperHistoryQuery;
 import com.xiliulou.electricity.service.ElectricityCabinetOrderOperHistoryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.vo.EleOrderOperHistoryDetailVO;
 import com.xiliulou.electricity.vo.ElectricityCabinetVO;
 import org.apache.commons.lang3.StringUtils;
@@ -89,7 +90,11 @@ public class ElectricityCabinetOrderOperHistoryServiceImpl implements Electricit
      */
     @Override
     public R selectOperateDataType(String orderId, Integer type) {
-        ElectricityCabinetOrderOperHistoryQuery historyQuery = ElectricityCabinetOrderOperHistoryQuery.builder().orderId(orderId).type(type).build();
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
+        ElectricityCabinetOrderOperHistoryQuery historyQuery = ElectricityCabinetOrderOperHistoryQuery.builder().orderId(orderId).type(type).tenantId(tenantId).build();
 
         List<ElectricityCabinetOrderOperHistory> historyList = electricityCabinetOrderOperHistoryMapper.queryListByOrderId(historyQuery);
         if (ObjectUtil.isNotEmpty(historyList)) {

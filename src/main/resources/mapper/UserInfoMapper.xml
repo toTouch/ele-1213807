@@ -377,6 +377,43 @@
         where uid = #{uid}
     </update>
 
+    <update id="update">
+        update t_user_info
+        <set>
+            <if test="phone != null and phone != ''">
+                phone = #{phone},
+            </if>
+            <if test="userName != null and userName != ''">
+                user_name = #{userName},
+            </if>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="idNumber != null and idNumber != ''">
+                id_number = #{idNumber},
+            </if>
+            <if test="authStatus != null">
+                auth_status = #{authStatus},
+            </if>
+            <if test="serviceStatus != null">
+                service_status = #{serviceStatus},
+            </if>
+            <if test="usableStatus != null">
+                usable_status = #{usableStatus},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where uid = #{uid} and tenant_id=#{tenantId}
+    </update>
+
 
 
 </mapper>

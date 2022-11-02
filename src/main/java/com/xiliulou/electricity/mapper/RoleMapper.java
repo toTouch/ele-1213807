@@ -37,4 +37,6 @@ public interface RoleMapper  extends BaseMapper<Role>{
 
 	@Select("SELECT id,name,code,create_time,update_time,tenant_id FROM t_role WHERE name=#{name} and tenant_id=#{tenantId}")
 	Role queryByName(@Param("name") String name,@Param("tenantId") Integer tenantId);
+	
+	Integer deleteById(@Param("id") Long id,@Param("tenantId") Integer tenantId);
 }

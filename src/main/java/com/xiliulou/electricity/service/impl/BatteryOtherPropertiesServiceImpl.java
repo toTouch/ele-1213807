@@ -11,6 +11,7 @@ import com.xiliulou.electricity.mapper.BatteryOtherPropertiesMapper;
 import com.xiliulou.electricity.service.BatteryOtherPropertiesService;
 import com.xiliulou.electricity.service.ElectricityBatteryService;
 import com.xiliulou.electricity.service.ElectricityCabinetBoxService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,23 +57,30 @@ public class BatteryOtherPropertiesServiceImpl implements BatteryOtherProperties
 
 	@Override
 	public R queryBySn(String sn) {
-		BatteryOtherProperties batteryOtherProperties=batteryOtherPropertiesMapper.selectOne(new LambdaQueryWrapper<BatteryOtherProperties>()
-				.eq(BatteryOtherProperties::getBatteryName,sn));
-
+		
 		BatteryOtherPropertiesQuery batteryOtherPropertiesQuery=new BatteryOtherPropertiesQuery();
-
-		if(Objects.isNull(batteryOtherProperties)) {
+		
+		ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(sn);
+		if(Objects.isNull(electricityBattery) || !Objects.equals(electricityBattery.getTenantId(), TenantContextHolder.getTenantId())){
 			return R.ok(batteryOtherPropertiesQuery);
 		}
-
-		ElectricityBattery electricityBattery=electricityBatteryService.queryBySn(sn);
+		
+		
 		if (Objects.equals(electricityBattery.getPhysicsStatus(),ElectricityBattery.PHYSICS_STATUS_WARE_HOUSE)){
-//			ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.queryByCellNo(electricityBattery.getElectricityCabinetId(),electricityBattery.getLastDepositCellNo());
 			ElectricityCabinetBox electricityCabinetBox=electricityCabinetBoxService.selectByBatteryId(electricityBattery.getId());
 			if (Objects.nonNull(electricityCabinetBox)) {
 				batteryOtherPropertiesQuery.setChargeV(electricityCabinetBox.getChargeV());
 			}
 		}
+		
+		
+		BatteryOtherProperties batteryOtherProperties=batteryOtherPropertiesMapper.selectOne(new LambdaQueryWrapper<BatteryOtherProperties>()
+				.eq(BatteryOtherProperties::getBatteryName,sn));
+		if(Objects.isNull(batteryOtherProperties)) {
+			return R.ok(batteryOtherPropertiesQuery);
+		}
+
+
 
 		BeanUtils.copyProperties(batteryOtherProperties,batteryOtherPropertiesQuery);
 		batteryOtherPropertiesQuery.setBatteryCoreVList(JsonUtil.fromJson(batteryOtherProperties.getBatteryCoreVList(),List.class));

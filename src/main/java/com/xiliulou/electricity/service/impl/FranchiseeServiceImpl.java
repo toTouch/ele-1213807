@@ -168,6 +168,10 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(oldFranchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
+        
+        if(!Objects.equals(oldFranchisee.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
 
         //押金参数判断
         if (Objects.equals(franchiseeAddAndUpdate.getModelType(), Franchisee.OLD_MODEL_TYPE)) {
@@ -207,9 +211,13 @@ public class FranchiseeServiceImpl implements FranchiseeService {
         if (Objects.isNull(franchisee)) {
             return R.fail("ELECTRICITY.0038", "未找到加盟商");
         }
+    
+        if(!Objects.equals(franchisee.getTenantId(),TenantContextHolder.getTenantId())){
+            return R.ok();
+        }
 
         //查询加盟商是否绑定的有套餐
-        List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id);
+        List<ElectricityMemberCard> electricityMemberCardList =electricityMemberCardService.selectByFranchiseeId(id,franchisee.getTenantId());
         if(!CollectionUtils.isEmpty(electricityMemberCardList)){
             log.error("ELE ERROR! delete franchisee fail,franchisee has binding memberCard,franchiseeId={}",id);
             return R.fail(id,"100101", "删除失败，该加盟商已绑定套餐！");
@@ -395,8 +403,9 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 Franchisee franchisee = new Franchisee();
                 franchisee.setId(franchiseeSetSplitQuery.getId());
                 franchisee.setPercent(franchiseeSetSplitQuery.getPercent());
+                franchisee.setTenantId(TenantContextHolder.getTenantId());
                 franchisee.setUpdateTime(System.currentTimeMillis());
-                franchiseeMapper.updateById(franchisee);
+                franchiseeMapper.update(franchisee);
 
             }
 
@@ -405,6 +414,7 @@ public class FranchiseeServiceImpl implements FranchiseeService {
                 Store store = new Store();
                 store.setId(franchiseeSetSplitQuery.getId());
                 store.setPercent(franchiseeSetSplitQuery.getPercent());
+                store.setTenantId(TenantContextHolder.getTenantId());
                 store.setUpdateTime(System.currentTimeMillis());
                 storeService.updateById(store);
             }
@@ -435,8 +445,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
     }
 
     @Override
-    public R queryByCabinetId(Integer cabinetId) {
-        return R.ok(franchiseeMapper.queryByCabinetId(cabinetId));
+    public R queryByCabinetId(Integer id, Integer tenantId) {
+        return R.ok(franchiseeMapper.queryByCabinetId(id,tenantId));
     }
 
 	@Override
@@ -444,4 +454,8 @@ public class FranchiseeServiceImpl implements FranchiseeService {
 		return franchiseeMapper.queryByUserId(uid);
 	}
 
+    @Override
+    public Franchisee queryByIdAndTenantId(Long id, Integer tenantId) {
+        return franchiseeMapper.selectOne(new LambdaQueryWrapper<Franchisee>().eq(Franchisee::getId, id).eq(Franchisee::getTenantId,tenantId));
+    }
 }

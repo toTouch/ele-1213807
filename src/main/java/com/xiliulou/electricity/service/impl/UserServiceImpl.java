@@ -172,6 +172,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User queryByUserNameAndTenantId(String username, Integer tenantId) {
+        return this.userMapper.selectOne(new LambdaQueryWrapper<User>().eq(User::getName, username).eq(User::getDelFlag, User.DEL_NORMAL).eq(User::getTenantId, tenantId));
+    }
+
+    @Override
     @Transactional(rollbackFor = Exception.class)
     public Triple<Boolean, String, Object> addAdminUser(AdminUserQuery adminUserQuery) {
         TokenUser tokenUser = SecurityUtils.getUserInfo();
@@ -304,9 +309,17 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public Pair<Boolean, Object> updateAdminUser(AdminUserQuery adminUserQuery) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         User user = queryByUidFromCache(adminUserQuery.getUid());
         if (Objects.isNull(user)) {
             return Pair.of(false, "uid:" + adminUserQuery.getUid() + "用户不存在!");
+        }
+
+        if (!Objects.equals(user.getTenantId(), tenantId)) {
+            return Pair.of(true, null);
         }
 
         if (StrUtil.isNotEmpty(adminUserQuery.getPhone())) {
@@ -368,6 +381,7 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(oldUserInfo)) {
                 UserInfo userInfo = new UserInfo();
                 userInfo.setId(oldUserInfo.getId());
+                userInfo.setTenantId(tenantId);
                 userInfo.setUpdateTime(System.currentTimeMillis());
                 userInfo.setPhone(updateUser.getPhone());
                 userInfo.setUid(oldUserInfo.getUid());
@@ -380,10 +394,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public Pair<Boolean, Object> deleteAdminUser(Long uid) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         User user = queryByUidFromCache(uid);
         if (Objects.isNull(user)) {
             return Pair.of(false, "uid:" + uid + "用户不存在!");
         }
+
+        if (!Objects.equals(user.getTenantId(), tenantId)) {
+            return Pair.of(true, null);
+        }
+
         if (Objects.equals(user.getUserType(), User.TYPE_USER_NORMAL_WX_PRO)) {
             return Pair.of(false, "非法操作");
         }
@@ -436,8 +458,10 @@ public class UserServiceImpl implements UserService {
             log.error("updatePassword  ERROR! not found user ");
             Triple.of(false, "ELECTRICITY.0001", "未找到用户");
         }
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
 
-        User oldUser = queryByUserName(passwordQuery.getName());
+        User oldUser = queryByUserNameAndTenantId(passwordQuery.getName(), tenantId);
         if (Objects.isNull(oldUser)) {
             log.error("updatePassword  ERROR! not found userName{} ", passwordQuery.getName());
             Triple.of(false, null, "用户名不存在");
@@ -650,13 +674,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Integer queryHomePageCount( Integer type, Long startTime, Long endTime, Integer tenantId) {
+    public Integer queryHomePageCount(Integer type, Long startTime, Long endTime, Integer tenantId) {
         return this.userMapper.queryCount(null, null, null, type, startTime, endTime, tenantId);
     }
 
     @Override
     @Transactional
     public Triple<Boolean, String, Object> deleteNormalUser(Long uid) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         TokenUser userInfo = SecurityUtils.getUserInfo();
         if (Objects.isNull(userInfo)) {
             return Triple.of(false, "USER.0001", "登陆用户不合法，无法操作！");
@@ -671,6 +699,10 @@ public class UserServiceImpl implements UserService {
             return Triple.of(false, "USER.0001", "没有此用户！无法删除");
         }
 
+        if (!Objects.equals(tenantId, user.getTenantId())) {
+            return Triple.of(true, null, null);
+        }
+
         List<UserOauthBind> userOauthBinds = userOauthBindService.queryListByUid(uid);
         if (DataUtil.collectionIsUsable(userOauthBinds)) {
             delUserOauthBindAndClearToken(userOauthBinds);
@@ -679,7 +711,7 @@ public class UserServiceImpl implements UserService {
         UserInfo userInfo1 = userInfoService.queryByUidFromCache(uid);
         franchiseeUserInfoService.deleteByUserInfoId(userInfo1.getId());
         //删除用户
-        deleteWxProUser(uid,userInfo1.getTenantId());
+        deleteWxProUser(uid, userInfo1.getTenantId());
         userInfoService.deleteByUid(uid);
 
         return Triple.of(true, null, null);
@@ -687,7 +719,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public R userAutoCodeGeneration() {
-        if(!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
+        if (!Objects.equals(SecurityUtils.getUserInfo().getType(), User.TYPE_USER_SUPER)) {
             return R.fail("权限不足");
         }
 
@@ -701,7 +733,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public R userAutoCodeCheck(String autoCode) {
         String key = redisService.get(autoCode);
-        if(StringUtils.isBlank(key)){
+        if (StringUtils.isBlank(key)) {
             return R.fail("验证码已使用或不存在");
         }
 

@@ -7,7 +7,7 @@
 		select id,uid,full_name,enc_bank_no,enc_bind_user_name,enc_bind_id_number,
 		enc_bank_code,del_flag,create_time,update_time
 		from t_bank_card
-		where del_flag=0
+		where del_flag=0 and tenant_id=#{query.tenantId}
 		<if test="query.uid != null ">
 			and uid = #{query.uid}
 		</if>
@@ -23,7 +23,7 @@
 	<select id="queryCount" resultType="java.lang.Integer">
 		select count(1)
 		from t_bank_card
-		where del_flag=0
+		where del_flag=0 and tenant_id=#{query.tenantId}
 		<if test="query.uid != null ">
 			and uid = #{query.uid}
 		</if>

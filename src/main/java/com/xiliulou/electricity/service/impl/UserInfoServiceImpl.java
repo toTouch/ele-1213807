@@ -27,11 +27,13 @@ import com.xiliulou.electricity.utils.SecurityUtils;
 import com.xiliulou.electricity.vo.*;
 import com.xiliulou.security.bean.TokenUser;
 import com.xxl.job.core.util.DateUtil;
+
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletResponse;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -40,6 +42,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
 import javax.annotation.Resource;
 import java.math.BigDecimal;
 import java.util.*;
@@ -142,7 +145,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Integer update(UserInfo userInfo) {
-        int result = this.userInfoMapper.updateById(userInfo);
+        int result = this.userInfoMapper.update(userInfo);
         DbUtils.dbOperateSuccessThen(result, () -> {
             redisService.delete(CacheConstant.CACHE_USER_INFO + userInfo.getUid());
             return null;
@@ -167,7 +170,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     if (item.getMemberCardExpireTime() > now) {
 //                        carDays = (item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24;
                         Double carDayTemp = Math.ceil((item.getMemberCardExpireTime() - System.currentTimeMillis()) / 1000L / 60 / 60 / 24.0);
-                        carDays=carDayTemp.longValue();
+                        carDays = carDayTemp.longValue();
                     }
                     if (Objects.equals(item.getMemberCardDisableStatus(), FranchiseeUserInfo.MEMBER_CARD_DISABLE)) {
                         carDays = (item.getMemberCardExpireTime() - item.getDisableMemberCardTime()) / (24 * 60 * 60 * 1000L);
@@ -183,11 +186,11 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setCardId(null);
                     item.setCardName(null);
                 }
-    
+
                 if (Objects.nonNull(item.getServiceStatus()) && !Objects
                         .equals(item.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_INIT)) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService
-                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(),null);
+                            .queryLastPayDepositTimeByUid(item.getUid(), item.getFranchiseeId(), item.getTenantId(), null);
                     if (Objects.nonNull(eleDepositOrder)) {
                         item.setPayDepositTime(eleDepositOrder.getCreateTime());
                     }
@@ -201,20 +204,20 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     item.setModel(BatteryConstant.acquireBattery(item.getModel()).toString());
                 }
 
-                if(StringUtils.isNotBlank(item.getOrderId())) {
+                if (StringUtils.isNotBlank(item.getOrderId())) {
                     EleDepositOrder eleDepositOrder = eleDepositOrderService.queryByOrderId(item.getOrderId());
-                    if(Objects.nonNull(eleDepositOrder)) {
+                    if (Objects.nonNull(eleDepositOrder)) {
                         item.setStoreId(eleDepositOrder.getStoreId());
                     }
                 }
 
                 FranchiseeUserInfo franchiseeUserInfo = franchiseeUserInfoService.queryByUid(item.getUid());
-                if(Objects.nonNull(franchiseeUserInfo) && StringUtils.isNotBlank(franchiseeUserInfo.getCardName())){
+                if (Objects.nonNull(franchiseeUserInfo) && StringUtils.isNotBlank(franchiseeUserInfo.getCardName())) {
                     item.setMemberCardDisableStatus(franchiseeUserInfo.getMemberCardDisableStatus());
                 }
 
                 ElectricityBattery electricityBattery = electricityBatteryService.queryByUid(item.getUid());
-                if(Objects.nonNull(electricityBattery)){
+                if (Objects.nonNull(electricityBattery)) {
                     item.setNowElectricityBatterySn(electricityBattery.getSn());
                 }
             });
@@ -264,15 +267,24 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional
     public R updateStatus(Long uid, Integer usableStatus) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         UserInfo oldUserInfo = queryByUidFromCache(uid);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
+            return R.ok();
         }
         UserInfo userInfo = new UserInfo();
         userInfo.setId(oldUserInfo.getId());
         userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(usableStatus);
+        userInfo.setTenantId(tenantId);
         update(userInfo);
         return R.ok();
     }
@@ -501,7 +513,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-        if (Objects.equals(franchiseeUserInfo.getServiceStatus(),FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
+        if (Objects.equals(franchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
 //        if (Objects.nonNull(franchiseeUserInfo.getNowElectricityBatterySn()) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(franchiseeUserInfo.getFranchiseeId());
@@ -567,13 +579,21 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public R verifyAuth(Long id, Integer authStatus) {
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         UserInfo oldUserInfo = queryByIdFromDB(id);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
         }
 
+        if (!Objects.equals(tenantId, oldUserInfo.getTenantId())) {
+            return R.ok();
+        }
+
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
+        userInfo.setTenantId(tenantId);
         userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
@@ -589,11 +609,16 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Override
     @Transactional
     public R updateAuth(UserInfo userInfo) {
-        userInfo.setUpdateTime(System.currentTimeMillis());
-        Integer update = update(userInfo);
 
         //租户
         Integer tenantId = TenantContextHolder.getTenantId();
+
+        if (!Objects.equals(tenantId, userInfo.getTenantId())) {
+            return R.ok();
+        }
+
+        userInfo.setUpdateTime(System.currentTimeMillis());
+        Integer update = update(userInfo);
 
         DbUtils.dbOperateSuccessThen(update, () -> {
             //实名认证数据修改
@@ -700,6 +725,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public R webBindBattery(UserInfoBatteryAddAndUpdate userInfoBatteryAddAndUpdate) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("ELECTRICITY  ERROR! not found user ");
@@ -710,6 +738,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo oldUserInfo = queryByUidFromCache(userInfoBatteryAddAndUpdate.getUid());
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (!Objects.equals(tenantId,oldUserInfo.getTenantId())) {
+            return R.ok();
         }
 
         //未实名认证
@@ -793,6 +825,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
                     .operateContent(Objects.equals(userInfoBatteryAddAndUpdate.getEdiType(), UserInfoBatteryAddAndUpdate.EDIT_TYPE) ? EleUserOperateRecord.EDIT_BATTERY_CONTENT : EleUserOperateRecord.BIND_BATTERY_CONTENT)
                     .operateUid(user.getUid())
                     .uid(oldUserInfo.getUid())
+                    .tenantId(TenantContextHolder.getTenantId())
                     .name(user.getUsername())
                     .initElectricityBatterySn(Objects.nonNull(isBindElectricityBattery) ? isBindElectricityBattery.getSn() : "")
                     .nowElectricityBatterySn(userInfoBatteryAddAndUpdate.getInitElectricityBatterySn())
@@ -819,6 +852,9 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     @Transactional(rollbackFor = Exception.class)
     public R webUnBindBattery(Long uid) {
 
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
             log.error("WEBUNBIND ERROR! not found user ");
@@ -828,6 +864,10 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         UserInfo oldUserInfo = queryByUidFromCache(uid);
         if (Objects.isNull(oldUserInfo)) {
             return R.fail("ELECTRICITY.0019", "未找到用户");
+        }
+
+        if (!Objects.equals(tenantId,oldUserInfo.getTenantId())) {
+            return R.ok();
         }
 
         //未实名认证
@@ -874,7 +914,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
             }
         }
 
-        if (Objects.nonNull(oldFranchiseeUserInfo.getServiceStatus()) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1 ) {
+        if (Objects.nonNull(oldFranchiseeUserInfo.getServiceStatus()) && Objects.equals(oldFranchiseeUserInfo.getServiceStatus(), FranchiseeUserInfo.STATUS_IS_BATTERY) && cardDays >= 1) {
             //查询用户是否存在电池服务费
             Franchisee franchisee = franchiseeService.queryByIdFromDB(oldFranchiseeUserInfo.getFranchiseeId());
             Integer modelType = franchisee.getModelType();
@@ -1022,8 +1062,8 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public R queryUserBelongFranchisee(Long franchiseeId) {
-        return R.ok(franchiseeService.queryByIdFromDB(franchiseeId));
+    public R queryUserBelongFranchisee(Long franchiseeId,Integer tenantId) {
+        return R.ok(franchiseeService.queryByIdAndTenantId(franchiseeId,tenantId));
     }
 
     @Override
@@ -1071,7 +1111,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
     @Override
     public UserInfo queryUserInfoByPhone(String phone, Integer tenantId) {
-        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag,UserInfo.DEL_NORMAL));
+        return userInfoMapper.selectOne(new LambdaQueryWrapper<UserInfo>().eq(UserInfo::getPhone, phone).eq(UserInfo::getTenantId, tenantId).eq(UserInfo::getDelFlag, UserInfo.DEL_NORMAL));
     }
 
     @Override
@@ -1170,7 +1210,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
     }
 
     @Override
-    public Integer updateByUid(UserInfo userInfo){
+    public Integer updateByUid(UserInfo userInfo) {
 
         Integer result = this.userInfoMapper.updateByUid(userInfo);
 
