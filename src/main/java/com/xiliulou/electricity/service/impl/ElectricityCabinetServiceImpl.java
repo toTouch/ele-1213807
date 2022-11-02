@@ -1901,6 +1901,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
         
         TenantContextHolder.setTenantId(electricityBattery.getTenantId());
 
+        TenantContextHolder.setTenantId(electricityBattery.getTenantId());
         //电池电量上报变化在百分之50以上，不更新电池电量
         Double power = batteryReportQuery.getPower();
         //修改电池
