@@ -110,6 +110,7 @@ public class JsonAdminStoreController extends BaseController {
                        @RequestParam(value = "beginTime", required = false) Long beginTime,
                        @RequestParam(value = "endTime", required = false) Long endTime,
                        @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                       @RequestParam(value = "payType", required = false) Integer payType,
                        @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
         if (size < 0 || size > 50) {
             size = 10L;
@@ -139,6 +140,7 @@ public class JsonAdminStoreController extends BaseController {
                 .address(address)
                 .usableStatus(usableStatus)
                 .tenantId(TenantContextHolder.getTenantId())
+                .payType(payType)
                 .storeIdList(ids)
                 .franchiseeId(franchiseeId).build();
 
@@ -152,6 +154,7 @@ public class JsonAdminStoreController extends BaseController {
                         @RequestParam(value = "beginTime", required = false) Long beginTime,
                         @RequestParam(value = "endTime", required = false) Long endTime,
                         @RequestParam(value = "usableStatus", required = false) Integer usableStatus,
+                        @RequestParam(value = "payType", required = false) Integer payType,
                         @RequestParam(value = "franchiseeId", required = false) Long franchiseeId) {
 
         TokenUser user = SecurityUtils.getUserInfo();
@@ -171,6 +174,7 @@ public class JsonAdminStoreController extends BaseController {
                 .endTime(endTime)
                 .address(address)
                 .usableStatus(usableStatus)
+                .payType(payType)
                 .tenantId(TenantContextHolder.getTenantId())
                 .storeIdList(ids)
                 .franchiseeId(franchiseeId).build();
@@ -286,6 +290,7 @@ public class JsonAdminStoreController extends BaseController {
     @GetMapping("/admin/store/getAccountList")
     public R getAccountList(@RequestParam("size") Long size,
                             @RequestParam("offset") Long offset,
+                            @RequestParam(value ="userName", required = false) String storeName,
                             @RequestParam(value = "storeId", required = false) Long storeId,
                             @RequestParam(value = "startTime", required = false) Long startTime,
                             @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -370,6 +375,7 @@ public class JsonAdminStoreController extends BaseController {
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .storeId(storeId)
+                .storeName(storeName)
                 .storeIdList(storeIdList).build();
 
         return storeAmountService.queryList(storeAccountQuery);
@@ -380,6 +386,7 @@ public class JsonAdminStoreController extends BaseController {
      */
     @GetMapping("/admin/store/getAccountCount")
     public R getAccountCount(@RequestParam(value = "storeId", required = false) Long storeId,
+                             @RequestParam(value ="userName", required = false) String storeName,
                              @RequestParam(value = "startTime", required = false) Long startTime,
                              @RequestParam(value = "endTime", required = false) Long endTime) {
 
@@ -455,6 +462,7 @@ public class JsonAdminStoreController extends BaseController {
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
                 .storeId(storeId)
+                .storeName(storeName)
                 .storeIdList(storeIdList).build();
 
         return storeAmountService.queryCount(storeAccountQuery);
@@ -463,6 +471,7 @@ public class JsonAdminStoreController extends BaseController {
     @GetMapping("/admin/store/getAccountHistoryList")
     public R getAccountHistoryList(@RequestParam("size") Long size,
                                    @RequestParam("offset") Long offset,
+                                   @RequestParam(value ="orderId", required = false) String orderId,
                                    @RequestParam(value = "storeId", required = false) Long storeId,
                                    @RequestParam(value = "startTime", required = false) Long startTime,
                                    @RequestParam(value = "endTime", required = false) Long endTime) {
@@ -477,6 +486,7 @@ public class JsonAdminStoreController extends BaseController {
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
                 .offset(offset)
                 .size(size)
+                .orderId(orderId)
                 .startTime(startTime)
                 .endTime(endTime)
                 .tenantId(TenantContextHolder.getTenantId())
@@ -487,12 +497,14 @@ public class JsonAdminStoreController extends BaseController {
 
     @GetMapping("/admin/store/getAccountHistoryCount")
     public R getAccountHistoryCount(
+            @RequestParam(value ="orderId", required = false) String orderId,
             @RequestParam(value = "storeId", required = false) Long storeId,
             @RequestParam(value = "startTime", required = false) Long startTime,
             @RequestParam(value = "endTime", required = false) Long endTime,
             @RequestParam(value = "oid", required = false) Long oid) {
 
         StoreAccountQuery storeAccountQuery = StoreAccountQuery.builder()
+                .orderId(orderId)
                 .startTime(startTime)
                 .endTime(endTime)
                 .storeId(storeId).build();

@@ -42,4 +42,5 @@ public class EleDepositOrderQuery {
 
     private String carModel;
 
+    private String storeName;
 }

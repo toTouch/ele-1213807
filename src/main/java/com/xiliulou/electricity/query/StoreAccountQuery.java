@@ -26,6 +26,10 @@ public class StoreAccountQuery {
 
 	private Long storeId;
 
+	private String storeName;
+
+	private String orderId;
+
 	private List<Long> storeIdList;
 
 }

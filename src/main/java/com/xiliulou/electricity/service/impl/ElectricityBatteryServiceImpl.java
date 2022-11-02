@@ -298,7 +298,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return electricitybatterymapper.queryCount(electricityBatteryQuery);
     }
-
+    
     @Override
     public BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId) {
         return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);
@@ -683,6 +683,18 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     @Override
     public List<ElectricityBattery> selectBatteryInfoByBatteryName(ElectricityBatteryQuery batteryQuery) {
         return electricitybatterymapper.selectBatteryInfoByBatteryName(batteryQuery);
+    }
+    
+    @Override
+    public boolean checkBatteryIsExchange(String batteryName, Double fullyCharged) {
+        boolean result = Boolean.FALSE;
+        ElectricityBattery electricityBattery = this.queryBySn(batteryName);
+        if (Objects.isNull(batteryName)) {
+            return result;
+        }
+    
+        result = electricityBattery.getPower() >= fullyCharged ? Boolean.TRUE : Boolean.FALSE;
+        return result;
     }
     
     private AppTemplateQuery createAppTemplateQuery(List<BorrowExpireBatteryVo> batteryList, Integer tenantId, String appId, String appSecret, String batteryOuttimeTemplate) {

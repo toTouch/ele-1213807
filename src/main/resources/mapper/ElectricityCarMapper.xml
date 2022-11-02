@@ -77,6 +77,9 @@
                 #{id}
             </foreach>
         </if>
+        <if test="query.phone != null and query.phone != '' ">
+            and tec.phone = #{query.phone}
+        </if>
         <if test="query.batterySn != null and query.batterySn!=''">
             and tec.battery_sn = #{query.batterySn}
         </if>

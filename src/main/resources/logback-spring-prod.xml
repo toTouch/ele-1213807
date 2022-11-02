@@ -77,7 +77,10 @@
 	<logger name="com.anji" level="ERROR">
 		<appender-ref ref="debug"/>
 	</logger>
-
+	
+	<logger name="com.xiliulou.db.dynamic.plugin.SqlPrintAndExecuteTimeCountInterceptor" level="INFO" additivity="false">
+		<appender-ref ref="debug"/>
+	</logger>
 
 	<logger name="com.xiliulou.electricity.filter.RequestFilter" level="INFO" additivity="false">
 		<appender-ref ref="request"/>

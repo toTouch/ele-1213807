@@ -11,16 +11,12 @@ import org.springframework.context.annotation.Configuration;
  * @mood
  */
 @Configuration
-@ConfigurationProperties(prefix = "ota-url")
+@ConfigurationProperties(prefix = "ota-path")
 @Data
 @RefreshScope
-public class EleIotOtaUrlConfig {
+public class EleIotOtaPathConfig {
     /**
-     * 子版url
+     * 核心板oss路径
      */
-    private String subUrl;
-    /**
-     * 核心板url
-     */
-    private String coreUrl;
+    private String otaPath;
 }
