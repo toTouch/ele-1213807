@@ -298,7 +298,7 @@ public class ElectricityBatteryServiceImpl extends ServiceImpl<ElectricityBatter
     public Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery) {
         return electricitybatterymapper.queryCount(electricityBatteryQuery);
     }
-
+    
     @Override
     public BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId) {
         return electricitybatterymapper.queryMaxPowerByElectricityCabinetId(electricityCabinetId);

@@ -380,6 +380,7 @@ public class UserServiceImpl implements UserService {
             if (Objects.nonNull(oldUserInfo)) {
                 UserInfo userInfo = new UserInfo();
                 userInfo.setId(oldUserInfo.getId());
+                userInfo.setTenantId(tenantId);
                 userInfo.setUpdateTime(System.currentTimeMillis());
                 userInfo.setPhone(updateUser.getPhone());
                 userInfo.setUid(oldUserInfo.getUid());

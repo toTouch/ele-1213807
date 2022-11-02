@@ -6,8 +6,11 @@
 
 
 	<select id="queryList" resultType="com.xiliulou.electricity.entity.StoreSplitAccountHistory">
-        select * from t_store_split_account_history
+        select store_id,create_time,split_amount,current_total_income,pay_amount,percent,order_id,type from t_store_split_account_history
         <where>
+            <if test="orderId != null and ''!=orderId">
+                and order_id = #{orderId}
+            </if>
             <if test="storeId != null">
                 and store_id = #{storeId}
             </if>
@@ -28,6 +31,9 @@
     <select id="queryCount" resultType="java.lang.Integer">
         select count(1) from t_store_split_account_history
         <where>
+            <if test="orderId != null and ''!=orderId">
+                and order_id = #{orderId}
+            </if>
             <if test="storeId != null">
                 and store_id = #{storeId}
             </if>

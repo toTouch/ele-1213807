@@ -4,48 +4,54 @@
 
 
 	<select id="queryList" resultType="com.xiliulou.electricity.entity.StoreAmount">
-		select * from t_store_amount
-		where del_flag = 0
+		select tsa.store_id,tsa.uid,tsa.create_time,tsa.total_income,tsa.balance,tsa.withdraw  from t_store_amount as tsa left join t_store as ts on ts.id=tsa.store_id
+		where tsa.del_flag = 0
+		<if test="storeName != null and storeName != ''">
+			and ts.name = #{storeName}
+		</if>
 		<if test="storeId != null">
-			and store_id =#{storeId}
+			and tsa.store_id =#{storeId}
 		</if>
 		<if test="startTime != null">
-			and create_time &gt;= #{startTime}
+			and tsa.create_time &gt;= #{startTime}
 		</if>
 		<if test="endTime != null">
-			and create_time &lt;= #{endTime}
+			and tsa.create_time &lt;= #{endTime}
 		</if>
 		<if test="tenantId != null">
-			and tenant_id = #{tenantId}
+			and tsa.tenant_id = #{tenantId}
 		</if>
 		<if test="storeIdList!=null and storeIdList!=''">
-			and store_id in
+			and tsa.store_id in
 			<foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
 				#{id}
 			</foreach>
 		</if>
-		order by create_time desc
+		order by tsa.create_time desc
 		limit #{offset}, #{size}
 	</select>
 
 
 	<select id="queryCount" resultType="java.lang.Integer">
-		select COUNT(1) from t_store_amount
-		where del_flag = 0
+		select COUNT(1) from t_store_amount as tsa left join t_store as ts on ts.id=tsa.store_id
+		where tsa.del_flag = 0
+		<if test="storeName != null and storeName != ''">
+			and ts.name = #{storeName}
+		</if>
 		<if test="storeId != null">
-			and store_id =#{storeId}
+			and tsa.store_id =#{storeId}
 		</if>
 		<if test="startTime != null">
-			and create_time &gt;= #{startTime}
+			and tsa.create_time &gt;= #{startTime}
 		</if>
 		<if test="endTime != null">
-			and create_time &lt;= #{endTime}
+			and tsa.create_time &lt;= #{endTime}
 		</if>
 		<if test="tenantId != null">
-			and tenant_id = #{tenantId}
+			and tsa.tenant_id = #{tenantId}
 		</if>
 		<if test="storeIdList!=null and storeIdList!=''">
-			and store_id in
+			and tsa.store_id in
 			<foreach collection="storeIdList" item="id" index="index" open="(" close=")" separator=",">
 				#{id}
 			</foreach>

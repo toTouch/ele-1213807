@@ -105,6 +105,10 @@ public class ElectricityCabinetBox {
      * 电池id
      */
     private Long bId;
+    /**
+     * 子板版本号
+     */
+    private String version;
 
     /**
      * 锁仓类型 0--人为锁仓 1--系统锁仓

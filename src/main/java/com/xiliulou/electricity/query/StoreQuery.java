@@ -28,6 +28,10 @@ public class StoreQuery {
 	 */
 	private Integer usableStatus;
 	/**
+	 * 支付类型
+	 */
+	private Integer payType;
+	/**
 	 * 门店地址
 	 */
 	private String address;

@@ -282,6 +282,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
         userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setUsableStatus(usableStatus);
+        userInfo.setTenantId(tenantId);
         update(userInfo);
         return R.ok();
     }
@@ -590,6 +591,7 @@ public class UserInfoServiceImpl extends ServiceImpl<UserInfoMapper, UserInfo> i
 
         UserInfo userInfo = new UserInfo();
         userInfo.setId(id);
+        userInfo.setTenantId(tenantId);
         userInfo.setUid(oldUserInfo.getUid());
         userInfo.setUpdateTime(System.currentTimeMillis());
         userInfo.setAuthStatus(authStatus);
