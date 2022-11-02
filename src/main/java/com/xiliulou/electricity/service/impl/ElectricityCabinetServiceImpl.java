@@ -1456,23 +1456,23 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                     e.setElectricityBatteryTotal(haveBatteryBoxs.size());
                 }
                 
-    
-                //查满仓空仓数
-                int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
-                //查满仓空仓数
-                int electricityBatteryTotal = 0;
-                int noElectricityBattery = 0;
-                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
-                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
-                    //空仓
-                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
-                    //电池总数
-                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
-                }
-
-                e.setElectricityBatteryTotal(electricityBatteryTotal);
-                e.setNoElectricityBattery(noElectricityBattery);
-                e.setFullyElectricityBattery(fullyElectricityBattery);
+//
+//                //查满仓空仓数
+//                int fullyElectricityBattery = queryFullyElectricityBattery(e.getId(), null);
+//                //查满仓空仓数
+//                int electricityBatteryTotal = 0;
+//                int noElectricityBattery = 0;
+//                List<ElectricityCabinetBox> electricityCabinetBoxList = electricityCabinetBoxService.queryBoxByElectricityCabinetId(e.getId());
+//                if (ObjectUtil.isNotEmpty(electricityCabinetBoxList)) {
+//                    //空仓
+//                    noElectricityBattery = (int) electricityCabinetBoxList.stream().filter(this::isNoElectricityBattery).count();
+//                    //电池总数
+//                    electricityBatteryTotal = (int) electricityCabinetBoxList.stream().filter(this::isElectricityBattery).count();
+//                }
+//
+//                e.setElectricityBatteryTotal(electricityBatteryTotal);
+//                e.setNoElectricityBattery(noElectricityBattery);
+//                e.setFullyElectricityBattery(fullyElectricityBattery);
 
 //                //动态查询在线状态
 //                boolean result = deviceIsOnline(e.getProductKey(), e.getDeviceName());
