@@ -716,6 +716,10 @@ public class JsonAdminEleWarnMsgController extends BaseController {
      */
     @PostMapping(value = "/admin/eleWarnMsg/export")
     public R eleWarnMsgExport(@RequestBody EleWarnMsgExcelQuery warnMsgQuery) {
+        if(!SecurityUtils.isAdmin()){
+            return R.fail("AUTH.0002", "没有权限操作！");
+        }
+        
         verifyParams(warnMsgQuery);
         return returnTripleResult(eleWarnMsgService.submitExportTask(warnMsgQuery));
     }
