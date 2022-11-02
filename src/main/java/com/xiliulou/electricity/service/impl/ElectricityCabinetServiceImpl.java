@@ -1444,7 +1444,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
                             && electricityBatteryService.checkBatteryIsExchange(item.getSn(), e.getFullyCharged()))
                             .collect(Collectors.toList());
                     //空仓
-                    List<ElectricityCabinetBox> emptyBoxs = electricityCabinetBoxes.parallelStream().filter(item -> StringUtils.isNotBlank(item.getSn())
+                    List<ElectricityCabinetBox> emptyBoxs = electricityCabinetBoxes.parallelStream().filter(item -> StringUtils.isBlank(item.getSn())
                             && Objects.equals(ElectricityCabinetBox.ELECTRICITY_CABINET_BOX_USABLE,item.getUsableStatus())).collect(Collectors.toList());
     
                     //有电池
