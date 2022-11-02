@@ -113,8 +113,8 @@ public class TenantServiceImpl implements TenantService {
 
         //运维
         Role maintainRole = new Role();
-        storeRole.setName(CommonConstant.MAINTAIN_NAME);
-        storeRole.setCode(CommonConstant.MAINTAIN_CODE);
+        maintainRole.setName(CommonConstant.MAINTAIN_NAME);
+        maintainRole.setCode(CommonConstant.MAINTAIN_CODE);
 
         ArrayList<Role> roleList = new ArrayList<>();
         roleList.add(operateRole);
