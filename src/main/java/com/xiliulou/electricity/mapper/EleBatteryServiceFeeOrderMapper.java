@@ -27,7 +27,7 @@ public interface EleBatteryServiceFeeOrderMapper extends BaseMapper<EleBatterySe
                                                   @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime);
 
     List<EleBatteryServiceFeeOrderVo> queryListForAdmin(@Param("uid") Long uid,
-                                                        @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("status") Integer status);
+                                                        @Param("offset") Long offset, @Param("size") Long size, @Param("startTime") Long startTime, @Param("endTime") Long endTime, @Param("status") Integer status,@Param("tenantId") Integer tenantId);
 
     List<EleBatteryServiceFeeOrderVo> queryList(@Param("query") BatteryServiceFeeQuery batteryServiceFeeQuery);
 

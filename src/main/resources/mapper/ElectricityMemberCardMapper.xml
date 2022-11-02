@@ -124,5 +124,63 @@
        where id = #{id}
 	</update>
 
+    <update id="update">
+        update t_electricity_member_card
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="holidayPrice != null">
+                holiday_price = #{holidayPrice},
+            </if>
+            <if test="price != null">
+                price = #{price},
+            </if>
+            <if test="validDays != null">
+                valid_days = #{validDays},
+            </if>
+            <if test="maxUseCount != null">
+                max_use_count = #{maxUseCount},
+            </if>
+            <if test="status != null">
+                status = #{status},
+            </if>
+            <if test="limitCount != null">
+                limit_count = #{limitCount},
+            </if>
+            <if test="delFlag != null">
+                del_flag = #{delFlag},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+            <if test="franchiseeId != null">
+                franchisee_id = #{franchiseeId},
+            </if>
+            <if test="modelType != null">
+                model_type = #{modelType},
+            </if>
+            <if test="batteryType != null">
+                battery_Type = #{batteryType},
+            </if>
+            <if test="isBindActivity != null">
+                is_bind_activity = #{isBindActivity},
+            </if>
+            <if test="activityId != null">
+                activity_id = #{activityId},
+            </if>
+            <if test="cardModel != null">
+                card_model = #{cardModel},
+            </if>
+            <if test="carModelId != null">
+                car_model_id = #{carModelId},
+            </if>
+        </set>
+        where id = #{id} and tenant_id = #{tenantId}
+    </update>
+
 
 </mapper>

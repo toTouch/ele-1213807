@@ -3,6 +3,7 @@ package com.xiliulou.electricity.controller.admin;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.query.JsonShareMoneyActivityHistoryQuery;
 import com.xiliulou.electricity.service.JoinShareMoneyActivityHistoryService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -43,13 +44,14 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
             offset = 0L;
         }
 
-        JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
-                .offset(offset)
-                .size(size)
-                .uid(uid)
-                .activityId(activityId).build();
-        return joinShareMoneyActivityHistoryService.queryList(jsonShareMoneyActivityHistoryQuery);
-    }
+		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
+				.offset(offset)
+				.size(size)
+				.uid(uid)
+				.tenantId(TenantContextHolder.getTenantId())
+				.activityId(activityId).build();
+		return joinShareMoneyActivityHistoryService.queryList(jsonShareMoneyActivityHistoryQuery);
+	}
 
 
     /**
@@ -59,11 +61,14 @@ public class JsonAdminJoinShareMoneyActivityHistoryController {
     public R queryCount(@RequestParam("uid") Long uid,
                         @RequestParam("activityId") Integer activityId) {
 
-        JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
-                .uid(uid)
-                .activityId(activityId).build();
-        return joinShareMoneyActivityHistoryService.queryCount(jsonShareMoneyActivityHistoryQuery);
-    }
+
+
+		JsonShareMoneyActivityHistoryQuery jsonShareMoneyActivityHistoryQuery = JsonShareMoneyActivityHistoryQuery.builder()
+				.uid(uid)
+				.tenantId(TenantContextHolder.getTenantId())
+				.activityId(activityId).build();
+		return joinShareMoneyActivityHistoryService.queryCount(jsonShareMoneyActivityHistoryQuery);
+	}
 
 }
 

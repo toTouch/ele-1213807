@@ -20,8 +20,6 @@ spring:
 
 logging:
   config: classpath:logback-spring-dev.xml
-  level:
-    com.xiliulou.electricity.mapper: debug
 management:
   endpoints:
     web:

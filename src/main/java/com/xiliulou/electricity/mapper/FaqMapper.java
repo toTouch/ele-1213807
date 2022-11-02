@@ -28,4 +28,6 @@ public interface FaqMapper extends BaseMapper<Faq> {
 
 
     Integer queryCount(@Param("tenantId") Integer tenantId);
+
+    int delete(@Param("id") Integer id,@Param("tenantId") Integer tenantId);
 }

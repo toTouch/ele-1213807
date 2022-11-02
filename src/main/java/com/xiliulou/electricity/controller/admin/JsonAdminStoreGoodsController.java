@@ -4,6 +4,7 @@ import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.StoreGoods;
 import com.xiliulou.electricity.query.StoreShopsQuery;
 import com.xiliulou.electricity.service.StoreGoodsService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.validator.CreateGroup;
 import com.xiliulou.electricity.validator.UpdateGroup;
 import lombok.extern.slf4j.Slf4j;
@@ -72,10 +73,14 @@ public class JsonAdminStoreGoodsController {
 			offset = 0L;
 		}
 
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
 				.offset(offset)
 				.size(size)
 				.name(name)
+				.tenantId(tenantId)
 				.beginTime(beginTime)
 				.endTime(endTime)
 				.storeId(storeId).build();
@@ -90,9 +95,12 @@ public class JsonAdminStoreGoodsController {
 			@RequestParam(value = "endTime", required = false) Long endTime,
 			@RequestParam(value = "storeId", required = false) Long storeId) {
 
-		//
+		//租户
+		Integer tenantId = TenantContextHolder.getTenantId();
+
 		StoreShopsQuery storeShopsQuery = StoreShopsQuery.builder()
 				.name(name)
+				.tenantId(tenantId)
 				.beginTime(beginTime)
 				.endTime(endTime)
 				.storeId(storeId).build();

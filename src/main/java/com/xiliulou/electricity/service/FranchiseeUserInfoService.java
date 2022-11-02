@@ -3,6 +3,8 @@ package com.xiliulou.electricity.service;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.FranchiseeUserInfo;
 import com.xiliulou.electricity.query.MemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.BatteryMemberCardExpiringSoonQuery;
+import com.xiliulou.electricity.query.CarMemberCardExpiringSoonQuery;
 import com.xiliulou.electricity.vo.EleBatteryServiceFeeVO;
 import org.apache.commons.lang3.tuple.Triple;
 
@@ -70,7 +72,7 @@ public interface FranchiseeUserInfoService {
      * @param id
      * @return
      */
-    List<FranchiseeUserInfo> selectByMemberCardId(Integer id);
+    List<FranchiseeUserInfo> selectByMemberCardId(Integer id, Integer tenantId);
 
     List<FranchiseeUserInfo> selectByFranchiseeId(Long id);
 
@@ -83,4 +85,10 @@ public interface FranchiseeUserInfoService {
     FranchiseeUserInfo selectByNowBattery(String sn);
 
     Triple<Boolean, String, Object> updateServiceStatus(Long uid, Integer serviceStatus);
+
+    List<BatteryMemberCardExpiringSoonQuery> batteryMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime);
+
+    List<CarMemberCardExpiringSoonQuery> carMemberCardExpire(Integer offset, Integer size, Long firstTime,
+        Long lastTime);
 }

@@ -47,7 +47,7 @@ public class UserRoleServiceImpl implements UserRoleService {
 		this.userRoleMapper.insert(userRole);
 		return userRole;
 	}
-
+	
 
 	@Override
 	@DS("slave_1")

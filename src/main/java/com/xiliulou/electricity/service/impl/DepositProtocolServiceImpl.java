@@ -1,6 +1,7 @@
 package com.xiliulou.electricity.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
 import com.xiliulou.core.web.R;
 import com.xiliulou.electricity.entity.DepositProtocol;
 import com.xiliulou.electricity.entity.UserNotice;
@@ -43,14 +44,12 @@ public class DepositProtocolServiceImpl implements DepositProtocolService {
 	@Override
 	public Triple<Boolean, String, Object> update(DepositProtocolQuery depositProtocolQuery) {
 		if (Objects.isNull(depositProtocolQuery.getId())) {
-			//tenant
-			Integer tenantId = TenantContextHolder.getTenantId();
-
+	
 			DepositProtocol depositProtocol = new DepositProtocol();
 			depositProtocol.setContent(depositProtocolQuery.getContent());
 			depositProtocol.setCreateTime(System.currentTimeMillis());
 			depositProtocol.setUpdateTime(System.currentTimeMillis());
-			depositProtocol.setTenantId(tenantId);
+			depositProtocol.setTenantId(TenantContextHolder.getTenantId());
 			depositProtocolMapper.insert(depositProtocol);
 		} else {
 
@@ -58,7 +57,8 @@ public class DepositProtocolServiceImpl implements DepositProtocolService {
 			depositProtocol.setId(depositProtocolQuery.getId());
 			depositProtocol.setContent(depositProtocolQuery.getContent());
 			depositProtocol.setUpdateTime(System.currentTimeMillis());
-			depositProtocolMapper.updateById(depositProtocol);
+			depositProtocol.setTenantId(TenantContextHolder.getTenantId());
+			depositProtocolMapper.update(depositProtocol);
 		}
 		return Triple.of(true, null, null);
 	}

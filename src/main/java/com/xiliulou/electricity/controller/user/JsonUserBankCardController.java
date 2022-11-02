@@ -9,6 +9,7 @@ import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.entity.BankCard;
 import com.xiliulou.electricity.query.BankCardQuery;
 import com.xiliulou.electricity.service.BankCardService;
+import com.xiliulou.electricity.tenant.TenantContextHolder;
 import com.xiliulou.electricity.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,11 @@ public class JsonUserBankCardController {
 	public R queryByUid() {
 		Long uid = SecurityUtils.getUid();
 
+		Integer tenantId = TenantContextHolder.getTenantId();
+
+
 		BankCardQuery bankCardQuery = BankCardQuery.builder()
-				.uid(uid).build();
+				.uid(uid).tenantId(tenantId).build();
 		return bankCardService.queryList(bankCardQuery);
 	}
 

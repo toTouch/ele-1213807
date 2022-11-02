@@ -71,7 +71,7 @@ public class JsonAdminBatteryServiceFeeController {
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
 
-        return eleBatteryServiceFeeOrderService.queryListForAdmin(offset, size, queryStartTime, queryEndTime, uid, status);
+        return eleBatteryServiceFeeOrderService.queryListForAdmin(offset, size, queryStartTime, queryEndTime, uid, status,tenantId);
     }
 
     /**
@@ -81,6 +81,10 @@ public class JsonAdminBatteryServiceFeeController {
      */
     @GetMapping("/admin/batteryServiceFee/query")
     public R queryBatteryServiceFee(@RequestParam("uid") Long uid) {
+
+        //租户
+        Integer tenantId = TenantContextHolder.getTenantId();
+
         //用户
         TokenUser user = SecurityUtils.getUserInfo();
         if (Objects.isNull(user)) {
@@ -93,6 +97,11 @@ public class JsonAdminBatteryServiceFeeController {
             log.error("admin saveUserMemberCard  ERROR! not found user! uid={}", uid);
             return R.fail("ELECTRICITY.0001", "未找到用户");
         }
+
+        if (!Objects.equals(userInfo.getTenantId(),tenantId)){
+            return R.ok();
+        }
+
         return R.ok(franchiseeUserInfoService.queryUserBatteryServiceFee(uid));
     }
 

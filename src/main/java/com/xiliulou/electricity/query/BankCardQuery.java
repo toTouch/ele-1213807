@@ -21,4 +21,6 @@ public class BankCardQuery {
 	private Long uid;
 	//银行卡号绑定人
 	private String encBindUserName;
+
+	private Integer tenantId;
 }

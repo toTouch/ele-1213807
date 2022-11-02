@@ -20,7 +20,7 @@ public interface FaqService {
      * @param id 主键
      * @return 实例对象
      */
-    Faq queryByIdFromDB(Integer id);
+    Faq queryByIdFromDB(Integer id,Integer tenantId);
 
 
 
@@ -46,7 +46,7 @@ public interface FaqService {
      * @param id 主键
      * @return 是否成功
      */
-    Boolean deleteById(Integer id);
+    Boolean deleteById(Integer id,Integer tenantId);
 
     Triple<Boolean, String, Object> queryList(Integer size, Integer offset);
 

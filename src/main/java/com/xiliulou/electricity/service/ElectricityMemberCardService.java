@@ -23,9 +23,9 @@ public interface ElectricityMemberCardService {
 
 	List<ElectricityMemberCard> queryByFranchisee(Long id);
 
-    List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id);
+    List<ElectricityMemberCard> getElectricityUsableBatteryList(Long id,Integer tenantId);
 
-    List<ElectricityMemberCard> selectByFranchiseeId(Long id);
+    List<ElectricityMemberCard> selectByFranchiseeId(Long id,Integer tenantId);
 
     R queryCount(Integer status, Integer type, Integer tenantId, Integer cardModel, Long franchiseeId);
 

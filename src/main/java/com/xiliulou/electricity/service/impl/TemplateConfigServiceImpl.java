@@ -26,6 +26,8 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
     @Autowired
     private RedisService redisService;
+    @Autowired
+    private TemplateConfigMapper templateConfigMapper;
 
     @Override
     public TemplateConfigEntity queryByTenantIdFromCache(Integer tenantId) {
@@ -75,8 +77,9 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
             return R.fail("id不能为空");
         }
         templateConfig.setUpdateTime(System.currentTimeMillis());
+        templateConfig.setTenantId(TenantContextHolder.getTenantId());
 
-        int i = this.baseMapper.updateById(templateConfig);
+        int i = templateConfigMapper.update(templateConfig);
         if (i > 0) {
             redisService.delete(CacheConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
         }
@@ -85,7 +88,7 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
 
     @Override
     public R removeByIdFromDB(Long id) {
-        int i = this.baseMapper.deleteById(id);
+        int i = templateConfigMapper.deleteById(id,TenantContextHolder.getTenantId());
         if (i > 0) {
             redisService.delete(CacheConstant.CACHE_TEMPLATE_CONFIG + TenantContextHolder.getTenantId());
         }
@@ -110,6 +113,8 @@ public class TemplateConfigServiceImpl extends ServiceImpl<TemplateConfigMapper,
         if(Objects.nonNull(templateConfigEntity)){
             result.add(templateConfigEntity.getBatteryOuttimeTemplate());
             result.add(templateConfigEntity.getElectricQuantityRemindTemplate());
+            result.add(templateConfigEntity.getBatteryMemberCardExpiringTemplate());
+            result.add(templateConfigEntity.getCarMemberCardExpiringTemplate());
             //result.add(templateConfigEntity.getMemberCardExpiringTemplate());
         }
 
