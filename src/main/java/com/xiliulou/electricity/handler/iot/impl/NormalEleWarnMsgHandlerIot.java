@@ -108,7 +108,7 @@ public class NormalEleWarnMsgHandlerIot extends AbstractElectricityIotHandler {
 
 
         //烟雾告警、后门异常打开  故障上报发送通知
-        this.sendWarnMessageNotify(electricityCabinet, eleWarnMsgVo);
+//        this.sendWarnMessageNotify(electricityCabinet, eleWarnMsgVo);
 
     }
 

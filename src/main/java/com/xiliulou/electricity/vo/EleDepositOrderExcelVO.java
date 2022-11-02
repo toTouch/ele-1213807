@@ -15,6 +15,7 @@ import java.math.BigDecimal;
 public class EleDepositOrderExcelVO {
 	@ExcelProperty("序号")
     private Integer id;
+	@ExcelProperty("门店") private String storeName;
 	@ExcelProperty("订单编号")
 	private String orderId;
 	@ExcelProperty("用户名")

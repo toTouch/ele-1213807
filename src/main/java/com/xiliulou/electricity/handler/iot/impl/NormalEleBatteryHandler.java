@@ -160,7 +160,7 @@ public class NormalEleBatteryHandler extends AbstractElectricityIotHandler {
         this.saveBatteryOtherProperties(eleBatteryVO, batteryName);
         
         //检查柜机电池是否满仓
-        this.checkElectricityCabinetBatteryFull(electricityCabinet);
+//        this.checkElectricityCabinetBatteryFull(electricityCabinet);
     }
 
     private ElectricityBattery buildElectricityBattery(EleBatteryVO eleBatteryVO, ElectricityBattery electricityBattery, ElectricityCabinet electricityCabinet, Double power) {

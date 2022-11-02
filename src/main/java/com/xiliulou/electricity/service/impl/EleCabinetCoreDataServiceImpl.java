@@ -28,8 +28,8 @@ public class EleCabinetCoreDataServiceImpl implements EleCabinetCoreDataService 
     private EleCabinetCoreDataMapper eleCabinetCoreDataMapper;
 
     @Override
-    public int atomicUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
-        return eleCabinetCoreDataMapper.atomicUpdateCabinetCoreData(cabinetCoreData);
+    public int idempotentUpdateCabinetCoreData(EleCabinetCoreData cabinetCoreData) {
+        return eleCabinetCoreDataMapper.idempotentUpdateCabinetCoreData(cabinetCoreData);
     }
 
     @Override

@@ -59,7 +59,7 @@ public interface ElectricityBatteryService extends IService<ElectricityBattery> 
 
 
     Integer querySumCount(ElectricityBatteryQuery electricityBatteryQuery);
-
+    
     BigEleBatteryVo queryMaxPowerByElectricityCabinetId(Integer electricityCabinetId);
 
     ElectricityBatteryVO selectBatteryDetailInfoBySN(String sn);

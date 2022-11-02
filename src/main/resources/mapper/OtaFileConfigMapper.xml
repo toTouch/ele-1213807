@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+    "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xiliulou.electricity.mapper.OtaFileConfigMapper">
+    
+    <resultMap type="com.xiliulou.electricity.entity.OtaFileConfig" id="OtaFileConfigMap">
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="name" column="name" jdbcType="VARCHAR"/>
+        <result property="downloadLink" column="download_link" jdbcType="VARCHAR"/>
+        <result property="version" column="version" jdbcType="VARCHAR"/>
+        <result property="sha256Value" column="sha256_value" jdbcType="VARCHAR"/>
+        <result property="type" column="type" jdbcType="INTEGER"/>
+        <result property="createTime" column="create_time" jdbcType="INTEGER"/>
+        <result property="updateTime" column="update_time" jdbcType="INTEGER"/>
+    </resultMap>
+    
+    <!--查询单个-->
+    <select id="queryById" resultMap="OtaFileConfigMap">
+        select
+          id, name, download_link, version, sha256_value, type, create_time, update_time
+        from t_ota_file_config
+        where id = #{id}
+    </select>
+    
+    <!--查询指定行数据-->
+    <select id="queryAllByLimit" resultMap="OtaFileConfigMap">
+        select
+          id, name, download_link, version, sha256_value, type, create_time, update_time
+        from t_ota_file_config
+        limit #{offset}, #{limit}
+    </select>
+    
+    <select id="queryAll" resultMap="OtaFileConfigMap">
+        select
+        id, name, download_link, version, sha256_value, type, create_time, update_time
+        from t_ota_file_config
+    </select>
+    
+    <!--新增所有列-->
+    <insert id="insertOne" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ota_file_config(name, download_link, version, sha256_value, type, create_time, update_time)
+        values (#{name}, #{downloadLink}, #{version}, #{sha256Value}, #{type}, #{createTime}, #{updateTime})
+    </insert>
+    
+    <!--通过主键修改数据-->
+    <update id="update">
+        update t_ota_file_config
+        <set>
+            <if test="name != null and name != ''">
+                name = #{name},
+            </if>
+            <if test="downloadLink != null and downloadLink != ''">
+                download_link = #{downloadLink},
+            </if>
+            <if test="version != null and version != ''">
+                version = #{version},
+            </if>
+            <if test="sha256Value != null and sha256Value != ''">
+                sha256_value = #{sha256Value},
+            </if>
+            <if test="type != null">
+                type = #{type},
+            </if>
+            <if test="createTime != null">
+                create_time = #{createTime},
+            </if>
+            <if test="updateTime != null">
+                update_time = #{updateTime},
+            </if>
+        </set>
+        where id = #{id}
+    </update>
+    
+    <!--通过主键删除-->
+    <delete id="deleteById">
+        delete from t_ota_file_config where id = #{id}
+    </delete>
+    
+    <select id="queryByType" resultMap="OtaFileConfigMap">
+        select
+          id, name, download_link, version, sha256_value, type, create_time, update_time
+        from t_ota_file_config where type = #{type}
+    </select>
+    
+    
+    <insert id="insertOrupdate" keyProperty="id" useGeneratedKeys="true">
+        insert into t_ota_file_config(name, download_link, version, sha256_value, type, create_time, update_time)
+        values (#{name}, #{downloadLink}, #{version}, #{sha256Value}, #{type}, #{createTime}, #{updateTime})
+        ON DUPLICATE KEY UPDATE
+        name = #{name}, download_link = #{downloadLink}, version = #{version}, sha256_value = #{sha256Value}, update_time = #{updateTime}
+    </insert>
+</mapper>

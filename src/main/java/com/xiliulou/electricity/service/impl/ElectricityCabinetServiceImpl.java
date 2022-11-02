@@ -17,8 +17,8 @@ import com.xiliulou.core.thread.XllThreadPoolExecutors;
 import com.xiliulou.core.utils.DataUtil;
 import com.xiliulou.core.web.R;
 import com.xiliulou.db.dynamic.annotation.DS;
+import com.xiliulou.electricity.config.EleIotOtaPathConfig;
 import com.xiliulou.electricity.constant.BatteryConstant;
-import com.xiliulou.electricity.config.EleIotOtaUrlConfig;
 import com.xiliulou.electricity.constant.CacheConstant;
 import com.xiliulou.electricity.constant.ElectricityIotConstant;
 import com.xiliulou.electricity.entity.*;
@@ -131,7 +131,13 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     @Autowired
     UserService userService;
     @Autowired
-    EleIotOtaUrlConfig eleIotOtaUrlConfig;
+    EleIotOtaPathConfig eleIotOtaPathConfig;
+    
+    @Autowired
+    OtaFileConfigService otaFileConfigService;
+    
+    @Autowired
+    EleOtaUpgradeService eleOtaUpgradeService;
 
     @Autowired
     ElectricityCabinetFileService electricityCabinetFileService;
@@ -1248,12 +1254,8 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
             dataMap.put("cell_list", cellList);
 
         }
-
-        //ota升级 -->  ota_process
-        if(Objects.equals(ElectricityIotConstant.OTA_PROCESS, eleOuterCommandQuery.getCommand())){
-            dataMap.put("subUrl", eleIotOtaUrlConfig.getSubUrl());
-            dataMap.put("coreUrl", eleIotOtaUrlConfig.getCoreUrl());
-        }
+    
+        
 
         HardwareCommandQuery comm = HardwareCommandQuery.builder()
                 .sessionId(eleOuterCommandQuery.getSessionId())
@@ -2966,6 +2968,7 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
 
     }
 
+    
     @Override
     public R queryElectricityCabinetFileById(Integer electricityCabinetId) {
         List<ElectricityCabinetFile> electricityCabinetFiles = electricityCabinetFileService.queryByDeviceInfo(electricityCabinetId.longValue(), ElectricityCabinetFile.TYPE_ELECTRICITY_CABINET, storageConfig.getIsUseOSS());
@@ -2980,23 +2983,86 @@ public class ElectricityCabinetServiceImpl implements ElectricityCabinetService 
     }
 
     @Override
-    public R checkOtaUpgradeSession(String sessionId) {
-        //OtaRequestVo vo = redisService.getWithHash(CacheConstant.OTA_PROCESS_CACHE + sessionId, OtaRequestVo.class);
-        String json =
-            "{\"completeTime\":1662630328600,\"coreUpgradeResult\":false,\"deviceName\":\"dy-test-002\",\"failCells\":[],\"msg\":\"升级失败!\",\"operateResult\":false,\"productKey\":\"a1QqoBrbcT1\",\"successCells\":[],\"type\":\"ota_process_rsp\",\"upgradeType\":1}";
-        OtaRequestVo vo = JsonUtil.fromJson(json, OtaRequestVo.class);
-        if(Objects.isNull(vo)) {
-            return R.fail(null,"检查超时");
+    public R otaCommand(Integer eid, Integer operateType, List<Integer> cellNos) {
+        final Integer TYPE_DOWNLOAD = 1;
+        final Integer TYPE_SYNC = 2;
+        final Integer TYPE_UPGRADE = 3;
+        
+        ElectricityCabinet electricityCabinet = queryByIdFromCache(eid);
+        if (Objects.isNull(electricityCabinet)) {
+            return R.fail("ELECTRICITY.0005", "未找到换电柜");
         }
-        return R.ok(vo);
-    }
+        
+        //换电柜是否在线
+        boolean eleResult = deviceIsOnline(electricityCabinet.getProductKey(), electricityCabinet.getDeviceName());
+        if (!eleResult) {
+            log.error("ELECTRICITY  ERROR!  electricityCabinet is offline ！electricityCabinet={}", electricityCabinet);
+            return R.fail("ELECTRICITY.0035", "换电柜不在线");
+        }
+        
+        if (!TYPE_DOWNLOAD.equals(operateType) && !TYPE_SYNC.equals(operateType) && !TYPE_UPGRADE.equals(operateType)) {
+            log.error("ELECTRICITY  ERROR!  ota  operate type illegal！electricityCabinet={},operateType={}",
+                    electricityCabinet, operateType);
+            return R.fail("100302", "ota操作类型不合法");
+        }
+    
+        String sessionId = UUID.randomUUID().toString().replaceAll("-", "");
+        
+        Map<String, Object> data = com.google.api.client.util.Maps.newHashMap();
+        Map<String, Object> content = new HashMap<>();
+        data.put("operateType", operateType);
+        if (TYPE_DOWNLOAD.equals(operateType)) {
+            //ota文件是否存在
+            OtaFileConfig coreBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_CORE_BOARD);
+            OtaFileConfig subBoardOtaFileConfig = otaFileConfigService.queryByType(OtaFileConfig.TYPE_SUB_BOARD);
+            
+            if (Objects.isNull(coreBoardOtaFileConfig) || Objects.isNull(subBoardOtaFileConfig)) {
+                log.error("SEND DOWNLOAD OTA CONMMAND ERROR! incomplete upgrade file error! coreBoard={}, subBoard={}",
+                        coreBoardOtaFileConfig, subBoardOtaFileConfig);
+                return R.fail("100301", "ota升级文件不完整，请联系客服处理");
+            }
+    
+            content.put("coreFileUrl", coreBoardOtaFileConfig.getDownloadLink());
+            content.put("coreFileSha256Hex", coreBoardOtaFileConfig.getSha256Value());
+            content.put("subFileUrl", subBoardOtaFileConfig.getDownloadLink());
+            content.put("subFileSha256Hex", subBoardOtaFileConfig.getSha256Value());
+        } else if (TYPE_UPGRADE.equals(operateType)) {
+            if (!DataUtil.collectionIsUsable(cellNos)) {
+                return R.fail("100303", "升级内容为空，请选择您要升级的板子");
+            }
+    
+            eleOtaUpgradeService.updateEleOtaUpgradeAndSaveHistory(cellNos, eid, sessionId);
+            content.put("cellNos", cellNos);
+        }
+    
+        data.put("content", JsonUtil.toJson(content));
 
+        HardwareCommandQuery comm = HardwareCommandQuery.builder()
+                .sessionId(sessionId)
+                .data(data)
+                .productKey(electricityCabinet.getProductKey())
+                .deviceName(electricityCabinet.getDeviceName())
+                .command(ElectricityIotConstant.OTA_OPERATE)
+                .build();
+
+        Pair<Boolean, String> result = eleHardwareHandlerManager.chooseCommandHandlerProcessSend(comm);
+        //发送命令失败
+        if (!result.getLeft()) {
+            return R.fail("ELECTRICITY.0037", "发送命令失败");
+        }
+        
+        return R.ok(sessionId);
+    }
+    
     @Override
-    public R closeOtaUpgradeSession(String sessionId) {
-        redisService.delete(CacheConstant.OTA_PROCESS_CACHE + sessionId);
-        return R.ok();
+    public R checkOtaSession(String sessionId) {
+        String s = redisService.get(CacheConstant.OTA_OPERATE_CACHE + sessionId);
+        if (StrUtil.isEmpty(s)) {
+            return R.ok();
+        }
+        return R.ok(s);
     }
-
+    
     @Override
     public R selectEleCabinetListByLongitudeAndLatitude(ElectricityCabinetQuery cabinetQuery) {
         List<ElectricityCabinet> electricityCabinets = electricityCabinetMapper.selectEleCabinetListByLongitudeAndLatitude(cabinetQuery);
